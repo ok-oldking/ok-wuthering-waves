@@ -1,0 +1,56 @@
+updates/
+images*
+tesseract
+models
+fonts
+_internal/
+# Byte-compiled / optimized / DLL files
+.idea/
+__pycache__/
+*.py[cod]
+*$py.class
+configs/
+ok/
+ok
+*.exe
+md5.txt
+update.bat
+click_screenshots/
+test_scripts/
+screenshots/
+thread_dumps.txt
+# C extensions
+*.so
+*.bat
+
+# Distribution / packaging
+.Python
+logs/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+
+# PyInstaller
+# Usually these files are written by a python script from a template
+# before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+autohelper

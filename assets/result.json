@@ -1,0 +1,199 @@
+{
+  "images": [
+    {
+      "width": 1280,
+      "height": 720,
+      "id": 0,
+      "file_name": "images\\926732a6-18_20_47_746270_ADBCaptureMethod_1280x720_original.png"
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "id": 1,
+      "file_name": "images\\7285ccac-18_44_07_081327_ADBCaptureMethod_1280x720_original.png"
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "id": 2,
+      "file_name": "images\\99ef8d1f-18_44_44_114313_ADBCaptureMethod_1280x720_original.png"
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "id": 3,
+      "file_name": "images\\160b9b32-18_46_16_498937_ADBCaptureMethod_1280x720_original.png"
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "id": 4,
+      "file_name": "images\\7e1885c9-18_55_30_787818_ADBCaptureMethod_1280x720_original.png"
+    }
+  ],
+  "categories": [
+    {
+      "id": 0,
+      "name": "assist_laohen_plus"
+    },
+    {
+      "id": 1,
+      "name": "box_qiandao"
+    },
+    {
+      "id": 2,
+      "name": "click_to_continue"
+    },
+    {
+      "id": 3,
+      "name": "go_home"
+    },
+    {
+      "id": 4,
+      "name": "hecha_chat"
+    },
+    {
+      "id": 5,
+      "name": "hecha_love"
+    },
+    {
+      "id": 6,
+      "name": "hecha_question"
+    },
+    {
+      "id": 7,
+      "name": "main_screen_feature"
+    },
+    {
+      "id": 8,
+      "name": "main_screen_menu"
+    },
+    {
+      "id": 9,
+      "name": "manpo_90"
+    },
+    {
+      "id": 10,
+      "name": "start_combat"
+    },
+    {
+      "id": 11,
+      "name": "start_screen_feature"
+    }
+  ],
+  "annotations": [
+    {
+      "id": 0,
+      "image_id": 0,
+      "category_id": 11,
+      "segmentation": [],
+      "bbox": [
+        42.40976183724836,
+        586.2203340008476,
+        42.7602557367298,
+        58.181987313910625
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 2487.8766568139877
+    },
+    {
+      "id": 1,
+      "image_id": 1,
+      "category_id": 5,
+      "segmentation": [],
+      "bbox": [
+        926.0,
+        445.0,
+        20.0,
+        22.99999999999999
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 459.9999999999998
+    },
+    {
+      "id": 2,
+      "image_id": 1,
+      "category_id": 6,
+      "segmentation": [],
+      "bbox": [
+        925.0,
+        313.0,
+        18.0,
+        22.00000000000001
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 396.00000000000017
+    },
+    {
+      "id": 3,
+      "image_id": 2,
+      "category_id": 4,
+      "segmentation": [],
+      "bbox": [
+        876.6639574257163,
+        294.02386400784167,
+        36.69080545349552,
+        33.3039618731728
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 1221.9491859192156
+    },
+    {
+      "id": 4,
+      "image_id": 3,
+      "category_id": 7,
+      "segmentation": [],
+      "bbox": [
+        1086.4536243180053,
+        661.4497272018693,
+        141.6679657053777,
+        30.927513639906433
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 4381.437941690865
+    },
+    {
+      "id": 5,
+      "image_id": 4,
+      "category_id": 3,
+      "segmentation": [],
+      "bbox": [
+        211.12987592117952,
+        17.77045047833575,
+        46.11855005091897,
+        36.38711288421131
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 1678.120886758938
+    },
+    {
+      "id": 6,
+      "image_id": 4,
+      "category_id": 9,
+      "segmentation": [],
+      "bbox": [
+        171.3579153268091,
+        281.78857187075266,
+        49.08029179730831,
+        17.770450478335743
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 872.1788948463353
+    }
+  ],
+  "info": {
+    "year": 2024,
+    "version": "1.0",
+    "description": "",
+    "contributor": "Label Studio",
+    "url": "",
+    "date_created": "2024-06-07 21:44:30.788534"
+  }
+}
