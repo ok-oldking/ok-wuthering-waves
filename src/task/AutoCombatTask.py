@@ -1,15 +1,17 @@
+import re
 import time
 
-from ok.color.Color import white_color, find_color_rectangles
+from ok.color.Color import white_color
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
+from ok.ocr.OCR import OCR
 from ok.task.TriggerTask import TriggerTask
 from src.char.CharFactory import get_char_by_pos
 
 logger = get_logger(__name__)
 
 
-class AutoCombatTask(TriggerTask, FindFeature):
+class AutoCombatTask(TriggerTask, FindFeature, OCR):
 
     def __init__(self):
         super().__init__()
@@ -22,28 +24,40 @@ class AutoCombatTask(TriggerTask, FindFeature):
         }
         self.last_check_combat = time.time()
         self._in_combat = False
+        self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
 
     def run(self):
         self.load_chars()
-        if self.in_combat():
+        if self.chars and self.in_combat():
             self.get_current_char().perform()
 
     def switch_next_char(self, current_char, post_action=None):
         max_priority = -1
         switch_to = None
+        has_intro = current_char.is_con_full()
         for i, char in enumerate(self.chars):
             if char == current_char:
                 priority = 0
             else:
-                priority = char.get_switch_priority(current_char)
+                priority = char.get_switch_priority(current_char, has_intro)
             if priority > max_priority:
                 max_priority = priority
                 switch_to = char
         if switch_to == current_char:
-            self.sleep(0.5)
+            self.sleep(0.2)
+            current_char.normal_attack()
             logger.warning(f"can't find next char to switch to, maybe switching too fast, sleep and wait")
             return self.switch_next_char(current_char, post_action)
+        switch_to.has_intro = has_intro
         self.send_key(switch_to.index + 1)
+        while True:
+            self.sleep(0.01)
+            if self.find_one(self.char_texts[switch_to.index]):
+                self.send_key(switch_to.index + 1)
+                logger.info('switch not detected, try click again')
+            else:
+                break
+
         if post_action:
             post_action()
 
@@ -67,18 +81,28 @@ class AutoCombatTask(TriggerTask, FindFeature):
 
     def check_in_combat(self):
         self.last_check_combat = time.time()
-        min_height = self.height_of_screen(9 / 2160)
-        min_width = self.width_of_screen(60 / 3840)
-        boxes = find_color_rectangles(self.frame, enemy_health_color_red, min_width, min_height)
+        return self.in_team() and self.ocr(0.1, 0, 0.9, 0.9, match=re.compile(r'^Lv'), target_height=720)
 
-        if len(boxes) > 0:
-            self.draw_boxes('enemy_health_bar', boxes, color='blue')
-            return True
-        else:
-            boxes = find_color_rectangles(self.frame, enemy_health_color_black, min_width, min_height)
-            if len(boxes) > 0:
-                self.draw_boxes('enemy_health_black', boxes, color='blue')
-                return True
+        # min_height = self.height_of_screen(10 / 2160)
+        # max_height = min_height * 3
+        # min_width = self.width_of_screen(90 / 3840)
+        # boxes = find_color_rectangles(self.frame, enemy_health_color_red, min_width, min_height, max_height=max_height)
+        #
+        # if len(boxes) > 0:
+        #     self.draw_boxes('enemy_health_bar_red', boxes, color='blue')
+        #     return True
+        # else:
+        #     boxes = find_color_rectangles(self.frame, enemy_health_color_black, min_width, min_height,
+        #                                   max_height=max_height)
+        #     if len(boxes) > 0:
+        #         self.draw_boxes('enemy_health_black', boxes, color='blue')
+        #         return True
+        #     else:
+        #         boxes = find_color_rectangles(self.frame, boss_health_color, min_width, min_height * 1.5,
+        #                                       box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 192 / 2160))
+        #         if len(boxes) > 0:
+        #             self.draw_boxes('boss_health', boxes, color='blue')
+        #             return True
 
     def load_chars(self):
         if self.chars:
@@ -87,15 +111,8 @@ class AutoCombatTask(TriggerTask, FindFeature):
             return
         self.log_info('load chars')
         self.chars.clear()
-        self.sleep(1)
-        self.send_key(1)
-        self.sleep(1)
         self.chars.append(get_char_by_pos(self, self.get_box_by_name('box_char_1'), 0))
-        self.send_key(2)
-        self.sleep(1)
         self.chars.append(get_char_by_pos(self, self.get_box_by_name('box_char_2'), 1))
-        self.send_key(3)
-        self.sleep(1)
         self.chars.append(get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2))
         self.log_info(f'load chars success {self.chars}', notify=True)
 
@@ -123,7 +140,13 @@ enemy_health_color_red = {
 }  # 207,75,60
 
 enemy_health_color_black = {
-    'r': (45, 55),  # Red range
-    'g': (28, 38),  # Green range
-    'b': (18, 28)  # Blue range
+    'r': (10, 55),  # Red range
+    'g': (28, 50),  # Green range
+    'b': (18, 70)  # Blue range
+}
+
+boss_health_color = {
+    'r': (250, 255),  # Red range
+    'g': (30, 180),  # Green range
+    'b': (4, 75)  # Blue range
 }
