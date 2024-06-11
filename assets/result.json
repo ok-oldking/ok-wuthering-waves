@@ -1,191 +1,281 @@
 {
   "images": [
     {
-      "width": 1280,
-      "height": 720,
+      "width": 3840,
+      "height": 2160,
       "id": 0,
-      "file_name": "images\\926732a6-18_20_47_746270_ADBCaptureMethod_1280x720_original.png"
+      "file_name": "images\\9beed513-16_15_23_246388_WindowsGraphicsCaptureMethod_3840x2160_title_None_Clie_a4tQhDg.png"
     },
     {
-      "width": 1280,
-      "height": 720,
+      "width": 3840,
+      "height": 2160,
       "id": 1,
-      "file_name": "images\\7285ccac-18_44_07_081327_ADBCaptureMethod_1280x720_original.png"
+      "file_name": "images\\9f04db98-16_20_58_825243_WindowsGraphicsCaptureMethod_3840x2160_title_None_Clie_VuLpBVc.png"
     },
     {
-      "width": 1280,
-      "height": 720,
+      "width": 3840,
+      "height": 2160,
       "id": 2,
-      "file_name": "images\\99ef8d1f-18_44_44_114313_ADBCaptureMethod_1280x720_original.png"
-    },
-    {
-      "width": 1280,
-      "height": 720,
-      "id": 3,
-      "file_name": "images\\160b9b32-18_46_16_498937_ADBCaptureMethod_1280x720_original.png"
-    },
-    {
-      "width": 1280,
-      "height": 720,
-      "id": 4,
-      "file_name": "images\\7e1885c9-18_55_30_787818_ADBCaptureMethod_1280x720_original.png"
+      "file_name": "images\\154eb284-17_01_16_406889_WindowsGraphicsCaptureMethod_3840x2160_title_None_Clie_6yGu616.png"
     }
   ],
   "categories": [
     {
       "id": 0,
-      "name": "assist_laohen_plus"
+      "name": "box_char_1"
     },
     {
       "id": 1,
-      "name": "box_qiandao"
+      "name": "box_char_2"
     },
     {
       "id": 2,
-      "name": "click_to_continue"
+      "name": "box_char_3"
     },
     {
       "id": 3,
-      "name": "go_home"
+      "name": "box_concerto_last_dot"
     },
     {
       "id": 4,
-      "name": "hecha_chat"
+      "name": "box_echo"
     },
     {
       "id": 5,
-      "name": "hecha_love"
+      "name": "box_echo_cd"
     },
     {
       "id": 6,
-      "name": "hecha_question"
+      "name": "box_liberation"
     },
     {
       "id": 7,
-      "name": "main_screen_feature"
+      "name": "box_resonance"
     },
     {
       "id": 8,
-      "name": "main_screen_menu"
+      "name": "box_resonance_cd"
     },
     {
       "id": 9,
-      "name": "manpo_90"
+      "name": "char_1_text"
     },
     {
       "id": 10,
-      "name": "start_combat"
+      "name": "char_2_text"
     },
     {
       "id": 11,
-      "name": "start_screen_feature"
+      "name": "char_3_text"
+    },
+    {
+      "id": 12,
+      "name": "char_taoqi"
+    },
+    {
+      "id": 13,
+      "name": "char_verina"
+    },
+    {
+      "id": 14,
+      "name": "char_yinlin"
     }
   ],
   "annotations": [
     {
       "id": 0,
       "image_id": 0,
-      "category_id": 11,
+      "category_id": 10,
       "segmentation": [],
       "bbox": [
-        42.40976183724836,
-        586.2203340008476,
-        42.7602557367298,
-        58.181987313910625
+        3474.996465254117,
+        691.7983715586762,
+        28.64101930169909,
+        31.961717191750818
       ],
       "ignore": 0,
       "iscrowd": 0,
-      "area": 2487.8766568139877
+      "area": 915.4161590043827
     },
     {
       "id": 1,
-      "image_id": 1,
-      "category_id": 5,
+      "image_id": 0,
+      "category_id": 11,
       "segmentation": [],
       "bbox": [
-        926.0,
-        445.0,
-        20.0,
-        22.99999999999999
+        3475.204008872245,
+        955.5863101996842,
+        27.39575759292966,
+        32.99943528239189
       ],
       "ignore": 0,
       "iscrowd": 0,
-      "area": 459.9999999999998
+      "area": 904.0445296999786
     },
     {
       "id": 2,
       "image_id": 1,
-      "category_id": 6,
+      "category_id": 9,
       "segmentation": [],
       "bbox": [
-        925.0,
-        313.0,
-        18.0,
-        22.00000000000001
+        3475.165155237534,
+        428.7368609626091,
+        26.476569362830197,
+        31.045534872345144
       ],
       "ignore": 0,
       "iscrowd": 0,
-      "area": 396.00000000000017
+      "area": 821.97925745381
     },
     {
       "id": 3,
+      "image_id": 1,
+      "category_id": 3,
+      "segmentation": [],
+      "bbox": [
+        2170.230315257591,
+        1997.6192029858564,
+        4.260107701179095,
+        12.102578696532555
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 51.55828870922439
+    },
+    {
+      "id": 4,
+      "image_id": 1,
+      "category_id": 13,
+      "segmentation": [],
+      "bbox": [
+        3535.814515487329,
+        746.0360560355382,
+        70.34696429843316,
+        57.31974868761258
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 4032.2703145226433
+    },
+    {
+      "id": 5,
+      "image_id": 1,
+      "category_id": 14,
+      "segmentation": [],
+      "bbox": [
+        3542.328123292739,
+        486.14310459965816,
+        68.39288195681038,
+        50.15478010166101
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 3430.229955062684
+    },
+    {
+      "id": 6,
+      "image_id": 1,
+      "category_id": 12,
+      "segmentation": [],
+      "bbox": [
+        3542.9794840732834,
+        978.5718546886899,
+        74.90648976221793,
+        71.64968585951947
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 5367.026460302226
+    },
+    {
+      "id": 7,
+      "image_id": 1,
+      "category_id": 7,
+      "segmentation": [],
+      "bbox": [
+        3153.7139991992462,
+        1904.1583989947724,
+        87.30139939514883,
+        52.13833574988081
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 4551.749673098711
+    },
+    {
+      "id": 8,
       "image_id": 2,
       "category_id": 4,
       "segmentation": [],
       "bbox": [
-        876.6639574257163,
-        294.02386400784167,
-        36.69080545349552,
-        33.3039618731728
+        3363.171340604921,
+        1912.0490971145573,
+        92.76484828231395,
+        44.21502114391123
       ],
       "ignore": 0,
       "iscrowd": 0,
-      "area": 1221.9491859192156
+      "area": 4101.599728214229
     },
     {
-      "id": 4,
-      "image_id": 3,
-      "category_id": 7,
+      "id": 9,
+      "image_id": 2,
+      "category_id": 2,
       "segmentation": [],
       "bbox": [
-        1086.4536243180053,
-        661.4497272018693,
-        141.6679657053777,
-        30.927513639906433
+        3506.6339066339065,
+        940.3439803439803,
+        176.117936117936,
+        182.40786240786255
       ],
       "ignore": 0,
       "iscrowd": 0,
-      "area": 4381.437941690865
+      "area": 32125.296258957198
     },
     {
-      "id": 5,
-      "image_id": 4,
-      "category_id": 3,
+      "id": 10,
+      "image_id": 2,
+      "category_id": 0,
       "segmentation": [],
       "bbox": [
-        211.12987592117952,
-        17.77045047833575,
-        46.11855005091897,
-        36.38711288421131
+        3509.77886977887,
+        408.8452088452089,
+        172.97297297297263,
+        185.55282555282554
       ],
       "ignore": 0,
       "iscrowd": 0,
-      "area": 1678.120886758938
+      "area": 32095.623879407598
     },
     {
-      "id": 6,
-      "image_id": 4,
-      "category_id": 9,
+      "id": 11,
+      "image_id": 2,
+      "category_id": 1,
       "segmentation": [],
       "bbox": [
-        171.3579153268091,
-        281.78857187075266,
-        49.08029179730831,
-        17.770450478335743
+        3516.068796068796,
+        666.7321867321866,
+        169.8280098280098,
+        188.69778869778867
       ],
       "ignore": 0,
       "iscrowd": 0,
-      "area": 872.1788948463353
+      "area": 32046.169913491773
+    },
+    {
+      "id": 12,
+      "image_id": 2,
+      "category_id": 6,
+      "segmentation": [],
+      "bbox": [
+        3575.487793759564,
+        1907.9145417037457,
+        99.41398355345214,
+        46.15649236410261
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 4588.600772769936
     }
   ],
   "info": {
@@ -194,6 +284,6 @@
     "description": "",
     "contributor": "Label Studio",
     "url": "",
-    "date_created": "2024-06-07 21:44:30.788534"
+    "date_created": "2024-06-11 18:18:28.825341"
   }
 }
