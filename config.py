@@ -1,12 +1,7 @@
 import os
-import re
 
 from ok.util.path import get_path_in_package
-from task.AoSkillManXunTask import AoSkillManXunTask
-from task.AutoStartCombatTask import AutoStartCombatTask
-from task.DailyTask import DailyTask
-from task.JoinGameTask import JoinGameTask
-from task.ManXunTask import ManXunTask
+from src.task.AutoCombatTask import AutoCombatTask
 
 version = "v1.1.11"
 
@@ -27,8 +22,8 @@ config = {
     # required if using feature detection
     'template_matching': {
         'coco_feature_json': os.path.join('assets', 'result.json'),
-        'default_horizontal_variance': 0.01,
-        'default_vertical_variance': 0.01,
+        'default_horizontal_variance': 0,
+        'default_vertical_variance': 0,
         'default_threshold': 0.9,
     },
     'windows': {  # required  when supporting windows game
@@ -60,12 +55,9 @@ config = {
     'version': version,
     'locale': 'zh_CN',
     'onetime_tasks': [  # tasks to execute
-        DailyTask(),
-        AoSkillManXunTask(),
-        JoinGameTask(),
-        ManXunTask(),
+
     ], 'trigger_tasks': [
-        AutoStartCombatTask()
+        AutoCombatTask()
     ],
     'scenes': [  # scenes to detect
 
