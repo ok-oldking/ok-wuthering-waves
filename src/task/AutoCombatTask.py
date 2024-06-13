@@ -1,7 +1,6 @@
 import re
 import time
 
-from ok.color.Color import white_color
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
@@ -56,10 +55,12 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
                 self.send_key(switch_to.index + 1)
                 logger.info('switch not detected, try click again')
             else:
+                switch_time = time.time()
                 break
 
         if post_action:
             post_action()
+        return switch_time
 
     def get_current_char(self):
         for i, char in enumerate(self.char_texts):
@@ -72,16 +73,22 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
     def in_combat(self):
         current_time = time.time()
         if self._in_combat:
-            if current_time - self.last_check_combat > 3:  # delay out of combat check
-                self._in_combat = self.check_in_combat()
+            if current_time - self.last_check_combat > 4:  # delay out of combat check
+                self.handler.post(self.check_in_combat, remove_existing=True, skip_if_running=True)
         else:
-            if current_time - self.last_check_combat > 0.2:
-                self._in_combat = self.check_in_combat()
+            if current_time - self.last_check_combat > 2:
+                self.handler.post(self.check_in_combat, remove_existing=True, skip_if_running=True)
         return self._in_combat
 
     def check_in_combat(self):
         self.last_check_combat = time.time()
-        return self.in_team() and self.ocr(0.1, 0, 0.9, 0.9, match=re.compile(r'^Lv'), target_height=720)
+        if self._in_combat:
+            if not self.in_team() or not self.ocr(0.1, 0, 0.9, 0.9, match=re.compile(r'^Lv'), target_height=720):
+                time.sleep(4)
+                if not self.in_team() or not self.ocr(0.1, 0, 0.9, 0.9, match=re.compile(r'^Lv'), target_height=720):
+                    self._in_combat = False
+        else:
+            self._in_combat = self.in_team() and self.ocr(0.1, 0, 0.9, 0.9, match=re.compile(r'^Lv'), target_height=720)
 
         # min_height = self.height_of_screen(10 / 2160)
         # max_height = min_height * 3
@@ -149,4 +156,10 @@ boss_health_color = {
     'r': (250, 255),  # Red range
     'g': (30, 180),  # Green range
     'b': (4, 75)  # Blue range
+}
+
+white_color = {
+    'r': (253, 255),  # Red range
+    'g': (253, 255),  # Green range
+    'b': (253, 255)  # Blue range
 }
