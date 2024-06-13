@@ -2,7 +2,7 @@ from src.char.BaseChar import BaseChar
 
 
 class Yinlin(BaseChar):
-    def perform(self):
+    def do_perform(self):
         if self.is_forte_full():
             if not self.has_intro:
                 self.normal_attack()
@@ -11,12 +11,12 @@ class Yinlin(BaseChar):
             self.sleep(0.4)
         elif self.resonance_available():
             self.click_resonance()
+            self.sleep(0.2)
             if self.liberation_available():
-                self.sleep(0.2)
                 self.click_liberation()
-                self.sleep(2.5)
+                self.sleep(3.1)
             else:
-                self.sleep(0.4)
+                self.sleep(0.2)
             self.click_resonance()
             self.sleep(.6)
         elif self.echo_available():
@@ -26,7 +26,7 @@ class Yinlin(BaseChar):
             self.switch_next_char(post_action=self.echo_post_action)
         elif self.liberation_available():
             self.click_liberation()
-            self.sleep(2.5)
+            self.sleep(3.1)
         self.switch_next_char()
 
     def echo_post_action(self):  # hold down the echo for 1 seconds and switch and then release the echo key
