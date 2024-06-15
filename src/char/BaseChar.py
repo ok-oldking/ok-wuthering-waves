@@ -47,9 +47,18 @@ class BaseChar:
 
     def perform(self):
         self.is_current_char = True
+        self.wait_down()
         self.do_perform()
         logger.debug(f'set current char false {self.index}')
         self.is_current_char = False
+
+    def wait_down(self):
+        clicked = False
+        while self.flying():
+            if not clicked:
+                self.task.click()
+                clicked = True
+            self.sleep(0.001)
 
     def do_perform(self):
         if self.liberation_available():
@@ -149,11 +158,11 @@ class BaseChar:
             return True
 
     def is_forte_full(self):
-        box = self.task.box_of_screen(2170 / 3840, 1998 / 2160, 2174 / 3840, 2007 / 2160, name='forte_full')
-        colorfulness = calculate_colorfulness(self.task.frame, box)
-        box.confidence = colorfulness
+        box = self.task.box_of_screen(2251 / 3840, 1993 / 2160, 2271 / 3840, 2016 / 2160, name='forte_full')
+        white_percent = self.task.calculate_color_percentage(forte_white_color, box)
+        box.confidence = white_percent
         self.task.draw_boxes('forte_full', box)
-        if colorfulness > 0.1:
+        if white_percent > 0.2:
             return True
 
     def liberation_available(self):
@@ -202,3 +211,10 @@ class BaseChar:
 
     def flying(self):
         return self.current_resonance() == 0
+
+
+forte_white_color = {
+    'r': (244, 255),  # Red range
+    'g': (246, 255),  # Green range
+    'b': (250, 255)  # Blue range
+}
