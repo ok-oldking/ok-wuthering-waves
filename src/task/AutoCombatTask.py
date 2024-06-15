@@ -97,26 +97,26 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
             self._in_combat = self.in_team() and self.check_health_bar()
 
     def check_health_bar(self):
-        min_height = self.height_of_screen(10 / 2160)
-        max_height = min_height * 3
-        min_width = self.width_of_screen(40 / 3840)
+        if self._in_combat:
+            min_height = self.height_of_screen(10 / 2160)
+            max_height = min_height * 3
+            min_width = self.width_of_screen(20 / 3840)
+        else:
+            min_height = self.height_of_screen(12 / 2160)
+            max_height = min_height * 3
+            min_width = self.width_of_screen(100 / 3840)
+
         boxes = find_color_rectangles(self.frame, enemy_health_color_red, min_width, min_height, max_height=max_height)
 
         if len(boxes) > 0:
             self.draw_boxes('enemy_health_bar_red', boxes, color='blue')
             return True
         else:
-            boxes = find_color_rectangles(self.frame, enemy_health_color_black, min_width, min_height,
-                                          max_height=max_height)
+            boxes = find_color_rectangles(self.frame, boss_health_color, min_width, min_height * 1.4,
+                                          box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 192 / 2160))
             if len(boxes) > 0:
-                self.draw_boxes('enemy_health_black', boxes, color='blue')
+                self.draw_boxes('boss_health', boxes, color='blue')
                 return True
-            else:
-                boxes = find_color_rectangles(self.frame, boss_health_color, min_width, min_height * 1.5,
-                                              box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 192 / 2160))
-                if len(boxes) > 0:
-                    self.draw_boxes('boss_health', boxes, color='blue')
-                    return True
 
     def load_chars(self):
         if not self.in_team():

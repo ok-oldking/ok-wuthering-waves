@@ -14,7 +14,8 @@ class Sanhua(BaseChar):
                 self.sleep(0.3)
         else:
             self.task.mouse_down()
-            self.sleep(1)
+            self.sleep(.7)
             self.task.mouse_up()
+            self.sleep(0.2)
 
         self.switch_next_char()
