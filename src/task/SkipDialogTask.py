@@ -38,6 +38,29 @@ class AutoDialogTask(TriggerTask, FindFeature, OCR):
                     self.screenshot('dialog')
                     logger.info('confirm dialog does not exist')
                 self.confirm_dialog_checked = True
+        btn_dialog_close = self.find_one('btn_dialog_close', use_gray_scale=True, threshold=0.8)
+        if btn_dialog_close:
+            self.click(btn_dialog_close, move_back=True)
+            return
+        btn_dialog_eye = self.find_one('btn_dialog_eye', use_gray_scale=True)
+        if btn_dialog_eye:
+            btn_auto_play_dialog = self.find_one('btn_auto_play_dialog', use_gray_scale=True)
+            if btn_auto_play_dialog:
+                self.click_box(btn_auto_play_dialog, move_back=True)
+                logger.info('toggle auto play')
+                self.sleep(0.2)
+            if arrow := self.find_feature('btn_dialog_arrow', x=0.59, y=0.33, to_x=0.75, to_y=0.75,
+                                          use_gray_scale=True, threshold=0.7):
+                self.click(arrow[-1])
+                logger.info('choose arrow')
+                self.sleep(0.2)
+            elif dots := self.find_feature('btn_dialog_3dots', x=0.59, y=0.33, to_x=0.75, to_y=0.75,
+                                           use_gray_scale=True, threshold=0.7):
+                if dots:
+                    self.click(dots[-1])
+                    logger.info('choose dot')
+                    self.sleep(0.2)
+            return
 
 
 dialog_white_color = {
