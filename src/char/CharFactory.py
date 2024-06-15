@@ -10,11 +10,16 @@ def get_char_by_pos(task, box, index):
         'char_taoqi': {'cls': Taoqi, 'res_cd': 15, 'echo_cd': 20},
         'char_rover': {'cls': HavocRover, 'res_cd': 12, 'echo_cd': 20}
     }
-
+    highest_confidence = 0
+    info = None
     for char_name, char_info in char_dict.items():
-        feature = task.find_feature(char_name, box=box, threshold=0.9)
+        feature = task.find_one(char_name, box=box, threshold=0.7)
+        if feature and feature.confidence > highest_confidence:
+            highest_confidence = feature.confidence
+            info = char_info
         if feature:
-            task.log_info(f'found char {char_name}')
-            return char_info.get('cls')(task, index, char_info.get('res_cd'))
+            task.log_info(f'found char {char_name} {feature.confidence}')
+    if info is not None:
+        return info.get('cls')(task, index, info.get('res_cd'))
     task.log_info(f'could not find char')
     return BaseChar(task, index)

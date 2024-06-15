@@ -3,7 +3,6 @@ from enum import IntEnum
 
 from ok.color.Color import white_color, calculate_colorfulness
 from ok.logging.Logger import get_logger
-from src.task.AutoCombatTask import AutoCombatTask
 
 
 class Priority(IntEnum):
@@ -19,7 +18,8 @@ logger = get_logger(__name__)
 
 
 class BaseChar:
-    def __init__(self, task: AutoCombatTask, index, res_cd=0):
+
+    def __init__(self, task, index, res_cd=0):
         self.white_off_threshold = 0.002
         self.task = task
         self.sleep_adjust = 0.001
@@ -33,6 +33,15 @@ class BaseChar:
         self.res_cd = res_cd
         self.con_ready = False
         self.is_current_char = False
+
+    @property
+    def name(self):
+        return self.__class__.__name__
+
+    def __eq__(self, other):
+        if isinstance(other, BaseChar):
+            return self.name == other.name
+        return False
 
     def perform(self):
         self.is_current_char = True
@@ -57,6 +66,7 @@ class BaseChar:
         return self.__class__.__name__
 
     def switch_next_char(self, post_action=None):
+        self.normal_attack()
         self.last_switch_time = self.task.switch_next_char(self, post_action=post_action)
 
     def sleep(self, sec):
@@ -93,6 +103,8 @@ class BaseChar:
         if self.liberation_available():
             priority += 1
         if self.resonance_available():
+            priority += 1
+        if self.is_forte_full():
             priority += 1
         if priority > 0:
             priority += Priority.SKILL_AVAILABLE
