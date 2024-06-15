@@ -21,4 +21,4 @@ class Verina(BaseChar):
         if has_intro:
             return super().do_get_switch_priority(current_char, has_intro) - 5
         else:
-            return super().do_get_switch_priority(current_char, has_intro)
+            return super().do_get_switch_priority(current_char, has_intro) - 1

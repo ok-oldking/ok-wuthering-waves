@@ -1,12 +1,16 @@
+from ok.logging.Logger import get_logger
+
 from src.char.BaseChar import BaseChar
+
+logger = get_logger(__name__)
 
 
 class Yinlin(BaseChar):
     def do_perform(self):
         if self.is_forte_full():
-            if not self.has_intro:
-                self.normal_attack()
-                self.sleep(0.2)
+            if self.liberation_available():
+                self.click_liberation()
+                self.sleep(3.1)
             self.heavy_attack()
             self.sleep(0.4)
         elif self.resonance_available():

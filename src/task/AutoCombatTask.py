@@ -1,10 +1,12 @@
-import re
 import time
 
+from ok.color.Color import find_color_rectangles
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
 from ok.task.TriggerTask import TriggerTask
+from ok.util.list import safe_get
+from src.char import BaseChar
 from src.char.CharFactory import get_char_by_pos
 
 logger = get_logger(__name__)
@@ -14,16 +16,17 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
 
     def __init__(self):
         super().__init__()
-        self.chars = list()
+        self.chars = [None, None, None]
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
-        self.default_config = {
+        self.default_config.update({
             'Echo Key': 'q',
             'Liberation Key': 'r',
             'Resonance Key': 'e',
-        }
+        })
         self.last_check_combat = time.time()
         self._in_combat = False
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
+        self._need_check_char = True
 
     def run(self):
         self.load_chars()
@@ -39,6 +42,7 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
                 priority = 0
             else:
                 priority = char.get_switch_priority(current_char, has_intro)
+                logger.info(f'switch priority: {char} {priority}')
             if priority > max_priority:
                 max_priority = priority
                 switch_to = char
@@ -83,45 +87,62 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
     def check_in_combat(self):
         self.last_check_combat = time.time()
         if self._in_combat:
-            if not self.in_team() or not self.ocr(0.1, 0, 0.9, 0.9, match=re.compile(r'^Lv'), target_height=720):
+            if not self.in_team() or not self.check_health_bar():
                 time.sleep(4)
-                if not self.in_team() or not self.ocr(0.1, 0, 0.9, 0.9, match=re.compile(r'^Lv'), target_height=720):
+                if not self.in_team() or not self.check_health_bar():
                     self._in_combat = False
+                    self._need_check_char = True
         else:
-            self._in_combat = self.in_team() and self.ocr(0.1, 0, 0.9, 0.9, match=re.compile(r'^Lv'), target_height=720)
+            self._in_combat = self.in_team() and self.check_health_bar()
 
-        # min_height = self.height_of_screen(10 / 2160)
-        # max_height = min_height * 3
-        # min_width = self.width_of_screen(90 / 3840)
-        # boxes = find_color_rectangles(self.frame, enemy_health_color_red, min_width, min_height, max_height=max_height)
-        #
-        # if len(boxes) > 0:
-        #     self.draw_boxes('enemy_health_bar_red', boxes, color='blue')
-        #     return True
-        # else:
-        #     boxes = find_color_rectangles(self.frame, enemy_health_color_black, min_width, min_height,
-        #                                   max_height=max_height)
-        #     if len(boxes) > 0:
-        #         self.draw_boxes('enemy_health_black', boxes, color='blue')
-        #         return True
-        #     else:
-        #         boxes = find_color_rectangles(self.frame, boss_health_color, min_width, min_height * 1.5,
-        #                                       box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 192 / 2160))
-        #         if len(boxes) > 0:
-        #             self.draw_boxes('boss_health', boxes, color='blue')
-        #             return True
+    def check_health_bar(self):
+        min_height = self.height_of_screen(10 / 2160)
+        max_height = min_height * 3
+        min_width = self.width_of_screen(40 / 3840)
+        boxes = find_color_rectangles(self.frame, enemy_health_color_red, min_width, min_height, max_height=max_height)
+
+        if len(boxes) > 0:
+            self.draw_boxes('enemy_health_bar_red', boxes, color='blue')
+            return True
+        else:
+            boxes = find_color_rectangles(self.frame, enemy_health_color_black, min_width, min_height,
+                                          max_height=max_height)
+            if len(boxes) > 0:
+                self.draw_boxes('enemy_health_black', boxes, color='blue')
+                return True
+            else:
+                boxes = find_color_rectangles(self.frame, boss_health_color, min_width, min_height * 1.5,
+                                              box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 192 / 2160))
+                if len(boxes) > 0:
+                    self.draw_boxes('boss_health', boxes, color='blue')
+                    return True
 
     def load_chars(self):
-        if self.chars:
+        if self.chars and not self._need_check_char:
             return
         if not self.in_team():
             return
         self.log_info('load chars')
-        self.chars.clear()
-        self.chars.append(get_char_by_pos(self, self.get_box_by_name('box_char_1'), 0))
-        self.chars.append(get_char_by_pos(self, self.get_box_by_name('box_char_2'), 1))
-        self.chars.append(get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2))
-        self.log_info(f'load chars success {self.chars}', notify=True)
+        char = get_char_by_pos(self, self.get_box_by_name('box_char_1'), 0)
+        old_char = safe_get(self.chars, 0)
+        if (type(char) is BaseChar and old_char is None) or type(char) is not BaseChar:
+            self.chars[0] = char
+            logger.info(f'update char1 to {char.name}')
+
+        char = get_char_by_pos(self, self.get_box_by_name('box_char_2'), 1)
+        old_char = safe_get(self.chars, 1)
+        if (type(char) is BaseChar and old_char is None) or type(char) is not BaseChar:
+            self.chars[1] = char
+            logger.info(f'update char2 to {char.name}')
+
+        char = get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2)
+        old_char = safe_get(self.chars, 2)
+        if (type(char) is BaseChar and old_char is None) or type(char) is not BaseChar:
+            self.chars[2] = char
+            logger.info(f'update char3 to {char.name}')
+
+        self.log_info(f'load chars success {self.chars}')
+        self._need_check_char = False
 
     def box_resonance(self):
         return self.get_box_by_name('box_resonance_cd')
@@ -136,7 +157,6 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
         c1 = self.find_one('char_1_text')
         c2 = self.find_one('char_2_text')
         c3 = self.find_one('char_3_text')
-        logger.debug(f'in team {c1} {c2} {c3}')
         return sum(x is not None for x in [c1, c2, c3]) == 2
 
 
