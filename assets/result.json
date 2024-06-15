@@ -41,6 +41,12 @@
       "height": 2160,
       "id": 6,
       "file_name": "images\\934f0ca6-17_53_47_840123_WindowsGraphicsCaptureMethod_3840x2160_title_None_Clie_aJQVINN.png"
+    },
+    {
+      "width": 3840,
+      "height": 2160,
+      "id": 7,
+      "file_name": "images\\1433eace-21_13_50_556378_WindowsGraphicsCaptureMethod_3840x2160_title_None_Clie_z8GnYut.png"
     }
   ],
   "categories": [
@@ -151,6 +157,10 @@
     {
       "id": 26,
       "name": "char_yinlin"
+    },
+    {
+      "id": 27,
+      "name": "pick_up_f"
     }
   ],
   "annotations": [
@@ -528,6 +538,21 @@
       "ignore": 0,
       "iscrowd": 0,
       "area": 13153.856997415667
+    },
+    {
+      "id": 25,
+      "image_id": 7,
+      "category_id": 27,
+      "segmentation": [],
+      "bbox": [
+        2503.364084708245,
+        1208.9597073673308,
+        27.039938641537265,
+        27.7332704015765
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 749.9059299877902
     }
   ],
   "info": {
@@ -536,6 +561,6 @@
     "description": "",
     "contributor": "Label Studio",
     "url": "",
-    "date_created": "2024-06-15 19:26:37.889387"
+    "date_created": "2024-06-15 21:20:52.772035"
   }
 }

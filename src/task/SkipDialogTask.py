@@ -1,4 +1,5 @@
 import re
+import time
 
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
@@ -15,6 +16,7 @@ class AutoDialogTask(TriggerTask, FindFeature, OCR):
         self.skip = None
         self.confirm_dialog_checked = False
         self.check_trigger_interval = 0.2
+        self.has_eye_time = 0
 
     def run(self):
         pass
@@ -38,12 +40,14 @@ class AutoDialogTask(TriggerTask, FindFeature, OCR):
                     self.screenshot('dialog')
                     logger.info('confirm dialog does not exist')
                 self.confirm_dialog_checked = True
-        btn_dialog_close = self.find_one('btn_dialog_close', use_gray_scale=True, threshold=0.8)
-        if btn_dialog_close:
-            self.click(btn_dialog_close, move_back=True)
-            return
+        if time.time() - self.has_eye_time < 2:
+            btn_dialog_close = self.find_one('btn_dialog_close', use_gray_scale=True, threshold=0.8)
+            if btn_dialog_close:
+                self.click(btn_dialog_close, move_back=True)
+                return
         btn_dialog_eye = self.find_one('btn_dialog_eye', use_gray_scale=True)
         if btn_dialog_eye:
+            self.has_eye_time = time.time()
             btn_auto_play_dialog = self.find_one('btn_auto_play_dialog', use_gray_scale=True)
             if btn_auto_play_dialog:
                 self.click_box(btn_auto_play_dialog, move_back=True)
