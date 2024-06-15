@@ -2,6 +2,7 @@ import os
 
 from ok.util.path import get_path_in_package
 from src.task.AutoCombatTask import AutoCombatTask
+from src.task.SkipDialogTask import AutoDialogTask
 
 version = "v1.1.11"
 
@@ -53,11 +54,11 @@ config = {
     'log_file': 'logs/ok-script.log',  # Optional, auto rotating every day
     'error_log_file': 'logs/ok-script_error.log',
     'version': version,
-    'locale': 'zh_CN',
     'onetime_tasks': [  # tasks to execute
 
     ], 'trigger_tasks': [
-        AutoCombatTask()
+        AutoCombatTask(),
+        AutoDialogTask()
     ],
     'scenes': [  # scenes to detect
 
