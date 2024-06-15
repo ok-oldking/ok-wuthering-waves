@@ -4,11 +4,17 @@ def get_char_by_pos(task, box, index):
     from src.char.Taoqi import Taoqi
     from src.char.BaseChar import BaseChar
     from src.char.HavocRover import HavocRover
+    from src.char.Sanhua import Sanhua
+    from src.char.Jianxin import Jianxin
+    from src.char.Encore import Encore
     char_dict = {
         'char_yinlin': {'cls': Yinlin, 'res_cd': 12, 'echo_cd': 15},
         'char_verina': {'cls': Verina, 'res_cd': 12, 'echo_cd': 20},
         'char_taoqi': {'cls': Taoqi, 'res_cd': 15, 'echo_cd': 20},
-        'char_rover': {'cls': HavocRover, 'res_cd': 12, 'echo_cd': 20}
+        'char_rover': {'cls': HavocRover, 'res_cd': 12, 'echo_cd': 20},
+        'char_encore': {'cls': Encore, 'res_cd': 10, 'echo_cd': 20},
+        'char_jianxin': {'cls': Jianxin, 'res_cd': 12, 'echo_cd': 20},
+        'char_sanhua': {'cls': Sanhua, 'res_cd': 10, 'echo_cd': 20},
     }
     highest_confidence = 0
     info = None

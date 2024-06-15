@@ -7,6 +7,7 @@ from ok.ocr.OCR import OCR
 from ok.task.TriggerTask import TriggerTask
 from ok.util.list import safe_get
 from src.char import BaseChar
+from src.char.BaseChar import Priority
 from src.char.CharFactory import get_char_by_pos
 
 logger = get_logger(__name__)
@@ -26,20 +27,23 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
         self.last_check_combat = time.time()
         self._in_combat = False
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
-        self._need_check_char = True
 
     def run(self):
-        self.load_chars()
-        if self.chars and self.in_combat():
+        while self.in_combat():
             self.get_current_char().perform()
 
+    def trigger(self):
+        if self.in_combat():
+            self.load_chars()
+            return True
+
     def switch_next_char(self, current_char, post_action=None):
-        max_priority = -1
+        max_priority = Priority.MIN
         switch_to = None
         has_intro = current_char.is_con_full()
         for i, char in enumerate(self.chars):
             if char == current_char:
-                priority = 0
+                priority = Priority.CURRENT_CHAR
             else:
                 priority = char.get_switch_priority(current_char, has_intro)
                 logger.info(f'switch priority: {char} {priority}')
@@ -47,10 +51,8 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
                 max_priority = priority
                 switch_to = char
         if switch_to == current_char:
-            self.sleep(0.2)
-            current_char.normal_attack()
             logger.warning(f"can't find next char to switch to, maybe switching too fast, sleep and wait")
-            return self.switch_next_char(current_char, post_action)
+            return
         switch_to.has_intro = has_intro
         self.send_key(switch_to.index + 1)
         while True:
@@ -91,7 +93,6 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
                 time.sleep(4)
                 if not self.in_team() or not self.check_health_bar():
                     self._in_combat = False
-                    self._need_check_char = True
         else:
             self._in_combat = self.in_team() and self.check_health_bar()
 
@@ -118,8 +119,6 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
                     return True
 
     def load_chars(self):
-        if self.chars and not self._need_check_char:
-            return
         if not self.in_team():
             return
         self.log_info('load chars')
@@ -142,7 +141,6 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
             logger.info(f'update char3 to {char.name}')
 
         self.log_info(f'load chars success {self.chars}')
-        self._need_check_char = False
 
     def box_resonance(self):
         return self.get_box_by_name('box_resonance_cd')
