@@ -6,7 +6,9 @@ from ok.logging.Logger import get_logger
 
 
 class Priority(IntEnum):
+    MIN = -999999999
     SWITCH_CD = -1000
+    CURRENT_CHAR = -100
     SKILL_AVAILABLE = 100
     ALL_IN_CD = 0
     NORMAL = 10
@@ -52,13 +54,13 @@ class BaseChar:
     def do_perform(self):
         if self.liberation_available():
             self.click_liberation()
-            self.sleep(1.5)
+            self.sleep(2)
         if self.resonance_available():
             self.click_resonance()
             self.sleep(0.1)
         elif self.echo_available():
             self.click_echo()
-            self.sleep(0.5)
+            self.sleep(0.2)
         self.switch_next_char()
         self.con_ready = False
 
@@ -118,7 +120,7 @@ class BaseChar:
             if self.base_resonance_white_percentage != 0:
                 return abs(self.base_resonance_white_percentage - snap1) < self.white_off_threshold
             cd_text = self.task.ocr(box=self.task.get_box_by_name('box_resonance'), target_height=540)
-            if not cd_text:
+            if len(cd_text) == 0 or not cd_text[0].name.isdigit():
                 self.base_resonance_white_percentage = snap1
                 logger.info(f'set base resonance to {self.base_resonance_white_percentage:.3f}')
                 return True
