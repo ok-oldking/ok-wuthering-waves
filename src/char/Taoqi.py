@@ -12,7 +12,6 @@ class Taoqi(BaseChar):
             self.normal_attack()
         if self.liberation_available():
             self.click_liberation()
-            self.sleep(2)
         if self.resonance_available():
             self.click_resonance()
             if self.echo_available():
