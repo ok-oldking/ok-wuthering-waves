@@ -8,7 +8,6 @@ class Verina(BaseChar):
             return self.switch_next_char()
         if self.liberation_available():
             self.click_liberation()
-            self.sleep(1.5)
         if self.resonance_available():
             self.click_resonance()
             if self.echo_available():

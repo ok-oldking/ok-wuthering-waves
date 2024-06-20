@@ -47,6 +47,18 @@
       "height": 2160,
       "id": 7,
       "file_name": "images\\1433eace-21_13_50_556378_WindowsGraphicsCaptureMethod_3840x2160_title_None_Clie_z8GnYut.png"
+    },
+    {
+      "width": 3840,
+      "height": 2160,
+      "id": 8,
+      "file_name": "images\\9ed8b373-00_57_50_813872_WindowsGraphicsCaptureMethod_3840x2160_title_None_Clie_3jLoRJh.png"
+    },
+    {
+      "width": 3840,
+      "height": 2160,
+      "id": 9,
+      "file_name": "images\\e521850f-00_37_38_458841_Encore_liberation_0.274_original.png"
     }
   ],
   "categories": [
@@ -160,6 +172,14 @@
     },
     {
       "id": 27,
+      "name": "edge_levitator"
+    },
+    {
+      "id": 28,
+      "name": "gray_combat_count_down"
+    },
+    {
+      "id": 29,
       "name": "pick_up_f"
     }
   ],
@@ -542,7 +562,7 @@
     {
       "id": 25,
       "image_id": 7,
-      "category_id": 27,
+      "category_id": 29,
       "segmentation": [],
       "bbox": [
         2503.364084708245,
@@ -553,6 +573,36 @@
       "ignore": 0,
       "iscrowd": 0,
       "area": 749.9059299877902
+    },
+    {
+      "id": 26,
+      "image_id": 8,
+      "category_id": 27,
+      "segmentation": [],
+      "bbox": [
+        2938.5892304377853,
+        1889.8640796534446,
+        86.40993725371172,
+        84.73207439441629
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 7321.693231798345
+    },
+    {
+      "id": 27,
+      "image_id": 9,
+      "category_id": 28,
+      "segmentation": [],
+      "bbox": [
+        1748.3257980253275,
+        275.04182659424396,
+        58.93319960335,
+        54.079877283073856
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 3187.100202448065
     }
   ],
   "info": {
@@ -561,6 +611,6 @@
     "description": "",
     "contributor": "Label Studio",
     "url": "",
-    "date_created": "2024-06-15 21:20:52.772035"
+    "date_created": "2024-06-19 01:31:47.083274"
   }
 }

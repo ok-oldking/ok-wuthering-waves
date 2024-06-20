@@ -8,7 +8,7 @@ version = "v1.1.11"
 
 
 def calculate_pc_exe_path(running_path):
-    return None
+    return running_path
 
 
 config = {
@@ -29,17 +29,18 @@ config = {
     },
     'windows': {  # required  when supporting windows game
         'exe': 'Client-Win64-Shipping.exe',
+        'calculate_pc_exe_path': calculate_pc_exe_path,
         'can_bit_blt': False  # default false, opengl games does not support bit_blt
     },
     'analytics': {
         'report_url': 'https://okreport.ok-script.com/report'
     },
-    # 'update': {
-    #     'releases_url': 'https://api.github.com/repos/ok-oldking/ok-baijing/releases?per_page=15',
-    #     'proxy_url': 'https://gh.ok-script.com/',
-    #     'exe_name': 'ok-baijing.exe',
-    #     'use_proxy': True
-    # },
+    'update': {
+        'releases_url': 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases?per_page=15',
+        'proxy_url': 'https://gh.ok-script.com/',
+        'exe_name': 'ok-baijing.exe',
+        'use_proxy': True
+    },
     'about': """
     <h3>OK-WW</h3>
     <p>免费开源软件 <a href="https://github.com/ok-oldking/ok-baijing">https://github.com/ok-oldking/ok-baijing</></p>

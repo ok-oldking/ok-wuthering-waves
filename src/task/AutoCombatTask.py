@@ -7,10 +7,14 @@ from ok.ocr.OCR import OCR
 from ok.task.TriggerTask import TriggerTask
 from ok.util.list import safe_get
 from src.char import BaseChar
-from src.char.BaseChar import Priority
+from src.char.BaseChar import Priority, role_values
 from src.char.CharFactory import get_char_by_pos
 
 logger = get_logger(__name__)
+
+
+class NotInCombatException(Exception):
+    pass
 
 
 class AutoCombatTask(TriggerTask, FindFeature, OCR):
@@ -23,14 +27,24 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
             'Echo Key': 'q',
             'Liberation Key': 'r',
             'Resonance Key': 'e',
+            'Character 1 Role': 'Default',
+            'Character 2 Role': 'Default',
+            'Character 3 Role': 'Default',
         })
+        self.config_type["Character 1 Role"] = {'type': "drop_down", 'options': role_values}
+        self.config_type["Character 2 Role"] = {'type': "drop_down", 'options': role_values}
+        self.config_type["Character 3 Role"] = {'type': "drop_down", 'options': role_values}
         self.last_check_combat = time.time()
         self._in_combat = False
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
 
     def run(self):
         while self.in_combat():
-            self.get_current_char().perform()
+            try:
+                logger.debug(f'autocombat loop {self.chars}')
+                self.get_current_char().perform()
+            except NotInCombatException:
+                logger.info('out of combat break')
 
     def trigger(self):
         if self.in_combat():
@@ -54,14 +68,17 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
             logger.warning(f"can't find next char to switch to, maybe switching too fast, sleep and wait")
             return
         switch_to.has_intro = has_intro
+        current_char.is_current_char = False
         self.send_key(switch_to.index + 1)
         while True:
             self.sleep(0.01)
-            if self.find_one(self.char_texts[switch_to.index]):
+            _, current_index = self.in_team()
+            if current_index != switch_to.index:
                 self.send_key(switch_to.index + 1)
-                logger.info('switch not detected, try click again')
+                logger.info(f'switch not detected, try click again {current_index} {switch_to}')
             else:
                 switch_time = time.time()
+                switch_to.is_current_char = True
                 break
 
         if post_action:
@@ -69,10 +86,9 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
         return switch_time
 
     def get_current_char(self):
-        for i, char in enumerate(self.char_texts):
-            feature = self.find_one(char)
-            if not feature:
-                return self.chars[i]
+        for char in self.chars:
+            if char.is_current_char:
+                return char
         self.log_error('can find current char!!')
         return None
 
@@ -83,18 +99,23 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
                 self.handler.post(self.check_in_combat, remove_existing=True, skip_if_running=True)
         else:
             if current_time - self.last_check_combat > 2:
-                self.handler.post(self.check_in_combat, remove_existing=True, skip_if_running=True)
+                return self.check_in_combat()
         return self._in_combat
 
     def check_in_combat(self):
         self.last_check_combat = time.time()
         if self._in_combat:
-            if not self.in_team() or not self.check_health_bar():
+            if self.come_out_of_combat():
                 time.sleep(4)
-                if not self.in_team() or not self.check_health_bar():
+                if self.come_out_of_combat():
                     self._in_combat = False
         else:
-            self._in_combat = self.in_team() and self.check_health_bar()
+            edge_levitator = self.find_one('edge_levitator', threshold=0.9)
+            self._in_combat = edge_levitator and self.in_team()[0] and self.check_health_bar()
+
+    def come_out_of_combat(self):
+        return not self.find_one('gray_combat_count_down') and (
+                not self.in_team()[0] or not self.check_health_bar())
 
     def check_health_bar(self):
         if self._in_combat:
@@ -118,15 +139,21 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
                 self.draw_boxes('boss_health', boxes, color='blue')
                 return True
 
+    def sleep(self, timeout):
+        if not self._in_combat:
+            raise NotInCombatException('not in combat')
+        super().sleep(timeout)
+
     def load_chars(self):
-        if not self.in_team():
+        in_team, current_index = self.in_team()
+        if not in_team:
             return
         self.log_info('load chars')
         char = get_char_by_pos(self, self.get_box_by_name('box_char_1'), 0)
         old_char = safe_get(self.chars, 0)
         if (type(char) is BaseChar and old_char is None) or type(char) is not BaseChar:
             self.chars[0] = char
-            logger.info(f'update char1 to {char.name}')
+            logger.info(f'update char1 to {char.name} {type(char)} {type(char) is not BaseChar}')
 
         char = get_char_by_pos(self, self.get_box_by_name('box_char_2'), 1)
         old_char = safe_get(self.chars, 1)
@@ -139,6 +166,12 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
         if (type(char) is BaseChar and old_char is None) or type(char) is not BaseChar:
             self.chars[2] = char
             logger.info(f'update char3 to {char.name}')
+
+        for char in self.chars:
+            if char.index == current_index:
+                char.is_current_char = True
+            else:
+                char.is_current_char = False
 
         self.log_info(f'load chars success {self.chars}')
 
@@ -155,7 +188,18 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
         c1 = self.find_one('char_1_text')
         c2 = self.find_one('char_2_text')
         c3 = self.find_one('char_3_text')
-        return sum(x is not None for x in [c1, c2, c3]) == 2
+        arr = [c1, c2, c3]
+        current = -1
+        exist_count = 0
+        for i in range(len(arr)):
+            if arr[i] is None:
+                current = i
+            else:
+                exist_count += 1
+        if exist_count == 2:
+            return True, current
+        else:
+            return False, -1
 
 
 enemy_health_color_red = {

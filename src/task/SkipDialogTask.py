@@ -45,7 +45,7 @@ class AutoDialogTask(TriggerTask, FindFeature, OCR):
             if btn_dialog_close:
                 self.click(btn_dialog_close, move_back=True)
                 return
-        btn_dialog_eye = self.find_one('btn_dialog_eye', use_gray_scale=True)
+        btn_dialog_eye = self.find_one('btn_dialog_eye', use_gray_scale=True, threshold=0.8)
         if btn_dialog_eye:
             self.has_eye_time = time.time()
             btn_auto_play_dialog = self.find_one('btn_auto_play_dialog', use_gray_scale=True)
