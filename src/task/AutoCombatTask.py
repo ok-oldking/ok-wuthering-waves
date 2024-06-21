@@ -1,6 +1,5 @@
 import time
 
-from ok.color.Color import find_color_rectangles
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
@@ -9,6 +8,7 @@ from ok.util.list import safe_get
 from src.char import BaseChar
 from src.char.BaseChar import Priority, role_values
 from src.char.CharFactory import get_char_by_pos
+from src.combat.CombatCheck import CombatCheck
 
 logger = get_logger(__name__)
 
@@ -17,7 +17,7 @@ class NotInCombatException(Exception):
     pass
 
 
-class AutoCombatTask(TriggerTask, FindFeature, OCR):
+class AutoCombatTask(TriggerTask, FindFeature, OCR, CombatCheck):
 
     def __init__(self):
         super().__init__()
@@ -34,8 +34,7 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
         self.config_type["Character 1 Role"] = {'type': "drop_down", 'options': role_values}
         self.config_type["Character 2 Role"] = {'type': "drop_down", 'options': role_values}
         self.config_type["Character 3 Role"] = {'type': "drop_down", 'options': role_values}
-        self.last_check_combat = time.time()
-        self._in_combat = False
+
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
 
     def run(self):
@@ -71,7 +70,7 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
         current_char.is_current_char = False
         self.send_key(switch_to.index + 1)
         while True:
-            self.sleep(0.01)
+            self.click()
             _, current_index = self.in_team()
             if current_index != switch_to.index:
                 self.send_key(switch_to.index + 1)
@@ -92,54 +91,8 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
         self.log_error('can find current char!!')
         return None
 
-    def in_combat(self):
-        current_time = time.time()
-        if self._in_combat:
-            if current_time - self.last_check_combat > 4:  # delay out of combat check
-                self.handler.post(self.check_in_combat, remove_existing=True, skip_if_running=True)
-        else:
-            if current_time - self.last_check_combat > 2:
-                return self.check_in_combat()
-        return self._in_combat
-
-    def check_in_combat(self):
-        self.last_check_combat = time.time()
-        if self._in_combat:
-            if self.come_out_of_combat():
-                time.sleep(4)
-                if self.come_out_of_combat():
-                    self._in_combat = False
-        else:
-            self._in_combat = self.in_team()[0] and self.check_health_bar()
-
-    def come_out_of_combat(self):
-        return not self.find_one('gray_combat_count_down') and (
-                not self.in_team()[0] or not self.check_health_bar())
-
-    def check_health_bar(self):
-        if self._in_combat:
-            min_height = self.height_of_screen(10 / 2160)
-            max_height = min_height * 3
-            min_width = self.width_of_screen(20 / 3840)
-        else:
-            min_height = self.height_of_screen(12 / 2160)
-            max_height = min_height * 3
-            min_width = self.width_of_screen(100 / 3840)
-
-        boxes = find_color_rectangles(self.frame, enemy_health_color_red, min_width, min_height, max_height=max_height)
-
-        if len(boxes) > 0:
-            self.draw_boxes('enemy_health_bar_red', boxes, color='blue')
-            return True
-        else:
-            boxes = find_color_rectangles(self.frame, boss_health_color, min_width, min_height * 1.4,
-                                          box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 192 / 2160))
-            if len(boxes) > 0:
-                self.draw_boxes('boss_health', boxes, color='blue')
-                return True
-
     def sleep(self, timeout):
-        if not self._in_combat:
+        if not self.in_combat():
             raise NotInCombatException('not in combat')
         super().sleep(timeout)
 
@@ -200,24 +153,6 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
         else:
             return False, -1
 
-
-enemy_health_color_red = {
-    'r': (202, 212),  # Red range
-    'g': (70, 80),  # Green range
-    'b': (55, 65)  # Blue range
-}  # 207,75,60
-
-enemy_health_color_black = {
-    'r': (10, 55),  # Red range
-    'g': (28, 50),  # Green range
-    'b': (18, 70)  # Blue range
-}
-
-boss_health_color = {
-    'r': (250, 255),  # Red range
-    'g': (30, 180),  # Green range
-    'b': (4, 75)  # Blue range
-}
 
 white_color = {
     'r': (253, 255),  # Red range
