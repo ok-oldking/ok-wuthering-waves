@@ -55,7 +55,6 @@ class BaseChar:
 
     def perform(self):
         # self.wait_down()
-        self.task.click()
         self.do_perform()
         logger.debug(f'set current char false {self.index}')
 
@@ -72,10 +71,10 @@ class BaseChar:
         self.click_liberation()
         if self.resonance_available():
             self.click_resonance()
-            self.sleep(0.2)
+            self.sleep(0.1)
         if self.echo_available():
             self.click_echo()
-            self.sleep(0.2)
+            self.sleep(0.1)
         self.switch_next_char()
 
     def __repr__(self):
@@ -117,6 +116,7 @@ class BaseChar:
         logger.info(f'{self} click echo')
 
     def click_liberation(self, wait_end=True):
+        self.task.in_liberation = True
         self.task.send_key(self.get_liberation_key())
         while self.liberation_available():
             self.sleep(0.02)
@@ -124,6 +124,7 @@ class BaseChar:
         start = time.time()
         while not self.task.in_team()[0]:
             self.sleep(0.02)
+        self.task.in_liberation = False
         self.task.info[f'{self} liberation time'] = f'{(time.time() - start):.2f}'
 
     def get_liberation_key(self):
