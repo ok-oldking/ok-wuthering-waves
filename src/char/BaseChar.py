@@ -59,22 +59,13 @@ class BaseChar:
         logger.debug(f'set current char false {self.index}')
 
     def wait_down(self):
-        clicked = False
         start = time.time()
         while self.flying():
-            if not clicked:
-                self.task.click()
-                clicked = True
-            self.sleep(0.001)
-        if self.has_intro:
-            waited = time.time() - start
-            self.task.info[f'{self} intro time'] = f'{waited:.2f}'
-            if waited < 0.2:
-                self.sleep(0.8 - waited)
-                self.task.log_info(f'sleep extra for task')
+            self.task.click()
+            self.sleep(0.05)
 
         self.task.screenshot(
-            f'{self}_down_finish_{(time.time() - start):.2f}_f:{self.is_forte_full()}_e:{self.resonance_available()}_r:{self.echo_available()}_q:{self.liberation_available()}')
+            f'{self}_down_finish_{(time.time() - start):.2f}_f:{self.is_forte_full()}_e:{self.resonance_available()}_r:{self.echo_available()}_q:{self.liberation_available()}_i{self.has_intro}')
 
     def do_perform(self):
         self.click_liberation()
@@ -96,7 +87,14 @@ class BaseChar:
         self.task.sleep(sec + self.sleep_adjust)
 
     def click_resonance(self):
-        self.task.send_key('e')
+        self.task.send_key(self.task.config.get('Resonance Key'))
+        while True:
+            curren_resonance = self.current_resonance()
+            if curren_resonance > 0 and abs(
+                    curren_resonance - self.base_resonance_white_percentage) > self.white_off_threshold:
+                break
+            self.sleep(0.05)
+            self.task.send_key(self.task.config.get('Resonance Key'))
         logger.info(f'{self} click resonance')
 
     def update_res_cd(self):
@@ -106,6 +104,13 @@ class BaseChar:
 
     def click_echo(self):
         self.task.send_key(self.get_echo_key())
+        while True:
+            current_echo = self.current_echo()
+            if current_echo > 0 and abs(
+                    current_echo - self.base_echo_white_percentage) > self.white_off_threshold:
+                break
+            self.sleep(0.05)
+            self.task.send_key(self.get_echo_key())
         logger.info(f'{self} click echo')
 
     def click_liberation(self, wait_end=True):

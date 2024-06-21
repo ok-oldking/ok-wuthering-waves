@@ -7,15 +7,13 @@ logger = get_logger(__name__)
 
 class Yinlin(BaseChar):
     def do_perform(self):
+        self.click_liberation()
         if self.is_forte_full():
-            self.click_liberation()
             self.heavy_attack()
             self.sleep(0.4)
         elif self.resonance_available():
             self.click_resonance()
-            self.sleep(0.5)
-            self.click_resonance()
-            self.sleep(.5)
+            self.sleep(.4)
         elif self.echo_available():
             echo_key = self.get_echo_key()
             self.task.send_key_down(echo_key)
