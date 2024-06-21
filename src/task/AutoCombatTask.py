@@ -110,8 +110,7 @@ class AutoCombatTask(TriggerTask, FindFeature, OCR):
                 if self.come_out_of_combat():
                     self._in_combat = False
         else:
-            edge_levitator = self.find_one('edge_levitator', threshold=0.9)
-            self._in_combat = edge_levitator and self.in_team()[0] and self.check_health_bar()
+            self._in_combat = self.in_team()[0] and self.check_health_bar()
 
     def come_out_of_combat(self):
         return not self.find_one('gray_combat_count_down') and (
