@@ -31,7 +31,7 @@ logger = get_logger(__name__)
 class BaseChar:
 
     def __init__(self, task, index, res_cd=0):
-        self.white_off_threshold = 0.002
+        self.white_off_threshold = 0.01
         self.task = task
         self.sleep_adjust = 0.001
         self.index = index
@@ -54,7 +54,8 @@ class BaseChar:
         return False
 
     def perform(self):
-        self.wait_down()
+        # self.wait_down()
+        self.task.click()
         self.do_perform()
         logger.debug(f'set current char false {self.index}')
 
@@ -93,7 +94,9 @@ class BaseChar:
             if curren_resonance > 0 and abs(
                     curren_resonance - self.base_resonance_white_percentage) > self.white_off_threshold:
                 break
-            self.sleep(0.05)
+            self.sleep(0.02)
+            self.task.click()
+            self.sleep(0.02)
             self.task.send_key(self.task.config.get('Resonance Key'))
         logger.info(f'{self} click resonance')
 
@@ -174,7 +177,7 @@ class BaseChar:
         if self.base_echo_white_percentage != 0:
             return abs(self.base_echo_white_percentage - snap1) < self.white_off_threshold
         cd_text = self.task.ocr(box=self.task.get_box_by_name('box_echo'), target_height=540, threshold=0.95)
-        if not cd_text or not cd_text[0].name.isdigit():
+        if not cd_text or not is_float(cd_text[0].name):
             self.base_echo_white_percentage = snap1
             if self.task.debug:
                 self.task.screenshot(f'{self}_echo_{snap1:.3f}')
@@ -205,7 +208,7 @@ class BaseChar:
             if self.base_liberation_white_percentage != 0:
                 return abs(self.base_liberation_white_percentage - snap1_lib) < self.white_off_threshold
             cd_text = self.task.ocr(box=self.task.get_box_by_name('box_liberation'), target_height=540, threshold=0.95)
-            if not cd_text or not cd_text[0].name.isdigit():
+            if not cd_text or not is_float(cd_text[0].name):
                 self.base_liberation_white_percentage = snap1_lib
                 logger.info(f'{self} set base liberation to {self.base_liberation_white_percentage:.3f}')
                 if self.task.debug:
