@@ -56,11 +56,17 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             return
         switch_to.has_intro = has_intro
         current_char.is_current_char = False
+        logger.info(f'switch {current_char} -> {switch_to}')
         self.send_key(switch_to.index + 1)
         while True:
-            self.click()
-            _, current_index = self.in_team()
+            in_team, current_index = self.in_team()
+            if not in_team:
+                logger.error('not in team while switching chars')
+                raise NotInCombatException('not in team while switching chars')
             if current_index != switch_to.index:
+                if self.debug:
+                    self.screenshot(f'switch_not_detected_{current_char}_to_{switch_to}')
+                self.click()
                 self.send_key(switch_to.index + 1)
                 logger.info(f'switch not detected, try click again {current_index} {switch_to}')
             else:
@@ -79,8 +85,11 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         for char in self.chars:
             if char.is_current_char:
                 return char
-        self.log_error('can find current char!!')
-        return None
+        if not self.in_team()[0]:
+            self.log_error('can find current char!!')
+            raise NotInCombatException('can find current char!!')
+        self.load_chars()
+        return self.get_current_char()
 
     def sleep_check_combat(self, timeout):
         if not self.in_combat():
@@ -153,6 +162,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         c2 = self.find_one('char_2_text')
         c3 = self.find_one('char_3_text')
         arr = [c1, c2, c3]
+        logger.debug(f'in_team check {arr}')
         current = -1
         exist_count = 0
         for i in range(len(arr)):
