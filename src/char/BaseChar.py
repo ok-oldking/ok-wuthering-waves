@@ -84,9 +84,10 @@ class BaseChar:
         self.last_switch_time = self.task.switch_next_char(self, post_action=post_action)
 
     def sleep(self, sec):
-        self.task.sleep(sec + self.sleep_adjust)
+        self.task.sleep_check_combat(sec + self.sleep_adjust)
 
     def click_resonance(self):
+        self.check_combat()
         self.task.send_key(self.task.config.get('Resonance Key'))
         while True:
             curren_resonance = self.current_resonance()
@@ -105,6 +106,7 @@ class BaseChar:
             self.last_res = time.time()
 
     def click_echo(self):
+        self.check_combat()
         self.task.send_key(self.get_echo_key())
         while True:
             current_echo = self.current_echo()
@@ -115,7 +117,12 @@ class BaseChar:
             self.task.send_key(self.get_echo_key())
         logger.info(f'{self} click echo')
 
+    def check_combat(self):
+        self.task.check_combat()
+
     def click_liberation(self, wait_end=True):
+        logger.info(f'click_liberation {self}')
+        self.check_combat()
         self.task.in_liberation = True
         self.task.send_key(self.get_liberation_key())
         while self.liberation_available():
@@ -123,6 +130,11 @@ class BaseChar:
             self.task.send_key(self.get_liberation_key())
         start = time.time()
         while not self.task.in_team()[0]:
+            if start - time.time() > 5:
+                logger.info('too long a liberation, the boss was killed by the liberation')
+                self.task.reset_to_false()
+                from src.task.BaseCombatTask import NotInCombatException
+                raise NotInCombatException('not in combat')
             self.sleep(0.02)
         self.task.in_liberation = False
         self.task.info[f'{self} liberation time'] = f'{(time.time() - start):.2f}'
@@ -229,9 +241,11 @@ class BaseChar:
         return self.__repr__()
 
     def normal_attack(self):
+        self.check_combat()
         self.task.click()
 
     def heavy_attack(self):
+        self.check_combat()
         self.task.mouse_down()
         self.sleep(0.6)
         self.task.mouse_up()

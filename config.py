@@ -2,6 +2,7 @@ import os
 
 from ok.util.path import get_path_in_package
 from src.task.AutoCombatTask import AutoCombatTask
+from src.task.FarmEchoTask import FarmEchoTask
 from src.task.SkipDialogTask import AutoDialogTask
 
 version = "v1.1.11"
@@ -56,7 +57,7 @@ config = {
     'error_log_file': 'logs/ok-script_error.log',
     'version': version,
     'onetime_tasks': [  # tasks to execute
-
+        FarmEchoTask()
     ], 'trigger_tasks': [
         AutoCombatTask(),
         AutoDialogTask()

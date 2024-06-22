@@ -59,6 +59,42 @@
       "height": 2160,
       "id": 9,
       "file_name": "images\\e521850f-00_37_38_458841_Encore_liberation_0.274_original.png"
+    },
+    {
+      "width": 3840,
+      "height": 2160,
+      "id": 10,
+      "file_name": "images\\cef1b3dd-00_55_22_640294_WindowsGraphicsCaptureMethod_3840x2160_title_None_Clie_NtclVno.png"
+    },
+    {
+      "width": 3840,
+      "height": 2160,
+      "id": 11,
+      "file_name": "images\\4533b3e8-00_53_36_188376_WindowsGraphicsCaptureMethod_3840x2160_title_None_Clie_4ls54Fe.png"
+    },
+    {
+      "width": 3840,
+      "height": 2160,
+      "id": 12,
+      "file_name": "images\\0ab28c72-00_54_43_431654_WindowsGraphicsCaptureMethod_3840x2160_title_None_Clie_usg73Cm.png"
+    },
+    {
+      "width": 3840,
+      "height": 2160,
+      "id": 13,
+      "file_name": "images\\55617870-00_55_49_536245_WindowsGraphicsCaptureMethod_3840x2160_title_None_Clie_NSeTZ2S.png"
+    },
+    {
+      "width": 3840,
+      "height": 2160,
+      "id": 14,
+      "file_name": "images\\01304a45-10_34_04_580378_WindowsGraphicsCaptureMethod_0x0_title_None_Client-Win_WnYCyUT.png"
+    },
+    {
+      "width": 3840,
+      "height": 2160,
+      "id": 15,
+      "file_name": "images\\64425cad-10_44_19_536997_WindowsGraphicsCaptureMethod_0x0_title_None_Client-Win_BLAxtp1.png"
     }
   ],
   "categories": [
@@ -176,10 +212,42 @@
     },
     {
       "id": 28,
-      "name": "gray_combat_count_down"
+      "name": "gray_book_button"
     },
     {
       "id": 29,
+      "name": "gray_book_forgery"
+    },
+    {
+      "id": 30,
+      "name": "gray_book_weekly_boss"
+    },
+    {
+      "id": 31,
+      "name": "gray_button_challenge"
+    },
+    {
+      "id": 32,
+      "name": "gray_combat_count_down"
+    },
+    {
+      "id": 33,
+      "name": "gray_confirm_exit_button"
+    },
+    {
+      "id": 34,
+      "name": "gray_crownless_battle"
+    },
+    {
+      "id": 35,
+      "name": "gray_start_battle"
+    },
+    {
+      "id": 36,
+      "name": "gray_teleport"
+    },
+    {
+      "id": 37,
       "name": "pick_up_f"
     }
   ],
@@ -562,7 +630,7 @@
     {
       "id": 25,
       "image_id": 7,
-      "category_id": 29,
+      "category_id": 37,
       "segmentation": [],
       "bbox": [
         2503.364084708245,
@@ -576,6 +644,21 @@
     },
     {
       "id": 26,
+      "image_id": 7,
+      "category_id": 28,
+      "segmentation": [],
+      "bbox": [
+        2938.8409098666675,
+        102.43352755998268,
+        74.7487903816102,
+        45.21840405801027
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 3380.021006323162
+    },
+    {
+      "id": 27,
       "image_id": 8,
       "category_id": 27,
       "segmentation": [],
@@ -590,9 +673,9 @@
       "area": 7321.693231798345
     },
     {
-      "id": 27,
+      "id": 28,
       "image_id": 9,
-      "category_id": 28,
+      "category_id": 32,
       "segmentation": [],
       "bbox": [
         1748.3257980253275,
@@ -603,6 +686,111 @@
       "ignore": 0,
       "iscrowd": 0,
       "area": 3187.100202448065
+    },
+    {
+      "id": 29,
+      "image_id": 10,
+      "category_id": 34,
+      "segmentation": [],
+      "bbox": [
+        273.9823008849558,
+        328.14159292035396,
+        108.31858407079658,
+        108.3185840707964
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 11732.915655102208
+    },
+    {
+      "id": 30,
+      "image_id": 11,
+      "category_id": 30,
+      "segmentation": [],
+      "bbox": [
+        414.15929203539827,
+        1178.7610619469028,
+        130.61946902654864,
+        114.6902654867255
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 14980.781580389981
+    },
+    {
+      "id": 31,
+      "image_id": 11,
+      "category_id": 29,
+      "segmentation": [],
+      "bbox": [
+        76.46017699115043,
+        541.5929203539824,
+        143.36283185840702,
+        146.5486725663717
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 21009.63270420549
+    },
+    {
+      "id": 32,
+      "image_id": 12,
+      "category_id": 36,
+      "segmentation": [],
+      "bbox": [
+        2590.0884955752213,
+        1898.7610619469028,
+        242.12389380530968,
+        210.26548672566366
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 50910.29837888634
+    },
+    {
+      "id": 33,
+      "image_id": 13,
+      "category_id": 31,
+      "segmentation": [],
+      "bbox": [
+        2414.8672566371683,
+        1860.5309734513273,
+        210.2654867256635,
+        197.5221238938053
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 41532.08551961777
+    },
+    {
+      "id": 34,
+      "image_id": 14,
+      "category_id": 35,
+      "segmentation": [],
+      "bbox": [
+        3580.8849557522108,
+        1876.4601769911494,
+        98.76106194690342,
+        184.77876106194807
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 18248.94666771112
+    },
+    {
+      "id": 35,
+      "image_id": 15,
+      "category_id": 33,
+      "segmentation": [],
+      "bbox": [
+        2806.725663716812,
+        1226.5486725663716,
+        165.66371681415976,
+        267.61061946902674
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 44333.36988017871
     }
   ],
   "info": {
@@ -611,6 +799,6 @@
     "description": "",
     "contributor": "Label Studio",
     "url": "",
-    "date_created": "2024-06-19 01:31:47.083274"
+    "date_created": "2024-06-22 11:27:26.451743"
   }
 }

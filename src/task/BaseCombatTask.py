@@ -3,18 +3,22 @@ import time
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
-from ok.task.TriggerTask import TriggerTask
+from ok.task.BaseTask import BaseTask
+from ok.task.TaskExecutor import CannotFindException
 from ok.util.list import safe_get
 from src.char import BaseChar
 from src.char.BaseChar import Priority, role_values
 from src.char.CharFactory import get_char_by_pos
 from src.combat.CombatCheck import CombatCheck
-from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
 
 logger = get_logger(__name__)
 
 
-class AutoCombatTask(BaseCombatTask, TriggerTask, FindFeature, OCR, CombatCheck):
+class NotInCombatException(Exception):
+    pass
+
+
+class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
 
     def __init__(self):
         super().__init__()
@@ -33,19 +37,6 @@ class AutoCombatTask(BaseCombatTask, TriggerTask, FindFeature, OCR, CombatCheck)
         self.config_type["Character 3 Role"] = {'type': "drop_down", 'options': role_values}
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
-
-    def run(self):
-        while self.in_combat():
-            try:
-                logger.debug(f'autocombat loop {self.chars}')
-                self.get_current_char().perform()
-            except NotInCombatException:
-                logger.info('out of combat break')
-
-    def trigger(self):
-        if self.in_combat():
-            self.load_chars()
-            return True
 
     def switch_next_char(self, current_char, post_action=None):
         max_priority = Priority.MIN
@@ -81,6 +72,9 @@ class AutoCombatTask(BaseCombatTask, TriggerTask, FindFeature, OCR, CombatCheck)
             post_action()
         return switch_time
 
+    def wait_in_team(self, time_out=10):
+        self.wait_until(lambda: self.in_team()[0], time_out=time_out)
+
     def get_current_char(self):
         for char in self.chars:
             if char.is_current_char:
@@ -88,10 +82,31 @@ class AutoCombatTask(BaseCombatTask, TriggerTask, FindFeature, OCR, CombatCheck)
         self.log_error('can find current char!!')
         return None
 
-    def sleep(self, timeout):
+    def sleep_check_combat(self, timeout):
         if not self.in_combat():
             raise NotInCombatException('not in combat')
         super().sleep(timeout)
+
+    def check_combat(self):
+        if not self.in_combat():
+            raise NotInCombatException('not in combat')
+
+    def walk_until_f(self, time_out=0, raise_if_not_found=True):
+        if not self.find_one('pick_up_f', horizontal_variance=0.02, vertical_variance=0.02, use_gray_scale=True):
+            self.send_key_down('w')
+            f_found = self.wait_feature('pick_up_f', horizontal_variance=0.02, vertical_variance=0.02,
+                                        use_gray_scale=True,
+                                        wait_until_before_delay=0, time_out=time_out, raise_if_not_found=False)
+            self.send_key_up('w')
+            if not f_found:
+                if raise_if_not_found:
+                    raise CannotFindException('cant find the f to enter')
+                else:
+                    logger.warning(f"can't find the f to enter")
+                    return
+        self.send_key('f')
+        self.sleep(0.5)
+        return True
 
     def load_chars(self):
         in_team, current_index = self.in_team()
