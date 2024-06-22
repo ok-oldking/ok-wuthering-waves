@@ -42,7 +42,8 @@ class CombatCheck:
         current = cv2.Canny(current, 100, 200)
         res = cv2.matchTemplate(current, self.boss_lv_edge, cv2.TM_CCOEFF_NORMED)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-        if max_val < 0.70:
+        if max_val < 0.5:
+            logger.debug(f'boss lv not detected by edge {res}')
             if not self.find_boss_lv_text():  # double check by text
                 self.boss_lv_box.confidence = max_val
                 self.draw_boxes('enemy_health_bar_red', self.boss_lv_box, color='red')
@@ -131,7 +132,7 @@ class CombatCheck:
             self.boss_lv_box = boss_lv_texts[0]
             self.boss_lv_edge = cv2.cvtColor(self.boss_lv_box.crop_frame(self.frame), cv2.COLOR_BGR2GRAY)
             self.boss_lv_edge = cv2.Canny(self.boss_lv_edge, 100, 200)
-            self.screenshot_boss_lv(self.boss_lv_edge, 'found_boss_lv')
+            # self.screenshot_boss_lv(self.boss_lv_edge, 'found_boss_lv')
             return True
 
 

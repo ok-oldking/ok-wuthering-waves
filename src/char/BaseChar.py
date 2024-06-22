@@ -105,15 +105,22 @@ class BaseChar:
         if current - self.last_res > self.res_cd:  # count the first click only
             self.last_res = time.time()
 
-    def click_echo(self):
+    def click_echo(self, sleep_time=0):
         self.check_combat()
+        echo_available = self.echo_available()
         self.task.send_key(self.get_echo_key())
         while True:
+            if not echo_available:
+                echo_available = self.echo_available()
             current_echo = self.current_echo()
             if current_echo > 0 and abs(
                     current_echo - self.base_echo_white_percentage) > self.white_off_threshold:
+                if echo_available:
+                    self.sleep(sleep_time)
                 break
-            self.sleep(0.05)
+            self.sleep(0.02)
+            self.task.click()
+            self.sleep(0.02)
             self.task.send_key(self.get_echo_key())
         logger.info(f'{self} click echo')
 
