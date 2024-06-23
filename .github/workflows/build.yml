@@ -45,14 +45,8 @@ jobs:
           (Get-Content config.py) -replace 'version = "v\d+\.\d+\.\d+"', 'version = "${{ steps.tagName.outputs.tag }}"' | Set-Content config.py
           pyinstaller main.spec
           python -m ok.update.gen_md5 .\dist\bundle
-          mv dist/bundle ok-baijing
-          7z a -t7z -r "ok-baijing-release-${{ steps.tagName.outputs.tag }}.7z" "ok-baijing"
-          rm -r dist
-          rm -r ok-baijing
-          pyinstaller main_debug.spec
-          python -m ok.update.gen_md5 .\dist\bundle
-          mv dist/bundle ok-baijing
-          7z a -t7z -r "ok-baijing-debug-${{ steps.tagName.outputs.tag }}.7z" "ok-baijing"
+          mv dist/bundle ok-ww
+          7z a -t7z -r "ok-ww-release-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"        
 
         shell: pwsh
 
@@ -65,9 +59,7 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           body: |
-            下载release.7z文件然后解压缩后运行, 如果需要查找问题，上传更多日志才需要下载debug版本
-            最好使用模拟器运行安卓版，可以挂后台，稳定。PC版游戏可能兼容性较差，无法挂后台。
-            更新内容：
+            Updates：
             ${{ steps.changes.outputs.changes }} 
           draft: false
           prerelease: true
@@ -78,19 +70,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./ok-baijing-release-${{ steps.tagName.outputs.tag }}.7z
-          asset_name: ok-baijing-release-${{ steps.tagName.outputs.tag }}.7z
+          asset_path: ./ok-ww-release-${{ steps.tagName.outputs.tag }}.7z
+          asset_name: ok-ww-release-${{ steps.tagName.outputs.tag }}.7z
           asset_content_type: application/zip
 
-      - name: upload-win-debug
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./ok-baijing-debug-${{ steps.tagName.outputs.tag }}.7z
-          asset_name: ok-baijing-debug-${{ steps.tagName.outputs.tag }}.7z
-          asset_content_type: application/zip
+
 
 
 
