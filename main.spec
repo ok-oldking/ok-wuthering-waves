@@ -52,7 +52,7 @@ else:
     add_data = []
 
 excludes = ['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter', 'resources', 'matplotlib','numpy.lib']
-add_data.append(('icon.ico', '.'))
+add_data.append(('icon.png', '.'))
 
 
 def list_files(directory, prefix=''):
