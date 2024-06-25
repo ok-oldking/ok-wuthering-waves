@@ -17,7 +17,7 @@ class Yinlin(BaseChar):
         elif self.echo_available():
             echo_key = self.get_echo_key()
             self.task.send_key_down(echo_key)
-            self.sleep(.7)
+            self.sleep(.6)
             self.switch_next_char(post_action=self.echo_post_action)
         self.switch_next_char()
 

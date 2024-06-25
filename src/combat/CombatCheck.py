@@ -29,13 +29,17 @@ class CombatCheck:
         return False
 
     def check_count_down(self):
+        count_down = self.find_one('gray_combat_count_down', threshold=0.9, canny_lower=50, canny_upper=150)
         if self.has_count_down:
-            count_down = self.find_one('gray_combat_count_down', threshold=0.8)
             if not count_down:
                 self.screenshot('out of combat because of count_down disappeared')
                 logger.info('out of combat because of count_down disappeared')
                 return False
-        return True
+            else:
+                return True
+        else:
+            self.has_count_down = count_down is not None
+            return self.has_count_down
 
     def check_boss(self):
         current = cv2.cvtColor(self.boss_lv_box.crop_frame(self.frame), cv2.COLOR_BGR2GRAY)
@@ -72,14 +76,14 @@ class CombatCheck:
             return True
         if self._in_combat:
             now = time.time()
-            if now - self.last_combat_check > 0.3:
+            if now - self.last_combat_check > 1:
                 self.last_combat_check = now
                 if self.boss_lv_edge is not None:
                     return self.check_boss()
                 if self.check_count_down():
                     return True
                 if not self.in_team()[0] or not self.check_health_bar():
-                    logger.debug('not in team and no health bar')
+                    logger.debug('not in team or no health bar')
                     if self.last_out_of_combat_time == 0:
                         self.last_out_of_combat_time = now
                         logger.debug(
@@ -100,7 +104,6 @@ class CombatCheck:
         else:
             in_combat = self.in_team()[0] and self.check_health_bar()
             if in_combat:
-                self.has_count_down = self.find_one('gray_combat_count_down') is not None
                 self._in_combat = True
                 return True
 
@@ -126,7 +129,7 @@ class CombatCheck:
         texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160),
                          target_height=720)
         boss_lv_texts = find_boxes_by_name(texts,
-                                           [re.compile(r'(?i)^L'), re.compile(r"\d{2}")])
+                                           [re.compile(r'(?i)^L[a-zA-Z].*')])
         if len(boss_lv_texts) > 0:
             logger.debug(f'boss_lv_texts: {boss_lv_texts}')
             self.boss_lv_box = boss_lv_texts[0]
