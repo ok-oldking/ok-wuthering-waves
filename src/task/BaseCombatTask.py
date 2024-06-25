@@ -52,23 +52,30 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                 max_priority = priority
                 switch_to = char
         if switch_to == current_char:
-            logger.warning(f"can't find next char to switch to, maybe switching too fast, sleep and wait")
-            return
+            self.click()
+            logger.warning(f"can't find next char to switch to, maybe switching too fast click and wait")
+            return self.switch_next_char(current_char, post_action)
         switch_to.has_intro = has_intro
         current_char.is_current_char = False
         logger.info(f'switch {current_char} -> {switch_to}')
-        self.send_key(switch_to.index + 1)
+        last_click = 0
+        start = time.time()
         while True:
-            in_team, current_index = self.in_team()
+            now = time.time()
+            if now - last_click > 0.1:
+                self.send_key(switch_to.index + 1)
+                last_click = now
+            in_team, current_index, size = self.in_team()
             if not in_team:
                 logger.error('not in team while switching chars')
                 raise NotInCombatException('not in team while switching chars')
             if current_index != switch_to.index:
                 if self.debug:
                     self.screenshot(f'switch_not_detected_{current_char}_to_{switch_to}')
-                self.click()
-                self.send_key(switch_to.index + 1)
-                logger.info(f'switch not detected, try click again {current_index} {switch_to}')
+                elif now - start > 2:
+                    raise NotInCombatException('failed switch chars')
+                else:
+                    self.next_frame()
             else:
                 switch_time = time.time()
                 switch_to.is_current_char = True
@@ -76,6 +83,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
 
         if post_action:
             post_action()
+        logger.info(f'switch_next_char end {(switch_time - start):.3f}s')
         return switch_time
 
     def wait_in_team(self, time_out=10):
@@ -92,9 +100,10 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         return self.get_current_char()
 
     def sleep_check_combat(self, timeout):
+        start = time.time()
         if not self.in_combat():
             raise NotInCombatException('not in combat')
-        super().sleep(timeout)
+        super().sleep(timeout - (time.time() - start))
 
     def check_combat(self):
         if not self.in_combat():
@@ -118,7 +127,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         return True
 
     def load_chars(self):
-        in_team, current_index = self.in_team()
+        in_team, current_index, count = self.in_team()
         if not in_team:
             return
         self.log_info('load chars')
@@ -133,12 +142,19 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         if (type(char) is BaseChar and old_char is None) or type(char) is not BaseChar:
             self.chars[1] = char
             logger.info(f'update char2 to {char.name}')
-
-        char = get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2)
-        old_char = safe_get(self.chars, 2)
-        if (type(char) is BaseChar and old_char is None) or type(char) is not BaseChar:
-            self.chars[2] = char
-            logger.info(f'update char3 to {char.name}')
+        if count == 3:
+            char = get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2)
+            old_char = safe_get(self.chars, 2)
+            if (type(char) is BaseChar and old_char is None) or type(char) is not BaseChar:
+                if len(self.chars) == 3:
+                    self.chars[2] = char
+                else:
+                    self.chars.append(char)
+                logger.info(f'update char3 to {char.name}')
+        else:
+            if len(self.chars) == 3:
+                self.chars.pop(0)
+            logger.info(f'team size changed to 2')
 
         for char in self.chars:
             if char.index == current_index:
@@ -158,22 +174,24 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         return self.calculate_color_percentage(white_color, self.get_box_by_name('box_resonance'))
 
     def in_team(self):
+        start = time.time()
         c1 = self.find_one('char_1_text')
         c2 = self.find_one('char_2_text')
         c3 = self.find_one('char_3_text')
         arr = [c1, c2, c3]
-        logger.debug(f'in_team check {arr}')
+        logger.debug(f'in_team check {arr} time: {(time.time() - start):.3f}s')
         current = -1
         exist_count = 0
         for i in range(len(arr)):
             if arr[i] is None:
-                current = i
+                if current == -1:
+                    current = i
             else:
                 exist_count += 1
-        if exist_count == 2:
-            return True, current
+        if exist_count == 2 or exist_count == 1:
+            return True, current, exist_count + 1
         else:
-            return False, -1
+            return False, -1, exist_count + 1
 
 
 white_color = {
