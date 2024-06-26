@@ -13,6 +13,7 @@ class Yinlin(BaseChar):
             self.sleep(0.4)
         elif self.resonance_available():
             self.click_resonance()
+            self.sleep(0.1)
         elif self.echo_available():
             echo_key = self.get_echo_key()
             self.task.send_key_down(echo_key)

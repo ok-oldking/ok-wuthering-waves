@@ -66,7 +66,7 @@ class BaseChar:
         start = time.time()
         while self.flying():
             self.task.click()
-            self.sleep(0.05)
+            self.sleep(0.2)
 
         self.task.screenshot(
             f'{self}_down_finish_{(time.time() - start):.2f}_f:{self.is_forte_full()}_e:{self.resonance_available()}_r:{self.echo_available()}_q:{self.liberation_available()}_i{self.has_intro}')
@@ -145,25 +145,31 @@ class BaseChar:
         if current - self.last_echo > self.echo_cd:  # count the first click only
             self.last_echo = time.time()
 
-    def click_echo(self, sleep_time=0):
+    def click_echo(self, duration=0, sleep_time=0):
         logger.debug(f'click_echo start')
         clicked = False
         start = 0
+        last_click = 0
         while True:
             self.check_combat()
             current = self.current_echo()
-            if not self.echo_available(current):
+            if duration == 0 and not self.echo_available(current):
                 break
-            logger.debug(f'click_liberation echo_available click')
             now = time.time()
-            if now - start > 0.1:
+            if duration > 0 and start != 0:
+                if now - start > duration:
+                    break
+            logger.debug(f'click_liberation echo_available click')
+            if now - last_click > 0.1:
                 if current == 0:
                     self.task.click()
                 else:
+                    if start == 0:
+                        start = now
                     clicked = True
                     self.update_echo_cd()
                     self.task.send_key(self.get_echo_key())
-                start = now
+                    last_click = now
             self.task.next_frame()
         logger.debug(f'click_echo end {clicked}')
         return clicked
@@ -173,10 +179,10 @@ class BaseChar:
 
     def click_liberation(self, wait_end=True):
         logger.debug(f'click_liberation start')
-        self.check_combat()
         start = time.time()
         last_click = 0
         while self.liberation_available():
+            self.check_combat()
             logger.debug(f'click_liberation liberation_available click')
             now = time.time()
             if now - last_click > 0.1:
@@ -196,6 +202,7 @@ class BaseChar:
             liberation_time = f'{(time.time() - last_click):.2f}'
             self.task.info[f'{self} liberation time'] = liberation_time
             logger.debug(f'click_liberation end {liberation_time}')
+        return last_click != 0
 
     def get_liberation_key(self):
         return self.task.config['Liberation Key']
@@ -262,14 +269,24 @@ class BaseChar:
                 return self.is_available(snap, 'liberation')
         else:
             mark_to_check = char_lib_check_marks[self.index]
-            mark = self.task.find_one(mark_to_check, canny_lower=50, canny_higher=150)
-            if mark is not None:
-                logger.debug(f'{self.__repr__()} liberation ready by checking mark')
-                self.liberation_available_mark = True
-                return True
+            box = self.task.get_box_by_name(mark_to_check)
+            box = box.copy(x_offset=-box.width, y_offset=-box.height, width_offset=box.width * 2,
+                           height_offset=box.height * 2)
+            for match in char_lib_check_marks:
+                mark = self.task.find_one(match, box=box, canny_lower=10, canny_higher=80, threshold=0.6)
+                if mark is not None:
+                    logger.debug(f'{self.__repr__()} liberation ready by checking mark {mark}')
+                    self.liberation_available_mark = True
+                    return True
 
     def __str__(self):
         return self.__repr__()
+
+    def continues_normal_attack(self, duration, interval=0.2):
+        start = time.time()
+        while time.time() - start < duration:
+            self.normal_attack()
+            self.sleep(interval)
 
     def normal_attack(self):
         logger.debug('normal attack')
