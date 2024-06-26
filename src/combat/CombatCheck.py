@@ -3,7 +3,7 @@ import time
 
 import cv2
 
-from ok.color.Color import find_color_rectangles
+from ok.color.Color import find_color_rectangles, white_color
 from ok.feature.Box import find_boxes_by_name
 from ok.logging.Logger import get_logger
 
@@ -29,7 +29,10 @@ class CombatCheck:
         return False
 
     def check_count_down(self):
-        count_down = self.find_one('gray_combat_count_down', threshold=0.9, canny_lower=50, canny_upper=150)
+        count_down = self.calculate_color_percentage(white_color,
+                                                     self.box_of_screen(1820 / 3840, 266 / 2160, 2088 / 3840,
+                                                                        325 / 2160, name="check_count_down")) > 0.05
+
         if self.has_count_down:
             if not count_down:
                 self.screenshot('out of combat because of count_down disappeared')
@@ -51,9 +54,15 @@ class CombatCheck:
             if not self.find_boss_lv_text():  # double check by text
                 self.boss_lv_box.confidence = max_val
                 self.draw_boxes('enemy_health_bar_red', self.boss_lv_box, color='red')
-                self.screenshot_boss_lv(current, 'out_of combat boss_health disappeared')
-                logger.info(f'out of combat because of boss_health disappeared, res:{max_val} {res}')
-                return self.reset_to_false()
+                if not (self.in_team()[0] and self.check_health_bar()) and not self.check_count_down():
+                    self.screenshot_boss_lv(current, 'out_of combat boss_health disappeared')
+                    logger.info(f'out of combat because of boss_health disappeared, res:{max_val} {res}')
+                    return self.reset_to_false()
+                else:
+                    self.boss_lv_edge = None
+                    self.boss_lv_box = None
+                    logger.info(f'boss_health disappeared, but still in combat')
+                    return True
             else:
                 return True
         else:

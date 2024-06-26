@@ -30,8 +30,9 @@ logger = get_logger(__name__)
 
 class BaseChar:
 
-    def __init__(self, task, index, res_cd=0):
+    def __init__(self, task, index, res_cd=0, echo_cd=0):
         self.white_off_threshold = 0.01
+        self.echo_cd = echo_cd
         self.task = task
         self.sleep_adjust = 0.001
         self.index = index
@@ -40,6 +41,7 @@ class BaseChar:
         self.base_liberation_white_percentage = 0
         self.last_switch_time = -1
         self.last_res = -1
+        self.last_echo = -1
         self.has_intro = False
         self.res_cd = res_cd
         self.is_current_char = False
@@ -78,6 +80,22 @@ class BaseChar:
             self.sleep(0.1)
         self.switch_next_char()
 
+    def is_available(self, percent, box_name):
+        if percent == 0:
+            return True
+        start = time.time()
+        box = self.task.get_box_by_name(f'box_{box_name}')
+        box = box.copy(x_offset=box.width / 4, y_offset=box.height * 0.6, width_offset=-box.width / 2,
+                       height_offset=-box.height * 0.5)
+        dot = self.task.find_one('edge_echo_cd_dot', box=box, canny_lower=40, canny_higher=80, threshold=0.5)
+
+        if dot is None:
+            logger.debug(f'find dot not exist cost : {time.time() - start}')
+            return True
+        else:
+            logger.debug(f'find dot exist cost : {time.time() - start} {dot}')
+            return False
+
     def __repr__(self):
         return self.__class__.__name__ + ('_T' if self.is_current_char else '_F')
 
@@ -85,51 +103,70 @@ class BaseChar:
         self.last_switch_time = self.task.switch_next_char(self, post_action=post_action)
 
     def sleep(self, sec):
-        self.task.sleep_check_combat(sec + self.sleep_adjust)
+        if sec > 0:
+            self.task.sleep_check_combat(sec + self.sleep_adjust)
 
     def click_resonance(self, post_sleep=0):
-        self.check_combat()
         clicked = None
         logger.debug(f'click_resonance start')
         start = 0
-        while self.resonance_available():
+        while True:
+            self.check_combat()
+            current_resonance = self.current_resonance()
+            if not self.resonance_available(current_resonance):
+                break
             logger.debug(f'click_resonance echo_available click')
             now = time.time()
             if now - start > 0.1:
-                self.task.send_key(self.task.config.get('Resonance Key'))
+                if current_resonance == 0:
+                    self.task.click()
+                else:
+                    clicked = True
+                    self.update_res_cd()
+                    self.send_resonance_key()
                 start = now
             self.task.next_frame()
-        # self.task.send_key(self.task.config.get('Resonance Key'))
-        # while True:
-        #     curren_resonance = self.current_resonance()
-        #     if clicked is None:
-        #         clicked = self.resonance_available(curren_resonance)
-        #     if curren_resonance > 0 and abs(
-        #             curren_resonance - self.base_resonance_white_percentage) > self.white_off_threshold:
-        #         break
-        #     self.sleep(0.02)
-        #     self.task.send_key(self.task.config.get('Resonance Key'))
-        if post_sleep > 0 and clicked:
+        if clicked:
             self.sleep(post_sleep)
         logger.debug(f'click_resonance end')
+        return clicked
+
+    def send_resonance_key(self, post_sleep=0):
+        self.task.send_key(self.task.config.get('Resonance Key'))
+        self.sleep(post_sleep)
 
     def update_res_cd(self):
         current = time.time()
         if current - self.last_res > self.res_cd:  # count the first click only
             self.last_res = time.time()
 
+    def update_echo_cd(self):
+        current = time.time()
+        if current - self.last_echo > self.echo_cd:  # count the first click only
+            self.last_echo = time.time()
+
     def click_echo(self, sleep_time=0):
         logger.debug(f'click_echo start')
-        self.check_combat()
+        clicked = False
         start = 0
-        while self.echo_available():
+        while True:
+            self.check_combat()
+            current = self.current_echo()
+            if not self.echo_available(current):
+                break
             logger.debug(f'click_liberation echo_available click')
             now = time.time()
             if now - start > 0.1:
-                self.task.send_key(self.get_echo_key())
+                if current == 0:
+                    self.task.click()
+                else:
+                    clicked = True
+                    self.update_echo_cd()
+                    self.task.send_key(self.get_echo_key())
                 start = now
             self.task.next_frame()
-        logger.debug(f'click_echo end')
+        logger.debug(f'click_echo end {clicked}')
+        return clicked
 
     def check_combat(self):
         self.task.check_combat()
@@ -137,27 +174,28 @@ class BaseChar:
     def click_liberation(self, wait_end=True):
         logger.debug(f'click_liberation start')
         self.check_combat()
-        start = 0
+        start = time.time()
+        last_click = 0
         while self.liberation_available():
             logger.debug(f'click_liberation liberation_available click')
             now = time.time()
-            if now - start > 0.1:
+            if now - last_click > 0.1:
                 self.task.send_key(self.get_liberation_key())
                 self.task.in_liberation = True
                 self.liberation_available_mark = False
-                start = now
+                last_click = now
+            if time.time() - start > 5:
+                self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
         while self.task.in_liberation and not self.task.in_team()[0]:
-            if start - time.time() > 5:
-                logger.info('too long a liberation, the boss was killed by the liberation')
-                self.task.reset_to_false()
-                from src.task.BaseCombatTask import NotInCombatException
-                raise NotInCombatException('not in combat')
+            if time.time() - start > 5:
+                self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
             self.task.next_frame()
         self.task.in_liberation = False
-        liberation_time = f'{(time.time() - start):.2f}'
-        self.task.info[f'{self} liberation time'] = liberation_time
-        logger.debug(f'click_liberation end {liberation_time}')
+        if time != 0:
+            liberation_time = f'{(time.time() - last_click):.2f}'
+            self.task.info[f'{self} liberation time'] = liberation_time
+            logger.debug(f'click_liberation end {liberation_time}')
 
     def get_liberation_key(self):
         return self.task.config['Liberation Key']
@@ -185,38 +223,17 @@ class BaseChar:
 
     def resonance_available(self, current=None):
         if self.is_current_char:
-            snap1 = self.current_resonance() if current is None else current
-            if snap1 == 0:
-                return True
-            if self.base_resonance_white_percentage != 0:
-                return abs(self.base_resonance_white_percentage - snap1) < self.white_off_threshold
-            cd_text = self.task.ocr(box=self.task.get_box_by_name('box_resonance'), target_height=540, threshold=0.95)
-            if len(cd_text) == 0 or not is_float(cd_text[0].name):
-                self.base_resonance_white_percentage = snap1
-                if self.task.debug:
-                    self.task.screenshot(f'{self}_resonance_{snap1:.3f}')
-                logger.info(f'{self} set base resonance to {self.base_resonance_white_percentage:.3f}')
-                return True
-            if cd_text:
-                logger.info(f'{self} set base resonance to has text {cd_text}')
-                return False
-        else:
-            if self.res_cd > 0:
-                return time.time() - self.last_res > self.res_cd
+            snap = self.current_resonance() if current is None else current
+            return self.is_available(snap, 'resonance')
+        elif self.res_cd > 0:
+            return time.time() - self.last_res > self.res_cd
 
-    def echo_available(self):
-        snap1 = self.current_echo()
-        if snap1 == 0:
-            return True
-        if self.base_echo_white_percentage != 0:
-            return abs(self.base_echo_white_percentage - snap1) < self.white_off_threshold
-        cd_text = self.task.ocr(box=self.task.get_box_by_name('box_echo'), target_height=540, threshold=0.95)
-        if not cd_text or not is_float(cd_text[0].name):
-            self.base_echo_white_percentage = snap1
-            if self.task.debug:
-                self.task.screenshot(f'{self}_echo_{snap1:.3f}')
-            logger.info(f'set base resonance to {self.base_echo_white_percentage:.3f}')
-            return True
+    def echo_available(self, current=None):
+        if self.is_current_char:
+            snap = self.current_echo() if current is None else current
+            return self.is_available(snap, 'echo')
+        elif self.echo_cd > 0:
+            return time.time() - self.last_echo > self.echo_cd
 
     def is_con_full(self):
         box = self.task.box_of_screen(1540 / 3840, 2007 / 2160, 1545 / 3840, 2010 / 2160, name='con_full')
@@ -238,21 +255,11 @@ class BaseChar:
         if self.liberation_available_mark:
             return True
         if self.is_current_char:
-            snap1_lib = self.current_liberation()
-            if snap1_lib == 0:
+            snap = self.current_liberation()
+            if snap == 0:
                 return False
-            if self.base_liberation_white_percentage != 0:
-                return abs(self.base_liberation_white_percentage - snap1_lib) < self.white_off_threshold
-            cd_text = self.task.ocr(box=self.task.get_box_by_name('box_liberation'), target_height=540, threshold=0.95)
-            if not cd_text or not is_float(cd_text[0].name):
-                self.base_liberation_white_percentage = snap1_lib
-                logger.info(f'{self} set base liberation to {self.base_liberation_white_percentage:.3f}')
-                if self.task.debug:
-                    self.task.screenshot(f'{self}_liberation_{self.base_liberation_white_percentage:.3f}')
-                return True
             else:
-                logger.debug(
-                    f'{self} set base liberation {snap1_lib:.3f} has text {cd_text}')
+                return self.is_available(snap, 'liberation')
         else:
             mark_to_check = char_lib_check_marks[self.index]
             mark = self.task.find_one(mark_to_check, canny_lower=50, canny_higher=150)
@@ -289,7 +296,7 @@ class BaseChar:
         return self.task.calculate_color_percentage(white_color, self.task.get_box_by_name('box_liberation'))
 
     def flying(self):
-        return self.get_current_levitator() == 0
+        return self.current_resonance() == 0
 
     def get_current_levitator(self):
         return self.task.calculate_color_percentage(white_color,
@@ -301,11 +308,3 @@ forte_white_color = {
     'g': (246, 255),  # Green range
     'b': (250, 255)  # Blue range
 }
-
-
-def is_float(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False

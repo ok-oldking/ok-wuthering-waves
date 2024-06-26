@@ -1,3 +1,6 @@
+from src.char.CharSkillButton import is_float
+
+
 def get_char_by_pos(task, box, index):
     from src.char.Verina import Verina
     from src.char.Yinlin import Yinlin
@@ -26,6 +29,14 @@ def get_char_by_pos(task, box, index):
         if feature:
             task.log_info(f'found char {char_name} {feature.confidence}')
     if info is not None:
-        return info.get('cls')(task, index, info.get('res_cd'))
+        cls = info.get('cls')
+        return cls(task, index, info.get('res_cd'), info.get('echo_cd'))
     task.log_info(f'could not find char')
+    has_cd = task.ocr(box=box)
+    if has_cd and is_float(has_cd[0].name):
+        task.log_info(f'found char {has_cd[0]} wait and reload')
+        task.next_frame()
+        return get_char_by_pos(task, box, index)
+    if task.debug:
+        task.screenshot(f'could not find char {index}')
     return BaseChar(task, index)
