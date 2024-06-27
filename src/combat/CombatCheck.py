@@ -3,7 +3,7 @@ import time
 
 import cv2
 
-from ok.color.Color import find_color_rectangles, white_color
+from ok.color.Color import find_color_rectangles, white_color, keep_pixels_in_color_range
 from ok.feature.Box import find_boxes_by_name
 from ok.logging.Logger import get_logger
 
@@ -31,7 +31,7 @@ class CombatCheck:
     def check_count_down(self):
         count_down = self.calculate_color_percentage(white_color,
                                                      self.box_of_screen(1820 / 3840, 266 / 2160, 2088 / 3840,
-                                                                        325 / 2160, name="check_count_down")) > 0.05
+                                                                        325 / 2160, name="check_count_down")) > 0.1
 
         if self.has_count_down:
             if not count_down:
@@ -41,15 +41,15 @@ class CombatCheck:
             else:
                 return True
         else:
-            self.has_count_down = count_down is not None
+            self.has_count_down = count_down
             return self.has_count_down
 
     def check_boss(self):
-        current = cv2.cvtColor(self.boss_lv_box.crop_frame(self.frame), cv2.COLOR_BGR2GRAY)
-        current = cv2.Canny(current, 100, 200)
+        current = self.keep_boss_text_white()
         res = cv2.matchTemplate(current, self.boss_lv_edge, cv2.TM_CCOEFF_NORMED)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-        if max_val < 0.5:
+        if max_val < 0.8:
+            self.screenshot_boss_lv(current, f'boss lv not detected by edge{max_val}')
             logger.debug(f'boss lv not detected by edge {res}')
             if not self.find_boss_lv_text():  # double check by text
                 self.boss_lv_box.confidence = max_val
@@ -71,12 +71,10 @@ class CombatCheck:
 
     def screenshot_boss_lv(self, current, name):
         if self.debug:
-            colored = cv2.cvtColor(self.boss_lv_edge, cv2.COLOR_GRAY2BGR)
             self.frame[self.boss_lv_box.y:self.boss_lv_box.y + self.boss_lv_box.height,
-            self.boss_lv_box.x:self.boss_lv_box.x + self.boss_lv_box.width] = cv2.cvtColor(current,
-                                                                                           cv2.COLOR_GRAY2BGR)
+            self.boss_lv_box.x:self.boss_lv_box.x + self.boss_lv_box.width] = current
             x, y, w, h = self.boss_lv_box.x, self.boss_lv_box.height + 50 + self.boss_lv_box.y, self.boss_lv_box.width, self.boss_lv_box.height
-            self.frame[y:y + h, x:x + w] = colored
+            self.frame[y:y + h, x:x + w] = self.boss_lv_edge
             self.screenshot(name)
 
     def in_combat(self):
@@ -85,13 +83,15 @@ class CombatCheck:
             return True
         if self._in_combat:
             now = time.time()
-            if now - self.last_combat_check > 1:
+            if now - self.last_combat_check > 0.5:
                 self.last_combat_check = now
+                if not self.in_team()[0]:
+                    return self.reset_to_false()
                 if self.boss_lv_edge is not None:
                     return self.check_boss()
                 if self.check_count_down():
                     return True
-                if not self.in_team()[0] or not self.check_health_bar():
+                if not self.check_health_bar():
                     logger.debug('not in team or no health bar')
                     if self.last_out_of_combat_time == 0:
                         self.last_out_of_combat_time = now
@@ -142,10 +142,11 @@ class CombatCheck:
         if len(boss_lv_texts) > 0:
             logger.debug(f'boss_lv_texts: {boss_lv_texts}')
             self.boss_lv_box = boss_lv_texts[0]
-            self.boss_lv_edge = cv2.cvtColor(self.boss_lv_box.crop_frame(self.frame), cv2.COLOR_BGR2GRAY)
-            self.boss_lv_edge = cv2.Canny(self.boss_lv_edge, 100, 200)
-            # self.screenshot_boss_lv(self.boss_lv_edge, 'found_boss_lv')
+            self.boss_lv_edge = self.keep_boss_text_white()
             return True
+
+    def keep_boss_text_white(self):
+        return keep_pixels_in_color_range(self.boss_lv_box.crop_frame(self.frame), white_color)
 
 
 enemy_health_color_red = {
