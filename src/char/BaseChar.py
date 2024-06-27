@@ -1,7 +1,7 @@
 import time
 from enum import IntEnum, StrEnum
 
-from ok.color.Color import white_color, calculate_colorfulness
+from ok.color.Color import white_color, calculate_colorfulness, get_connected_area_by_color
 from ok.logging.Logger import get_logger
 
 
@@ -83,18 +83,38 @@ class BaseChar:
     def is_available(self, percent, box_name):
         if percent == 0:
             return True
-        start = time.time()
+        # start = time.time()
         box = self.task.get_box_by_name(f'box_{box_name}')
-        box = box.copy(x_offset=box.width / 4, y_offset=box.height * 0.6, width_offset=-box.width / 2,
-                       height_offset=-box.height * 0.5)
-        dot = self.task.find_one('edge_echo_cd_dot', box=box, canny_lower=40, canny_higher=80, threshold=0.5)
+        # box = box.copy(x_offset=box.width / 4, y_offset=box.height * 0.6, width_offset=-box.width / 2,
+        #                height_offset=-box.height * 0.5, name=f'box_{box_name}_find_dot')
+        num_labels, stats = get_connected_area_by_color(box.crop_frame(self.task.frame), dot_color)
+        # has_dot = False
+        has_dot = False
+        number_count = 0
+        # if num_labels > 4:
+        #     return True
+        for i in range(1, num_labels):
+            # Check if the connected component touches the border
+            left, top, width, height, area = stats[i]
+            if left > 0 and top > 0 and left + width < box.width and top + height < box.height:
+                logger.debug(f"{box_name} Area of connected component {i}: {area} pixels {width}x{height}")
+                if 20 / 3840 / 2160 <= area / self.task.frame.shape[0] / self.task.frame.shape[
+                    1] <= 60 / 3840 / 2160 and abs(width - height) / (width + height) < 0.1:
+                    has_dot = True
+                elif 150 / 3840 / 2160 <= area / self.task.frame.shape[0] / self.task.frame.shape[
+                    1] <= 500 / 3840 / 2160:
+                    number_count += 1
+        logger.debug(f"{box_name} number_count {number_count} has_dot {has_dot}")
+        return not (has_dot and 2 <= number_count <= 3)
 
-        if dot is None:
-            logger.debug(f'find dot not exist cost : {time.time() - start}')
-            return True
-        else:
-            logger.debug(f'find dot exist cost : {time.time() - start} {dot}')
-            return False
+        # # dot = self.task.find_one('edge_echo_cd_dot', box=box, canny_lower=40, canny_higher=80, threshold=0.5)
+        #
+        # if dot is None:
+        #     logger.debug(f'find dot not exist cost : {time.time() - start}')
+        #     return True
+        # else:
+        #     logger.debug(f'find dot exist cost : {time.time() - start} {dot}')
+        #     return False
 
     def __repr__(self):
         return self.__class__.__name__ + ('_T' if self.is_current_char else '_F')
@@ -115,7 +135,7 @@ class BaseChar:
             current_resonance = self.current_resonance()
             if not self.resonance_available(current_resonance):
                 break
-            logger.debug(f'click_resonance echo_available click')
+            logger.debug(f'click_resonance resonance_available click')
             now = time.time()
             if now - start > 0.1:
                 if current_resonance == 0:
@@ -159,7 +179,7 @@ class BaseChar:
             if duration > 0 and start != 0:
                 if now - start > duration:
                     break
-            logger.debug(f'click_liberation echo_available click')
+            logger.debug(f'click_echo echo_available click')
             if now - last_click > 0.1:
                 if current == 0:
                     self.task.click()
@@ -323,5 +343,11 @@ class BaseChar:
 forte_white_color = {
     'r': (244, 255),  # Red range
     'g': (246, 255),  # Green range
+    'b': (250, 255)  # Blue range
+}
+
+dot_color = {
+    'r': (250, 255),  # Red range
+    'g': (250, 255),  # Green range
     'b': (250, 255)  # Blue range
 }
