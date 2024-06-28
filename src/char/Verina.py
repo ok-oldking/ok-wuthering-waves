@@ -7,7 +7,7 @@ class Verina(BaseChar):
         if self.flying():
             return self.switch_next_char()
         self.click_liberation()
-        if not self.click_resonance():
+        if not self.click_resonance()[0]:
             self.click_echo()
             self.heavy_attack()
         self.switch_next_char()
