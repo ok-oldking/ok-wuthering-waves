@@ -23,7 +23,7 @@ config = {
     },
     # required if using feature detection
     'template_matching': {
-        'coco_feature_json': os.path.join('assets', 'result.json'),
+        'coco_feature_json': os.path.join('assets', '_annotations.coco.json'),
         'default_horizontal_variance': 0,
         'default_vertical_variance': 0,
         'default_threshold': 0.9,
