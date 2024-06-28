@@ -1,4 +1,5 @@
 from src.char.CharSkillButton import is_float
+from src.char.Jinhsi import Jinhsi
 
 
 def get_char_by_pos(task, box, index):
@@ -18,6 +19,7 @@ def get_char_by_pos(task, box, index):
         'char_encore': {'cls': Encore, 'res_cd': 10, 'echo_cd': 20},
         'char_jianxin': {'cls': Jianxin, 'res_cd': 12, 'echo_cd': 20},
         'char_sanhua': {'cls': Sanhua, 'res_cd': 10, 'echo_cd': 20},
+        'char_jinhsi': {'cls': Jinhsi, 'res_cd': 3, 'echo_cd': 20},
     }
     highest_confidence = 0
     info = None
