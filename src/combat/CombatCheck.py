@@ -6,6 +6,7 @@ import cv2
 from ok.color.Color import find_color_rectangles, white_color, keep_pixels_in_color_range
 from ok.feature.Box import find_boxes_by_name
 from ok.logging.Logger import get_logger
+from src import text_white_color
 
 logger = get_logger(__name__)
 
@@ -29,14 +30,14 @@ class CombatCheck:
         return False
 
     def check_count_down(self):
-        count_down = self.calculate_color_percentage(white_color,
+        count_down = self.calculate_color_percentage(text_white_color,
                                                      self.box_of_screen(1820 / 3840, 266 / 2160, 2088 / 3840,
-                                                                        325 / 2160, name="check_count_down")) > 0.1
+                                                                        325 / 2160, name="check_count_down"))
 
         if self.has_count_down:
-            if not count_down:
-                self.screenshot('out of combat because of count_down disappeared')
-                logger.info('out of combat because of count_down disappeared')
+            if count_down < 0.1:
+                self.screenshot(f'out of combat because of count_down disappeared {count_down:.2f}%')
+                logger.info(f'out of combat because of count_down disappeared {count_down:.2f}%')
                 return False
             else:
                 return True

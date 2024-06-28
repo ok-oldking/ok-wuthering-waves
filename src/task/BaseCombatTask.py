@@ -62,7 +62,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             return self.switch_next_char(current_char, post_action)
         switch_to.has_intro = has_intro
         current_char.is_current_char = False
-        logger.info(f'switch {current_char} -> {switch_to}')
+        logger.info(f'switch {current_char} -> {switch_to} has_intro {has_intro}')
         last_click = 0
         start = time.time()
         while True:

@@ -24,6 +24,7 @@ thread_dumps.txt
 
 # Distribution / packaging
 .Python
+test/
 logs/
 build/
 develop-eggs/
