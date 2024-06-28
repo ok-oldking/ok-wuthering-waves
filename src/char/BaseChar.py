@@ -4,8 +4,10 @@ from enum import IntEnum, StrEnum
 import cv2
 import numpy as np
 
-from ok.color.Color import white_color, get_connected_area_by_color, color_range_to_bound
+from ok.color.Color import get_connected_area_by_color, color_range_to_bound
+from ok.config.Config import Config
 from ok.logging.Logger import get_logger
+from src import text_white_color
 
 
 class Priority(IntEnum):
@@ -38,9 +40,6 @@ class BaseChar:
         self.task = task
         self.sleep_adjust = 0.001
         self.index = index
-        self.base_resonance_white_percentage = 0
-        self.base_echo_white_percentage = 0
-        self.base_liberation_white_percentage = 0
         self.last_switch_time = -1
         self.last_res = -1
         self.last_echo = -1
@@ -49,6 +48,15 @@ class BaseChar:
         self.is_current_char = False
         self.liberation_available_mark = False
         self.logger = get_logger(self.name)
+        self.full_ring_area = 0
+        self.config = {"_full_ring_area": 0, "_ring_color_index": -1}
+        if type(self) is BaseChar:
+            self.config = Config(self.config,
+                                 self.name)
+        self.current_con = 0
+
+    def char_config(self):
+        return {}
 
     @property
     def name(self):
@@ -56,7 +64,7 @@ class BaseChar:
 
     def __eq__(self, other):
         if isinstance(other, BaseChar):
-            return self.name == other.name
+            return self.name == other.name and self.index == other.index
         return False
 
     def perform(self):
@@ -86,10 +94,12 @@ class BaseChar:
             return True
 
         box = self.task.get_box_by_name(f'box_{box_name}')
-        num_labels, stats = get_connected_area_by_color(box.crop_frame(self.task.frame), dot_color, connectivity=8)
+        cropped = box.crop_frame(self.task.frame)
+        num_labels, stats = get_connected_area_by_color(cropped, dot_color, connectivity=8)
         big_area_count = 0
         has_dot = False
         number_count = 0
+        invalid_count = 0
         for i in range(1, num_labels):
             # Check if the connected component touches the border
             left, top, width, height, area = stats[i]
@@ -101,22 +111,17 @@ class BaseChar:
                 if 20 / 3840 / 2160 <= area / self.task.frame.shape[0] / self.task.frame.shape[
                     1] <= 60 / 3840 / 2160 and abs(width - height) / (width + height) < 0.1:
                     has_dot = True
-                elif 150 / 3840 / 2160 <= area / self.task.frame.shape[0] / self.task.frame.shape[
-                    1] <= 500 / 3840 / 2160:
+                elif 35 / 2160 <= height / self.task.screen_height <= 45 / 2160 and 5 / 2160 <= width / self.task.screen_height <= 35 / 2160:
                     number_count += 1
-        self.logger.debug(f"{box_name} number_count {number_count} big_count {big_area_count} has_dot {has_dot}")
-        if big_area_count > 5:
-            return True
-        return not (has_dot and 2 <= number_count <= 3)
+            else:
+                invalid_count += 1
+        available = invalid_count > 0 or not (has_dot and 2 <= number_count <= 3)
+        if self.task.debug:
+            msg = f"{self}_{available}_{box_name} number_count {number_count} big_count {big_area_count} invalid_count {invalid_count} has_dot {has_dot}"
+            self.task.screenshot(msg, frame=cropped)
+            self.logger.debug(msg)
 
-        # # dot = self.task.find_one('edge_echo_cd_dot', box=box, canny_lower=40, canny_higher=80, threshold=0.5)
-        #
-        # if dot is None:
-        #     self.logger.debug(f'find dot not exist cost : {time.time() - start}')
-        #     return True
-        # else:
-        #     self.logger.debug(f'find dot exist cost : {time.time() - start} {dot}')
-        #     return False
+        return available
 
     def __repr__(self):
         return self.__class__.__name__ + ('_T' if self.is_current_char else '_F')
@@ -129,7 +134,7 @@ class BaseChar:
         if sec > 0:
             self.task.sleep_check_combat(sec + self.sleep_adjust)
 
-    def click_resonance(self, post_sleep=0, has_animation=False):
+    def click_resonance(self, post_sleep=0, has_animation=False, send_click=True):
         clicked = None
         self.logger.debug(f'click_resonance start')
         last_click = 0
@@ -143,16 +148,18 @@ class BaseChar:
                     if time.time() - resonance_click_time > 6:
                         self.logger.error(f'resonance animation too long, breaking')
                         self.check_combat()
-                self.task.next_frame()
+                    self.task.next_frame()
+                    continue
             else:
                 self.check_combat()
             current_resonance = self.current_resonance()
             if not self.resonance_available(current_resonance):
+                self.logger.debug(f'click_resonance not available break')
                 break
             self.logger.debug(f'click_resonance resonance_available click')
             now = time.time()
             if now - last_click > 0.1:
-                if current_resonance == 0 or last_op != 'click':
+                if (current_resonance == 0 or last_op != 'click') and send_click:
                     self.task.click()
                     last_op = 'click'
                 else:
@@ -268,20 +275,16 @@ class BaseChar:
             priority += Priority.SKILL_AVAILABLE
         return priority
 
-    @staticmethod
     def count_liberation_priority(self):
         return 1
 
-    @staticmethod
     def count_resonance_priority(self):
-        return 1
+        return 10
 
-    @staticmethod
     def count_echo_priority(self):
         return 1
 
-    @staticmethod
-    def count_forte_priority():
+    def count_forte_priority(self):
         return 0
 
     def resonance_available(self, current=None):
@@ -301,16 +304,34 @@ class BaseChar:
     def is_con_full(self):
         box = self.task.box_of_screen(1422 / 3840, 1939 / 2160, 1566 / 3840, 2076 / 2160, name='con_full')
         box.confidence = 0
-        for color_range in con_colors:
-            rings = self.count_rings(box.crop_frame(self.task.frame), color_range,
-                                     2000 / 3840 / 2160 * self.task.screen_width * self.task.screen_height)
-            if rings == 1:
-                self.logger.info(
-                    f'is_con_full found a ring of colors {color_range} box.width:{box.width} {self.task.screen_width, self.task.screen_height}')
-                box.confidence = 1
-                return True
-            self.logger.debug(
-                f'is_con_full found {rings} rings of colors {color_range} {box.width, box.height} {self.task.screen_width, self.task.screen_height}')
+
+        max_area = 0
+        percent = 0
+        max_is_full = False
+        color_index = -1
+        target_index = self.config.get('_ring_color_index', -1)
+        for i in range(len(con_colors)):
+            if target_index != -1 and i != target_index:
+                break
+            color_range = con_colors[i]
+            area, is_full = self.count_rings(box.crop_frame(self.task.frame), color_range,
+                                             2000 / 3840 / 2160 * self.task.screen_width * self.task.screen_height)
+            if area > max_area:
+                max_is_full = is_full
+                max_area = int(area)
+                color_index = i
+        if max_is_full:
+            self.config['_full_ring_area'] = max_area
+            self.config['_ring_color_index'] = color_index
+        if self.config.get('_full_ring_area', 0) > 0:
+            percent = max_area / self.config['_full_ring_area']
+        if max_area > 0:
+            self.logger.info(
+                f'is_con_full found a ring {percent} {color_index} box.width:{box.width} {self.task.screen_width, self.task.screen_height}')
+        box.confidence = percent
+        self.current_con = percent
+        if percent >= 1:
+            return True
         self.task.draw_boxes('con_full', box)
 
     def is_forte_full(self):
@@ -365,22 +386,18 @@ class BaseChar:
         self.logger.debug('heavy attack end')
 
     def current_resonance(self):
-        return self.task.calculate_color_percentage(white_color,
+        return self.task.calculate_color_percentage(text_white_color,
                                                     self.task.get_box_by_name('box_resonance'))
 
     def current_echo(self):
-        return self.task.calculate_color_percentage(white_color,
+        return self.task.calculate_color_percentage(text_white_color,
                                                     self.task.get_box_by_name('box_echo'))
 
     def current_liberation(self):
-        return self.task.calculate_color_percentage(white_color, self.task.get_box_by_name('box_liberation'))
+        return self.task.calculate_color_percentage(text_white_color, self.task.get_box_by_name('box_liberation'))
 
     def flying(self):
         return self.current_resonance() == 0
-
-    def get_current_levitator(self):
-        return self.task.calculate_color_percentage(white_color,
-                                                    self.task.get_box_by_name('edge_levitator'))
 
     def count_rings(self, image, color_range, min_area):
         # Define the color range
@@ -404,7 +421,7 @@ class BaseChar:
         ]
 
         # Function to check if a component forms a ring
-        def is_ring(component_mask):
+        def is_full_ring(component_mask):
             # Find contours
             contours, _ = cv2.findContours(component_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             if len(contours) != 1:
@@ -415,8 +432,8 @@ class BaseChar:
             # if cv2.arcLength(contour, True) > 0:
             #     return True
             # Approximate the contour with polygons.
-            epsilon = 0.05 * cv2.arcLength(contours[0], True)
-            approx = cv2.approxPolyDP(contours[0], epsilon, True)
+            epsilon = 0.05 * cv2.arcLength(contour, True)
+            approx = cv2.approxPolyDP(contour, epsilon, True)
 
             # Check if the polygon is closed (has no gaps) and has a reasonable number of vertices for a ring.
             if not cv2.isContourConvex(approx) or len(approx) < 4:
@@ -427,6 +444,8 @@ class BaseChar:
 
         # Iterate over each component
         ring_count = 0
+        is_full = False
+        the_area = 0
         for label in range(1, num_labels):
             x, y, width, height, area = stats[label, :5]
             bounding_box_area = width * height
@@ -436,17 +455,20 @@ class BaseChar:
                 # Select a color from the list based on the label index
                 color = colors[label % len(colors)]
                 cv2.drawContours(image_with_contours, contours, -1, color, 2)  # Draw contour
-                if is_ring(component_mask):
-                    ring_count += 1
+                if is_full_ring(component_mask):
+                    is_full = True
+                the_area = area
+                ring_count += 1
 
-        # Save or display the image with contours
-        cv2.imwrite(f'test\\test_{self}_{ring_count}_{time.time()}.jpg', image_with_contours)
-        # Alternatively, to display the image
-        # cv2.imshow('Image with Contours', image_with_contours)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+        # if ring_count == 1:
+        #     # Save or display the image with contours
+        #     cv2.imwrite(f'test\\test_{self}_{the_ring_percent:.2f}_{time.time()}.jpg', image_with_contours)
+        if ring_count > 1:
+            is_full = False
+            the_area = 0
+            self.logger.warning(f'is_con_full found multiple rings {ring_count}')
 
-        return ring_count
+        return the_area, is_full
 
 
 forte_white_color = {
@@ -463,9 +485,9 @@ dot_color = {
 
 con_colors = [
     {
-        'r': (205, 235),  # Red range
-        'g': (190, 222),  # Green range for yellow spectro
-        'b': (90, 130)  # Blue range
+        'r': (205, 235),
+        'g': (190, 222),  # for yellow spectro
+        'b': (90, 130)
     },
     {
         'r': (150, 180),  # Red range
