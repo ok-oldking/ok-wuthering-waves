@@ -12,6 +12,7 @@ class Priority(IntEnum):
     SKILL_AVAILABLE = 100
     ALL_IN_CD = 0
     NORMAL = 10
+    MAX = 9999999999
 
 
 class Role(StrEnum):
@@ -24,8 +25,6 @@ class Role(StrEnum):
 role_values = [role for role in Role]
 
 char_lib_check_marks = ['char_1_lib_check_mark', 'char_2_lib_check_mark', 'char_3_lib_check_mark']
-
-logger = get_logger(__name__)
 
 
 class BaseChar:
@@ -46,7 +45,7 @@ class BaseChar:
         self.res_cd = res_cd
         self.is_current_char = False
         self.liberation_available_mark = False
-        logger.name = self.name
+        self.logger = get_logger(self.name)
 
     @property
     def name(self):
@@ -60,7 +59,7 @@ class BaseChar:
     def perform(self):
         # self.wait_down()
         self.do_perform()
-        logger.debug(f'set current char false {self.index}')
+        self.logger.debug(f'set current char false {self.index}')
 
     def wait_down(self):
         start = time.time()
@@ -73,86 +72,103 @@ class BaseChar:
 
     def do_perform(self):
         self.click_liberation()
-        if self.resonance_available():
-            self.click_resonance()
-        if self.echo_available():
-            self.click_echo()
-            self.sleep(0.1)
+        if self.click_resonance()[0]:
+            return self.switch_next_char()
+        if self.click_echo():
+            return self.switch_next_char()
         self.switch_next_char()
 
     def is_available(self, percent, box_name):
         if percent == 0:
             return True
-        # start = time.time()
+
         box = self.task.get_box_by_name(f'box_{box_name}')
-        # box = box.copy(x_offset=box.width / 4, y_offset=box.height * 0.6, width_offset=-box.width / 2,
-        #                height_offset=-box.height * 0.5, name=f'box_{box_name}_find_dot')
-        num_labels, stats = get_connected_area_by_color(box.crop_frame(self.task.frame), dot_color)
-        # has_dot = False
+        num_labels, stats = get_connected_area_by_color(box.crop_frame(self.task.frame), dot_color, connectivity=8)
+        big_area_count = 0
         has_dot = False
         number_count = 0
-        # if num_labels > 4:
-        #     return True
         for i in range(1, num_labels):
             # Check if the connected component touches the border
             left, top, width, height, area = stats[i]
+            if area / self.task.frame.shape[0] / self.task.frame.shape[
+                1] > 20 / 3840 / 2160:
+                big_area_count += 1
             if left > 0 and top > 0 and left + width < box.width and top + height < box.height:
-                logger.debug(f"{box_name} Area of connected component {i}: {area} pixels {width}x{height}")
+                self.logger.debug(f"{box_name} Area of connected component {i}: {area} pixels {width}x{height}")
                 if 20 / 3840 / 2160 <= area / self.task.frame.shape[0] / self.task.frame.shape[
                     1] <= 60 / 3840 / 2160 and abs(width - height) / (width + height) < 0.1:
                     has_dot = True
                 elif 150 / 3840 / 2160 <= area / self.task.frame.shape[0] / self.task.frame.shape[
                     1] <= 500 / 3840 / 2160:
                     number_count += 1
-        logger.debug(f"{box_name} number_count {number_count} has_dot {has_dot}")
+        self.logger.debug(f"{box_name} number_count {number_count} big_count {big_area_count} has_dot {has_dot}")
+        if big_area_count > 5:
+            return True
         return not (has_dot and 2 <= number_count <= 3)
 
         # # dot = self.task.find_one('edge_echo_cd_dot', box=box, canny_lower=40, canny_higher=80, threshold=0.5)
         #
         # if dot is None:
-        #     logger.debug(f'find dot not exist cost : {time.time() - start}')
+        #     self.logger.debug(f'find dot not exist cost : {time.time() - start}')
         #     return True
         # else:
-        #     logger.debug(f'find dot exist cost : {time.time() - start} {dot}')
+        #     self.logger.debug(f'find dot exist cost : {time.time() - start} {dot}')
         #     return False
 
     def __repr__(self):
         return self.__class__.__name__ + ('_T' if self.is_current_char else '_F')
 
     def switch_next_char(self, post_action=None):
+        self.liberation_available_mark = self.liberation_available()
         self.last_switch_time = self.task.switch_next_char(self, post_action=post_action)
 
     def sleep(self, sec):
         if sec > 0:
             self.task.sleep_check_combat(sec + self.sleep_adjust)
 
-    def click_resonance(self, post_sleep=0):
+    def click_resonance(self, post_sleep=0, has_animation=False):
         clicked = None
-        logger.debug(f'click_resonance start')
-        start = 0
+        self.logger.debug(f'click_resonance start')
+        last_click = 0
+        last_op = 'click'
+        resonance_click_time = 0
+        animated = False
         while True:
-            self.check_combat()
+            if has_animation:
+                if not self.task.in_team()[0]:
+                    animated = True
+                    if time.time() - resonance_click_time > 6:
+                        self.logger.error(f'resonance animation too long, breaking')
+                        self.check_combat()
+                self.task.next_frame()
+            else:
+                self.check_combat()
             current_resonance = self.current_resonance()
             if not self.resonance_available(current_resonance):
                 break
-            logger.debug(f'click_resonance resonance_available click')
+            self.logger.debug(f'click_resonance resonance_available click')
             now = time.time()
-            if now - start > 0.1:
-                if current_resonance == 0:
+            if now - last_click > 0.1:
+                if current_resonance == 0 or last_op != 'click':
                     self.task.click()
+                    last_op = 'click'
                 else:
-                    clicked = True
+                    if resonance_click_time == 0:
+                        clicked = True
+                        resonance_click_time = now
+                    last_op = 'resonance'
                     self.update_res_cd()
                     self.send_resonance_key()
-                start = now
+                last_click = now
             self.task.next_frame()
         if clicked:
             self.sleep(post_sleep)
-        logger.debug(f'click_resonance end')
-        return clicked
+        self.logger.debug(f'click_resonance end')
+        duration = time.time() - resonance_click_time if resonance_click_time != 0 else 0
+        return clicked, duration, animated
 
-    def send_resonance_key(self, post_sleep=0):
-        self.task.send_key(self.task.config.get('Resonance Key'))
+    def send_resonance_key(self, post_sleep=0, interval=-1):
+        self.task.send_key(self.task.config.get('Resonance Key'), interval=interval)
         self.sleep(post_sleep)
 
     def update_res_cd(self):
@@ -166,7 +182,7 @@ class BaseChar:
             self.last_echo = time.time()
 
     def click_echo(self, duration=0, sleep_time=0):
-        logger.debug(f'click_echo start')
+        self.logger.debug(f'click_echo start')
         clicked = False
         start = 0
         last_click = 0
@@ -179,7 +195,7 @@ class BaseChar:
             if duration > 0 and start != 0:
                 if now - start > duration:
                     break
-            logger.debug(f'click_echo echo_available click')
+            self.logger.debug(f'click_echo echo_available click')
             if now - last_click > 0.1:
                 if current == 0:
                     self.task.click()
@@ -191,19 +207,19 @@ class BaseChar:
                     self.task.send_key(self.get_echo_key())
                     last_click = now
             self.task.next_frame()
-        logger.debug(f'click_echo end {clicked}')
+        self.logger.debug(f'click_echo end {clicked}')
         return clicked
 
     def check_combat(self):
         self.task.check_combat()
 
     def click_liberation(self, wait_end=True):
-        logger.debug(f'click_liberation start')
+        self.logger.debug(f'click_liberation start')
         start = time.time()
         last_click = 0
         while self.liberation_available():
             self.check_combat()
-            logger.debug(f'click_liberation liberation_available click')
+            self.logger.debug(f'click_liberation liberation_available click')
             now = time.time()
             if now - last_click > 0.1:
                 self.task.send_key(self.get_liberation_key())
@@ -218,10 +234,10 @@ class BaseChar:
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
             self.task.next_frame()
         self.task.in_liberation = False
-        if time != 0:
-            liberation_time = f'{(time.time() - last_click):.2f}'
+        if last_click != 0:
+            liberation_time = f'{(time.time() - start):.2f}'
             self.task.info[f'{self} liberation time'] = liberation_time
-            logger.debug(f'click_liberation end {liberation_time}')
+            self.logger.debug(f'click_liberation end {liberation_time}')
         return last_click != 0
 
     def get_liberation_key(self):
@@ -295,7 +311,7 @@ class BaseChar:
             for match in char_lib_check_marks:
                 mark = self.task.find_one(match, box=box, canny_lower=10, canny_higher=80, threshold=0.6)
                 if mark is not None:
-                    logger.debug(f'{self.__repr__()} liberation ready by checking mark {mark}')
+                    self.logger.debug(f'{self.__repr__()} liberation ready by checking mark {mark}')
                     self.liberation_available_mark = True
                     return True
 
@@ -309,17 +325,17 @@ class BaseChar:
             self.sleep(interval)
 
     def normal_attack(self):
-        logger.debug('normal attack')
+        self.logger.debug('normal attack')
         self.check_combat()
         self.task.click()
 
     def heavy_attack(self):
         self.check_combat()
-        logger.debug('heavy attack start')
+        self.logger.debug('heavy attack start')
         self.task.mouse_down()
         self.sleep(0.6)
         self.task.mouse_up()
-        logger.debug('heavy attack end')
+        self.logger.debug('heavy attack end')
 
     def current_resonance(self):
         return self.task.calculate_color_percentage(white_color,

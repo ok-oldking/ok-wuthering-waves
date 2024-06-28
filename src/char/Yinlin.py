@@ -1,8 +1,4 @@
-from ok.logging.Logger import get_logger
-
 from src.char.BaseChar import BaseChar
-
-logger = get_logger(__name__)
 
 
 class Yinlin(BaseChar):
