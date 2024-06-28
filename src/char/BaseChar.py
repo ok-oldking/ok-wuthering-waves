@@ -1,7 +1,10 @@
 import time
 from enum import IntEnum, StrEnum
 
-from ok.color.Color import white_color, calculate_colorfulness, get_connected_area_by_color
+import cv2
+import numpy as np
+
+from ok.color.Color import white_color, get_connected_area_by_color, color_range_to_bound
 from ok.logging.Logger import get_logger
 
 
@@ -156,8 +159,8 @@ class BaseChar:
                     if resonance_click_time == 0:
                         clicked = True
                         resonance_click_time = now
+                        self.update_res_cd()
                     last_op = 'resonance'
-                    self.update_res_cd()
                     self.send_resonance_key()
                 last_click = now
             self.task.next_frame()
@@ -247,22 +250,39 @@ class BaseChar:
         return self.task.config['Echo Key']
 
     def get_switch_priority(self, current_char, has_intro):
-        if time.time() - self.last_switch_time < 1:
+        priority = self.do_get_switch_priority(current_char, has_intro)
+        if priority != Priority.MAX and time.time() - self.last_switch_time < 0.9:
             return Priority.SWITCH_CD  # switch cd
         else:
-            return self.do_get_switch_priority(current_char, has_intro)
+            return priority
 
     def do_get_switch_priority(self, current_char, has_intro=False):
         priority = 0
-        if self.liberation_available():
-            priority += 1
-        if self.resonance_available():
-            priority += 1
-        if self.is_forte_full():
-            priority += 1
+        if self.count_liberation_priority() and self.liberation_available():
+            priority += self.count_liberation_priority()
+        if self.count_resonance_priority() and self.resonance_available():
+            priority += self.count_resonance_priority()
+        if self.count_forte_priority() and self.is_forte_full():
+            priority += self.count_forte_priority()
         if priority > 0:
             priority += Priority.SKILL_AVAILABLE
         return priority
+
+    @staticmethod
+    def count_liberation_priority(self):
+        return 1
+
+    @staticmethod
+    def count_resonance_priority(self):
+        return 1
+
+    @staticmethod
+    def count_echo_priority(self):
+        return 1
+
+    @staticmethod
+    def count_forte_priority():
+        return 0
 
     def resonance_available(self, current=None):
         if self.is_current_char:
@@ -279,12 +299,19 @@ class BaseChar:
             return time.time() - self.last_echo > self.echo_cd
 
     def is_con_full(self):
-        box = self.task.box_of_screen(1540 / 3840, 2007 / 2160, 1545 / 3840, 2010 / 2160, name='con_full')
-        colorfulness = calculate_colorfulness(self.task.frame, box)
-        box.confidence = colorfulness
+        box = self.task.box_of_screen(1422 / 3840, 1939 / 2160, 1566 / 3840, 2076 / 2160, name='con_full')
+        box.confidence = 0
+        for color_range in con_colors:
+            rings = self.count_rings(box.crop_frame(self.task.frame), color_range,
+                                     2000 / 3840 / 2160 * self.task.screen_width * self.task.screen_height)
+            if rings == 1:
+                self.logger.info(
+                    f'is_con_full found a ring of colors {color_range} box.width:{box.width} {self.task.screen_width, self.task.screen_height}')
+                box.confidence = 1
+                return True
+            self.logger.debug(
+                f'is_con_full found {rings} rings of colors {color_range} {box.width, box.height} {self.task.screen_width, self.task.screen_height}')
         self.task.draw_boxes('con_full', box)
-        if colorfulness > 0.1:
-            return True
 
     def is_forte_full(self):
         box = self.task.box_of_screen(2251 / 3840, 1993 / 2160, 2271 / 3840, 2016 / 2160, name='forte_full')
@@ -355,6 +382,72 @@ class BaseChar:
         return self.task.calculate_color_percentage(white_color,
                                                     self.task.get_box_by_name('edge_levitator'))
 
+    def count_rings(self, image, color_range, min_area):
+        # Define the color range
+        lower_bound, upper_bound = color_range_to_bound(color_range)
+
+        image_with_contours = image.copy()
+
+        # Create a binary mask
+        mask = cv2.inRange(image, lower_bound, upper_bound)
+
+        # Find connected components
+        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
+
+        colors = [
+            (0, 255, 0),  # Green
+            (0, 0, 255),  # Red
+            (255, 0, 0),  # Blue
+            (0, 255, 255),  # Yellow
+            (255, 0, 255),  # Magenta
+            (255, 255, 0)  # Cyan
+        ]
+
+        # Function to check if a component forms a ring
+        def is_ring(component_mask):
+            # Find contours
+            contours, _ = cv2.findContours(component_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if len(contours) != 1:
+                return False
+            contour = contours[0]
+
+            # Check if the contour is closed by checking if the start and end points are the same
+            # if cv2.arcLength(contour, True) > 0:
+            #     return True
+            # Approximate the contour with polygons.
+            epsilon = 0.05 * cv2.arcLength(contours[0], True)
+            approx = cv2.approxPolyDP(contours[0], epsilon, True)
+
+            # Check if the polygon is closed (has no gaps) and has a reasonable number of vertices for a ring.
+            if not cv2.isContourConvex(approx) or len(approx) < 4:
+                return False
+
+            # All conditions met, likely a close ring.
+            return True
+
+        # Iterate over each component
+        ring_count = 0
+        for label in range(1, num_labels):
+            x, y, width, height, area = stats[label, :5]
+            bounding_box_area = width * height
+            if bounding_box_area >= min_area:
+                component_mask = (labels == label).astype(np.uint8) * 255
+                contours, _ = cv2.findContours(component_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                # Select a color from the list based on the label index
+                color = colors[label % len(colors)]
+                cv2.drawContours(image_with_contours, contours, -1, color, 2)  # Draw contour
+                if is_ring(component_mask):
+                    ring_count += 1
+
+        # Save or display the image with contours
+        cv2.imwrite(f'test\\test_{self}_{ring_count}_{time.time()}.jpg', image_with_contours)
+        # Alternatively, to display the image
+        # cv2.imshow('Image with Contours', image_with_contours)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+
+        return ring_count
+
 
 forte_white_color = {
     'r': (244, 255),  # Red range
@@ -367,3 +460,36 @@ dot_color = {
     'g': (250, 255),  # Green range
     'b': (250, 255)  # Blue range
 }
+
+con_colors = [
+    {
+        'r': (205, 235),  # Red range
+        'g': (190, 222),  # Green range for yellow spectro
+        'b': (90, 130)  # Blue range
+    },
+    {
+        'r': (150, 180),  # Red range
+        'g': (95, 120),  # Green range for purple electric
+        'b': (215, 245)  # Blue range
+    },
+    {
+        'r': (200, 230),  # Red range
+        'g': (100, 130),  # Green range    for red fire
+        'b': (75, 105)  # Blue range
+    },
+    {
+        'r': (60, 95),  # Red range
+        'g': (150, 180),  # Green range    for blue ice
+        'b': (210, 245)  # Blue range
+    },
+    {
+        'r': (70, 110),  # Red range
+        'g': (215, 250),  # Green range    for green wind
+        'b': (155, 190)  # Blue range
+    },
+    {
+        'r': (190, 220),  # Red range
+        'g': (65, 105),  # Green range    for havoc
+        'b': (145, 175)  # Blue range
+    }
+]

@@ -1,4 +1,4 @@
-from src.char.BaseChar import BaseChar
+from src.char.BaseChar import BaseChar, Priority
 
 
 class Verina(BaseChar):
@@ -14,6 +14,6 @@ class Verina(BaseChar):
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False):
         if has_intro:
-            return super().do_get_switch_priority(current_char, has_intro) - 5
+            return Priority.MIN
         else:
-            return super().do_get_switch_priority(current_char, has_intro) - 1
+            return super().do_get_switch_priority(current_char, has_intro)
