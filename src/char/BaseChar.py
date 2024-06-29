@@ -50,7 +50,7 @@ class BaseChar:
         self.logger = get_logger(self.name)
         self.full_ring_area = 0
         self.config = {"_full_ring_area": 0, "_ring_color_index": -1}
-        if type(self) is BaseChar:
+        if type(self) is not BaseChar:
             self.config = Config(self.config,
                                  self.name)
         self.current_con = 0
@@ -82,17 +82,14 @@ class BaseChar:
             f'{self}_down_finish_{(time.time() - start):.2f}_f:{self.is_forte_full()}_e:{self.resonance_available()}_r:{self.echo_available()}_q:{self.liberation_available()}_i{self.has_intro}')
 
     def do_perform(self):
-        self.click_liberation()
+        self.click_liberation(con_less_than=81)
         if self.click_resonance()[0]:
             return self.switch_next_char()
         if self.click_echo():
             return self.switch_next_char()
         self.switch_next_char()
 
-    def is_available(self, percent, box_name):
-        if percent == 0:
-            return True
-
+    def has_cd(self, box_name):
         box = self.task.get_box_by_name(f'box_{box_name}')
         cropped = box.crop_frame(self.task.frame)
         num_labels, stats = get_connected_area_by_color(cropped, dot_color, connectivity=8)
@@ -109,26 +106,35 @@ class BaseChar:
             if left > 0 and top > 0 and left + width < box.width and top + height < box.height:
                 self.logger.debug(f"{box_name} Area of connected component {i}: {area} pixels {width}x{height}")
                 if 20 / 3840 / 2160 <= area / self.task.frame.shape[0] / self.task.frame.shape[
-                    1] <= 60 / 3840 / 2160 and abs(width - height) / (width + height) < 0.1:
+                    1] <= 60 / 3840 / 2160 and abs(width - height) / (width + height) < 0.3:
                     has_dot = True
-                elif 35 / 2160 <= height / self.task.screen_height <= 45 / 2160 and 5 / 2160 <= width / self.task.screen_height <= 35 / 2160:
+                elif 25 / 2160 <= height / self.task.screen_height <= 45 / 2160 and 5 / 2160 <= width / self.task.screen_height <= 35 / 2160:
                     number_count += 1
             else:
                 invalid_count += 1
-        available = invalid_count > 0 or not (has_dot and 2 <= number_count <= 3)
+        has_cd = invalid_count == 0 and (has_dot and 2 <= number_count <= 3)
         if self.task.debug:
-            msg = f"{self}_{available}_{box_name} number_count {number_count} big_count {big_area_count} invalid_count {invalid_count} has_dot {has_dot}"
-            self.task.screenshot(msg, frame=cropped)
+            msg = f"{self}_{has_cd}_{box_name} number_count {number_count} big_count {big_area_count} invalid_count {invalid_count} has_dot {has_dot}"
+            # self.task.screenshot(msg, frame=cropped)
             self.logger.debug(msg)
+        return has_cd
 
-        return available
+    def is_available(self, percent, box_name):
+        return percent == 0 or not self.has_cd(box_name)
+
+    def switch_out(self):
+        self.is_current_char = False
+        if self.current_con == 1:
+            self.logger.info(f'switch_out at full con set current_con to 0')
+            self.current_con = 0
 
     def __repr__(self):
         return self.__class__.__name__ + ('_T' if self.is_current_char else '_F')
 
-    def switch_next_char(self, post_action=None):
+    def switch_next_char(self, post_action=None, free_intro=False, target_low_con=False):
         self.liberation_available_mark = self.liberation_available()
-        self.last_switch_time = self.task.switch_next_char(self, post_action=post_action)
+        self.last_switch_time = self.task.switch_next_char(self, post_action=post_action, free_intro=free_intro,
+                                                           target_low_con=target_low_con)
 
     def sleep(self, sec):
         if sec > 0:
@@ -223,10 +229,18 @@ class BaseChar:
     def check_combat(self):
         self.task.check_combat()
 
-    def click_liberation(self, wait_end=True):
+    def reset_state(self):
+        self.has_intro = False
+
+    def click_liberation(self, wait_end=True, con_less_than=-1):
+        if con_less_than > 0:
+            if self.get_current_con() * 100 > con_less_than:
+                return False
+
         self.logger.debug(f'click_liberation start')
         start = time.time()
         last_click = 0
+        clicked = False
         while self.liberation_available():
             self.check_combat()
             self.logger.debug(f'click_liberation liberation_available click')
@@ -240,15 +254,16 @@ class BaseChar:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
         while self.task.in_liberation and not self.task.in_team()[0]:
+            clicked = True
             if time.time() - start > 5:
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
             self.task.next_frame()
         self.task.in_liberation = False
-        if last_click != 0:
+        if clicked:
             liberation_time = f'{(time.time() - start):.2f}'
             self.task.info[f'{self} liberation time'] = liberation_time
             self.logger.debug(f'click_liberation end {liberation_time}')
-        return last_click != 0
+        return clicked
 
     def get_liberation_key(self):
         return self.task.config['Liberation Key']
@@ -287,9 +302,11 @@ class BaseChar:
     def count_forte_priority(self):
         return 0
 
-    def resonance_available(self, current=None):
+    def resonance_available(self, current=None, check_ready=False):
         if self.is_current_char:
             snap = self.current_resonance() if current is None else current
+            if check_ready and snap == 0:
+                return False
             return self.is_available(snap, 'resonance')
         elif self.res_cd > 0:
             return time.time() - self.last_res > self.res_cd
@@ -302,6 +319,9 @@ class BaseChar:
             return time.time() - self.last_echo > self.echo_cd
 
     def is_con_full(self):
+        return self.get_current_con() == 1
+
+    def get_current_con(self):
         box = self.task.box_of_screen(1422 / 3840, 1939 / 2160, 1566 / 3840, 2076 / 2160, name='con_full')
         box.confidence = 0
 
@@ -310,29 +330,40 @@ class BaseChar:
         max_is_full = False
         color_index = -1
         target_index = self.config.get('_ring_color_index', -1)
+        cropped = box.crop_frame(self.task.frame)
         for i in range(len(con_colors)):
             if target_index != -1 and i != target_index:
-                break
+                continue
             color_range = con_colors[i]
-            area, is_full = self.count_rings(box.crop_frame(self.task.frame), color_range,
-                                             2000 / 3840 / 2160 * self.task.screen_width * self.task.screen_height)
-            if area > max_area:
+            area, is_full = self.count_rings(cropped, color_range,
+                                             1500 / 3840 / 2160 * self.task.screen_width * self.task.screen_height)
+            self.logger.debug(f'is_con_full test color_range {color_range} {area, is_full}')
+            if is_full:
                 max_is_full = is_full
-                max_area = int(area)
                 color_index = i
+            if area > max_area:
+                max_area = int(area)
         if max_is_full:
+            self.logger.info(
+                f'is_con_full found a full ring {self.config.get("_full_ring_area", 0)} -> {max_area}  {color_index}')
             self.config['_full_ring_area'] = max_area
             self.config['_ring_color_index'] = color_index
+            self.logger.info(
+                f'is_con_full2 found a full ring {self.config.get("_full_ring_area", 0)} -> {max_area}  {color_index}')
         if self.config.get('_full_ring_area', 0) > 0:
             percent = max_area / self.config['_full_ring_area']
-        if max_area > 0:
-            self.logger.info(
-                f'is_con_full found a ring {percent} {color_index} box.width:{box.width} {self.task.screen_width, self.task.screen_height}')
+        self.logger.info(
+            f'is_con_full {self} {percent} {max_area}/{self.config.get("_full_ring_area", 0)} {color_index} ')
+        if self.task.debug:
+            self.task.screenshot(
+                f'is_con_full {self} {percent} {max_area}/{self.config.get("_full_ring_area", 0)} {color_index} ',
+                cropped)
         box.confidence = percent
         self.current_con = percent
-        if percent >= 1:
-            return True
-        self.task.draw_boxes('con_full', box)
+        self.task.draw_boxes(f'is_con_full_{self}', box)
+        if percent > 1:
+            percent = 1
+        return percent
 
     def is_forte_full(self):
         box = self.task.box_of_screen(2251 / 3840, 1993 / 2160, 2271 / 3840, 2016 / 2160, name='forte_full')
@@ -449,20 +480,20 @@ class BaseChar:
         for label in range(1, num_labels):
             x, y, width, height, area = stats[label, :5]
             bounding_box_area = width * height
+            component_mask = (labels == label).astype(np.uint8) * 255
+            contours, _ = cv2.findContours(component_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            color = colors[label % len(colors)]
+            cv2.drawContours(image_with_contours, contours, -1, color, 2)
             if bounding_box_area >= min_area:
-                component_mask = (labels == label).astype(np.uint8) * 255
-                contours, _ = cv2.findContours(component_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 # Select a color from the list based on the label index
-                color = colors[label % len(colors)]
-                cv2.drawContours(image_with_contours, contours, -1, color, 2)  # Draw contour
                 if is_full_ring(component_mask):
                     is_full = True
                 the_area = area
                 ring_count += 1
 
-        # if ring_count == 1:
-        #     # Save or display the image with contours
-        #     cv2.imwrite(f'test\\test_{self}_{the_ring_percent:.2f}_{time.time()}.jpg', image_with_contours)
+        if self.task.debug:
+            # Save or display the image with contours
+            cv2.imwrite(f'test\\test_{self}_{is_full}_{the_area}_{lower_bound}.jpg', image_with_contours)
         if ring_count > 1:
             is_full = False
             the_area = 0
@@ -490,9 +521,9 @@ con_colors = [
         'b': (90, 130)
     },
     {
-        'r': (150, 180),  # Red range
-        'g': (95, 120),  # Green range for purple electric
-        'b': (215, 245)  # Blue range
+        'r': (150, 190),  # Red range
+        'g': (95, 140),  # Green range for purple electric
+        'b': (210, 249)  # Blue range
     },
     {
         'r': (200, 230),  # Red range
