@@ -46,7 +46,7 @@ class CombatCheck:
             return self.has_count_down
 
     def check_boss(self):
-        current = self.keep_boss_text_white()
+        current, area = self.keep_boss_text_white()
         res = cv2.matchTemplate(current, self.boss_lv_edge, cv2.TM_CCOEFF_NORMED)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
         if max_val < 0.8:
@@ -139,15 +139,24 @@ class CombatCheck:
         texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160),
                          target_height=720)
         boss_lv_texts = find_boxes_by_name(texts,
-                                           [re.compile(r'(?i)^L[a-zA-Z].*')])
+                                           [re.compile(r'(?i)^L[V].*')])
         if len(boss_lv_texts) > 0:
             logger.debug(f'boss_lv_texts: {boss_lv_texts}')
             self.boss_lv_box = boss_lv_texts[0]
-            self.boss_lv_edge = self.keep_boss_text_white()
+            self.boss_lv_edge, area = self.keep_boss_text_white()
+            if self.boss_lv_edge is None:
+                self.boss_lv_box = None
+                return False
             return True
 
     def keep_boss_text_white(self):
-        return keep_pixels_in_color_range(self.boss_lv_box.crop_frame(self.frame), white_color)
+        image, area = keep_pixels_in_color_range(self.boss_lv_box.crop_frame(self.frame), white_color)
+        if area / image.shape[0] * image.shape[1] < 0.05:
+            image, area = keep_pixels_in_color_range(self.boss_lv_box.crop_frame(self.frame), boss_orange_text_color)
+            if area / image.shape[0] * image.shape[1] < 0.05:
+                logger.error(f'keep_boss_text_white cant find text with the correct color')
+                return None, 0
+        return image, area
 
 
 enemy_health_color_red = {
@@ -160,6 +169,12 @@ enemy_health_color_black = {
     'r': (10, 55),  # Red range
     'g': (28, 50),  # Green range
     'b': (18, 70)  # Blue range
+}
+
+boss_orange_text_color = {
+    'r': (218, 218),  # Red range
+    'g': (178, 178),  # Green range
+    'b': (68, 68)  # Blue range
 }
 
 boss_health_color = {

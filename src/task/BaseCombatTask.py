@@ -43,15 +43,17 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         self.reset_to_false()
         raise NotInCombatException(message)
 
-    def switch_next_char(self, current_char, post_action=None):
+    def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
         max_priority = Priority.MIN
         switch_to = None
-        has_intro = current_char.is_con_full()
+        has_intro = free_intro if free_intro else current_char.is_con_full()
         for i, char in enumerate(self.chars):
             if char == current_char:
                 priority = Priority.CURRENT_CHAR
             else:
                 priority = char.get_switch_priority(current_char, has_intro)
+                if target_low_con:
+                    priority += (1 - char.current_con) * 100
                 logger.info(f'switch priority: {char} {priority}')
             if priority > max_priority:
                 max_priority = priority
@@ -59,9 +61,9 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         if switch_to == current_char:
             self.click()
             logger.warning(f"can't find next char to switch to, maybe switching too fast click and wait")
-            return self.switch_next_char(current_char, post_action)
+            return self.switch_next_char(current_char, post_action, free_intro, target_low_con)
         switch_to.has_intro = has_intro
-        current_char.is_current_char = False
+        current_char.switch_out()
         logger.info(f'switch {current_char} -> {switch_to} has_intro {has_intro}')
         last_click = 0
         start = time.time()
@@ -76,6 +78,8 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to}')
                 self.raise_not_in_combat('not in team while switching chars')
             if current_index != switch_to.index:
+                has_intro = free_intro if free_intro else current_char.is_con_full()
+                switch_to.has_intro = has_intro
                 if now - start > 3:
                     if self.debug:
                         self.screenshot(f'switch_not_detected_{current_char}_to_{switch_to}')
@@ -138,19 +142,20 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         self.log_info('load chars')
         char = get_char_by_pos(self, self.get_box_by_name('box_char_1'), 0)
         old_char = safe_get(self.chars, 0)
-        if (type(char) is BaseChar and old_char is None) or type(char) is not BaseChar:
+        if self.should_update(char, old_char):
             self.chars[0] = char
             logger.info(f'update char1 to {char.name} {type(char)} {type(char) is not BaseChar}')
 
         char = get_char_by_pos(self, self.get_box_by_name('box_char_2'), 1)
         old_char = safe_get(self.chars, 1)
-        if (type(char) is BaseChar and old_char is None) or type(char) is not BaseChar:
+        if self.should_update(char, old_char):
             self.chars[1] = char
+            char.reset_state()
             logger.info(f'update char2 to {char.name}')
         if count == 3:
             char = get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2)
             old_char = safe_get(self.chars, 2)
-            if (type(char) is BaseChar and old_char is None) or type(char) is not BaseChar:
+            if self.should_update(char, old_char):
                 if len(self.chars) == 3:
                     self.chars[2] = char
                 else:
@@ -162,12 +167,17 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             logger.info(f'team size changed to 2')
 
         for char in self.chars:
+            char.reset_state()
             if char.index == current_index:
                 char.is_current_char = True
             else:
                 char.is_current_char = False
 
         self.log_info(f'load chars success {self.chars}')
+
+    @staticmethod
+    def should_update(char, old_char):
+        return (type(char) is BaseChar and old_char is None) or (type(char) is not BaseChar and old_char != char)
 
     def box_resonance(self):
         return self.get_box_by_name('box_resonance_cd')

@@ -9,6 +9,7 @@ class Verina(BaseChar):
         self.click_liberation()
         if not self.click_resonance()[0]:
             self.click_echo()
+            self.normal_attack()
             self.heavy_attack()
         self.switch_next_char()
 
