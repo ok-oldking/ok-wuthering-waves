@@ -46,7 +46,17 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
         max_priority = Priority.MIN
         switch_to = None
-        has_intro = free_intro if free_intro else current_char.is_con_full()
+        has_intro = free_intro
+        if not has_intro:
+            current_con = current_char.get_current_con()
+            if current_con > 0.8 and current_con != 1:
+                logger.info(f'switch_next_char current_con {current_con:.2f} almost full, sleep and check again')
+                self.sleep(0.1)
+                self.next_frame()
+                current_con = current_char.get_current_con()
+            if current_con == 1:
+                has_intro = True
+
         for i, char in enumerate(self.chars):
             if char == current_char:
                 priority = Priority.CURRENT_CHAR
@@ -54,7 +64,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                 priority = char.get_switch_priority(current_char, has_intro)
                 if target_low_con:
                     priority += (1 - char.current_con) * 100
-                logger.info(f'switch priority: {char} {priority}')
+                logger.info(f'switch_next_char priority: {char} {priority}')
             if priority > max_priority:
                 max_priority = priority
                 switch_to = char
@@ -64,7 +74,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             return self.switch_next_char(current_char, post_action, free_intro, target_low_con)
         switch_to.has_intro = has_intro
         current_char.switch_out()
-        logger.info(f'switch {current_char} -> {switch_to} has_intro {has_intro}')
+        logger.info(f'switch_next_char {current_char} -> {switch_to} has_intro {has_intro}')
         last_click = 0
         start = time.time()
         while True:
@@ -150,7 +160,6 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         old_char = safe_get(self.chars, 1)
         if self.should_update(char, old_char):
             self.chars[1] = char
-            char.reset_state()
             logger.info(f'update char2 to {char.name}')
         if count == 3:
             char = get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2)
@@ -194,7 +203,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         c2 = self.find_one('char_2_text', use_gray_scale=True)
         c3 = self.find_one('char_3_text', use_gray_scale=True)
         arr = [c1, c2, c3]
-        logger.debug(f'in_team check {arr} time: {(time.time() - start):.3f}s')
+        # logger.debug(f'in_team check {arr} time: {(time.time() - start):.3f}s')
         current = -1
         exist_count = 0
         for i in range(len(arr)):
