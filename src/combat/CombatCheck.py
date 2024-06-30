@@ -47,14 +47,14 @@ class CombatCheck:
 
     def check_boss(self):
         current, area = self.keep_boss_text_white()
-        res = cv2.matchTemplate(current, self.boss_lv_edge, cv2.TM_CCOEFF_NORMED)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+        max_val = 0
+        if current is not None:
+            res = cv2.matchTemplate(current, self.boss_lv_edge, cv2.TM_CCOEFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
         if max_val < 0.8:
-            self.screenshot_boss_lv(current, f'boss lv not detected by edge{max_val}')
-            logger.debug(f'boss lv not detected by edge {res}')
+            self.screenshot_boss_lv(current, f'boss lv not detected by edge {max_val}')
+            logger.debug(f'boss lv not detected by edge')
             if not self.find_boss_lv_text():  # double check by text
-                self.boss_lv_box.confidence = max_val
-                self.draw_boxes('enemy_health_bar_red', self.boss_lv_box, color='red')
                 if not (self.in_team()[0] and self.check_health_bar()) and not self.check_count_down():
                     self.screenshot_boss_lv(current, 'out_of combat boss_health disappeared')
                     logger.info(f'out of combat because of boss_health disappeared, res:{max_val} {res}')
@@ -72,10 +72,11 @@ class CombatCheck:
 
     def screenshot_boss_lv(self, current, name):
         if self.debug:
-            self.frame[self.boss_lv_box.y:self.boss_lv_box.y + self.boss_lv_box.height,
-            self.boss_lv_box.x:self.boss_lv_box.x + self.boss_lv_box.width] = current
-            x, y, w, h = self.boss_lv_box.x, self.boss_lv_box.height + 50 + self.boss_lv_box.y, self.boss_lv_box.width, self.boss_lv_box.height
-            self.frame[y:y + h, x:x + w] = self.boss_lv_edge
+            if self.boss_lv_box is not None and self.boss_lv_edge is not None:
+                self.frame[self.boss_lv_box.y:self.boss_lv_box.y + self.boss_lv_box.height,
+                self.boss_lv_box.x:self.boss_lv_box.x + self.boss_lv_box.width] = current
+                x, y, w, h = self.boss_lv_box.x, self.boss_lv_box.height + 50 + self.boss_lv_box.y, self.boss_lv_box.width, self.boss_lv_box.height
+                self.frame[y:y + h, x:x + w] = self.boss_lv_edge
             self.screenshot(name)
 
     def in_combat(self):
@@ -150,12 +151,16 @@ class CombatCheck:
             return True
 
     def keep_boss_text_white(self):
-        image, area = keep_pixels_in_color_range(self.boss_lv_box.crop_frame(self.frame), white_color)
+        corpped = self.boss_lv_box.crop_frame(self.frame)
+        image, area = keep_pixels_in_color_range(corpped, white_color)
         if area / image.shape[0] * image.shape[1] < 0.05:
-            image, area = keep_pixels_in_color_range(self.boss_lv_box.crop_frame(self.frame), boss_orange_text_color)
+            image, area = keep_pixels_in_color_range(corpped, boss_orange_text_color)
             if area / image.shape[0] * image.shape[1] < 0.05:
-                logger.error(f'keep_boss_text_white cant find text with the correct color')
-                return None, 0
+                image, area = keep_pixels_in_color_range(corpped,
+                                                         boss_red_text_color)
+                if area / image.shape[0] * image.shape[1] < 0.05:
+                    logger.error(f'keep_boss_text_white cant find text with the correct color')
+                    return None, 0
         return image, area
 
 
@@ -175,6 +180,12 @@ boss_orange_text_color = {
     'r': (218, 218),  # Red range
     'g': (178, 178),  # Green range
     'b': (68, 68)  # Blue range
+}
+
+boss_red_text_color = {
+    'r': (226, 226),  # Red range
+    'g': (82, 82),  # Green range
+    'b': (76, 76)  # Blue range
 }
 
 boss_health_color = {
