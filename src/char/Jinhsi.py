@@ -47,20 +47,28 @@ class Jinhsi(BaseChar):
         return 0
 
     def count_echo_priority(self):
-        return 8
+        return 0
 
     def count_liberation_priority(self):
         return 0
 
     def handle_incarnation(self):
         self.incarnation = False
+        self.logger.info(f'handle_incarnation click_resonance start')
         start = time.time()
-        # self.task.screenshot(f'handle_incarnation start')
+        liberated = False
         while self.has_cd('resonance'):
             self.task.click(interval=0.1)
-            self.check_combat()
-        self.task.screenshot(f'handle_incarnation click_resonance start')
-        self.click_resonance(has_animation=True)
+            if time.time() - start > 1.8 and not liberated:
+                liberated = True
+                if self.click_liberation():
+                    self.task.click()
+                    continue
+            if not liberated or not self.task.in_team()[0]:
+                self.check_combat()
+
+        # self.task.screenshot(f'handle_incarnation click_resonance start')
+        self.click_resonance(has_animation=True, send_click=True)
         if not self.click_echo():
             self.task.click()
         # self.task.screenshot(f'handle_incarnation click_resonance end {time.time() - start}')
@@ -81,13 +89,12 @@ class Jinhsi(BaseChar):
             self.check_combat()
         if time.time() - start < 1.2:
             self.logger.info(f'handle_intro fly e in_cd {time.time() - start}')
-            if self.click_liberation():
-                return self.handle_intro()
-            else:
-                self.incarnation_cd = True
-                self.click_echo()
-                return
+            self.incarnation_cd = True
+            if not self.click_echo():
+                self.task.click()
+            return
         # self.task.screenshot(f'handle_intro end {time.time() - start}')
+        self.click_echo()
         self.logger.info(f'handle_intro end {time.time() - start}')
         self.incarnation = True
         self.incarnation_cd = False
