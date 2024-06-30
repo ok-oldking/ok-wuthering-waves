@@ -57,7 +57,7 @@ class CombatCheck:
             if not self.find_boss_lv_text():  # double check by text
                 if not (self.in_team()[0] and self.check_health_bar()) and not self.check_count_down():
                     self.screenshot_boss_lv(current, 'out_of combat boss_health disappeared')
-                    logger.info(f'out of combat because of boss_health disappeared, res:{max_val} {res}')
+                    logger.info(f'out of combat because of boss_health disappeared, res:{max_val}')
                     return self.reset_to_false()
                 else:
                     self.boss_lv_edge = None
@@ -72,7 +72,7 @@ class CombatCheck:
 
     def screenshot_boss_lv(self, current, name):
         if self.debug:
-            if self.boss_lv_box is not None and self.boss_lv_edge is not None:
+            if self.boss_lv_box is not None and self.boss_lv_edge is not None and current is not None:
                 self.frame[self.boss_lv_box.y:self.boss_lv_box.y + self.boss_lv_box.height,
                 self.boss_lv_box.x:self.boss_lv_box.x + self.boss_lv_box.width] = current
                 x, y, w, h = self.boss_lv_box.x, self.boss_lv_box.height + 50 + self.boss_lv_box.y, self.boss_lv_box.width, self.boss_lv_box.height
