@@ -5,19 +5,20 @@ class Yinlin(BaseChar):
     def do_perform(self):
         if self.has_intro:
             self.sleep(0.4)
+        liberation = self.click_liberation()
         if self.is_forte_full():
-            if not self.has_intro:
+            if not self.has_intro and not liberation:
                 self.normal_attack()
             self.heavy_attack()
             self.sleep(0.4)
-        elif self.click_resonance()[0]:
+        elif self.click_resonance(send_click=False)[0]:
             self.sleep(0.1)
         elif self.echo_available():
             echo_key = self.get_echo_key()
             self.sleep(0.1)
             self.task.send_key_down(echo_key)
             self.sleep(.6)
-            self.switch_next_char(post_action=self.echo_post_action)
+            return self.switch_next_char(post_action=self.echo_post_action)
         else:
             self.heavy_attack()
         self.switch_next_char()

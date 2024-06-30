@@ -249,7 +249,9 @@ class BaseChar:
         clicked = False
         self.task.send_key(self.get_liberation_key())
         while self.liberation_available():
-            self.check_combat()
+            if not self.task.in_team()[0]:
+                self.task.next_frame()
+                break
             self.logger.debug(f'click_liberation liberation_available click')
             now = time.time()
             if now - last_click > 0.1:
@@ -270,7 +272,7 @@ class BaseChar:
         if clicked:
             liberation_time = f'{(time.time() - start):.2f}'
             self.task.info[f'{self} liberation time'] = liberation_time
-            self.logger.debug(f'click_liberation end {liberation_time}')
+            self.logger.info(f'click_liberation end {liberation_time}')
         return clicked
 
     def get_liberation_key(self):
