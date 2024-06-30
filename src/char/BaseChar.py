@@ -49,6 +49,7 @@ class BaseChar:
         self.liberation_available_mark = False
         self.logger = get_logger(self.name)
         self.full_ring_area = 0
+        self._is_forte_full = False
         self.config = {"_full_ring_area": 0, "_ring_color_index": -1}
         if type(self) is not BaseChar:
             self.config = Config(self.config,
@@ -82,7 +83,8 @@ class BaseChar:
             f'{self}_down_finish_{(time.time() - start):.2f}_f:{self.is_forte_full()}_e:{self.resonance_available()}_r:{self.echo_available()}_q:{self.liberation_available()}_i{self.has_intro}')
 
     def do_perform(self):
-        self.click_liberation(con_less_than=81)
+        if self.click_liberation(con_less_than=1):
+            return self.switch_next_char()
         if self.click_resonance()[0]:
             return self.switch_next_char()
         if self.click_echo():
@@ -124,6 +126,7 @@ class BaseChar:
 
     def switch_out(self):
         self.is_current_char = False
+        self.has_intro = False
         if self.current_con == 1:
             self.logger.info(f'switch_out at full con set current_con to 0')
             self.current_con = 0
@@ -132,6 +135,7 @@ class BaseChar:
         return self.__class__.__name__ + ('_T' if self.is_current_char else '_F')
 
     def switch_next_char(self, post_action=None, free_intro=False, target_low_con=False):
+        self.is_forte_full()
         self.liberation_available_mark = self.liberation_available()
         self.last_switch_time = self.task.switch_next_char(self, post_action=post_action, free_intro=free_intro,
                                                            target_low_con=target_low_con)
@@ -141,7 +145,7 @@ class BaseChar:
             self.task.sleep_check_combat(sec + self.sleep_adjust)
 
     def click_resonance(self, post_sleep=0, has_animation=False, send_click=True):
-        clicked = None
+        clicked = False
         self.logger.debug(f'click_resonance start')
         last_click = 0
         last_op = 'click'
@@ -165,10 +169,11 @@ class BaseChar:
             self.logger.debug(f'click_resonance resonance_available click')
             now = time.time()
             if now - last_click > 0.1:
-                if (current_resonance == 0 or last_op != 'click') and send_click:
+                if ((current_resonance == 0) and send_click) or last_op == 'resonance':
                     self.task.click()
                     last_op = 'click'
-                else:
+                    continue
+                if current_resonance > 0:
                     if resonance_click_time == 0:
                         clicked = True
                         resonance_click_time = now
@@ -179,8 +184,8 @@ class BaseChar:
             self.task.next_frame()
         if clicked:
             self.sleep(post_sleep)
-        self.logger.debug(f'click_resonance end')
         duration = time.time() - resonance_click_time if resonance_click_time != 0 else 0
+        self.logger.debug(f'click_resonance end clicked {clicked} duration {duration} animated {animated}')
         return clicked, duration, animated
 
     def send_resonance_key(self, post_sleep=0, interval=-1):
@@ -230,17 +235,19 @@ class BaseChar:
         self.task.check_combat()
 
     def reset_state(self):
+        self.logger.info('reset state')
         self.has_intro = False
 
     def click_liberation(self, wait_end=True, con_less_than=-1):
         if con_less_than > 0:
-            if self.get_current_con() * 100 > con_less_than:
+            if self.get_current_con() > con_less_than:
                 return False
 
         self.logger.debug(f'click_liberation start')
         start = time.time()
-        last_click = 0
+        last_click = start
         clicked = False
+        self.task.send_key(self.get_liberation_key())
         while self.liberation_available():
             self.check_combat()
             self.logger.debug(f'click_liberation liberation_available click')
@@ -253,7 +260,8 @@ class BaseChar:
             if time.time() - start > 5:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
-        while self.task.in_liberation and not self.task.in_team()[0]:
+        while not self.task.in_team()[0]:
+            self.task.in_liberation = True
             clicked = True
             if time.time() - start > 5:
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
@@ -284,11 +292,15 @@ class BaseChar:
             priority += self.count_liberation_priority()
         if self.count_resonance_priority() and self.resonance_available():
             priority += self.count_resonance_priority()
-        if self.count_forte_priority() and self.is_forte_full():
+        if self.count_forte_priority() and self._is_forte_full:
             priority += self.count_forte_priority()
         if priority > 0:
             priority += Priority.SKILL_AVAILABLE
+        priority += self.count_liberation_priority()
         return priority
+
+    def count_base_priority(self):
+        return 0
 
     def count_liberation_priority(self):
         return 1
@@ -352,12 +364,22 @@ class BaseChar:
                 f'is_con_full2 found a full ring {self.config.get("_full_ring_area", 0)} -> {max_area}  {color_index}')
         if self.config.get('_full_ring_area', 0) > 0:
             percent = max_area / self.config['_full_ring_area']
+        if not max_is_full and percent >= 1:
+            self.logger.error(f'is_con_full not full but percent greater than 1, set to 0.99, {percent} {max_is_full}')
+            self.task.screenshot(
+                f'is_con_full not full but percent greater than 1, set to 0.99, {percent} {max_is_full}',
+                cropped)
+            percent = 0.99
+        if percent > 1:
+            self.logger.error(f'is_con_full percent greater than 1, set to 1, {percent} {max_is_full}')
+            self.task.screenshot(f'is_con_full percent greater than 1, set to 1, {percent} {max_is_full}', cropped)
+            percent = 1
         self.logger.info(
             f'is_con_full {self} {percent} {max_area}/{self.config.get("_full_ring_area", 0)} {color_index} ')
-        if self.task.debug:
-            self.task.screenshot(
-                f'is_con_full {self} {percent} {max_area}/{self.config.get("_full_ring_area", 0)} {color_index} ',
-                cropped)
+        # if self.task.debug:
+        #     self.task.screenshot(
+        #         f'is_con_full {self} {percent} {max_area}/{self.config.get("_full_ring_area", 0)} {color_index} ',
+        #         cropped)
         box.confidence = percent
         self.current_con = percent
         self.task.draw_boxes(f'is_con_full_{self}', box)
@@ -370,8 +392,8 @@ class BaseChar:
         white_percent = self.task.calculate_color_percentage(forte_white_color, box)
         box.confidence = white_percent
         self.task.draw_boxes('forte_full', box)
-        if white_percent > 0.2:
-            return True
+        self._is_forte_full = white_percent > 0.2
+        return self._is_forte_full
 
     def liberation_available(self):
         if self.liberation_available_mark:
@@ -397,11 +419,15 @@ class BaseChar:
     def __str__(self):
         return self.__repr__()
 
-    def continues_normal_attack(self, duration, interval=0.2):
+    def continues_normal_attack(self, duration, interval=0.2, click_resonance_if_ready_and_return=False,
+                                until_con_full=False):
         start = time.time()
         while time.time() - start < duration:
-            self.normal_attack()
-            self.sleep(interval)
+            if click_resonance_if_ready_and_return and self.resonance_available():
+                return self.click_resonance()
+            if until_con_full and self.is_con_full():
+                return
+            self.task.click(interval=interval)
 
     def normal_attack(self):
         self.logger.debug('normal attack')

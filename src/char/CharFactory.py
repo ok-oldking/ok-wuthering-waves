@@ -1,5 +1,6 @@
 from src.char.CharSkillButton import is_float
 from src.char.Jinhsi import Jinhsi
+from src.char.Yuanwu import Yuanwu
 
 
 def get_char_by_pos(task, box, index):
@@ -20,20 +21,21 @@ def get_char_by_pos(task, box, index):
         'char_jianxin': {'cls': Jianxin, 'res_cd': 12, 'echo_cd': 20},
         'char_sanhua': {'cls': Sanhua, 'res_cd': 10, 'echo_cd': 20},
         'char_jinhsi': {'cls': Jinhsi, 'res_cd': 3, 'echo_cd': 20},
+        'char_yuanwu': {'cls': Yuanwu, 'res_cd': 3, 'echo_cd': 20},
     }
     highest_confidence = 0
     info = None
     for char_name, char_info in char_dict.items():
         feature = task.find_one(char_name, box=box, threshold=0.7)
+        if feature:
+            task.log_info(f'found char {char_name} {feature.confidence} {highest_confidence}')
         if feature and feature.confidence > highest_confidence:
             highest_confidence = feature.confidence
             info = char_info
-        if feature:
-            task.log_info(f'found char {char_name} {feature.confidence}')
     if info is not None:
         cls = info.get('cls')
         return cls(task, index, info.get('res_cd'), info.get('echo_cd'))
-    task.log_info(f'could not find char')
+    task.log_info(f'could not find char {info} {highest_confidence}')
     has_cd = task.ocr(box=box)
     if has_cd and is_float(has_cd[0].name):
         task.log_info(f'found char {has_cd[0]} wait and reload')
