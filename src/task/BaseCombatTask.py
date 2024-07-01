@@ -1,3 +1,4 @@
+import random
 import time
 
 from ok.feature.FindFeature import FindFeature
@@ -106,6 +107,12 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         logger.info(f'switch_next_char end {(switch_time - start):.3f}s')
         return switch_time
 
+    def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1):
+        if x == -1 and y == -1:
+            x = self.width_of_screen(random.uniform(0.4, 0.6))
+            y = self.height_of_screen(random.uniform(0.4, 0.6))
+        return super().click(x, y, move_back, name, interval)
+
     def wait_in_team(self, time_out=10):
         self.wait_until(lambda: self.in_team()[0], time_out=time_out)
 
@@ -129,10 +136,11 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             self.raise_not_in_combat('combat check not in combat')
 
     def walk_until_f(self, time_out=0, raise_if_not_found=True):
-        if not self.find_one('pick_up_f', horizontal_variance=0.02, vertical_variance=0.02, use_gray_scale=True):
+        if not self.find_one('pick_up_f', horizontal_variance=0.02, vertical_variance=0.2, threshold=0.8,
+                             use_gray_scale=True):
             self.send_key_down('w')
             f_found = self.wait_feature('pick_up_f', horizontal_variance=0.02, vertical_variance=0.02,
-                                        use_gray_scale=True,
+                                        use_gray_scale=True, threshold=0.8,
                                         wait_until_before_delay=0, time_out=time_out, raise_if_not_found=False)
             self.send_key_up('w')
             if not f_found:
@@ -198,7 +206,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         return self.calculate_color_percentage(white_color, self.get_box_by_name('box_resonance'))
 
     def in_team(self):
-        start = time.time()
+        # start = time.time()
         c1 = self.find_one('char_1_text', use_gray_scale=True)
         c2 = self.find_one('char_2_text', use_gray_scale=True)
         c3 = self.find_one('char_3_text', use_gray_scale=True)
