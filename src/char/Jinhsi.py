@@ -79,6 +79,7 @@ class Jinhsi(BaseChar):
         self.logger.info(f'handle_intro  start')
         last = None
         start = time.time()
+        self.send_resonance_key()
         while not self.has_cd('resonance'):
             if last != 'resonance' or time.time() - start < 1:
                 if self.send_resonance_key(interval=0.1):

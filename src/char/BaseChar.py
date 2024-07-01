@@ -83,8 +83,7 @@ class BaseChar:
             f'{self}_down_finish_{(time.time() - start):.2f}_f:{self.is_forte_full()}_e:{self.resonance_available()}_r:{self.echo_available()}_q:{self.liberation_available()}_i{self.has_intro}')
 
     def do_perform(self):
-        if self.click_liberation(con_less_than=1):
-            return self.switch_next_char()
+        self.click_liberation(con_less_than=1)
         if self.click_resonance()[0]:
             return self.switch_next_char()
         if self.click_echo():
@@ -107,7 +106,7 @@ class BaseChar:
                 big_area_count += 1
             if left > 0 and top > 0 and left + width < box.width and top + height < box.height:
                 self.logger.debug(f"{box_name} Area of connected component {i}: {area} pixels {width}x{height}")
-                if 20 / 3840 / 2160 <= area / self.task.frame.shape[0] / self.task.frame.shape[
+                if 16 / 3840 / 2160 <= area / self.task.frame.shape[0] / self.task.frame.shape[
                     1] <= 60 / 3840 / 2160 and abs(width - height) / (width + height) < 0.3:
                     has_dot = True
                 elif 25 / 2160 <= height / self.task.screen_height <= 45 / 2160 and 5 / 2160 <= width / self.task.screen_height <= 35 / 2160:
@@ -181,6 +180,11 @@ class BaseChar:
                     last_op = 'resonance'
                     self.send_resonance_key()
                 last_click = now
+                if time.time() - resonance_click_time > 10:
+                    self.logger.error(f'click_resonance too long, breaking')
+                    self.task.screenshot(self.task.get_box_by_name('box_resonance').crop(self.task.frame),
+                                         'click_resonance too long, breaking')
+                    break
             self.task.next_frame()
         if clicked:
             self.sleep(post_sleep)

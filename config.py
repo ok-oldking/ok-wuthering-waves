@@ -1,5 +1,6 @@
 import os
 
+from ok.interaction.PostMessageInteraction import PostMessageInteraction
 from ok.util.path import get_path_in_package
 from src.task.AutoCombatTask import AutoCombatTask
 from src.task.FarmEchoTask import FarmEchoTask
@@ -31,7 +32,12 @@ config = {
     'windows': {  # required  when supporting windows game
         'exe': 'Client-Win64-Shipping.exe',
         'calculate_pc_exe_path': calculate_pc_exe_path,
+        'interaction': PostMessageInteraction,
         'can_bit_blt': False  # default false, opengl games does not support bit_blt
+    },
+    'supported_resolution': {
+        'ratio': '16:9',
+        'min_size': (1280, 720)
     },
     'analytics': {
         'report_url': 'https://okreport.ok-script.com/report'
