@@ -1,6 +1,5 @@
 import os
 
-from ok.interaction.PostMessageInteraction import PostMessageInteraction
 from ok.util.path import get_path_in_package
 from src.task.AutoCombatTask import AutoCombatTask
 from src.task.FarmEchoTask import FarmEchoTask
@@ -32,8 +31,9 @@ config = {
     'windows': {  # required  when supporting windows game
         'exe': 'Client-Win64-Shipping.exe',
         'calculate_pc_exe_path': calculate_pc_exe_path,
-        'interaction': PostMessageInteraction,
-        'can_bit_blt': False  # default false, opengl games does not support bit_blt
+        'interaction': 'PostMessage',
+        'can_bit_blt': True,  # default false, opengl games does not support bit_blt
+        'bit_blt_render_full': True
     },
     'supported_resolution': {
         'ratio': '16:9',
@@ -49,7 +49,7 @@ config = {
         'use_proxy': True
     },
     'about': """
-    <h3>OK-Wuthering-Waves</h3>
+    <h3>OK-WW</h3>
     <p>免费开源软件 <a href="https://github.com/ok-oldking/ok-wuthering-waves">https://github.com/ok-oldking/ok-wuthering-waves</></p>
     <p>报告问题BUG <a href="https://github.com/ok-oldking/ok-wuthering-waves/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D">https://github.com/ok-oldking/ok-baijing/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D</></p>
     <p>QQ群:<a href="https://qm.qq.com/q/aGO7eBJ2Uw">594495691</a></p>
