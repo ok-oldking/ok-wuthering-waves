@@ -23,6 +23,7 @@ class FarmEchoTask(BaseCombatTask):
         }
         self.config_type["Entrance Direction"] = {'type': "drop_down", 'options': ['Forward', 'Backward']}
         self.crownless_pos = (0.9, 0.4)
+        self.last_drop = False
 
     def run(self):
         self.handler.post(self.mouse_reset, 0.01)
@@ -47,6 +48,7 @@ class FarmEchoTask(BaseCombatTask):
 
         # loop here
         count = 0
+
         while count < self.config.get("Repeat Farm Count", 0):
             count += 1
             self.wait_until(lambda: self.in_team()[0], time_out=40)
@@ -77,15 +79,22 @@ class FarmEchoTask(BaseCombatTask):
             logger.info(f'farm echo move forward walk_until_f to find echo')
             if self.walk_until_f(time_out=4, raise_if_not_found=False):  # find and pick echo
                 logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
-                self.info['Echo Count'] = self.info.get('Echo Count', 0) + 1
+                self.incr_drop(True)
+            elif not self.last_drop:  # only search for the guaranteed drop
+                self.incr_drop(self.find_echo_drop())
             else:
-                self.find_echo_drop()
+                self.incr_drop(False)
             self.sleep(0.5)
             self.send_key('esc')
             self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=True,
                                     use_gray_scale=True)
             self.wait_in_team_and_world(time_out=40)
-            self.sleep(1)
+            self.sleep(2)
+
+    def incr_drop(self, dropped):
+        if dropped:
+            self.info['Echo Count'] = self.info.get('Echo Count', 0) + 1
+        self.last_drop = dropped
 
     def choose_level(self, start):
         y = 0.17
@@ -136,9 +145,10 @@ class FarmEchoTask(BaseCombatTask):
                 self.sleep(1)
                 self.send_key('a', down_time=0.05)
                 self.sleep(1)
-        self.screenshot(f'pick_echo_{highest_index}')
+        if self.debug:
+            self.screenshot(f'pick_echo_{highest_index}')
         logger.info(f'found echo {highest_index} walk')
-        self.walk_until_f(raise_if_not_found=False, time_out=5)
+        return self.walk_until_f(raise_if_not_found=False, time_out=5)
 
 
 echo_color = {

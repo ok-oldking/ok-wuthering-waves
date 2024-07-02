@@ -74,11 +74,12 @@ class CombatCheck:
     def screenshot_boss_lv(self, current, name):
         if self.debug:
             if self.boss_lv_box is not None and self.boss_lv_edge is not None and current is not None:
-                self.frame[self.boss_lv_box.y:self.boss_lv_box.y + self.boss_lv_box.height,
+                frame = self.frame.copy()
+                frame[self.boss_lv_box.y:self.boss_lv_box.y + self.boss_lv_box.height,
                 self.boss_lv_box.x:self.boss_lv_box.x + self.boss_lv_box.width] = current
                 x, y, w, h = self.boss_lv_box.x, self.boss_lv_box.height + 50 + self.boss_lv_box.y, self.boss_lv_box.width, self.boss_lv_box.height
-                self.frame[y:y + h, x:x + w] = self.boss_lv_edge
-            self.screenshot(name)
+                frame[y:y + h, x:x + w] = self.boss_lv_edge
+                self.screenshot(name, frame)
 
     def in_combat(self):
         if self.in_liberation:
