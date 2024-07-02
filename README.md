@@ -4,13 +4,15 @@
 
 Automation for Wuthering waves
 
-* Farm Boss Echo
-* Auto Combat
+* Farm Boss Echo (Dreamless, Jue)
+* Auto Combat (Beats 90% players for [fully supported characters](src/chars))
 * Auto Skip Dialogs in Quests
+* Can run while game is in background
 
-### 注意事项
+### How to Run
 
-* Might not work in system < windows 10
+* Download the exe from [release](releases)
+* May need to add the app folder to Windows Defender white list.
 * Run the exe as Admin, because we need permission to send key and mouse event
 
 ### Development
