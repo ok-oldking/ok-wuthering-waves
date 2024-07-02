@@ -3,7 +3,7 @@ import time
 
 import cv2
 
-from ok.color.Color import find_color_rectangles, white_color, keep_pixels_in_color_range
+from ok.color.Color import find_color_rectangles, keep_pixels_in_color_range
 from ok.feature.Box import find_boxes_by_name
 from ok.logging.Logger import get_logger
 from src import text_white_color
@@ -36,13 +36,14 @@ class CombatCheck:
 
         if self.has_count_down:
             if count_down < 0.1:
-                self.screenshot(f'out of combat because of count_down disappeared {count_down:.2f}%')
+                # self.screenshot(f'out of combat because of count_down disappeared {count_down:.2f}%')
                 logger.info(f'out of combat because of count_down disappeared {count_down:.2f}%')
+                self.has_count_down = False
                 return False
             else:
                 return True
         else:
-            self.has_count_down = count_down
+            self.has_count_down = count_down > 0.1
             return self.has_count_down
 
     def check_boss(self):
@@ -95,16 +96,16 @@ class CombatCheck:
                     return True
                 if not self.check_health_bar():
                     logger.debug('not in team or no health bar')
-                    if self.last_out_of_combat_time == 0:
-                        self.last_out_of_combat_time = now
-                        logger.debug(
-                            'first time detected, not in team and no health bar, wait for 4 seconds to double check')
-                        return True
-                    elif now - self.last_out_of_combat_time > 4:
-                        logger.debug('out of combat for 4 secs return False')
-                        return self.reset_to_false()
-                    else:
-                        return True
+                    # if self.last_out_of_combat_time == 0:
+                    #     self.last_out_of_combat_time = now
+                    #     logger.debug(
+                    #         'first time detected, not in team and no health bar, wait for 4 seconds to double check')
+                    return self.reset_to_false()
+                    # elif now - self.last_out_of_combat_time > 4:
+                    #     logger.debug('out of combat for 4 secs return False')
+                    #     return self.reset_to_false()
+                    # else:
+                    #     return True
                 else:
                     logger.debug(
                         'check in combat pass')
@@ -113,12 +114,15 @@ class CombatCheck:
             else:
                 return True
         else:
-            in_combat = self.in_team()[0] and self.check_health_bar()
+            in_combat = self.in_team()[0] and self.check_health_bar() and (
+                    self.boss_lv_edge is not None or self.has_count_down is not None)
             if in_combat:
+                logger.info(
+                    f'enter combat boss_lv_edge:{self.boss_lv_edge is not None} has_count_down:{self.has_count_down is not None}')
                 self._in_combat = True
                 return True
 
-    def check_health_bar(self, find_boss=True):
+    def check_health_bar(self):
         if self._in_combat:
             min_height = self.height_of_screen(10 / 2160)
             max_height = min_height * 3
@@ -133,8 +137,18 @@ class CombatCheck:
         if len(boxes) > 0:
             self.draw_boxes('enemy_health_bar_red', boxes, color='blue')
             return True
-        elif find_boss:
-            return self.find_boss_lv_text()
+        else:
+            boxes = find_color_rectangles(self.frame, boss_health_color, min_width * 3, min_height * 1.3,
+                                          box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 192 / 2160))
+            if len(boxes) == 1:
+                self.boss_health_box = boxes[0]
+                self.boss_health_box.width = 10
+                self.boss_health_box.x += 6
+                self.boss_health = self.boss_health_box.crop_frame(self.frame)
+                self.draw_boxes('boss_health', boxes, color='blue')
+                return True
+
+        return self.find_boss_lv_text()
 
     def find_boss_lv_text(self):
         texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160),
@@ -152,7 +166,7 @@ class CombatCheck:
 
     def keep_boss_text_white(self):
         corpped = self.boss_lv_box.crop_frame(self.frame)
-        image, area = keep_pixels_in_color_range(corpped, white_color)
+        image, area = keep_pixels_in_color_range(corpped, boss_white_text_color)
         if area / image.shape[0] * image.shape[1] < 0.05:
             image, area = keep_pixels_in_color_range(corpped, boss_orange_text_color)
             if area / image.shape[0] * image.shape[1] < 0.05:
@@ -174,6 +188,12 @@ enemy_health_color_black = {
     'r': (10, 55),  # Red range
     'g': (28, 50),  # Green range
     'b': (18, 70)  # Blue range
+}
+
+boss_white_text_color = {
+    'r': (200, 255),  # Red range
+    'g': (200, 255),  # Green range
+    'b': (200, 255)  # Blue range
 }
 
 boss_orange_text_color = {

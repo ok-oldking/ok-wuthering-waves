@@ -151,6 +151,10 @@ class BaseChar:
         resonance_click_time = 0
         animated = False
         while True:
+            if resonance_click_time != 0 and time.time() - resonance_click_time > 10:
+                self.logger.error(f'click_resonance too long, breaking {time.time() - resonance_click_time}')
+                self.task.screenshot('click_resonance too long, breaking')
+                break
             if has_animation:
                 if not self.task.in_team()[0]:
                     animated = True
@@ -180,11 +184,6 @@ class BaseChar:
                     last_op = 'resonance'
                     self.send_resonance_key()
                 last_click = now
-                if time.time() - resonance_click_time > 10:
-                    self.logger.error(f'click_resonance too long, breaking')
-                    self.task.screenshot(self.task.get_box_by_name('box_resonance').crop(self.task.frame),
-                                         'click_resonance too long, breaking')
-                    break
             self.task.next_frame()
         if clicked:
             self.sleep(post_sleep)
@@ -230,7 +229,7 @@ class BaseChar:
                     clicked = True
                     self.update_echo_cd()
                     self.task.send_key(self.get_echo_key())
-                    last_click = now
+                last_click = now
             self.task.next_frame()
         self.logger.debug(f'click_echo end {clicked}')
         return clicked
