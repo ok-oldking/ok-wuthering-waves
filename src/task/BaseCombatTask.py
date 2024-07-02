@@ -1,5 +1,8 @@
+import math
 import random
 import time
+
+import win32api
 
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
@@ -8,7 +11,7 @@ from ok.task.BaseTask import BaseTask
 from ok.task.TaskExecutor import CannotFindException
 from ok.util.list import safe_get
 from src.char import BaseChar
-from src.char.BaseChar import Priority, role_values
+from src.char.BaseChar import Priority
 from src.char.CharFactory import get_char_by_pos
 from src.combat.CombatCheck import CombatCheck
 
@@ -29,13 +32,9 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             'Echo Key': 'q',
             'Liberation Key': 'r',
             'Resonance Key': 'e',
-            'Character 1 Role': 'Default',
-            'Character 2 Role': 'Default',
-            'Character 3 Role': 'Default',
         })
-        self.config_type["Character 1 Role"] = {'type': "drop_down", 'options': role_values}
-        self.config_type["Character 2 Role"] = {'type': "drop_down", 'options': role_values}
-        self.config_type["Character 3 Role"] = {'type': "drop_down", 'options': role_values}
+
+        self.mouse_pos = None
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
 
@@ -84,14 +83,14 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                 self.send_key(switch_to.index + 1)
                 last_click = now
             in_team, current_index, size = self.in_team()
-            if not in_team:
+            if not in_team and now - start > 10:
                 if self.debug:
-                    self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to}')
+                    self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
                 self.raise_not_in_combat('not in team while switching chars')
             if current_index != switch_to.index:
                 has_intro = free_intro if free_intro else current_char.is_con_full()
                 switch_to.has_intro = has_intro
-                if now - start > 3:
+                if now - start > 10:
                     if self.debug:
                         self.screenshot(f'switch_not_detected_{current_char}_to_{switch_to}')
                     self.raise_not_in_combat('failed switch chars')
@@ -113,8 +112,11 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             y = self.height_of_screen(random.uniform(0.4, 0.6))
         return super().click(x, y, move_back, name, interval)
 
-    def wait_in_team(self, time_out=10):
-        self.wait_until(lambda: self.in_team()[0], time_out=time_out)
+    def wait_in_team_and_world(self, time_out=10):
+        self.wait_until(self.in_team_and_world, time_out=time_out, raise_if_not_found=True)
+
+    def in_team_and_world(self):
+        return self.in_team()[0] and self.find_one(f'gray_book_button', threshold=0.7, use_gray_scale=True)
 
     def get_current_char(self):
         for char in self.chars:
@@ -135,21 +137,41 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         if not self.in_combat():
             self.raise_not_in_combat('combat check not in combat')
 
-    def walk_until_f(self, time_out=0, raise_if_not_found=True):
-        if not self.find_one('pick_up_f', horizontal_variance=0.02, vertical_variance=0.2, threshold=0.8,
+    def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True):
+        if not self.find_one('pick_up_f', horizontal_variance=0.1, vertical_variance=0.1, threshold=0.8,
                              use_gray_scale=True):
-            self.send_key_down('w')
-            f_found = self.wait_feature('pick_up_f', horizontal_variance=0.02, vertical_variance=0.02,
+            self.send_key_down(direction)
+            f_found = self.wait_feature('pick_up_f', horizontal_variance=0.1, vertical_variance=0.1,
                                         use_gray_scale=True, threshold=0.8,
                                         wait_until_before_delay=0, time_out=time_out, raise_if_not_found=False)
-            self.send_key_up('w')
             if not f_found:
                 if raise_if_not_found:
                     raise CannotFindException('cant find the f to enter')
                 else:
                     logger.warning(f"can't find the f to enter")
-                    return
-        self.send_key('f')
+                    self.send_key_up(direction)
+                    return False
+            self.send_key('f')
+            self.sleep(0.2)
+            self.send_key('f')
+            self.send_key_up(direction)
+            if self.wait_click_feature('cancel_button', relative_x=1, raise_if_not_found=True,
+                                       use_gray_scale=True, time_out=2):
+                logger.warning(f"found a claim reward")
+                return False
+            # while self.in_team_and_world():
+            #
+            #     self.send_key('f')
+            #     count += 1
+            #     if count > 20:
+            #         self.send_key_up(direction)
+            #         logger.error('failed to enter')
+            #         if raise_if_not_found:
+            #             raise CannotFindException('cant find the f to enter')
+            #         else:
+            #             return False
+        else:
+            self.send_key('f')
         self.sleep(0.5)
         return True
 
@@ -224,6 +246,25 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             return True, current, exist_count + 1
         else:
             return False, -1, exist_count + 1
+
+    def mouse_reset(self):
+        # logger.debug("mouse_reset")
+        current_position = win32api.GetCursorPos()
+        if self.mouse_pos:
+            distance = math.sqrt(
+                (current_position[0] - self.mouse_pos[0]) ** 2
+                + (current_position[1] - self.mouse_pos[1]) ** 2
+            )
+            if distance > 400:
+                logger.debug(f'move mouse back {self.mouse_pos}')
+                win32api.SetCursorPos(self.mouse_pos)
+                self.mouse_pos = None
+                if self.enabled:
+                    self.handler.post(self.mouse_reset, 1)
+                return
+        self.mouse_pos = current_position
+        if self.enabled:
+            return self.handler.post(self.mouse_reset, 0.005)
 
 
 white_color = {
