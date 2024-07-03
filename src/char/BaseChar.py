@@ -99,13 +99,13 @@ class BaseChar:
         number_count = 0
         invalid_count = 0
         for i in range(1, num_labels):
-            # Check if the connected component touches the border
+            # Check if the connected co  mponent touches the border
             left, top, width, height, area = stats[i]
             if area / self.task.frame.shape[0] / self.task.frame.shape[
                 1] > 20 / 3840 / 2160:
                 big_area_count += 1
             if left > 0 and top > 0 and left + width < box.width and top + height < box.height:
-                self.logger.debug(f"{box_name} Area of connected component {i}: {area} pixels {width}x{height}")
+                # self.logger.debug(f"{box_name} Area of connected component {i}: {area} pixels {width}x{height}")
                 if 16 / 3840 / 2160 <= area / self.task.frame.shape[0] / self.task.frame.shape[
                     1] <= 60 / 3840 / 2160 and abs(width - height) / (width + height) < 0.3:
                     has_dot = True
@@ -257,9 +257,10 @@ class BaseChar:
                 break
             self.logger.debug(f'click_liberation liberation_available click')
             now = time.time()
+            self.task.in_liberation = True
+            clicked = True
             if now - last_click > 0.1:
                 self.task.send_key(self.get_liberation_key())
-                self.task.in_liberation = True
                 self.liberation_available_mark = False
                 last_click = now
             if time.time() - start > 5:
@@ -267,7 +268,6 @@ class BaseChar:
             self.task.next_frame()
         while not self.task.in_team()[0]:
             self.task.in_liberation = True
-            clicked = True
             if time.time() - start > 5:
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
             self.task.next_frame()
@@ -540,9 +540,9 @@ forte_white_color = {
 }
 
 dot_color = {
-    'r': (250, 255),  # Red range
-    'g': (250, 255),  # Green range
-    'b': (250, 255)  # Blue range
+    'r': (245, 255),  # Red range
+    'g': (245, 255),  # Green range
+    'b': (245, 255)  # Blue range
 }
 
 con_colors = [

@@ -204,9 +204,9 @@ boss_orange_text_color = {
 }
 
 boss_red_text_color = {
-    'r': (226, 226),  # Red range
-    'g': (82, 82),  # Green range
-    'b': (76, 76)  # Blue range
+    'r': (200, 230),  # Red range
+    'g': (70, 90),  # Green range
+    'b': (60, 80)  # Blue range
 }
 
 boss_health_color = {

@@ -59,11 +59,11 @@ class Jinhsi(BaseChar):
         liberated = False
         while self.has_cd('resonance'):
             self.task.click(interval=0.1)
-            if time.time() - start > 1.8 and not liberated:
-                liberated = True
-                if self.click_liberation():
-                    self.task.click()
-                    continue
+            # if time.time() - start > 1.8 and not liberated:
+            #     liberated = True
+            #     if self.click_liberation():
+            #         self.task.click()
+            #         continue
             if not liberated or not self.task.in_team()[0]:
                 self.check_combat()
 
@@ -94,8 +94,13 @@ class Jinhsi(BaseChar):
             if not self.click_echo():
                 self.task.click()
             return
+        if self.click_liberation():
+            t = 0.6
+        else:
+            t = 1.7
+        self.continues_normal_attack(t)
         # self.task.screenshot(f'handle_intro end {time.time() - start}')
-        self.click_echo()
+        # self.click_echo()
         self.logger.info(f'handle_intro end {time.time() - start}')
         self.incarnation = True
         self.incarnation_cd = False
