@@ -51,7 +51,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             current_con = current_char.get_current_con()
             if current_con > 0.8 and current_con != 1:
                 logger.info(f'switch_next_char current_con {current_con:.2f} almost full, sleep and check again')
-                self.sleep(0.1)
+                self.sleep(0.05)
                 self.next_frame()
                 current_con = current_char.get_current_con()
             if current_con == 1:
@@ -64,7 +64,8 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                 priority = char.get_switch_priority(current_char, has_intro)
                 if target_low_con:
                     priority += (1 - char.current_con) * 100
-                logger.info(f'switch_next_char priority: {char} {priority}')
+                logger.info(
+                    f'switch_next_char priority: {char} {priority} {char.current_con} target_low_con {target_low_con}')
             if priority > max_priority:
                 max_priority = priority
                 switch_to = char
@@ -135,6 +136,8 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
 
     def check_combat(self):
         if not self.in_combat():
+            if self.debug:
+                self.screenshot('not_in_combat')
             self.raise_not_in_combat('combat check not in combat')
 
     def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True):
