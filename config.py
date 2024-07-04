@@ -18,14 +18,13 @@ config = {
     'config_folder': 'configs',
     'gui_icon': get_path_in_package(__file__, 'icon.png'),
     'ocr': {
-        'lib': 'RapidOCR',
-        'inference_num_threads': int(os.cpu_count() / 2)
+        'lib': 'RapidOCR'
     },
     # required if using feature detection
     'template_matching': {
         'coco_feature_json': os.path.join('assets', '_annotations.coco.json'),
-        'default_horizontal_variance': 0,
-        'default_vertical_variance': 0,
+        'default_horizontal_variance': 0.002,
+        'default_vertical_variance': 0.002,
         'default_threshold': 0.9,
     },
     'windows': {  # required  when supporting windows game
@@ -37,7 +36,7 @@ config = {
     },
     'supported_resolution': {
         'ratio': '16:9',
-        'min_size': (1280, 720)
+        'min_size': (1600, 900)
     },
     'analytics': {
         'report_url': 'https://okreport.ok-script.com/report'
@@ -50,9 +49,9 @@ config = {
     },
     'about': """
     <h3>OK-WW</h3>
-    <p>免费开源软件 <a href="https://github.com/ok-oldking/ok-wuthering-waves">https://github.com/ok-oldking/ok-wuthering-waves</></p>
-    <p>报告问题BUG <a href="https://github.com/ok-oldking/ok-wuthering-waves/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D">https://github.com/ok-oldking/ok-baijing/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D</></p>
-    <p>QQ群:<a href="https://qm.qq.com/q/aGO7eBJ2Uw">594495691</a></p>
+    <p>GitHub <a href="https://github.com/ok-oldking/ok-wuthering-waves">https://github.com/ok-oldking/ok-wuthering-waves</></p>
+    <p>Report a BUG <a href="https://github.com/ok-oldking/ok-wuthering-waves/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D">https://github.com/ok-oldking/ok-wuthering-waves/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D</></p>
+    <p>QQ Group:<a href="https://qm.qq.com/q/aGO7eBJ2Uw">594495691</a></p>
 """,
     'supported_screen_ratio': '16:9',
     'screenshots_folder': "screenshots",

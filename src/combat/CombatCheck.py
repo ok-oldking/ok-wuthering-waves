@@ -12,13 +12,16 @@ logger = get_logger(__name__)
 
 
 class CombatCheck:
-    last_out_of_combat_time = 0
-    last_combat_check = 0
-    _in_combat = False
-    boss_lv_edge = None
-    boss_lv_box = None
-    in_liberation = False  # return True
-    has_count_down = False  # instant end of combat if count_down goes away
+
+    def __init__(self):
+        self.last_out_of_combat_time = 0
+        self.last_combat_check = 0
+        self._in_combat = False
+        self.boss_lv_edge = None
+        self.boss_lv_box = None
+        self.in_liberation = False  # return True
+        self.has_count_down = False  # instant end of combat if count_down goes away
+        self.boss_health_box = None
 
     def reset_to_false(self):
         self._in_combat = False
@@ -27,15 +30,17 @@ class CombatCheck:
         self.has_count_down = False
         self.last_out_of_combat_time = 0
         self.last_combat_check = 0
+        self.boss_lv_box = None
+        self.boss_health_box = None
         return False
 
     def check_count_down(self):
         count_down = self.calculate_color_percentage(text_white_color,
                                                      self.box_of_screen(1820 / 3840, 266 / 2160, 2088 / 3840,
-                                                                        325 / 2160, name="check_count_down"))
+                                                                        330 / 2160, name="check_count_down"))
 
         if self.has_count_down:
-            if count_down < 0.1:
+            if count_down < 0.04:
                 # self.screenshot(f'out of combat because of count_down disappeared {count_down:.2f}%')
                 logger.info(f'out of combat because of count_down disappeared {count_down:.2f}%')
                 self.has_count_down = False
@@ -53,11 +58,13 @@ class CombatCheck:
             res = cv2.matchTemplate(current, self.boss_lv_edge, cv2.TM_CCOEFF_NORMED)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
         if max_val < 0.8:
-            self.screenshot_boss_lv(current, f'boss lv not detected by edge {max_val}')
+            if self.debug:
+                self.screenshot_boss_lv(current, f'boss lv not detected by edge {max_val}')
             logger.debug(f'boss lv not detected by edge')
             if not self.find_boss_lv_text():  # double check by text
                 if not (self.in_team()[0] and self.check_health_bar()) and not self.check_count_down():
-                    self.screenshot_boss_lv(current, 'out_of combat boss_health disappeared')
+                    if self.debug:
+                        self.screenshot_boss_lv(current, 'out_of combat boss_health disappeared')
                     logger.info(f'out of combat because of boss_health disappeared, res:{max_val}')
                     return self.reset_to_false()
                 else:
@@ -68,7 +75,7 @@ class CombatCheck:
             else:
                 return True
         else:
-            logger.debug(f'check boss edge passed {res}')
+            logger.debug(f'check boss edge passed {max_val}')
             return True
 
     def screenshot_boss_lv(self, current, name):
@@ -97,16 +104,7 @@ class CombatCheck:
                     return True
                 if not self.check_health_bar():
                     logger.debug('not in team or no health bar')
-                    # if self.last_out_of_combat_time == 0:
-                    #     self.last_out_of_combat_time = now
-                    #     logger.debug(
-                    #         'first time detected, not in team and no health bar, wait for 4 seconds to double check')
                     return self.reset_to_false()
-                    # elif now - self.last_out_of_combat_time > 4:
-                    #     logger.debug('out of combat for 4 secs return False')
-                    #     return self.reset_to_false()
-                    # else:
-                    #     return True
                 else:
                     logger.debug(
                         'check in combat pass')
@@ -116,7 +114,7 @@ class CombatCheck:
                 return True
         else:
             in_combat = self.in_team()[0] and self.check_health_bar() and (
-                    self.boss_lv_edge is not None or self.has_count_down is not None)
+                    self.boss_health_box is not None or self.has_count_down is not None)
             if in_combat:
                 logger.info(
                     f'enter combat boss_lv_edge:{self.boss_lv_edge is not None} has_count_down:{self.has_count_down is not None}')

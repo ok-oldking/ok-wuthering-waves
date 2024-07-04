@@ -94,13 +94,11 @@ class Jinhsi(BaseChar):
             if not self.click_echo():
                 self.task.click()
             return
-        if self.click_liberation():
-            t = 0.6
+        if self.click_liberation(send_click=True):
+            self.continues_normal_attack(0.3)
         else:
-            t = 1.7
-        self.continues_normal_attack(t)
+            self.continues_normal_attack(1.8)
         # self.task.screenshot(f'handle_intro end {time.time() - start}')
-        # self.click_echo()
         self.logger.info(f'handle_intro end {time.time() - start}')
         self.incarnation = True
         self.incarnation_cd = False

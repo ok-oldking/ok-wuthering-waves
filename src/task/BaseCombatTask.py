@@ -63,18 +63,18 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             else:
                 priority = char.get_switch_priority(current_char, has_intro)
                 if target_low_con:
-                    priority += (1 - char.current_con) * 100
+                    priority += (1 - char.current_con) * 1000 - Priority.SWITCH_CD
                 logger.info(
                     f'switch_next_char priority: {char} {priority} {char.current_con} target_low_con {target_low_con}')
             if priority > max_priority:
                 max_priority = priority
                 switch_to = char
         if switch_to == current_char:
+            self.check_combat()
             self.click()
             logger.warning(f"can't find next char to switch to, maybe switching too fast click and wait")
             return self.switch_next_char(current_char, post_action, free_intro, target_low_con)
         switch_to.has_intro = has_intro
-        current_char.switch_out()
         logger.info(f'switch_next_char {current_char} -> {switch_to} has_intro {has_intro}')
         last_click = 0
         start = time.time()
@@ -99,6 +99,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                     self.next_frame()
             else:
                 switch_time = time.time()
+                current_char.switch_out()
                 switch_to.is_current_char = True
                 break
 
@@ -231,10 +232,13 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         return self.calculate_color_percentage(white_color, self.get_box_by_name('box_resonance'))
 
     def in_team(self):
-        # start = time.time()
-        c1 = self.find_one('char_1_text', use_gray_scale=True)
-        c2 = self.find_one('char_2_text', use_gray_scale=True)
-        c3 = self.find_one('char_3_text', use_gray_scale=True)
+        start = time.time()
+        c1 = self.find_one('char_1_text',
+                           threshold=0.75)
+        c2 = self.find_one('char_2_text',
+                           threshold=0.75)
+        c3 = self.find_one('char_3_text',
+                           threshold=0.75)
         arr = [c1, c2, c3]
         # logger.debug(f'in_team check {arr} time: {(time.time() - start):.3f}s')
         current = -1
