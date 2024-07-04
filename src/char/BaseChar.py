@@ -241,7 +241,7 @@ class BaseChar:
         self.logger.info('reset state')
         self.has_intro = False
 
-    def click_liberation(self, wait_end=True, con_less_than=-1):
+    def click_liberation(self, wait_end=True, con_less_than=-1, send_click=False):
         if con_less_than > 0:
             if self.get_current_con() > con_less_than:
                 return False
@@ -268,6 +268,8 @@ class BaseChar:
             self.task.next_frame()
         while not self.task.in_team()[0]:
             self.task.in_liberation = True
+            if send_click:
+                self.task.click(interval=0.1)
             if time.time() - start > 5:
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
             self.task.next_frame()
@@ -424,7 +426,7 @@ class BaseChar:
     def __str__(self):
         return self.__repr__()
 
-    def continues_normal_attack(self, duration, interval=0.2, click_resonance_if_ready_and_return=False,
+    def continues_normal_attack(self, duration, interval=0.1, click_resonance_if_ready_and_return=False,
                                 until_con_full=False):
         start = time.time()
         while time.time() - start < duration:
