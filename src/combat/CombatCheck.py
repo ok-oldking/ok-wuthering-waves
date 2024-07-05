@@ -12,17 +12,14 @@ logger = get_logger(__name__)
 
 
 class CombatCheck:
-
-    def __init__(self):
-        self.last_out_of_combat_time = 0
-        self.last_combat_check = 0
-        self._in_combat = False
-        self.boss_lv_edge = None
-        self.boss_lv_box = None
-        self.in_liberation = False  # return True
-        self.has_count_down = False  # instant end of combat if count_down goes away
-        self.boss_health_box = None
-        self.in_liberation = False
+    last_out_of_combat_time = 0
+    last_combat_check = 0
+    _in_combat = False
+    boss_lv_edge = None
+    boss_lv_box = None
+    in_liberation = False  # return True
+    has_count_down = False  # instant end of combat if count_down goes away
+    boss_health_box = None
 
     def reset_to_false(self):
         self._in_combat = False
