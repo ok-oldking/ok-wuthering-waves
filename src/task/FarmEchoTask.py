@@ -64,6 +64,8 @@ class FarmEchoTask(BaseCombatTask):
             #     return
 
             self.wait_until(lambda: self.in_combat(), time_out=40, raise_if_not_found=True)
+            self.sleep(4)
+            self.wait_until(lambda: self.in_combat(), time_out=3, raise_if_not_found=True)
             self.load_chars()
             while self.in_combat():
                 try:
