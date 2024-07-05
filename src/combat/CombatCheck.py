@@ -46,7 +46,7 @@ class CombatCheck:
             else:
                 return True
         else:
-            self.has_count_down = count_down > 0.1
+            self.has_count_down = count_down > 0.04
             return self.has_count_down
 
     def check_boss(self):
