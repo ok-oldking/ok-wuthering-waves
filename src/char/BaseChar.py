@@ -270,7 +270,7 @@ class BaseChar:
             self.task.in_liberation = True
             if send_click:
                 self.task.click(interval=0.1)
-            if time.time() - start > 0:
+            if time.time() - start > 7:
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
             self.task.next_frame()
         self.task.in_liberation = False
