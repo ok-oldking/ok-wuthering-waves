@@ -151,6 +151,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                                         wait_until_before_delay=0, time_out=time_out, raise_if_not_found=False)
             if not f_found:
                 if raise_if_not_found:
+                    self.send_key_up(direction)
                     raise CannotFindException('cant find the f to enter')
                 else:
                     logger.warning(f"can't find the f to enter")
