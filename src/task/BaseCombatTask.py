@@ -85,7 +85,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                 self.send_key(switch_to.index + 1)
                 last_click = now
             in_team, current_index, size = self.in_team()
-            if not in_team and now - start > 10:
+            if not in_team or now - start > 10:
                 if self.debug:
                     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
                 self.raise_not_in_combat('not in team while switching chars')
