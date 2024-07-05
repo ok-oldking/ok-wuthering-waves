@@ -26,6 +26,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
 
     def __init__(self):
         super().__init__()
+        CombatCheck.__init__(self)
         self.chars = [None, None, None]
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.default_config.update({
