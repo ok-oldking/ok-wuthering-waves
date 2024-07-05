@@ -1,14 +1,10 @@
-from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
-from ok.ocr.OCR import OCR
-from ok.task.TriggerTask import TriggerTask
-from src.combat.CombatCheck import CombatCheck
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
 
 logger = get_logger(__name__)
 
 
-class AutoCombatTask(BaseCombatTask, TriggerTask, FindFeature, OCR, CombatCheck):
+class AutoCombatTask(BaseCombatTask):
 
     def run(self):
         while self.in_combat():
