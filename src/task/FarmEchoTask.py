@@ -79,7 +79,8 @@ class FarmEchoTask(BaseCombatTask):
             logger.info(f'farm echo combat end')
             self.wait_in_team_and_world(time_out=20)
             logger.info(f'farm echo move forward walk_until_f to find echo')
-            if self.walk_until_f(time_out=3, raise_if_not_found=False):  # find and pick echo
+            if self.walk_until_f(time_out=3 if self.config.get('Entrance Direction') == 'Forward' else 6,
+                                 raise_if_not_found=False):  # find and pick echo
                 logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
                 self.incr_drop(True)
             elif not self.last_drop:  # only search for the guaranteed drop
