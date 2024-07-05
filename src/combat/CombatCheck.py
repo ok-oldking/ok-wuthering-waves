@@ -22,6 +22,7 @@ class CombatCheck:
         self.in_liberation = False  # return True
         self.has_count_down = False  # instant end of combat if count_down goes away
         self.boss_health_box = None
+        self.in_liberation = False
 
     def reset_to_false(self):
         self._in_combat = False
