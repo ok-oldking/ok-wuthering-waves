@@ -270,7 +270,7 @@ class BaseChar:
             self.task.in_liberation = True
             if send_click:
                 self.task.click(interval=0.1)
-            if time.time() - start > 5:
+            if time.time() - start > 0:
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
             self.task.next_frame()
         self.task.in_liberation = False
@@ -372,10 +372,11 @@ class BaseChar:
         if self.config.get('_full_ring_area', 0) > 0:
             percent = max_area / self.config['_full_ring_area']
         if not max_is_full and percent >= 1:
-            self.logger.error(f'is_con_full not full but percent greater than 1, set to 0.99, {percent} {max_is_full}')
-            self.task.screenshot(
-                f'is_con_full not full but percent greater than 1, set to 0.99, {percent} {max_is_full}',
-                cropped)
+            self.logger.warning(
+                f'is_con_full not full but percent greater than 1, set to 0.99, {percent} {max_is_full}')
+            # self.task.screenshot(
+            #     f'is_con_full not full but percent greater than 1, set to 0.99, {percent} {max_is_full}',
+            #     cropped)
             percent = 0.99
         if percent > 1:
             self.logger.error(f'is_con_full percent greater than 1, set to 1, {percent} {max_is_full}')
