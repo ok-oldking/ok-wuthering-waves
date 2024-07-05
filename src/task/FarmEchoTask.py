@@ -114,9 +114,9 @@ class FarmEchoTask(BaseCombatTask):
         # confirm_button = self.find_one('gray_confirm_exit_button', use_gray_scale=True, threshold=0.7)
 
         self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False,
-                                use_gray_scale=True, time_out=2)
+                                use_gray_scale=True, time_out=3, click_after_delay=0.5)
         self.wait_click_feature('gray_start_battle', relative_x=-1, raise_if_not_found=True,
-                                use_gray_scale=True)
+                                use_gray_scale=True, click_after_delay=0.5)
 
     def find_echo_drop(self):
         # self.click_relative(0.5, 0.5)

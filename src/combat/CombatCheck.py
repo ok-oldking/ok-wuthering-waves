@@ -38,7 +38,7 @@ class CombatCheck:
                                                                         330 / 2160, name="check_count_down"))
 
         if self.has_count_down:
-            if count_down < 0.04:
+            if count_down < 0.03:
                 # self.screenshot(f'out of combat because of count_down disappeared {count_down:.2f}%')
                 logger.info(f'out of combat because of count_down disappeared {count_down:.2f}%')
                 self.has_count_down = False
@@ -46,7 +46,8 @@ class CombatCheck:
             else:
                 return True
         else:
-            self.has_count_down = count_down > 0.04
+            self.has_count_down = count_down > 0.03
+            logger.info(f'set count_down to {self.has_count_down} {count_down:.2f}%')
             return self.has_count_down
 
     def check_boss(self):
@@ -86,13 +87,21 @@ class CombatCheck:
                 frame[y:y + h, x:x + w] = self.boss_lv_edge
                 self.screenshot(name, frame)
 
+    def find_target_enemy(self):
+        start = time.time()
+        target_enemy = self.find_one('target_enemy_white', box=self.box_of_screen(0.14, 0.12, 0.8, 0.8),
+                                     use_gray_scale=True, threshold=0.8,
+                                     frame_processor=process_target_enemy_area)
+        logger.debug(f'find_target_enemy {target_enemy} {time.time() - start}')
+        return target_enemy is not None
+
     def in_combat(self):
         if self.in_liberation:
             logger.debug('in liberation return True')
             return True
         if self._in_combat:
             now = time.time()
-            if now - self.last_combat_check > 0.5:
+            if now - self.last_combat_check > 1:
                 self.last_combat_check = now
                 if not self.in_team()[0]:
                     return self.reset_to_false()
@@ -102,22 +111,29 @@ class CombatCheck:
                     return True
                 if not self.check_health_bar():
                     logger.debug('not in team or no health bar')
-                    return self.reset_to_false()
+                    if not self.target_enemy():
+                        logger.error('target_enemy failed, break out of combat')
+                        return self.reset_to_false()
                 else:
                     logger.debug(
                         'check in combat pass')
-                    self.last_out_of_combat_time = 0
+                    # self.last_out_of_combat_time = 0
                     return True
             else:
                 return True
         else:
             in_combat = self.in_team()[0] and self.check_health_bar() and (
-                    self.boss_health_box is not None or self.has_count_down is not None)
+                    (
+                            self.boss_health_box is not None or self.boss_lv_edge is not None or self.has_count_down) or self.target_enemy())
             if in_combat:
                 logger.info(
-                    f'enter combat boss_lv_edge:{self.boss_lv_edge is not None} has_count_down:{self.has_count_down is not None}')
+                    f'enter combat boss_lv_edge:{self.boss_lv_edge is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
                 self._in_combat = True
                 return True
+
+    def target_enemy(self):
+        self.middle_click()
+        return self.wait_until(self.find_target_enemy, time_out=2)
 
     def check_health_bar(self):
         if self._in_combat:
@@ -173,6 +189,11 @@ class CombatCheck:
                     logger.error(f'keep_boss_text_white cant find text with the correct color')
                     return None, 0
         return image, area
+
+
+def process_target_enemy_area(frame):
+    frame[frame != 255] = 0
+    return frame
 
 
 enemy_health_color_red = {
