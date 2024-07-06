@@ -57,7 +57,13 @@ class Jinhsi(BaseChar):
         self.logger.info(f'handle_incarnation click_resonance start')
         start = time.time()
         liberated = False
-        while self.has_cd('resonance'):
+        while True:
+            current_res = self.current_resonance()
+            if current_res > 0 and not self.has_cd('resonance'):
+                self.logger.debug(f'handle_incarnation current_res: {current_res} breaking')
+                if self.task.debug:
+                    self.task.screenshot(f'handle_incarnation e available')
+                break
             self.task.click(interval=0.1)
             # if time.time() - start > 1.8 and not liberated:
             #     liberated = True
@@ -71,7 +77,8 @@ class Jinhsi(BaseChar):
         self.click_resonance(has_animation=True, send_click=True)
         if not self.click_echo():
             self.task.click()
-        # self.task.screenshot(f'handle_incarnation click_resonance end {time.time() - start}')
+        if self.task.debug:
+            self.task.screenshot(f'handle_incarnation click_resonance end {time.time() - start}')
         self.logger.info(f'handle_incarnation  click_resonance end {time.time() - start}')
 
     def handle_intro(self):

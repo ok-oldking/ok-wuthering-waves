@@ -258,7 +258,6 @@ class BaseChar:
             self.logger.debug(f'click_liberation liberation_available click')
             now = time.time()
             self.task.in_liberation = True
-            clicked = True
             if now - last_click > 0.1:
                 self.task.send_key(self.get_liberation_key())
                 self.liberation_available_mark = False
@@ -267,6 +266,7 @@ class BaseChar:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
         while not self.task.in_team()[0]:
+            clicked = True
             self.task.in_liberation = True
             if send_click:
                 self.task.click(interval=0.1)
@@ -543,9 +543,9 @@ forte_white_color = {
 }
 
 dot_color = {
-    'r': (245, 255),  # Red range
-    'g': (245, 255),  # Green range
-    'b': (245, 255)  # Blue range
+    'r': (235, 255),  # Red range
+    'g': (235, 255),  # Green range
+    'b': (235, 255)  # Blue range
 }
 
 con_colors = [
