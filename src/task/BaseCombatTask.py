@@ -88,7 +88,8 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             if not in_team or now - start > 10:
                 if self.debug:
                     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                self.raise_not_in_combat('not in team while switching chars')
+                self.raise_not_in_combat(
+                    f'not in team while switching chars_{current_char}_to_{switch_to}, {now - start}')
             if current_index != switch_to.index:
                 has_intro = free_intro if free_intro else current_char.is_con_full()
                 switch_to.has_intro = has_intro
