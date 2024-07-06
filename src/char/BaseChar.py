@@ -396,11 +396,22 @@ class BaseChar:
         return percent
 
     def is_forte_full(self):
-        box = self.task.box_of_screen(2251 / 3840, 1993 / 2160, 2271 / 3840, 2016 / 2160, name='forte_full')
+        box = self.task.box_of_screen(2251 / 3840, 1993 / 2160, 2311 / 3840, 2016 / 2160, name='forte_full')
         white_percent = self.task.calculate_color_percentage(forte_white_color, box)
+        # num_labels, stats = get_connected_area_by_color(box.crop_frame(self.task.frame), forte_white_color,
+        #                                                 connectivity=8)
+        # total_area = 0
+        # for i in range(1, num_labels):
+        #     # Check if the connected co  mponent touches the border
+        #     left, top, width, height, area = stats[i]
+        #     total_area += area
+        # white_percent = total_area / box.width / box.height
+        if self.task.debug:
+            self.task.screenshot(f'{self}_forte_{white_percent}')
+        self.logger.debug(f'is_forte_full {white_percent}')
         box.confidence = white_percent
         self.task.draw_boxes('forte_full', box)
-        self._is_forte_full = white_percent > 0.2
+        self._is_forte_full = white_percent > 0.08
         return self._is_forte_full
 
     def liberation_available(self):
