@@ -13,16 +13,14 @@ class Encore(BaseChar):
             self.sleep(0.4)
             self.n4()
             self.click_resonance()
-            if self.is_forte_full():
-                self.logger.info('Encore is_forte_full cast')
-                self.sleep(2)
-                self.heavy_attack()
+            # if self.is_forte_full():
+            #     self.logger.info('Encore is_forte_full cast')
+            #     self.sleep(2)
+            #     self.heavy_attack()
         elif self.resonance_available():
             self.click_resonance()
         elif self.echo_available():
             self.click_echo(duration=1.5)
-        elif self.is_forte_full():
-            self.heavy_attack()
         else:
             self.logger.info('Encore nothing is available')
         self.switch_next_char()
