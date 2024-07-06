@@ -73,8 +73,8 @@ class FarmEchoTask(BaseCombatTask):
                     self.get_current_char().perform()
                 except NotInCombatException as e:
                     logger.info(f'farm echo loop out of combat break {e}')
-                    if self.debug:
-                        self.screenshot(f'out of combat break {e}')
+                    # if self.debug:
+                    self.screenshot(f'out of combat break {e}')
                     break
             logger.info(f'farm echo combat end')
             self.wait_in_team_and_world(time_out=20)
