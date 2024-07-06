@@ -20,11 +20,12 @@ class Encore(BaseChar):
             self.sleep(0.4)
             self.n4()
             self.click_resonance()
-            if self.is_forte_full():
-                self.logger.info('Encore is_forte_full cast')
-                self.sleep(2)
-                self.heavy_attack()
-                self.last_heavy = time.time()
+            # full = self.is_forte_full()
+            # if full:
+            #     self.logger.info('Encore is_forte_full cast')
+            #     self.sleep(2)
+            #     self.heavy_attack()
+            #     self.last_heavy = time.time()
         elif self.resonance_available():
             self.click_resonance()
         elif self.echo_available():
@@ -42,4 +43,4 @@ class Encore(BaseChar):
             return super().do_get_switch_priority(current_char, has_intro)
 
     def n4(self):
-        self.continues_normal_attack(2.5)
+        self.continues_normal_attack(2.4)
