@@ -11,6 +11,7 @@ Demonstration: [https://youtu.be/N32I1aMfdqQ](https://youtu.be/N32I1aMfdqQ)
 * Auto Combat (Beats 90% players for [Fully Supported Characters](src/char))
 * Auto Skip Dialogs in Quests
 * Supports All Game Languages
+  ![img.png](readme/img.png)
 
 ### How to Run
 
