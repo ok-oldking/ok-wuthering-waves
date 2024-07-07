@@ -2,6 +2,8 @@
 
 ## OK-WW
 
+自动战斗, 后台刷声骸, QQ群: [970523295](https://qm.qq.com/q/qMezq2IDGU)
+
 Automation for Wuthering Waves using Computer Vision, Auto Combat
 Demonstration: [https://youtu.be/N32I1aMfdqQ](https://youtu.be/N32I1aMfdqQ)
 

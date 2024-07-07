@@ -21,7 +21,7 @@ class FarmEchoTask(BaseCombatTask):
             'Level': '(1-6) Important, Choose which level to farm, lower levels might not produce a echo',
             'Entrance Direction': 'Choose Forward for Dreamless, Backward for Jue'
         }
-        self.config_type["Entrance Direction"] = {'type': "drop_down", 'options': ['Forward', 'Backward']}
+        self.config_type["Entrance Directrance Direction"] = {'type': "drop_down", 'options': ['Forward', 'Backward']}
         self.crownless_pos = (0.9, 0.4)
         self.last_drop = False
 
@@ -64,7 +64,7 @@ class FarmEchoTask(BaseCombatTask):
             #     return
 
             self.wait_until(lambda: self.in_combat(), time_out=40, raise_if_not_found=True)
-            self.sleep(4)
+            self.sleep(2)
             self.wait_until(lambda: self.in_combat(), time_out=3, raise_if_not_found=True)
             self.load_chars()
             while self.in_combat():
@@ -93,6 +93,9 @@ class FarmEchoTask(BaseCombatTask):
                                     use_gray_scale=True)
             self.wait_in_team_and_world(time_out=40)
             self.sleep(4)
+            if self.config.get('Entrance Direction') == 'Backward':
+                self.send_key('a', down_time=0.2)  # Jue
+                self.sleep(1)
 
     def incr_drop(self, dropped):
         if dropped:

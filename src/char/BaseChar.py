@@ -406,8 +406,8 @@ class BaseChar:
         #     left, top, width, height, area = stats[i]
         #     total_area += area
         # white_percent = total_area / box.width / box.height
-        if self.task.debug:
-            self.task.screenshot(f'{self}_forte_{white_percent}')
+        # if self.task.debug:
+        #     self.task.screenshot(f'{self}_forte_{white_percent}')
         self.logger.debug(f'is_forte_full {white_percent}')
         box.confidence = white_percent
         self.task.draw_boxes('forte_full', box)
