@@ -21,7 +21,7 @@ class FarmEchoTask(BaseCombatTask):
             'Level': '(1-6) Important, Choose which level to farm, lower levels might not produce a echo',
             'Entrance Direction': 'Choose Forward for Dreamless, Backward for Jue'
         }
-        self.config_type["Entrance Directrance Direction"] = {'type': "drop_down", 'options': ['Forward', 'Backward']}
+        self.config_type["Entrance Direction"] = {'type': "drop_down", 'options': ['Forward', 'Backward']}
         self.crownless_pos = (0.9, 0.4)
         self.last_drop = False
 
