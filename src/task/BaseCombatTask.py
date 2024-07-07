@@ -1,5 +1,4 @@
 import math
-import random
 import time
 
 import win32api
@@ -112,8 +111,8 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
 
     def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1):
         if x == -1 and y == -1:
-            x = self.width_of_screen(random.uniform(0.4, 0.6))
-            y = self.height_of_screen(random.uniform(0.4, 0.6))
+            x = self.width_of_screen(0.5)
+            y = self.height_of_screen(0.5)
         return super().click(x, y, move_back, name, interval)
 
     def wait_in_team_and_world(self, time_out=10):

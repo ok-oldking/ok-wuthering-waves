@@ -453,11 +453,11 @@ class BaseChar:
         self.check_combat()
         self.task.click()
 
-    def heavy_attack(self):
+    def heavy_attack(self, duration=0.6):
         self.check_combat()
         self.logger.debug('heavy attack start')
         self.task.mouse_down()
-        self.sleep(0.6)
+        self.sleep(duration)
         self.task.mouse_up()
         self.logger.debug('heavy attack end')
 
