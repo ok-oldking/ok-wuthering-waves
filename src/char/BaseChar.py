@@ -245,7 +245,7 @@ class BaseChar:
         if con_less_than > 0:
             if self.get_current_con() > con_less_than:
                 return False
-
+        self.task.in_liberation = True
         self.logger.debug(f'click_liberation start')
         start = time.time()
         last_click = start
@@ -257,7 +257,6 @@ class BaseChar:
                 break
             self.logger.debug(f'click_liberation liberation_available click')
             now = time.time()
-            self.task.in_liberation = True
             if now - last_click > 0.1:
                 self.task.send_key(self.get_liberation_key())
                 self.liberation_available_mark = False
@@ -267,7 +266,6 @@ class BaseChar:
             self.task.next_frame()
         while not self.task.in_team()[0]:
             clicked = True
-            self.task.in_liberation = True
             if send_click:
                 self.task.click(interval=0.1)
             if time.time() - start > 7:
