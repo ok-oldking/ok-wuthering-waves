@@ -18,13 +18,15 @@ class Encore(BaseChar):
         target_low_con = False
         if self.has_intro:
             self.sleep(0.7)
-        self.wait_down()
-        if self.can_resonance_step2():
+            self.wait_down()
+        elif self.can_resonance_step2(4):
             if self.click_resonance()[0]:
                 self.logger.info('try Encore resonance_step2 success')
                 self.sleep(0.3)
             else:
-                self.logger.info('try Encore resonance_step2 failure')
+                self.task.wait_until(self.resonance_available, time_out=1)
+                wait_success = self.click_resonance()[0]
+                self.logger.info(f'try Encore resonance_step2 wait_success:{wait_success}')
 
         if self.still_in_liberation():
             # if time.time() - self.liberation_time > 7.5 and self.is_forte_full():
@@ -57,13 +59,13 @@ class Encore(BaseChar):
     def count_echo_priority(self):
         return 40
 
-    def can_resonance_step2(self):
-        return time.time() - self.last_resonance < 4
+    def can_resonance_step2(self, delay=3):
+        return time.time() - self.last_resonance < delay
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False):
         if time.time() - self.last_heavy < 3:
             return Priority.MIN
-        elif self.still_in_liberation() or self.can_resonance_step2() or has_intro:
+        elif self.still_in_liberation() or self.can_resonance_step2():
             self.logger.info(
                 f'switch priority MIN because still in liberation')
             return Priority.MAX

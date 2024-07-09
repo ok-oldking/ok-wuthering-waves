@@ -12,16 +12,8 @@ logger = get_logger(__name__)
 
 
 class CombatCheck:
-    last_out_of_combat_time = 0
-    last_combat_check = 0
-    _in_combat = False
-    boss_lv_edge = None
-    boss_lv_box = None
-    in_liberation = False  # return True
-    has_count_down = False  # instant end of combat if count_down goes away
-    boss_health_box = None
 
-    def reset_to_false(self):
+    def __init__(self):
         self._in_combat = False
         self.boss_lv_edge = None
         self.in_liberation = False  # return True
@@ -30,7 +22,25 @@ class CombatCheck:
         self.last_combat_check = 0
         self.boss_lv_box = None
         self.boss_health_box = None
-        return False
+
+    def reset_to_false(self, recheck=False):
+        if recheck and time.time() - self.last_out_of_combat_time > 2.1:
+            logger.info('out of combat start double check')
+            if self.debug:
+                self.screenshot('out of combat start double check')
+            self.last_out_of_combat_time = time.time()
+            return True
+        else:
+            # logger.info('out of combat start double check sleep end')
+            self._in_combat = False
+            self.boss_lv_edge = None
+            self.in_liberation = False  # return True
+            self.has_count_down = False
+            self.last_out_of_combat_time = 0
+            self.last_combat_check = 0
+            self.boss_lv_box = None
+            self.boss_health_box = None
+            return False
 
     def check_count_down(self):
         count_down_area = self.box_of_screen(1820 / 3840, 266 / 2160, 2100 / 3840,
@@ -75,7 +85,7 @@ class CombatCheck:
                     if self.debug:
                         self.screenshot_boss_lv(current, 'out_of combat boss_health disappeared')
                     logger.info(f'out of combat because of boss_health disappeared, res:{max_val}')
-                    return self.reset_to_false()
+                    return False
                 else:
                     self.boss_lv_edge = None
                     self.boss_lv_box = None
@@ -100,12 +110,14 @@ class CombatCheck:
     def find_target_enemy(self):
         start = time.time()
         target_enemy = self.find_one('target_enemy_white', box=self.box_of_screen(0.14, 0.12, 0.8, 0.8),
-                                     use_gray_scale=True, threshold=0.8,
+                                     use_gray_scale=True, threshold=0.92,
                                      frame_processor=process_target_enemy_area)
+        # if self.debug and target_enemy is not None:
+        #     self.screenshot('find_target_enemy')
         logger.debug(f'find_target_enemy {target_enemy} {time.time() - start}')
         return target_enemy is not None
 
-    def in_combat(self):
+    def in_combat(self, rechecked=False):
         if self.in_liberation:
             logger.debug('in liberation return True')
             return True
@@ -114,9 +126,12 @@ class CombatCheck:
             if now - self.last_combat_check > 1:
                 self.last_combat_check = now
                 if not self.in_team()[0]:
-                    return self.reset_to_false()
+                    return self.reset_to_false(recheck=True)
                 if self.boss_lv_edge is not None:
-                    return self.check_boss()
+                    if self.check_boss():
+                        return True
+                    else:
+                        return self.reset_to_false(recheck=False)
                 if self.check_count_down():
                     return True
                 if not self.check_health_bar():
@@ -128,7 +143,6 @@ class CombatCheck:
                 else:
                     logger.debug(
                         'check in combat pass')
-                    # self.last_out_of_combat_time = 0
                     return True
             else:
                 return True

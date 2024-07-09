@@ -43,6 +43,18 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         self.reset_to_false()
         raise NotInCombatException(message)
 
+    def combat_once(self, wait_combat_time=180):
+        self.wait_until(lambda: self.in_combat(), time_out=wait_combat_time, raise_if_not_found=True)
+        self.load_chars()
+        while self.in_combat():
+            try:
+                logger.debug(f'combat_once loop {self.chars}')
+                self.get_current_char().perform()
+            except NotInCombatException as e:
+                logger.info(f'combat_once out of combat break {e}')
+                self.screenshot(f'out of combat break {e}')
+                break
+
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
         max_priority = Priority.MIN
         switch_to = None
@@ -119,7 +131,8 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         self.wait_until(self.in_team_and_world, time_out=time_out, raise_if_not_found=True)
 
     def in_team_and_world(self):
-        return self.in_team()[0] and self.find_one(f'gray_book_button', threshold=0.7, use_gray_scale=True)
+        return self.in_team()[
+            0]  # and self.find_one(f'gray_book_button', threshold=0.7, canny_lower=50, canny_higher=150)
 
     def get_current_char(self):
         for char in self.chars:

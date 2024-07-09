@@ -33,10 +33,10 @@ class FarmEchoTask(BaseCombatTask):
             self.log_error('must be in game world and in teams', notify=True)
             return
         if self.config.get('Teleport'):
-            book = self.find_one('gray_book_button', use_gray_scale=True)
-            if not book:
-                self.log_error("can't find the book button")
-                return
+            # book = self.find_one('gray_book_button', use_gray_scale=True)
+            # if not book:
+            #     self.log_error("can't find the book button")
+            #     return
             self.sleep(2)
             self.log_info('click f2 to open the book')
             self.send_key('f2')
