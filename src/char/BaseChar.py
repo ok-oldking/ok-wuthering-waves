@@ -264,6 +264,8 @@ class BaseChar:
             if time.time() - start > 5:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
+        if self.task.in_team()[0]:
+            self.sleep(0.05)
         while not self.task.in_team()[0]:
             clicked = True
             if send_click:
