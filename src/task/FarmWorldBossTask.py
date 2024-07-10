@@ -114,10 +114,10 @@ class FarmWorldBossTask(BaseCombatTask):
             if time.time() - start > 20:
                 raise Exception("scroll to long")
                 # if count % 10 == 0:
-            self.click_relative(0.5, 0.5)
+            self.click_relative(0.5, 0.7)
             self.sleep(0.1)
             # count += 1
-            self.scroll_relative(0.7, 0.5, -2)
+            self.scroll_relative(0.7, 0.7, -2)
             self.sleep(0.1)
             targets = self.find_feature('target_box', box=target_box, template=source_template)
             if targets:
