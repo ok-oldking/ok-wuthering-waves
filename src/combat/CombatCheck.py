@@ -3,7 +3,7 @@ import time
 
 import cv2
 
-from ok.color.Color import find_color_rectangles, keep_pixels_in_color_range
+from ok.color.Color import find_color_rectangles, keep_pixels_in_color_range, is_pure_black
 from ok.feature.Box import find_boxes_by_name
 from ok.logging.Logger import get_logger
 from src import text_white_color
@@ -22,8 +22,12 @@ class CombatCheck:
         self.last_combat_check = 0
         self.boss_lv_box = None
         self.boss_health_box = None
+        self.out_of_combat_reason = ""
 
-    def reset_to_false(self, recheck=False):
+    def reset_to_false(self, recheck=False, reason=""):
+        if is_pure_black(self.frame):
+            logger.error('getting a pure black frame for unknown reason, reset_to_false return true')
+            return True
         if recheck and time.time() - self.last_out_of_combat_time > 2.1:
             logger.info('out of combat start double check')
             if self.debug:
@@ -32,6 +36,7 @@ class CombatCheck:
             return True
         else:
             # logger.info('out of combat start double check sleep end')
+            self.out_of_combat_reason = reason
             self._in_combat = False
             self.boss_lv_edge = None
             self.in_liberation = False  # return True
@@ -110,7 +115,7 @@ class CombatCheck:
     def find_target_enemy(self):
         start = time.time()
         target_enemy = self.find_one('target_enemy_white', box=self.box_of_screen(0.14, 0.12, 0.8, 0.8),
-                                     use_gray_scale=True, threshold=0.92,
+                                     use_gray_scale=True, threshold=0.83,
                                      frame_processor=process_target_enemy_area)
         # if self.debug and target_enemy is not None:
         #     self.screenshot('find_target_enemy')
@@ -126,19 +131,19 @@ class CombatCheck:
             if now - self.last_combat_check > 1:
                 self.last_combat_check = now
                 if not self.in_team()[0]:
-                    return self.reset_to_false(recheck=True)
+                    return self.reset_to_false(recheck=False, reason="not in team")
                 if self.boss_lv_edge is not None:
                     if self.check_boss():
                         return True
                     else:
-                        return self.reset_to_false(recheck=False)
+                        return self.reset_to_false(recheck=False, reason="boss disappear")
                 if self.check_count_down():
                     return True
                 if not self.check_health_bar():
                     logger.debug('not in team or no health bar')
                     if not self.target_enemy():
                         logger.error('target_enemy failed, break out of combat')
-                        return self.reset_to_false()
+                        return self.reset_to_false(reason='target enemy failed')
                     return True
                 else:
                     logger.debug(
