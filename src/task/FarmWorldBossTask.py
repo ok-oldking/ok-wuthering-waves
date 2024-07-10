@@ -45,15 +45,16 @@ class FarmWorldBossTask(BaseCombatTask):
         self.sleep(1)
         self.log_info('click f2 to open the book')
         self.send_key('f2')
-        gray_book_boss = self.wait_until(lambda: self.find_one('gray_book_boss', vertical_variance=1,
-                                                               threshold=0.8, canny_lower=50,
-                                                               canny_higher=150) or self.find_one(
-            'gray_book_boss_highlight',
-            vertical_variance=1,
-            threshold=0.8,
-            canny_lower=50,
-            canny_higher=150),
-                                         time_out=3)
+        gray_book_boss = self.wait_until(
+            lambda: self.find_one('gray_book_boss', vertical_variance=1, horizontal_variance=0.05,
+                                  threshold=0.8, canny_lower=50,
+                                  canny_higher=150) or self.find_one(
+                'gray_book_boss_highlight',
+                vertical_variance=1, horizontal_variance=0.05,
+                threshold=0.8,
+                canny_lower=50,
+                canny_higher=150),
+            time_out=3)
         if not gray_book_boss:
             self.log_error("can't find the gray_book_boss", notify=True)
             raise Exception("can't find gray_book_boss")
@@ -109,15 +110,16 @@ class FarmWorldBossTask(BaseCombatTask):
         source_template = Feature(source_box.crop_frame(self.frame), source_box.x, source_box.y)
         target_box = self.box_of_screen(0.38, 0.16, 0.42, 0.33)
         start = time.time()
+
+        self.click_relative(0.5, 0.5)
+        self.sleep(0.1)
         # count = 0
         while True:
             if time.time() - start > 20:
                 raise Exception("scroll to long")
                 # if count % 10 == 0:
-            self.click_relative(0.5, 0.7)
-            self.sleep(0.1)
             # count += 1
-            self.scroll_relative(0.7, 0.7, -2)
+            self.scroll_relative(0.5, 0.5, -2)
             self.sleep(0.1)
             targets = self.find_feature('target_box', box=target_box, template=source_template)
             if targets:
