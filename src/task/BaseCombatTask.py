@@ -40,11 +40,13 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
 
     def raise_not_in_combat(self, message):
         logger.error(message)
-        self.reset_to_false()
+        self.reset_to_false(reason=message)
         raise NotInCombatException(message)
 
-    def combat_once(self, wait_combat_time=180):
+    def combat_once(self, wait_combat_time=180, wait_before=2):
         self.wait_until(lambda: self.in_combat(), time_out=wait_combat_time, raise_if_not_found=True)
+        self.sleep(wait_before)
+        self.wait_until(lambda: self.in_combat(), time_out=3, raise_if_not_found=True)
         self.load_chars()
         while self.in_combat():
             try:
@@ -52,8 +54,29 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                 self.get_current_char().perform()
             except NotInCombatException as e:
                 logger.info(f'combat_once out of combat break {e}')
-                self.screenshot(f'out of combat break {e}')
+                self.screenshot(f'out of combat break {self.out_of_combat_reason}')
                 break
+
+    # @property
+    # def frame(self):
+    #     frame = super().frame
+    #     if frame is not None:
+    #         start = time.time()
+    #         # if cv2.countNonZero(cv2.split(frame)) == 0:
+    #         means, stddevs = cv2.meanStdDev(frame)
+    #
+    #         # Check if all channel means are very close to zero (black)
+    #         all_black_means = np.all(np.isclose(means, 0.0, atol=1e-3))
+    #
+    #         # Check if all channel standard deviations are low (uniform)
+    #         low_stddevs = np.all(stddevs[0] < 1e-3)
+    #
+    #         # Return True if all channels are black and uniform
+    #         if all_black_means and low_stddevs:
+    #             logger.error('got a pure black frame!')
+    #             return self.next_frame()
+    #         logger.debug(f'black check:{time.time() - start}')
+    #     return frame
 
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
         max_priority = Priority.MIN
@@ -152,43 +175,41 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
     def check_combat(self):
         if not self.in_combat():
             if self.debug:
-                self.screenshot('not_in_combat')
+                self.screenshot('not_in_combat_calling_check_combat')
             self.raise_not_in_combat('combat check not in combat')
 
-    def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True):
+    def send_key_and_wait_f(self, direction, raise_if_not_found, time_out):
+        if time_out <= 0:
+            return
+        self.send_key_down(direction)
+        f_found = self.wait_feature('pick_up_f', horizontal_variance=0.1, vertical_variance=0.1,
+                                    use_gray_scale=True, threshold=0.8,
+                                    wait_until_before_delay=0, time_out=time_out, raise_if_not_found=False)
+        if not f_found:
+            if raise_if_not_found:
+                self.send_key_up(direction)
+                raise CannotFindException('cant find the f to enter')
+            else:
+                logger.warning(f"can't find the f to enter")
+                self.send_key_up(direction)
+                return False
+        self.send_key('f')
+        self.sleep(0.2)
+        self.send_key('f')
+        self.send_key_up(direction)
+        if self.wait_click_feature('cancel_button', relative_x=1, raise_if_not_found=False,
+                                   use_gray_scale=True, time_out=2):
+            logger.warning(f"found a claim reward")
+            return False
+        return f_found
+
+    def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0):
         if not self.find_one('pick_up_f', horizontal_variance=0.1, vertical_variance=0.1, threshold=0.8,
                              use_gray_scale=True):
-            self.send_key_down(direction)
-            f_found = self.wait_feature('pick_up_f', horizontal_variance=0.1, vertical_variance=0.1,
-                                        use_gray_scale=True, threshold=0.8,
-                                        wait_until_before_delay=0, time_out=time_out, raise_if_not_found=False)
-            if not f_found:
-                if raise_if_not_found:
-                    self.send_key_up(direction)
-                    raise CannotFindException('cant find the f to enter')
-                else:
-                    logger.warning(f"can't find the f to enter")
-                    self.send_key_up(direction)
-                    return False
-            self.send_key('f')
-            self.sleep(0.2)
-            self.send_key('f')
-            self.send_key_up(direction)
-            if self.wait_click_feature('cancel_button', relative_x=1, raise_if_not_found=True,
-                                       use_gray_scale=True, time_out=2):
-                logger.warning(f"found a claim reward")
-                return False
-            # while self.in_team_and_world():
-            #
-            #     self.send_key('f')
-            #     count += 1
-            #     if count > 20:
-            #         self.send_key_up(direction)
-            #         logger.error('failed to enter')
-            #         if raise_if_not_found:
-            #             raise CannotFindException('cant find the f to enter')
-            #         else:
-            #             return False
+            if backward_time > 0:
+                if self.send_key_and_wait_f('s', raise_if_not_found, backward_time):
+                    return True
+            return self.send_key_and_wait_f(direction, raise_if_not_found, time_out) and self.sleep(0.5)
         else:
             self.send_key('f')
         self.sleep(0.5)
