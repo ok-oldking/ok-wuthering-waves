@@ -105,9 +105,9 @@ class FarmWorldBossTask(BaseCombatTask):
         return True
 
     def scroll_down_a_page(self):
-        source_box = self.box_of_screen(0.38, 0.78, 0.42, 0.85)
+        source_box = self.box_of_screen(0.38, 0.78, 0.42, 0.80)
         source_template = Feature(source_box.crop_frame(self.frame), source_box.x, source_box.y)
-        target_box = self.box_of_screen(0.38, 0.18, 0.42, 0.31)
+        target_box = self.box_of_screen(0.38, 0.16, 0.42, 0.33)
         start = time.time()
         # count = 0
         while True:
