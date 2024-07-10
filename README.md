@@ -7,7 +7,7 @@
 Automation for Wuthering Waves using Computer Vision, Auto Combat
 Demonstration: [https://youtu.be/N32I1aMfdqQ](https://youtu.be/N32I1aMfdqQ)
 
-* Farm Boss Echo (Dreamless, Jue)
+* Farm Boss Echo (Dreamless, Jue and World Bosses)
 * Auto Combat (Beats 90% players for [Fully Supported Characters](src/char))
 * Auto Skip Dialogs in Quests
 * Supports All Game Languages
