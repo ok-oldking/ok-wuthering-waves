@@ -17,12 +17,12 @@ class FarmWorldBossTask(BaseCombatTask):
                            'Feilian Beringal',
                            'Mourning Aix', 'Impermanence Heron', 'Lampylumen Myriad', 'Mech Abomination',
                            'Bell-Borne Geochelone']
+        self.weekly_boss_index = {'Bell-Borne Geochelone': 3}
         self.weekly_boss_count = 1  # Bell-Borne Geochelone
         default_config = {
             'Boss1': 'N/A',
             'Boss2': 'N/A',
             'Boss3': 'N/A',
-            'Boss4': 'N/A',
             'Repeat Farm Count': 1000
         }
         default_config.update(self.default_config)
@@ -30,7 +30,6 @@ class FarmWorldBossTask(BaseCombatTask):
         self.config_type["Boss1"] = {'type': "drop_down", 'options': self.boss_names}
         self.config_type["Boss2"] = {'type': "drop_down", 'options': self.boss_names}
         self.config_type["Boss3"] = {'type': "drop_down", 'options': self.boss_names}
-        self.config_type["Boss4"] = {'type': "drop_down", 'options': self.boss_names}
         self.config_description = {
             'Level': '(1-6) Important, Choose which level to farm, lower levels might not produce a echo',
             'Entrance Direction': 'Choose Forward for Dreamless, Backward for Jue'
@@ -43,7 +42,6 @@ class FarmWorldBossTask(BaseCombatTask):
         index = self.boss_names.index(boss_name)
         index -= 1
         self.log_info(f'teleport to {boss_name} index {index}')
-
         self.sleep(1)
         self.log_info('click f2 to open the book')
         self.send_key('f2')
@@ -55,7 +53,13 @@ class FarmWorldBossTask(BaseCombatTask):
         self.sleep(1.5)
         self.click_relative(0.04, 0.29)
         self.sleep(1)
-        self.click_relative(0.21, 0.36)
+        if index >= (len(self.boss_names) - self.weekly_boss_count - 1):  # weekly turtle
+            logger.info('click weekly boss')
+            index = self.weekly_boss_index[boss_name]
+            self.click_relative(0.21, 0.59)
+        else:
+            logger.info('click normal boss')
+            self.click_relative(0.21, 0.36)
         # self.wait_click_feature('gray_book_forgery', raise_if_not_found=True, use_gray_scale=True, threshold=0.7)
         # self.wait_click_feature('gray_book_boss', raise_if_not_found=True, use_gray_scale=True, threshold=0.7)
         self.sleep(1)
@@ -79,7 +83,7 @@ class FarmWorldBossTask(BaseCombatTask):
         self.click_relative(0.5, 0.5)
         self.wait_click_feature('gray_custom_way_point', box=self.box_of_screen(0.62, 0.48, 0.70, 0.66),
                                 raise_if_not_found=True,
-                                use_gray_scale=True, threshold=0.75)
+                                use_gray_scale=True, threshold=0.75, time_out=2)
         travel = self.wait_feature('fast_travel_custom', raise_if_not_found=True, use_gray_scale=True, threshold=0.8)
         self.click_box(travel, relative_x=1.5)
 
@@ -91,17 +95,20 @@ class FarmWorldBossTask(BaseCombatTask):
         return True
 
     def scroll_down_a_page(self):
-        self.click_relative(0.5, 0.5)
-        self.sleep(0.2)
         source_box = self.box_of_screen(0.38, 0.78, 0.42, 0.85)
         source_template = Feature(source_box.crop_frame(self.frame), source_box.x, source_box.y)
         target_box = self.box_of_screen(0.38, 0.18, 0.42, 0.31)
         start = time.time()
+        # count = 0
         while True:
             if time.time() - start > 20:
                 raise Exception("scroll to long")
-            self.scroll_relative(0.7, 0.5, -1)
-            self.sleep(0.2)
+                # if count % 10 == 0:
+            self.click_relative(0.5, 0.5)
+            self.sleep(0.1)
+            # count += 1
+            self.scroll_relative(0.7, 0.5, -2)
+            self.sleep(0.1)
             targets = self.find_feature('target_box', box=target_box, template=source_template)
             if targets:
                 self.log_info(f'scroll to targets {targets} successfully')
@@ -124,7 +131,7 @@ class FarmWorldBossTask(BaseCombatTask):
                         logger.info(f'farm echo combat end')
                         self.wait_in_team_and_world(time_out=20)
                         logger.info(f'farm echo move forward walk_until_f to find echo')
-                        if self.walk_until_f(time_out=3,
+                        if self.walk_until_f(time_out=6, backward_time=1,
                                              raise_if_not_found=False):  # find and pick echo
                             logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
                             self.incr_drop(True)

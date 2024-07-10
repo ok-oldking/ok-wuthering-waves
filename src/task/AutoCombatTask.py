@@ -13,9 +13,9 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                 logger.debug(f'autocombat loop {self.chars}')
                 self.get_current_char().perform()
             except NotInCombatException as e:
-                logger.info(f'out of combat break {e}')
+                logger.info(f'auto_combat_task_out_of_combat {e}')
                 if self.debug:
-                    self.screenshot(f'out of combat break {e}')
+                    self.screenshot(f'auto_combat_task_out_of_combat {e}')
                 break
 
     def trigger(self):

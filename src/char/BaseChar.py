@@ -114,10 +114,10 @@ class BaseChar:
             else:
                 invalid_count += 1
         has_cd = invalid_count == 0 and (has_dot and 2 <= number_count <= 3)
-        if self.task.debug:
-            msg = f"{self}_{has_cd}_{box_name} number_count {number_count} big_count {big_area_count} invalid_count {invalid_count} has_dot {has_dot}"
-            # self.task.screenshot(msg, frame=cropped)
-            self.logger.debug(msg)
+        # if self.task.debug:
+        # msg = f"{self}_{has_cd}_{box_name} number_count {number_count} big_count {big_area_count} invalid_count {invalid_count} has_dot {has_dot}"
+        # self.task.screenshot(msg, frame=cropped)
+        # self.logger.debug(msg)
         return has_cd
 
     def is_available(self, percent, box_name):
