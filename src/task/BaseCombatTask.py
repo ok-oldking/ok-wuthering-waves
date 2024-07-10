@@ -197,8 +197,9 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         self.sleep(0.2)
         self.send_key('f')
         self.send_key_up(direction)
-        if self.wait_click_feature('cancel_button', relative_x=1, raise_if_not_found=False,
-                                   use_gray_scale=True, time_out=2):
+        if self.wait_click_feature('cancel_button', relative_x=1, raise_if_not_found=False, horizontal_variance=0.1,
+                                   vertical_variance=0.1,
+                                   use_gray_scale=True, time_out=1, threshold=0.8):
             logger.warning(f"found a claim reward")
             return False
         return f_found
