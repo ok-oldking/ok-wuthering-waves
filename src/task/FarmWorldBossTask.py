@@ -47,11 +47,11 @@ class FarmWorldBossTask(BaseCombatTask):
         self.send_key('f2')
         gray_book_boss = self.wait_until(
             lambda: self.find_one('gray_book_boss', vertical_variance=1, horizontal_variance=0.05,
-                                  threshold=0.8, canny_lower=50,
+                                  threshold=0.7, canny_lower=50,
                                   canny_higher=150) or self.find_one(
                 'gray_book_boss_highlight',
                 vertical_variance=1, horizontal_variance=0.05,
-                threshold=0.8,
+                threshold=0.7,
                 canny_lower=50,
                 canny_higher=150),
             time_out=3)
@@ -95,7 +95,7 @@ class FarmWorldBossTask(BaseCombatTask):
         self.wait_click_feature('gray_custom_way_point', box=self.box_of_screen(0.62, 0.48, 0.70, 0.66),
                                 raise_if_not_found=True,
                                 use_gray_scale=True, threshold=0.75, time_out=2)
-        travel = self.wait_feature('fast_travel_custom', raise_if_not_found=True, use_gray_scale=True, threshold=0.8)
+        travel = self.wait_feature('fast_travel_custom', raise_if_not_found=True, use_gray_scale=True, threshold=0.75)
         self.click_box(travel, relative_x=1.5)
 
     def check_main(self):
