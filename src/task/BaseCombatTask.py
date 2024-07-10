@@ -197,12 +197,16 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         self.sleep(0.2)
         self.send_key('f')
         self.send_key_up(direction)
-        if self.wait_click_feature('cancel_button', relative_x=1, raise_if_not_found=False, horizontal_variance=0.1,
-                                   vertical_variance=0.1,
-                                   use_gray_scale=True, time_out=1, threshold=0.8):
-            logger.warning(f"found a claim reward")
+        if self.handle_claim_button():
             return False
         return f_found
+
+    def handle_claim_button(self):
+        if self.wait_click_feature('cancel_button', relative_x=1, raise_if_not_found=False, horizontal_variance=0.1,
+                                   vertical_variance=0.1,
+                                   use_gray_scale=True, time_out=2, threshold=0.8):
+            logger.warning(f"found a claim reward")
+            return True
 
     def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0):
         if not self.find_one('pick_up_f', horizontal_variance=0.1, vertical_variance=0.1, threshold=0.8,
@@ -213,6 +217,8 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             return self.send_key_and_wait_f(direction, raise_if_not_found, time_out) and self.sleep(0.5)
         else:
             self.send_key('f')
+            if self.handle_claim_button():
+                return False
         self.sleep(0.5)
         return True
 
