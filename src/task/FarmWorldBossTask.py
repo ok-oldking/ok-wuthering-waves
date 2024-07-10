@@ -129,6 +129,9 @@ class FarmWorldBossTask(BaseCombatTask):
                         logger.info(f'farm echo combat once start')
                         self.combat_once()
                         logger.info(f'farm echo combat end')
+                        if boss_name == 'Bell-Borne Geochelone':
+                            logger.info(f'sleep for the Boss model to disappear')
+                            self.sleep(5)
                         self.wait_in_team_and_world(time_out=20)
                         logger.info(f'farm echo move forward walk_until_f to find echo')
                         if self.walk_until_f(time_out=6, backward_time=1,
