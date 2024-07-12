@@ -53,7 +53,8 @@ class FarmEchoTask(BaseCombatTask):
 
         while count < self.config.get("Repeat Farm Count", 0):
             count += 1
-            self.wait_until(lambda: self.in_team()[0], time_out=40)
+            self.wait_in_team_and_world(time_out=20)
+            self.sleep(1)
             self.walk_until_f(time_out=10,
                               direction='w' if self.config.get('Entrance Direction') == 'Forward' else 's')
             logger.info(f'enter success')
