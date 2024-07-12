@@ -91,7 +91,8 @@ class FarmWorldBossTask(BaseCombatTask):
         self.wait_feature('gray_teleport', raise_if_not_found=True, use_gray_scale=True, time_out=120,
                           pre_action=lambda: self.click_box(proceeds[index], relative_x=-1))
         self.sleep(1)
-        self.click_relative(0.5, 0.5)
+        self.wait_click_feature('custom_teleport', box=self.box_of_screen(0.48, 0.45, 0.54, 0.58),
+                                raise_if_not_found=True, threshold=0.8, time_out=2)
         self.wait_click_feature('gray_custom_way_point', box=self.box_of_screen(0.62, 0.48, 0.70, 0.66),
                                 raise_if_not_found=True,
                                 use_gray_scale=True, threshold=0.75, time_out=2)
@@ -106,9 +107,9 @@ class FarmWorldBossTask(BaseCombatTask):
         return True
 
     def scroll_down_a_page(self):
-        source_box = self.box_of_screen(0.38, 0.78, 0.42, 0.80)
+        source_box = self.box_of_screen(0.38, 0.80, 0.42, 0.83)
         source_template = Feature(source_box.crop_frame(self.frame), source_box.x, source_box.y)
-        target_box = self.box_of_screen(0.38, 0.16, 0.42, 0.33)
+        target_box = self.box_of_screen(0.38, 0.16, 0.42, 0.31)
         start = time.time()
 
         self.click_relative(0.5, 0.5)
@@ -119,7 +120,7 @@ class FarmWorldBossTask(BaseCombatTask):
                 raise Exception("scroll to long")
                 # if count % 10 == 0:
             # count += 1
-            self.scroll_relative(0.5, 0.5, -2)
+            self.scroll_relative(0.5, 0.5, -1)
             self.sleep(0.1)
             targets = self.find_feature('target_box', box=target_box, template=source_template)
             if targets:

@@ -116,39 +116,6 @@ class FarmEchoTask(BaseCombatTask):
         self.wait_click_feature('gray_start_battle', relative_x=-1, raise_if_not_found=True,
                                 use_gray_scale=True, click_after_delay=0.5, threshold=0.8)
 
-    def find_echo_drop(self):
-        # self.click_relative(0.5, 0.5)
-        # self.sleep(1)
-        # self.middle_click_relative(0.5, 0.5)
-        step = 0.01
-        box = self.box_of_screen(0.25, 0.20, 0.75, 0.53)
-        highest_percent = 0.0
-        highest_index = 0
-        for i in range(4):
-            self.middle_click_relative(0.5, 0.5)
-            self.sleep(2)
-            color_percent = self.calculate_color_percentage(echo_color, box)
-            if color_percent > highest_percent:
-                highest_percent = color_percent
-                highest_index = i
-            if self.debug:
-                self.screenshot(f'find_echo_{highest_index}_{float(color_percent):.3f}_{float(highest_percent):.3}')
-            logger.debug(f'searching for echo {i} {float(color_percent):.3f} {float(highest_percent):.3}')
-            # self.click_relative(0.25, 0.25)
-            self.send_key('a', down_time=0.05)
-            self.sleep(1)
-
-        if highest_percent > 0.05:
-            for i in range(highest_index):
-                self.middle_click_relative(0.5, 0.5)
-                self.sleep(1)
-                self.send_key('a', down_time=0.05)
-                self.sleep(1)
-        if self.debug:
-            self.screenshot(f'pick_echo_{highest_index}')
-        logger.info(f'found echo {highest_index} walk')
-        return self.walk_until_f(raise_if_not_found=False, time_out=5)
-
 
 echo_color = {
     'r': (200, 255),  # Red range
