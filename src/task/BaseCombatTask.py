@@ -48,6 +48,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         self.sleep(wait_before)
         self.wait_until(lambda: self.in_combat(), time_out=3, raise_if_not_found=True)
         self.load_chars()
+        self.info['Combat Count'] = self.info.get('Combat Count', 0) + 1
         while self.in_combat():
             try:
                 logger.debug(f'combat_once loop {self.chars}')
