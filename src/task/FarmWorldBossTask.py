@@ -89,7 +89,7 @@ class FarmWorldBossTask(BaseCombatTask):
         # self.click_relative(self.crownless_pos[0], self.crownless_pos[1])
         # self.wait_click_feature('gray_teleport', raise_if_not_found=True, use_gray_scale=True)
         self.wait_feature('gray_teleport', raise_if_not_found=True, use_gray_scale=True, time_out=120,
-                          pre_action=lambda: self.click_box(proceeds[index], relative_x=-1))
+                          pre_action=lambda: self.click_box(proceeds[index], relative_x=-1) and self.sleep(1.5))
         self.sleep(1)
         self.wait_click_feature('custom_teleport', box=self.box_of_screen(0.48, 0.45, 0.54, 0.58),
                                 raise_if_not_found=True, threshold=0.8, time_out=2)
