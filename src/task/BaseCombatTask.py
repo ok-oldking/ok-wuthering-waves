@@ -57,6 +57,27 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                 self.screenshot(f'out of combat break {self.out_of_combat_reason}')
                 break
 
+    def run_in_circle_to_find_echo(self, circle_count=3):
+        directions = ['w', 'a', 's', 'd']
+        step = 1
+        duration = 1
+        total_index = 0
+        for count in range(circle_count):
+            logger.debug(f'running first circle_count{circle_count} circle {total_index} duration:{duration}')
+            for direction in directions:
+                if total_index > 2 and (total_index + 1) % 2 == 0:
+                    duration += step
+                # self.send_key_down(direction)
+                # self.sleep(0.02)
+                # self.mouse_down(key="right")
+                picked = self.send_key_and_wait_f(direction, False, time_out=duration, running=True)
+                # self.mouse_up(key="right")
+                # self.send_key_up(direction)
+                if picked:
+                    self.mouse_up(key="right")
+                    return True
+                total_index += 1
+
     # @property
     # def frame(self):
     #     frame = super().frame
@@ -178,26 +199,34 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                 self.screenshot('not_in_combat_calling_check_combat')
             self.raise_not_in_combat('combat check not in combat')
 
-    def send_key_and_wait_f(self, direction, raise_if_not_found, time_out):
+    def send_key_and_wait_f(self, direction, raise_if_not_found, time_out, running=False):
         if time_out <= 0:
             return
+        start = time.time()
+        if running:
+            self.mouse_down(key='right')
         self.send_key_down(direction)
-        f_found = self.wait_feature('pick_up_f', horizontal_variance=0.1, vertical_variance=0.1,
+        f_found = self.wait_feature('pick_up_f', horizontal_variance=0.05, vertical_variance=0.05,
                                     use_gray_scale=True, threshold=0.8,
                                     wait_until_before_delay=0, time_out=time_out, raise_if_not_found=False)
+        self.send_key_up(direction)
+        if running:
+            self.mouse_up(key='right')
         if not f_found:
             if raise_if_not_found:
-                self.send_key_up(direction)
                 raise CannotFindException('cant find the f to enter')
             else:
                 logger.warning(f"can't find the f to enter")
-                self.send_key_up(direction)
                 return False
         self.send_key('f')
-        self.sleep(0.2)
-        self.send_key('f')
-        self.send_key_up(direction)
         if self.handle_claim_button():
+            self.send_key_down(direction)
+            if running:
+                self.mouse_down(key='right')
+            self.sleep(time.time() - start)
+            if running:
+                self.mouse_up(key='right')
+            self.send_key_up(direction)
             return False
         return f_found
 

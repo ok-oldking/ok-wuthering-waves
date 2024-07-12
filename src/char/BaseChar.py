@@ -126,6 +126,7 @@ class BaseChar:
     def switch_out(self):
         self.is_current_char = False
         self.has_intro = False
+        self.liberation_available_mark = self.liberation_available()
         if self.current_con == 1:
             self.logger.info(f'switch_out at full con set current_con to 0')
             self.current_con = 0
@@ -135,7 +136,6 @@ class BaseChar:
 
     def switch_next_char(self, post_action=None, free_intro=False, target_low_con=False):
         self.is_forte_full()
-        self.liberation_available_mark = self.liberation_available()
         self.last_switch_time = self.task.switch_next_char(self, post_action=post_action, free_intro=free_intro,
                                                            target_low_con=target_low_con)
 
@@ -250,24 +250,25 @@ class BaseChar:
         start = time.time()
         last_click = start
         clicked = False
-        self.task.send_key(self.get_liberation_key())
         while self.liberation_available():
-            if not self.task.in_team()[0]:
-                self.task.next_frame()
-                break
             self.logger.debug(f'click_liberation liberation_available click')
             now = time.time()
             if now - last_click > 0.1:
                 self.task.send_key(self.get_liberation_key())
                 self.liberation_available_mark = False
+                clicked = True
                 last_click = now
             if time.time() - start > 5:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
-        if self.task.in_team()[0]:
-            self.sleep(0.05)
+        if clicked:
+            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=1):
+                self.logger.debug(f'not in_team successfully casted liberation')
+            else:
+                self.task.in_liberation = False
+                self.logger.error(f'clicked liberation but no effect')
+                return False
         while not self.task.in_team()[0]:
-            clicked = True
             if send_click:
                 self.task.click(interval=0.1)
             if time.time() - start > 7:
