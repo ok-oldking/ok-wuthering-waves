@@ -262,7 +262,7 @@ class BaseChar:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
         if clicked:
-            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=1):
+            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.6):
                 self.logger.debug(f'not in_team successfully casted liberation')
             else:
                 self.task.in_liberation = False
@@ -277,7 +277,6 @@ class BaseChar:
         self.task.in_liberation = False
         if clicked:
             liberation_time = f'{(time.time() - start):.2f}'
-            self.task.info[f'{self} liberation time'] = liberation_time
             self.logger.info(f'click_liberation end {liberation_time}')
         return clicked
 
@@ -424,17 +423,17 @@ class BaseChar:
                 return False
             else:
                 return self.is_available(snap, 'liberation')
-        else:
-            mark_to_check = char_lib_check_marks[self.index]
-            box = self.task.get_box_by_name(mark_to_check)
-            box = box.copy(x_offset=-box.width, y_offset=-box.height, width_offset=box.width * 2,
-                           height_offset=box.height * 2)
-            for match in char_lib_check_marks:
-                mark = self.task.find_one(match, box=box, canny_lower=10, canny_higher=80, threshold=0.6)
-                if mark is not None:
-                    self.logger.debug(f'{self.__repr__()} liberation ready by checking mark {mark}')
-                    self.liberation_available_mark = True
-                    return True
+        # else:
+        #     mark_to_check = char_lib_check_marks[self.index]
+        #     box = self.task.get_box_by_name(mark_to_check)
+        #     box = box.copy(x_offset=-box.width, y_offset=-box.height, width_offset=box.width * 2,
+        #                    height_offset=box.height * 2)
+        #     for match in char_lib_check_marks:
+        #         mark = self.task.find_one(match, box=box, canny_lower=10, canny_higher=80, threshold=0.8)
+        #         if mark is not None:
+        #             self.logger.debug(f'{self.__repr__()} liberation ready by checking mark {mark}')
+        #             self.liberation_available_mark = True
+        #             return True
 
     def __str__(self):
         return self.__repr__()
