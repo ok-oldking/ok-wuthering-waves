@@ -1,7 +1,7 @@
 import re
 
 from ok.logging.Logger import get_logger
-from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
+from src.task.BaseCombatTask import BaseCombatTask
 
 logger = get_logger(__name__)
 
@@ -26,6 +26,7 @@ class FarmEchoTask(BaseCombatTask):
         self.last_drop = False
 
     def run(self):
+        # return self.run_in_circle_to_find_echo()
         self.handler.post(self.mouse_reset, 0.01)
         # self.find_echo_drop()
         # return
@@ -64,30 +65,19 @@ class FarmEchoTask(BaseCombatTask):
             #     self.log_error('Can not find a level to enter', notify=True)
             #     return
 
-            self.wait_until(lambda: self.in_combat(), time_out=40, raise_if_not_found=True)
-            self.sleep(2)
-            self.wait_until(lambda: self.in_combat(), time_out=3, raise_if_not_found=True)
-            self.load_chars()
-            while self.in_combat():
-                try:
-                    logger.debug(f'farm echo loop {self.chars}')
-                    self.get_current_char().perform()
-                except NotInCombatException as e:
-                    logger.info(f'farm echo loop out of combat break {e}')
-                    # if self.debug:
-                    self.screenshot(f'out of combat break {e}')
-                    break
+            self.combat_once()
             logger.info(f'farm echo combat end')
             self.wait_in_team_and_world(time_out=20)
             logger.info(f'farm echo move forward walk_until_f to find echo')
-            if self.walk_until_f(time_out=3 if self.config.get('Entrance Direction') == 'Forward' else 6,
-                                 raise_if_not_found=False):  # find and pick echo
+            if self.config.get('Entrance Direction') == 'Forward':
+                dropped = self.walk_until_f(time_out=3,
+                                            raise_if_not_found=False)  # find and pick echo
                 logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
                 self.incr_drop(True)
-            elif not self.last_drop:  # only search for the guaranteed drop
-                self.incr_drop(self.find_echo_drop())
             else:
-                self.incr_drop(False)
+                self.sleep(2)
+                dropped = self.run_in_circle_to_find_echo(3)
+            self.incr_drop(dropped)
             self.sleep(0.5)
             self.send_key('esc')
             self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=True,
@@ -133,16 +123,15 @@ class FarmEchoTask(BaseCombatTask):
         highest_index = 0
         for i in range(4):
             self.middle_click_relative(0.5, 0.5)
+            self.sleep(2)
             color_percent = self.calculate_color_percentage(echo_color, box)
             if color_percent > highest_percent:
                 highest_percent = color_percent
                 highest_index = i
-            self.screenshot(f'find_echo_{highest_index}_{float(color_percent):.3f}_{float(highest_percent):.3}')
-            self.sleep(1)
-            self.next_frame()
+            if self.debug:
+                self.screenshot(f'find_echo_{highest_index}_{float(color_percent):.3f}_{float(highest_percent):.3}')
             logger.debug(f'searching for echo {i} {float(color_percent):.3f} {float(highest_percent):.3}')
             # self.click_relative(0.25, 0.25)
-            self.sleep(1)
             self.send_key('a', down_time=0.05)
             self.sleep(1)
 
