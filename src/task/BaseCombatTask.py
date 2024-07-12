@@ -60,20 +60,15 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
 
     def run_in_circle_to_find_echo(self, circle_count=3):
         directions = ['w', 'a', 's', 'd']
-        step = 1
-        duration = 1
+        step = 1.5
+        duration = 0.5
         total_index = 0
         for count in range(circle_count):
             logger.debug(f'running first circle_count{circle_count} circle {total_index} duration:{duration}')
             for direction in directions:
                 if total_index > 2 and (total_index + 1) % 2 == 0:
                     duration += step
-                # self.send_key_down(direction)
-                # self.sleep(0.02)
-                # self.mouse_down(key="right")
                 picked = self.send_key_and_wait_f(direction, False, time_out=duration, running=True)
-                # self.mouse_up(key="right")
-                # self.send_key_up(direction)
                 if picked:
                     self.mouse_up(key="right")
                     return True
@@ -219,12 +214,15 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             else:
                 logger.warning(f"can't find the f to enter")
                 return False
+        remaining = time.time() - start
         self.send_key('f')
+
         if self.handle_claim_button():
+            self.sleep(0.5)
             self.send_key_down(direction)
             if running:
                 self.mouse_down(key='right')
-            self.sleep(time.time() - start)
+            self.sleep(remaining + 0.2)
             if running:
                 self.mouse_up(key='right')
             self.send_key_up(direction)

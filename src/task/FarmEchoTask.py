@@ -56,7 +56,8 @@ class FarmEchoTask(BaseCombatTask):
             self.wait_in_team_and_world(time_out=20)
             self.sleep(1)
             self.walk_until_f(time_out=10,
-                              direction='w' if self.config.get('Entrance Direction') == 'Forward' else 's')
+                              direction='w' if self.config.get('Entrance Direction') == 'Forward' else 's',
+                              raise_if_not_found=True)
             logger.info(f'enter success')
             stam = self.wait_ocr(0.75, 0.02, 0.85, 0.09, match=re.compile('240'), raise_if_not_found=True)
             logger.info(f'found stam {stam}')
@@ -103,16 +104,17 @@ class FarmEchoTask(BaseCombatTask):
         #         continue
         logger.info(f'choose level {start}')
         self.click_relative(x, y + (start - 1) * distance)
-        # self.sleep(1)
+        self.sleep(0.5)
         # self.click_relative(x, y + (start - 1) * distance)
-        self.wait_click_feature('gray_button_challenge', raise_if_not_found=True, use_gray_scale=True)
+        self.wait_click_feature('gray_button_challenge', raise_if_not_found=True, use_gray_scale=True,
+                                click_after_delay=0.5)
         # self.sleep(1)
         # confirm_button = self.find_one('gray_confirm_exit_button', use_gray_scale=True, threshold=0.7)
 
         self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False,
-                                use_gray_scale=True, time_out=3, click_after_delay=0.5)
+                                use_gray_scale=True, time_out=3, click_after_delay=0.5, threshold=0.8)
         self.wait_click_feature('gray_start_battle', relative_x=-1, raise_if_not_found=True,
-                                use_gray_scale=True, click_after_delay=0.5)
+                                use_gray_scale=True, click_after_delay=0.5, threshold=0.8)
 
     def find_echo_drop(self):
         # self.click_relative(0.5, 0.5)
