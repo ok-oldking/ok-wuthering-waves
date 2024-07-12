@@ -3,7 +3,7 @@ import time
 
 import cv2
 
-from ok.color.Color import find_color_rectangles, keep_pixels_in_color_range, is_pure_black
+from ok.color.Color import find_color_rectangles, get_mask_in_color_range, is_pure_black
 from ok.feature.Box import find_boxes_by_name
 from ok.logging.Logger import get_logger
 from src import text_white_color
@@ -15,13 +15,15 @@ class CombatCheck:
 
     def __init__(self):
         self._in_combat = False
-        self.boss_lv_edge = None
+        self.boss_lv_template = None
+        self.boss_lv_mask = None
         self.in_liberation = False  # return True
         self.has_count_down = False
         self.last_out_of_combat_time = 0
         self.last_combat_check = 0
         self.boss_lv_box = None
         self.boss_health_box = None
+        self.boss_health = None
         self.out_of_combat_reason = ""
 
     def reset_to_false(self, recheck=False, reason=""):
@@ -38,12 +40,14 @@ class CombatCheck:
             # logger.info('out of combat start double check sleep end')
             self.out_of_combat_reason = reason
             self._in_combat = False
-            self.boss_lv_edge = None
+            self.boss_lv_mask = None
+            self.boss_lv_template = None
             self.in_liberation = False  # return True
             self.has_count_down = False
             self.last_out_of_combat_time = 0
             self.last_combat_check = 0
             self.boss_lv_box = None
+            self.boss_health = None
             self.boss_health_box = None
             return False
 
@@ -75,10 +79,10 @@ class CombatCheck:
             return self.has_count_down
 
     def check_boss(self):
-        current, area = self.keep_boss_text_white()
+        current = self.boss_lv_box.crop_frame(self.frame)
         max_val = 0
         if current is not None:
-            res = cv2.matchTemplate(current, self.boss_lv_edge, cv2.TM_CCOEFF_NORMED)
+            res = cv2.matchTemplate(current, self.boss_lv_template, cv2.TM_CCOEFF_NORMED, mask=self.boss_lv_mask)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
         if max_val < 0.8:
             if self.debug:
@@ -92,7 +96,7 @@ class CombatCheck:
                     logger.info(f'out of combat because of boss_health disappeared, res:{max_val}')
                     return False
                 else:
-                    self.boss_lv_edge = None
+                    self.boss_lv_template = None
                     self.boss_lv_box = None
                     logger.info(f'boss_health disappeared, but still in combat')
                     return True
@@ -104,12 +108,12 @@ class CombatCheck:
 
     def screenshot_boss_lv(self, current, name):
         if self.debug:
-            if self.boss_lv_box is not None and self.boss_lv_edge is not None and current is not None:
+            if self.boss_lv_box is not None and self.boss_lv_template is not None and current is not None:
                 frame = self.frame.copy()
                 frame[self.boss_lv_box.y:self.boss_lv_box.y + self.boss_lv_box.height,
                 self.boss_lv_box.x:self.boss_lv_box.x + self.boss_lv_box.width] = current
                 x, y, w, h = self.boss_lv_box.x, self.boss_lv_box.height + 50 + self.boss_lv_box.y, self.boss_lv_box.width, self.boss_lv_box.height
-                frame[y:y + h, x:x + w] = self.boss_lv_edge
+                frame[y:y + h, x:x + w] = self.boss_lv_template
                 self.screenshot(name, frame)
 
     def find_target_enemy(self):
@@ -132,7 +136,7 @@ class CombatCheck:
                 self.last_combat_check = now
                 if not self.in_team()[0]:
                     return self.reset_to_false(recheck=False, reason="not in team")
-                if self.boss_lv_edge is not None:
+                if self.boss_lv_template is not None:
                     if self.check_boss():
                         return True
                     else:
@@ -154,14 +158,14 @@ class CombatCheck:
         else:
             in_combat = self.in_team()[0] and self.check_health_bar()
             if in_combat:
-                in_combat = self.boss_health_box is not None or self.boss_lv_edge is not None or self.has_count_down
+                in_combat = self.boss_health_box is not None or self.boss_lv_template is not None or self.has_count_down
                 if in_combat:
                     self.target_enemy(wait=False)
                 else:
                     in_combat = self.target_enemy()
             if in_combat:
                 logger.info(
-                    f'enter combat boss_lv_edge:{self.boss_lv_edge is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
+                    f'enter combat boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
                 self._in_combat = True
                 return True
 
@@ -210,24 +214,24 @@ class CombatCheck:
         if len(boss_lv_texts) > 0:
             logger.debug(f'boss_lv_texts: {boss_lv_texts}')
             self.boss_lv_box = boss_lv_texts[0]
-            self.boss_lv_edge, area = self.keep_boss_text_white()
-            if self.boss_lv_edge is None:
+            self.boss_lv_template, self.boss_lv_mask = self.keep_boss_text_white()
+            if self.boss_lv_template is None:
                 self.boss_lv_box = None
                 return False
             return True
 
     def keep_boss_text_white(self):
-        corpped = self.boss_lv_box.crop_frame(self.frame)
-        image, area = keep_pixels_in_color_range(corpped, boss_white_text_color)
-        if area / image.shape[0] * image.shape[1] < 0.05:
-            image, area = keep_pixels_in_color_range(corpped, boss_orange_text_color)
-            if area / image.shape[0] * image.shape[1] < 0.05:
-                image, area = keep_pixels_in_color_range(corpped,
-                                                         boss_red_text_color)
-                if area / image.shape[0] * image.shape[1] < 0.05:
+        cropped = self.boss_lv_box.crop_frame(self.frame)
+        mask, area = get_mask_in_color_range(cropped, boss_white_text_color)
+        if area / mask.shape[0] * mask.shape[1] < 0.05:
+            mask, area = get_mask_in_color_range(cropped, boss_orange_text_color)
+            if area / mask.shape[0] * mask.shape[1] < 0.05:
+                mask, area = get_mask_in_color_range(cropped,
+                                                     boss_red_text_color)
+                if area / mask.shape[0] * mask.shape[1] < 0.05:
                     logger.error(f'keep_boss_text_white cant find text with the correct color')
                     return None, 0
-        return image, area
+        return cropped, mask
 
 
 count_down_re = re.compile(r'\d\d')
