@@ -68,7 +68,7 @@ class Encore(BaseChar):
         elif self.still_in_liberation() or self.can_resonance_step2():
             self.logger.info(
                 f'switch priority MIN because still in liberation')
-            return Priority.MAX
+            return Priority.MAX + 1
         else:
             return super().do_get_switch_priority(current_char, has_intro)
 
