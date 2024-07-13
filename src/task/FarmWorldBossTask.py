@@ -74,9 +74,12 @@ class FarmWorldBossTask(BaseCombatTask):
         # self.wait_click_feature('gray_book_forgery', raise_if_not_found=True, use_gray_scale=True, threshold=0.7)
         # self.wait_click_feature('gray_book_boss', raise_if_not_found=True, use_gray_scale=True, threshold=0.7)
         self.sleep(1)
-        while index > 4:  # first page
-            self.log_info(f'index {index} greater than 4, swipe')
-            self.scroll_down_a_page()
+        # while index > 4:  # first page
+        if index > 4:
+            self.log_info(f'click scroll bar')
+            self.click_relative(3760 / 3840, 1852 / 2160)
+            self.sleep(0.5)
+            # self.scroll_down_a_page()
             index -= 4
         # y = y + (index - 1) * distance
         self.log_info(f'index after scrolling down {index}')
@@ -91,8 +94,11 @@ class FarmWorldBossTask(BaseCombatTask):
         self.wait_feature('gray_teleport', raise_if_not_found=True, use_gray_scale=True, time_out=120,
                           pre_action=lambda: self.click_box(proceeds[index], relative_x=-1) and self.sleep(1.5))
         self.sleep(1)
-        self.wait_click_feature('custom_teleport', box=self.box_of_screen(0.48, 0.45, 0.54, 0.58),
-                                raise_if_not_found=True, threshold=0.8, time_out=2)
+        teleport = self.wait_click_feature('custom_teleport', box=self.box_of_screen(0.48, 0.45, 0.54, 0.58),
+                                           raise_if_not_found=False, threshold=0.8, time_out=2)
+        if not teleport:
+            self.click_relative(0.5, 0.5)
+        self.sleep(0.5)
         self.wait_click_feature('gray_custom_way_point', box=self.box_of_screen(0.62, 0.48, 0.70, 0.66),
                                 raise_if_not_found=True,
                                 use_gray_scale=True, threshold=0.75, time_out=2)
