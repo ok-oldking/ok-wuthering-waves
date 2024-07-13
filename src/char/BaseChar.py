@@ -52,8 +52,7 @@ class BaseChar:
         self._is_forte_full = False
         self.config = {"_full_ring_area": 0, "_ring_color_index": -1}
         if type(self) is not BaseChar:
-            self.config = Config(self.config,
-                                 self.name)
+            self.config = Config(self.name, self.config)
         self.current_con = 0
 
     def char_config(self):
@@ -192,7 +191,7 @@ class BaseChar:
         return clicked, duration, animated
 
     def send_resonance_key(self, post_sleep=0, interval=-1):
-        self.task.send_key(self.task.config.get('Resonance Key'), interval=interval)
+        self.task.send_key(self.task.key_config.get('Resonance Key'), interval=interval)
         self.sleep(post_sleep)
 
     def update_res_cd(self):
@@ -281,10 +280,10 @@ class BaseChar:
         return clicked
 
     def get_liberation_key(self):
-        return self.task.config['Liberation Key']
+        return self.task.key_config['Liberation Key']
 
     def get_echo_key(self):
-        return self.task.config['Echo Key']
+        return self.task.key_config['Echo Key']
 
     def get_switch_priority(self, current_char, has_intro):
         priority = self.do_get_switch_priority(current_char, has_intro)

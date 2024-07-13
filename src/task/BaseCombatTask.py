@@ -3,6 +3,7 @@ import time
 
 import win32api
 
+from ok.config.ConfigOption import ConfigOption
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
@@ -21,6 +22,13 @@ class NotInCombatException(Exception):
     pass
 
 
+key_config_option = ConfigOption('Game Hotkey Config', {
+    'Echo Key': 'q',
+    'Liberation Key': 'r',
+    'Resonance Key': 'e',
+}, description='In Game Hotkey for Skills')
+
+
 class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
 
     def __init__(self):
@@ -28,11 +36,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         CombatCheck.__init__(self)
         self.chars = [None, None, None]
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
-        self.default_config.update({
-            'Echo Key': 'q',
-            'Liberation Key': 'r',
-            'Resonance Key': 'e',
-        })
+        self.key_config = self.get_config(key_config_option)
 
         self.mouse_pos = None
 

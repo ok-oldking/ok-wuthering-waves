@@ -62,13 +62,10 @@ config = {
     'error_log_file': 'logs/ok-script_error.log',
     'version': version,
     'onetime_tasks': [  # tasks to execute
-        FarmEchoTask(),
-        FarmWorldBossTask()
+        FarmEchoTask,
+        FarmWorldBossTask
     ], 'trigger_tasks': [
-        AutoCombatTask(),
-        AutoDialogTask()
-    ],
-    'scenes': [  # scenes to detect
-
+        AutoCombatTask,
+        AutoDialogTask
     ]
 }
