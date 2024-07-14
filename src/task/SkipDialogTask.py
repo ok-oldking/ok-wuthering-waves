@@ -17,6 +17,7 @@ class AutoDialogTask(TriggerTask, FindFeature, OCR):
         self.confirm_dialog_checked = False
         self.check_trigger_interval = 0.2
         self.has_eye_time = 0
+        self.name = "Skip Dialog during Quests"
 
     def run(self):
         pass
