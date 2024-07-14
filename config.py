@@ -56,7 +56,7 @@ config = {
 """,
     'supported_screen_ratio': '16:9',
     'screenshots_folder': "screenshots",
-    'gui_title': 'OK-Wuthering-Waves',  # Optional
+    'gui_title': 'OK-WW',  # Optional
     # 'coco_feature_folder': get_path(__file__, 'assets/coco_feature'),  # required if using feature detection
     'log_file': 'logs/ok-script.log',  # Optional, auto rotating every day
     'error_log_file': 'logs/ok-script_error.log',
