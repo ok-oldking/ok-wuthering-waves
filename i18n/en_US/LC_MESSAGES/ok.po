@@ -1,0 +1,70 @@
+#
+msgid ""
+msgstr ""
+
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: you@example.com\n"
+"Last-Translator: you@example.com\n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
+msgstr ""
+
+msgid "AutoCombatTask"
+msgstr ""
+
+msgid "AutoDialogTask"
+msgstr ""
+
+msgid "Boss1"
+msgstr ""
+
+msgid "Boss2"
+msgstr ""
+
+msgid "Boss3"
+msgstr ""
+
+msgid "Choose Forward for Dreamless, Backward for Jue"
+msgstr ""
+
+msgid "Click Start at the Entrance(Dreamless, Jue)"
+msgstr ""
+
+msgid "Click Start in Game World"
+msgstr ""
+
+msgid "Echo Key"
+msgstr ""
+
+msgid "Entrance Direction"
+msgstr ""
+
+msgid "Farm Echo in Dungeon"
+msgstr ""
+
+msgid "Farm World Boss(Must Drop a WayPoint on the Boss First)"
+msgstr ""
+
+msgid "Game Hotkey Config"
+msgstr ""
+
+msgid "In Game Hotkey for Skills"
+msgstr ""
+
+msgid "Level"
+msgstr ""
+
+msgid "Liberation Key"
+msgstr ""
+
+msgid "Repeat Farm Count"
+msgstr ""
+
+msgid "Resonance Key"
+msgstr ""
