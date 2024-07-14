@@ -45,22 +45,14 @@ class FarmWorldBossTask(BaseCombatTask):
         self.sleep(1)
         self.log_info('click f2 to open the book')
         self.send_key('f2')
-        gray_book_boss = self.wait_until(
-            lambda: self.find_one('gray_book_boss', vertical_variance=1, horizontal_variance=0.05,
-                                  threshold=0.7, canny_lower=50,
-                                  canny_higher=150) or self.find_one(
-                'gray_book_boss_highlight',
-                vertical_variance=1, horizontal_variance=0.05,
-                threshold=0.7,
-                canny_lower=50,
-                canny_higher=150),
-            time_out=3)
+        gray_book_boss = self.wait_book()
         if not gray_book_boss:
             self.log_error("can't find the gray_book_boss", notify=True)
             raise Exception("can't find gray_book_boss")
-        if gray_book_boss.name == 'gray_book_boss':
-            self.log_info(f'click {gray_book_boss}')
-            self.click_box(gray_book_boss)
+
+        self.log_info(f'click {gray_book_boss}')
+        self.click_box(gray_book_boss)
+        
         self.sleep(1.5)
         self.click_relative(0.04, 0.29)
         self.sleep(1)
@@ -104,6 +96,19 @@ class FarmWorldBossTask(BaseCombatTask):
                                 use_gray_scale=True, threshold=0.75, time_out=2)
         travel = self.wait_feature('fast_travel_custom', raise_if_not_found=True, use_gray_scale=True, threshold=0.75)
         self.click_box(travel, relative_x=1.5)
+
+    def wait_book(self):
+        gray_book_boss = self.wait_until(
+            lambda: self.find_one('gray_book_boss', vertical_variance=1, horizontal_variance=0.05,
+                                  threshold=0.7, canny_lower=50,
+                                  canny_higher=150) or self.find_one(
+                'gray_book_boss_highlight',
+                vertical_variance=1, horizontal_variance=0.05,
+                threshold=0.7,
+                canny_lower=50,
+                canny_higher=150),
+            time_out=3)
+        return gray_book_boss
 
     def check_main(self):
         if not self.in_team()[0]:
