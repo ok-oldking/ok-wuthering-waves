@@ -63,9 +63,6 @@ class FarmEchoTask(BaseCombatTask):
             logger.info(f'found stam {stam}')
             self.sleep(1)
             self.choose_level(self.config.get("Level"))
-            # if i == -1:
-            #     self.log_error('Can not find a level to enter', notify=True)
-            #     return
 
             self.combat_once()
             logger.info(f'farm echo combat end')
@@ -75,7 +72,6 @@ class FarmEchoTask(BaseCombatTask):
                 dropped = self.walk_until_f(time_out=3,
                                             raise_if_not_found=False)  # find and pick echo
                 logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
-                self.incr_drop(True)
             else:
                 self.sleep(2)
                 dropped = self.run_in_circle_to_find_echo(3)
