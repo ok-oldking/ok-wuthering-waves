@@ -55,15 +55,22 @@ excludes = ['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter', 'resources',
 add_data.append(('icon.png', '.'))
 
 
-def list_files(directory, prefix=''):
+def list_files(directory, prefix='', extensions=[]):
     file_list = []
     for root, dirs, files in os.walk(directory):
         for filename in files:
+            # Check the file extension
+            _, ext = os.path.splitext(filename)
+            if extensions and ext not in extensions:
+                continue
+
             # Create the full filepath by joining root with the filename
             filepath = os.path.join(root, filename)
+
             # Create the relative path for the file to be used in the spec datas
             relative_path = os.path.relpath(filepath, prefix)
             folder_path = os.path.dirname(relative_path)
+
             # Append the tuple (full filepath, relative path) to the file list
             file_list.append((filepath, folder_path))
     return file_list
@@ -71,6 +78,11 @@ def list_files(directory, prefix=''):
 if os.path.exists('assets'):
     root_folder = os.getcwd()  # Get the current working directory
     assets = list_files(os.path.join(root_folder, 'assets'), root_folder)
+    add_data += assets
+
+if os.path.exists('i18n'):
+    root_folder = os.getcwd()  # Get the current working directory
+    assets = list_files(os.path.join(root_folder, 'i18n'), root_folder, ['.mo'])
     add_data += assets
 
 print(f"add_data {add_data}")
