@@ -15,12 +15,6 @@ msgstr ""
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
 msgstr ""
 
-msgid "AutoCombatTask"
-msgstr ""
-
-msgid "AutoDialogTask"
-msgstr ""
-
 msgid "Boss1"
 msgstr ""
 
@@ -67,4 +61,52 @@ msgid "Repeat Farm Count"
 msgstr ""
 
 msgid "Resonance Key"
+msgstr ""
+
+msgid "Auto Combat"
+msgstr ""
+
+msgid "Backward"
+msgstr ""
+
+msgid "Bell-Borne Geochelone"
+msgstr ""
+
+msgid "Crownless"
+msgstr ""
+
+msgid "Enable auto combat in Abyss, Game World etc"
+msgstr ""
+
+msgid "Feilian Beringal"
+msgstr ""
+
+msgid "Forward"
+msgstr ""
+
+msgid "Impermanence Heron"
+msgstr ""
+
+msgid "Inferno Rider"
+msgstr ""
+
+msgid "Lampylumen Myriad"
+msgstr ""
+
+msgid "Mech Abomination"
+msgstr ""
+
+msgid "Mourning Aix"
+msgstr ""
+
+msgid "N/A"
+msgstr ""
+
+msgid "Skip Dialog during Quests"
+msgstr ""
+
+msgid "Tempest Mephis"
+msgstr ""
+
+msgid "Thundering Mephis"
 msgstr ""
