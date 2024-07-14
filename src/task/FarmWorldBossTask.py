@@ -52,10 +52,8 @@ class FarmWorldBossTask(BaseCombatTask):
 
         self.log_info(f'click {gray_book_boss}')
         self.click_box(gray_book_boss)
-        
         self.sleep(1.5)
-        self.click_relative(0.04, 0.29)
-        self.sleep(1)
+        
         if index >= (len(self.boss_names) - self.weekly_boss_count - 1):  # weekly turtle
             logger.info('click weekly boss')
             index = self.weekly_boss_index[boss_name]
@@ -84,7 +82,7 @@ class FarmWorldBossTask(BaseCombatTask):
         # self.click_relative(self.crownless_pos[0], self.crownless_pos[1])
         # self.wait_click_feature('gray_teleport', raise_if_not_found=True, use_gray_scale=True)
         self.wait_feature('gray_teleport', raise_if_not_found=True, use_gray_scale=True, time_out=120,
-                          pre_action=lambda: self.click_box(proceeds[index], relative_x=-1) and self.sleep(1.5))
+                          pre_action=lambda: self.click_box(proceeds[index], relative_x=-1) and self.sleep(3))
         self.sleep(1)
         teleport = self.wait_click_feature('custom_teleport', box=self.box_of_screen(0.48, 0.45, 0.54, 0.58),
                                            raise_if_not_found=False, threshold=0.8, time_out=2)
