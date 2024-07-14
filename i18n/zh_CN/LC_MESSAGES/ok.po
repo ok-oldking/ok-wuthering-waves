@@ -1,9 +1,6 @@
 #
 msgid ""
 msgstr ""
-
-msgid ""
-msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: you@example.com\n"
 "Last-Translator: you@example.com\n"
@@ -12,14 +9,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid ""
+msgstr ""
+
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
-msgstr ""
-
-msgid "AutoCombatTask"
-msgstr ""
-
-msgid "AutoDialogTask"
-msgstr ""
+msgstr "(1-6) 重要, 选择你对应世界等级可以产出声骸的难度, 从上到下为1-6"
 
 msgid "Boss1"
 msgstr ""
@@ -34,37 +28,85 @@ msgid "Choose Forward for Dreamless, Backward for Jue"
 msgstr "无妄者选前进, 角选后退"
 
 msgid "Click Start at the Entrance(Dreamless, Jue)"
-msgstr ""
+msgstr "在入口点击(无妄者, 角)"
 
 msgid "Click Start in Game World"
-msgstr ""
+msgstr "在游戏世界点击开始"
 
 msgid "Echo Key"
-msgstr ""
+msgstr "声骸按键(默认q)"
 
 msgid "Entrance Direction"
-msgstr ""
+msgstr "入口方向"
 
 msgid "Farm Echo in Dungeon"
-msgstr ""
+msgstr "刷副本Boss声骸"
 
 msgid "Farm World Boss(Must Drop a WayPoint on the Boss First)"
-msgstr ""
+msgstr "刷大世界4C Boss声骸"
 
 msgid "Game Hotkey Config"
-msgstr ""
+msgstr "游戏快捷键设置"
 
 msgid "In Game Hotkey for Skills"
-msgstr ""
+msgstr "声骸, 共鸣技能, 共鸣解放"
 
 msgid "Level"
-msgstr ""
+msgstr "等级"
 
 msgid "Liberation Key"
-msgstr ""
+msgstr "共鸣解放快捷键(默认r)"
 
 msgid "Repeat Farm Count"
-msgstr ""
+msgstr "刷多少次"
 
 msgid "Resonance Key"
-msgstr ""
+msgstr "共鸣技能快捷键(默认e)"
+
+msgid "Auto Combat"
+msgstr "自动战斗"
+
+msgid "Backward"
+msgstr "后退"
+
+msgid "Bell-Borne Geochelone"
+msgstr "乌龟"
+
+msgid "Crownless"
+msgstr "无冠者"
+
+msgid "Enable auto combat in Abyss, Game World etc"
+msgstr "在大世界,深渊,无音区等开启自动战斗"
+
+msgid "Feilian Beringal"
+msgstr "猴子"
+
+msgid "Forward"
+msgstr "前进"
+
+msgid "Impermanence Heron"
+msgstr "黑鸟"
+
+msgid "Inferno Rider"
+msgstr "摩托车"
+
+msgid "Lampylumen Myriad"
+msgstr "冰猴子"
+
+msgid "Mech Abomination"
+msgstr "机器人"
+
+msgid "Mourning Aix"
+msgstr "光鸟"
+
+msgid "N/A"
+msgstr "不刷"
+
+msgid "Skip Dialog during Quests"
+msgstr "任务跳过对话"
+
+msgid "Tempest Mephis"
+msgstr "第一个雷Boss"
+
+msgid "Thundering Mephis"
+msgstr "第二个雷Boss"
