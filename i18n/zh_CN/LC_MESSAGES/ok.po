@@ -43,7 +43,7 @@ msgid "Farm Echo in Dungeon"
 msgstr "刷副本Boss声骸"
 
 msgid "Farm World Boss(Must Drop a WayPoint on the Boss First)"
-msgstr "刷大世界4C Boss声骸"
+msgstr "刷大世界4C Boss声骸(先在要刷的Boss脸上放锚点)"
 
 msgid "Game Hotkey Config"
 msgstr "游戏快捷键设置"

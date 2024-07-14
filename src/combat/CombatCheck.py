@@ -118,7 +118,7 @@ class CombatCheck:
 
     def find_target_enemy(self):
         start = time.time()
-        target_enemy = self.find_one('target_enemy_white', box=self.box_of_screen(0.14, 0.12, 0.8, 0.8),
+        target_enemy = self.find_one('target_enemy_white', box=self.box_of_screen(0.25, 0.25, 0.75, 0.75),
                                      use_gray_scale=True, threshold=0.83,
                                      frame_processor=process_target_enemy_area)
         # if self.debug and target_enemy is not None:
