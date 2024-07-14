@@ -1,9 +1,6 @@
 #
 msgid ""
 msgstr ""
-
-msgid ""
-msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: you@example.com\n"
 "Last-Translator: you@example.com\n"
@@ -109,4 +106,13 @@ msgid "Tempest Mephis"
 msgstr ""
 
 msgid "Thundering Mephis"
+msgstr ""
+
+msgid "Combat Count"
+msgstr ""
+
+msgid "Echo Count"
+msgstr ""
+
+msgid "Log"
 msgstr ""
