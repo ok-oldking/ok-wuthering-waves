@@ -52,7 +52,7 @@ config = {
     <h3>OK-WW</h3>
     <p>GitHub <a href="https://github.com/ok-oldking/ok-wuthering-waves">https://github.com/ok-oldking/ok-wuthering-waves</></p>
     <p>Report a BUG <a href="https://github.com/ok-oldking/ok-wuthering-waves/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D">https://github.com/ok-oldking/ok-wuthering-waves/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D</></p>
-    <p>QQ Group:<a href="https://qm.qq.com/q/qMezq2IDGU">970523295</a></p>
+    <p>QQ群:<a href="https://qm.qq.com/q/qMezq2IDGU">970523295</a></p>
 """,
     'supported_screen_ratio': '16:9',
     'screenshots_folder': "screenshots",
