@@ -149,6 +149,8 @@ class FarmWorldBossTask(BaseCombatTask):
                         count += 1
                         self.teleport(boss_name)
                         logger.info(f'farm echo combat once start')
+                        if boss_name == 'Crownless':
+                            self.walk_until_f(raise_if_not_found=True, time_out=4, backward_time=1)
                         self.combat_once()
                         logger.info(f'farm echo combat end')
                         if boss_name == 'Bell-Borne Geochelone':
