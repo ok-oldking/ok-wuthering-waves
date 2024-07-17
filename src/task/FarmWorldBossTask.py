@@ -150,6 +150,9 @@ class FarmWorldBossTask(BaseCombatTask):
                         self.teleport(boss_name)
                         logger.info(f'farm echo combat once start')
                         if boss_name == 'Crownless':
+                            self.wait_in_team_and_world(time_out=20)
+                            self.sleep(2)
+                            logger.info('Crownless walk to f')
                             self.walk_until_f(raise_if_not_found=True, time_out=4, backward_time=1)
                         self.combat_once()
                         logger.info(f'farm echo combat end')
