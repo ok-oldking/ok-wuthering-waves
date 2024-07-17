@@ -6,7 +6,7 @@ from src.task.FarmEchoTask import FarmEchoTask
 from src.task.FarmWorldBossTask import FarmWorldBossTask
 from src.task.SkipDialogTask import AutoDialogTask
 
-version = "v1.1.11"
+version = "v0.0.11"
 
 
 def calculate_pc_exe_path(running_path):
@@ -33,7 +33,8 @@ config = {
         'calculate_pc_exe_path': calculate_pc_exe_path,
         'interaction': 'PostMessage',
         'can_bit_blt': True,  # default false, opengl games does not support bit_blt
-        'bit_blt_render_full': True
+        'bit_blt_render_full': True,
+        'check_hdr_and_night_light': True
     },
     'supported_resolution': {
         'ratio': '16:9',
