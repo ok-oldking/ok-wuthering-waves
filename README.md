@@ -6,7 +6,7 @@
 
 腾讯QQ频道，下载和反馈[OK-WW](https://pd.qq.com/s/2jhl3oogp)
 
-QQ水群，不下载不讨论软件: [970523295](https://qm.qq.com/q/qMezq2IDGU)
+QQ水群，只聊游戏, 不下载不讨论软件: [970523295](https://qm.qq.com/q/qMezq2IDGU)
 
 Automation for Wuthering Waves using Computer Vision, Auto Combat
 
