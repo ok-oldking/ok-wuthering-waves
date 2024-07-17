@@ -6,7 +6,7 @@ from src.task.FarmEchoTask import FarmEchoTask
 from src.task.FarmWorldBossTask import FarmWorldBossTask
 from src.task.SkipDialogTask import AutoDialogTask
 
-version = "v0.0.11"
+version = "v3.0.11"
 
 
 def calculate_pc_exe_path(running_path):
@@ -54,6 +54,8 @@ config = {
     <p>GitHub <a href="https://github.com/ok-oldking/ok-wuthering-waves">https://github.com/ok-oldking/ok-wuthering-waves</></p>
     <p>Report a BUG <a href="https://github.com/ok-oldking/ok-wuthering-waves/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D">https://github.com/ok-oldking/ok-wuthering-waves/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D</></p>
     <p>QQ群:<a href="https://qm.qq.com/q/qMezq2IDGU">970523295</a></p>
+    <p>QQ频道:<a href="https://pd.qq.com/s/75758wrmp">OK-WW</a></p>
+    <p>本软件免费, 如果你被收费请立即退款, 请到QQ频道或者GitHub下载最新官方版</p>
 """,
     'supported_screen_ratio': '16:9',
     'screenshots_folder': "screenshots",
