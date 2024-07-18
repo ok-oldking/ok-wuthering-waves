@@ -91,13 +91,13 @@ msgid "Inferno Rider"
 msgstr "摩托车"
 
 msgid "Lampylumen Myriad"
-msgstr "冰猴子"
+msgstr "辉萤军势"
 
 msgid "Mech Abomination"
 msgstr "机器人"
 
 msgid "Mourning Aix"
-msgstr "光鸟"
+msgstr "哀声鸷"
 
 msgid "N/A"
 msgstr "不刷"

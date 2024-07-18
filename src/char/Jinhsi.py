@@ -65,15 +65,9 @@ class Jinhsi(BaseChar):
                 #     self.task.screenshot(f'handle_incarnation e available')
                 break
             self.task.click(interval=0.1)
-            # if time.time() - start > 1.8 and not liberated:
-            #     liberated = True
-            #     if self.click_liberation():
-            #         self.task.click()
-            #         continue
             if not liberated or not self.task.in_team()[0]:
                 self.check_combat()
 
-        # self.task.screenshot(f'handle_incarnation click_resonance start')
         self.click_resonance(has_animation=True, send_click=True)
         if not self.click_echo():
             self.task.click()
