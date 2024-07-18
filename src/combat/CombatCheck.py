@@ -25,6 +25,7 @@ class CombatCheck:
         self.boss_health_box = None
         self.boss_health = None
         self.out_of_combat_reason = ""
+        self.combat_check_interval = 0.8
 
     def reset_to_false(self, recheck=False, reason=""):
         if is_pure_black(self.frame):
@@ -133,7 +134,7 @@ class CombatCheck:
             return True
         if self._in_combat:
             now = time.time()
-            if now - self.last_combat_check > 1:
+            if now - self.last_combat_check > self.combat_check_interval:
                 self.last_combat_check = now
                 if not self.in_team()[0]:
                     return self.reset_to_false(recheck=False, reason="not in team")
