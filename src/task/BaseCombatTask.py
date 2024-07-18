@@ -244,8 +244,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             return True
 
     def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0):
-        if not self.find_one('pick_up_f', horizontal_variance=0.1, vertical_variance=0.1, threshold=0.8,
-                             use_gray_scale=True):
+        if not self.find_one('pick_up_f', horizontal_variance=0.01, vertical_variance=0.01, threshold=0.8):
             if backward_time > 0:
                 if self.send_key_and_wait_f('s', raise_if_not_found, backward_time):
                     return True
