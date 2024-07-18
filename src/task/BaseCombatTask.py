@@ -59,7 +59,8 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                 self.get_current_char().perform()
             except NotInCombatException as e:
                 logger.info(f'combat_once out of combat break {e}')
-                self.screenshot(f'out of combat break {self.out_of_combat_reason}')
+                if self.debug:
+                    self.screenshot(f'out of combat break {self.out_of_combat_reason}')
                 break
 
     def run_in_circle_to_find_echo(self, circle_count=3):
@@ -187,11 +188,11 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         self.load_chars()
         return self.get_current_char()
 
-    def sleep_check_combat(self, timeout):
+    def sleep_check_combat(self, timeout, check_combat=True):
         start = time.time()
-        if not self.in_combat():
+        if not self.in_combat() and check_combat:
             self.raise_not_in_combat('sleep check not in combat')
-        super().sleep(timeout - (time.time() - start))
+        self.sleep(timeout - (time.time() - start))
 
     def check_combat(self):
         if not self.in_combat():
