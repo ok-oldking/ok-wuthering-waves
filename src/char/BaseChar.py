@@ -38,7 +38,7 @@ class BaseChar:
         self.white_off_threshold = 0.01
         self.echo_cd = echo_cd
         self.task = task
-        self.sleep_adjust = 0.001
+        self.sleep_adjust = 0
         self.index = index
         self.last_switch_time = -1
         self.last_res = -1
@@ -138,9 +138,9 @@ class BaseChar:
         self.last_switch_time = self.task.switch_next_char(self, post_action=post_action, free_intro=free_intro,
                                                            target_low_con=target_low_con)
 
-    def sleep(self, sec):
+    def sleep(self, sec, check_combat=True):
         if sec > 0:
-            self.task.sleep_check_combat(sec + self.sleep_adjust)
+            self.task.sleep_check_combat(sec + self.sleep_adjust, check_combat=check_combat)
 
     def click_resonance(self, post_sleep=0, has_animation=False, send_click=True):
         clicked = False
@@ -150,20 +150,21 @@ class BaseChar:
         resonance_click_time = 0
         animated = False
         while True:
-            if resonance_click_time != 0 and time.time() - resonance_click_time > 10:
+            if resonance_click_time != 0 and time.time() - resonance_click_time > 8:
                 self.logger.error(f'click_resonance too long, breaking {time.time() - resonance_click_time}')
                 self.task.screenshot('click_resonance too long, breaking')
                 break
             if has_animation:
                 if not self.task.in_team()[0]:
+                    self.task.in_liberation = True
                     animated = True
                     if time.time() - resonance_click_time > 6:
+                        self.task.in_liberation = False
                         self.logger.error(f'resonance animation too long, breaking')
-                        self.check_combat()
                     self.task.next_frame()
+                    self.check_combat()
                     continue
-            else:
-                self.check_combat()
+            self.check_combat()
             current_resonance = self.current_resonance()
             if not self.resonance_available(current_resonance):
                 self.logger.debug(f'click_resonance not available break')
@@ -182,12 +183,15 @@ class BaseChar:
                         self.update_res_cd()
                     last_op = 'resonance'
                     self.send_resonance_key()
+                    if has_animation:  # sleep if there will be an animation like Jinhsi
+                        self.sleep(0.2, check_combat=False)
                 last_click = now
             self.task.next_frame()
+        self.task.in_liberation = False
         if clicked:
             self.sleep(post_sleep)
         duration = time.time() - resonance_click_time if resonance_click_time != 0 else 0
-        self.logger.debug(f'click_resonance end clicked {clicked} duration {duration} animated {animated}')
+        self.logger.info(f'click_resonance end clicked {clicked} duration {duration} animated {animated}')
         return clicked, duration, animated
 
     def send_resonance_key(self, post_sleep=0, interval=-1):

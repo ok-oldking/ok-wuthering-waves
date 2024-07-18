@@ -55,7 +55,15 @@ config = {
     <p>Report a BUG <a href="https://github.com/ok-oldking/ok-wuthering-waves/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D">https://github.com/ok-oldking/ok-wuthering-waves/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D</></p>
     <p>QQ群:<a href="https://qm.qq.com/q/qMezq2IDGU">970523295</a></p>
     <p>QQ频道:<a href="https://pd.qq.com/s/75758wrmp">OK-WW</a></p>
-    <p>本软件免费, 如果你被收费请立即退款, 请到QQ频道或者GitHub下载最新官方版</p>
+    <p style="color:red;">
+    <strong>本软件是免费开源的。</strong> 如果你被收费，请立即退款。请访问QQ频道或GitHub下载最新的官方版本。
+    </p>
+    <p style="color:red;">
+        <strong>本软件仅供个人使用，用于学习Python编程、计算机视觉、UI自动化等。</strong> 请勿将其用于任何营利性或商业用途。
+    </p>
+    <p style="color:red;">
+        <strong>使用本软件可能会导致账号被封。</strong> 请在了解风险后再使用。
+    </p>
 """,
     'supported_screen_ratio': '16:9',
     'screenshots_folder': "screenshots",

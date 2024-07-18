@@ -128,6 +128,7 @@ class CombatCheck:
 
     def in_combat(self, rechecked=False):
         if self.in_liberation:
+            self.last_combat_check = time.time()
             logger.debug('in liberation return True')
             return True
         if self._in_combat:
