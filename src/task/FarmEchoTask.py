@@ -28,25 +28,9 @@ class FarmEchoTask(BaseCombatTask):
     def run(self):
         # return self.run_in_circle_to_find_echo()
         self.handler.post(self.mouse_reset, 0.01)
-        # self.find_echo_drop()
-        # return
         if not self.in_team()[0]:
             self.log_error('must be in game world and in teams', notify=True)
             return
-        if self.config.get('Teleport'):
-            # book = self.find_one('gray_book_button', use_gray_scale=True)
-            # if not book:
-            #     self.log_error("can't find the book button")
-            #     return
-            self.sleep(2)
-            self.log_info('click f2 to open the book')
-            self.send_key('f2')
-            self.wait_click_feature('gray_book_forgery', raise_if_not_found=True, use_gray_scale=True, threshold=0.8)
-            self.wait_click_feature('gray_book_weekly_boss', raise_if_not_found=True, use_gray_scale=True,
-                                    threshold=0.8)
-            self.sleep(1)
-            self.click_relative(self.crownless_pos[0], self.crownless_pos[1])
-            self.wait_click_feature('gray_teleport', raise_if_not_found=True, use_gray_scale=True)
 
         # loop here
         count = 0
