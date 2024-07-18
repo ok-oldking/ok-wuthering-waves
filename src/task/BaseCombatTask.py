@@ -207,8 +207,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         if running:
             self.mouse_down(key='right')
         self.send_key_down(direction)
-        f_found = self.wait_feature('pick_up_f', horizontal_variance=0.05, vertical_variance=0.05,
-                                    use_gray_scale=True, threshold=0.8,
+        f_found = self.wait_feature('pick_up_f', horizontal_variance=0.01, vertical_variance=0.01, threshold=0.8,
                                     wait_until_before_delay=0, time_out=time_out, raise_if_not_found=False)
         if f_found:
             self.send_key('f')
