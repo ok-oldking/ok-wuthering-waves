@@ -79,18 +79,13 @@ class FarmEchoTask(BaseCombatTask):
         y = 0.17
         x = 0.15
         distance = 0.08
-        # for i in range(4):
-        #     if i < start:
-        #         continue
+        
         logger.info(f'choose level {start}')
         self.click_relative(x, y + (start - 1) * distance)
         self.sleep(0.5)
-        # self.click_relative(x, y + (start - 1) * distance)
+
         self.wait_click_feature('gray_button_challenge', raise_if_not_found=True, use_gray_scale=True,
                                 click_after_delay=0.5)
-        # self.sleep(1)
-        # confirm_button = self.find_one('gray_confirm_exit_button', use_gray_scale=True, threshold=0.7)
-
         self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False,
                                 use_gray_scale=True, time_out=3, click_after_delay=0.5, threshold=0.8)
         self.wait_click_feature('gray_start_battle', relative_x=-1, raise_if_not_found=True,

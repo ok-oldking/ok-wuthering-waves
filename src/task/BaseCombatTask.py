@@ -22,6 +22,10 @@ class NotInCombatException(Exception):
     pass
 
 
+class CharDeadException(NotInCombatException):
+    pass
+
+
 key_config_option = ConfigOption('Game Hotkey Config', {
     'Echo Key': 'q',
     'Liberation Key': 'r',
@@ -42,10 +46,12 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
 
-    def raise_not_in_combat(self, message):
+    def raise_not_in_combat(self, message, exception_type=None):
         logger.error(message)
         self.reset_to_false(reason=message)
-        raise NotInCombatException(message)
+        if exception_type is None:
+            exception_type = NotInCombatException
+        raise exception_type(message)
 
     def combat_once(self, wait_combat_time=180, wait_before=2):
         self.wait_until(lambda: self.in_combat(), time_out=wait_combat_time, raise_if_not_found=True)
@@ -57,6 +63,8 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             try:
                 logger.debug(f'combat_once loop {self.chars}')
                 self.get_current_char().perform()
+            except CharDeadException as e:
+                raise e
             except NotInCombatException as e:
                 logger.info(f'combat_once out of combat break {e}')
                 if self.debug:
@@ -78,27 +86,6 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                     self.mouse_up(key="right")
                     return True
                 total_index += 1
-
-    # @property
-    # def frame(self):
-    #     frame = super().frame
-    #     if frame is not None:
-    #         start = time.time()
-    #         # if cv2.countNonZero(cv2.split(frame)) == 0:
-    #         means, stddevs = cv2.meanStdDev(frame)
-    #
-    #         # Check if all channel means are very close to zero (black)
-    #         all_black_means = np.all(np.isclose(means, 0.0, atol=1e-3))
-    #
-    #         # Check if all channel standard deviations are low (uniform)
-    #         low_stddevs = np.all(stddevs[0] < 1e-3)
-    #
-    #         # Return True if all channels are black and uniform
-    #         if all_black_means and low_stddevs:
-    #             logger.error('got a pure black frame!')
-    #             return self.next_frame()
-    #         logger.debug(f'black check:{time.time() - start}')
-    #     return frame
 
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
         max_priority = Priority.MIN
@@ -141,11 +128,19 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                 self.send_key(switch_to.index + 1)
                 last_click = now
             in_team, current_index, size = self.in_team()
-            if not in_team or now - start > 10:
+            if not in_team:
                 if self.debug:
                     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
+                confirm = self.wait_feature('revive_confirm', threshold=0.8, time_out=3)
+                if confirm:
+                    self.log_info(f'char dead')
+                    self.raise_not_in_combat(f'char dead', exception_type=CharDeadException)
+                else:
+                    self.raise_not_in_combat(
+                        f'not in team while switching chars_{current_char}_to_{switch_to}')
+            if now - start > 10:
                 self.raise_not_in_combat(
-                    f'not in team while switching chars_{current_char}_to_{switch_to}, {now - start}')
+                    f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
             if current_index != switch_to.index:
                 has_intro = free_intro if free_intro else current_char.is_con_full()
                 switch_to.has_intro = has_intro
