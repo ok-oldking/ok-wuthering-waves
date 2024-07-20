@@ -41,11 +41,11 @@ config = {
         'min_size': (1600, 900)
     },
     'analytics': {
-        'report_url': 'https://okreport.ok-script.com/report'
+        'report_url': 'http://okreportcn.ok-script.com/report'
     },
     'update': {
         'releases_url': 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases?per_page=15',
-        'proxy_url': 'https://gh.ok-script.com/',
+        'proxy_url': 'http://okreportcn.ok-script.com/',
         'exe_name': 'ok-ww.exe',
         'use_proxy': True
     },

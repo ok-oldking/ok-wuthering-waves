@@ -2,7 +2,7 @@ import time
 
 from ok.feature.Feature import Feature
 from ok.logging.Logger import get_logger
-from src.task.BaseCombatTask import BaseCombatTask
+from src.task.BaseCombatTask import BaseCombatTask, CharDeadException
 
 logger = get_logger(__name__)
 
@@ -88,6 +88,9 @@ class FarmWorldBossTask(BaseCombatTask):
         self.wait_click_feature('gray_custom_way_point', box=self.box_of_screen(0.62, 0.48, 0.70, 0.66),
                                 raise_if_not_found=True,
                                 use_gray_scale=True, threshold=0.75, time_out=2)
+        self.click_fast_travel()
+
+    def click_fast_travel(self):
         travel = self.wait_feature('fast_travel_custom', raise_if_not_found=True, threshold=0.75)
         self.click_box(travel, relative_x=1.5)
 
@@ -119,18 +122,30 @@ class FarmWorldBossTask(BaseCombatTask):
 
         self.click_relative(0.5, 0.5)
         self.sleep(0.1)
-        # count = 0
         while True:
             if time.time() - start > 20:
                 raise Exception("scroll to long")
-                # if count % 10 == 0:
-            # count += 1
             self.scroll_relative(0.5, 0.5, -1)
             self.sleep(0.1)
             targets = self.find_feature('target_box', box=target_box, template=source_template)
             if targets:
                 self.log_info(f'scroll to targets {targets} successfully')
                 break
+
+    def teleport_to_heal(self):
+        self.info['Death Times'] = self.info.get('Death Times', 0) + 1
+        self.send_key('esc')
+        self.sleep(1)
+        self.log_info('click m to open the map')
+        self.send_key('m')
+        self.sleep(2)
+        self.click_relative(0.68, 0.05)
+        self.sleep(1)
+        self.click_relative(0.37, 0.42)
+        travel = self.wait_feature('gray_teleport', raise_if_not_found=True, use_gray_scale=True, time_out=3)
+        self.click_box(travel, relative_x=1.5)
+        self.wait_in_team_and_world(time_out=20)
+        self.sleep(2)
 
     def run(self):
         if not self.check_main():
@@ -150,7 +165,12 @@ class FarmWorldBossTask(BaseCombatTask):
                             self.sleep(2)
                             logger.info('Crownless walk to f')
                             self.walk_until_f(raise_if_not_found=True, time_out=4, backward_time=1)
-                        self.combat_once()
+                        try:
+                            self.combat_once()
+                        except CharDeadException:
+                            logger.info(f'char dead try teleport to heal')
+                            self.teleport_to_heal()
+                            continue
                         logger.info(f'farm echo combat end')
                         if boss_name == 'Bell-Borne Geochelone':
                             logger.info(f'sleep for the Boss model to disappear')
