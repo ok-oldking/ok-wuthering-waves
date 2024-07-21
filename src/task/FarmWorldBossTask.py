@@ -38,7 +38,7 @@ class FarmWorldBossTask(BaseCombatTask):
         self.crownless_pos = (0.9, 0.4)
         self.last_drop = False
 
-    def teleport(self, boss_name):
+    def teleport_to_boss(self, boss_name):
         index = self.boss_names.index(boss_name)
         index -= 1
         self.log_info(f'teleport to {boss_name} index {index}')
@@ -114,6 +114,7 @@ class FarmWorldBossTask(BaseCombatTask):
             return self.in_team()[0]
         return True
 
+    # not current in use because not stable, right now using one click to scroll down
     def scroll_down_a_page(self):
         source_box = self.box_of_screen(0.38, 0.80, 0.42, 0.83)
         source_template = Feature(source_box.crop_frame(self.frame), source_box.x, source_box.y)
@@ -133,7 +134,7 @@ class FarmWorldBossTask(BaseCombatTask):
                 break
 
     def teleport_to_heal(self):
-        self.info['Death Times'] = self.info.get('Death Times', 0) + 1
+        self.info['Death Count'] = self.info.get('Death Count', 0) + 1
         self.send_key('esc')
         self.sleep(1)
         self.log_info('click m to open the map')
@@ -158,7 +159,7 @@ class FarmWorldBossTask(BaseCombatTask):
                 if boss_name := self.config.get(key):
                     if boss_name != 'N/A':
                         count += 1
-                        self.teleport(boss_name)
+                        self.teleport_to_boss(boss_name)
                         logger.info(f'farm echo combat once start')
                         if boss_name == 'Crownless':
                             self.wait_in_team_and_world(time_out=20)
