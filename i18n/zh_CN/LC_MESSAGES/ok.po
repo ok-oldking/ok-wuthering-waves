@@ -1,6 +1,9 @@
 #
 msgid ""
 msgstr ""
+
+msgid ""
+msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: you@example.com\n"
 "Last-Translator: you@example.com\n"
@@ -9,20 +12,17 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid ""
-msgstr ""
-
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
 msgstr "(1-6) 重要, 选择你对应世界等级可以产出声骸的难度, 从上到下为1-6"
 
 msgid "Boss1"
-msgstr ""
+msgstr "第1个Boss"
 
 msgid "Boss2"
-msgstr ""
+msgstr "第2个Boss"
 
 msgid "Boss3"
-msgstr ""
+msgstr "第3个Boss"
 
 msgid "Choose Forward for Dreamless, Backward for Jue"
 msgstr "无妄者选前进, 角选后退"
@@ -119,3 +119,9 @@ msgstr "获得声骸个数"
 
 msgid "Log"
 msgstr "日志"
+
+msgid "Auto Pick"
+msgstr "自动拾取"
+
+msgid "Auto Pick Flowers in Game World"
+msgstr "大世界自动拾取"

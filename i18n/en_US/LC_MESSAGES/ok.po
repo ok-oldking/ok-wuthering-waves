@@ -116,3 +116,9 @@ msgstr ""
 
 msgid "Log"
 msgstr ""
+
+msgid "Auto Pick"
+msgstr ""
+
+msgid "Auto Pick Flowers in Game World"
+msgstr ""

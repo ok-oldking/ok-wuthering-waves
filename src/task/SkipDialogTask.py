@@ -15,7 +15,7 @@ class AutoDialogTask(TriggerTask, FindFeature, OCR):
         super().__init__()
         self.skip = None
         self.confirm_dialog_checked = False
-        self.check_trigger_interval = 0.2
+        self.trigger_interval = 1
         self.has_eye_time = 0
         self.name = "Skip Dialog during Quests"
 
@@ -23,7 +23,7 @@ class AutoDialogTask(TriggerTask, FindFeature, OCR):
         pass
 
     def trigger(self):
-        skip = self.ocr(0.03, 0.03, 0.11, 0.10, match=re.compile('SKIP'), threshold=0.9)
+        skip = self.ocr(0.03, 0.03, 0.11, 0.10, use_grayscale=True, match=re.compile('SKIP'), threshold=0.9)
         if skip:
             logger.info('Click Skip Dialog')
             self.click_box(skip, move_back=True)
