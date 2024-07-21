@@ -289,6 +289,9 @@ class BaseChar:
     def get_echo_key(self):
         return self.task.key_config['Echo Key']
 
+    def get_resonance_key(self):
+        return self.task.key_config['Resonance Key']
+
     def get_switch_priority(self, current_char, has_intro):
         priority = self.do_get_switch_priority(current_char, has_intro)
         if priority != Priority.MAX and time.time() - self.last_switch_time < 0.9:

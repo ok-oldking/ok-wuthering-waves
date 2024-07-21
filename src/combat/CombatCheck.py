@@ -38,7 +38,6 @@ class CombatCheck:
             self.last_out_of_combat_time = time.time()
             return True
         else:
-            # logger.info('out of combat start double check sleep end')
             self.out_of_combat_reason = reason
             self._in_combat = False
             self.boss_lv_mask = None
@@ -126,6 +125,16 @@ class CombatCheck:
         #     self.screenshot('find_target_enemy')
         logger.debug(f'find_target_enemy {target_enemy} {time.time() - start}')
         return target_enemy is not None
+
+    def handle_monthly_card(self):
+        monthly_card = self.find_one('monthly_card', threshold=0.8)
+        if monthly_card is not None:
+            self.click(monthly_card)
+            self.sleep(2)
+            self.click(monthly_card)
+            self.sleep(1)
+        logger.debug(f'check_monthly_card {monthly_card}')
+        return monthly_card is not None
 
     def in_combat(self, rechecked=False):
         if self.in_liberation:
