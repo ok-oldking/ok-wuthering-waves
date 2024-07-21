@@ -2,11 +2,12 @@ import os
 
 from ok.util.path import get_path_in_package
 from src.task.AutoCombatTask import AutoCombatTask
+from src.task.AutoPickTask import AutoPickTask
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.FarmWorldBossTask import FarmWorldBossTask
 from src.task.SkipDialogTask import AutoDialogTask
 
-version = "v3.0.11"
+version = "v0.0.11"
 
 
 def calculate_pc_exe_path(running_path):
@@ -41,11 +42,11 @@ config = {
         'min_size': (1600, 900)
     },
     'analytics': {
-        'report_url': 'http://okreportcn.ok-script.com/report'
+        'report_url': 'http://111.231.71.225/report'
     },
     'update': {
         'releases_url': 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases?per_page=15',
-        'proxy_url': 'http://okreportcn.ok-script.com/',
+        'proxy_url': 'http://111.231.71.225/',
         'exe_name': 'ok-ww.exe',
         'use_proxy': True
     },
@@ -77,6 +78,7 @@ config = {
         FarmWorldBossTask
     ], 'trigger_tasks': [
         AutoCombatTask,
-        AutoDialogTask
+        AutoDialogTask,
+        AutoPickTask
     ]
 }
