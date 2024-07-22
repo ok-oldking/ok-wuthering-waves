@@ -151,13 +151,13 @@ class CombatCheck:
                 in_team = self.in_team()[0]
                 if not in_team:
                     return self.reset_to_false(recheck=False, reason="not in team")
+                if self.check_count_down():
+                    return True
                 if self.boss_lv_template is not None:
                     if self.check_boss(in_team):
                         return True
                     else:
                         return self.reset_to_false(recheck=False, reason="boss disappear")
-                if self.check_count_down():
-                    return True
                 if not self.check_health_bar():
                     logger.debug('not in team or no health bar')
                     if not self.target_enemy():

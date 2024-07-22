@@ -168,8 +168,8 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             y = self.height_of_screen(0.5)
         return super().click(x, y, move_back, name, interval)
 
-    def wait_in_team_and_world(self, time_out=10):
-        return self.wait_until(self.in_team_and_world, time_out=time_out, raise_if_not_found=True)
+    def wait_in_team_and_world(self, time_out=10, raise_if_not_found=True):
+        return self.wait_until(self.in_team_and_world, time_out=time_out, raise_if_not_found=raise_if_not_found)
 
     def in_team_and_world(self):
         return self.in_team()[
