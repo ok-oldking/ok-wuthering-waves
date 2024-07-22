@@ -1,3 +1,5 @@
+from src.char.Baizhi import Baizhi
+from src.char.Calcharo import Calcharo
 from src.char.Changli import Changli
 from src.char.CharSkillButton import is_float
 from src.char.Chixia import Chixia
@@ -27,7 +29,9 @@ def get_char_by_pos(task, box, index):
         'char_yuanwu': {'cls': Yuanwu, 'res_cd': 3, 'echo_cd': 20},
         'chang_changli': {'cls': Changli, 'res_cd': 12, 'echo_cd': 20},
         'char_chixia': {'cls': Chixia, 'res_cd': 9, 'echo_cd': 20},
-        'char_danjin': {'cls': Danjin, 'res_cd': 9, 'echo_cd': 20}
+        'char_danjin': {'cls': Danjin, 'res_cd': 9999999, 'echo_cd': 20},
+        'char_baizhi': {'cls': Baizhi, 'res_cd': 16, 'echo_cd': 20},
+        'char_calcharo': {'cls': Calcharo, 'res_cd': 99999, 'echo_cd': 20}
     }
     highest_confidence = 0
     info = None
