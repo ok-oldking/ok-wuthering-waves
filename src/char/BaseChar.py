@@ -256,14 +256,13 @@ class BaseChar:
         self.task.in_liberation = True
         self.logger.debug(f'click_liberation start')
         start = time.time()
-        last_click = start
+        last_click = 0
         clicked = False
-        self.task.send_key(self.get_liberation_key())
-        self.task.last_click_liberation = start
         while self.liberation_available():
             self.logger.debug(f'click_liberation liberation_available click')
             now = time.time()
             if now - last_click > 0.1:
+                self.task.last_click_liberation = now
                 self.task.send_key(self.get_liberation_key())
                 self.liberation_available_mark = False
                 clicked = True
