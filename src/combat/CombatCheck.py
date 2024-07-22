@@ -26,6 +26,7 @@ class CombatCheck:
         self.boss_health = None
         self.out_of_combat_reason = ""
         self.combat_check_interval = 0.8
+        self.last_click_liberation = 0
 
     def reset_to_false(self, recheck=False, reason=""):
         if is_pure_black(self.frame):
@@ -50,6 +51,9 @@ class CombatCheck:
             self.boss_health = None
             self.boss_health_box = None
             return False
+
+    def recent_liberation(self):
+        return time.time() - self.last_click_liberation < 0.5
 
     def check_count_down(self):
         count_down_area = self.box_of_screen(1820 / 3840, 266 / 2160, 2100 / 3840,
@@ -78,7 +82,7 @@ class CombatCheck:
                 logger.info(f'set count_down to {self.has_count_down}  {numbers} {count_down:.2f}%')
             return self.has_count_down
 
-    def check_boss(self):
+    def check_boss(self, in_team):
         current = self.boss_lv_box.crop_frame(self.frame)
         max_val = 0
         if current is not None:
@@ -89,8 +93,7 @@ class CombatCheck:
                 self.screenshot_boss_lv(current, f'boss lv not detected by edge {max_val}')
             logger.debug(f'boss lv not detected by edge')
             if not self.find_boss_lv_text():  # double check by text
-                if not self.in_team()[
-                    0] and not self.check_health_bar() and not self.check_count_down() and not self.find_target_enemy():
+                if not in_team and not self.check_health_bar() and not self.check_count_down() and not self.find_target_enemy():
                     if self.debug:
                         self.screenshot_boss_lv(current, 'out_of combat boss_health disappeared')
                     logger.info(f'out of combat because of boss_health disappeared, res:{max_val}')
@@ -137,7 +140,7 @@ class CombatCheck:
         return monthly_card is not None
 
     def in_combat(self, rechecked=False):
-        if self.in_liberation:
+        if self.in_liberation or self.recent_liberation():
             self.last_combat_check = time.time()
             logger.debug('in liberation return True')
             return True
@@ -145,10 +148,11 @@ class CombatCheck:
             now = time.time()
             if now - self.last_combat_check > self.combat_check_interval:
                 self.last_combat_check = now
-                if not self.in_team()[0]:
+                in_team = self.in_team()[0]
+                if not in_team:
                     return self.reset_to_false(recheck=False, reason="not in team")
                 if self.boss_lv_template is not None:
-                    if self.check_boss():
+                    if self.check_boss(in_team):
                         return True
                     else:
                         return self.reset_to_false(recheck=False, reason="boss disappear")
