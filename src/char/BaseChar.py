@@ -1,5 +1,6 @@
 import time
 from enum import IntEnum, StrEnum
+from typing import Any
 
 import cv2
 import numpy as np
@@ -81,12 +82,16 @@ class BaseChar:
         self.task.screenshot(
             f'{self}_down_finish_{(time.time() - start):.2f}_f:{self.is_forte_full()}_e:{self.resonance_available()}_r:{self.echo_available()}_q:{self.liberation_available()}_i{self.has_intro}')
 
+    def click(self, *args: Any, **kwargs: Any):
+        self.task.click(*args, **kwargs)
+
     def do_perform(self):
         self.click_liberation(con_less_than=1)
         if self.click_resonance()[0]:
             return self.switch_next_char()
         if self.click_echo():
             return self.switch_next_char()
+        self.task.click()
         self.switch_next_char()
 
     def has_cd(self, box_name):
@@ -194,8 +199,8 @@ class BaseChar:
         self.logger.info(f'click_resonance end clicked {clicked} duration {duration} animated {animated}')
         return clicked, duration, animated
 
-    def send_resonance_key(self, post_sleep=0, interval=-1):
-        self.task.send_key(self.task.key_config.get('Resonance Key'), interval=interval)
+    def send_resonance_key(self, post_sleep=0, interval=-1, down_time=0.01):
+        self.task.send_key(self.task.key_config.get('Resonance Key'), interval=interval, down_time=down_time)
         self.sleep(post_sleep)
 
     def update_res_cd(self):
@@ -253,6 +258,8 @@ class BaseChar:
         start = time.time()
         last_click = start
         clicked = False
+        self.task.send_key(self.get_liberation_key())
+        self.task.last_click_liberation = start
         while self.liberation_available():
             self.logger.debug(f'click_liberation liberation_available click')
             now = time.time()
@@ -272,6 +279,7 @@ class BaseChar:
                 self.logger.error(f'clicked liberation but no effect')
                 return False
         while not self.task.in_team()[0]:
+            clicked = True
             if send_click:
                 self.task.click(interval=0.1)
             if time.time() - start > 7:

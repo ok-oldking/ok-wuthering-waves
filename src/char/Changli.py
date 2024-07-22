@@ -37,6 +37,7 @@ class Changli(BaseChar):
         elif self.resonance_available():
             self.send_resonance_key()
             self.enhanced_normal = True
+            self.normal_attack()
         elif self.click_echo(1.5):
             pass
         else:
