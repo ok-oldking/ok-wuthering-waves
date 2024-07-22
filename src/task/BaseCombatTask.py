@@ -12,7 +12,6 @@ from ok.task.TaskExecutor import CannotFindException
 from ok.util.list import safe_get
 from src.char import BaseChar
 from src.char.BaseChar import Priority
-from src.char.Calcharo import Calcharo
 from src.char.CharFactory import get_char_by_pos
 from src.combat.CombatCheck import CombatCheck
 
@@ -132,13 +131,6 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             if not in_team:
                 if self.debug:
                     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                if isinstance(switch_to, Calcharo) and has_intro:  # Calcharo
-                    result = self.wait_in_team_and_world(time_out=4)
-                    if not result:
-                        self.raise_not_in_combat(
-                            f'Calcharo intro animation wait failed not in team while switching chars_{current_char}_to_{switch_to}')
-                    else:
-                        in_team, current_index, size = result
                 confirm = self.wait_feature('revive_confirm', threshold=0.8, time_out=3)
                 if confirm:
                     self.log_info(f'char dead')
