@@ -131,6 +131,13 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             if not in_team:
                 if self.debug:
                     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
+                if self.in_liberation:  # Calcharo
+                    result = self.wait_in_team_and_world(time_out=4)
+                    if not result:
+                        self.raise_not_in_combat(
+                            f'Calcharo outro animation wait failed not in team while switching chars_{current_char}_to_{switch_to}')
+                    else:
+                        in_team, current_index, size = result
                 confirm = self.wait_feature('revive_confirm', threshold=0.8, time_out=3)
                 if confirm:
                     self.log_info(f'char dead')
@@ -151,6 +158,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                 else:
                     self.next_frame()
             else:
+                self.in_liberation = False
                 switch_time = time.time()
                 current_char.switch_out()
                 switch_to.is_current_char = True
@@ -168,7 +176,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         return super().click(x, y, move_back, name, interval)
 
     def wait_in_team_and_world(self, time_out=10):
-        self.wait_until(self.in_team_and_world, time_out=time_out, raise_if_not_found=True)
+        return self.wait_until(self.in_team_and_world, time_out=time_out, raise_if_not_found=True)
 
     def in_team_and_world(self):
         return self.in_team()[
