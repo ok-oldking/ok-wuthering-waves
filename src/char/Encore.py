@@ -17,7 +17,7 @@ class Encore(BaseChar):
     def do_perform(self):
         target_low_con = False
         if self.has_intro:
-            self.sleep(0.7)
+            self.continues_normal_attack(.7)
             self.wait_down()
         elif self.can_resonance_step2(4):
             if self.click_resonance()[0]:
@@ -29,10 +29,6 @@ class Encore(BaseChar):
                 self.logger.info(f'try Encore resonance_step2 wait_success:{wait_success}')
 
         if self.still_in_liberation():
-            # if time.time() - self.liberation_time > 7.5 and self.is_forte_full():
-            #     self.heavy_attack()
-            #     self.last_heavy = time.time()
-            # else:
             target_low_con = True
             self.n4()
         elif self.click_resonance()[0]:
