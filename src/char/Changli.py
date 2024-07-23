@@ -23,9 +23,7 @@ class Changli(BaseChar):
 
     def do_perform(self):
         if self.has_intro or self.enhanced_normal:
-            self.sleep(0.05)
-            self.normal_attack()
-            self.sleep(0.5)
+            self.continues_normal_attack(0.5)
         self.enhanced_normal = False
         if self.is_forte_full():
             self.logger.debug('Changli click heavy attack without ult')
