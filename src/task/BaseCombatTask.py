@@ -236,6 +236,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                              vertical_variance=0.1,
                              use_gray_scale=True, time_out=2, threshold=0.8):
             self.send_key('esc')
+            self.sleep(0.05)
             logger.info(f"found a claim reward")
             return True
 
