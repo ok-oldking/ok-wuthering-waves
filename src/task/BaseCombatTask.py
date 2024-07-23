@@ -232,10 +232,11 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
         return f_found
 
     def handle_claim_button(self):
-        if self.wait_click_feature('cancel_button', relative_x=1, raise_if_not_found=False, horizontal_variance=0.1,
-                                   vertical_variance=0.1,
-                                   use_gray_scale=True, time_out=2, threshold=0.8):
-            logger.warning(f"found a claim reward")
+        if self.wait_feature('cancel_button', raise_if_not_found=False, horizontal_variance=0.1,
+                             vertical_variance=0.1,
+                             use_gray_scale=True, time_out=2, threshold=0.8):
+            self.send_key('esc')
+            logger.info(f"found a claim reward")
             return True
 
     def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0):
