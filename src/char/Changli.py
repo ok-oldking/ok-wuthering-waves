@@ -14,7 +14,7 @@ class Changli(BaseChar):
         self.enhanced_normal = False
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False):
-        if time.time() - self.last_e < 3:
+        if time.time() - self.last_e < 4:
             self.logger.info(
                 f'switch priority MIN because e not finished')
             return Priority.MIN
@@ -22,23 +22,24 @@ class Changli(BaseChar):
             return super().do_get_switch_priority(current_char, has_intro)
 
     def do_perform(self):
-        # self.logger.debug(
-        #     f'Encore_perform_{self.has_intro}_{self.echo_available()}_{self.resonance_available()}_{self.liberation_available()}')
         if self.has_intro or self.enhanced_normal:
+            self.sleep(0.05)
             self.normal_attack()
             self.sleep(0.5)
         self.enhanced_normal = False
         if self.is_forte_full():
+            self.logger.debug('Changli click heavy attack without ult')
             self.heavy_attack(0.8)
             return self.switch_next_char()
         if self.click_liberation():
+            self.sleep(0.1)
             self.heavy_attack(0.8)
-            return self.switch_next_char()
         elif self.resonance_available():
             self.send_resonance_key()
             self.enhanced_normal = True
             self.normal_attack()
         elif self.click_echo(1.5):
+            self.logger.debug('Changli click echo success')
             pass
         else:
             self.normal_attack()

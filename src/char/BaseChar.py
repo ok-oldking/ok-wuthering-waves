@@ -35,7 +35,7 @@ char_lib_check_marks = ['char_1_lib_check_mark', 'char_2_lib_check_mark', 'char_
 
 class BaseChar:
 
-    def __init__(self, task, index, res_cd=0, echo_cd=0):
+    def __init__(self, task, index, res_cd=20, echo_cd=20):
         self.white_off_threshold = 0.01
         self.echo_cd = echo_cd
         self.task = task
@@ -74,13 +74,9 @@ class BaseChar:
         self.logger.debug(f'set current char false {self.index}')
 
     def wait_down(self):
-        start = time.time()
         while self.flying():
             self.task.click()
             self.sleep(0.2)
-
-        self.task.screenshot(
-            f'{self}_down_finish_{(time.time() - start):.2f}_f:{self.is_forte_full()}_e:{self.resonance_available()}_r:{self.echo_available()}_q:{self.liberation_available()}_i{self.has_intro}')
 
     def click(self, *args: Any, **kwargs: Any):
         self.task.click(*args, **kwargs)
@@ -118,10 +114,6 @@ class BaseChar:
             else:
                 invalid_count += 1
         has_cd = invalid_count == 0 and (has_dot and 2 <= number_count <= 3)
-        # if self.task.debug:
-        # msg = f"{self}_{has_cd}_{box_name} number_count {number_count} big_count {big_area_count} invalid_count {invalid_count} has_dot {has_dot}"
-        # self.task.screenshot(msg, frame=cropped)
-        # self.logger.debug(msg)
         return has_cd
 
     def is_available(self, percent, box_name):
@@ -215,19 +207,21 @@ class BaseChar:
 
     def click_echo(self, duration=0, sleep_time=0):
         self.logger.debug(f'click_echo start')
+        if self.has_cd('echo'):
+            self.logger.debug('click_echo has cd return ')
+            return False
         clicked = False
         start = 0
         last_click = 0
         while True:
             self.check_combat()
             current = self.current_echo()
+            now = time.time()
             if duration == 0 and not self.echo_available(current):
                 break
-            now = time.time()
-            if duration > 0 and start != 0:
+            elif duration > 0 and start != 0:
                 if now - start > duration:
                     break
-            self.logger.debug(f'click_echo echo_available click')
             if now - last_click > 0.1:
                 if current == 0:
                     self.task.click()
@@ -549,9 +543,9 @@ class BaseChar:
                 the_area = area
                 ring_count += 1
 
-        if self.task.debug:
-            # Save or display the image with contours
-            cv2.imwrite(f'test\\test_{self}_{is_full}_{the_area}_{lower_bound}.jpg', image_with_contours)
+        # if self.task.debug:
+        # Save or display the image with contours
+        # cv2.imwrite(f'test\\test_{self}_{is_full}_{the_area}_{lower_bound}.jpg', image_with_contours)
         if ring_count > 1:
             is_full = False
             the_area = 0

@@ -7,7 +7,7 @@ from src.task.FarmEchoTask import FarmEchoTask
 from src.task.FarmWorldBossTask import FarmWorldBossTask
 from src.task.SkipDialogTask import AutoDialogTask
 
-version = "v0.0.11"
+version = "v5.0.11"
 
 
 def calculate_pc_exe_path(running_path):
