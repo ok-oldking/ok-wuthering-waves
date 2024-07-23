@@ -24,8 +24,8 @@ class AutoPickTask(TriggerTask, FindFeature):
         f_search_box = self.get_box_by_name('pick_up_f')
         f_search_box = f_search_box.copy(x_offset=-f_search_box.width / 2,
                                          width_offset=f_search_box.width,
-                                         height_offset=f_search_box.height * 4,
-                                         y_offset=-f_search_box.height / 2,
+                                         height_offset=f_search_box.height * 9,
+                                         y_offset=-f_search_box.height * 5,
                                          name='search_dialog')
         if f := self.find_one('pick_up_f', box=f_search_box,
                               threshold=0.8):
