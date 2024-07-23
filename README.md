@@ -49,5 +49,6 @@ pip install -r requirements.txt
 python main_debug.py
 ```
 
-
+### 致谢
+[https://github.com/lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss) 后台点击代码
   
