@@ -71,13 +71,13 @@ class FarmWorldBossTask(BaseCombatTask):
             index -= 4
 
         self.log_info(f'index after scrolling down {index}')
-        proceeds = self.find_feature('boss_proceed', vertical_variance=1, use_gray_scale=True, threshold=0.8)
+        proceeds = self.find_feature('boss_proceed', vertical_variance=1, threshold=0.8)
         if self.debug:
             self.screenshot('proceeds')
         if not proceeds:
             raise Exception("can't find the boss proceeds")
 
-        self.wait_feature('gray_teleport', raise_if_not_found=True, use_gray_scale=True, time_out=120,
+        self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=120,
                           pre_action=lambda: self.click_box(proceeds[index], relative_x=-1), wait_until_before_delay=5)
         self.sleep(1)
         teleport = self.wait_click_feature('custom_teleport', box=self.box_of_screen(0.48, 0.45, 0.54, 0.58),
@@ -85,9 +85,8 @@ class FarmWorldBossTask(BaseCombatTask):
         if not teleport:
             self.click_relative(0.5, 0.5)
         self.sleep(0.5)
-        self.wait_click_feature('gray_custom_way_point', box=self.box_of_screen(0.62, 0.48, 0.70, 0.66),
-                                raise_if_not_found=True,
-                                use_gray_scale=True, threshold=0.75, time_out=2)
+        self.wait_click_feature('gray_custom_way_point', box=self.box_of_screen(0.62, 0.48, 0.70, 0.86),
+                                raise_if_not_found=True, threshold=0.75, time_out=2)
         self.click_fast_travel()
 
     def click_fast_travel(self):
@@ -143,7 +142,7 @@ class FarmWorldBossTask(BaseCombatTask):
         self.click_relative(0.68, 0.05)
         self.sleep(1)
         self.click_relative(0.37, 0.42)
-        travel = self.wait_feature('gray_teleport', raise_if_not_found=True, use_gray_scale=True, time_out=3)
+        travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
         self.click_box(travel, relative_x=1.5)
         self.wait_in_team_and_world(time_out=20)
         self.sleep(2)
