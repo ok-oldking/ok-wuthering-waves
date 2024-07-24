@@ -71,7 +71,7 @@ class FarmWorldBossTask(BaseCombatTask):
             index -= 4
 
         self.log_info(f'index after scrolling down {index}')
-        proceeds = self.find_feature('boss_proceed', vertical_variance=1, threshold=0.8)
+        proceeds = self.find_feature('boss_proceed', vertical_variance=1, horizontal_variance=0.05, threshold=0.8)
         if self.debug:
             self.screenshot('proceeds')
         if not proceeds:
@@ -175,9 +175,8 @@ class FarmWorldBossTask(BaseCombatTask):
                         if boss_name == 'Bell-Borne Geochelone':
                             logger.info(f'sleep for the Boss model to disappear')
                             self.sleep(5)
-                        self.wait_in_team_and_world(time_out=20)
                         logger.info(f'farm echo move forward walk_until_f to find echo')
-                        if self.walk_until_f(time_out=6, backward_time=1, exclude_text=self.absorb_echo_exclude_text,
+                        if self.walk_until_f(time_out=6, backward_time=1, target_text=self.absorb_echo_feature,
                                              raise_if_not_found=False):  # find and pick echo
                             logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
                             self.incr_drop(True)

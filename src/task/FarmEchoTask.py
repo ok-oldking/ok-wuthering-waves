@@ -1,5 +1,3 @@
-import re
-
 from ok.logging.Logger import get_logger
 from src.task.BaseCombatTask import BaseCombatTask
 
@@ -42,18 +40,16 @@ class FarmEchoTask(BaseCombatTask):
                               direction='w' if self.config.get('Entrance Direction') == 'Forward' else 's',
                               raise_if_not_found=True)
             logger.info(f'enter success')
-            stam = self.wait_ocr(0.75, 0.02, 0.85, 0.09, match=re.compile('240'), raise_if_not_found=True)
-            logger.info(f'found stam {stam}')
+            challenge = self.wait_feature('gray_button_challenge', raise_if_not_found=True, use_gray_scale=True)
+            logger.info(f'found challenge {challenge}')
             self.sleep(1)
             self.choose_level(self.config.get("Level"))
 
             self.combat_once()
-            logger.info(f'farm echo combat end')
-            self.wait_in_team_and_world(time_out=20)
             logger.info(f'farm echo move {self.config.get("Entrance Direction")} walk_until_f to find echo')
             if self.config.get('Entrance Direction') == 'Forward':
-                dropped = self.walk_until_f(time_out=3, exclude_text=self.absorb_echo_exclude_text,
-                                            raise_if_not_found=False)  # find and pick echo
+                dropped = self.walk_until_f(time_out=4, target_text=self.absorb_echo_feature,
+                                            raise_if_not_found=False, backward_time=1)  # find and pick echo
                 logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
             else:
                 self.sleep(2)
