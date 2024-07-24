@@ -53,10 +53,10 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             exception_type = NotInCombatException
         raise exception_type(message)
 
-    def combat_once(self, wait_combat_time=180, wait_before=1):
+    def combat_once(self, wait_combat_time=180, wait_before=3):
         self.wait_until(lambda: self.in_combat(), time_out=wait_combat_time, raise_if_not_found=True)
         self.sleep(wait_before)
-        self.wait_until(lambda: self.in_combat(), time_out=3, raise_if_not_found=True)
+        self.wait_until(lambda: self.in_combat(), time_out=10, raise_if_not_found=True)
         self.load_chars()
         self.info['Combat Count'] = self.info.get('Combat Count', 0) + 1
         while self.in_combat():
@@ -70,6 +70,8 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 if self.debug:
                     self.screenshot(f'out of combat break {self.out_of_combat_reason}')
                 break
+        self.wait_in_team_and_world(time_out=10)
+        self.sleep(1)
         self.middle_click()
         self.sleep(0.2)
 
@@ -84,7 +86,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 if total_index > 2 and (total_index + 1) % 2 == 0:
                     duration += step
                 picked = self.send_key_and_wait_f(direction, False, time_out=duration, running=True,
-                                                  exclude_text=self.absorb_echo_exclude_text)
+                                                  target_text=self.absorb_echo_feature)
                 if picked:
                     self.mouse_up(key="right")
                     return True
@@ -199,14 +201,14 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 self.screenshot('not_in_combat_calling_check_combat')
             self.raise_not_in_combat('combat check not in combat')
 
-    def send_key_and_wait_f(self, direction, raise_if_not_found, time_out, running=False, exclude_text=None):
+    def send_key_and_wait_f(self, direction, raise_if_not_found, time_out, running=False, target_text=None):
         if time_out <= 0:
             return
         start = time.time()
         if running:
             self.mouse_down(key='right')
         self.send_key_down(direction)
-        f_found = self.wait_until(lambda: self.find_f_with_text(exclude_text=exclude_text), time_out=time_out,
+        f_found = self.wait_until(lambda: self.find_f_with_text(target_text=target_text), time_out=time_out,
                                   raise_if_not_found=False)
         if f_found:
             self.send_key('f')
@@ -242,14 +244,15 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             logger.info(f"found a claim reward")
             return True
 
-    def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0, exclude_text=None):
-        if not self.find_f_with_text(exclude_text=exclude_text):
+    def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0, target_text=None):
+        logger.info(f'walk_until_f direction {direction} target_text: {target_text}')
+        if not self.find_f_with_text(target_text=target_text):
             if backward_time > 0:
-                if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, exclude_text=exclude_text):
+                if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, target_text=target_text):
                     logger.info('walk backward found f')
                     return True
             return self.send_key_and_wait_f(direction, raise_if_not_found, time_out,
-                                            exclude_text=exclude_text) and self.sleep(0.5)
+                                            target_text=target_text) and self.sleep(0.5)
         else:
             self.send_key('f')
             if self.handle_claim_button():
