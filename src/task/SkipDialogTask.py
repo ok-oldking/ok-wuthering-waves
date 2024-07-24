@@ -23,7 +23,7 @@ class AutoDialogTask(TriggerTask, FindFeature, OCR):
         pass
 
     def trigger(self):
-        skip = self.ocr(0.03, 0.03, 0.11, 0.10, target_height=480, match=re.compile('SKIP'), threshold=0.9)
+        skip = self.ocr(0.03, 0.03, 0.11, 0.10, target_height=540, match=re.compile('SKIP'), threshold=0.9)
         if skip:
             logger.info('Click Skip Dialog')
             self.click_box(skip, move_back=True)

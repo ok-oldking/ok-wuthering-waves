@@ -35,7 +35,7 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
                                                       y_offset=-0.7 * f.height)
                 # absorb = self.find_one(self.absorb_echo_feature, box=search_absorb, canny_lower=75, canny_higher=150,
                 #                        threshold=0.65)
-                absorb = self.ocr(box=search_absorb, match=self.absorb_echo_text, log=True, target_height=480)
+                absorb = self.ocr(box=search_absorb, match=self.absorb_echo_text, log=True, target_height=540)
                 logger.debug(f'auto_pick try to search for absorb {self.absorb_echo_text} {absorb}')
                 if absorb:
                     return True

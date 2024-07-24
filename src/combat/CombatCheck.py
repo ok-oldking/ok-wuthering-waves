@@ -223,7 +223,7 @@ class CombatCheck:
 
     def find_boss_lv_text(self):
         texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160),
-                         target_height=720)
+                         target_height=540)
         boss_lv_texts = find_boxes_by_name(texts,
                                            [re.compile(r'(?i)^L[V].*')])
         if len(boss_lv_texts) > 0:
