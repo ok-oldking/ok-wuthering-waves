@@ -178,7 +178,7 @@ class FarmWorldBossTask(BaseCombatTask):
                             self.sleep(5)
                         self.wait_in_team_and_world(time_out=20)
                         logger.info(f'farm echo move forward walk_until_f to find echo')
-                        if self.walk_until_f(time_out=6, backward_time=1,
+                        if self.walk_until_f(time_out=6, backward_time=1, exclude_text=self.absorb_echo_exclude_text,
                                              raise_if_not_found=False):  # find and pick echo
                             logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
                             self.incr_drop(True)
