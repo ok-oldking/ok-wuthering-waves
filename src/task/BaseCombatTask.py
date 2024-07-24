@@ -86,7 +86,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 if total_index > 2 and (total_index + 1) % 2 == 0:
                     duration += step
                 picked = self.send_key_and_wait_f(direction, False, time_out=duration, running=True,
-                                                  target_text=self.absorb_echo_feature)
+                                                  target_text=self.absorb_echo_text)
                 if picked:
                     self.mouse_up(key="right")
                     return True
