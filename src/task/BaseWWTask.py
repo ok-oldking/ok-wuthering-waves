@@ -1,3 +1,5 @@
+import re
+
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
@@ -10,6 +12,13 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
 
     def __init__(self):
         super().__init__()
+
+    @property
+    def absorb_echo_text(self):
+        if self.game_lang == 'zh_CN' or self.game_lang == 'en_US':
+            return re.compile(r'(吸收|Absorb)')
+        else:
+            return None
 
     @property
     def absorb_echo_feature(self):
@@ -35,9 +44,9 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
     def find_f_with_text(self, target_text=None):
         f = self.find_one('pick_up_f', box=self.f_search_box, threshold=0.8)
         if f and target_text:
-            search_text_box = f.copy(x_offset=f.width * 5, width_offset=f.width * 12, height_offset=1 * f.height,
-                                     y_offset=-0.5 * f.height)
-            text = self.find_one(target_text, box=search_text_box, canny_lower=75, canny_higher=150, threshold=0.65)
+            search_text_box = f.copy(x_offset=f.width * 5, width_offset=f.width * 7, height_offset=1.5 * f.height,
+                                     y_offset=-0.8 * f.height, name='search_text_box')
+            text = self.ocr(box=search_text_box, match=target_text)
             logger.debug(f'found f with text {text}, target_text {target_text}')
             if not text:
                 return None
