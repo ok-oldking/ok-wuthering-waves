@@ -1,5 +1,3 @@
-import re
-
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
@@ -12,7 +10,17 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
 
     def __init__(self):
         super().__init__()
-        self.absorb_echo_exclude_text = re.compile(r'(领取奖励|Claim)')
+
+    @property
+    def absorb_echo_feature(self):
+        return self.get_feature_by_lang('absorb')
+
+    def get_feature_by_lang(self, feature):
+        lang_feature = feature + '_' + self.game_lang
+        if self.feature_exists(lang_feature):
+            return lang_feature
+        else:
+            return None
 
     @property
     def f_search_box(self):
@@ -24,13 +32,21 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
                                          name='search_dialog')
         return f_search_box
 
-    def find_f_with_text(self, exclude_text=None):
+    def find_f_with_text(self, target_text=None):
         f = self.find_one('pick_up_f', box=self.f_search_box, threshold=0.8)
-        if f and exclude_text:
+        if f and target_text:
             search_text_box = f.copy(x_offset=f.width * 5, width_offset=f.width * 12, height_offset=1 * f.height,
                                      y_offset=-0.5 * f.height)
-            text = self.ocr(box=search_text_box, match=exclude_text)
-            logger.debug(f'found f with text {text}, exclude_text {exclude_text}')
-            if len(text) > 0:
-                return False
+            text = self.find_one(target_text, box=search_text_box, canny_lower=75, canny_higher=150, threshold=0.65)
+            logger.debug(f'found f with text {text}, target_text {target_text}')
+            if not text:
+                return None
         return f
+
+    @property
+    def game_lang(self):
+        if '鸣潮' in self.hwnd_title:
+            return 'zh_CN'
+        elif 'Wuthering' in self.hwnd_title:
+            return 'en_US'
+        return 'unknown_lang'

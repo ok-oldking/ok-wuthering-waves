@@ -27,5 +27,16 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
             dialog_search = f.copy(x_offset=f.width * 2, width_offset=f.width * 2, height_offset=f.height * 2,
                                    y_offset=-f.height,
                                    name='search_dialog')
-            return self.find_one('dialog_3_dots', box=dialog_search,
-                                 threshold=0.8) is None
+            dialog_3_dots = self.find_feature('dialog_3_dots', box=dialog_search,
+                                              threshold=0.8)
+            if dialog_3_dots and self.absorb_echo_feature:
+                search_absorb = dialog_3_dots[0].copy(x_offset=f.width * 2, width_offset=f.width * 10,
+                                                      height_offset=1.4 * f.height,
+                                                      y_offset=-0.7 * f.height)
+                absorb = self.find_one(self.absorb_echo_feature, box=search_absorb, canny_lower=75, canny_higher=150,
+                                       threshold=0.65)
+                logger.debug(f'auto_pick try to search for absorb {self.absorb_echo_feature} {absorb}')
+                if absorb:
+                    return True
+            if not dialog_3_dots:
+                return True
