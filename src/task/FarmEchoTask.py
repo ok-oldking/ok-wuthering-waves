@@ -26,7 +26,6 @@ class FarmEchoTask(BaseCombatTask):
         self.last_drop = False
 
     def run(self):
-        # return self.run_in_circle_to_find_echo()
         self.handler.post(self.mouse_reset, 0.01)
         if not self.in_team()[0]:
             self.log_error('must be in game world and in teams', notify=True)
@@ -53,7 +52,7 @@ class FarmEchoTask(BaseCombatTask):
             self.wait_in_team_and_world(time_out=20)
             logger.info(f'farm echo move {self.config.get("Entrance Direction")} walk_until_f to find echo')
             if self.config.get('Entrance Direction') == 'Forward':
-                dropped = self.walk_until_f(time_out=3,
+                dropped = self.walk_until_f(time_out=3, exclude_text=self.absorb_echo_exclude_text,
                                             raise_if_not_found=False)  # find and pick echo
                 logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
             else:
@@ -79,7 +78,7 @@ class FarmEchoTask(BaseCombatTask):
         y = 0.17
         x = 0.15
         distance = 0.08
-        
+
         logger.info(f'choose level {start}')
         self.click_relative(x, y + (start - 1) * distance)
         self.sleep(0.5)

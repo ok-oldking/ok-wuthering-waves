@@ -7,13 +7,13 @@ from ok.config.ConfigOption import ConfigOption
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
-from ok.task.BaseTask import BaseTask
 from ok.task.TaskExecutor import CannotFindException
 from ok.util.list import safe_get
 from src.char import BaseChar
 from src.char.BaseChar import Priority
 from src.char.CharFactory import get_char_by_pos
 from src.combat.CombatCheck import CombatCheck
+from src.task.BaseWWTask import BaseWWTask
 
 logger = get_logger(__name__)
 
@@ -33,7 +33,7 @@ key_config_option = ConfigOption('Game Hotkey Config', {
 }, description='In Game Hotkey for Skills')
 
 
-class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
+class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
 
     def __init__(self):
         super().__init__()
@@ -53,7 +53,7 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             exception_type = NotInCombatException
         raise exception_type(message)
 
-    def combat_once(self, wait_combat_time=180, wait_before=2):
+    def combat_once(self, wait_combat_time=180, wait_before=1):
         self.wait_until(lambda: self.in_combat(), time_out=wait_combat_time, raise_if_not_found=True)
         self.sleep(wait_before)
         self.wait_until(lambda: self.in_combat(), time_out=3, raise_if_not_found=True)
@@ -70,6 +70,8 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                 if self.debug:
                     self.screenshot(f'out of combat break {self.out_of_combat_reason}')
                 break
+        self.middle_click()
+        self.sleep(0.2)
 
     def run_in_circle_to_find_echo(self, circle_count=3):
         directions = ['w', 'a', 's', 'd']
@@ -81,7 +83,8 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
             for direction in directions:
                 if total_index > 2 and (total_index + 1) % 2 == 0:
                     duration += step
-                picked = self.send_key_and_wait_f(direction, False, time_out=duration, running=True)
+                picked = self.send_key_and_wait_f(direction, False, time_out=duration, running=True,
+                                                  exclude_text=self.absorb_echo_exclude_text)
                 if picked:
                     self.mouse_up(key="right")
                     return True
@@ -196,15 +199,15 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
                 self.screenshot('not_in_combat_calling_check_combat')
             self.raise_not_in_combat('combat check not in combat')
 
-    def send_key_and_wait_f(self, direction, raise_if_not_found, time_out, running=False):
+    def send_key_and_wait_f(self, direction, raise_if_not_found, time_out, running=False, exclude_text=None):
         if time_out <= 0:
             return
         start = time.time()
         if running:
             self.mouse_down(key='right')
         self.send_key_down(direction)
-        f_found = self.wait_feature('pick_up_f', horizontal_variance=0.01, vertical_variance=0.01, threshold=0.8,
-                                    wait_until_before_delay=0, time_out=time_out, raise_if_not_found=False)
+        f_found = self.wait_until(lambda: self.find_f_with_text(exclude_text=exclude_text), time_out=time_out,
+                                  raise_if_not_found=False)
         if f_found:
             self.send_key('f')
             self.sleep(0.1)
@@ -233,19 +236,20 @@ class BaseCombatTask(BaseTask, FindFeature, OCR, CombatCheck):
 
     def handle_claim_button(self):
         if self.wait_feature('cancel_button', raise_if_not_found=False, horizontal_variance=0.1,
-                             vertical_variance=0.1,
-                             use_gray_scale=True, time_out=2, threshold=0.8):
+                             vertical_variance=0.1, time_out=1.5, threshold=0.8):
             self.send_key('esc')
             self.sleep(0.05)
             logger.info(f"found a claim reward")
             return True
 
-    def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0):
-        if not self.find_one('pick_up_f', horizontal_variance=0.01, vertical_variance=0.01, threshold=0.8):
+    def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0, exclude_text=None):
+        if not self.find_f_with_text(exclude_text=exclude_text):
             if backward_time > 0:
-                if self.send_key_and_wait_f('s', raise_if_not_found, backward_time):
+                if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, exclude_text=exclude_text):
+                    logger.info('walk backward found f')
                     return True
-            return self.send_key_and_wait_f(direction, raise_if_not_found, time_out) and self.sleep(0.5)
+            return self.send_key_and_wait_f(direction, raise_if_not_found, time_out,
+                                            exclude_text=exclude_text) and self.sleep(0.5)
         else:
             self.send_key('f')
             if self.handle_claim_button():
