@@ -176,7 +176,7 @@ class FarmWorldBossTask(BaseCombatTask):
                             logger.info(f'sleep for the Boss model to disappear')
                             self.sleep(5)
                         logger.info(f'farm echo move forward walk_until_f to find echo')
-                        if self.walk_until_f(time_out=6, backward_time=1, target_text=self.absorb_echo_feature,
+                        if self.walk_until_f(time_out=6, backward_time=1, target_text=self.absorb_echo_text,
                                              raise_if_not_found=False):  # find and pick echo
                             logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
                             self.incr_drop(True)
