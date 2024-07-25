@@ -122,3 +122,12 @@ msgstr ""
 
 msgid "Auto Pick Flowers in Game World"
 msgstr ""
+
+msgid "Pick Echo Config"
+msgstr ""
+
+msgid "Turn on if your CPU is Powerful for more accuracy"
+msgstr ""
+
+msgid "Use OCR"
+msgstr ""

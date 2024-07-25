@@ -1,5 +1,6 @@
 import re
 
+from ok.config.ConfigOption import ConfigOption
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
@@ -7,15 +8,21 @@ from ok.task.BaseTask import BaseTask
 
 logger = get_logger(__name__)
 
+pick_echo_config_option = ConfigOption('Pick Echo Config', {
+    'Use OCR': False
+}, config_description={
+    'Use OCR': 'Turn on if your CPU is Powerful for more accuracy'})
+
 
 class BaseWWTask(BaseTask, FindFeature, OCR):
 
     def __init__(self):
         super().__init__()
+        self.pick_echo_config = self.get_config(pick_echo_config_option)
 
     @property
     def absorb_echo_text(self):
-        if self.game_lang == 'zh_CN' or self.game_lang == 'en_US':
+        if self.pick_echo_config.get('Use OCR') and (self.game_lang == 'zh_CN' or self.game_lang == 'en_US'):
             return re.compile(r'(吸收|Absorb)')
         else:
             return None
