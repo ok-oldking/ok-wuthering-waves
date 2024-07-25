@@ -222,8 +222,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             else:
                 logger.warning(f"can't find the f to enter")
                 return False
-        if target_text:
-            return f_found
+            
         remaining = time.time() - start
 
         if self.handle_claim_button():
@@ -257,8 +256,6 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                                             target_text=target_text) and self.sleep(0.5)
         else:
             self.send_key('f')
-            if target_text:
-                return True
             if self.handle_claim_button():
                 return False
         self.sleep(0.5)
