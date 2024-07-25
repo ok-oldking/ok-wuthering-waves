@@ -1,9 +1,6 @@
 #
 msgid ""
 msgstr ""
-
-msgid ""
-msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: you@example.com\n"
 "Last-Translator: you@example.com\n"
@@ -11,6 +8,9 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+msgid ""
+msgstr ""
 
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
 msgstr "(1-6) 重要, 选择你对应世界等级可以产出声骸的难度, 从上到下为1-6"
@@ -125,3 +125,12 @@ msgstr "自动拾取"
 
 msgid "Auto Pick Flowers in Game World"
 msgstr "大世界自动拾取"
+
+msgid "Pick Echo Config"
+msgstr "拾取声骸"
+
+msgid "Turn on if your CPU is Powerful for more accuracy"
+msgstr "高配置CPU请打开,增加拾取声骸准确度,如果配置不够导致路过不捡声骸,请关闭"
+
+msgid "Use OCR"
+msgstr "使用文字识别(中英文客户端适用)"
