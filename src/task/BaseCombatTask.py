@@ -173,13 +173,6 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             y = self.height_of_screen(0.5)
         return super().click(x, y, move_back, name, interval)
 
-    def wait_in_team_and_world(self, time_out=10, raise_if_not_found=True):
-        return self.wait_until(self.in_team_and_world, time_out=time_out, raise_if_not_found=raise_if_not_found)
-
-    def in_team_and_world(self):
-        return self.in_team()[
-            0]  # and self.find_one(f'gray_book_button', threshold=0.7, canny_lower=50, canny_higher=150)
-
     def get_current_char(self):
         for char in self.chars:
             if char.is_current_char:
@@ -222,7 +215,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             else:
                 logger.warning(f"can't find the f to enter")
                 return False
-            
+
         remaining = time.time() - start
 
         if self.handle_claim_button():
