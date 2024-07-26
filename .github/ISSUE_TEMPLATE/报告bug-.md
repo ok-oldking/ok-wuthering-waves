@@ -19,14 +19,17 @@ assignees: ok-oldking
 截图 :
 如果适用，添加截图以帮助解释您的问题。
 
+是否必现:
+是/否/大概率/小概率
+
+录屏:
+最好有录屏上传QQ频道
+
 脚本软件版本：
 [如]1.1.1
 
 windows操作系统:
  [例如] Windows 11 Pro 23H2 22631.3593
 
-模拟器版本:
- [如使用模拟器]MuMu模拟器12 V3.8.25 (2927)
-
 上传日志:
-将脚本安装目录的logs,screenshots,config,click_screenshots打包上传附件
+将脚本安装目录的logs,screenshots打包上传附件
