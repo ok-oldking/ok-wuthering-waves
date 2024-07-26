@@ -26,7 +26,7 @@ class CombatCheck:
         self.boss_health = None
         self.out_of_combat_reason = ""
         self.combat_check_interval = 0.8
-        self.last_click_liberation = 0
+        self.last_liberation = 0
 
     def reset_to_false(self, recheck=False, reason=""):
         if is_pure_black(self.frame):
@@ -53,7 +53,7 @@ class CombatCheck:
             return False
 
     def recent_liberation(self):
-        return time.time() - self.last_click_liberation < 0.3
+        return time.time() - self.last_liberation < 0.3
 
     def check_count_down(self):
         count_down_area = self.box_of_screen(1820 / 3840, 266 / 2160, 2100 / 3840,

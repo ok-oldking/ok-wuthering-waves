@@ -154,6 +154,7 @@ class BaseChar:
             if has_animation:
                 if not self.task.in_team()[0]:
                     self.task.in_liberation = True
+                    self.task.last_liberation = time.time()
                     animated = True
                     if time.time() - resonance_click_time > 6:
                         self.task.in_liberation = False
@@ -256,7 +257,6 @@ class BaseChar:
             self.logger.debug(f'click_liberation liberation_available click')
             now = time.time()
             if now - last_click > 0.1:
-                self.task.last_click_liberation = now
                 self.task.send_key(self.get_liberation_key())
                 self.liberation_available_mark = False
                 clicked = True
@@ -272,10 +272,11 @@ class BaseChar:
                 self.logger.error(f'clicked liberation but no effect')
                 return False
         while not self.task.in_team()[0]:
+            self.task.last_liberation = time.time()
             clicked = True
             if send_click:
                 self.task.click(interval=0.1)
-            if time.time() - start > 7:
+            if self.task.last_liberation - start > 7:
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
             self.task.next_frame()
         self.task.in_liberation = False
