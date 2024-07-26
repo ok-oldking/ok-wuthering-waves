@@ -5,11 +5,12 @@ from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
 from ok.task.TriggerTask import TriggerTask
+from src.task.BaseWWTask import BaseWWTask
 
 logger = get_logger(__name__)
 
 
-class AutoDialogTask(TriggerTask, FindFeature, OCR):
+class AutoDialogTask(TriggerTask, BaseWWTask, FindFeature, OCR):
 
     def __init__(self):
         super().__init__()

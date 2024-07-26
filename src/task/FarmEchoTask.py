@@ -24,6 +24,7 @@ class FarmEchoTask(BaseCombatTask):
         self.last_drop = False
 
     def run(self):
+        self.set_check_monthly_card()
         self.handler.post(self.mouse_reset, 0.01)
         if not self.in_team()[0]:
             self.log_error('must be in game world and in teams', notify=True)

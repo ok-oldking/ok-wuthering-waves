@@ -148,6 +148,7 @@ class FarmWorldBossTask(BaseCombatTask):
         self.sleep(2)
 
     def run(self):
+        self.set_check_monthly_card()
         if not self.check_main():
             self.log_error('must be in game world and in teams', notify=True)
         self.handler.post(self.mouse_reset, 0.01)

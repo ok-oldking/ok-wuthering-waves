@@ -131,3 +131,18 @@ msgstr ""
 
 msgid "Use OCR"
 msgstr ""
+
+msgid "Check Monthly Card"
+msgstr ""
+
+msgid "Check for monthly card to avoid interruption of tasks"
+msgstr ""
+
+msgid "Monthly Card Config"
+msgstr ""
+
+msgid "Monthly Card Time"
+msgstr ""
+
+msgid "Your computer's local time when the monthly card will popup, hour in (1-24)"
+msgstr ""
