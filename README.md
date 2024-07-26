@@ -3,8 +3,8 @@
 ## OK-WW
 * Automation for Wuthering Waves using Computer Vision, Auto Combat
 * 点击[releases](https://github.com/ok-oldking/ok-wuthering-waves/releases), 下载7z压缩包, 解压缩双击运行.exe
-* 下载有问题的, 也可加入腾讯QQ频道，[OK-WW](https://pd.qq.com/s/2jhl3oogp)
-* QQ水群，只聊游戏, 不下载不讨论软件: [970523295](https://qm.qq.com/q/qMezq2IDGU)
+* 下载有问题的, 也可加入腾讯QQ频道，[OK-WW](https://pd.qq.com/s/2jhl3oogp) 问题答案: 老王同学OK
+* QQ水群，只聊游戏, 不下载不讨论软件: [970523295](https://qm.qq.com/q/qMezq2IDGU) 问题答案: 老王同学OK
 
 
 ### 有多强?
