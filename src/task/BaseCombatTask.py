@@ -231,10 +231,11 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         return f_found
 
     def handle_claim_button(self):
-        if self.wait_feature('cancel_button', raise_if_not_found=False, horizontal_variance=0.1,
-                             vertical_variance=0.1, time_out=1.5, threshold=0.8):
+        if self.wait_feature('claim_cancel_button', raise_if_not_found=False, horizontal_variance=0.05,
+                             vertical_variance=0.05, time_out=1.5, threshold=0.8):
+            self.sleep(0.5)
             self.send_key('esc')
-            self.sleep(0.05)
+            self.sleep(0.5)
             logger.info(f"found a claim reward")
             return True
 
