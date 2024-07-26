@@ -1,6 +1,9 @@
 #
 msgid ""
 msgstr ""
+
+msgid ""
+msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: you@example.com\n"
 "Last-Translator: you@example.com\n"
@@ -8,9 +11,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-msgid ""
-msgstr ""
 
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
 msgstr "(1-6) 重要, 选择你对应世界等级可以产出声骸的难度, 从上到下为1-6"
@@ -134,3 +134,18 @@ msgstr "高配置CPU请打开,增加拾取声骸准确度,如果配置不够导�
 
 msgid "Use OCR"
 msgstr "使用文字识别(中英文客户端适用)"
+
+msgid "Check Monthly Card"
+msgstr "是否检查月卡"
+
+msgid "Check for monthly card to avoid interruption of tasks"
+msgstr "设置避免小月卡弹窗打断任务"
+
+msgid "Monthly Card Config"
+msgstr "小月卡设置"
+
+msgid "Monthly Card Time"
+msgstr "月卡时间"
+
+msgid "Your computer's local time when the monthly card will popup, hour in (1-24)"
+msgstr "几点会弹出月卡提示, 本地计算机时间(1-24)"
