@@ -167,7 +167,7 @@ class BaseChar:
             if not self.resonance_available(current_resonance):
                 self.logger.debug(f'click_resonance not available break')
                 break
-            self.logger.debug(f'click_resonance resonance_available click')
+            self.logger.debug(f'click_resonance resonance_available click {current_resonance}')
             now = time.time()
             if now - last_click > 0.1:
                 if ((current_resonance == 0) and send_click) or last_op == 'resonance':
