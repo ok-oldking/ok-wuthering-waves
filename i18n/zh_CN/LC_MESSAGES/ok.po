@@ -149,3 +149,6 @@ msgstr "月卡时间"
 
 msgid "Your computer's local time when the monthly card will popup, hour in (1-24)"
 msgstr "几点会弹出月卡提示, 本地计算机时间(1-24)"
+
+msgid "must be in game world and in teams, please check you game resolution is 16:9"
+msgstr "必须在大世界队伍中, 请点击截图测试,检查游戏分辨率是否是16:9"

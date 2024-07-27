@@ -50,6 +50,7 @@ class BaseChar:
         self.liberation_available_mark = False
         self.logger = get_logger(self.name)
         self.full_ring_area = 0
+        self.freeze_durations = []
         self._is_forte_full = False
         self.config = {"_full_ring_area": 0, "_ring_color_index": -1}
         if type(self) is not BaseChar:
@@ -189,6 +190,8 @@ class BaseChar:
         if clicked:
             self.sleep(post_sleep)
         duration = time.time() - resonance_click_time if resonance_click_time != 0 else 0
+        if animated:
+            self.add_freeze_duration(resonance_click_time, duration)
         self.logger.info(f'click_resonance end clicked {clicked} duration {duration} animated {animated}')
         return clicked, duration, animated
 
@@ -253,7 +256,9 @@ class BaseChar:
         start = time.time()
         last_click = 0
         clicked = False
-        while self.liberation_available():
+        while self.liberation_available() or (
+                (clicked and time.time() - last_click < 0.5) and self.task.in_team()[
+            0]):  # clicked and still in team wait for animation
             self.logger.debug(f'click_liberation liberation_available click')
             now = time.time()
             if now - last_click > 0.1:
@@ -271,6 +276,7 @@ class BaseChar:
                 self.task.in_liberation = False
                 self.logger.error(f'clicked liberation but no effect')
                 return False
+        start = time.time()
         while not self.task.in_team()[0]:
             self.task.last_liberation = time.time()
             clicked = True
@@ -279,11 +285,25 @@ class BaseChar:
             if self.task.last_liberation - start > 7:
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
             self.task.next_frame()
+        duration = time.time() - start
+        self.add_freeze_duration(start, duration)
         self.task.in_liberation = False
         if clicked:
-            liberation_time = f'{(time.time() - start):.2f}'
-            self.logger.info(f'click_liberation end {liberation_time}')
+            self.logger.info(f'click_liberation end {duration}')
         return clicked
+
+    def add_freeze_duration(self, start, duration, freeze_time=0.2):
+        if duration > freeze_time:
+            current_time = time.time()
+            self.freeze_durations = [item for item in self.freeze_durations if item[0] <= current_time - 15]
+            self.freeze_durations.append((start, duration, freeze_time))
+
+    def time_elapsed_accounting_for_freeze(self, start):
+        to_minus = 0
+        for freeze_start, duration, freeze_time in self.freeze_durations:
+            if start < freeze_start:
+                to_minus += duration - freeze_time
+        return time.time() - start - to_minus
 
     def get_liberation_key(self):
         return self.task.key_config['Liberation Key']
@@ -296,7 +316,7 @@ class BaseChar:
 
     def get_switch_priority(self, current_char, has_intro):
         priority = self.do_get_switch_priority(current_char, has_intro)
-        if priority != Priority.MAX and time.time() - self.last_switch_time < 0.9:
+        if priority < Priority.MAX and time.time() - self.last_switch_time < 0.9:
             return Priority.SWITCH_CD  # switch cd
         else:
             return priority

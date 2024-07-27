@@ -1,5 +1,3 @@
-import time
-
 from src.char.BaseChar import BaseChar, Priority
 
 
@@ -14,7 +12,7 @@ class Changli(BaseChar):
         self.enhanced_normal = False
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False):
-        if time.time() - self.last_e < 4:
+        if self.time_elapsed_accounting_for_freeze(self.last_e) < 4:
             self.logger.info(
                 f'switch priority MIN because e not finished')
             return Priority.MIN
