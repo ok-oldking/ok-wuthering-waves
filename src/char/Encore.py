@@ -18,7 +18,7 @@ class Encore(BaseChar):
         target_low_con = False
         if self.has_intro:
             self.logger.debug('encore wait intro')
-            self.continues_normal_attack(.8)
+            self.continues_normal_attack(1.0)
             self.wait_down()
         else:
             while not self.still_in_liberation() and self.can_resonance_step2():
