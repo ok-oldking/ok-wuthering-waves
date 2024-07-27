@@ -57,13 +57,13 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         else:
             return None
 
-    def set_check_monthly_card(self):
+    def set_check_monthly_card(self, next_day=False):
         if self.monthly_card_config.get('Check Monthly Card'):
             now = datetime.now()
             hour = self.monthly_card_config.get('Monthly Card Time')
             # Calculate the next 4 o'clock in the morning
             next_four_am = now.replace(hour=hour, minute=0, second=0, microsecond=0)
-            if now >= next_four_am:
+            if now >= next_four_am or next_day:
                 next_four_am += timedelta(days=1)
             next_monthly_card_start_date_time = next_four_am - timedelta(seconds=30)
             # Subtract 1 minute from the next 4 o'clock in the morning
@@ -94,25 +94,25 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         return f
 
     def check_for_monthly_card(self):
-        if self.next_monthly_card_start > 0:
-            if time.time() > self.next_monthly_card_start:
-                start = time.time()
-                logger.info(f'start waiting for monthly card')
-                f4_open = False
-                if self.in_team_and_world():
-                    logger.info(f'in team send f4 to wait')
-                    self.send_key('f4')
-                    f4_open = True
+        if self.should_check_monthly_card():
+            start = time.time()
+            logger.info(f'check_for_monthly_card start check')
+            if self.check_combat():
+                logger.info(f'check_for_monthly_card in combat return')
+                return time.time() - start
+            if self.in_team_and_world():
+                logger.info(f'check_for_monthly_card in team send sleep until monthly card popup')
                 monthly_card = self.wait_until(self.handle_monthly_card, time_out=120, raise_if_not_found=False)
                 logger.info(f'wait monthly card end {monthly_card}')
-                if f4_open:
-                    self.send_key('esc')
-                    self.sleep(2)
-                    logger.info(f'wait monthly card close f4')
-                cost = time.time() - start
-                self.set_check_monthly_card()
-                return cost
+            cost = time.time() - start
+            return cost
         return 0
+
+    def should_check_monthly_card(self):
+        if self.next_monthly_card_start > 0:
+            if 0 < time.time() - self.next_monthly_card_start < 120:
+                return True
+        return False
 
     def sleep(self, timeout):
         return super().sleep(timeout - self.check_for_monthly_card())
@@ -131,6 +131,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
             self.sleep(2)
             self.click(monthly_card)
             self.sleep(1)
+            self.set_check_monthly_card(next_day=True)
         logger.debug(f'check_monthly_card {monthly_card}')
         return monthly_card is not None
 
