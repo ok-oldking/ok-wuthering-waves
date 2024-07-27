@@ -1,11 +1,12 @@
 # ![icon](icon.png)
 
 ## OK-WW
+
 * Automation for Wuthering Waves using Computer Vision, Auto Combat
 * 点击[releases](https://github.com/ok-oldking/ok-wuthering-waves/releases), 下载7z压缩包, 解压缩双击运行.exe
 * 下载有问题的, 也可加入腾讯QQ频道，[OK-WW](https://pd.qq.com/s/2jhl3oogp) 问题答案: 老王同学OK
 * QQ水群，只聊游戏, 不下载不讨论软件: [970523295](https://qm.qq.com/q/qMezq2IDGU) 问题答案: 老王同学OK
-
+* [出现问题先查看,常见问题](readme/faq.md)
 
 ### 有多强?
 
@@ -49,8 +50,9 @@ pip install -r requirements.txt
 python main_debug.py
 ```
 
-the images assets was generated using this [roboflow project](https://app.roboflow.com/test-7ruyi/ww-jamcc) 
+the images assets was generated using this [roboflow project](https://app.roboflow.com/test-7ruyi/ww-jamcc)
 
 ### 致谢
+
 [https://github.com/lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss) 后台点击代码
   

@@ -7,6 +7,8 @@ assignees: ok-oldking
 
 ---
 
+请先挨个检查,[常见问题](https://github.com/ok-oldking/ok-wuthering-waves/readme/faq.md)
+
 描述错误:
 [请清晰简洁地描述错误是什么]
 
@@ -29,7 +31,7 @@ assignees: ok-oldking
 [如]1.1.1
 
 windows操作系统:
- [例如] Windows 11 Pro 23H2 22631.3593
+[例如] Windows 11 Pro 23H2 22631.3593
 
 上传日志:
 将脚本安装目录的logs,screenshots打包上传附件
