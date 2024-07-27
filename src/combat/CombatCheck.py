@@ -29,6 +29,8 @@ class CombatCheck:
         self.last_liberation = 0
 
     def reset_to_false(self, recheck=False, reason=""):
+        if self.handle_monthly_card():
+            return True
         if is_pure_black(self.frame):
             logger.error('getting a pure black frame for unknown reason, reset_to_false return true')
             return True
