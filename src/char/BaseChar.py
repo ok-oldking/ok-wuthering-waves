@@ -256,9 +256,7 @@ class BaseChar:
         start = time.time()
         last_click = 0
         clicked = False
-        while self.liberation_available() or (
-                (clicked and time.time() - last_click < 0.5) and self.task.in_team()[
-            0]):  # clicked and still in team wait for animation
+        while self.liberation_available():  # clicked and still in team wait for animation
             self.logger.debug(f'click_liberation liberation_available click')
             now = time.time()
             if now - last_click > 0.1:
