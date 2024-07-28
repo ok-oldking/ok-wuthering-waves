@@ -129,7 +129,7 @@ class BaseChar:
             self.current_con = 0
 
     def __repr__(self):
-        return self.__class__.__name__ + ('_T' if self.is_current_char else '_F')
+        return self.__class__.__name__
 
     def switch_next_char(self, post_action=None, free_intro=False, target_low_con=False):
         self.is_forte_full()

@@ -146,3 +146,96 @@ msgstr ""
 
 msgid "Your computer's local time when the monthly card will popup, hour in (1-24)"
 msgstr ""
+
+msgid "Capture Frame Count"
+msgstr ""
+
+msgid "Capture Frame Rate"
+msgstr ""
+
+msgid "Current Character"
+msgstr ""
+
+msgid "Diagnosis"
+msgstr ""
+
+msgid "Diagnosis Problem, Performance Test, Run in Game World"
+msgstr ""
+
+msgid "Echo Available"
+msgstr ""
+
+msgid "Echo in CD"
+msgstr ""
+
+msgid "Game Resolution"
+msgstr ""
+
+msgid "Liberation Available"
+msgstr ""
+
+msgid "Liberation in CD"
+msgstr ""
+
+msgid "Resonance Available"
+msgstr ""
+
+msgid "Resonance in CD"
+msgstr ""
+
+msgid "10.4"
+msgstr ""
+
+msgid "10.47"
+msgstr ""
+
+msgid "10.55"
+msgstr ""
+
+msgid "10.79"
+msgstr ""
+
+msgid "11.2"
+msgstr ""
+
+msgid "11.56"
+msgstr ""
+
+msgid "13"
+msgstr ""
+
+msgid "24"
+msgstr ""
+
+msgid "2560x1440"
+msgstr ""
+
+msgid "28.79"
+msgstr ""
+
+msgid "3"
+msgstr ""
+
+msgid "33"
+msgstr ""
+
+msgid "43"
+msgstr ""
+
+msgid "53"
+msgstr ""
+
+msgid "64"
+msgstr ""
+
+msgid "False"
+msgstr ""
+
+msgid "Jinhsi"
+msgstr ""
+
+msgid "True"
+msgstr ""
+
+msgid "load chars success [Encore, Verina, Jinhsi]"
+msgstr ""

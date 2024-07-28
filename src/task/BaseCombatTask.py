@@ -173,7 +173,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             y = self.height_of_screen(0.5)
         return super().click(x, y, move_back, name, interval)
 
-    def get_current_char(self):
+    def get_current_char(self) -> BaseChar:
         for char in self.chars:
             if char.is_current_char:
                 return char

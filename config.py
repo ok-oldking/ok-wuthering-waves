@@ -3,6 +3,7 @@ import os
 from ok.util.path import get_path_in_package
 from src.task.AutoCombatTask import AutoCombatTask
 from src.task.AutoPickTask import AutoPickTask
+from src.task.DiagnosisTask import DiagnosisTask
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.FarmWorldBossTask import FarmWorldBossTask
 from src.task.SkipDialogTask import AutoDialogTask
@@ -75,7 +76,8 @@ config = {
     'version': version,
     'onetime_tasks': [  # tasks to execute
         FarmEchoTask,
-        FarmWorldBossTask
+        FarmWorldBossTask,
+        DiagnosisTask
     ], 'trigger_tasks': [
         AutoCombatTask,
         AutoDialogTask,
