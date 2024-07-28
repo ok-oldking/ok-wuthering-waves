@@ -151,7 +151,7 @@ class CombatCheck:
                     else:
                         return self.reset_to_false(recheck=False, reason="boss disappear")
                 if not self.check_health_bar():
-                    logger.debug('not in team or no health bar')
+                    logger.debug('no health bar')
                     if not self.target_enemy():
                         logger.error('target_enemy failed, break out of combat')
                         return self.reset_to_false(reason='target enemy failed')
@@ -170,6 +170,8 @@ class CombatCheck:
             else:
                 in_combat = self.target_enemy()
             if in_combat:
+                if not self.boss_lv_template:
+                    self.find_boss_lv_text()
                 logger.info(
                     f'enter combat cost {(time.time() - start):2f} boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
                 self._in_combat = True
@@ -201,7 +203,7 @@ class CombatCheck:
             return True
         else:
             boxes = find_color_rectangles(self.frame, boss_health_color, min_width * 3, min_height * 1.3,
-                                          box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 192 / 2160))
+                                          box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 200 / 2160))
             if len(boxes) == 1:
                 self.boss_health_box = boxes[0]
                 self.boss_health_box.width = 10
@@ -214,7 +216,7 @@ class CombatCheck:
 
     def find_boss_lv_text(self):
         texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160),
-                         target_height=540)
+                         target_height=540, name='boss_lv_text')
         boss_lv_texts = find_boxes_by_name(texts,
                                            [re.compile(r'(?i)^L[V].*')])
         if len(boss_lv_texts) > 0:
