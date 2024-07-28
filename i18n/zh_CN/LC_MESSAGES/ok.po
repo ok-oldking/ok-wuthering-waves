@@ -152,3 +152,45 @@ msgstr "几点会弹出月卡提示, 本地计算机时间(1-24)"
 
 msgid "must be in game world and in teams, please check you game resolution is 16:9"
 msgstr "必须在大世界队伍中, 请点击截图测试,检查游戏分辨率是否是16:9"
+
+msgid "Capture Frame Count"
+msgstr "截图次数"
+
+msgid "Capture Frame Rate"
+msgstr "截图FPS"
+
+msgid "Current Character"
+msgstr "当前角色"
+
+msgid "Diagnosis"
+msgstr "诊断问题"
+
+msgid "Diagnosis Problem, Performance Test, Run in Game World"
+msgstr "诊断问题,截图性能测试,在大世界启动.如果技能状态与游戏内不一致,查看常见问题4"
+
+msgid "Echo Available"
+msgstr "声骸可用"
+
+msgid "Echo in CD"
+msgstr "声骸CD中"
+
+msgid "Game Resolution"
+msgstr "游戏分辨率"
+
+msgid "Liberation Available"
+msgstr "大招可用"
+
+msgid "Liberation in CD"
+msgstr "大招CD中"
+
+msgid "Resonance Available"
+msgstr "共鸣技能可用"
+
+msgid "Resonance in CD"
+msgstr "共鸣技能CD中"
+
+msgid "False"
+msgstr "否"
+
+msgid "True"
+msgstr "是"
