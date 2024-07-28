@@ -44,6 +44,7 @@ jobs:
           echo ${{ github.sha }} > Release.txt
           (Get-Content config.py) -replace 'version = "v\d+\.\d+\.\d+"', 'version = "${{ steps.tagName.outputs.tag }}"' | Set-Content config.py
           pyinstaller main.spec
+          copy 免责声明.txt .\dist\bundle\
           python -m ok.update.gen_md5 .\dist\bundle
           mv dist/bundle ok-ww
           7z a -t7z -r "ok-ww-release-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"        
@@ -59,7 +60,7 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           body: |
-            Updates：
+            下载7z的压缩包,解压运行exe,Updates：
             ${{ steps.changes.outputs.changes }} 
           draft: false
           prerelease: true
