@@ -4,7 +4,6 @@ import time
 
 import win32api
 
-import ok.gui
 from ok.config.ConfigOption import ConfigOption
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
@@ -261,18 +260,24 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
     def load_hotkey(self, force=False):
         if not self.key_config['HotKey Verify'] and not force:
             return
-        resonance_key = self.ocr(0.82, 0.93, 0.84, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8)
-        echo_key = self.ocr(0.88, 0.93, 0.90, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8)
-        liberation_key = self.ocr(0.93, 0.93, 0.95, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8)
+        resonance_key = self.ocr(0.82, 0.92, 0.85, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
+                                 name='resonance_key', use_grayscale=True)
+        echo_key = self.ocr(0.88, 0.92, 0.90, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
+                            name='echo_key')
+        liberation_key = self.ocr(0.93, 0.92, 0.96, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
+                                  name='liberation_key')
         keys_str = str(resonance_key) + str(echo_key) + str(liberation_key)
 
-        if not resonance_key or not echo_key or not liberation_key:
-            raise Exception(ok.gui.app.tr(
-                "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}").format(
-                keys_str))
-        self.key_config['Echo Key'] = echo_key[0].name.lower()
-        self.key_config['Liberation Key'] = liberation_key[0].name.lower()
-        self.key_config['Resonance Key'] = resonance_key[0].name.lower()
+        # if not resonance_key or not echo_key or not liberation_key:
+        #     raise Exception(ok.gui.app.tr(
+        #         "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}").format(
+        #         keys_str))
+        if echo_key:
+            self.key_config['Echo Key'] = echo_key[0].name.lower()
+        if liberation_key:
+            self.key_config['Liberation Key'] = liberation_key[0].name.lower()
+        if resonance_key:
+            self.key_config['Resonance Key'] = resonance_key[0].name.lower()
         self.key_config['HotKey Verify'] = False
         logger.info(f'set hotkey {self.key_config}')
         self.info['Skill HotKeys'] = keys_str
@@ -309,11 +314,12 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             logger.info(f'team size changed to 2')
 
         for char in self.chars:
-            char.reset_state()
-            if char.index == current_index:
-                char.is_current_char = True
-            else:
-                char.is_current_char = False
+            if char is not None:
+                char.reset_state()
+                if char.index == current_index:
+                    char.is_current_char = True
+                else:
+                    char.is_current_char = False
 
         self.log_info(f'load chars success {self.chars}')
 
