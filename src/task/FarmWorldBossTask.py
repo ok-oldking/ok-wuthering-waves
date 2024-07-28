@@ -77,7 +77,7 @@ class FarmWorldBossTask(BaseCombatTask):
         if not proceeds:
             raise Exception("can't find the boss proceeds")
 
-        self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=120,
+        self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=200,
                           pre_action=lambda: self.click_box(proceeds[index], relative_x=-1), wait_until_before_delay=5)
         self.sleep(1)
         teleport = self.wait_click_feature('custom_teleport', box=self.box_of_screen(0.48, 0.45, 0.54, 0.58),
