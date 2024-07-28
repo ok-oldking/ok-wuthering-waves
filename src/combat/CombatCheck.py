@@ -170,7 +170,7 @@ class CombatCheck:
             else:
                 in_combat = self.target_enemy()
             if in_combat:
-                if not self.boss_lv_template:
+                if self.boss_lv_template is None:
                     self.find_boss_lv_text()
                 logger.info(
                     f'enter combat cost {(time.time() - start):2f} boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
