@@ -1,9 +1,30 @@
-# ![icon](icon.png)
+#  OK-WW
+![Static Badge](https://img.shields.io/badge/platfrom-Windows-blue?color=blue)
+![GitHub release (with filter)](https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves)
+![GitHub all releases](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)
+![Static Badge](https://img.shields.io/badge/QQ%E7%BE%A4-970523295-purple)
 
-## OK-WW
+# 免责声明
+本软件是一个外部工具，旨在自动化鸣潮的游戏玩法。它仅通过现有用户界面与游戏交互，并遵守相关法律法规。该软件包旨在简化用户与游戏的交互，不会破坏游戏平衡或提供不公平优势，也不会修改任何游戏文件或代码。
+
+本软件开源、免费，仅供个人学习交流使用，仅限于个人游戏账号，不得用于任何商业或营利性目的。开发者团队拥有本项目的最终解释权。使用本软件产生的所有问题与本项目及开发者团队无关。若您发现商家使用本软件进行代练并收费，这是商家的个人行为，本软件不授权用于代练服务，产生的问题及后果与本软件无关。本软件不授权任何人进行售卖，售卖的软件可能被加入恶意代码，导致游戏账号或电脑资料被盗，与本软件无关。
+
+This software is an external tool designed to automate the gameplay of “鸣潮”. It interacts with the game solely through the existing user interface and complies with relevant laws and regulations. The package aims to simplify user interaction with the game without disrupting game balance or providing any unfair advantages. It does not modify any game files or code.
+
+This software is open-source and free, intended solely for personal learning and communication purposes, and is limited to personal game accounts. It is not allowed for any commercial or profit-making purposes. The development team reserves the final interpretation rights of this project. Any issues arising from the use of this software are unrelated to the project and the development team. If you find merchants using this software for paid boosting services, it is their personal behavior, and this software is not authorized for boosting services. Any issues and consequences arising from such use are unrelated to this software. This software is not authorized for sale, and any sold versions may contain malicious code, leading to the theft of game accounts or computer data, which is unrelated to this software.
+
+请注意，根据库洛的《鸣潮》公平运营声明:
+
+```
+严禁利用任何第三方工具破坏游戏体验。
+我们将严厉打击使用外挂、加速器、作弊软件、宏脚本等违规工具的行为，这些行为包括但不限于自动挂机、技能加速、无敌模式、瞬移、修改游戏数据等操作。
+一经查证，我们将视违规情况和次数，采取包括但不限于扣除违规收益、冻结或永久封禁游戏账号等措施。
+```
+
+### 使用说明
 
 * Automation for Wuthering Waves using Computer Vision, Auto Combat
-* 点击[releases](https://github.com/ok-oldking/ok-wuthering-waves/releases), 下载7z压缩包, 解压缩双击运行.exe
+* 点击[releases](https://github.com/ok-oldking/ok-wuthering-waves/releases), 下载7z压缩包(80M左右的), 解压缩双击运行.exe
 * 下载有问题的, 也可加入腾讯QQ频道，[OK-WW](https://pd.qq.com/s/2jhl3oogp) 问题答案: 老王同学OK
 * QQ水群，只聊游戏, 不下载不讨论软件: [970523295](https://qm.qq.com/q/qMezq2IDGU) 问题答案: 老王同学OK
 * [出现问题先查看,常见问题](readme/faq.md)
