@@ -1,8 +1,10 @@
 import math
+import re
 import time
 
 import win32api
 
+import ok.gui
 from ok.config.ConfigOption import ConfigOption
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
@@ -27,6 +29,7 @@ class CharDeadException(NotInCombatException):
 
 
 key_config_option = ConfigOption('Game Hotkey Config', {
+    'HotKey Verify': True,
     'Echo Key': 'q',
     'Liberation Key': 'r',
     'Resonance Key': 'e',
@@ -255,7 +258,27 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         self.sleep(0.5)
         return True
 
+    def load_hotkey(self, force=False):
+        if not self.key_config['HotKey Verify'] and not force:
+            return
+        resonance_key = self.ocr(0.82, 0.93, 0.84, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8)
+        echo_key = self.ocr(0.88, 0.93, 0.90, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8)
+        liberation_key = self.ocr(0.93, 0.93, 0.95, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8)
+        keys_str = str(resonance_key) + str(echo_key) + str(liberation_key)
+
+        if not resonance_key or not echo_key or not liberation_key:
+            raise Exception(ok.gui.app.tr(
+                "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}").format(
+                keys_str))
+        self.key_config['Echo Key'] = echo_key[0].name.lower()
+        self.key_config['Liberation Key'] = liberation_key[0].name.lower()
+        self.key_config['Resonance Key'] = resonance_key[0].name.lower()
+        self.key_config['HotKey Verify'] = False
+        logger.info(f'set hotkey {self.key_config}')
+        self.info['Skill HotKeys'] = keys_str
+
     def load_chars(self):
+        self.load_hotkey()
         in_team, current_index, count = self.in_team()
         if not in_team:
             return

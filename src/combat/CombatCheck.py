@@ -163,16 +163,15 @@ class CombatCheck:
             else:
                 return True
         else:
+            start = time.time()
             in_combat = self.in_team()[0] and self.check_health_bar()
             if in_combat:
-                in_combat = self.boss_health_box is not None or self.boss_lv_template is not None or self.has_count_down
-                if in_combat:
-                    self.target_enemy(wait=False)
-                else:
-                    in_combat = self.target_enemy()
+                self.target_enemy(wait=False)
+            else:
+                in_combat = self.target_enemy()
             if in_combat:
                 logger.info(
-                    f'enter combat boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
+                    f'enter combat cost {(time.time() - start):2f} boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
                 self._in_combat = True
                 return True
 

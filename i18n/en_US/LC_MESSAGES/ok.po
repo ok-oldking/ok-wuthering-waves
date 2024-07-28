@@ -239,3 +239,15 @@ msgstr ""
 
 msgid "load chars success [Encore, Verina, Jinhsi]"
 msgstr ""
+
+msgid "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}"
+msgstr ""
+
+msgid "HotKey Verify"
+msgstr ""
+
+msgid "Turn on to avoid interruption by monthly card when executing tasks"
+msgstr ""
+
+msgid "Turn on to enable auto pick echo"
+msgstr ""
