@@ -382,7 +382,7 @@ class BaseChar:
             color_range = con_colors[i]
             area, is_full = self.count_rings(cropped, color_range,
                                              1500 / 3840 / 2160 * self.task.screen_width * self.task.screen_height)
-            self.logger.debug(f'is_con_full test color_range {color_range} {area, is_full}')
+            # self.logger.debug(f'is_con_full test color_range {color_range} {area, is_full}')
             if is_full:
                 max_is_full = is_full
                 color_index = i
@@ -408,8 +408,8 @@ class BaseChar:
             self.logger.error(f'is_con_full percent greater than 1, set to 1, {percent} {max_is_full}')
             self.task.screenshot(f'is_con_full percent greater than 1, set to 1, {percent} {max_is_full}', cropped)
             percent = 1
-        self.logger.info(
-            f'is_con_full {self} {percent} {max_area}/{self.config.get("_full_ring_area", 0)} {color_index} ')
+        # self.logger.info(
+        #     f'is_con_full {self} {percent} {max_area}/{self.config.get("_full_ring_area", 0)} {color_index} ')
         # if self.task.debug:
         #     self.task.screenshot(
         #         f'is_con_full {self} {percent} {max_area}/{self.config.get("_full_ring_area", 0)} {color_index} ',
