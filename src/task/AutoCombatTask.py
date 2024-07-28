@@ -9,7 +9,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
 
     def __init__(self):
         super().__init__()
-        self.trigger_interval = 0.2
+        self.trigger_interval = 0.1
         self.name = "Auto Combat"
         self.description = "Enable auto combat in Abyss, Game World etc"
 

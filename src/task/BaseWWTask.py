@@ -13,12 +13,12 @@ logger = get_logger(__name__)
 pick_echo_config_option = ConfigOption('Pick Echo Config', {
     'Use OCR': False
 }, config_description={
-    'Use OCR': 'Turn on if your CPU is Powerful for more accuracy'})
+    'Use OCR': 'Turn on if your CPU is Powerful for more accuracy'}, description='Turn on to enable auto pick echo')
 
 monthly_card_config_option = ConfigOption('Monthly Card Config', {
     'Check Monthly Card': False,
     'Monthly Card Time': 4
-}, config_description={
+}, description='Turn on to avoid interruption by monthly card when executing tasks', config_description={
     'Check Monthly Card': 'Check for monthly card to avoid interruption of tasks',
     'Monthly Card Time': 'Your computer\'s local time when the monthly card will popup, hour in (1-24)'
 })
@@ -128,9 +128,11 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         monthly_card = self.find_one('monthly_card', threshold=0.8)
         if monthly_card is not None:
             self.click(monthly_card)
+            self.sleep(3)
+            self.click(monthly_card)
             self.sleep(2)
             self.click(monthly_card)
-            self.sleep(1)
+            self.sleep(2)
             self.set_check_monthly_card(next_day=True)
         logger.debug(f'check_monthly_card {monthly_card}')
         return monthly_card is not None
