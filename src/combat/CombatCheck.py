@@ -280,7 +280,7 @@ boss_red_text_color = {
 }
 
 boss_health_color = {
-    'r': (250, 255),  # Red range
-    'g': (30, 180),  # Green range
+    'r': (245, 255),  # Red range
+    'g': (30, 185),  # Green range
     'b': (4, 75)  # Blue range
 }
