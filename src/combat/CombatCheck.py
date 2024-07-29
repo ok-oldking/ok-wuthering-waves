@@ -167,9 +167,6 @@ class CombatCheck:
             in_combat = self.in_team()[0] and self.check_health_bar()
             if in_combat:
                 self.target_enemy(wait=False)
-            else:
-                in_combat = self.target_enemy()
-            if in_combat:
                 if self.boss_lv_template is None:
                     self.find_boss_lv_text()
                 logger.info(
