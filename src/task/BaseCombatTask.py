@@ -69,8 +69,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 raise e
             except NotInCombatException as e:
                 logger.info(f'combat_once out of combat break {e}')
-                if self.debug:
-                    self.screenshot(f'out of combat break {self.out_of_combat_reason}')
+                self.screenshot(f'combat_once out of combat break {self.out_of_combat_reason}')
                 break
         self.wait_in_team_and_world(time_out=10)
         self.sleep(1)
