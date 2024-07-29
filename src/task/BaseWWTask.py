@@ -127,12 +127,16 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
     def handle_monthly_card(self):
         monthly_card = self.find_one('monthly_card', threshold=0.8)
         if monthly_card is not None:
+            self.screenshot('monthly_card1')
             self.click(monthly_card)
             self.sleep(3)
+            self.screenshot('monthly_card2')
             self.click(monthly_card)
             self.sleep(2)
+            self.screenshot('monthly_card3')
             self.click(monthly_card)
             self.sleep(2)
+            self.screenshot('monthly_card4')
             self.set_check_monthly_card(next_day=True)
         logger.debug(f'check_monthly_card {monthly_card}')
         return monthly_card is not None
