@@ -310,7 +310,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 logger.info(f'update char3 to {char.name}')
         else:
             if len(self.chars) == 3:
-                self.chars.pop(0)
+                self.chars = self.chars[:2]
             logger.info(f'team size changed to 2')
 
         for char in self.chars:
