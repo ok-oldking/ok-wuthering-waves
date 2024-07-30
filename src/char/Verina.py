@@ -11,6 +11,7 @@ class Verina(BaseChar):
             return self.switch_next_char()
         self.click_echo()
         self.normal_attack()
+        self.switch_next_char()
 
     def count_base_priority(self):
         return - 1
