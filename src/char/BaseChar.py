@@ -121,9 +121,9 @@ class BaseChar:
         return percent == 0 or not self.has_cd(box_name)
 
     def switch_out(self):
+        self.last_switch_time = time.time()
         self.is_current_char = False
         self.has_intro = False
-        self.liberation_available_mark = self.liberation_available()
         if self.current_con == 1:
             self.logger.info(f'switch_out at full con set current_con to 0')
             self.current_con = 0
@@ -133,8 +133,10 @@ class BaseChar:
 
     def switch_next_char(self, post_action=None, free_intro=False, target_low_con=False):
         self.is_forte_full()
-        self.last_switch_time = self.task.switch_next_char(self, post_action=post_action, free_intro=free_intro,
-                                                           target_low_con=target_low_con)
+        self.has_intro = False
+        self.liberation_available_mark = self.liberation_available()
+        self.task.switch_next_char(self, post_action=post_action, free_intro=free_intro,
+                                   target_low_con=target_low_con)
 
     def sleep(self, sec, check_combat=True):
         if sec > 0:
@@ -290,7 +292,7 @@ class BaseChar:
             self.logger.info(f'click_liberation end {duration}')
         return clicked
 
-    def add_freeze_duration(self, start, duration, freeze_time=0.2):
+    def add_freeze_duration(self, start, duration, freeze_time=0):
         if duration > freeze_time:
             current_time = time.time()
             self.freeze_durations = [item for item in self.freeze_durations if item[0] <= current_time - 15]
