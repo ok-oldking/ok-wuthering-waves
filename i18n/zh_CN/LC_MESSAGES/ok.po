@@ -206,3 +206,6 @@ msgstr "开启避免挂任务的时候被月卡中断"
 
 msgid "Turn on to enable auto pick echo"
 msgstr "打开以启用自动拾取声骸"
+
+msgid "can't find gray_book_boss, make sure f2 is the hotkey for book"
+msgstr "找不到boss列表, 请确认快捷键f2可以打开书"
