@@ -47,8 +47,8 @@ class FarmWorldBossTask(BaseCombatTask):
         self.send_key('f2')
         gray_book_boss = self.wait_book()
         if not gray_book_boss:
-            self.log_error("can't find the gray_book_boss", notify=True)
-            raise Exception("can't find gray_book_boss")
+            self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
+            raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")
 
         self.log_info(f'click {gray_book_boss}')
         self.click_box(gray_book_boss)
