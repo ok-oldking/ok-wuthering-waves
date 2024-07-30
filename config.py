@@ -33,10 +33,12 @@ config = {
     'windows': {  # required  when supporting windows game
         'exe': 'Client-Win64-Shipping.exe',
         'calculate_pc_exe_path': calculate_pc_exe_path,
+        'hwnd_class': 'UnrealWindow',
         'interaction': 'PostMessage',
         'can_bit_blt': True,  # default false, opengl games does not support bit_blt
         'bit_blt_render_full': True,
-        'check_hdr_and_night_light': True
+        'check_hdr_and_night_light': True,
+        'require_bg': True
     },
     'supported_resolution': {
         'ratio': '16:9',

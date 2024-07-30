@@ -51,6 +51,7 @@ class BaseChar:
         self.logger = get_logger(self.name)
         self.full_ring_area = 0
         self.freeze_durations = []
+        self.last_perform = 0
         self._is_forte_full = False
         self.config = {"_full_ring_area": 0, "_ring_color_index": -1}
         if type(self) is not BaseChar:
@@ -71,6 +72,7 @@ class BaseChar:
 
     def perform(self):
         # self.wait_down()
+        self.last_perform = time.time()
         self.do_perform()
         self.logger.debug(f'set current char false {self.index}')
 

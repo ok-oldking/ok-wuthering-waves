@@ -107,7 +107,6 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 current_con = current_char.get_current_con()
             if current_con == 1:
                 has_intro = True
-
         for i, char in enumerate(self.chars):
             if char == current_char:
                 priority = Priority.CURRENT_CHAR
@@ -121,8 +120,10 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 max_priority = priority
                 switch_to = char
         if switch_to == current_char:
-            # self.check_combat()
             logger.warning(f"can't find next char to switch to, maybe switching too fast click and wait")
+            if time.time() - current_char.last_perform < 0.1:
+                current_char.continues_normal_attack(0.1)
+                logger.warning(f"can't find next char to switch to, performing too fast add a normal attack")
             return current_char.perform()
         switch_to.has_intro = has_intro
         logger.info(f'switch_next_char {current_char} -> {switch_to} has_intro {has_intro}')
