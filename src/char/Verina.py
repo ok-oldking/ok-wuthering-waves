@@ -9,11 +9,8 @@ class Verina(BaseChar):
             return self.switch_next_char()
         if self.click_resonance(send_click=False)[0]:
             return self.switch_next_char()
-        if self.click_echo():
-            self.heavy_attack()
-            return self.switch_next_char()
-        self.heavy_attack()
-        self.switch_next_char()
+        self.click_echo()
+        self.normal_attack()
 
     def count_base_priority(self):
         return - 1
