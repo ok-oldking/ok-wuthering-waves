@@ -14,11 +14,15 @@ class Encore(BaseChar):
     def still_in_liberation(self):
         return self.time_elapsed_accounting_for_freeze(self.liberation_time) < 9.5
 
+    def switch_out(self):
+        super().switch_out()
+        self.last_resonance = 0
+
     def do_perform(self):
         target_low_con = False
         if self.has_intro:
             self.logger.debug('encore wait intro')
-            self.continues_normal_attack(1.0)
+            self.continues_normal_attack(1.5)
             self.wait_down()
         else:
             while not self.still_in_liberation() and self.can_resonance_step2():

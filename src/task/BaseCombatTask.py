@@ -121,10 +121,9 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 max_priority = priority
                 switch_to = char
         if switch_to == current_char:
-            self.check_combat()
-            self.click()
+            # self.check_combat()
             logger.warning(f"can't find next char to switch to, maybe switching too fast click and wait")
-            return self.switch_next_char(current_char, post_action, free_intro, target_low_con)
+            return current_char.perform()
         switch_to.has_intro = has_intro
         logger.info(f'switch_next_char {current_char} -> {switch_to} has_intro {has_intro}')
         last_click = 0
@@ -159,15 +158,13 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                     self.next_frame()
             else:
                 self.in_liberation = False
-                switch_time = time.time()
                 current_char.switch_out()
                 switch_to.is_current_char = True
                 break
 
         if post_action:
             post_action()
-        logger.info(f'switch_next_char end {(switch_time - start):.3f}s')
-        return switch_time
+        logger.info(f'switch_next_char end {(current_char.last_switch_time - start):.3f}s')
 
     def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1):
         if x == -1 and y == -1:
