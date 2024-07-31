@@ -45,12 +45,14 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         self.key_config = self.get_config(key_config_option)
 
         self.mouse_pos = None
+        self.combat_start = 0
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
 
     def raise_not_in_combat(self, message, exception_type=None):
         logger.error(message)
-        self.reset_to_false(reason=message)
+        if self.reset_to_false(reason=message):
+            logger.error(f'reset to false failed: {message}')
         if exception_type is None:
             exception_type = NotInCombatException
         raise exception_type(message)
@@ -318,6 +320,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                     char.is_current_char = True
                 else:
                     char.is_current_char = False
+        self.combat_start = time.time()
 
         self.log_info(f'load chars success {self.chars}')
 
