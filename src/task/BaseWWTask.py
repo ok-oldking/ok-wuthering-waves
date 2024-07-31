@@ -97,15 +97,15 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         if self.should_check_monthly_card():
             start = time.time()
             logger.info(f'check_for_monthly_card start check')
-            if self.check_combat():
+            if self.in_combat():
                 logger.info(f'check_for_monthly_card in combat return')
                 return time.time() - start
             if self.in_team_and_world():
                 logger.info(f'check_for_monthly_card in team send sleep until monthly card popup')
                 monthly_card = self.wait_until(self.handle_monthly_card, time_out=120, raise_if_not_found=False)
                 logger.info(f'wait monthly card end {monthly_card}')
-            cost = time.time() - start
-            return cost
+                cost = time.time() - start
+                return cost
         return 0
 
     def should_check_monthly_card(self):
