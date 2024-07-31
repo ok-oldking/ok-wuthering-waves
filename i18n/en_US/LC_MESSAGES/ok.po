@@ -251,3 +251,24 @@ msgstr ""
 
 msgid "Turn on to enable auto pick echo"
 msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "can't find gray_book_boss, make sure f2 is the hotkey for book"
+msgstr ""
+
+msgid "click Box(name='gray_book_boss_highlight', x=48, y=364, width=105, height=105, confidence=87)"
+msgstr ""
+
+msgid "click f2 to open the book"
+msgstr ""
+
+msgid "index after scrolling down 0"
+msgstr ""
+
+msgid "must be in game world and in teams"
+msgstr ""
+
+msgid "teleport to Crownless index 0"
+msgstr ""
