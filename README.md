@@ -59,7 +59,7 @@ Demonstration: [https://youtu.be/N32I1aMfdqQ](https://youtu.be/N32I1aMfdqQ)
 
 * Download the 7z from [releases](https://github.com/ok-oldking/ok-wuthering-waves/releases), extract and run the exe
 * May need to add the app folder to Windows Defender white list.
-* Game must be a 16:9 ratio like 1920x1080, 3840x2160, lowest supported resolution is 1600*900
+* Game must be a 16:9 ratio like 1920x1080, 3840x2160
 * Can run while game is in background, but not minimized
 
 ### Development
