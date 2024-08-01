@@ -99,7 +99,7 @@ class BaseChar:
     def has_cd(self, box_name):
         box = self.task.get_box_by_name(f'box_{box_name}')
         cropped = box.crop_frame(self.task.frame)
-        num_labels, stats, labels = get_connected_area_by_color(cropped, dot_color, connectivity=8, gray_range=20)
+        num_labels, stats, labels = get_connected_area_by_color(cropped, dot_color, connectivity=8, gray_range=22)
         big_area_count = 0
         has_dot = False
         number_count = 0
