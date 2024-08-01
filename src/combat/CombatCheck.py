@@ -58,8 +58,8 @@ class CombatCheck:
         return time.time() - self.last_liberation < 0.3
 
     def check_count_down(self):
-        count_down_area = self.box_of_screen(1820 / 3840, 266 / 2160, 2100 / 3840,
-                                             340 / 2160, name="check_count_down")
+        count_down_area = self.box_of_screen_scaled(3840, 2160, 1820, 266, 2100,
+                                                    340, name="check_count_down", hcenter=True)
         count_down = self.calculate_color_percentage(text_white_color,
                                                      count_down_area)
 
@@ -212,7 +212,7 @@ class CombatCheck:
         return self.find_boss_lv_text()
 
     def find_boss_lv_text(self):
-        texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160),
+        texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160, hcenter=True),
                          target_height=540, name='boss_lv_text')
         boss_lv_texts = find_boxes_by_name(texts,
                                            [re.compile(r'(?i)^L[V].*')])

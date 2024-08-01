@@ -22,7 +22,7 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
         self.sleep(0.2)
 
     def trigger(self):
-        if f := self.find_one('pick_up_f', box=self.f_search_box,
+        if f := self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box,
                               threshold=0.8):
             dialog_search = f.copy(x_offset=f.width * 2, width_offset=f.width * 2, height_offset=f.height * 2,
                                    y_offset=-f.height,

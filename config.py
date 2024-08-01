@@ -69,7 +69,6 @@ config = {
         <strong>使用本软件可能会导致账号被封。</strong> 请在了解风险后再使用。
     </p>
 """,
-    'supported_screen_ratio': '16:9',
     'screenshots_folder': "screenshots",
     'gui_title': 'OK-WW',  # Optional
     # 'coco_feature_folder': get_path(__file__, 'assets/coco_feature'),  # required if using feature detection

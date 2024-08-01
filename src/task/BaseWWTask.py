@@ -74,7 +74,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
 
     @property
     def f_search_box(self):
-        f_search_box = self.get_box_by_name('pick_up_f')
+        f_search_box = self.get_box_by_name('pick_up_f_hcenter_vcenter')
         f_search_box = f_search_box.copy(x_offset=-f_search_box.width / 2,
                                          width_offset=f_search_box.width,
                                          height_offset=f_search_box.height * 9,
@@ -83,7 +83,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         return f_search_box
 
     def find_f_with_text(self, target_text=None):
-        f = self.find_one('pick_up_f', box=self.f_search_box, threshold=0.8)
+        f = self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box, threshold=0.8)
         if f and target_text:
             search_text_box = f.copy(x_offset=f.width * 5, width_offset=f.width * 7, height_offset=1.5 * f.height,
                                      y_offset=-0.8 * f.height, name='search_text_box')
