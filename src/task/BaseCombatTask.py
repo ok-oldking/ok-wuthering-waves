@@ -140,7 +140,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             if not in_team:
                 if self.debug:
                     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                confirm = self.wait_feature('revive_confirm', threshold=0.8, time_out=3)
+                confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=3)
                 if confirm:
                     self.log_info(f'char dead')
                     self.raise_not_in_combat(f'char dead', exception_type=CharDeadException)
@@ -233,7 +233,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         return f_found
 
     def handle_claim_button(self):
-        if self.wait_feature('claim_cancel_button', raise_if_not_found=False, horizontal_variance=0.05,
+        if self.wait_feature('claim_cancel_button_hcenter_vcenter', raise_if_not_found=False, horizontal_variance=0.05,
                              vertical_variance=0.1, time_out=1.5, threshold=0.8):
             self.sleep(0.5)
             self.send_key('esc')

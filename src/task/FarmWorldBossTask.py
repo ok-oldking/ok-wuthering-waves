@@ -80,10 +80,11 @@ class FarmWorldBossTask(BaseCombatTask):
         self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=200,
                           pre_action=lambda: self.click_box(proceeds[index], relative_x=-1), wait_until_before_delay=5)
         self.sleep(1)
-        teleport = self.wait_click_feature('custom_teleport', box=self.box_of_screen(0.48, 0.45, 0.54, 0.58),
+        teleport = self.wait_click_feature('custom_teleport_hcenter_vcenter',
+                                           box=self.box_of_screen(0.48, 0.45, 0.54, 0.58),
                                            raise_if_not_found=False, threshold=0.8, time_out=2)
         if not teleport:
-            self.click_relative(0.5, 0.5)
+            self.click_relative(0.5, 0.5, hcenter=True)
         self.sleep(0.5)
         self.wait_click_feature('gray_custom_way_point', box=self.box_of_screen(0.62, 0.48, 0.70, 0.86),
                                 raise_if_not_found=True, threshold=0.75, time_out=2)
@@ -96,7 +97,7 @@ class FarmWorldBossTask(BaseCombatTask):
 
     def wait_book(self):
         gray_book_boss = self.wait_until(
-            lambda: self.find_one('gray_book_boss', vertical_variance=1, horizontal_variance=0.05,
+            lambda: self.find_one('gray_book_boss', vertical_variance=0.8, horizontal_variance=0.05,
                                   threshold=0.7, canny_lower=50,
                                   canny_higher=150) or self.find_one(
                 'gray_book_boss_highlight',
