@@ -42,17 +42,21 @@ class CombatCheck:
             return True
         else:
             self.out_of_combat_reason = reason
-            self._in_combat = False
-            self.boss_lv_mask = None
-            self.boss_lv_template = None
-            self.in_liberation = False  # return True
-            self.has_count_down = False
-            self.last_out_of_combat_time = 0
-            self.last_combat_check = 0
-            self.boss_lv_box = None
-            self.boss_health = None
-            self.boss_health_box = None
+            self.do_reset_to_false()
             return False
+
+    def do_reset_to_false(self):
+        self._in_combat = False
+        self.boss_lv_mask = None
+        self.boss_lv_template = None
+        self.in_liberation = False  # return True
+        self.has_count_down = False
+        self.last_out_of_combat_time = 0
+        self.last_combat_check = 0
+        self.boss_lv_box = None
+        self.boss_health = None
+        self.boss_health_box = None
+        return False
 
     def recent_liberation(self):
         return time.time() - self.last_liberation < 0.3

@@ -113,7 +113,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         if self.walk_until_f(time_out=6, backward_time=backward_time, target_text=self.absorb_echo_text,
                              raise_if_not_found=False):  # find and pick echo
             logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
-            self.incr_drop(True)
+            return True
 
     def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0, target_text=None):
         logger.info(f'walk_until_f direction {direction} target_text: {target_text}')
