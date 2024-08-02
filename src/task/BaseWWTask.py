@@ -109,7 +109,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
                 return cost
         return 0
 
-    def walk_find_echo(self, backward_time=1):
+    def walk_find_echo(self, backward_time=1.0):
         if self.walk_until_f(time_out=6, backward_time=backward_time, target_text=self.absorb_echo_text,
                              raise_if_not_found=False):  # find and pick echo
             logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
@@ -180,7 +180,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         box = self.box_of_screen(0.25, 0.20, 0.75, 0.53, hcenter=True)
         highest_percent = 0
         highest_index = 0
-        threshold = 0.01
+        threshold = 0.02
         for i in range(4):
             self.middle_click_relative(0.5, 0.5)
             self.sleep(1)
@@ -190,7 +190,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
                 highest_index = i
                 if color_percent > threshold:
                     self.log_debug(f'found color_percent {color_percent} > {threshold}, walk now')
-                    return self.walk_find_echo(backward_time=0)
+                    return self.walk_find_echo(backward_time=0.5)
             if self.debug:
                 self.screenshot(f'find_echo_{highest_index}_{float(color_percent):.3f}_{float(highest_percent):.3f}')
             logger.debug(f'searching for echo {i} {float(color_percent):.3f} {float(highest_percent):.3f}')
