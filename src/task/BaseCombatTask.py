@@ -56,10 +56,12 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             exception_type = NotInCombatException
         raise exception_type(message)
 
-    def combat_once(self, wait_combat_time=180, wait_before=3):
-        self.wait_until(lambda: self.in_combat(), time_out=wait_combat_time, raise_if_not_found=True)
+    def combat_once(self, wait_combat_time=180, wait_before=1.5):
+        self.wait_until(self.in_combat, time_out=wait_combat_time, raise_if_not_found=True)
         self.sleep(wait_before)
-        # self.wait_until(lambda: self.in_combat(), time_out=10, raise_if_not_found=True)
+        self.do_reset_to_false()
+        self.wait_until(self.in_combat, time_out=5, raise_if_not_found=True)
+
         self.load_chars()
         self.info['Combat Count'] = self.info.get('Combat Count', 0) + 1
         while self.in_combat():
@@ -70,8 +72,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 raise e
             except NotInCombatException as e:
                 logger.info(f'combat_once out of combat break {e}')
-                if self.debug:
-                    self.screenshot(f'combat_once out of combat break {self.out_of_combat_reason}')
+                self.screenshot(f'combat_once out of combat break {self.out_of_combat_reason}')
                 break
         self.wait_in_team_and_world(time_out=10)
         self.sleep(1)
