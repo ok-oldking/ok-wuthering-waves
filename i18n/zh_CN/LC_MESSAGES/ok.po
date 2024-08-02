@@ -1,6 +1,9 @@
 #
 msgid ""
 msgstr ""
+
+msgid ""
+msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: you@example.com\n"
 "Last-Translator: you@example.com\n"
@@ -8,9 +11,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-msgid ""
-msgstr ""
 
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
 msgstr "(1-6) 重要, 选择你对应世界等级可以产出声骸的难度, 从上到下为1-6"
@@ -209,4 +209,25 @@ msgstr "打开以启用自动拾取声骸"
 
 msgid "can't find gray_book_boss, make sure f2 is the hotkey for book"
 msgstr "找不到boss列表, 请确认快捷键f2可以打开书"
+
+msgid "1"
+msgstr ""
+
+msgid "Boss1 Echo Pickup Method"
+msgstr "Boss1搜索声骸方法"
+
+msgid "Boss2 Echo Pickup Method"
+msgstr "Boss2搜索声骸方法"
+
+msgid "Boss3 Echo Pickup Method"
+msgstr "Boss3搜索声骸方法"
+
+msgid "Run in Circle"
+msgstr "转圈奔跑"
+
+msgid "Turn Around and Search"
+msgstr "4方向搜索"
+
+msgid "Walk"
+msgstr "后退再前进"
 
