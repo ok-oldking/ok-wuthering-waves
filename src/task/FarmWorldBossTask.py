@@ -195,11 +195,12 @@ class FarmWorldBossTask(BaseCombatTask):
                         method = self.config.get(f'Boss{i} Echo Pickup Method', 'Walk')
 
                         if method == 'Run in Circle':
-                            self.run_in_circle_to_find_echo()
+                            dropped = self.run_in_circle_to_find_echo()
                         elif method == 'Turn Around and Search':
-                            self.turn_and_find_echo()
+                            dropped = self.turn_and_find_echo()
                         else:
-                            self.walk_find_echo()
+                            dropped = self.walk_find_echo()
+                        self.incr_drop(dropped)
 
             if count == 0:
                 self.log_error('must choose at least 1 Boss to Farm', notify=True)

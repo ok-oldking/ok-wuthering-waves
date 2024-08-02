@@ -68,7 +68,6 @@ class FarmEchoTask(BaseCombatTask):
     def incr_drop(self, dropped):
         if dropped:
             self.info['Echo Count'] = self.info.get('Echo Count', 0) + 1
-        self.last_drop = dropped
 
     def choose_level(self, start):
         y = 0.17
