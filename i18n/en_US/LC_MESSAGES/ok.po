@@ -272,3 +272,36 @@ msgstr ""
 
 msgid "teleport to Crownless index 0"
 msgstr ""
+
+msgid "1"
+msgstr ""
+
+msgid "Boss1 Echo Pickup Method"
+msgstr ""
+
+msgid "Boss2 Echo Pickup Method"
+msgstr ""
+
+msgid "Boss3 Echo Pickup Method"
+msgstr ""
+
+msgid "Run in Circle"
+msgstr ""
+
+msgid "Turn Around and Search"
+msgstr ""
+
+msgid "Walk"
+msgstr ""
+
+msgid "click Box(name='gray_book_boss_highlight', x=48, y=364, width=105, height=105, confidence=86)"
+msgstr ""
+
+msgid "click scroll bar"
+msgstr ""
+
+msgid "index after scrolling down 3"
+msgstr ""
+
+msgid "teleport to Lampylumen Myriad index 7"
+msgstr ""

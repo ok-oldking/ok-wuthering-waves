@@ -8,7 +8,6 @@ from ok.config.ConfigOption import ConfigOption
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
-from ok.task.TaskExecutor import CannotFindException
 from ok.util.list import safe_get
 from src.char import BaseChar
 from src.char.BaseChar import Priority
@@ -195,67 +194,6 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             if self.debug:
                 self.screenshot('not_in_combat_calling_check_combat')
             self.raise_not_in_combat('combat check not in combat')
-
-    def send_key_and_wait_f(self, direction, raise_if_not_found, time_out, running=False, target_text=None):
-        if time_out <= 0:
-            return
-        start = time.time()
-        if running:
-            self.mouse_down(key='right')
-        self.send_key_down(direction)
-        f_found = self.wait_until(lambda: self.find_f_with_text(target_text=target_text), time_out=time_out,
-                                  raise_if_not_found=False)
-        if f_found:
-            self.send_key('f')
-            self.sleep(0.1)
-        self.send_key_up(direction)
-        if running:
-            self.mouse_up(key='right')
-        if not f_found:
-            if raise_if_not_found:
-                raise CannotFindException('cant find the f to enter')
-            else:
-                logger.warning(f"can't find the f to enter")
-                return False
-
-        remaining = time.time() - start
-
-        if self.handle_claim_button():
-            self.sleep(0.5)
-            self.send_key_down(direction)
-            if running:
-                self.mouse_down(key='right')
-            self.sleep(remaining + 0.2)
-            if running:
-                self.mouse_up(key='right')
-            self.send_key_up(direction)
-            return False
-        return f_found
-
-    def handle_claim_button(self):
-        if self.wait_feature('claim_cancel_button_hcenter_vcenter', raise_if_not_found=False, horizontal_variance=0.05,
-                             vertical_variance=0.1, time_out=1.5, threshold=0.8):
-            self.sleep(0.5)
-            self.send_key('esc')
-            self.sleep(0.5)
-            logger.info(f"found a claim reward")
-            return True
-
-    def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0, target_text=None):
-        logger.info(f'walk_until_f direction {direction} target_text: {target_text}')
-        if not self.find_f_with_text(target_text=target_text):
-            if backward_time > 0:
-                if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, target_text=target_text):
-                    logger.info('walk backward found f')
-                    return True
-            return self.send_key_and_wait_f(direction, raise_if_not_found, time_out,
-                                            target_text=target_text) and self.sleep(0.5)
-        else:
-            self.send_key('f')
-            if self.handle_claim_button():
-                return False
-        self.sleep(0.5)
-        return True
 
     def load_hotkey(self, force=False):
         if not self.key_config['HotKey Verify'] and not force:

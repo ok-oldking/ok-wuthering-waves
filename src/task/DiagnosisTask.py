@@ -43,11 +43,6 @@ class DiagnosisTask(BaseCombatTask):
                 self.info['Liberation Available'] = char.current_liberation() > 0
                 self.next_frame()
 
-    def incr_drop(self, dropped):
-        if dropped:
-            self.info['Echo Count'] = self.info.get('Echo Count', 0) + 1
-        self.last_drop = dropped
-
     def choose_level(self, start):
         y = 0.17
         x = 0.15
