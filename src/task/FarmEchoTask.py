@@ -21,7 +21,6 @@ class FarmEchoTask(BaseCombatTask):
         }
         self.config_type["Entrance Direction"] = {'type': "drop_down", 'options': ['Forward', 'Backward']}
         self.crownless_pos = (0.9, 0.4)
-        self.last_drop = False
 
     def run(self):
         self.set_check_monthly_card()
