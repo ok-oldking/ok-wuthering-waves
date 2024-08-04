@@ -80,7 +80,7 @@ class FiveToOneTask(BaseCombatTask):
         self.log_info(f'increase cost filter {cost}')
         self.click_relative(0.04, 0.91)
         self.sleep(1)
-        boxes = self.ocr(0.11, 0.45, 0.90, 0.88, target_height=720)
+        boxes = self.ocr(0.11, 0.45, 0.90, 0.88, target_height=720, log=True)
         self.click(find_boxes_by_name(boxes, names='重置'), after_sleep=1)
         self.click(find_boxes_by_name(boxes, names=re.compile(f'ost{cost}')), after_sleep=1)
         self.click(find_boxes_by_name(boxes, names='确定'), after_sleep=1)
@@ -89,13 +89,26 @@ class FiveToOneTask(BaseCombatTask):
     def click_empty_area(self):
         self.click_relative(0.9, 0.51, after_sleep=1)
 
+    def check_ui(self):
+        put = self.ocr(0.46, 0.64, 0.58, 0.69)
+        if len(put) == 1:
+            if put[0].name == "清除":
+                self.click(put, after_sleep=1)
+                return True
+            elif put[0].name == '自动放入':
+                return True
+
     def loop_merge(self):
-        add = self.wait_feature('data_merge_hcenter_vcenter')
+        if self.current_cost == 0:
+            time_out = 0
+        else:
+            time_out = 10
+        add = self.wait_until(self.check_ui, post_action=self.click_empty_area, time_out=time_out)
         if not add:
             raise Exception('请在5合1界面开始,并保持声骸未添加状态')
-        self.click(add)
-        self.wait_feature('data_merge_selection', raise_if_not_found=True, threshold=0.8,
-                          post_action=self.click_empty_area)
+        self.click_relative(0.53, 0.20)
+        self.wait_feature('data_merge_selection', raise_if_not_found=True, threshold=0.75,
+                          post_action=self.click_empty_area, time_out=15)
         self.sleep(0.5)
 
         if self.current_cost == 0:
@@ -126,7 +139,7 @@ class FiveToOneTask(BaseCombatTask):
             texts = self.ocr(0.60, 0.40, 0.83, 0.76, name='echo_stats', target_height=720, log=True)
             sets = find_boxes_by_name(texts, self.sets)
             if not sets:
-                self.log_error(f'无法识别声骸套装', notify=True)
+                self.log_error(f'无法识别声骸套装, 需要打开角色声骸界面,右上角点击切换一下简述', notify=True)
                 return False
             set_name = sets[0].name
 
