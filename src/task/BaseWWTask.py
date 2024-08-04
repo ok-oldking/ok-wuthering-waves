@@ -94,6 +94,16 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
                 return None
         return f
 
+    def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1, move=True, down_time=0.01):
+        if x == -1 and y == -1:
+            x = self.width_of_screen(0.5)
+            y = self.height_of_screen(0.5)
+            move = False
+            down_time = 0.01
+        else:
+            down_time = 0.2
+        return super().click(x, y, move_back, name, interval, move=move, down_time=down_time)
+
     def check_for_monthly_card(self):
         if self.should_check_monthly_card():
             start = time.time()
