@@ -71,8 +71,6 @@ pip install -r requirements.txt
 python main_debug.py
 ```
 
-the images assets was generated using this [roboflow project](https://app.roboflow.com/test-7ruyi/ww-jamcc)
-
 ### 致谢
 
 [https://github.com/lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss) 后台点击代码
