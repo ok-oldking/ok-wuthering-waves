@@ -122,6 +122,9 @@ class FiveToOneTask(BaseCombatTask):
                 row += 1
                 col = 0
                 self.log_info(f'next row {row, col}')
+                if row == 6:
+                    self.log_error(f'无法凑够五个声骸, 请退出重新开始', notify=True)
+                    return False
             x, y = self.get_pos(row, col)
             col += 1
             lock = self.wait_until(self.find_lock, pre_action=lambda: self.click_relative(x - 0.01, y + 0.01),
