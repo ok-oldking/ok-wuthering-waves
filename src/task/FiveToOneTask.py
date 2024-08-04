@@ -57,18 +57,49 @@ class FiveToOneTask(BaseCombatTask):
         self.echo_y_distance = (1678 - 421) / 4 / 2160
         self.echo_per_row = 8
         self.confirmed = False
+        self.current_cost = 0
 
     def run(self):
+        self.current_cost = 0
         while self.loop_merge():
             pass
+
+    def incr_cost_filter(self):
+        if self.current_cost == 0:
+            self.current_cost = 1
+        elif self.current_cost == 1:
+            self.current_cost = 3
+        elif self.current_cost == 3:
+            self.current_cost = 4
+        else:
+            return False
+        self.set_filter(self.current_cost)
+        return True
+
+    def set_filter(self, cost):
+        self.log_info(f'increase cost filter {cost}')
+        self.click_relative(0.04, 0.91)
+        self.sleep(1)
+        boxes = self.ocr(0.11, 0.45, 0.90, 0.88, target_height=720)
+        self.click(find_boxes_by_name(boxes, names='重置'), after_sleep=1)
+        self.click(find_boxes_by_name(boxes, names=re.compile(f'ost{cost}')), after_sleep=1)
+        self.click(find_boxes_by_name(boxes, names='确定'), after_sleep=1)
+        self.click_empty_area()
+
+    def click_empty_area(self):
+        self.click_relative(0.9, 0.51, after_sleep=1)
 
     def loop_merge(self):
         add = self.wait_feature('data_merge_hcenter_vcenter')
         if not add:
             raise Exception('请在5合1界面开始,并保持声骸未添加状态')
         self.click(add)
-        self.wait_feature('data_merge_selection', raise_if_not_found=True, threshold=0.8)
+        self.wait_feature('data_merge_selection', raise_if_not_found=True, threshold=0.8,
+                          post_action=self.click_empty_area)
         self.sleep(0.5)
+
+        if self.current_cost == 0:
+            self.incr_cost_filter()
         row = 0
         col = 0
         add_count = 0
@@ -80,15 +111,17 @@ class FiveToOneTask(BaseCombatTask):
                 self.log_info(f'next row {row, col}')
             x, y = self.get_pos(row, col)
             col += 1
-            # self.click_relative(x - 0.01, y - 0.01)
-            # self.sleep(0.1)
-            # self.sleep(0.5)
             lock = self.wait_until(self.find_lock, pre_action=lambda: self.click_relative(x - 0.01, y + 0.01),
                                    wait_until_before_delay=0.8, raise_if_not_found=True)
             if lock.name == 'echo_locked':
-                self.log_info(f'五合一完成,合成{self.info.get("合成数量", 0)},加锁{self.info.get("加锁数量", 0)}',
-                              notify=True)
-                return False
+                if self.incr_cost_filter():
+                    col = 0
+                    row = 0
+                    continue
+                else:
+                    self.log_info(f'五合一完成,合成{self.info.get("合成数量", 0)},加锁{self.info.get("加锁数量", 0)}',
+                                  notify=True)
+                    return False
 
             texts = self.ocr(0.60, 0.40, 0.83, 0.76, name='echo_stats', target_height=720, log=True)
             sets = find_boxes_by_name(texts, self.sets)
@@ -104,10 +137,16 @@ class FiveToOneTask(BaseCombatTask):
 
             main_stat_boundary = self.box_of_screen(0.66, 0.40, 0.77, 0.47)
             main_stat_box = find_boxes_within_boundary(texts, main_stat_boundary)
-            if not main_stat_box or len(main_stat_box) > 1 or main_stat_box[0].name not in self.main_stats:
+            main_stat = "None"
+            if main_stat_box and len(main_stat_box) == 1:
+                main_stat = main_stat_box[0].name
+                if main_stat == "灭伤害加成":
+                    main_stat = "湮灭伤害加成"
+                elif main_stat == "行射伤害加成":
+                    main_stat = "衍射伤害加成"
+            if main_stat not in self.main_stats:
                 self.log_error(f'无法识别声骸主属性{main_stat_box}', notify=True)
                 return False
-            main_stat = main_stat_box[0].name
 
             config_name = f'锁定_{cost}C_{main_stat}'
 
