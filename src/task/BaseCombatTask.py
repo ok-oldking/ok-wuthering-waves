@@ -169,12 +169,6 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             post_action()
         logger.info(f'switch_next_char end {(current_char.last_switch_time - start):.3f}s')
 
-    def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1):
-        if x == -1 and y == -1:
-            x = self.width_of_screen(0.5)
-            y = self.height_of_screen(0.5)
-        return super().click(x, y, move_back, name, interval)
-
     def get_current_char(self) -> BaseChar:
         for char in self.chars:
             if char.is_current_char:
