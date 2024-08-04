@@ -6,6 +6,7 @@ from src.task.AutoPickTask import AutoPickTask
 from src.task.DiagnosisTask import DiagnosisTask
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.FarmWorldBossTask import FarmWorldBossTask
+from src.task.FiveToOneTask import FiveToOneTask
 from src.task.SkipDialogTask import AutoDialogTask
 
 version = "v5.0.11"
@@ -28,7 +29,7 @@ config = {
         'coco_feature_json': os.path.join('assets', '_annotations.coco.json'),
         'default_horizontal_variance': 0.002,
         'default_vertical_variance': 0.002,
-        'default_threshold': 0.9,
+        'default_threshold': 0.8,
     },
     'windows': {  # required  when supporting windows game
         'exe': 'Client-Win64-Shipping.exe',
@@ -70,6 +71,7 @@ config = {
     </p>
 """,
     'screenshots_folder': "screenshots",
+    'click_screenshots_folder': "click_screenshots",
     'gui_title': 'OK-WW',  # Optional
     # 'coco_feature_folder': get_path(__file__, 'assets/coco_feature'),  # required if using feature detection
     'log_file': 'logs/ok-script.log',  # Optional, auto rotating every day
@@ -78,6 +80,7 @@ config = {
     'onetime_tasks': [  # tasks to execute
         FarmEchoTask,
         FarmWorldBossTask,
+        FiveToOneTask,
         DiagnosisTask
     ], 'trigger_tasks': [
         AutoCombatTask,
