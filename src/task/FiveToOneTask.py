@@ -155,8 +155,8 @@ class FiveToOneTask(BaseCombatTask):
                 self.log_info(f'需要加锁 {config_name} {set_name}')
                 self.click_relative(x, y)
                 self.sleep(1)
-                self.click(lock)
-                locked = self.wait_feature('echo_locked', threshold=0.9)
+                locked = self.wait_feature('echo_locked', threshold=0.9, pre_action=lambda: self.click(lock),
+                                           wait_until_before_delay=1.5)
                 if not locked:
                     self.log_info(f'加锁失败 {config_name} {set_name}', notify=True)
                     return False
