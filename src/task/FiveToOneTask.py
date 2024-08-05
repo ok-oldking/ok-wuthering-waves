@@ -17,6 +17,7 @@ class FiveToOneTask(BaseCombatTask):
         self.description = "数据坞五合一 + 自动上锁, 游戏语言必须为简体中文,必须16:9分辨率"
         self.name = "在数据坞五合一界面启动"
         self.default_config = {
+            '处理声骸COST': ["1", "3", "4"],
             '锁定_1C_生命': [],
             '锁定_1C_防御': [],
             '锁定_1C_攻击': [
@@ -54,31 +55,33 @@ class FiveToOneTask(BaseCombatTask):
 
         self.config_type = {}
         for key in self.default_config.keys():
-            self.config_type[key] = {'type': "multi_selection", 'options': self.sets}
+            if key == "处理声骸COST":
+                self.config_type[key] = {'type': "multi_selection", 'options': self.default_config[key]}
+            else:
+                self.config_type[key] = {'type': "multi_selection", 'options': self.sets}
+
         self.first_echo_x = 326 / 3840
         self.first_echo_y = 178 / 2160
         self.echo_x_distance = (2215 - 343) / 7 / 3840
         self.echo_y_distance = (1678 - 421) / 4 / 2160
         self.echo_per_row = 8
         self.confirmed = False
-        self.current_cost = 0
+        self.current_cost_index = 0
 
     def run(self):
-        self.current_cost = 0
+        self.current_cost_index = 0
         while self.loop_merge():
             pass
 
     def incr_cost_filter(self):
-        if self.current_cost == 0:
-            self.current_cost = 1
-        elif self.current_cost == 1:
-            self.current_cost = 3
-        elif self.current_cost == 3:
-            self.current_cost = 4
+        to_handle = self.config.get('处理声骸COST', [])
+        if len(to_handle) > self.current_cost_index:
+            target = to_handle[self.current_cost_index]
+            self.current_cost_index += 1
+            self.set_filter(target)
+            return True
         else:
             return False
-        self.set_filter(self.current_cost)
-        return True
 
     def set_filter(self, cost):
         self.log_info(f'increase cost filter {cost}')
@@ -88,11 +91,11 @@ class FiveToOneTask(BaseCombatTask):
         self.click(find_boxes_by_name(boxes, names='重置'), after_sleep=1)
         self.click(find_boxes_by_name(boxes, names='五星'), after_sleep=1)
         self.click(find_boxes_by_name(boxes, names=re.compile(f'ost{cost}')), after_sleep=1)
-        self.click(find_boxes_by_name(boxes, names='确定'), after_sleep=1)
+        self.click(find_boxes_by_name(boxes, names='确定'), after_sleep=2)
         self.click_empty_area()
 
     def click_empty_area(self):
-        self.click_relative(0.9, 0.51, after_sleep=1)
+        self.click_relative(0.95, 0.51, after_sleep=2)
 
     def check_ui(self):
         put = self.ocr(0.46, 0.64, 0.58, 0.69)
@@ -109,7 +112,7 @@ class FiveToOneTask(BaseCombatTask):
                 text.name = fix
 
     def loop_merge(self):
-        if self.current_cost == 0:
+        if self.current_cost_index == 0:
             time_out = 0
         else:
             time_out = 10
@@ -121,7 +124,7 @@ class FiveToOneTask(BaseCombatTask):
                           post_action=self.click_empty_area, time_out=15)
         self.sleep(0.5)
 
-        if self.current_cost == 0:
+        if self.current_cost_index == 0:
             self.incr_cost_filter()
         row = 0
         col = 0
