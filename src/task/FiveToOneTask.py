@@ -1,5 +1,8 @@
 import re
 
+import cv2
+import numpy as np
+
 from ok.feature.Box import Box, find_boxes_by_name, find_boxes_within_boundary
 from ok.logging.Logger import get_logger
 from src.task.BaseCombatTask import BaseCombatTask
@@ -146,13 +149,15 @@ class FiveToOneTask(BaseCombatTask):
                                   notify=True)
                     return False
 
-            texts = self.ocr(0.60, 0.40, 0.83, 0.76, name='echo_stats', target_height=720, log=True)
-            self.fix_ocr_texts(texts)
+            texts = self.ocr_echo_texts()
             sets = find_boxes_by_name(texts, self.sets)
             if not sets:
-                self.log_error(f'无法识别声骸套装, 需要打开角色声骸界面,右上角点击切换一下简述', notify=True)
-                return False
-            set_name = sets[0].name
+                set_name = self.find_set_by_template()
+                if not set_name:
+                    self.log_error(f'无法识别声骸套装, 需要打开角色声骸界面,右上角点击切换一下简述', notify=True)
+                    return False
+            else:
+                set_name = sets[0].name
 
             cost = self.find_cost(texts)
             if not cost:
@@ -200,6 +205,23 @@ class FiveToOneTask(BaseCombatTask):
         self.info['合成数量'] = self.info.get('合成数量', 0) + 1
         return True
 
+    def find_set_by_template(self):
+        box = self.get_box_by_name('box_set_name')
+        max_conf = 0
+        max_name = None
+        for i in range(len(self.sets)):
+            feature = self.find_one(f'set_name_{i}', box=box, threshold=0.65, mask_function=mask_circle)
+            if feature and feature.confidence > max_conf:
+                max_conf = feature.confidence
+                max_name = self.sets[i]
+        logger.info(f'find_set_by_template: {max_name} {max_conf}')
+        return max_name
+
+    def ocr_echo_texts(self):
+        texts = self.ocr(0.60, 0.40, 0.83, 0.76, name='echo_stats', target_height=720, log=True)
+        self.fix_ocr_texts(texts)
+        return texts
+
     def find_cost(self, texts):
         cost_boundary = self.box_of_screen(0.80, 0.24, 0.83, 0.29, name='cost_boundary')
         # cost_boxes = find_boxes_within_boundary(texts, cost_boundary)
@@ -231,3 +253,19 @@ def extract_number(text):
     if match:
         return int(match.group())
     return None
+
+
+def mask_circle(image):
+    # Get the dimensions of the image
+    height, width = image.shape[:2]
+
+    # Calculate the center and axes of the ellipse
+    center = (width // 2, height // 2)
+    axes = (width // 2, height // 2)
+
+    # Create a mask with the same dimensions as the image
+    mask = np.zeros((height, width), dtype=np.uint8)
+
+    # Draw the ellipse on the mask
+    cv2.ellipse(mask, center, axes, 0, 0, 360, (255), thickness=-1)
+    return mask
