@@ -136,14 +136,7 @@ class FiveToOneTask(BaseCombatTask):
                                                                            y + self.echo_x_distance / 3),
                                     wait_until_before_delay=0.8, raise_if_not_found=True)
 
-            sets = find_boxes_by_name(texts, self.sets)
-            if not sets:
-                set_name = self.find_set_by_template()
-                if not set_name:
-                    self.log_error(f'无法识别声骸套装, 需要打开角色声骸界面,右上角点击切换一下简述', notify=True)
-                    return False
-            else:
-                set_name = sets[0].name
+            set_name = self.find_set_name(texts)
 
             cost = self.find_cost(texts)
 
@@ -178,6 +171,18 @@ class FiveToOneTask(BaseCombatTask):
                 self.info['加锁数量'] = self.info.get('加锁数量', 0) + 1
                 lock_count += 1
         return lock_count
+
+    def find_set_name(self, texts=None):
+        if texts is None:
+            texts = self.ocr_echo_texts()
+        sets = find_boxes_by_name(texts, self.sets)
+        if not sets:
+            set_name = self.find_set_by_template()
+            if not set_name:
+                raise Exception(f'无法识别声骸套装, 需要打开角色声骸界面,右上角点击切换一下简述')
+        else:
+            set_name = sets[0].name
+        return set_name
 
     def loop_merge(self, skip_go_into_ui=False, start_col=0):
         if not skip_go_into_ui:
@@ -234,7 +239,8 @@ class FiveToOneTask(BaseCombatTask):
         max_conf = 0
         max_name = None
         for i in range(len(self.sets)):
-            feature = self.find_one(f'set_name_{i}', box=box, threshold=0.65, mask_function=mask_circle)
+            feature = self.find_one(f'set_name_{i}', box=box,
+                                    threshold=0.55, mask_function=mask_circle)
             if feature and feature.confidence > max_conf:
                 max_conf = feature.confidence
                 max_name = self.sets[i]
