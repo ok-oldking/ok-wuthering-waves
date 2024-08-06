@@ -205,14 +205,15 @@ class FiveToOneTask(BaseCombatTask):
             if not self.incr_cost_filter():
                 self.log_error(f'无法凑够五个声骸, 任务结束', notify=True)
                 return False
+
         if self.current_cost != '4':
             lock_count = self.check_and_lock(start_col)
+            self.click_empty_area()
         else:
             lock_count = 0
 
         if lock_count > 0:
             logger.info(f'本次加锁 {lock_count} 个, 重新添加5个')
-            self.click_empty_area()
             self.try_add_or_remove_five()
             return self.loop_merge(True, start_col=5 - lock_count)
         else:
