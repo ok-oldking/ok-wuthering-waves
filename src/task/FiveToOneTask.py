@@ -3,7 +3,7 @@ import re
 import cv2
 import numpy as np
 
-from ok.feature.Box import Box, find_boxes_by_name, find_boxes_within_boundary
+from ok.feature.Box import find_boxes_by_name, find_boxes_within_boundary
 from ok.logging.Logger import get_logger
 from src.task.BaseCombatTask import BaseCombatTask
 
@@ -17,7 +17,8 @@ class FiveToOneTask(BaseCombatTask):
         self.description = "数据坞五合一 + 自动上锁, 游戏语言必须为简体中文,必须16:9分辨率"
         self.name = "在数据坞五合一界面启动"
         self.default_config = {
-            '处理声骸COST': ["1", "3", "4"],
+            '处理声骸COST': ["4", "3", "1"],
+            '4C舍弃': ["主属性攻击力百分比", "主属性防御力百分比", "主属性生命值百分比"],
             '锁定_1C_生命': [],
             '锁定_1C_防御': [],
             '锁定_1C_攻击': [
@@ -35,16 +36,16 @@ class FiveToOneTask(BaseCombatTask):
             '锁定_3C_共鸣效率': [
                 '凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光', '轻云出月',
                 '不绝余音'],
-            '锁定_4C_暴击': ['凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光',
-                             '轻云出月',
-                             '不绝余音'],
-            '锁定_4C_暴击伤害': ['凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光',
-                                 '轻云出月',
-                                 '不绝余音'],
-            '锁定_4C_治疗效果加成': ['隐世回光'],
-            '锁定_4C_生命': [],
-            '锁定_4C_防御': [],
-            '锁定_4C_攻击': [],
+            # '锁定_4C_暴击': ['凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光',
+            #                  '轻云出月',
+            #                  '不绝余音'],
+            # '锁定_4C_暴击伤害': ['凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光',
+            #                      '轻云出月',
+            #                      '不绝余音'],
+            # '锁定_4C_治疗效果加成': ['隐世回光'],
+            # '锁定_4C_生命': [],
+            # '锁定_4C_防御': [],
+            # '锁定_4C_攻击': [],
         }
         self.sets = [
             '凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光', '轻云出月', '不绝余音']
@@ -55,7 +56,7 @@ class FiveToOneTask(BaseCombatTask):
 
         self.config_type = {}
         for key in self.default_config.keys():
-            if key == "处理声骸COST":
+            if key == "处理声骸COST" or key == "4C舍弃":
                 self.config_type[key] = {'type': "multi_selection", 'options': self.default_config[key]}
             else:
                 self.config_type[key] = {'type': "multi_selection", 'options': self.sets}
@@ -67,30 +68,37 @@ class FiveToOneTask(BaseCombatTask):
         self.echo_per_row = 8
         self.confirmed = False
         self.current_cost_index = 0
+        self.current_cost = None
 
     def run(self):
         self.current_cost_index = 0
+        self.current_cost = None
         while self.loop_merge():
             pass
 
     def incr_cost_filter(self):
         to_handle = self.config.get('处理声骸COST', [])
         if len(to_handle) > self.current_cost_index:
-            target = to_handle[self.current_cost_index]
+            self.current_cost = to_handle[self.current_cost_index]
             self.current_cost_index += 1
-            self.set_filter(target)
+            self.set_filter()
             return True
         else:
             return False
 
-    def set_filter(self, cost):
-        self.log_info(f'increase cost filter {cost}')
+    def set_filter(self):
+        self.log_info(f'increase cost filter {self.current_cost}')
         self.click_relative(0.04, 0.91)
         self.sleep(1)
         boxes = self.ocr(0.11, 0.31, 0.90, 0.88, target_height=720, log=True)
         self.click(find_boxes_by_name(boxes, names='重置'), after_sleep=1)
         self.click(find_boxes_by_name(boxes, names='五星'), after_sleep=1)
-        self.click(find_boxes_by_name(boxes, names=re.compile(f'ost{cost}')), after_sleep=1)
+        self.click(find_boxes_by_name(boxes, names=re.compile(f'ost{self.current_cost}')), after_sleep=1)
+
+        if self.current_cost == '4':
+            for throw in self.config.get('4C舍弃'):
+                self.click(find_boxes_by_name(boxes, names=throw), after_sleep=1)
+
         self.click(find_boxes_by_name(boxes, names='确定'), after_sleep=2)
         self.click_empty_area()
 
@@ -111,48 +119,23 @@ class FiveToOneTask(BaseCombatTask):
             if fix := self.fix_map.get(text.name):
                 text.name = fix
 
-    def loop_merge(self):
-        if self.current_cost_index == 0:
-            time_out = 0
-        else:
-            time_out = 10
-        add = self.wait_until(self.check_ui, post_action=self.click_empty_area, time_out=time_out)
-        if not add:
-            raise Exception('请在5合1界面开始,并保持声骸未添加状态')
-        self.click_relative(0.53, 0.20)
-        self.wait_feature('data_merge_selection', raise_if_not_found=True, threshold=0.75,
-                          post_action=self.click_empty_area, time_out=15)
+    def try_add_or_remove_five(self):
+        self.log_info('try_add_five')
+        self.click(self.get_box_by_name('box_data_merge_add_clear'))
         self.sleep(0.5)
+        last_slot = self.find_one('data_merge_last_add_slot')
+        return last_slot is None
 
-        if self.current_cost_index == 0:
-            self.incr_cost_filter()
-        row = 0
-        col = 0
-        add_count = 0
+    def check_and_lock(self, start_col):
+        lock_count = 0
 
-        while add_count < 5:
-            if col >= 8:
-                row += 1
-                col = 0
-                self.log_info(f'next row {row, col}')
-                if row == 6:
-                    self.log_error(f'无法凑够五个声骸, 请退出重新开始', notify=True)
-                    return False
-            x, y = self.get_pos(row, col)
-            col += 1
-            lock = self.wait_until(self.find_lock, pre_action=lambda: self.click_relative(x - 0.01, y + 0.01),
-                                   wait_until_before_delay=0.8, raise_if_not_found=True)
-            if lock.name == 'echo_locked':
-                if self.incr_cost_filter():
-                    col = 0
-                    row = 0
-                    continue
-                else:
-                    self.log_info(f'五合一完成,合成{self.info.get("合成数量", 0)},加锁{self.info.get("加锁数量", 0)}',
-                                  notify=True)
-                    return False
+        for col in range(start_col, 5):
+            x, y = self.get_pos(0, col)
+            texts = self.wait_until(self.ocr_echo_texts,
+                                    pre_action=lambda: self.click_relative(x - self.echo_x_distance / 3,
+                                                                           y + self.echo_x_distance / 3),
+                                    wait_until_before_delay=0.8, raise_if_not_found=True)
 
-            texts = self.ocr_echo_texts()
             sets = find_boxes_by_name(texts, self.sets)
             if not sets:
                 set_name = self.find_set_by_template()
@@ -163,6 +146,7 @@ class FiveToOneTask(BaseCombatTask):
                 set_name = sets[0].name
 
             cost = self.find_cost(texts)
+
             if not cost:
                 self.log_error(f'无法识别声骸COST', notify=True)
                 return False
@@ -179,34 +163,71 @@ class FiveToOneTask(BaseCombatTask):
             config_name = f'锁定_{cost}C_{main_stat}'
 
             sets_to_lock = self.config.get(config_name, [])
+            self.log_info(f'识别声骸 {config_name} {set_name} {main_stat} ')
             if set_name in sets_to_lock:
-                self.log_info(f'需要加锁 {config_name} {set_name}')
+                self.log_info(f'需要加锁 {config_name} {set_name} {main_stat} ')
                 self.click_relative(x, y)
                 self.sleep(1)
-                locked = self.wait_feature('echo_locked', threshold=0.9, pre_action=lambda: self.click(lock),
+                locked = self.wait_feature('echo_locked', threshold=0.9,
+                                           pre_action=lambda: self.click(self.get_box_by_name('echo_locked')),
                                            wait_until_before_delay=1.5)
                 if not locked:
                     self.log_info(f'加锁失败 {config_name} {set_name}', notify=True)
                     return False
+                logger.info(f'加锁成功 {config_name}  {set_name} {main_stat}  {locked}')
                 self.info['加锁数量'] = self.info.get('加锁数量', 0) + 1
-                continue
-            add_count += 1
+                lock_count += 1
+        return lock_count
 
-        self.click_relative(0.79, 0.91)
-        self.sleep(0.5)
-        self.click_relative(0.79, 0.91)  # merge
-        if not self.confirmed:
-            confirm = self.wait_feature('data_merge_confirm_hcenter_vcenter', time_out=3, raise_if_not_found=False)
-            if confirm:
-                self.click_relative(0.44, 0.55)
-                self.sleep(0.5)
-                self.click_box(confirm, relative_x=-1)
-            self.confirmed = True
-        self.wait_ocr(0.45, 0.33, 0.55, 0.39, match='获得声骸', raise_if_not_found=True, time_out=15)
-        self.sleep(1)
-        self.click_relative(0.79, 0.91)
-        self.info['合成数量'] = self.info.get('合成数量', 0) + 1
+    def loop_merge(self, skip_go_into_ui=False, start_col=0):
+        if not skip_go_into_ui:
+            self.go_into_merge_ui()
+            if self.current_cost_index == 0:
+                self.incr_cost_filter()
+
+        while not self.try_add_or_remove_five():
+            if not self.incr_cost_filter():
+                self.log_error(f'无法凑够五个声骸, 任务结束', notify=True)
+                return False
+        if self.current_cost != '4':
+            lock_count = self.check_and_lock(start_col)
+        else:
+            lock_count = 0
+
+        if lock_count > 0:
+            logger.info(f'本次加锁 {lock_count} 个, 重新添加5个')
+            self.click_empty_area()
+            self.try_add_or_remove_five()
+            return self.loop_merge(True, start_col=5 - lock_count)
+        else:
+            logger.info(f'没有加锁 开始合成')
+            self.click_relative(0.79, 0.91)
+            self.sleep(0.5)
+            self.click_relative(0.79, 0.91)  # merge
+            if not self.confirmed:
+                confirm = self.wait_feature('data_merge_confirm_hcenter_vcenter', time_out=3, raise_if_not_found=False)
+                if confirm:
+                    self.click_relative(0.44, 0.55)
+                    self.sleep(0.5)
+                    self.click_box(confirm, relative_x=-1)
+                self.confirmed = True
+            self.wait_ocr(0.45, 0.33, 0.55, 0.39, match='获得声骸', raise_if_not_found=True, time_out=15)
+            self.sleep(1)
+            self.click_relative(0.79, 0.91)
+            self.info['合成数量'] = self.info.get('合成数量', 0) + 1
         return True
+
+    def go_into_merge_ui(self):
+        if self.current_cost_index == 0:
+            add = self.check_ui()
+        else:
+            add = self.wait_until(self.check_ui, post_action=self.click_empty_area)
+        if not add:
+            raise Exception('请在5合1界面开始,并保持声骸未添加状态')
+        self.click(self.get_box_by_name('data_merge_hcenter_vcenter'))
+        self.wait_feature('data_merge_selection', raise_if_not_found=True, threshold=0.75,
+                          post_action=self.click_empty_area, time_out=15)
+        self.sleep(0.5)
 
     def find_set_by_template(self):
         box = self.get_box_by_name('box_set_name')
@@ -223,28 +244,18 @@ class FiveToOneTask(BaseCombatTask):
     def ocr_echo_texts(self):
         texts = self.ocr(0.60, 0.40, 0.83, 0.76, name='echo_stats', target_height=720, log=True)
         self.fix_ocr_texts(texts)
-        return texts
+        if len(texts) > 4:
+            return texts
+        else:
+            return None
 
     def find_cost(self, texts):
         cost_boundary = self.box_of_screen(0.80, 0.24, 0.83, 0.29, name='cost_boundary')
-        # cost_boxes = find_boxes_within_boundary(texts, cost_boundary)
         cost_boxes = self.ocr(box=cost_boundary, log=True)
         for box in cost_boxes:
             extract = extract_number(box.name)
             if extract is not None:
                 return extract
-
-    def find_lock(self) -> Box:
-        data_merge_locked = self.find_one('echo_locked', threshold=0.75)
-        data_merge_unlocked = self.find_one('echo_unlocked', threshold=0.75)
-        self.log_debug(f'find lock {data_merge_locked} {data_merge_unlocked}')
-        if data_merge_locked and data_merge_unlocked:
-            if data_merge_locked.confidence > data_merge_unlocked.confidence:
-                return data_merge_locked
-            else:
-                return data_merge_unlocked
-        else:
-            return data_merge_locked or data_merge_unlocked
 
     def get_pos(self, row, col):
         return self.first_echo_x + col * self.echo_x_distance, self.first_echo_y + row * self.echo_y_distance
