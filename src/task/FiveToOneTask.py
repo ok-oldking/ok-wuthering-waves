@@ -218,8 +218,6 @@ class FiveToOneTask(BaseCombatTask):
         else:
             logger.info(f'没有加锁 开始合成')
             self.click_relative(0.79, 0.91)
-            self.sleep(0.5)
-            self.click_relative(0.79, 0.91)  # merge
             self.handle_confirm()
             self.wait_ocr(0.45, 0.33, 0.55, 0.39, match='获得声骸', raise_if_not_found=True, time_out=15)
             self.sleep(1)
