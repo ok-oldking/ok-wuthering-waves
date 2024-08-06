@@ -56,8 +56,12 @@ class FiveToOneTask(BaseCombatTask):
 
         self.config_type = {}
         for key in self.default_config.keys():
-            if key == "处理声骸COST" or key == "4C舍弃":
-                self.config_type[key] = {'type': "multi_selection", 'options': self.default_config[key]}
+            if key == "处理声骸COST":
+                self.config_type[key] = {'type': "multi_selection",
+                                         'options': self.default_config[key]}
+            elif key == "4C舍弃":
+                self.config_type[key] = {'type': "multi_selection",
+                                         'options': self.default_config[key] + ["全部未加锁"]}
             else:
                 self.config_type[key] = {'type': "multi_selection", 'options': self.sets}
 
@@ -81,7 +85,11 @@ class FiveToOneTask(BaseCombatTask):
         if len(to_handle) > self.current_cost_index:
             self.current_cost = to_handle[self.current_cost_index]
             self.current_cost_index += 1
-            self.set_filter()
+            if self.current_cost == '4' and not self.config.get('4C舍弃'):
+                self.log_info(f'4C 什么都没选!')
+                return self.incr_cost_filter()
+            else:
+                self.set_filter()
             return True
         else:
             return False
@@ -96,8 +104,11 @@ class FiveToOneTask(BaseCombatTask):
         self.click(find_boxes_by_name(boxes, names=re.compile(f'ost{self.current_cost}')), after_sleep=1)
 
         if self.current_cost == '4':
-            for throw in self.config.get('4C舍弃'):
-                self.click(find_boxes_by_name(boxes, names=throw), after_sleep=1)
+            if "全部未加锁" in self.config.get('4C舍弃'):
+                self.logger.info('全部舍弃4C')
+            else:
+                for throw in self.config.get('4C舍弃'):
+                    self.click(find_boxes_by_name(boxes, names=throw), after_sleep=1)
 
         self.click(find_boxes_by_name(boxes, names='确定'), after_sleep=2)
         self.click_empty_area()
@@ -209,18 +220,21 @@ class FiveToOneTask(BaseCombatTask):
             self.click_relative(0.79, 0.91)
             self.sleep(0.5)
             self.click_relative(0.79, 0.91)  # merge
-            if not self.confirmed:
-                confirm = self.wait_feature('data_merge_confirm_hcenter_vcenter', time_out=3, raise_if_not_found=False)
-                if confirm:
-                    self.click_relative(0.44, 0.55)
-                    self.sleep(0.5)
-                    self.click_box(confirm, relative_x=-1)
-                self.confirmed = True
+            self.handle_confirm()
             self.wait_ocr(0.45, 0.33, 0.55, 0.39, match='获得声骸', raise_if_not_found=True, time_out=15)
             self.sleep(1)
             self.click_relative(0.79, 0.91)
-            self.info['合成数量'] = self.info.get('合成数量', 0) + 1
+            self.info['合成次数'] = self.info.get('合成次数', 0) + 1
         return True
+
+    def handle_confirm(self):
+        if not self.confirmed:
+            confirm = self.wait_feature('data_merge_confirm_hcenter_vcenter', time_out=3, raise_if_not_found=False)
+            if confirm:
+                self.click_relative(0.44, 0.55)
+                self.sleep(0.5)
+                self.click_box(confirm, relative_x=-1)
+            self.confirmed = True
 
     def go_into_merge_ui(self):
         if self.current_cost_index == 0:
