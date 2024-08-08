@@ -64,20 +64,18 @@ class Jinhsi(BaseChar):
         self.incarnation = False
         self.logger.info(f'handle_incarnation click_resonance start')
         start = time.time()
-        liberated = False
         while True:
             current_res = self.current_resonance()
             if current_res > 0 and not self.has_cd('resonance'):
-                self.logger.debug(f'handle_incarnation current_res: {current_res} breaking')
+                self.logger.info(f'handle_incarnation current_res: {current_res} breaking')
                 if self.task.debug:
                     self.task.screenshot(f'handle_incarnation e available')
                 # self.send_resonance_key()
                 break
             self.task.click(interval=0.1)
-            if not liberated or not self.task.in_team()[0]:
-                self.check_combat()
+            self.check_combat()
 
-        self.click_resonance(has_animation=True, send_click=True)
+        self.click_resonance(has_animation=True, animation_min_duration=1)
         if not self.click_echo():
             self.task.click()
         # if self.task.debug:
