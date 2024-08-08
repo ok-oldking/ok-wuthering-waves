@@ -189,8 +189,8 @@ class BaseChar:
                     continue
                 else:
                     self.task.in_liberation = False
-            now = time.time()
             self.check_combat()
+            now = time.time()
             current_resonance = self.current_resonance()
             if not self.resonance_available(current_resonance) and (
                     not has_animation or now - start > animation_min_duration):
