@@ -182,7 +182,7 @@ class FarmWorldBossTask(BaseCombatTask):
                             logger.info(f'sleep for the Bell-Borne model to appear')
                             self.sleep(15)
                         try:
-                            self.combat_once()
+                            self.combat_once(wait_before=0)
                         except CharDeadException:
                             logger.info(f'char dead try teleport to heal')
                             self.teleport_to_heal()
