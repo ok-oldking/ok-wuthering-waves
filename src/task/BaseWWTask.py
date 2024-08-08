@@ -88,7 +88,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         if f and target_text:
             search_text_box = f.copy(x_offset=f.width * 5, width_offset=f.width * 7, height_offset=1.5 * f.height,
                                      y_offset=-0.8 * f.height, name='search_text_box')
-            text = self.ocr(box=search_text_box, match=target_text)
+            text = self.ocr(box=search_text_box, match=target_text, target_height=540)
             logger.debug(f'found f with text {text}, target_text {target_text}')
             if not text:
                 return None
