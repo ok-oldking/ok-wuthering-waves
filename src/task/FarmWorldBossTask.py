@@ -19,7 +19,7 @@ class FarmWorldBossTask(BaseCombatTask):
                            'Bell-Borne Geochelone']
         self.find_echo_method = ['Walk', 'Run in Circle', 'Turn Around and Search']
 
-        self.weekly_boss_index = {'Bell-Borne Geochelone': 3}
+        self.weekly_boss_index = {'Bell-Borne Geochelone': -1}
         self.weekly_boss_count = 1  # Bell-Borne Geochelone
         default_config = {
             'Boss1': 'N/A',
