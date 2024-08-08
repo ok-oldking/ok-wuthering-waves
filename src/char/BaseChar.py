@@ -163,13 +163,14 @@ class BaseChar:
         if sec > 0:
             self.task.sleep_check_combat(sec + self.sleep_adjust, check_combat=check_combat)
 
-    def click_resonance(self, post_sleep=0, has_animation=False, send_click=True):
+    def click_resonance(self, post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0):
         clicked = False
         self.logger.debug(f'click_resonance start')
         last_click = 0
         last_op = 'click'
         resonance_click_time = 0
         animated = False
+        start = time.time()
         while True:
             if resonance_click_time != 0 and time.time() - resonance_click_time > 8:
                 self.task.in_liberation = False
@@ -179,7 +180,6 @@ class BaseChar:
             if has_animation:
                 if not self.task.in_team()[0]:
                     self.task.in_liberation = True
-                    self.task.last_liberation = time.time()
                     animated = True
                     if time.time() - resonance_click_time > 6:
                         self.task.in_liberation = False
@@ -187,13 +187,17 @@ class BaseChar:
                     self.task.next_frame()
                     self.check_combat()
                     continue
+                else:
+                    self.task.in_liberation = False
+            now = time.time()
             self.check_combat()
             current_resonance = self.current_resonance()
-            if not self.resonance_available(current_resonance):
+            if not self.resonance_available(current_resonance) and (
+                    not has_animation or now - start > animation_min_duration):
                 self.logger.debug(f'click_resonance not available break')
                 break
             self.logger.debug(f'click_resonance resonance_available click {current_resonance}')
-            now = time.time()
+
             if now - last_click > 0.1:
                 if ((current_resonance == 0) and send_click) or last_op == 'resonance':
                     self.task.click()
@@ -293,6 +297,7 @@ class BaseChar:
             self.task.next_frame()
         if clicked:
             if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.6):
+                self.task.in_liberation = True
                 self.logger.debug(f'not in_team successfully casted liberation')
             else:
                 self.task.in_liberation = False
@@ -300,11 +305,11 @@ class BaseChar:
                 return False
         start = time.time()
         while not self.task.in_team()[0]:
-            self.task.last_liberation = time.time()
+            self.task.in_liberation = True
             clicked = True
             if send_click:
                 self.task.click(interval=0.1)
-            if self.task.last_liberation - start > 7:
+            if time.time() - start > 7:
                 self.task.in_liberation = False
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
             self.task.next_frame()
