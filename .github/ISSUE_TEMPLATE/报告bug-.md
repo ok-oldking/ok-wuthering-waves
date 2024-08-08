@@ -7,7 +7,11 @@ assignees: ok-oldking
 
 ---
 
-请先挨个检查,[常见问题](https://github.com/ok-oldking/ok-wuthering-waves/readme/faq.md)
+请先挨个检查:
+[常见问题](https://github.com/ok-oldking/ok-wuthering-waves/readme/faq.md)
+
+搜索现有ISSUE:
+[https://github.com/ok-oldking/ok-wuthering-waves/issues?q=](https://github.com/ok-oldking/ok-wuthering-waves/issues?q=)
 
 描述错误:
 [请清晰简洁地描述错误是什么]
