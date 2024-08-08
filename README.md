@@ -1,4 +1,11 @@
-#  OK-WW
+<div align="center">
+  <h1 align="center">
+    <img src="icon.png" width="200"/>
+    <br/>
+    ok-ww
+  </h1> 
+</div>
+
 ![Static Badge](https://img.shields.io/badge/platfrom-Windows-blue?color=blue)
 ![GitHub release (with filter)](https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves)
 ![GitHub all releases](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)
