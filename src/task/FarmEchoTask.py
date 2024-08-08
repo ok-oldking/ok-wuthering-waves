@@ -59,11 +59,11 @@ class FarmEchoTask(BaseCombatTask):
             self.send_key('esc')
             self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=True,
                                     use_gray_scale=True)
-            self.wait_in_team_and_world(time_out=40)
+            self.wait_in_team_and_world(time_out=120)
             self.sleep(4)
             if self.config.get('Entrance Direction') == 'Backward':
-                self.send_key('a', down_time=0.2)  # Jue
-                self.sleep(1)
+                self.right_click()  # Jue
+                self.sleep(3)
 
     def incr_drop(self, dropped):
         if dropped:
