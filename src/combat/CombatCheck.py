@@ -17,7 +17,7 @@ class CombatCheck:
         self._in_combat = False
         self.boss_lv_template = None
         self.boss_lv_mask = None
-        self.in_liberation = False  # return True
+        self._in_liberation = False  # return True
         self.has_count_down = False
         self.last_out_of_combat_time = 0
         self.last_combat_check = 0
@@ -26,7 +26,17 @@ class CombatCheck:
         self.boss_health = None
         self.out_of_combat_reason = ""
         self.combat_check_interval = 0.8
-        self.last_liberation = 0
+        self._last_liberation = 0
+
+    @property
+    def in_liberation(self):
+        return self._in_liberation
+
+    @in_liberation.setter
+    def in_liberation(self, value):
+        self._in_liberation = value
+        if value:
+            self._last_liberation = time.time()
 
     def reset_to_false(self, recheck=False, reason=""):
         if self.should_check_monthly_card() and self.handle_monthly_card():
@@ -59,7 +69,7 @@ class CombatCheck:
         return False
 
     def recent_liberation(self):
-        return time.time() - self.last_liberation < 0.3
+        return time.time() - self._last_liberation < 0.4
 
     def check_count_down(self):
         count_down_area = self.box_of_screen_scaled(3840, 2160, 1820, 266, 2100,
@@ -137,7 +147,6 @@ class CombatCheck:
 
     def in_combat(self, rechecked=False):
         if self.in_liberation or self.recent_liberation():
-            self.last_combat_check = time.time()
             logger.debug('in liberation return True')
             return True
         if self._in_combat:
@@ -219,7 +228,7 @@ class CombatCheck:
         texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160, hcenter=True),
                          target_height=540, name='boss_lv_text')
         boss_lv_texts = find_boxes_by_name(texts,
-                                           [re.compile(r'(?i)^L[V].*')])
+                                           [re.compile(r'(?i)^L[Vv].*')])
         if len(boss_lv_texts) > 0:
             logger.debug(f'boss_lv_texts: {boss_lv_texts}')
             self.boss_lv_box = boss_lv_texts[0]
