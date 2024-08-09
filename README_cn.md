@@ -4,7 +4,7 @@
     <br/>
     ok-ww
   </h1> 
-<h3><i>基于图像识别的鸣潮自动化, 使用windows api模拟用户点击, 无读取游戏内存或侵入修改游戏数据.</i></h3>
+<h3><i>基于图像识别的鸣潮自动化, 使用windows接口模拟用户点击, 无读取游戏内存或侵入修改游戏文件/数据.</i></h3>
 </div>
 
 ![Static Badge](https://img.shields.io/badge/platfrom-Windows-blue?color=blue)
