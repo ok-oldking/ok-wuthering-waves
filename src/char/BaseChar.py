@@ -279,7 +279,6 @@ class BaseChar:
         if con_less_than > 0:
             if self.get_current_con() > con_less_than:
                 return False
-        self.task.in_liberation = True
         self.logger.debug(f'click_liberation start')
         start = time.time()
         last_click = 0
@@ -296,7 +295,7 @@ class BaseChar:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
         if clicked:
-            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.6):
+            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4):
                 self.task.in_liberation = True
                 self.logger.debug(f'not in_team successfully casted liberation')
             else:
