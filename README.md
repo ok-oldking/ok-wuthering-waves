@@ -1,6 +1,7 @@
 <div align="center">
   <h1 align="center">
     <img src="icon.png" width="200"/>
+    <br/>
       ok-ww
   </h1> 
 <h3><i>Automation for Wuthering Waves using computer vision and win32api to simulate user input</i></h3>
