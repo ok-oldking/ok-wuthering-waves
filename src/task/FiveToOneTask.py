@@ -214,7 +214,8 @@ class FiveToOneTask(BaseCombatTask):
 
         if lock_count > 0:
             logger.info(f'本次加锁 {lock_count} 个, 重新添加5个')
-            self.try_add_or_remove_five()
+            if lock_count != 5:
+                self.try_add_or_remove_five()
             return self.loop_merge(True, start_col=5 - lock_count)
         else:
             logger.info(f'没有加锁 开始合成')

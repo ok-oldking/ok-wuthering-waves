@@ -1,3 +1,5 @@
+from qfluentwidgets import FluentIcon
+
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.task.TriggerTask import TriggerTask
@@ -12,6 +14,7 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
         super().__init__()
         self.name = "Auto Pick"
         self.description = "Auto Pick Flowers in Game World"
+        self.icon = FluentIcon.SHOPPING_CART
 
     def run(self):
         self.send_key('f')

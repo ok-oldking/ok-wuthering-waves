@@ -69,7 +69,7 @@ class CombatCheck:
         return False
 
     def recent_liberation(self):
-        return time.time() - self._last_liberation < 0.3
+        return time.time() - self._last_liberation < 0.15
 
     def check_count_down(self):
         count_down_area = self.box_of_screen_scaled(3840, 2160, 1820, 266, 2100,
