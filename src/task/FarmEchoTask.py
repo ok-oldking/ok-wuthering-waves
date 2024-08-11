@@ -1,3 +1,5 @@
+from qfluentwidgets import FluentIcon
+
 from ok.logging.Logger import get_logger
 from src.task.BaseCombatTask import BaseCombatTask
 
@@ -21,6 +23,7 @@ class FarmEchoTask(BaseCombatTask):
         }
         self.config_type["Entrance Direction"] = {'type': "drop_down", 'options': ['Forward', 'Backward']}
         self.crownless_pos = (0.9, 0.4)
+        self.icon = FluentIcon.ALBUM
 
     def run(self):
         self.set_check_monthly_card()
