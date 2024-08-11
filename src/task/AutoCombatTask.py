@@ -1,3 +1,5 @@
+from qfluentwidgets import FluentIcon
+
 from ok.logging.Logger import get_logger
 from ok.task.TriggerTask import TriggerTask
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
@@ -12,6 +14,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         self.trigger_interval = 0.1
         self.name = "Auto Combat"
         self.description = "Enable auto combat in Abyss, Game World etc"
+        self.icon = FluentIcon.CALORIES
 
     def run(self):
         while self.in_combat():
