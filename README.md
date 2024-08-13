@@ -4,7 +4,7 @@
     <br/>
       ok-ww
   </h1> 
-<h3><i>Automation for Wuthering Waves using computer vision and win32api to simulate user input</i></h3>
+<h3><i>Automation for Wuthering Waves using computer vision and win32api</i></h3>
 </div>
 
 ![Static Badge](https://img.shields.io/badge/platfrom-Windows-blue?color=blue)
