@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from ok.util.path import get_path_in_package
 from src.task.AutoCombatTask import AutoCombatTask
@@ -13,7 +14,8 @@ version = "v5.0.11"
 
 
 def calculate_pc_exe_path(running_path):
-    return running_path
+    game_exe_folder = Path(running_path).parents[3]
+    return str(game_exe_folder / "Wuthering Waves.exe")
 
 
 config = {
