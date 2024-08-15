@@ -18,6 +18,7 @@ class FiveToOneTask(BaseCombatTask):
         self.name = "在数据坞五合一界面启动"
         self.default_config = {
             '处理声骸COST': ["4", "3", "1"],
+            '4C舍弃': ["主属性攻击力百分比", "主属性防御力百分比", "主属性生命值百分比"],
             '锁定_1C_生命': [],
             '锁定_1C_防御': [],
             '锁定_1C_攻击': [
@@ -35,16 +36,16 @@ class FiveToOneTask(BaseCombatTask):
             '锁定_3C_共鸣效率': [
                 '凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光', '轻云出月',
                 '不绝余音'],
-            '锁定_4C_暴击': ['凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光',
-                             '轻云出月',
-                             '不绝余音'],
-            '锁定_4C_暴击伤害': ['凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光',
-                                 '轻云出月',
-                                 '不绝余音'],
-            '锁定_4C_治疗效果加成': ['隐世回光'],
-            '锁定_4C_生命': [],
-            '锁定_4C_防御': [],
-            '锁定_4C_攻击': [],
+            # '锁定_4C_暴击': ['凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光',
+            #                  '轻云出月',
+            #                  '不绝余音'],
+            # '锁定_4C_暴击伤害': ['凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光',
+            #                      '轻云出月',
+            #                      '不绝余音'],
+            # '锁定_4C_治疗效果加成': ['隐世回光'],
+            # '锁定_4C_生命': [],
+            # '锁定_4C_防御': [],
+            # '锁定_4C_攻击': [],
         }
         self.sets = [
             '凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光', '轻云出月', '不绝余音']
@@ -58,6 +59,9 @@ class FiveToOneTask(BaseCombatTask):
             if key == "处理声骸COST":
                 self.config_type[key] = {'type': "multi_selection",
                                          'options': self.default_config[key]}
+            elif key == "4C舍弃":
+                self.config_type[key] = {'type': "multi_selection",
+                                         'options': self.default_config[key] + ["全部未加锁"]}
             else:
                 self.config_type[key] = {'type': "multi_selection", 'options': self.sets}
 
@@ -81,7 +85,11 @@ class FiveToOneTask(BaseCombatTask):
         if len(to_handle) > self.current_cost_index:
             self.current_cost = to_handle[self.current_cost_index]
             self.current_cost_index += 1
-            self.set_filter()
+            if self.current_cost == '4' and not self.config.get('4C舍弃'):
+                self.log_info(f'4C 什么都没选!')
+                return self.incr_cost_filter()
+            else:
+                self.set_filter()
             return True
         else:
             return False
@@ -94,6 +102,14 @@ class FiveToOneTask(BaseCombatTask):
         self.click(find_boxes_by_name(boxes, names='重置'), after_sleep=1)
         self.click(find_boxes_by_name(boxes, names='五星'), after_sleep=1)
         self.click(find_boxes_by_name(boxes, names=re.compile(f'ost{self.current_cost}')), after_sleep=1)
+
+        if self.current_cost == '4':
+            if "全部未加锁" in self.config.get('4C舍弃'):
+                self.logger.info('全部舍弃4C')
+            else:
+                for throw in self.config.get('4C舍弃'):
+                    self.click(find_boxes_by_name(boxes, names=throw), after_sleep=1)
+
         self.click(find_boxes_by_name(boxes, names='确定'), after_sleep=2)
         self.click_empty_area()
 
@@ -190,10 +206,13 @@ class FiveToOneTask(BaseCombatTask):
                 self.log_error(f'无法凑够五个声骸, 任务结束', notify=True)
                 return False
 
-        lock_count, success = self.check_and_lock(start_col)
-        if not success:
-            return False
-        self.click_empty_area()
+        if self.current_cost != '4':
+            lock_count, success = self.check_and_lock(start_col)
+            if not success:
+                return False
+            self.click_empty_area()
+        else:
+            lock_count = 0
 
         if lock_count > 0:
             logger.info(f'本次加锁 {lock_count} 个, 重新添加5个')
