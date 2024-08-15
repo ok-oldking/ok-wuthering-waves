@@ -41,7 +41,10 @@ config = {
         'interaction': 'PostMessage',
         'can_bit_blt': True,  # default false, opengl games does not support bit_blt
         'bit_blt_render_full': True,
-        'check_hdr_and_night_light': True,
+        'check_hdr': False,
+        'force_no_hdr': False,
+        'check_night_light': True,
+        'force_no_night_light': True,
         'require_bg': True
     },
     'supported_resolution': {
