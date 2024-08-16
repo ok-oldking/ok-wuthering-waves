@@ -42,6 +42,12 @@ add_data = list(set(yaml_add_data + onnx_add_data + openvino_add_data))
 excludes = ['FixTk', 'tcl', 'tk', '_tkinter', 'tkinter', 'Tkinter', 'resources', 'matplotlib','numpy.lib']
 add_data.append(('icon.ico', '.'))
 
+import ok
+ok_dir = Path(ok.__file__).resolve().parent
+binaries = os.path.join(ok_dir, 'binaries', '*')
+print(f'ok_dir {ok_dir}')
+add_data.append((binaries, 'ok/binaries'))
+
 def list_files(directory, prefix=''):
     file_list = []
     for root, dirs, files in os.walk(directory):
