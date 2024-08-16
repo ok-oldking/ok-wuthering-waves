@@ -42,8 +42,8 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
                                               threshold=0.8)
 
             if dialog_3_dots:
-                if self.config.get('Pick Up Black List'):
-                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up Black List'), log=True,
+                if self.config.get('Pick Up White List'):
+                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up White List'), log=True,
                                      target_height=540)
                     if texts:
                         logger.info(f'found Pick Up White List {texts}')
