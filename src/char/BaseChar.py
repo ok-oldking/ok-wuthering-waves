@@ -238,32 +238,31 @@ class BaseChar:
             self.last_echo = time.time()
 
     def click_echo(self, duration=0, sleep_time=0):
-        self.logger.debug(f'click_echo start')
+        self.logger.debug(f'click_echo start duration: {duration}')
         if self.has_cd('echo'):
             self.logger.debug('click_echo has cd return ')
             return False
         clicked = False
-        start = 0
+        start = time.time()
         last_click = 0
         while True:
             self.check_combat()
             current = self.current_echo()
-            now = time.time()
-            if duration == 0 and not self.echo_available(current):
+            if not self.echo_available(current) and (duration == 0 or not clicked):
                 break
-            elif duration > 0 and start != 0:
+            now = time.time()
+            if duration > 0 and start != 0:
                 if now - start > duration:
                     break
             if now - last_click > 0.1:
-                if current == 0:
-                    self.task.click()
-                else:
-                    if start == 0:
-                        start = now
-                    clicked = True
+                if not clicked:
                     self.update_echo_cd()
-                    self.task.send_key(self.get_echo_key())
+                    clicked = True
+                self.task.send_key(self.get_echo_key())
                 last_click = now
+            if now - start > 5:
+                self.logger.error(f'click_echo too long {clicked}')
+                break
             self.task.next_frame()
         self.logger.debug(f'click_echo end {clicked}')
         return clicked
