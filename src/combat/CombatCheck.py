@@ -98,7 +98,7 @@ class CombatCheck:
                 logger.info(f'set count_down to {self.has_count_down}  {numbers} {count_down:.2f}%')
             return self.has_count_down
 
-    def check_boss(self, in_team):
+    def check_boss(self):
         current = self.boss_lv_box.crop_frame(self.frame)
         max_val = 0
         if current is not None:
@@ -109,7 +109,7 @@ class CombatCheck:
                 self.screenshot_boss_lv(current, f'boss lv not detected by edge {max_val}')
             logger.debug(f'boss lv not detected by edge')
             if not self.find_boss_lv_text():  # double check by text
-                if not in_team and not self.check_health_bar() and not self.check_count_down() and not self.find_target_enemy():
+                if not self.check_health_bar() and not self.check_count_down() and not self.find_target_enemy():
                     if self.debug:
                         self.screenshot_boss_lv(current, 'out_of combat boss_health disappeared')
                     logger.info(f'out of combat because of boss_health disappeared, res:{max_val}')
@@ -135,9 +135,13 @@ class CombatCheck:
                 frame[y:y + h, x:x + w] = self.boss_lv_template
                 self.screenshot(name, frame)
 
+    @property
+    def target_area_box(self):
+        return self.box_of_screen(0.1, 0.10, 0.9, 0.9, hcenter=True, name="target_area_box")
+
     def find_target_enemy(self):
         start = time.time()
-        target_enemy = self.find_one('target_enemy_white', box=self.box_of_screen(0.20, 0.20, 0.8, 0.8, hcenter=True),
+        target_enemy = self.find_one('target_enemy_white', box=self.target_area_box,
                                      use_gray_scale=True, threshold=0.83,
                                      frame_processor=process_target_enemy_area)
         # if self.debug and target_enemy is not None:
@@ -153,26 +157,23 @@ class CombatCheck:
             now = time.time()
             if now - self.last_combat_check > self.combat_check_interval:
                 self.last_combat_check = now
-                in_team = self.in_team()[0]
-                if not in_team:
+                if not self.in_team()[0]:
                     return self.reset_to_false(recheck=False, reason="not in team")
                 if self.check_count_down():
                     return True
                 if self.boss_lv_template is not None:
-                    if self.check_boss(in_team):
+                    if self.check_boss():
                         return True
                     else:
                         return self.reset_to_false(recheck=False, reason="boss disappear")
-                if not self.check_health_bar():
-                    logger.debug('no health bar')
-                    if not self.target_enemy():
-                        logger.error('target_enemy failed, break out of combat')
-                        return self.reset_to_false(reason='target enemy failed')
+                if self.check_health_bar():
                     return True
-                else:
-                    logger.debug(
-                        'check in combat pass')
+                if self.ocr_lv_text():
                     return True
+                if self.target_enemy():
+                    return True
+                logger.error('target_enemy failed, break out of combat')
+                return self.reset_to_false(reason='target enemy failed')
             else:
                 return True
         else:
@@ -187,6 +188,12 @@ class CombatCheck:
                 self._in_combat = True
                 return True
 
+    def ocr_lv_text(self):
+        lvs = self.ocr(box=self.target_area_box,
+                       match=re.compile(r'lv\.\d{1,3}', re.IGNORECASE),
+                       target_height=540, name='lv_text', log=True)
+        return lvs
+
     def target_enemy(self, wait=True):
         if not wait:
             self.middle_click()
@@ -194,13 +201,13 @@ class CombatCheck:
             if self.find_target_enemy():
                 return True
             self.middle_click()
-            return self.wait_until(self.find_target_enemy, time_out=2)
+            return self.wait_until(self.find_target_enemy, time_out=2.5)
 
     def check_health_bar(self):
         if self._in_combat:
-            min_height = self.height_of_screen(10 / 2160)
+            min_height = self.height_of_screen(12 / 2160)
             max_height = min_height * 3
-            min_width = self.width_of_screen(15 / 3840)
+            min_width = self.width_of_screen(12 / 3840)
         else:
             min_height = self.height_of_screen(12 / 2160)
             max_height = min_height * 3
@@ -212,7 +219,7 @@ class CombatCheck:
             self.draw_boxes('enemy_health_bar_red', boxes, color='blue')
             return True
         else:
-            boxes = find_color_rectangles(self.frame, boss_health_color, min_width * 3, min_height * 1.3,
+            boxes = find_color_rectangles(self.frame, boss_health_color, min_width, min_height * 1.3,
                                           box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 200 / 2160))
             if len(boxes) == 1:
                 self.boss_health_box = boxes[0]
