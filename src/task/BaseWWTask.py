@@ -192,6 +192,12 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         highest_index = 0
         threshold = 0.02
         for i in range(4):
+            if self.find_f_with_text(target_text=self.absorb_echo_text):
+                self.send_key('f')
+                if not self.handle_claim_button():
+                    logger.debug(f'farm echo found echo before turn and find')
+                    self.sleep(0.5)
+                    return True
             self.middle_click_relative(0.5, 0.5, down_time=0.2)
             self.sleep(1)
             color_percent = self.calculate_color_percentage(echo_color, box)
