@@ -6,6 +6,8 @@ from src.char.Chixia import Chixia
 from src.char.Danjin import Danjin
 from src.char.Jinhsi import Jinhsi
 from src.char.Yuanwu import Yuanwu
+from src.char.Jiyan import Jiyan
+from src.char.Mortefi import Mortefi
 
 
 def get_char_by_pos(task, box, index):
@@ -31,7 +33,9 @@ def get_char_by_pos(task, box, index):
         'char_chixia': {'cls': Chixia, 'res_cd': 9, 'echo_cd': 20},
         'char_danjin': {'cls': Danjin, 'res_cd': 9999999, 'echo_cd': 20},
         'char_baizhi': {'cls': Baizhi, 'res_cd': 16, 'echo_cd': 20},
-        'char_calcharo': {'cls': Calcharo, 'res_cd': 99999, 'echo_cd': 20}
+        'char_calcharo': {'cls': Calcharo, 'res_cd': 99999, 'echo_cd': 20},
+        'char_jiyan': {'cls': Jiyan, 'res_cd': 16, 'echo_cd': 20},
+        'char_mortefi': {'cls': Mortefi, 'res_cd': 14, 'echo_cd': 20},
     }
     highest_confidence = 0
     info = None
