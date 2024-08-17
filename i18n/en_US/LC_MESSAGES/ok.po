@@ -305,3 +305,108 @@ msgstr ""
 
 msgid "teleport to Lampylumen Myriad index 7"
 msgstr ""
+
+msgid "4"
+msgstr ""
+
+msgid "4C舍弃"
+msgstr ""
+
+msgid "Game Sound"
+msgstr ""
+
+msgid "Mute Game while in Background"
+msgstr ""
+
+msgid "Pick Up Black List"
+msgstr ""
+
+msgid "Pick Up White List"
+msgstr ""
+
+msgid "不绝余音"
+msgstr ""
+
+msgid "主属性攻击力百分比"
+msgstr ""
+
+msgid "主属性生命值百分比"
+msgstr ""
+
+msgid "主属性防御力百分比"
+msgstr ""
+
+msgid "全部未加锁"
+msgstr ""
+
+msgid "凝夜白霜"
+msgstr ""
+
+msgid "啸谷长风"
+msgstr ""
+
+msgid "在数据坞五合一界面启动"
+msgstr ""
+
+msgid "处理声骸COST"
+msgstr ""
+
+msgid "彻空冥雷"
+msgstr ""
+
+msgid "数据坞五合一 + 自动上锁, 游戏语言必须为简体中文,必须16:9分辨率"
+msgstr ""
+
+msgid "沉日劫明"
+msgstr ""
+
+msgid "浮星祛暗"
+msgstr ""
+
+msgid "熔山裂谷"
+msgstr ""
+
+msgid "轻云出月"
+msgstr ""
+
+msgid "锁定_1C_攻击"
+msgstr ""
+
+msgid "锁定_1C_生命"
+msgstr ""
+
+msgid "锁定_1C_防御"
+msgstr ""
+
+msgid "锁定_3C_共鸣效率"
+msgstr ""
+
+msgid "锁定_3C_冷凝伤害加成"
+msgstr ""
+
+msgid "锁定_3C_导电伤害加成"
+msgstr ""
+
+msgid "锁定_3C_攻击"
+msgstr ""
+
+msgid "锁定_3C_气动伤害加成"
+msgstr ""
+
+msgid "锁定_3C_湮灭伤害加成"
+msgstr ""
+
+msgid "锁定_3C_热熔伤害加成"
+msgstr ""
+
+msgid "锁定_3C_生命"
+msgstr ""
+
+msgid "锁定_3C_衍射伤害加成"
+msgstr ""
+
+msgid "锁定_3C_防御"
+msgstr ""
+
+msgid "隐世回光"
+msgstr ""
