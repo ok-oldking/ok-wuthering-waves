@@ -104,15 +104,17 @@ class Jinhsi(BaseChar):
             self.logger.info(f'handle_intro in cd switch {start - self.last_fly_e_time}')
             return
 
+        clicked_resonance = False
         while True:
             self.task.next_frame()
             self.check_combat()
             if not self.has_cd('resonance'):
                 self.send_resonance_key(interval=0.1)
-                if time.time() - self.last_fly_e_time > 7:
+                if not clicked_resonance:
+                    clicked_resonance = True
                     self.last_fly_e_time = time.time()
                 continue
-            if time.time() - start < 4:
+            if time.time() - start < 3 and not clicked_resonance:
                 self.task.click(interval=0.1)
                 continue
             if self.task.debug:
