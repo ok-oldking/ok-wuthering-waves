@@ -20,7 +20,7 @@ class Jinhsi(BaseChar):
         elif self.has_intro or self.incarnation_cd:
             self.handle_intro()
             return self.switch_next_char()
-        if self.time_elapsed_accounting_for_freeze(self.task.combat_start) < 5:
+        if self.time_elapsed_accounting_for_freeze(self.task.combat_start) < 5 or self.last_fly_e_time == 0:
             self.click_liberation()
         self.click_echo()
         return self.switch_next_char()
@@ -50,7 +50,7 @@ class Jinhsi(BaseChar):
         return 0
 
     def count_echo_priority(self):
-        return 0
+        return 10
 
     def count_liberation_priority(self):
         return 0
@@ -63,12 +63,9 @@ class Jinhsi(BaseChar):
         last_op = 'resonance'
         self.task.in_liberation = False
         while True:
-            if time.time() - start > 5:
+            if time.time() - start > 6:
                 self.logger.info(f'handle incarnation too long')
                 break
-            if time.time() - animation_start < 1.5:
-                continue
-            self.task.next_frame()
             if self.task.in_team()[0]:
                 if last_op == 'resonance':
                     self.task.click(interval=0.1)
@@ -85,7 +82,7 @@ class Jinhsi(BaseChar):
                     animation_start = time.time()
                 self.task.in_liberation = True
             self.check_combat()
-
+            self.task.next_frame()
         self.task.in_liberation = False
 
         if not self.click_echo():
@@ -98,7 +95,8 @@ class Jinhsi(BaseChar):
         # self.task.screenshot(f'handle_intro start')
         self.logger.info(f'handle_intro start')
         start = time.time()
-        if self.time_elapsed_accounting_for_freeze(self.last_fly_e_time) < 10.5:
+        if (self.time_elapsed_accounting_for_freeze(self.last_fly_e_time) < 10.5 or self.has_cd(
+                'resonance')) and not self.incarnation_cd:
             self.incarnation_cd = True
             self.click_echo()
             self.logger.info(f'handle_intro in cd switch {start - self.last_fly_e_time}')
@@ -114,8 +112,13 @@ class Jinhsi(BaseChar):
                     clicked_resonance = True
                     self.last_fly_e_time = time.time()
                 continue
-            if time.time() - start < 3 and not clicked_resonance:
-                self.task.click(interval=0.1)
+            if time.time() - self.last_fly_e_time > 2.5:
+                break
+            if time.time() - start < 4:
+                if not clicked_resonance:
+                    self.task.click(interval=0.1)
+                else:
+                    clicked_resonance = False
                 continue
             if self.task.debug:
                 self.task.screenshot(f'handle_intro e end {time.time() - start}')

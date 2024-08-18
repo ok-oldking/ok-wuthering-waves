@@ -111,6 +111,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             if current_con == 1:
                 has_intro = True
         low_con = 200
+
         for i, char in enumerate(self.chars):
             if char == current_char:
                 priority = Priority.CURRENT_CHAR
@@ -121,6 +122,10 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             if target_low_con:
                 if char.current_con < low_con and char != current_char:
                     low_con = char.current_con
+                    switch_to = char
+            elif priority == max_priority:
+                if char.last_perform < switch_to.last_perform:
+                    logger.debug(f'switch priority equal, determine by last perform')
                     switch_to = char
             elif priority > max_priority:
                 max_priority = priority
@@ -208,7 +213,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             else:
                 # self.logger.debug(f"{box_name} has invalid return False")
                 invalid_count += 1
-                # return False
+                return False
 
             # Draw the connected component with a random color
             # mask = labels == i

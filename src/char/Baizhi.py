@@ -6,6 +6,9 @@ class Baizhi(BaseChar):
     def count_base_priority(self):
         return -1
 
+    def count_echo_priority(self):
+        return 0
+
     def do_perform(self):
         if self.has_intro:
             self.logger.debug('has_intro wait click 1.2 sec')
