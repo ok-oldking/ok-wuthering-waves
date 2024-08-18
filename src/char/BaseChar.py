@@ -316,6 +316,8 @@ class BaseChar:
             priority += self.count_resonance_priority()
         if self.count_forte_priority() and self._is_forte_full:
             priority += self.count_forte_priority()
+        if self.echo_available():
+            priority += self.count_echo_priority()
         if priority > 0:
             priority += Priority.SKILL_AVAILABLE
         priority += self.count_liberation_priority()
