@@ -187,13 +187,13 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
             return True
 
     def turn_and_find_echo(self):
+        if self.walk_until_f(target_text=self.absorb_echo_text(), raise_if_not_found=False):
+              return True
         box = self.box_of_screen(0.25, 0.20, 0.75, 0.53, hcenter=True)
         highest_percent = 0
         highest_index = 0
-        threshold = 0.02
-        for i in range(4):
-            if self.walk_until_f(target_text=self.absorb_echo_text(), raise_if_not_found=False):
-              return True
+        threshold = 0.02        
+        for i in range(4):            
             self.middle_click_relative(0.5, 0.5, down_time=0.2)
             self.sleep(1)
             color_percent = self.calculate_color_percentage(echo_color, box)
