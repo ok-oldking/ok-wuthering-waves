@@ -10,7 +10,7 @@ class Yuanwu(BaseChar):
         return 0
 
     def count_base_priority(self):
-        return -2
+        return -1
 
     def do_perform(self):
         self.click_liberation(con_less_than=1)
