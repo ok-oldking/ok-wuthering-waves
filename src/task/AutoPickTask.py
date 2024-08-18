@@ -15,6 +15,10 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
         self.name = "Auto Pick"
         self.description = "Auto Pick Flowers in Game World"
         self.icon = FluentIcon.SHOPPING_CART
+        self.default_config.update({
+            'Pick Up White List': ['吸收', 'Absorb'],
+            'Pick Up Black List': ['开始合成']
+        })
 
     def run(self):
         self.send_key('f')
@@ -27,20 +31,28 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
     def trigger(self):
         if f := self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box,
                               threshold=0.8):
-            dialog_search = f.copy(x_offset=f.width * 2, width_offset=f.width * 2, height_offset=f.height * 2,
+            dialog_search = f.copy(x_offset=f.width * 3, width_offset=f.width * 2, height_offset=f.height * 2,
                                    y_offset=-f.height,
                                    name='search_dialog')
+
+            text_area = dialog_search.copy(x_offset=dialog_search.width, width_offset=f.width * 6,
+                                           height_offset=0,
+                                           y_offset=0)
             dialog_3_dots = self.find_feature('dialog_3_dots', box=dialog_search,
                                               threshold=0.8)
-            if dialog_3_dots and self.absorb_echo_text:
-                search_absorb = dialog_3_dots[0].copy(x_offset=f.width * 2, width_offset=f.width * 6,
-                                                      height_offset=1.4 * f.height,
-                                                      y_offset=-0.7 * f.height)
-                # absorb = self.find_one(self.absorb_echo_feature, box=search_absorb, canny_lower=75, canny_higher=150,
-                #                        threshold=0.65)
-                absorb = self.ocr(box=search_absorb, match=self.absorb_echo_text, log=True, target_height=540)
-                logger.debug(f'auto_pick try to search for absorb {self.absorb_echo_text} {absorb}')
-                if absorb:
-                    return True
-            if not dialog_3_dots:
+
+            if dialog_3_dots:
+                if self.config.get('Pick Up White List'):
+                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up White List'), log=True,
+                                     target_height=540)
+                    if texts:
+                        logger.info(f'found Pick Up White List {texts}')
+                        return True
+            else:
+                if self.config.get('Pick Up Black List'):
+                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up Black List'), log=True,
+                                     target_height=540)
+                    if texts:
+                        logger.info(f'found Pick Up Black List: {texts}')
+                        return False
                 return True

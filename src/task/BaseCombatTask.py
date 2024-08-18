@@ -90,7 +90,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 if total_index > 2 and (total_index + 1) % 2 == 0:
                     duration += step
                 picked = self.send_key_and_wait_f(direction, False, time_out=duration, running=True,
-                                                  target_text=self.absorb_echo_text)
+                                                  target_text=self.absorb_echo_text())
                 if picked:
                     self.mouse_up(key="right")
                     return True
@@ -144,9 +144,9 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 if confirm:
                     self.log_info(f'char dead')
                     self.raise_not_in_combat(f'char dead', exception_type=CharDeadException)
-                else:
-                    self.raise_not_in_combat(
-                        f'not in team while switching chars_{current_char}_to_{switch_to}')
+                # else:
+                #     self.raise_not_in_combat(
+                #         f'not in team while switching chars_{current_char}_to_{switch_to}')
             if now - start > 10:
                 self.raise_not_in_combat(
                     f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
