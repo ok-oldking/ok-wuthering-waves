@@ -4,13 +4,14 @@ import time
 
 import win32api
 
+from ok.color.Color import get_connected_area_by_color
 from ok.config.ConfigOption import ConfigOption
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
 from ok.util.list import safe_get
 from src.char import BaseChar
-from src.char.BaseChar import Priority
+from src.char.BaseChar import Priority, dot_color
 from src.char.CharFactory import get_char_by_pos
 from src.combat.CombatCheck import CombatCheck
 from src.task.BaseWWTask import BaseWWTask
@@ -129,7 +130,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             if time.time() - current_char.last_perform < 0.1:
                 current_char.continues_normal_attack(0.2)
                 logger.warning(f"can't find next char to switch to, performing too fast add a normal attack")
-            return current_char.perform()
+            return current_char.switch_next_char()
         switch_to.has_intro = has_intro
         logger.info(f'switch_next_char {current_char} -> {switch_to} has_intro {has_intro}')
         last_click = 0
@@ -171,6 +172,52 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         if post_action:
             post_action()
         logger.info(f'switch_next_char end {(current_char.last_switch_time - start):.3f}s')
+
+    def has_resonance_cd(self):
+        return self.has_cd('resonance')
+
+    def has_cd(self, box_name):
+        box = self.get_box_by_name(f'box_{box_name}')
+        cropped = box.crop_frame(self.frame)
+        num_labels, stats, labels = get_connected_area_by_color(cropped, dot_color, connectivity=8, gray_range=22)
+        big_area_count = 0
+        has_dot = False
+        number_count = 0
+        invalid_count = 0
+        # output_image = cropped.copy()
+        for i in range(1, num_labels):
+            # Check if the connected co  mponent touches the border
+            left, top, width, height, area = stats[i]
+            if area / self.frame.shape[0] / self.frame.shape[
+                1] > 20 / 3840 / 2160:
+                big_area_count += 1
+            if left > 0 and top > 0 and left + width < box.width and top + height < box.height:
+                # self.logger.debug(f"{box_name} Area of connected component {i}: {area} pixels {width}x{height} ")
+                if 16 / 3840 / 2160 <= area / self.frame.shape[0] / self.frame.shape[
+                    1] <= 90 / 3840 / 2160 and abs(width - height) / (
+                        width + height) < 0.3:
+                    # if  top < (
+                    #     box.height / 2) and left > box.width * 0.2 and left + width < box.width * 0.8:
+                    has_dot = True
+                    #     self.logger.debug(f"{box_name} multiple dots return False")
+                    #     return False
+                    # dot = stats[i]
+                elif 25 / 2160 <= height / self.screen_height <= 45 / 2160 and 5 / 2160 <= width / self.screen_height <= 35 / 2160:
+                    number_count += 1
+            else:
+                self.logger.debug(f"{box_name} has invalid return False")
+                invalid_count += 1
+                # return False
+
+            # Draw the connected component with a random color
+            # mask = labels == i
+            # import numpy as np
+            # output_image[mask] = np.random.randint(0, 255, size=3)
+        # if self.debug:
+        #     self.screenshot(f'{self}_{box_name}_has_cd', output_image)
+        has_cd = (has_dot and 2 <= number_count <= 3)
+        self.logger.debug(f'{box_name} has_cd {has_cd} {invalid_count} {number_count} {has_dot}')
+        return has_cd
 
     def get_current_char(self) -> BaseChar:
         for char in self.chars:
