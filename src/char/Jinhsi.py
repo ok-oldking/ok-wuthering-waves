@@ -44,7 +44,7 @@ class Jinhsi(BaseChar):
             return super().do_get_switch_priority(current_char, has_intro)
 
     def count_base_priority(self):
-        return 0
+        return -3
 
     def count_resonance_priority(self):
         return 0
@@ -60,6 +60,7 @@ class Jinhsi(BaseChar):
         self.logger.info(f'handle_incarnation click_resonance start')
         start = time.time()
         while True:
+            self.task.click(interval=0.1)
             current_res = self.current_resonance()
             if current_res > 0 and not self.has_cd('resonance'):
                 self.logger.info(f'handle_incarnation current_res: {current_res} breaking')
@@ -67,7 +68,6 @@ class Jinhsi(BaseChar):
                     self.task.screenshot(f'handle_incarnation e available')
                 # self.send_resonance_key()
                 break
-            self.task.click(interval=0.1)
             self.check_combat()
 
         self.click_resonance(has_animation=True, animation_min_duration=1)
