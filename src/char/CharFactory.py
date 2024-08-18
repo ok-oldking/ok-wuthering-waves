@@ -5,9 +5,10 @@ from src.char.CharSkillButton import is_float
 from src.char.Chixia import Chixia
 from src.char.Danjin import Danjin
 from src.char.Jinhsi import Jinhsi
-from src.char.Yuanwu import Yuanwu
 from src.char.Jiyan import Jiyan
 from src.char.Mortefi import Mortefi
+from src.char.Yuanwu import Yuanwu
+from src.char.Zhezhi import Zhezhi
 
 
 def get_char_by_pos(task, box, index):
@@ -24,6 +25,7 @@ def get_char_by_pos(task, box, index):
         'char_verina': {'cls': Verina, 'res_cd': 12, 'echo_cd': 20},
         'char_taoqi': {'cls': Taoqi, 'res_cd': 15, 'echo_cd': 20},
         'char_rover': {'cls': HavocRover, 'res_cd': 12, 'echo_cd': 20},
+        'char_rover_male': {'cls': HavocRover, 'res_cd': 12, 'echo_cd': 20},
         'char_encore': {'cls': Encore, 'res_cd': 10, 'echo_cd': 20},
         'char_jianxin': {'cls': Jianxin, 'res_cd': 12, 'echo_cd': 20},
         'char_sanhua': {'cls': Sanhua, 'res_cd': 10, 'echo_cd': 20},
@@ -36,6 +38,7 @@ def get_char_by_pos(task, box, index):
         'char_calcharo': {'cls': Calcharo, 'res_cd': 99999, 'echo_cd': 20},
         'char_jiyan': {'cls': Jiyan, 'res_cd': 16, 'echo_cd': 20},
         'char_mortefi': {'cls': Mortefi, 'res_cd': 14, 'echo_cd': 20},
+        'char_zhezhi': {'cls': Zhezhi, 'res_cd': 6, 'echo_cd': 20},
     }
     highest_confidence = 0
     info = None

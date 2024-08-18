@@ -22,12 +22,7 @@ class Jinhsi(BaseChar):
             return self.switch_next_char()
         if self.time_elapsed_accounting_for_freeze(self.task.combat_start) < 5:
             self.click_liberation()
-        if self.click_echo():
-            pass
-        elif self.time_elapsed_accounting_for_freeze(self.last_free_intro) < 8 and self.click_resonance()[0]:
-            pass
-        else:
-            self.continues_normal_attack(0.31)
+        self.click_echo()
         return self.switch_next_char()
 
     def reset_state(self):
@@ -85,16 +80,9 @@ class Jinhsi(BaseChar):
     def handle_intro(self):
         # self.task.screenshot(f'handle_intro start')
         self.logger.info(f'handle_intro  start')
-        last = None
         start = time.time()
-        self.send_resonance_key()
         while not self.has_cd('resonance'):
-            if last != 'resonance' or time.time() - start < 1:
-                if self.send_resonance_key(interval=0.1):
-                    last = 'resonance'
-            else:
-                if self.task.click(interval=0.1):
-                    last = 'click'
+            self.send_resonance_key(interval=0.1)
             self.check_combat()
         if time.time() - start < 1.2:
             self.logger.info(f'handle_intro fly e in_cd {time.time() - start}')

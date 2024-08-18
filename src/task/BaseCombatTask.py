@@ -98,7 +98,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
 
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
         max_priority = Priority.MIN
-        switch_to = None
+        switch_to = current_char
         has_intro = free_intro
         if not has_intro:
             current_con = current_char.get_current_con()
@@ -109,22 +109,25 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 current_con = current_char.get_current_con()
             if current_con == 1:
                 has_intro = True
+        low_con = 200
         for i, char in enumerate(self.chars):
             if char == current_char:
                 priority = Priority.CURRENT_CHAR
             else:
                 priority = char.get_switch_priority(current_char, has_intro)
-                if target_low_con:
-                    priority += (1 - char.current_con) * 1000 - Priority.SWITCH_CD
                 logger.info(
                     f'switch_next_char priority: {char} {priority} {char.current_con} target_low_con {target_low_con}')
-            if priority > max_priority:
+            if target_low_con:
+                if char.current_con < low_con and char != current_char:
+                    low_con = char.current_con
+                    switch_to = char
+            elif priority > max_priority:
                 max_priority = priority
                 switch_to = char
         if switch_to == current_char:
             logger.warning(f"can't find next char to switch to, maybe switching too fast click and wait")
             if time.time() - current_char.last_perform < 0.1:
-                current_char.continues_normal_attack(0.1)
+                current_char.continues_normal_attack(0.2)
                 logger.warning(f"can't find next char to switch to, performing too fast add a normal attack")
             return current_char.perform()
         switch_to.has_intro = has_intro
