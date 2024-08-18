@@ -187,6 +187,8 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
             return True
 
     def turn_and_find_echo(self):
+        if self.walk_until_f(target_text=self.absorb_echo_text(), raise_if_not_found=False):
+              return True
         box = self.box_of_screen(0.25, 0.20, 0.75, 0.53, hcenter=True)
         highest_percent = 0
         highest_index = 0
