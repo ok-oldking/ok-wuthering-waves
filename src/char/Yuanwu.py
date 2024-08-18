@@ -18,8 +18,5 @@ class Yuanwu(BaseChar):
             self.continues_normal_attack(1.2)
         if self.is_forte_full():
             self.send_resonance_key(down_time=0.7, post_sleep=0.2)
-        elif self.click_echo():
-            pass
-        else:
-            self.continues_normal_attack(0.31)
+        self.click_echo()
         self.switch_next_char()
