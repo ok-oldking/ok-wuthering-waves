@@ -5,7 +5,7 @@ from typing import Any
 import cv2
 import numpy as np
 
-from ok.color.Color import get_connected_area_by_color, color_range_to_bound
+from ok.color.Color import color_range_to_bound
 from ok.config.Config import Config
 from ok.logging.Logger import get_logger
 from src import text_white_color
@@ -97,46 +97,7 @@ class BaseChar:
         self.switch_next_char()
 
     def has_cd(self, box_name):
-        box = self.task.get_box_by_name(f'box_{box_name}')
-        cropped = box.crop_frame(self.task.frame)
-        num_labels, stats, labels = get_connected_area_by_color(cropped, dot_color, connectivity=8, gray_range=22)
-        big_area_count = 0
-        has_dot = False
-        number_count = 0
-        invalid_count = 0
-        # output_image = cropped.copy()
-        for i in range(1, num_labels):
-            # Check if the connected co  mponent touches the border
-            left, top, width, height, area = stats[i]
-            if area / self.task.frame.shape[0] / self.task.frame.shape[
-                1] > 20 / 3840 / 2160:
-                big_area_count += 1
-            if left > 0 and top > 0 and left + width < box.width and top + height < box.height:
-                # self.logger.debug(f"{box_name} Area of connected component {i}: {area} pixels {width}x{height} ")
-                if 16 / 3840 / 2160 <= area / self.task.frame.shape[0] / self.task.frame.shape[
-                    1] <= 90 / 3840 / 2160 and abs(width - height) / (
-                        width + height) < 0.3:
-                    # if  top < (
-                    #     box.height / 2) and left > box.width * 0.2 and left + width < box.width * 0.8:
-                    has_dot = True
-                    #     self.logger.debug(f"{box_name} multiple dots return False")
-                    #     return False
-                    # dot = stats[i]
-                elif 25 / 2160 <= height / self.task.screen_height <= 45 / 2160 and 5 / 2160 <= width / self.task.screen_height <= 35 / 2160:
-                    number_count += 1
-            else:
-                # self.logger.debug(f"{box_name} has invalid return False")
-                invalid_count += 1
-                return False
-
-            # Draw the connected component with a random color
-            # mask = labels == i
-            # output_image[mask] = np.random.randint(0, 255, size=3)
-        # if self.task.debug:
-        #     self.task.screenshot(f'{self}_{box_name}_has_cd', output_image)
-        has_cd = invalid_count == 0 and (has_dot and 2 <= number_count <= 3)
-        # self.logger.debug(f'{box_name} has_cd {has_cd} {invalid_count} {number_count} {has_dot}')
-        return has_cd
+        return self.task.has_cd(box_name)
 
     def is_available(self, percent, box_name):
         return percent == 0 or not self.has_cd(box_name)
