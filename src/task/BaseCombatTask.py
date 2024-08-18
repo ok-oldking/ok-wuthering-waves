@@ -130,7 +130,8 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             if time.time() - current_char.last_perform < 0.1:
                 current_char.continues_normal_attack(0.2)
                 logger.warning(f"can't find next char to switch to, performing too fast add a normal attack")
-            return current_char.switch_next_char()
+            return self.switch_next_char(current_char, post_action=post_action, free_intro=free_intro,
+                                         target_low_con=target_low_con)
         switch_to.has_intro = has_intro
         logger.info(f'switch_next_char {current_char} -> {switch_to} has_intro {has_intro}')
         last_click = 0
@@ -142,18 +143,17 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 last_click = now
             in_team, current_index, size = self.in_team()
             if not in_team:
+                logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
                 if self.debug:
                     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=3)
+                confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2)
                 if confirm:
                     self.log_info(f'char dead')
                     self.raise_not_in_combat(f'char dead', exception_type=CharDeadException)
-                # else:
-                #     self.raise_not_in_combat(
-                #         f'not in team while switching chars_{current_char}_to_{switch_to}')
-            if now - start > 10:
-                self.raise_not_in_combat(
-                    f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
+                if now - start > 5:
+                    self.raise_not_in_combat(
+                        f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
+                continue
             if current_index != switch_to.index:
                 has_intro = free_intro if free_intro else current_char.is_con_full()
                 switch_to.has_intro = has_intro
@@ -184,6 +184,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         has_dot = False
         number_count = 0
         invalid_count = 0
+        # dot = None
         # output_image = cropped.copy()
         for i in range(1, num_labels):
             # Check if the connected co  mponent touches the border
@@ -195,7 +196,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 # self.logger.debug(f"{box_name} Area of connected component {i}: {area} pixels {width}x{height} ")
                 if 16 / 3840 / 2160 <= area / self.frame.shape[0] / self.frame.shape[
                     1] <= 90 / 3840 / 2160 and abs(width - height) / (
-                        width + height) < 0.3:
+                        width + height) < 0.3 and top / cropped.shape[0] > 0.6:
                     # if  top < (
                     #     box.height / 2) and left > box.width * 0.2 and left + width < box.width * 0.8:
                     has_dot = True
@@ -205,7 +206,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 elif 25 / 2160 <= height / self.screen_height <= 45 / 2160 and 5 / 2160 <= width / self.screen_height <= 35 / 2160:
                     number_count += 1
             else:
-                self.logger.debug(f"{box_name} has invalid return False")
+                # self.logger.debug(f"{box_name} has invalid return False")
                 invalid_count += 1
                 # return False
 

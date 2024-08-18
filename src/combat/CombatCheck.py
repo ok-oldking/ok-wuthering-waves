@@ -151,7 +151,7 @@ class CombatCheck:
 
     def in_combat(self, rechecked=False):
         if self.in_liberation or self.recent_liberation():
-            logger.debug('in liberation return True')
+            # logger.debug('in liberation return True')
             return True
         if self._in_combat:
             now = time.time()
