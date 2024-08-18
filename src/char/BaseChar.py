@@ -266,6 +266,11 @@ class BaseChar:
             self.task.next_frame()
         self.logger.debug(f'click_echo end {clicked}')
         return clicked
+    
+    def click_jump(self, sleep_time=0):
+        self.check_combat()
+        self.task.send_key('space')
+        self.task.next_frame()
 
     def check_combat(self):
         self.task.check_combat()
