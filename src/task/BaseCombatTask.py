@@ -131,10 +131,10 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 max_priority = priority
                 switch_to = char
         if switch_to == current_char:
-            logger.warning(f"can't find next char to switch to, maybe switching too fast click and wait")
-            if time.time() - current_char.last_perform < 0.1:
-                current_char.continues_normal_attack(0.2)
-                logger.warning(f"can't find next char to switch to, performing too fast add a normal attack")
+            # logger.warning(f"can't find next char to switch to, maybe switching too fast click and wait")
+            # if time.time() - current_char.last_perform < 0.1:
+            current_char.continues_normal_attack(0.2)
+            logger.warning(f"can't find next char to switch to, performing too fast add a normal attack")
             return self.switch_next_char(current_char, post_action=post_action, free_intro=free_intro,
                                          target_low_con=target_low_con)
         switch_to.has_intro = has_intro
