@@ -162,7 +162,7 @@ class CombatCheck:
                 if self.check_count_down():
                     return True
                 if self.boss_lv_template is not None:
-                    if self.check_boss():
+                    if self.wait_until(self.check_boss, time_out=1.5):
                         return True
                     else:
                         return self.reset_to_false(recheck=False, reason="boss disappear")
