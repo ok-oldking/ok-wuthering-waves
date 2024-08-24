@@ -27,6 +27,7 @@ config = {
         'lib': 'RapidOCR'
     },
     'start_timeout': 120,  # default 60
+    'wait_until_before_delay': 0,  # default 1 , for wait_until() function
     # required if using feature detection
     'template_matching': {
         'coco_feature_json': os.path.join('assets', '_annotations.coco.json'),
