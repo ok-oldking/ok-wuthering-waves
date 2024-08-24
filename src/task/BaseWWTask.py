@@ -188,7 +188,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
 
     def turn_and_find_echo(self):
         if self.walk_until_f(target_text=self.absorb_echo_text(), raise_if_not_found=False):
-              return True
+            return True
         box = self.box_of_screen(0.25, 0.20, 0.75, 0.53, hcenter=True)
         highest_percent = 0
         highest_index = 0
@@ -243,17 +243,17 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
 
     def handle_monthly_card(self):
         monthly_card = self.find_one('monthly_card', threshold=0.8)
-        self.screenshot('monthly_card1')
+        # self.screenshot('monthly_card1')
         if monthly_card is not None:
-            self.screenshot('monthly_card1')
+            # self.screenshot('monthly_card1')
             self.click_relative(0.50, 0.89)
             self.sleep(2)
-            self.screenshot('monthly_card2')
+            # self.screenshot('monthly_card2')
             self.click_relative(0.50, 0.89)
             self.sleep(2)
             self.wait_until(self.in_team_and_world, time_out=10, post_action=lambda: self.click_relative(0.50, 0.89),
                             wait_until_before_delay=1)
-            self.screenshot('monthly_card3')
+            # self.screenshot('monthly_card3')
             self.set_check_monthly_card(next_day=True)
         logger.debug(f'check_monthly_card {monthly_card}')
         return monthly_card is not None
