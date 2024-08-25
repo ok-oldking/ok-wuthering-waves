@@ -231,7 +231,8 @@ class FiveToOneTask(BaseCombatTask):
 
     def handle_confirm(self):
         if not self.confirmed:
-            confirm = self.wait_feature('data_merge_confirm_hcenter_vcenter', time_out=3, raise_if_not_found=False)
+            confirm = self.wait_feature('data_merge_confirm_hcenter_vcenter', time_out=3, raise_if_not_found=False,
+                                        wait_until_before_delay=1.5)
             if confirm:
                 self.click_relative(0.44, 0.55)
                 self.sleep(0.5)
