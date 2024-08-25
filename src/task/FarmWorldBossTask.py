@@ -179,7 +179,8 @@ class FarmWorldBossTask(BaseCombatTask):
                             self.sleep(2)
                             logger.info('Crownless walk to f')
                             self.walk_until_f(raise_if_not_found=True, time_out=4, backward_time=1)
-                            in_combat = self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10)
+                            in_combat = self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10,
+                                                        wait_until_before_delay=0)
                             if not in_combat:  # try click again
                                 self.walk_until_f(raise_if_not_found=True, time_out=4)
                         elif boss_name == 'Bell-Borne Geochelone':
