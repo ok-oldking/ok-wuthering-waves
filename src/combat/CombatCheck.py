@@ -99,7 +99,10 @@ class CombatCheck:
             return self.has_count_down
 
     def check_boss(self):
-        current = self.boss_lv_box.crop_frame(self.frame)
+        if self.boss_lv_box is not None:
+            current = self.boss_lv_box.crop_frame(self.frame)
+        else:
+            current = None
         max_val = 0
         if current is not None:
             res = cv2.matchTemplate(current, self.boss_lv_template, cv2.TM_CCOEFF_NORMED, mask=self.boss_lv_mask)
