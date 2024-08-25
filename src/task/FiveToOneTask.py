@@ -149,12 +149,6 @@ class FiveToOneTask(BaseCombatTask):
 
             set_name = self.find_set_name(texts)
 
-            cost = self.find_cost(texts)
-
-            if not cost:
-                self.log_error(f'无法识别声骸COST', notify=True)
-                return 0, False
-
             main_stat_boundary = self.box_of_screen(0.63, 0.40, 0.77, 0.47)
             main_stat_box = find_boxes_within_boundary(texts, main_stat_boundary)
             main_stat = "None"
@@ -164,7 +158,7 @@ class FiveToOneTask(BaseCombatTask):
                 self.log_error(f'无法识别声骸主属性{main_stat_box}', notify=True)
                 return 0, False
 
-            config_name = f'锁定_{cost}C_{main_stat}'
+            config_name = f'锁定_{self.current_cost}C_{main_stat}'
 
             sets_to_lock = self.config.get(config_name, [])
             self.log_info(f'识别声骸 {config_name} {set_name} {main_stat} ')
