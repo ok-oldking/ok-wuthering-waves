@@ -177,6 +177,22 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
             return False
         return f_found
 
+    def run_until(self, condiction, direction, time_out, raise_if_not_found=False, running=False):
+        if time_out <= 0:
+            return
+        self.send_key_down(direction)
+        if running:
+            self.mouse_down(key='right')
+        result = self.wait_until(condiction, time_out=time_out,
+                                 raise_if_not_found=raise_if_not_found, wait_until_before_delay=0)
+        self.send_key_up(direction)
+        if running:
+            self.mouse_up(key='right')
+        return result
+
+    def is_moving(self):
+        return False
+
     def handle_claim_button(self):
         if self.wait_feature('claim_cancel_button_hcenter_vcenter', raise_if_not_found=False, horizontal_variance=0.05,
                              vertical_variance=0.1, time_out=1.5, threshold=0.8, wait_until_before_delay=0.8):

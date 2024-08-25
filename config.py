@@ -84,6 +84,7 @@ config = {
     'error_log_file': 'logs/ok-script_error.log',
     'version': version,
     'onetime_tasks': [  # tasks to execute
+        # FarmWorldTask,
         FarmEchoTask,
         FarmWorldBossTask,
         FiveToOneTask,
