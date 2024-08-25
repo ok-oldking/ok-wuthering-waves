@@ -162,7 +162,7 @@ class CombatCheck:
                 if self.check_count_down():
                     return True
                 if self.boss_lv_template is not None:
-                    if self.wait_until(self.check_boss, time_out=1.5):
+                    if self.wait_until(self.check_boss, time_out=2, wait_until_before_delay=0):
                         return True
                     else:
                         return self.reset_to_false(recheck=False, reason="boss disappear")
@@ -201,7 +201,7 @@ class CombatCheck:
             if self.find_target_enemy():
                 return True
             self.middle_click()
-            return self.wait_until(self.find_target_enemy, time_out=2.5)
+            return self.wait_until(self.find_target_enemy, time_out=2.5, wait_until_before_delay=0)
 
     def check_health_bar(self):
         if self._in_combat:

@@ -255,7 +255,7 @@ class BaseChar:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
         if clicked:
-            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4):
+            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4, wait_until_before_delay=0):
                 self.task.in_liberation = True
                 self.logger.debug(f'not in_team successfully casted liberation')
             else:
