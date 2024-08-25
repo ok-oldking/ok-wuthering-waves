@@ -61,7 +61,7 @@ class Jinhsi(BaseChar):
         start = time.time()
         animation_start = 0
         last_op = 'resonance'
-        self.task.in_liberation = False
+        self.task.in_liberation = True
         while True:
             if time.time() - start > 6:
                 self.logger.info(f'handle incarnation too long')
