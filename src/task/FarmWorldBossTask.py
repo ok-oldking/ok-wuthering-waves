@@ -115,7 +115,7 @@ class FarmWorldBossTask(BaseCombatTask):
                 threshold=0.7,
                 canny_lower=50,
                 canny_higher=150),
-            time_out=3)
+            time_out=3, wait_until_before_delay=2)
         return gray_book_boss
 
     def check_main(self):
