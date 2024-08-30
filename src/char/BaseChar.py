@@ -279,8 +279,10 @@ class BaseChar:
             self.logger.info(f'click_liberation end {duration}')
         return clicked
 
-    def add_freeze_duration(self, start, duration, freeze_time=0):
-        if duration > freeze_time:
+    def add_freeze_duration(self, start, duration=-1, freeze_time=0.2):
+        if duration == -1:
+            duration = time.time() - start
+        if start > 0 and duration > freeze_time:
             current_time = time.time()
             self.freeze_durations = [item for item in self.freeze_durations if item[0] <= current_time - 15]
             self.freeze_durations.append((start, duration, freeze_time))

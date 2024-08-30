@@ -87,6 +87,8 @@ class Jinhsi(BaseChar):
 
         if not self.click_echo():
             self.task.click()
+
+        self.add_freeze_duration(animation_start)
         # if self.task.debug:
         #     self.task.screenshot(f'handle_incarnation click_resonance end {time.time() - start}')
         self.logger.info(f'handle_incarnation  click_resonance end {time.time() - start}')
@@ -117,8 +119,6 @@ class Jinhsi(BaseChar):
             if time.time() - start < 3:
                 if not clicked_resonance:
                     self.task.click(interval=0.1)
-                else:
-                    clicked_resonance = False
                 continue
             if self.task.debug:
                 self.task.screenshot(f'handle_intro e end {time.time() - start}')
