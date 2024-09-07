@@ -2,13 +2,6 @@ import os
 from pathlib import Path
 
 from ok.util.path import get_path_in_package
-from src.task.AutoCombatTask import AutoCombatTask
-from src.task.AutoPickTask import AutoPickTask
-from src.task.DiagnosisTask import DiagnosisTask
-from src.task.FarmEchoTask import FarmEchoTask
-from src.task.FarmWorldBossTask import FarmWorldBossTask
-from src.task.FiveToOneTask import FiveToOneTask
-from src.task.SkipDialogTask import AutoDialogTask
 
 version = "v5.0.11"
 
@@ -24,7 +17,7 @@ config = {
     'config_folder': 'configs',
     'gui_icon': get_path_in_package(__file__, 'icon.png'),
     'ocr': {
-        'lib': 'RapidOCR'
+        'lib': 'rapidocr_openvino'
     },
     'start_timeout': 120,  # default 60
     'wait_until_before_delay': 2,  # default 1 , for wait_until() function
@@ -55,12 +48,15 @@ config = {
     'analytics': {
         'report_url': 'http://111.231.71.225/report'
     },
-    'update': {
-        'releases_url': 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases?per_page=15',
-        'proxy_url': 'http://111.231.71.225/',
-        'exe_name': 'ok-ww.exe',
-        'use_proxy': True
-    },
+    'git_update': {'sources': [{
+        'name': 'Global',
+        'git_url': 'https://github.com/ok-oldking/ok-wuthering-waves',
+        'pip_url': 'https://pypi.org/simple/'
+    }, {
+        'name': 'China',
+        'git_url': 'https://github.com/ok-oldking/ok-wuthering-waves',
+        'pip_url': 'https://pypi.org/simple/'
+    }]},
     'about': """
     <h3>OK-WW</h3>
     <p>GitHub <a href="https://github.com/ok-oldking/ok-wuthering-waves">https://github.com/ok-oldking/ok-wuthering-waves</></p>
@@ -80,18 +76,19 @@ config = {
     'screenshots_folder': "screenshots",
     'gui_title': 'OK-WW',  # Optional
     # 'coco_feature_folder': get_path(__file__, 'assets/coco_feature'),  # required if using feature detection
-    'log_file': 'logs/ok-script.log',  # Optional, auto rotating every day
-    'error_log_file': 'logs/ok-script_error.log',
+    'log_file': 'logs/ok-ww.log',  # Optional, auto rotating every day
+    'error_log_file': 'logs/ok-ww_error.log',
+    'launcher_log_file': 'logs/launcher.log',
+    'launcher_error_log_file': 'logs/launcher_error.log',
     'version': version,
     'onetime_tasks': [  # tasks to execute
-        # FarmWorldTask,
-        FarmEchoTask,
-        FarmWorldBossTask,
-        FiveToOneTask,
-        DiagnosisTask
+        ["src.task.FarmEchoTask", "FarmEchoTask"],
+        ["src.task.FarmWorldBossTask", "FarmWorldBossTask"],
+        ["src.task.FiveToOneTask", "FiveToOneTask"],
+        ["src.task.DiagnosisTask", "DiagnosisTask"],
     ], 'trigger_tasks': [
-        AutoCombatTask,
-        AutoDialogTask,
-        AutoPickTask
+        ["src.task.AutoCombatTask", "AutoCombatTask"],
+        ["src.task.AutoPickTask", "AutoPickTask"],
+        ["src.task.SkipDialogTask", "AutoDialogTask"]
     ]
 }
