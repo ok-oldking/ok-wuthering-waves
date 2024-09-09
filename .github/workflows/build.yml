@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build exe with PyInstaller
+    name: Build exe with launcher
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
@@ -34,20 +34,15 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller  # Add other dependencies if needed
           pip install -r requirements.txt
 
       - name: Build Executable
         run: |
           echo "tag: ${{ steps.changes.outputs.tag }}"
           echo "changes: ${{ steps.changes.outputs.changes }}"
-          echo ${{ github.sha }} > Release.txt
-          (Get-Content config.py) -replace 'version = "v\d+\.\d+\.\d+"', 'version = "${{ steps.tagName.outputs.tag }}"' | Set-Content config.py
-          pyinstaller main.spec
-          copy 免责声明.txt .\dist\bundle\
-          python -m ok.update.gen_md5 .\dist\bundle
-          mv dist/bundle ok-ww
-          7z a -t7z -r "ok-ww-release-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"        
+          python -m ok.update.package_launcher ${{ steps.tagName.outputs.tag }} CPU
+          mv dist ok-ww
+          7z a -t7z -r "ok-ww-release-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"
 
         shell: pwsh
 
@@ -60,7 +55,9 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           body: |
-            下载7z的压缩包,解压运行exe,Updates：
+            下载release.7z文件然后解压缩后运行, 如果需要查找问题
+            最好使用模拟器运行安卓版，可以挂后台，稳定。PC版游戏可能兼容性较差，无法挂后台。
+            更新内容：
             ${{ steps.changes.outputs.changes }} 
           draft: false
           prerelease: true
@@ -74,7 +71,6 @@ jobs:
           asset_path: ./ok-ww-release-${{ steps.tagName.outputs.tag }}.7z
           asset_name: ok-ww-release-${{ steps.tagName.outputs.tag }}.7z
           asset_content_type: application/zip
-
 
 
 
