@@ -1,8 +1,6 @@
 import os
 from pathlib import Path
 
-from ok.util.path import get_path_in_package
-
 version = "v5.0.11"
 
 
@@ -15,7 +13,7 @@ config = {
     'debug': False,  # Optional, default: False
     'use_gui': True,
     'config_folder': 'configs',
-    'gui_icon': get_path_in_package(__file__, 'icon.png'),
+    'gui_icon': 'icon.png',
     'ocr': {
         'lib': 'rapidocr_openvino'
     },
