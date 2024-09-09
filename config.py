@@ -52,8 +52,8 @@ config = {
         'pip_url': 'https://pypi.org/simple/'
     }, {
         'name': 'China',
-        'git_url': 'https://github.com/ok-oldking/ok-wuthering-waves',
-        'pip_url': 'https://pypi.org/simple/'
+        'git_url': 'https://gitee.com/ok-olding/ok-wuthering-waves',
+        'pip_url': 'https://mirrors.cloud.tencent.com/pypi/simple'
     }]},
     'about': """
     <h3>OK-WW</h3>
