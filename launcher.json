@@ -1,0 +1,23 @@
+[
+  {
+    "name": "CPU",
+    "entry": "main.py",
+    "install_dependencies": [
+      "PySide6-Fluent-Widgets>=1.5.5 --no-deps",
+      "ok-script rapidocr-openvino psutil wmi>=1.5.1 typing-extensions>=4.11.0 numpy>=1.26.4 opencv-python>=4.9.0.80"
+    ],
+    "uninstall_dependencies": [
+    ]
+  },
+  {
+    "name": "GPU(Nvidia RTX >= 3000)",
+    "entry": "main_gpu.py",
+    "install_dependencies": [
+      "paddlepaddle-gpu==3.0.0b1 -i https://www.paddlepaddle.org.cn/packages/stable/cu123/",
+      "PySide6-Fluent-Widgets>=1.5.5 --no-deps",
+      "ok-script psutil wmi>=1.5.1 typing-extensions>=4.11.0 numpy>=1.26.4 opencv-python>=4.9.0.80"
+    ],
+    "uninstall_dependencies": [
+    ]
+  }
+]

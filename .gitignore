@@ -12,7 +12,6 @@ __pycache__/
 configs/
 ok/
 ok
-*.exe
 md5.txt
 update.bat
 click_screenshots/
