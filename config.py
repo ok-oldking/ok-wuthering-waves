@@ -53,7 +53,7 @@ config = {
     }, {
         'name': 'China',
         'git_url': 'https://gitee.com/ok-olding/ok-wuthering-waves',
-        'pip_url': 'https://mirrors.cloud.tencent.com/pypi/simple'
+        'pip_url': 'https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple'
     }]},
     'about': """
     <h3>OK-WW</h3>
