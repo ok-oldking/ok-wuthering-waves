@@ -40,7 +40,8 @@ jobs:
         run: |
           echo "tag: ${{ steps.changes.outputs.tag }}"
           echo "changes: ${{ steps.changes.outputs.changes }}"
-          python -m ok.update.package_launcher ${{ steps.tagName.outputs.tag }} CPU
+          python -m ok.update.package_launcher ${{ steps.tagName.outputs.tag }}
+          python -m ok.update.gen_md5 .\dist
           mv dist ok-ww
           7z a -t7z -r "ok-ww-release-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"
 
@@ -55,8 +56,7 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           body: |
-            下载release.7z文件然后解压缩后运行, 如果需要查找问题
-            最好使用模拟器运行安卓版，可以挂后台，稳定。PC版游戏可能兼容性较差，无法挂后台。
+            下载release.7z文件解压缩运行ok-ww.exe, Download release.7z and extract and execute the ok-ww.exe
             更新内容：
             ${{ steps.changes.outputs.changes }} 
           draft: false
