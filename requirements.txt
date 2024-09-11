@@ -1,3 +1,11 @@
-ok-script==0.0.238
+ok-script==0.0.240
 #rapidocr_onnxruntime
 rapidocr_openvino
+pySide6-Fluent-Widgets>=1.5.5
+pycaw
+rapidocr-openvino
+psutil
+WMI>=1.5.1
+typing-extensions>=4.11.0
+numpy>=1.26.4
+opencv-contrib-python>=4.10.0.84
