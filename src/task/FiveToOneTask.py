@@ -51,7 +51,7 @@ class FiveToOneTask(BaseCombatTask):
             '凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光', '轻云出月', '不绝余音']
 
         self.main_stats = ["攻击", "防御", "生命", "共鸣效率", "冷凝伤害加成", "热熔伤害加成", "导电伤害加成",
-                           "气动伤害加成", "衍射伤害加成", "湮灭伤害加成", "治疗效果加成", "暴击", "暴击伤害"]
+                           "气动伤害加成", "衍射伤害加成", "湮灭伤害加成", "治疗效果加成", "暴击伤害", "暴击"]
         self.fix_map = {'凝夜自霜': '凝夜白霜', '灭伤害加成': '湮灭伤害加成', '行射伤害加成': '衍射伤害加成'}
 
         self.config_type = {}
@@ -127,8 +127,19 @@ class FiveToOneTask(BaseCombatTask):
 
     def fix_ocr_texts(self, texts):
         for text in texts:
+            if text.name in self.main_stats:
+                continue
             if fix := self.fix_map.get(text.name):
                 text.name = fix
+                continue
+            if self.fix_ending(text):
+                continue
+
+    def fix_ending(self, text):
+        for stats in self.main_stats:
+            if text.name.endswith(stats):
+                text.name = stats
+                return True
 
     def try_add_or_remove_five(self):
         self.log_info('try_add_five')
@@ -149,11 +160,11 @@ class FiveToOneTask(BaseCombatTask):
 
             set_name = self.find_set_name(texts)
 
-            main_stat_boundary = self.box_of_screen(0.63, 0.40, 0.77, 0.47)
+            main_stat_boundary = self.box_of_screen(0.60, 0.40, 0.77, 0.47)
             main_stat_box = find_boxes_within_boundary(texts, main_stat_boundary)
             main_stat = "None"
-            if main_stat_box and len(main_stat_box) == 1:
-                main_stat = main_stat_box[0].name
+            if len(main_stat_box) >= 1:
+                main_stat = main_stat_box[-1].name
             if main_stat not in self.main_stats:
                 self.log_error(f'无法识别声骸主属性{main_stat_box}', notify=True)
                 return 0, False
@@ -259,7 +270,7 @@ class FiveToOneTask(BaseCombatTask):
         return max_name
 
     def ocr_echo_texts(self):
-        texts = self.ocr(0.60, 0.40, 0.83, 0.76, name='echo_stats', target_height=720, log=True)
+        texts = self.ocr(0.60, 0.40, 0.85, 0.76, name='echo_stats', target_height=720, log=True)
         self.fix_ocr_texts(texts)
         if len(texts) > 4:
             return texts
