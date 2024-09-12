@@ -51,10 +51,19 @@ config = {
         'git_url': 'https://github.com/ok-oldking/ok-wuthering-waves',
         'pip_url': 'https://pypi.org/simple/'
     }, {
+        'name': '清华大学',
+        'git_url': 'https://gitee.com/ok-olding/ok-wuthering-waves',
+        'pip_url': 'https://pypi.tuna.tsinghua.edu.cn/simple'
+    }, {
         'name': 'China',
         'git_url': 'https://gitee.com/ok-olding/ok-wuthering-waves',
-        'pip_url': 'https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple'
-    }]},
+        'pip_url': 'https://mirrors.cloud.tencent.com/pypi/simple'
+    }, {
+        'name': '阿里云',
+        'git_url': 'https://gitee.com/ok-olding/ok-wuthering-waves',
+        'pip_url': 'https://mirrors.aliyun.com/pypi/simple'
+    },
+    ]},
     'about': """
     <h3>OK-WW</h3>
     <p>GitHub <a href="https://github.com/ok-oldking/ok-wuthering-waves">https://github.com/ok-oldking/ok-wuthering-waves</></p>

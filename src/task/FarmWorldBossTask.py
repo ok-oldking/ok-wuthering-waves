@@ -102,13 +102,13 @@ class FarmWorldBossTask(BaseCombatTask):
         self.wait_in_team_and_world(time_out=120)
 
     def click_fast_travel(self):
-        travel = self.wait_feature('fast_travel_custom', raise_if_not_found=True, threshold=0.75)
+        travel = self.wait_feature('fast_travel_custom', raise_if_not_found=True, threshold=0.6)
         self.click_box(travel, relative_x=1.5)
 
     def wait_book(self):
         gray_book_boss = self.wait_until(
             lambda: self.find_one('gray_book_boss', vertical_variance=0.8, horizontal_variance=0.05,
-                                  threshold=0.7, canny_lower=50,
+                                  threshold=0.6, canny_lower=50,
                                   canny_higher=150) or self.find_one(
                 'gray_book_boss_highlight',
                 vertical_variance=1, horizontal_variance=0.05,
