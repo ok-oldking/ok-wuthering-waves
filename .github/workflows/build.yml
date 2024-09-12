@@ -40,11 +40,24 @@ jobs:
         run: |
           echo "tag: ${{ steps.changes.outputs.tag }}"
           echo "changes: ${{ steps.changes.outputs.changes }}"
+          
           python -m ok.update.package_launcher ${{ steps.tagName.outputs.tag }}
           python -m ok.update.gen_md5 .\dist
-          mv dist ok-ww
+          Copy-Item -Path "dist" -Destination "ok-ww" -Recurse
           7z a -t7z -r "ok-ww-release-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"
-          7z a -tzip -r "ok-ww-release-${{ steps.tagName.outputs.tag }}.zip" "ok-ww"
+          7z a -tzip -r "ok-ww-${{ steps.tagName.outputs.tag }}.zip" "ok-ww"
+          Remove-Item -Path "ok-ww" -Recurse -Force
+          
+          python -m ok.update.package_full_with_profile ${{ steps.tagName.outputs.tag }} 0
+          python -m ok.update.gen_md5 .\dist
+          Copy-Item -Path "dist" -Destination "ok-ww" -Recurse
+          7z a -t7z -r "ok-ww-Nvidia-GPU-full-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"
+          Remove-Item -Path "ok-ww" -Recurse -Force
+          
+          python -m ok.update.package_full_with_profile ${{ steps.tagName.outputs.tag }} 1
+          python -m ok.update.gen_md5 .\dist
+          Copy-Item -Path "dist" -Destination "ok-ww" -Recurse
+          7z a -t7z -r "ok-ww-CPU-full-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"     
 
         shell: pwsh
 
@@ -79,6 +92,26 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./ok-ww-release-${{ steps.tagName.outputs.tag }}.zip
-          asset_name: ok-ww-release-${{ steps.tagName.outputs.tag }}.zip
+          asset_path: ./ok-ww-${{ steps.tagName.outputs.tag }}.zip
+          asset_name: ok-ww-${{ steps.tagName.outputs.tag }}.zip
           asset_content_type: application/zip
+
+      - name: upload-7z-gpu
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./ok-ww-Nvidia-GPU-full-${{ steps.tagName.outputs.tag }}.7z
+          asset_name: ok-ww-Nvidia-GPU-full-${{ steps.tagName.outputs.tag }}.7z
+          asset_content_type: application/x-7z-compressed
+
+      - name: upload-7z-cpu
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./ok-ww-CPU-full-${{ steps.tagName.outputs.tag }}.7z
+          asset_name: ok-ww-CPU-full-${{ steps.tagName.outputs.tag }}.7z
+          asset_content_type: application/x-7z-compressed
