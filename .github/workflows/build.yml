@@ -44,6 +44,7 @@ jobs:
           python -m ok.update.gen_md5 .\dist
           mv dist ok-ww
           7z a -t7z -r "ok-ww-release-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"
+          zip -r "ok-ww-release-${{ steps.tagName.outputs.tag }}.zip" "ok-ww"
 
         shell: pwsh
 
@@ -56,13 +57,13 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           body: |
-            下载release.7z文件解压缩运行ok-ww.exe, Download release.7z and extract and execute the ok-ww.exe
+            下载release.7z或zip文件解压缩运行ok-ww.exe, Download release.7z or .zip and extract and execute the ok-ww.exe
             更新内容：
-            ${{ steps.changes.outputs.changes }} 
+            ${{ steps.changes.outputs.changes }}
           draft: false
           prerelease: true
 
-      - name: upload-win
+      - name: upload-7z
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -70,8 +71,14 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./ok-ww-release-${{ steps.tagName.outputs.tag }}.7z
           asset_name: ok-ww-release-${{ steps.tagName.outputs.tag }}.7z
+          asset_content_type: application/x-7z-compressed
+
+      - name: upload-zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./ok-ww-release-${{ steps.tagName.outputs.tag }}.zip
+          asset_name: ok-ww-release-${{ steps.tagName.outputs.tag }}.zip
           asset_content_type: application/zip
-
-
-
-
