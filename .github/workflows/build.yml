@@ -44,7 +44,7 @@ jobs:
           python -m ok.update.gen_md5 .\dist
           mv dist ok-ww
           7z a -t7z -r "ok-ww-release-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"
-          zip -r "ok-ww-release-${{ steps.tagName.outputs.tag }}.zip" "ok-ww"
+          7z a -tzip -r "ok-ww-release-${{ steps.tagName.outputs.tag }}.zip" "ok-ww"
 
         shell: pwsh
 
