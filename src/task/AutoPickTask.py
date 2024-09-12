@@ -16,6 +16,7 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
         self.description = "Auto Pick Flowers in Game World"
         self.icon = FluentIcon.SHOPPING_CART
         self.default_config.update({
+            '_enabled': True,
             'Pick Up White List': ['吸收', 'Absorb'],
             'Pick Up Black List': ['开始合成']
         })
