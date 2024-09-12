@@ -1,6 +1,6 @@
-import re
 import time
 
+import re
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
@@ -14,6 +14,7 @@ class AutoDialogTask(TriggerTask, BaseWWTask, FindFeature, OCR):
 
     def __init__(self):
         super().__init__()
+        self.default_config = {'_enabled': True}
         self.skip = None
         self.confirm_dialog_checked = False
         self.trigger_interval = 1
