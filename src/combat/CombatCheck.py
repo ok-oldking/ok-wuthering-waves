@@ -1,8 +1,8 @@
-import re
 import time
 
 import cv2
 
+import re
 from ok.color.Color import find_color_rectangles, get_mask_in_color_range, is_pure_black
 from ok.feature.Box import find_boxes_by_name
 from ok.logging.Logger import get_logger
@@ -237,6 +237,10 @@ class CombatCheck:
     def find_boss_lv_text(self):
         texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160, hcenter=True),
                          target_height=540, name='boss_lv_text')
+        fps_text = find_boxes_by_name(texts,
+                                      re.compile(r'FPS', re.IGNORECASE))
+        if fps_text:
+            raise Exception('FPS text detected on screen, please close any FPS overlay!')
         boss_lv_texts = find_boxes_by_name(texts,
                                            [re.compile(r'(?i)^L[Vv].*')])
         if len(boss_lv_texts) > 0:
