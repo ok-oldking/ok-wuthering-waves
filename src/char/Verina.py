@@ -18,3 +18,6 @@ class Verina(BaseChar):
 
     def count_base_priority(self):
         return - 1
+
+    def count_echo_priority(self):
+        return 0
