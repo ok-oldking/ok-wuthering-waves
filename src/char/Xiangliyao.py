@@ -13,7 +13,9 @@ class Xiangliyao(BaseChar):
         if self.click_liberation():
             self.liberation_time = time.time()
         if self.still_in_liberation():
-            while not self.click_resonance(send_click=True)[0]:
+            current_resonance = self.current_resonance()
+            while current_resonance != 0 and not self.has_cd('resonance') and not self.click_resonance(send_click=True)[
+                0]:
                 self.continues_normal_attack(1)
         elif self.echo_available():
             self.logger.debug('click_echo')
