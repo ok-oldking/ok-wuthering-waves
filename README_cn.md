@@ -70,6 +70,8 @@ Use Python 3.11, other versions might work but are not tested.
 pip install -r requirements.txt #install python dependencies
 python main.py # run the release version
 python main_debug.py # run the debug version
+python main_gpu_debug.py # run the gpu debug version
+python main_gpu.py # run the gpu release version
 ```
 
 ### 致谢
