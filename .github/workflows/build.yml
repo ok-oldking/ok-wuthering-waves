@@ -43,21 +43,21 @@ jobs:
           
           python -m ok.update.package_launcher ${{ steps.tagName.outputs.tag }}
           python -m ok.update.gen_md5 .\dist
-          Move-Item -Path "dist" -Destination "ok-ww"
+          Copy-Item -Path "dist" -Destination "ok-ww" -Recurse
           7z a -t7z -r "ok-ww-release-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"
           7z a -tzip -r "ok-ww-${{ steps.tagName.outputs.tag }}.zip" "ok-ww"
           Remove-Item -Path "ok-ww" -Recurse -Force
           
-          python -m ok.update.package_full_with_profile ${{ steps.tagName.outputs.tag }} 0
-          python -m ok.update.gen_md5 .\dist
-          Move-Item -Path "dist" -Destination "ok-ww"
-          7z a -t7z -r "ok-ww-Nvidia-GPU-full-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"
-          Remove-Item -Path "ok-ww" -Recurse -Force
-          
           python -m ok.update.package_full_with_profile ${{ steps.tagName.outputs.tag }} 1
           python -m ok.update.gen_md5 .\dist
-          Move-Item -Path "dist" -Destination "ok-ww"
+          Copy-Item -Path "dist" -Destination "ok-ww" -Recurse
           7z a -t7z -r "ok-ww-CPU-full-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"     
+          
+          python -m ok.update.package_full_with_profile ${{ steps.tagName.outputs.tag }} 0
+          python -m ok.update.gen_md5 .\dist
+          Copy-Item -Path "dist" -Destination "ok-ww" -Recurse
+          7z a -t7z -r "ok-ww-Nvidia-GPU-full-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"
+          Remove-Item -Path "ok-ww" -Recurse -Force
 
         shell: pwsh
 
