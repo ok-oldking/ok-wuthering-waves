@@ -146,21 +146,20 @@ class CombatCheck:
         start = time.time()
         target_enemy = self.find_one('target_enemy_white', box=self.target_area_box,
                                      use_gray_scale=True, threshold=0.83,
-                                     frame_processor=process_target_enemy_area)
+                                     frame_processor=keep_only_white)
         # if self.debug and target_enemy is not None:
         #     self.screenshot('find_target_enemy')
         logger.debug(f'find_target_enemy {target_enemy} {time.time() - start}')
         return target_enemy is not None
 
-    def in_combat(self, rechecked=False):
+    def in_combat(self, check_team=True):
         if self.in_liberation or self.recent_liberation():
-            # logger.debug('in liberation return True')
             return True
         if self._in_combat:
             now = time.time()
             if now - self.last_combat_check > self.combat_check_interval:
                 self.last_combat_check = now
-                if not self.in_team()[0]:
+                if check_team and not self.in_team()[0]:
                     return self.reset_to_false(recheck=False, reason="not in team")
                 if self.check_count_down():
                     return True
@@ -181,7 +180,7 @@ class CombatCheck:
                 return True
         else:
             start = time.time()
-            in_combat = self.in_team()[0] and self.check_health_bar()
+            in_combat = ((not check_team) or self.in_team()[0]) and self.check_health_bar()
             if in_combat:
                 self.target_enemy(wait=False)
                 if self.boss_lv_template is None:
@@ -269,7 +268,7 @@ class CombatCheck:
 count_down_re = re.compile(r'\d\d')
 
 
-def process_target_enemy_area(frame):
+def keep_only_white(frame):
     frame[frame != 255] = 0
     return frame
 

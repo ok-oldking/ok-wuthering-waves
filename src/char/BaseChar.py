@@ -1,14 +1,14 @@
 import time
-from enum import IntEnum, StrEnum
-from typing import Any
 
 import cv2
 import numpy as np
 
+from enum import IntEnum, StrEnum
 from ok.color.Color import color_range_to_bound
 from ok.config.Config import Config
 from ok.logging.Logger import get_logger
 from src import text_white_color
+from typing import Any
 
 
 class Priority(IntEnum):
@@ -295,13 +295,13 @@ class BaseChar:
         return time.time() - start - to_minus
 
     def get_liberation_key(self):
-        return self.task.key_config['Liberation Key']
+        return self.task.get_liberation_key()
 
     def get_echo_key(self):
-        return self.task.key_config['Echo Key']
+        return self.task.get_echo_key()
 
     def get_resonance_key(self):
-        return self.task.key_config['Resonance Key']
+        return self.task.get_resonance_key()
 
     def get_switch_priority(self, current_char, has_intro):
         priority = self.do_get_switch_priority(current_char, has_intro)
