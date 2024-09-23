@@ -1,15 +1,16 @@
 import math
-import re
 import time
 
 import win32api
 
+import re
 from ok.color.Color import get_connected_area_by_color
 from ok.config.ConfigOption import ConfigOption
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
 from ok.util.list import safe_get
+from src import text_white_color
 from src.char import BaseChar
 from src.char.BaseChar import Priority, dot_color
 from src.char.CharFactory import get_char_by_pos
@@ -57,6 +58,12 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             exception_type = NotInCombatException
         raise exception_type(message)
 
+    def available(self, name):
+        current = self.calculate_color_percentage(text_white_color,
+                                                  self.get_box_by_name(f'box_{name}'))
+        if current > 0 and not self.has_cd(name):
+            return True
+
     def combat_once(self, wait_combat_time=180, wait_before=1.5):
         self.wait_until(self.in_combat, time_out=wait_combat_time, raise_if_not_found=True,
                         wait_until_before_delay=wait_before)
@@ -92,7 +99,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 if picked:
                     self.mouse_up(key="right")
                     return True
-                
+
                 self.sleep(0.1)
                 self.send_key_down('a')
                 self.sleep(0.01)
@@ -182,6 +189,15 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         if post_action:
             post_action()
         logger.info(f'switch_next_char end {(current_char.last_switch_time - start):.3f}s')
+
+    def get_liberation_key(self):
+        return self.key_config['Liberation Key']
+
+    def get_echo_key(self):
+        return self.key_config['Echo Key']
+
+    def get_resonance_key(self):
+        return self.key_config['Resonance Key']
 
     def has_resonance_cd(self):
         return self.has_cd('resonance')
