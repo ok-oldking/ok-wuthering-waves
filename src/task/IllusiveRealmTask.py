@@ -35,12 +35,30 @@ class IllusiveRealmTask(BaseCombatTask):
             self.click()
         else:
             if self.available('liberation'):
-                self.send_key(self.get_liberation_key())
+                self.send_key_and_wait_animation(self.get_liberation_key())
             elif self.available('echo'):
                 self.send_key(self.get_echo_key())
             elif self.available('resonance'):
                 self.send_key(self.get_resonance_key())
         self.last_is_click = not self.last_is_click
+
+    def send_key_and_wait_animation(self, key, total_wait=10, animation_wait=5):
+        start = time.time()
+        animation_start = 0
+        while time.time() - start < total_wait and (
+                animation_start == 0 or time.time() - animation_start < animation_wait):
+            if self.in_realm() or self.in_team()[0]:
+                if animation_start > 0:
+                    self.in_liberation = False
+                    return
+                else:
+                    self.send_key(key, interval=0.2)
+            else:
+                if animation_start == 0:
+                    animation_start = time.time()
+                self.in_liberation = True
+                self.next_frame()
+        logger.info(f'send_key_and_wait_animation timed out {key}')
 
     def run(self):
         while True:
