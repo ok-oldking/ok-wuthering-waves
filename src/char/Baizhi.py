@@ -1,13 +1,7 @@
-from src.char.BaseChar import BaseChar
+from src.char.Healer import Healer
 
 
-class Baizhi(BaseChar):
-
-    def count_base_priority(self):
-        return -1
-
-    def count_echo_priority(self):
-        return 0
+class Baizhi(Healer):
 
     def do_perform(self):
         if self.has_intro:
@@ -15,6 +9,5 @@ class Baizhi(BaseChar):
             self.continues_normal_attack(1.2, click_resonance_if_ready_and_return=True)
         self.click_liberation(con_less_than=1)
         self.click_resonance()
-        if self.get_current_con() > 0.65:
-            self.click_echo()
+        self.click_echo()
         self.switch_next_char()

@@ -231,7 +231,7 @@ class BaseChar:
         self.logger.info('reset state')
         self.has_intro = False
 
-    def click_liberation(self, wait_end=True, con_less_than=-1, send_click=False):
+    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0):
         if con_less_than > 0:
             if self.get_current_con() > con_less_than:
                 return False
@@ -239,6 +239,11 @@ class BaseChar:
         start = time.time()
         last_click = 0
         clicked = False
+        while time.time() - start < wait_if_cd_ready and not self.liberation_available() and not self.has_cd(
+                'liberation'):
+            self.logger.debug(f'click_liberation wait ready {wait_if_cd_ready}')
+            self.click(interval=0.1)
+            self.task.next_frame()
         while self.liberation_available():  # clicked and still in team wait for animation
             self.logger.debug(f'click_liberation liberation_available click')
             now = time.time()
@@ -299,14 +304,14 @@ class BaseChar:
     def get_resonance_key(self):
         return self.task.get_resonance_key()
 
-    def get_switch_priority(self, current_char, has_intro):
-        priority = self.do_get_switch_priority(current_char, has_intro)
+    def get_switch_priority(self, current_char, has_intro, target_low_con):
+        priority = self.do_get_switch_priority(current_char, has_intro, target_low_con)
         if priority < Priority.MAX and time.time() - self.last_switch_time < 0.9:
             return Priority.SWITCH_CD  # switch cd
         else:
             return priority
 
-    def do_get_switch_priority(self, current_char, has_intro=False):
+    def do_get_switch_priority(self, current_char, has_intro=False, target_low_con=False):
         priority = 0
         if self.count_liberation_priority() and self.liberation_available():
             priority += self.count_liberation_priority()
@@ -353,10 +358,10 @@ class BaseChar:
             return time.time() - self.last_echo > self.echo_cd
 
     def is_con_full(self):
-        return self.task.is_con_full()
+        return self.task.is_con_full(self.config)
 
     def get_current_con(self):
-        self.current_con = self.task.get_current_con()
+        self.current_con = self.task.get_current_con(self.config)
         return self.current_con
 
     def is_forte_full(self):
