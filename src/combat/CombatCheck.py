@@ -113,16 +113,12 @@ class CombatCheck:
                 self.screenshot_boss_lv(current, f'boss lv not detected by edge {max_val}')
             logger.debug(f'boss lv not detected by edge')
             if not self.find_boss_lv_text():  # double check by text
-                if not self.check_health_bar() and not self.find_target_enemy():
-                    if self.debug:
-                        self.screenshot_boss_lv(current, 'out_of combat boss_health disappeared')
-                    logger.info(f'out of combat because of boss_health disappeared, res:{max_val}')
-                    return False
-                else:
-                    self.boss_lv_template = None
-                    self.boss_lv_box = None
-                    logger.info(f'boss_health disappeared, but still in combat')
-                    return True
+                if self.debug:
+                    self.screenshot_boss_lv(current, 'out_of combat boss_health disappeared')
+                self.boss_lv_template = None
+                self.boss_lv_box = None
+                logger.info(f'out of combat because of boss_health disappeared, res:{max_val}')
+                return False
             else:
                 return True
         else:
@@ -202,8 +198,9 @@ class CombatCheck:
         else:
             if self.find_target_enemy():
                 return True
-            self.middle_click()
-            return self.wait_until(self.find_target_enemy, time_out=2.5, wait_until_before_delay=0)
+            return self.wait_until(self.find_target_enemy, time_out=2.5, wait_until_before_delay=0,
+                                   wait_until_check_delay=0.1,
+                                   pre_action=self.middle_click)
 
     def check_health_bar(self):
         if self._in_combat:
