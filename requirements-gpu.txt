@@ -1,0 +1,2 @@
+paddlepaddle-gpu==3.0.0b1 -i https://www.paddlepaddle.org.cn/packages/stable/cu123/
+paddleocr==2.8.1
