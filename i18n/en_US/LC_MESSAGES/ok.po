@@ -410,3 +410,15 @@ msgstr ""
 
 msgid "隐世回光"
 msgstr ""
+
+msgid "Auto Combat in Illusive Realm"
+msgstr ""
+
+msgid "Auto Combat in Multiplayer Mode"
+msgstr ""
+
+msgid "Enable auto combat in Multiplayer Mode"
+msgstr ""
+
+msgid "Illusive Realm"
+msgstr ""
