@@ -41,6 +41,7 @@ class DiagnosisTask(BaseCombatTask):
                 self.info['Echo Available'] = char.current_echo() > 0
                 self.info['Liberation in CD'] = char.has_cd('liberation')
                 self.info['Liberation Available'] = char.current_liberation() > 0
+                self.info['Concerto'] = char.get_current_con()
                 self.next_frame()
 
     def choose_level(self, start):

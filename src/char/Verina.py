@@ -1,7 +1,7 @@
-from src.char.BaseChar import BaseChar
+from src.char.Healer import Healer
 
 
-class Verina(BaseChar):
+class Verina(Healer):
 
     def do_perform(self):
         self.click_liberation()
@@ -15,9 +15,3 @@ class Verina(BaseChar):
             self.heavy_attack()
         # self.normal_attack()
         self.switch_next_char()
-
-    def count_base_priority(self):
-        return - 1
-
-    def count_echo_priority(self):
-        return 0

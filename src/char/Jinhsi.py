@@ -33,7 +33,7 @@ class Jinhsi(BaseChar):
         super().switch_next_char(free_intro=self.has_free_intro, target_low_con=True)
         self.has_free_intro = False
 
-    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False):
+    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if has_intro or self.incarnation or self.incarnation_cd:
             self.logger.info(
                 f'switch priority max because has_intro {has_intro} incarnation {self.incarnation} incarnation_cd {self.incarnation_cd}')
