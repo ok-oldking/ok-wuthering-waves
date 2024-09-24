@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 from qfluentwidgets import FluentIcon
 
-from ok.feature.FeatureSet import mask_white
 from ok.logging.Logger import get_logger
 from src.task.BaseCombatTask import BaseCombatTask
 
@@ -93,3 +92,18 @@ def mask_target(image_path):
     masked_image = cv2.bitwise_and(image, image, mask=combined_mask)
 
     return masked_image
+
+
+def mask_white(image):
+    # Check if the image is grayscale
+    if len(image.shape) == 2 or image.shape[2] == 1:
+        # Image is grayscale
+        lower_white = np.array([230])
+        upper_white = np.array([255])
+    else:
+        # Image is in color
+        lower_white = np.array([230, 230, 230])
+        upper_white = np.array([255, 255, 255])
+
+    # Create a mask for the white color
+    return cv2.inRange(image, lower_white, upper_white)
