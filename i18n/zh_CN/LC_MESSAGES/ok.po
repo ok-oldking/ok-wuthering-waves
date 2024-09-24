@@ -1,9 +1,6 @@
 #
 msgid ""
 msgstr ""
-
-msgid ""
-msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: you@example.com\n"
 "Last-Translator: you@example.com\n"
@@ -11,6 +8,9 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+msgid ""
+msgstr ""
 
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
 msgstr "(1-6) 重要, 选择你对应世界等级可以产出声骸的难度, 从上到下为1-6"
@@ -341,3 +341,15 @@ msgstr ""
 
 msgid "隐世回光"
 msgstr ""
+
+msgid "Auto Combat in Illusive Realm"
+msgstr "需要上哪里亮了点哪里的角色"
+
+msgid "Auto Combat in Multiplayer Mode"
+msgstr "多人联机自动战斗"
+
+msgid "Enable auto combat in Multiplayer Mode"
+msgstr "多人联机开启自动战斗, 需要上哪里亮了点哪里的角色"
+
+msgid "Illusive Realm"
+msgstr "半自动肉鸽(深坠异想奇境)"

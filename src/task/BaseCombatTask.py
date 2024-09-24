@@ -51,6 +51,33 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         self.combat_start = 0
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
+        self.multiplayer_check_interval = 3
+        self._in_multiplayer = False
+        self._multiplayer_last_check = 0
+
+    def check_in_multiplayer(self):
+        self._multiplayer_last_check = time.time()
+        self._in_multiplayer = self.find_one('multiplayer_world_mark',
+                                             threshold=0.75) is not None
+        return self._in_multiplayer
+
+    def send_key_and_wait_animation(self, key, check_function, total_wait=10, animation_wait=5):
+        start = time.time()
+        animation_start = 0
+        while time.time() - start < total_wait and (
+                animation_start == 0 or time.time() - animation_start < animation_wait):
+            if check_function():
+                if animation_start > 0:
+                    self.in_liberation = False
+                    return
+                else:
+                    self.send_key(key, interval=0.2)
+            else:
+                if animation_start == 0:
+                    animation_start = time.time()
+                self.in_liberation = True
+                self.next_frame()
+        logger.info(f'send_key_and_wait_animation timed out {key}')
 
     def raise_not_in_combat(self, message, exception_type=None):
         logger.error(message)
@@ -406,8 +433,16 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             percent = 1
         return percent
 
+    def in_multiplayer(self):
+        if self._in_multiplayer or self._multiplayer_last_check == 0:
+            return self.check_in_multiplayer()
+        if not self._in_multiplayer and time.time() - self._multiplayer_last_check > self.multiplayer_check_interval:
+            return self.check_in_multiplayer()
+        return self._in_multiplayer
+
     def in_team(self):
-        start = time.time()
+        if self.in_multiplayer():
+            return False, -1, -1
         c1 = self.find_one('char_1_text',
                            threshold=0.75)
         c2 = self.find_one('char_2_text',

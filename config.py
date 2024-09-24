@@ -21,7 +21,7 @@ config = {
     'wait_until_before_delay': 2,  # default 1 , for wait_until() function
     # required if using feature detection
     'template_matching': {
-        'coco_feature_json': os.path.join('assets', '_annotations.coco.json'),
+        'coco_feature_json': os.path.join('assets', 'result.json'),
         'default_horizontal_variance': 0.002,
         'default_vertical_variance': 0.002,
         'default_threshold': 0.8,
@@ -111,6 +111,7 @@ config = {
     ], 'trigger_tasks': [
         ["src.task.AutoCombatTask", "AutoCombatTask"],
         ["src.task.AutoPickTask", "AutoPickTask"],
-        ["src.task.SkipDialogTask", "AutoDialogTask"]
+        ["src.task.SkipDialogTask", "AutoDialogTask"],
+        ["src.task.MultiplayerAutoCombatTask", "MultiplayerAutoCombatTask"],
     ]
 }
