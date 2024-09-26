@@ -1,9 +1,7 @@
-import math
 import time
 
 import cv2
 import numpy as np
-import win32api
 
 import re
 from ok.color.Color import get_connected_area_by_color, color_range_to_bound
@@ -469,26 +467,27 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         # Function to check if a component forms a ring
 
     def mouse_reset(self):
-        # logger.debug("mouse_reset")
-        try:
-            current_position = win32api.GetCursorPos()
-            if self.mouse_pos:
-                distance = math.sqrt(
-                    (current_position[0] - self.mouse_pos[0]) ** 2
-                    + (current_position[1] - self.mouse_pos[1]) ** 2
-                )
-                if distance > 400:
-                    logger.debug(f'move mouse back {self.mouse_pos}')
-                    win32api.SetCursorPos(self.mouse_pos)
-                    self.mouse_pos = None
-                    if self.enabled:
-                        self.handler.post(self.mouse_reset, 1)
-                    return
-            self.mouse_pos = current_position
-            if self.enabled:
-                return self.handler.post(self.mouse_reset, 0.005)
-        except Exception as e:
-            logger.error('mouse_reset exception', e)
+        # # logger.debug("mouse_reset")
+        # try:
+        #     current_position = win32api.GetCursorPos()
+        #     if self.mouse_pos:
+        #         distance = math.sqrt(
+        #             (current_position[0] - self.mouse_pos[0]) ** 2
+        #             + (current_position[1] - self.mouse_pos[1]) ** 2
+        #         )
+        #         if distance > 400:
+        #             logger.debug(f'move mouse back {self.mouse_pos}')
+        #             win32api.SetCursorPos(self.mouse_pos)
+        #             self.mouse_pos = None
+        #             if self.enabled:
+        #                 self.handler.post(self.mouse_reset, 1)
+        #             return
+        #     self.mouse_pos = current_position
+        #     if self.enabled:
+        #         return self.handler.post(self.mouse_reset, 0.005)
+        # except Exception as e:
+        #     logger.error('mouse_reset exception', e)
+        pass
 
     def count_rings(self, image, color_range, min_area):
         # Define the color range
