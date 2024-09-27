@@ -112,8 +112,8 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         self.sleep(0.2)
 
     def run_in_circle_to_find_echo(self, circle_count=3):
-        directions = ['w', 'w', 'w', 'w']
-        step = 0.8
+        directions = ['w', 'a', 's', 'd']
+        step = 1.2
         duration = 0.8
         total_index = 0
         for count in range(circle_count):
@@ -126,15 +126,6 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 if picked:
                     self.mouse_up(key="right")
                     return True
-
-                self.sleep(0.1)
-                self.send_key_down('a')
-                self.sleep(0.01)
-                self.send_key_up('a')
-                self.sleep(0.1)
-                self.middle_click()
-                self.sleep(1)
-
                 total_index += 1
 
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
