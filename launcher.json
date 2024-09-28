@@ -8,6 +8,7 @@
       "PySide6-Fluent-Widgets>=1.5.5 --no-deps",
       "paddleocr==2.8.1 ok-script pycaw psutil setuptools WMI>=1.5.1 typing-extensions>=4.11.0 numpy==1.26.4 opencv-contrib-python>=4.10.0.84"
     ],
+    "uninstall_dependencies": "rapidocr_openvino openvino",
     "target_size": 6070947351
   },
   {
@@ -17,6 +18,7 @@
       "PySide6-Fluent-Widgets>=1.5.5 --no-deps",
       "rapidocr-openvino ok-script pycaw psutil WMI>=1.5.1 typing-extensions>=4.11.0 numpy==1.26.4 opencv-contrib-python>=4.10.0.84"
     ],
+    "uninstall_dependencies": "paddleocr",
     "target_size": 616621272
   }
 ]
