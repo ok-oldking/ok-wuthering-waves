@@ -50,22 +50,6 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
 
-        self.bosses_pos = {
-            'Bell-Borne Geochelone': [0, 0, False],
-            'Dreamless': [0, 2, True],
-            'Jue': [0, 3, True],
-            'Tempest Mephis': [0, 4, False],
-            'Inferno Rider': [0, 5, False],
-            'Impermanence Heron': [0, 6, False],
-            'Lampylumen Myriad': [1, 0, False],
-            'Feilian Beringal': [1, 1, False],
-            'Mourning Aix': [1, 2, False],
-            'Crownless': [1, 3, False],
-            'Mech Abomination': [1, 4, False],
-            'Thundering Mephis': [1, 5, False],
-            'Fallacy of No Return': [1, 6, False],
-        }
-
     def send_key_and_wait_animation(self, key, check_function, total_wait=10, animation_wait=5):
         start = time.time()
         animation_start = 0

@@ -36,6 +36,21 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         self.multiplayer_check_interval = 3
         self._in_multiplayer = False
         self._multiplayer_last_check = 0
+        self.bosses_pos = {
+            'Bell-Borne Geochelone': [0, 0, False],
+            'Dreamless': [0, 2, True],
+            'Jue': [0, 3, True],
+            'Tempest Mephis': [0, 4, False],
+            'Inferno Rider': [0, 5, False],
+            'Impermanence Heron': [0, 6, False],
+            'Lampylumen Myriad': [1, 0, False],
+            'Feilian Beringal': [1, 1, False],
+            'Mourning Aix': [1, 2, False],
+            'Crownless': [1, 3, False],
+            'Mech Abomination': [1, 4, False],
+            'Thundering Mephis': [1, 5, False],
+            'Fallacy of No Return': [1, 6, False],
+        }
 
     def validate(self, key, value):
         message = self.validate_config(key, value)
@@ -363,7 +378,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
 
     def click_traval_button(self):
         if btn := self.find_one('fast_travel_custom', threshold=0.6):
-            self.click_box(btn, relative_x=-1)
+            self.click_box(btn, relative_x=1)
             self.sleep(1)
             return self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=True,
                                            threshold=0.7,
