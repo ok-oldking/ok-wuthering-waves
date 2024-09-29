@@ -1,7 +1,7 @@
-import re
 import time
-from datetime import datetime, timedelta
 
+import re
+from datetime import datetime, timedelta
 from ok.config.ConfigOption import ConfigOption
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
@@ -257,6 +257,32 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
     def in_team_and_world(self):
         return self.in_team()[
             0]  # and self.find_one(f'gray_book_button', threshold=0.7, canny_lower=50, canny_higher=150)
+
+    def in_team(self):
+        if self.in_multiplayer():
+            return False, -1, -1
+        c1 = self.find_one('char_1_text',
+                           threshold=0.75)
+        c2 = self.find_one('char_2_text',
+                           threshold=0.75)
+        c3 = self.find_one('char_3_text',
+                           threshold=0.75)
+        arr = [c1, c2, c3]
+        # logger.debug(f'in_team check {arr} time: {(time.time() - start):.3f}s')
+        current = -1
+        exist_count = 0
+        for i in range(len(arr)):
+            if arr[i] is None:
+                if current == -1:
+                    current = i
+            else:
+                exist_count += 1
+        if exist_count == 2 or exist_count == 1:
+            return True, current, exist_count + 1
+        else:
+            return False, -1, exist_count + 1
+
+        # Function to check if a component forms a ring
 
     def handle_monthly_card(self):
         monthly_card = self.find_one('monthly_card', threshold=0.8)
