@@ -15,14 +15,15 @@ class FarmWorldBossTask(BaseCombatTask):
         super().__init__()
         self.description = "Click Start in Game World"
         self.name = "Farm World Boss(Must Drop a WayPoint on the Boss First)"
-        self.boss_names = ['N/A', 'Crownless', 'Tempest Mephis', 'Thundering Mephis', 'Inferno Rider',
+        self.boss_names = ['N/A', 'Bell-Borne Geochelone', 'Crownless', 'Thundering Mephis',
+                           'Inferno Rider',
                            'Feilian Beringal',
                            'Mourning Aix', 'Impermanence Heron', 'Lampylumen Myriad', 'Mech Abomination',
-                           'Bell-Borne Geochelone']
+                           'Fallacy of No Return'
+                           ]
+
         self.find_echo_method = ['Walk', 'Run in Circle', 'Turn Around and Search']
 
-        self.weekly_boss_index = {'Bell-Borne Geochelone': -1}
-        self.weekly_boss_count = 1  # Bell-Borne Geochelone
         default_config = {
             'Boss1': 'N/A',
             'Boss1 Echo Pickup Method': 'Turn Around and Search',
@@ -47,83 +48,6 @@ class FarmWorldBossTask(BaseCombatTask):
         self.config_type["Entrance Direction"] = {'type': "drop_down", 'options': ['Forward', 'Backward']}
         self.crownless_pos = (0.9, 0.4)
         self.icon = FluentIcon.GLOBE
-
-    def teleport_to_boss(self, boss_name):
-        index = self.boss_names.index(boss_name)
-        index -= 1
-        self.log_info(f'teleport to {boss_name} index {index}')
-        self.sleep(1)
-        self.log_info('click f2 to open the book')
-        self.send_key('f2')
-        gray_book_boss = self.wait_book()
-        if not gray_book_boss:
-            self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
-            raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")
-
-        self.log_info(f'click {gray_book_boss}')
-        self.click_box(gray_book_boss)
-        self.sleep(1.5)
-
-        if index >= (len(self.boss_names) - self.weekly_boss_count - 1):  # weekly turtle
-            logger.info('click weekly boss')
-            index = self.weekly_boss_index[boss_name]
-            self.click_relative(0.21, 0.59)
-        else:
-            logger.info('click normal boss')
-            self.click_relative(0.21, 0.36)
-
-        self.sleep(1)
-
-        if index > 4:
-            self.log_info(f'click scroll bar')
-            self.click_relative(3760 / 3840, 1852 / 2160)
-            self.sleep(0.5)
-            index -= 4
-
-        self.log_info(f'index after scrolling down {index}')
-        proceeds = self.find_feature('boss_proceed', vertical_variance=1, horizontal_variance=0.05, threshold=0.8)
-        if self.debug:
-            self.screenshot('proceeds')
-        if not proceeds:
-            raise Exception("can't find the boss proceeds")
-
-        self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=200,
-                          pre_action=lambda: self.click_box(proceeds[index], relative_x=-1), wait_until_before_delay=5)
-        self.sleep(1)
-        teleport = self.wait_click_feature('custom_teleport_hcenter_vcenter',
-                                           box=self.box_of_screen(0.48, 0.45, 0.54, 0.58),
-                                           raise_if_not_found=False, threshold=0.8, time_out=2)
-        if not teleport:
-            self.click_relative(0.5, 0.5, hcenter=True)
-        self.sleep(0.5)
-        self.wait_click_feature('gray_custom_way_point', box=self.box_of_screen(0.62, 0.48, 0.70, 0.86),
-                                raise_if_not_found=True, threshold=0.75, time_out=2)
-        self.click_fast_travel()
-        self.wait_in_team_and_world(time_out=120)
-
-    def click_fast_travel(self):
-        travel = self.wait_feature('fast_travel_custom', raise_if_not_found=True, threshold=0.6)
-        self.click_box(travel, relative_x=1.5)
-
-    def wait_book(self):
-        gray_book_boss = self.wait_until(
-            lambda: self.find_one('gray_book_boss', vertical_variance=0.8, horizontal_variance=0.05,
-                                  threshold=0.6, canny_lower=50,
-                                  canny_higher=150) or self.find_one(
-                'gray_book_boss_highlight',
-                vertical_variance=1, horizontal_variance=0.05,
-                threshold=0.7,
-                canny_lower=50,
-                canny_higher=150),
-            time_out=3, wait_until_before_delay=2)
-        return gray_book_boss
-
-    def check_main(self):
-        if not self.in_team()[0]:
-            self.send_key('esc')
-            self.sleep(1)
-            return self.in_team()[0]
-        return True
 
     # not current in use because not stable, right now using one click to scroll down
     def scroll_down_a_page(self):

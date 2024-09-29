@@ -24,12 +24,6 @@ msgstr "第2个Boss"
 msgid "Boss3"
 msgstr "第3个Boss"
 
-msgid "Choose Forward for Dreamless, Backward for Jue"
-msgstr "无妄者选前进, 角选后退"
-
-msgid "Click Start at the Entrance(Dreamless, Jue)"
-msgstr "在入口点击(无妄者, 角)"
-
 msgid "Click Start in Game World"
 msgstr "在游戏世界点击开始"
 
@@ -74,6 +68,12 @@ msgstr "乌龟"
 
 msgid "Crownless"
 msgstr "无冠者"
+
+msgid "Jue"
+msgstr "角"
+
+msgid "Dreamless"
+msgstr "无妄者"
 
 msgid "Enable auto combat in Abyss, Game World etc"
 msgstr "在大世界,深渊,无音区等开启自动战斗"
@@ -353,3 +353,18 @@ msgstr "多人联机开启自动战斗, 需要上哪里亮了点哪里的角色"
 
 msgid "Illusive Realm"
 msgstr "半自动肉鸽(深坠异想奇境)"
+
+msgid "Fallacy of No Return"
+msgstr "无归的谬误"
+
+msgid "click Box(name='gray_book_all_monsters', x=53, y=713, width=104, height=107, confidence=77)"
+msgstr ""
+
+msgid "click f2 to open the book"
+msgstr ""
+
+msgid "teleport to Fallacy of No Return index 6 in_dungeon False"
+msgstr ""
+
+msgid "index after scrolling down 6"
+msgstr ""
