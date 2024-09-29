@@ -7,6 +7,7 @@ from src.char.Danjin import Danjin
 from src.char.Jinhsi import Jinhsi
 from src.char.Jiyan import Jiyan
 from src.char.Mortefi import Mortefi
+from src.char.ShoreKeeper import ShoreKeeper
 from src.char.Xiangliyao import Xiangliyao
 from src.char.Yuanwu import Yuanwu
 from src.char.Zhezhi import Zhezhi
@@ -24,6 +25,7 @@ def get_char_by_pos(task, box, index):
     char_dict = {
         'char_yinlin': {'cls': Yinlin, 'res_cd': 12, 'echo_cd': 15},
         'char_verina': {'cls': Verina, 'res_cd': 12, 'echo_cd': 20},
+        'char_shorekeeper': {'cls': ShoreKeeper, 'res_cd': 15, 'echo_cd': 20},
         'char_taoqi': {'cls': Taoqi, 'res_cd': 15, 'echo_cd': 20},
         'char_rover': {'cls': HavocRover, 'res_cd': 12, 'echo_cd': 20},
         'char_rover_male': {'cls': HavocRover, 'res_cd': 12, 'echo_cd': 20},
