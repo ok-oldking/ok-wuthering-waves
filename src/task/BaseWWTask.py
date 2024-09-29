@@ -266,7 +266,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         self._multiplayer_last_check = time.time()
         self._in_multiplayer = self.find_one('multiplayer_world_mark',
                                              threshold=0.75) is not None
-        return self._in_multiplayera
+        return self._in_multiplayer
 
     def in_multiplayer(self):
         if self._in_multiplayer or self._multiplayer_last_check == 0:
