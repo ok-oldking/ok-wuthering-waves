@@ -10,19 +10,18 @@ class FarmEchoTask(BaseCombatTask):
 
     def __init__(self):
         super().__init__()
-        self.description = "Click Start at the Entrance(Dreamless, Jue)"
+        self.description = "Click Start in Game World"
         self.name = "Farm Echo in Dungeon"
         self.default_config.update({
             'Level': 1,
             'Repeat Farm Count': 100,
-            'Entrance Direction': 'Forward'
+            'Boss': 'Dreamless'
         })
         self.config_description = {
-            'Level': '(1-6) Important, Choose which level to farm, lower levels might not produce a echo',
-            'Entrance Direction': 'Choose Forward for Dreamless, Backward for Jue'
+            'Level': '(1-6) Important, Choose which level to farm, lower levels might not produce a echo'
         }
-        self.config_type["Entrance Direction"] = {'type': "drop_down", 'options': ['Forward', 'Backward']}
-        self.crownless_pos = (0.9, 0.4)
+        self.config_type["Boss"] = {'type': "drop_down", 'options': ['Dreamless', 'Jue']}
+
         self.icon = FluentIcon.ALBUM
 
     def run(self):
@@ -35,24 +34,25 @@ class FarmEchoTask(BaseCombatTask):
         # loop here
         count = 0
 
+        self.teleport_to_boss(self.config.get('Boss'))
+        self.sleep(1)
+        self.walk_until_f(time_out=10,
+                          raise_if_not_found=True)
+        logger.info(f'enter success')
+        challenge = self.wait_feature('gray_button_challenge', raise_if_not_found=True, use_gray_scale=True)
+        logger.info(f'found challenge {challenge}')
+        self.sleep(1)
+        self.choose_level(self.config.get("Level"))
+
         while count < self.config.get("Repeat Farm Count", 0):
             count += 1
             self.wait_in_team_and_world(time_out=20)
             self.sleep(1)
-            self.walk_until_f(time_out=10,
-                              direction='w' if self.config.get('Entrance Direction') == 'Forward' else 's',
-                              raise_if_not_found=True)
-            logger.info(f'enter success')
-            challenge = self.wait_feature('gray_button_challenge', raise_if_not_found=True, use_gray_scale=True)
-            logger.info(f'found challenge {challenge}')
-            self.sleep(1)
-            self.choose_level(self.config.get("Level"))
 
             self.combat_once()
-            logger.info(f'farm echo move {self.config.get("Entrance Direction")} walk_until_f to find echo')
-            if self.config.get('Entrance Direction') == 'Forward':
-                dropped = self.walk_until_f(time_out=4, target_text=self.absorb_echo_text(),
-                                            raise_if_not_found=False, backward_time=1)  # find and pick echo
+            logger.info(f'farm echo move {self.config.get("Boss")} walk_until_f to find echo')
+            if self.config.get('Boss') == 'Dreamless':
+                dropped = self.walk_find_echo(1)
                 logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
             else:
                 self.sleep(2)
@@ -63,10 +63,7 @@ class FarmEchoTask(BaseCombatTask):
             self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=True,
                                     use_gray_scale=True, wait_until_before_delay=2)
             self.wait_in_team_and_world(time_out=120)
-            self.sleep(4)
-            if self.config.get('Entrance Direction') == 'Backward':
-                self.right_click()  # Jue
-                self.sleep(3)
+            self.sleep(2)
 
     def incr_drop(self, dropped):
         if dropped:

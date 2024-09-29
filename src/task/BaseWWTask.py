@@ -326,6 +326,69 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
             return 'en_US'
         return 'unknown_lang'
 
+    def teleport_to_boss(self, boss_name):
+        pos = self.bosses_pos.get(boss_name)
+        page = pos[0]
+        index = pos[1]
+        in_dungeon = pos[2]
+        self.log_info(f'teleport to {boss_name} index {index} in_dungeon {in_dungeon}')
+        self.sleep(1)
+        self.log_info('click f2 to open the book')
+        self.send_key('f2')
+        gray_book_boss = self.wait_book()
+        if not gray_book_boss:
+            self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
+            raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")
+
+        self.log_info(f'click {gray_book_boss}')
+        self.click_box(gray_book_boss)
+        self.sleep(2)
+
+        if page == 1:  # weekly turtle
+            logger.info('scroll down a page')
+            self.click_relative(1136 / 2560, 0.27)
+            self.sleep(1)
+
+        x = 0.24
+        y = 0.17
+        step = (0.75 - y) / 6
+
+        self.click_relative(x, y + step * index)
+        self.sleep(1)
+        self.log_info(f'index after scrolling down {index}')
+        self.click_relative(0.89, 0.91)
+
+        self.wait_click_travel()
+        self.wait_in_team_and_world(time_out=120)
+
+    def click_traval_button(self):
+        if btn := self.find_one('fast_travel_custom', threshold=0.6):
+            self.click_box(btn, relative_x=-1)
+            self.sleep(1)
+            return self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=True,
+                                           threshold=0.7,
+                                           time_out=5)
+        elif btn := self.find_one('gray_teleport', threshold=0.7):
+            return self.click_box(btn, relative_x=1)
+
+    def wait_click_travel(self):
+        self.wait_until(self.click_traval_button, raise_if_not_found=True, time_out=10)
+
+    def wait_book(self):
+        gray_book_boss = self.wait_until(
+            lambda: self.find_one('gray_book_all_monsters', vertical_variance=0.8, horizontal_variance=0.05,
+                                  threshold=0.6, canny_lower=50,
+                                  canny_higher=150),
+            time_out=3, wait_until_before_delay=2)
+        return gray_book_boss
+
+    def check_main(self):
+        if not self.in_team()[0]:
+            self.send_key('esc')
+            self.sleep(1)
+            return self.in_team()[0]
+        return True
+
 
 echo_color = {
     'r': (200, 255),  # Red range
