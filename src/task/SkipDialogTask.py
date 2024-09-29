@@ -38,6 +38,8 @@ class AutoDialogTask(TriggerTask, BaseWWTask, FindFeature, OCR):
         if skip_button := self.find_one('skip_quest_confirm', threshold=0.8):
             self.click(skip_button)
             return True
+        if self.in_team_and_world():
+            return True
 
     def trigger(self):
         skip = self.ocr(0.03, 0.03, 0.11, 0.10, target_height=540, match=re.compile(r'SKIP', re.IGNORECASE),

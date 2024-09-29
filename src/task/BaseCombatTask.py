@@ -431,32 +431,6 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             return self.check_in_multiplayer()
         return self._in_multiplayer
 
-    def in_team(self):
-        if self.in_multiplayer():
-            return False, -1, -1
-        c1 = self.find_one('char_1_text',
-                           threshold=0.75)
-        c2 = self.find_one('char_2_text',
-                           threshold=0.75)
-        c3 = self.find_one('char_3_text',
-                           threshold=0.75)
-        arr = [c1, c2, c3]
-        # logger.debug(f'in_team check {arr} time: {(time.time() - start):.3f}s')
-        current = -1
-        exist_count = 0
-        for i in range(len(arr)):
-            if arr[i] is None:
-                if current == -1:
-                    current = i
-            else:
-                exist_count += 1
-        if exist_count == 2 or exist_count == 1:
-            return True, current, exist_count + 1
-        else:
-            return False, -1, exist_count + 1
-
-        # Function to check if a component forms a ring
-
     def mouse_reset(self):
         # # logger.debug("mouse_reset")
         # try:
