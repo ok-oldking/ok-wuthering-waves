@@ -49,15 +49,6 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         self.combat_start = 0
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
-        self.multiplayer_check_interval = 3
-        self._in_multiplayer = False
-        self._multiplayer_last_check = 0
-
-    def check_in_multiplayer(self):
-        self._multiplayer_last_check = time.time()
-        self._in_multiplayer = self.find_one('multiplayer_world_mark',
-                                             threshold=0.75) is not None
-        return self._in_multiplayer
 
     def send_key_and_wait_animation(self, key, check_function, total_wait=10, animation_wait=5):
         start = time.time()
@@ -423,13 +414,6 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         if percent > 1:
             percent = 1
         return percent
-
-    def in_multiplayer(self):
-        if self._in_multiplayer or self._multiplayer_last_check == 0:
-            return self.check_in_multiplayer()
-        if not self._in_multiplayer and time.time() - self._multiplayer_last_check > self.multiplayer_check_interval:
-            return self.check_in_multiplayer()
-        return self._in_multiplayer
 
     def mouse_reset(self):
         # # logger.debug("mouse_reset")

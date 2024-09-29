@@ -33,6 +33,10 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         self.monthly_card_config = self.get_config(monthly_card_config_option)
         self.next_monthly_card_start = 0
 
+        self.multiplayer_check_interval = 3
+        self._in_multiplayer = False
+        self._multiplayer_last_check = 0
+
     def validate(self, key, value):
         message = self.validate_config(key, value)
         if message:
@@ -257,6 +261,19 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
     def in_team_and_world(self):
         return self.in_team()[
             0]  # and self.find_one(f'gray_book_button', threshold=0.7, canny_lower=50, canny_higher=150)
+
+    def check_in_multiplayer(self):
+        self._multiplayer_last_check = time.time()
+        self._in_multiplayer = self.find_one('multiplayer_world_mark',
+                                             threshold=0.75) is not None
+        return self._in_multiplayera
+
+    def in_multiplayer(self):
+        if self._in_multiplayer or self._multiplayer_last_check == 0:
+            return self.check_in_multiplayer()
+        if not self._in_multiplayer and time.time() - self._multiplayer_last_check > self.multiplayer_check_interval:
+            return self.check_in_multiplayer()
+        return self._in_multiplayer
 
     def in_team(self):
         if self.in_multiplayer():
