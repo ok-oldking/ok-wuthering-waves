@@ -233,6 +233,12 @@
             "height": 2160,
             "id": 38,
             "file_name": "images/38.png"
+        },
+        {
+            "width": 3840,
+            "height": 2160,
+            "id": 39,
+            "file_name": "images/39.png"
         }
     ],
     "categories": [
@@ -570,10 +576,14 @@
         },
         {
             "id": 83,
-            "name": "target_enemy_white"
+            "name": "skip_quest_confirm"
         },
         {
             "id": 84,
+            "name": "target_enemy_white"
+        },
+        {
+            "id": 85,
             "name": "ww"
         }
     ],
@@ -1796,7 +1806,7 @@
         {
             "id": 81,
             "image_id": 37,
-            "category_id": 83,
+            "category_id": 84,
             "segmentation": [],
             "bbox": [
                 1688.0,
@@ -1837,6 +1847,21 @@
             "ignore": 0,
             "iscrowd": 0,
             "area": 635.6328449714375
+        },
+        {
+            "id": 84,
+            "image_id": 39,
+            "category_id": 83,
+            "segmentation": [],
+            "bbox": [
+                2296.991150442478,
+                1462.3008849557525,
+                105.13274336283175,
+                124.24778761061948
+            ],
+            "ignore": 0,
+            "iscrowd": 0,
+            "area": 13062.510768266884
         }
     ],
     "info": {
@@ -1845,6 +1870,6 @@
         "description": "",
         "contributor": "Label Studio",
         "url": "",
-        "date_created": "2024-09-29 11:52:06.454108"
+        "date_created": "2024-09-29 13:28:20.270108"
     }
 }

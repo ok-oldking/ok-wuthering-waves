@@ -16,7 +16,6 @@ class AutoDialogTask(TriggerTask, BaseWWTask, FindFeature, OCR):
         super().__init__()
         self.default_config = {'_enabled': True}
         self.skip = None
-        self.confirm_dialog_checked = False
         self.trigger_interval = 1
         self.has_eye_time = 0
         self.name = "Skip Dialog during Quests"
@@ -29,20 +28,7 @@ class AutoDialogTask(TriggerTask, BaseWWTask, FindFeature, OCR):
         if skip:
             logger.info('Click Skip Dialog')
             self.click_box(skip, move_back=True)
-            if not self.confirm_dialog_checked:
-                logger.info('Start checking if confirm dialog exists')
-                self.sleep(2)
-                if self.calculate_color_percentage(dialog_white_color, box=self.box_of_screen(0.42, 0.59, 0.56,
-                                                                                              0.64)) > 0.9 and self.calculate_color_percentage(
-                    dialog_black_color, box=self.box_of_screen(0.61, 0.60, 0.74, 0.64)) > 0.8:
-                    logger.info('confirm dialog exists, click confirm')
-                    self.click_relative(0.44, 0.55)
-                    self.sleep(0.2)
-                    self.click_relative(0.67, 0.62)
-                else:
-                    self.screenshot('dialog')
-                    logger.info('confirm dialog does not exist')
-                self.confirm_dialog_checked = True
+            return self.wait_click_feature('skip_quest_confirm', threshold=0.8)
         if time.time() - self.has_eye_time < 2:
             btn_dialog_close = self.find_one('btn_dialog_close', use_gray_scale=True, threshold=0.8)
             if btn_dialog_close:
