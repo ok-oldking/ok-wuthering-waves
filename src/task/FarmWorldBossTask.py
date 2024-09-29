@@ -15,7 +15,7 @@ class FarmWorldBossTask(BaseCombatTask):
         super().__init__()
         self.description = "Click Start in Game World"
         self.name = "Farm World Boss(Must Drop a WayPoint on the Boss First)"
-        self.boss_names = ['N/A', 'Bell-Borne Geochelone', 'Crownless', 'Thundering Mephis',
+        self.boss_names = ['N/A', 'Bell-Borne Geochelone', 'Crownless', 'Thundering Mephis', 'Tempest Mephis',
                            'Inferno Rider',
                            'Feilian Beringal',
                            'Mourning Aix', 'Impermanence Heron', 'Lampylumen Myriad', 'Mech Abomination',
