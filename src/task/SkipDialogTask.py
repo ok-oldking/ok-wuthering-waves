@@ -47,7 +47,7 @@ class AutoDialogTask(TriggerTask, BaseWWTask, FindFeature, OCR):
         if skip:
             logger.info('Click Skip Dialog')
             self.click_box(skip, move_back=True)
-            return self.wait_until(self.skip_confirm, wait_until_before_delay=0, raise_if_not_found=False)
+            return self.wait_until(self.skip_confirm, wait_until_before_delay=0, time_out=3, raise_if_not_found=False)
         if time.time() - self.has_eye_time < 2:
             btn_dialog_close = self.find_one('btn_dialog_close', use_gray_scale=True, threshold=0.8)
             if btn_dialog_close:
