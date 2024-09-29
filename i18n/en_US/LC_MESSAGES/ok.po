@@ -422,3 +422,15 @@ msgstr ""
 
 msgid "Illusive Realm"
 msgstr ""
+
+msgid "Fallacy of No Return"
+msgstr ""
+
+msgid "click Box(name='gray_book_all_monsters', x=53, y=713, width=104, height=107, confidence=77)"
+msgstr ""
+
+msgid "teleport to Fallacy of No Return index 6 in_dungeon False"
+msgstr ""
+
+msgid "index after scrolling down 6"
+msgstr ""
