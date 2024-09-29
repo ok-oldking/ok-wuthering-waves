@@ -372,7 +372,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         self.sleep(1)
         self.log_info(f'index after scrolling down {index}')
         self.click_relative(0.89, 0.91)
-
+        self.sleep(1)
         self.wait_click_travel()
         self.wait_in_team_and_world(time_out=120)
 
