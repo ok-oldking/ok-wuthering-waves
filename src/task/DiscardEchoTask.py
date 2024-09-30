@@ -142,9 +142,9 @@ class DiscardEchoTask(BaseCombatTask):
         steps = 0.08
         target_box = set_icon.copy(y_offset=-self.height_of_screen(steps), height_offset=self.height_of_screen(steps))
         while True:
-            self.click_relative(0.7, 0.5)
+            self.click_relative(0.5, 0.5)
             self.sleep(0.05)
-            self.scroll_relative(0.7, 0.5, -2)
+            self.scroll_relative(0.5, 0.5, -2)
             self.sleep(0.2)
             target = self.find_one('target_box', box=target_box, template=source_template, threshold=0.9)
             if not target:
