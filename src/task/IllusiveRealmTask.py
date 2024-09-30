@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from qfluentwidgets import FluentIcon
 
+from ok.feature.FeatureSet import mask_white
 from ok.logging.Logger import get_logger
 from src.task.BaseCombatTask import BaseCombatTask
 
@@ -21,12 +22,10 @@ class IllusiveRealmTask(BaseCombatTask):
 
     def in_realm(self):
         illusive_realm_menu = self.find_one('illusive_realm_menu',
-                                            use_gray_scale=False, threshold=0.4,
-                                            mask_function=mask_white)
+                                            use_gray_scale=False, threshold=0.4)
         if illusive_realm_menu:
             illusive_realm_exit = self.find_one('illusive_realm_exit',
-                                                use_gray_scale=False, threshold=0.4,
-                                                mask_function=mask_white)
+                                                use_gray_scale=False, threshold=0.4)
             return illusive_realm_exit is not None
 
     def perform(self):
@@ -80,16 +79,5 @@ def mask_target(image_path):
     return masked_image
 
 
-def mask_white(image):
-    # Check if the image is grayscale
-    if len(image.shape) == 2 or image.shape[2] == 1:
-        # Image is grayscale
-        lower_white = np.array([230])
-        upper_white = np.array([255])
-    else:
-        # Image is in color
-        lower_white = np.array([230, 230, 230])
-        upper_white = np.array([255, 255, 255])
-
-    # Create a mask for the white color
-    return cv2.inRange(image, lower_white, upper_white)
+def mask_button_white(image):
+    return mask_white(image, 230)
