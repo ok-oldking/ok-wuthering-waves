@@ -201,8 +201,8 @@ class DiscardEchoTask(BaseCombatTask):
             return True
 
     def get_echo_level_and_cost(self):
-        texts = self.ocr(0.87, 0.17, 0.96, 0.26, name='echo_stats', target_height=720, log=True)
-        cost = -1
+        texts = self.ocr(0.87, 0.17, 0.96, 0.26, name='echo_stats', target_height=1080, log=True)
+        cost = 1
         level = -1
         level_pattern = r'^\+\d+$'
         cost_pattern = r'^(?:COST\s*)?(\d+)$'
