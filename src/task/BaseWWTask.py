@@ -401,7 +401,8 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         if not self.in_team()[0]:
             self.send_key('esc')
             self.sleep(1)
-            return self.in_team()[0]
+            if not self.in_team()[0]:
+                raise Exception('must be in game world and in teams')
         return True
 
 

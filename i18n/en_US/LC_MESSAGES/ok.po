@@ -434,3 +434,117 @@ msgstr ""
 
 msgid "index after scrolling down 6"
 msgstr ""
+
+msgid "2"
+msgstr ""
+
+msgid "5"
+msgstr ""
+
+msgid "6"
+msgstr ""
+
+msgid "7"
+msgstr ""
+
+msgid "All echoes not checked in the config will be discarded, click start in game world, must be in a 16:9 screen ratio"
+msgstr ""
+
+msgid "Boss"
+msgstr ""
+
+msgid "Celestial Light"
+msgstr ""
+
+msgid "Discard Echo"
+msgstr ""
+
+msgid "Discarded"
+msgstr ""
+
+msgid "Dreamless"
+msgstr ""
+
+msgid "Freezing Frost"
+msgstr ""
+
+msgid "Jue"
+msgstr ""
+
+msgid "Keep 1C ATK"
+msgstr ""
+
+msgid "Keep 1C DEF"
+msgstr ""
+
+msgid "Keep 1C HP"
+msgstr ""
+
+msgid "Keep 3C ATK"
+msgstr ""
+
+msgid "Keep 3C Aero DMG"
+msgstr ""
+
+msgid "Keep 3C DEF"
+msgstr ""
+
+msgid "Keep 3C Electro DMG"
+msgstr ""
+
+msgid "Keep 3C Energy Regen"
+msgstr ""
+
+msgid "Keep 3C Fusion DMG"
+msgstr ""
+
+msgid "Keep 3C Glacio DMG"
+msgstr ""
+
+msgid "Keep 3C HP"
+msgstr ""
+
+msgid "Keep 3C Havoc DMG"
+msgstr ""
+
+msgid "Keep 3C Spectro DMG"
+msgstr ""
+
+msgid "Keep 4C ATK"
+msgstr ""
+
+msgid "Keep 4C Crit"
+msgstr ""
+
+msgid "Keep 4C Crit DMG"
+msgstr ""
+
+msgid "Keep 4C DEF"
+msgstr ""
+
+msgid "Keep 4C HP"
+msgstr ""
+
+msgid "Keep 4C Healing"
+msgstr ""
+
+msgid "Lingering Tunes"
+msgstr ""
+
+msgid "Molten Rift"
+msgstr ""
+
+msgid "Moonlit Clouds"
+msgstr ""
+
+msgid "Rejuvenating Glow"
+msgstr ""
+
+msgid "Sierra Gale"
+msgstr ""
+
+msgid "Sun-sinking Eclipse"
+msgstr ""
+
+msgid "Void Thunder"
+msgstr ""

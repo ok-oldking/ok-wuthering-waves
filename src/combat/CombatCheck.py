@@ -166,8 +166,6 @@ class CombatCheck:
                         return True
                 if self.check_health_bar():
                     return True
-                if self.ocr_lv_text():
-                    return True
                 if self.target_enemy():
                     return True
                 logger.error('target_enemy failed, try recheck break out of combat')
