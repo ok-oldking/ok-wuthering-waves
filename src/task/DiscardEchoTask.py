@@ -72,7 +72,9 @@ class DiscardEchoTask(BaseCombatTask):
         self.row_count = 4
         self.echo_x_distance = (0.58 - 0.15) / (self.col_count - 1)
         self.echo_y_distance = (0.76 - 0.19) / (self.row_count - 1)
-        self.scroll_distance = 0
+        self.set_names = []
+        for i in range(len(self.sets)):
+            self.set_names.append(f'set_name_{i}')
 
     def run(self):
         self.check_main()
@@ -86,7 +88,6 @@ class DiscardEchoTask(BaseCombatTask):
         self.click_relative(0.21, 0.29, after_sleep=1)
         self.click_relative(0.80, 0.83, after_sleep=1)
         self.check_level_sort()
-
         while True:
             if col >= self.col_count:
                 col = 0
@@ -131,41 +132,37 @@ class DiscardEchoTask(BaseCombatTask):
                 return main_stat
 
     def scroll_down_a_page(self):
-        if self.scroll_distance == 0:
-            source_box = self.box_of_screen(0.37, 0.69, 0.53, 0.84)
-            source_template = Feature(source_box.crop_frame(self.frame), source_box.x, source_box.y)
-            target_box = self.box_of_screen(0.36, 0.59, 0.54, 0.84)
-            self.click_relative(0.5, 0.5)
-            self.sleep(0.1)
-            self.scroll_relative(0.5, 0.5, -1)
-            self.sleep(1)
-            target = self.find_one('target_box', box=target_box, template=source_template, threshold=0.7)
-            if not target or source_box.y - target.y <= 0:
-                raise Exception("Can't find scroll distance!")
-            self.scroll_distance = source_box.y - target.y
-            offset = -1
-        else:
-            offset = 0
-        to_scroll = round(self.height_of_screen(0.86 - 0.11) / self.scroll_distance) + offset
-        self.log_info(f'to_scroll {to_scroll} self.scroll_distance {self.scroll_distance}')
-        i = 0
-        while i < to_scroll:
-            self.click_relative(0.5, 0.5)
-            self.sleep(0.1)
-            i += 1
-            offset = -1
-            self.scroll_relative(0.5, 0.5, offset)
-            self.sleep(0.1)
+        set_icon = self.find_best_match_in_box(self.box_of_screen(0.36, 0.67, 0.39, 0.86), self.set_names, 0.3)
+
+        # last_box.x -= self.height_of_screen(0.04)
+        # last_box.width += self.width_of_screen(0.03)
+        # last_box.y -= self.height_of_screen(0.05)
+        # last_box.height += self.width_of_screen(0.04)
+        source_template = Feature(set_icon.crop_frame(self.frame), set_icon.x, set_icon.y)
+        steps = 0.08
+        target_box = set_icon.copy(y_offset=-self.height_of_screen(steps), height_offset=self.height_of_screen(steps))
+        while True:
+            self.click_relative(0.7, 0.5)
+            self.sleep(0.05)
+            self.scroll_relative(0.7, 0.5, -2)
+            self.sleep(0.2)
+            target = self.find_one('target_box', box=target_box, template=source_template, threshold=0.9)
+            if not target:
+                self.sleep(1)
+                return
+            self.log_info(f'found target box {target}, continue scrolling')
+            target_box = target.copy(y_offset=-self.height_of_screen(steps),
+                                     height_offset=self.height_of_screen(steps))
+            if target_box.y < 0:
+                target_box.y = 0
 
     def find_set_by_template(self):
         box = self.get_box_by_name('box_set_name')
-        set_names = []
-        for i in range(len(self.sets)):
-            set_names.append(f'set_name_{i}')
-        set_name = self.find_best_match_in_box(box, set_names, 0.3)
+
+        set_name = self.find_best_match_in_box(box, self.set_names, 0.3)
         if not set_name:
             raise Exception("Can't find set name")
-        index = find_index_in_list(set_names, set_name.name)
+        index = find_index_in_list(self.set_names, set_name.name)
         if index == -1:
             raise Exception("Can't find set name")
         max_name = self.sets[index]
