@@ -1,6 +1,9 @@
 #
 msgid ""
 msgstr ""
+
+msgid ""
+msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: you@example.com\n"
 "Last-Translator: you@example.com\n"
@@ -8,9 +11,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-msgid ""
-msgstr ""
 
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
 msgstr "(1-6) 重要, 选择你对应世界等级可以产出声骸的难度, 从上到下为1-6"
@@ -210,9 +210,6 @@ msgstr "打开以启用自动拾取声骸"
 msgid "can't find gray_book_boss, make sure f2 is the hotkey for book"
 msgstr "找不到boss列表, 请确认快捷键f2可以打开书"
 
-msgid "1"
-msgstr ""
-
 msgid "Boss1 Echo Pickup Method"
 msgstr "Boss1搜索声骸方法"
 
@@ -234,113 +231,17 @@ msgstr "后退再前进"
 msgid "Death Count"
 msgstr "死亡次数"
 
-msgid "3"
-msgstr ""
-
-msgid "4"
-msgstr ""
-
-msgid "4C舍弃"
-msgstr ""
-
 msgid "Game Sound"
-msgstr ""
+msgstr "游戏声音"
 
 msgid "Mute Game while in Background"
-msgstr ""
+msgstr "游戏后台时静音"
 
 msgid "Pick Up Black List"
 msgstr "拾取黑名单"
 
 msgid "Pick Up White List"
 msgstr "拾取白名单"
-
-msgid "不绝余音"
-msgstr ""
-
-msgid "主属性攻击力百分比"
-msgstr ""
-
-msgid "主属性生命值百分比"
-msgstr ""
-
-msgid "主属性防御力百分比"
-msgstr ""
-
-msgid "全部未加锁"
-msgstr ""
-
-msgid "凝夜白霜"
-msgstr ""
-
-msgid "啸谷长风"
-msgstr ""
-
-msgid "在数据坞五合一界面启动"
-msgstr ""
-
-msgid "处理声骸COST"
-msgstr ""
-
-msgid "彻空冥雷"
-msgstr ""
-
-msgid "数据坞五合一 + 自动上锁, 游戏语言必须为简体中文,必须16:9分辨率"
-msgstr ""
-
-msgid "沉日劫明"
-msgstr ""
-
-msgid "浮星祛暗"
-msgstr ""
-
-msgid "熔山裂谷"
-msgstr ""
-
-msgid "轻云出月"
-msgstr ""
-
-msgid "锁定_1C_攻击"
-msgstr ""
-
-msgid "锁定_1C_生命"
-msgstr ""
-
-msgid "锁定_1C_防御"
-msgstr ""
-
-msgid "锁定_3C_共鸣效率"
-msgstr ""
-
-msgid "锁定_3C_冷凝伤害加成"
-msgstr ""
-
-msgid "锁定_3C_导电伤害加成"
-msgstr ""
-
-msgid "锁定_3C_攻击"
-msgstr ""
-
-msgid "锁定_3C_气动伤害加成"
-msgstr ""
-
-msgid "锁定_3C_湮灭伤害加成"
-msgstr ""
-
-msgid "锁定_3C_热熔伤害加成"
-msgstr ""
-
-msgid "锁定_3C_生命"
-msgstr ""
-
-msgid "锁定_3C_衍射伤害加成"
-msgstr ""
-
-msgid "锁定_3C_防御"
-msgstr ""
-
-msgid "隐世回光"
-msgstr ""
 
 msgid "Auto Combat in Illusive Realm"
 msgstr "需要上哪里亮了点哪里的角色"
@@ -357,14 +258,101 @@ msgstr "半自动肉鸽(深坠异想奇境)"
 msgid "Fallacy of No Return"
 msgstr "无归的谬误"
 
-msgid "click Box(name='gray_book_all_monsters', x=53, y=713, width=104, height=107, confidence=77)"
-msgstr ""
-
 msgid "click f2 to open the book"
+msgstr "点击F2打开书"
+
+msgid "Check configs to keep, click start in game world, must be in a 16:9 screen ratio"
+msgstr "必须16:9分辨率, 没有勾选的都会标记为弃置, 大世界启动"
+
+msgid "Boss"
 msgstr ""
 
-msgid "teleport to Fallacy of No Return index 6 in_dungeon False"
-msgstr ""
+msgid "Celestial Light"
+msgstr "浮星祛暗"
 
-msgid "index after scrolling down 6"
-msgstr ""
+msgid "Discard Echo"
+msgstr "弃置声骸"
+
+msgid "Discarded"
+msgstr "已弃置"
+
+msgid "Freezing Frost"
+msgstr "凝夜白霜"
+
+msgid "Keep 1C ATK"
+msgstr "保留 1C 攻击"
+
+msgid "Keep 1C DEF"
+msgstr "保留 1C 防御"
+
+msgid "Keep 1C HP"
+msgstr "保留 1C 生命"
+
+msgid "Keep 3C ATK"
+msgstr "保留 3C 攻击"
+
+msgid "Keep 3C Aero DMG"
+msgstr "保留 3C 风伤"
+
+msgid "Keep 3C DEF"
+msgstr "保留 3C 防御"
+
+msgid "Keep 3C Electro DMG"
+msgstr "保留 3C 雷伤"
+
+msgid "Keep 3C Energy Regen"
+msgstr "保留 3C 充能"
+
+msgid "Keep 3C Fusion DMG"
+msgstr "保留 3C 火伤"
+
+msgid "Keep 3C Glacio DMG"
+msgstr "保留 3C 冰伤"
+
+msgid "Keep 3C HP"
+msgstr "保留 3C 生命"
+
+msgid "Keep 3C Havoc DMG"
+msgstr "保留 3C 暗伤"
+
+msgid "Keep 3C Spectro DMG"
+msgstr "保留 3C 光伤"
+
+msgid "Keep 4C ATK"
+msgstr "保留 4C 攻击"
+
+msgid "Keep 4C Crit"
+msgstr "保留 4C 暴击"
+
+msgid "Keep 4C Crit DMG"
+msgstr "保留 4C 爆伤"
+
+msgid "Keep 4C DEF"
+msgstr "保留 4C 防御"
+
+msgid "Keep 4C HP"
+msgstr "保留 4C 生命"
+
+msgid "Keep 4C Healing"
+msgstr "保留 4C 治疗"
+
+msgid "Lingering Tunes"
+msgstr "不绝余音"
+
+msgid "Molten Rift"
+msgstr "熔山裂谷"
+
+msgid "Moonlit Clouds"
+msgstr "轻云出月"
+
+msgid "Rejuvenating Glow"
+msgstr "隐世回光"
+
+msgid "Sierra Gale"
+msgstr "啸谷长风"
+
+msgid "Sun-sinking Eclipse"
+msgstr "沉日劫明"
+
+msgid "Void Thunder"
+msgstr "彻空冥雷"
