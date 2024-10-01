@@ -77,6 +77,7 @@ class DiscardEchoTask(BaseCombatTask):
             self.set_names.append(f'set_name_{i}')
 
     def run(self):
+        return self.scroll_down_a_page()
         self.check_main()
         row = 0
         col = 0
@@ -134,18 +135,13 @@ class DiscardEchoTask(BaseCombatTask):
     def scroll_down_a_page(self):
         set_icon = self.find_best_match_in_box(self.box_of_screen(0.36, 0.67, 0.39, 0.86), self.set_names, 0.3)
 
-        # last_box.x -= self.height_of_screen(0.04)
-        # last_box.width += self.width_of_screen(0.03)
-        # last_box.y -= self.height_of_screen(0.05)
-        # last_box.height += self.width_of_screen(0.04)
         source_template = Feature(set_icon.crop_frame(self.frame), set_icon.x, set_icon.y)
         steps = 0.08
         target_box = set_icon.copy(y_offset=-self.height_of_screen(steps), height_offset=self.height_of_screen(steps))
+        self.click_relative(0.5, 0.5, after_sleep=1)
         while True:
-            self.click_relative(0.5, 0.5)
-            self.sleep(0.05)
-            self.scroll_relative(0.5, 0.5, -2)
-            self.sleep(0.2)
+            self.scroll_relative(0.5, 0.5, -1)
+            self.sleep(0.5)
             target = self.find_one('target_box', box=target_box, template=source_template, threshold=0.9)
             if not target:
                 self.sleep(1)
