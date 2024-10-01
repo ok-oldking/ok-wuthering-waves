@@ -548,3 +548,15 @@ msgstr ""
 
 msgid "Void Thunder"
 msgstr ""
+
+msgid "Check configs to keep, click start in game world, must be in a 16:9 screen ratio"
+msgstr ""
+
+msgid "Prevent Wuthering Waves from moving the mouse"
+msgstr ""
+
+msgid "Turn on if you mouse jumps around"
+msgstr ""
+
+msgid "load chars success [Encore, ShoreKeeper, Xiangliyao]"
+msgstr ""

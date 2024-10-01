@@ -392,9 +392,9 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
     def wait_book(self):
         gray_book_boss = self.wait_until(
             lambda: self.find_one('gray_book_all_monsters', vertical_variance=0.8, horizontal_variance=0.05,
-                                  threshold=0.6, canny_lower=50,
-                                  canny_higher=150),
+                                  threshold=0.4),
             time_out=3, wait_until_before_delay=2)
+        logger.info(f'found gray_book_boss {gray_book_boss}')
         return gray_book_boss
 
     def check_main(self):

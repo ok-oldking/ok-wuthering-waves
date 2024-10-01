@@ -166,6 +166,8 @@ class CombatCheck:
                         return True
                 if self.check_health_bar():
                     return True
+                if self.ocr_lv_text():
+                    return True
                 if self.target_enemy():
                     return True
                 logger.error('target_enemy failed, try recheck break out of combat')
@@ -187,7 +189,7 @@ class CombatCheck:
     def ocr_lv_text(self):
         lvs = self.ocr(box=self.target_area_box,
                        match=re.compile(r'lv\.\d{1,3}', re.IGNORECASE),
-                       target_height=540, name='lv_text', log=True)
+                       target_height=720, name='lv_text', log=True)
         return lvs
 
     def target_enemy(self, wait=True):
