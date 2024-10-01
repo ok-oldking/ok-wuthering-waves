@@ -16,7 +16,6 @@ class FarmWorldTask(BaseCombatTask):
 
     def run(self):
         self.set_check_monthly_card()
-        self.handler.post(self.mouse_reset, 0.01)
         self.run_to_combat()
 
     def run_to_combat(self):
