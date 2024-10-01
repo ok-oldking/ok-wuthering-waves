@@ -77,7 +77,6 @@ class DiscardEchoTask(BaseCombatTask):
             self.set_names.append(f'set_name_{i}')
 
     def run(self):
-        return self.scroll_down_a_page()
         self.check_main()
         row = 0
         col = 0
@@ -99,7 +98,7 @@ class DiscardEchoTask(BaseCombatTask):
                 col = 0
             x, y = self.get_pos(row, col)
             self.click_relative(x, y)
-            self.sleep(0.5)
+            self.sleep(0.2)
             col = col + 1
             if not self.is_gold():
                 self.log_info('not gold discard')
@@ -133,18 +132,23 @@ class DiscardEchoTask(BaseCombatTask):
                 return main_stat
 
     def scroll_down_a_page(self):
+        self.log_info(f'scroll down a page')
         set_icon = self.find_best_match_in_box(self.box_of_screen(0.36, 0.67, 0.39, 0.86), self.set_names, 0.3)
 
         source_template = Feature(set_icon.crop_frame(self.frame), set_icon.x, set_icon.y)
-        steps = 0.08
+        steps = 0.04
         target_box = set_icon.copy(y_offset=-self.height_of_screen(steps), height_offset=self.height_of_screen(steps))
-        self.click_relative(0.5, 0.5, after_sleep=1)
+        x, y = self.width_of_screen(1596 / 2560), self.height_of_screen(0.6)
+        self.mouse_down(x, y)
+        # self.sleep(0.1)
         while True:
-            self.scroll_relative(0.5, 0.5, -1)
-            self.sleep(0.5)
+            self.scroll(x, y, -1)
+            self.sleep(0.05)
             target = self.find_one('target_box', box=target_box, template=source_template, threshold=0.9)
             if not target:
-                self.sleep(1)
+                self.scroll(x, y, -1)
+                self.mouse_up()
+                self.sleep(0.01)
                 return
             self.log_info(f'found target box {target}, continue scrolling')
             target_box = target.copy(y_offset=-self.height_of_screen(steps),
