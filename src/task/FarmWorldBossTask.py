@@ -67,7 +67,6 @@ class FarmWorldBossTask(BaseCombatTask):
     def run(self):
         self.set_check_monthly_card()
         self.check_main()
-        self.handler.post(self.mouse_reset, 0.01)
         count = 0
         while True:
             for i in range(1, 4):
