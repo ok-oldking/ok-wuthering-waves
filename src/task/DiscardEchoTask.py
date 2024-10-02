@@ -72,6 +72,7 @@ class DiscardEchoTask(BaseCombatTask):
         self.current_cost = 0
 
     def run(self):
+        self.current_cost = 0
         if self.find_one('button_echo_merge'):
             self.click_empty_area()
             if not self.find_one('data_merge_first_add_slot', threshold=0.6):
