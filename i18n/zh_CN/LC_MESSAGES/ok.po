@@ -363,3 +363,8 @@ msgstr "防止鸣潮游戏移动鼠标"
 msgid "Turn on if you mouse jumps around"
 msgstr "如果打开鸣潮的时候鼠标会跳动(游戏问题,窗口后台的时候可能移动鼠标)"
 
+msgid "Auto Echo Data Merge"
+msgstr "自动合成声骸"
+
+msgid "Data Merge Completed!"
+msgstr "自动合成声骸完成!"

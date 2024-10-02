@@ -1,8 +1,7 @@
-import re
-
 import cv2
 import numpy as np
 
+import re
 from ok.feature.Box import find_boxes_by_name, find_boxes_within_boundary
 from ok.logging.Logger import get_logger
 from src.task.BaseCombatTask import BaseCombatTask
@@ -114,7 +113,7 @@ class FiveToOneTask(BaseCombatTask):
         self.click_empty_area()
 
     def click_empty_area(self):
-        self.click_relative(0.95, 0.51, after_sleep=2)
+        self.click_relative(0.95, 0.51, after_sleep=1)
 
     def check_ui(self):
         put = self.ocr(0.46, 0.64, 0.58, 0.69)
