@@ -1,5 +1,3 @@
-import re
-from ok.feature.Box import get_bounding_box
 from ok.feature.Feature import Feature
 from ok.feature.FeatureSet import mask_white
 from ok.util.list import find_index_in_list
@@ -11,7 +9,7 @@ class DiscardEchoTask(BaseCombatTask):
     def __init__(self):
         super().__init__()
         self.description = "Check configs to keep, click start in game world, must be in a 16:9 screen ratio"
-        self.name = "Discard Echo"
+        self.name = "Auto Echo Data Merge"
         self.default_config = {
             'Keep 1C HP': ['Rejuvenating Glow'],
             'Keep 1C DEF': [],
@@ -66,65 +64,87 @@ class DiscardEchoTask(BaseCombatTask):
         for key in self.default_config.keys():
             self.config_type[key] = {'type': "multi_selection", 'options': self.sets}
 
-        self.first_echo_x = 0.15
-        self.first_echo_y = 0.19
-        self.col_count = 6
-        self.row_count = 4
-        self.echo_x_distance = (0.58 - 0.15) / (self.col_count - 1)
-        self.echo_y_distance = (0.76 - 0.19) / (self.row_count - 1)
         self.set_names = []
         for i in range(len(self.sets)):
             self.set_names.append(f'set_name_{i}')
+        self.echo_positions = [(0.79, 0.20), (0.87, 0.30), (0.84, 0.47), (0.73, 0.47), (0.7, 0.3)]
+        self.confirmed = False
+        self.current_cost = 0
 
     def run(self):
-        self.check_main()
-        row = 0
-        col = 0
-        self.send_key('b')
-        self.sleep(2)
-        self.click_relative(0.04, 0.25, after_sleep=1)
-        self.click_relative(0.12, 0.91, after_sleep=2)
-        self.click_relative(0.61, 0.83, after_sleep=1)
-        self.click_relative(0.21, 0.29, after_sleep=1)
-        self.click_relative(0.80, 0.83, after_sleep=1)
-        self.check_level_sort()
+        if self.find_one('button_echo_merge'):
+            self.click_empty_area()
+            if not self.find_one('data_merge_first_add_slot', threshold=0.6):
+                self.log_info(f'remove added echos')
+                self.add_5()
+        else:
+            self.check_main()
+            self.send_key('esc')
+            self.sleep(2)
+            self.click_relative(0.75, 0.46, after_sleep=1)
+            self.click_relative(0.04, 0.55, after_sleep=1)
+            self.click_relative(0.53, 0.2, after_sleep=1)
+        self.incr_cost_filter()
+        starting_index = 0
         while True:
-            if col >= self.col_count:
-                col = 0
-                row += 1
-            if row >= self.row_count:
-                self.scroll_down_a_page()
-                row = 0
-                col = 0
-            x, y = self.get_pos(row, col)
-            self.click_relative(x, y)
-            self.sleep(0.2)
-            col = col + 1
-            if not self.is_gold():
-                self.log_info('not gold discard')
-                self.discard()
-                continue
+            starting_index = self.loop_merge(starting_index)
+            if starting_index == -1:
+                break
+        self.log_info(f'Data Merge Completed!', notify=True)
 
-            level, cost = self.get_echo_level_and_cost()
-            if level > 0:
-                self.log_info(f'Discard echo completed!')
-                return True
-            if cost <= 0:
-                raise Exception("Can't find echo cost")
+    def add_5(self):
+        self.log_info('try_add_five')
+        self.click(self.get_box_by_name('box_data_merge_add_clear'), after_sleep=0.5)
 
+    def loop_merge(self, start_index):
+        self.add_5()
+        if self.find_one('data_merge_first_add_slot', threshold=0.6):
+            if self.incr_cost_filter():
+                self.add_5()
+            else:
+                return -1
+        for i in range(start_index, len(self.echo_positions)):
+            x, y = self.echo_positions[i]
+            self.click_relative(x, y, after_sleep=0.5)
             main_stat = self.find_main_stat()
             set_name = self.find_set_by_template()
 
-            config_name = f'Keep {cost}C {main_stat}'
+            config_name = f'Keep {self.current_cost}C {main_stat}'
             self.log_info(f'found {config_name} {self.config.get(config_name)}')
-            if set_name not in self.config.get(config_name):
-                self.log_info(f'discard {config_name}')
-                self.info_incr('Discarded')
-                self.discard()
+            if set_name in self.config.get(config_name):
+                self.click_box(self.get_box_by_name('box_echo_lock_merge'))
+                self.click_empty_area()
+                self.add_5()
+                self.info_incr('Lock Count', 1)
+                return i
+            self.click_empty_area()
+        self.wait_merge()
+        return 0
+
+    def wait_merge(self):
+        self.wait_click_feature('button_echo_merge', raise_if_not_found=True)
+        self.handle_confirm()
+        self.wait_feature('data_merge_hcenter', pre_action=self.click_empty_area, wait_until_before_delay=1,
+                          time_out=15, raise_if_not_found=True)
+        self.click_relative(0.53, 0.19, after_sleep=1)
+        self.info_incr('Merge Count', 1)
+
+    def handle_confirm(self):
+        if not self.confirmed:
+            confirm = self.wait_feature('confirm_btn_hcenter_vcenter', time_out=3, raise_if_not_found=False,
+                                        wait_until_before_delay=1.5)
+            if confirm:
+                self.click_relative(0.44, 0.55)
+                self.sleep(0.5)
+                self.click_box(confirm, relative_x=-1)
+            self.confirmed = True
+
+    def click_empty_area(self):
+        self.click_relative(0.95, 0.51, after_sleep=0.5)
 
     def find_main_stat(self):
-        box = self.get_box_by_name('box_echo_stat')
-        stat = self.find_best_match_in_box(box, self.main_stats_feature_name, 0.6)
+        box = self.get_box_by_name('box_echo_main_stat_merge').scale(1.2, 1.2)
+        stat = self.find_best_match_in_box(box, self.main_stats_feature_name, 0.3)
         if not stat:
             raise Exception("Can't find main stat!")
         for main_stat in self.main_stats:
@@ -136,14 +156,15 @@ class DiscardEchoTask(BaseCombatTask):
         set_icon = self.find_best_match_in_box(self.box_of_screen(0.36, 0.67, 0.39, 0.86), self.set_names, 0.3)
 
         source_template = Feature(set_icon.crop_frame(self.frame), set_icon.x, set_icon.y)
-        steps = 0.04
-        target_box = set_icon.copy(y_offset=-self.height_of_screen(steps), height_offset=self.height_of_screen(steps))
+        steps = 0.03
+        target_box = set_icon.copy(y_offset=-self.height_of_screen(steps),
+                                   height_offset=self.height_of_screen(steps) + 2)
         x, y = self.width_of_screen(1596 / 2560), self.height_of_screen(0.6)
         self.mouse_down(x, y)
         # self.sleep(0.1)
         while True:
             self.scroll(x, y, -1)
-            self.sleep(0.05)
+            self.sleep(0.005)
             target = self.find_one('target_box', box=target_box, template=source_template, threshold=0.9)
             if not target:
                 self.scroll(x, y, -1)
@@ -152,12 +173,12 @@ class DiscardEchoTask(BaseCombatTask):
                 return
             self.log_info(f'found target box {target}, continue scrolling')
             target_box = target.copy(y_offset=-self.height_of_screen(steps),
-                                     height_offset=self.height_of_screen(steps))
+                                     height_offset=self.height_of_screen(steps) + 2)
             if target_box.y < 0:
                 target_box.y = 0
 
     def find_set_by_template(self):
-        box = self.get_box_by_name('box_set_name')
+        box = self.get_box_by_name('box_set_merge')
 
         set_name = self.find_best_match_in_box(box, self.set_names, 0.3)
         if not set_name:
@@ -176,43 +197,25 @@ class DiscardEchoTask(BaseCombatTask):
         self.click_box(discard)
         self.wait_feature('echo_discarded', threshold=0.6, time_out=5, raise_if_not_found=True)
 
-    def check_level_sort(self):
-        box = self.get_box_by_name('echo_sort_asc').scale(1.5, 1.5)
+    def incr_cost_filter(self):
+        if self.current_cost == 0:
+            self.current_cost = 1
+            x = 0.26
+        elif self.current_cost == 1:
+            self.current_cost = 3
+            x = 0.5
+        elif self.current_cost == 3:
+            self.current_cost = 4
+            x = 0.72
+        else:
+            return False
 
-        sort = self.find_best_match_in_box(box, ['echo_sort_asc', 'echo_sort_desc'], 0.6)
-        if not sort:
-            raise Exception("Can't open echo bag!")
-        if sort.name == 'echo_sort_desc':
-            self.log_info('change sort to asc')
-            self.click_box(sort, after_sleep=1)
-
-    def is_gold(self):
-        box = get_bounding_box([self.get_box_by_name('echo_rarity_gold'), self.get_box_by_name('echo_rarity_blue'),
-                                self.get_box_by_name('echo_rarity_green'),
-                                self.get_box_by_name('echo_rarity_purple')]).scale(1.03, 1.03)
-        sort = self.find_best_match_in_box(box, ['echo_rarity_gold', 'echo_rarity_blue', 'echo_rarity_green',
-                                                 'echo_rarity_purple'], 0.6)
-        if not sort:
-            raise Exception("Can't find rarity!")
-        if sort.name == 'echo_rarity_gold':
-            return True
-
-    def get_echo_level_and_cost(self):
-        texts = self.ocr(0.87, 0.17, 0.96, 0.26, name='echo_stats', target_height=1080, log=True)
-        cost = 1
-        level = -1
-        level_pattern = r'^\+\d+$'
-        cost_pattern = r'^(?:COST\s*)?(\d+)$'
-        for text in texts:
-            if re.match(level_pattern, text.name):
-                level = int(text.name[1:])
-            elif match := re.match(cost_pattern, text.name):
-                cost = int(match.group(1))
-
-        return level, cost
-
-    def get_pos(self, row, col):
-        return self.first_echo_x + col * self.echo_x_distance, self.first_echo_y + row * self.echo_y_distance
+        self.click_relative(0.04, 0.91, after_sleep=1)
+        self.click_relative(0.61, 0.83, after_sleep=0.5)
+        self.click_relative(x, 0.63, after_sleep=0.5)
+        self.click_relative(0.81, 0.84, after_sleep=1)
+        self.log_info(f'incr_cost_filter: {self.current_cost}')
+        return True
 
 
 def get_stat_feature_name(main_stat):
