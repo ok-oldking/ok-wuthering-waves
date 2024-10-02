@@ -19,8 +19,5 @@ class Yuanwu(BaseChar):
             self.continues_normal_attack(1.2)
             return self.switch_next_char()
         self.click_resonance()
-        self.continues_normal_attack(1 - self.time_elapsed_accounting_for_freeze(self.last_perform),
-                                     until_con_full=True)
-        if self.get_current_con() > 0.65:
-            self.click_echo()
+        self.click_echo()
         self.switch_next_char()
