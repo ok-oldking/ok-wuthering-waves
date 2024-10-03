@@ -1,9 +1,9 @@
-name: sync repos
+name: Clone and Push to Coding.net
 
 on:
   push:
     branches:
-      - main
+      - '**'
 
 jobs:
   clone-and-push:
