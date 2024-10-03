@@ -19,9 +19,12 @@ jobs:
           cd ok-wuthering-waves.git
 
       - name: Set up Git credentials
+        env:
+          CODING_USERNAME: ${{ secrets.CODING_USERNAME }}
+          CODING_PASSWORD: ${{ secrets.CODING_PASSWORD }}
         run: |
-          git config --global user.name "${{ secrets.CODING_USERNAME }}"
-          git config --global user.password "${{ secrets.CODING_PASSWORD }}"
+          git config --global credential.helper store
+          echo "https://${CODING_USERNAME}:${CODING_PASSWORD}@e.coding.net" > ~/.git-credentials
 
       - name: Push to Coding.net
         run: |
