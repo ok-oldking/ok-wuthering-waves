@@ -159,6 +159,8 @@ class CombatCheck:
                 if check_team and not self.in_team()[0]:
                     logger.info('not in team break out of combat')
                     return self.reset_to_false(recheck=False, reason="not in team")
+                if not self.check_target_enemy():
+                    return self.reset_to_false(recheck=False, reason="no target enemy")
                 if self.check_count_down():
                     return True
                 if self.boss_lv_template is not None:
@@ -191,6 +193,15 @@ class CombatCheck:
                        match=re.compile(r'lv\.\d{1,3}', re.IGNORECASE),
                        target_height=720, name='lv_text', log=True)
         return lvs
+
+    def check_target_enemy(self):
+        if self.calculate_color_percentage(text_white_color,
+                                           self.get_box_by_name('box_target_enemy')) == 0:
+            self.log_error(
+                "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (HDR/Game Filter)",
+                notify=True, tray=True)
+            self.pause()
+        return True
 
     def target_enemy(self, wait=True):
         if not wait:
