@@ -48,26 +48,6 @@ class FarmWorldBossTask(BaseCombatTask):
 
     # not current in use because not stable, right now using one click to scroll down
 
-    def teleport_to_heal(self):
-        self.info['Death Count'] = self.info.get('Death Count', 0) + 1
-        self.send_key('esc')
-        self.sleep(1)
-        self.log_info('click m to open the map')
-        self.send_key('m')
-        self.sleep(2)
-        for i in range(4):
-            self.click_relative(0.94, 0.29, after_sleep=0.5)
-            logger.info(f'click zoom')
-        self.click_relative(0.91, 0.77, after_sleep=1)
-        self.log_info('click change map')
-        self.click_relative(0.77, 0.15, after_sleep=1)
-        self.click_relative(0.48, 0.26, after_sleep=1)
-        logger.info(f'click heal')
-        travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
-        self.click_box(travel, relative_x=1.5)
-        self.wait_in_team_and_world(time_out=20)
-        self.sleep(2)
-
     def run(self):
         self.set_check_monthly_card()
         self.check_main()
