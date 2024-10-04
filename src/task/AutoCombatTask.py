@@ -28,11 +28,12 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                     self.teleport_to_heal()
                 except Exception as e:
                     logger.error('teleport to heal error', e)
+                break
             except NotInCombatException as e:
                 logger.info(f'auto_combat_task_out_of_combat {e}')
                 if self.debug:
                     self.screenshot(f'auto_combat_task_out_of_combat {e}')
-            break
+                break
 
     def trigger(self):
         if self.in_combat():
