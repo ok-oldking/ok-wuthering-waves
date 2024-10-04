@@ -197,9 +197,15 @@ class CombatCheck:
     def check_target_enemy(self):
         if self.calculate_color_percentage(text_white_color,
                                            self.get_box_by_name('box_target_enemy')) == 0:
+            if self.wait_until(lambda: self.calculate_color_percentage(text_white_color,
+                                                                       self.get_box_by_name('box_target_enemy')) != 0,
+                               wait_until_before_delay=0,
+                               time_out=3):
+                return True
             self.log_error(
                 "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (HDR/Game Filter)",
                 notify=True, tray=True)
+            self.screenshot('check_target_enemy')
             self.pause()
         return True
 
