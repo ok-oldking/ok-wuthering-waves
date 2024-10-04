@@ -25,7 +25,7 @@ class CombatCheck:
         self.boss_health_box = None
         self.boss_health = None
         self.out_of_combat_reason = ""
-        self.combat_check_interval = 0.8
+        self.combat_check_interval = 1
         self._last_liberation = 0
 
     @property
@@ -48,7 +48,8 @@ class CombatCheck:
             logger.info('out of combat start double check')
             if self.debug:
                 self.screenshot('out of combat start double check')
-            if self.wait_until(self.check_health_bar, time_out=1.2, wait_until_before_delay=0):
+            if self.wait_until(self.check_health_bar, time_out=1.2, wait_until_before_delay=0,
+                               wait_until_check_delay=0):
                 return True
         self.out_of_combat_reason = reason
         self.do_reset_to_false()
@@ -142,10 +143,10 @@ class CombatCheck:
     def find_target_enemy(self):
         start = time.time()
         target_enemy = self.find_one('target_enemy_white', box=self.target_area_box,
-                                     use_gray_scale=True, threshold=0.83,
+                                     use_gray_scale=True, threshold=0.7,
                                      frame_processor=keep_only_white)
-        # if self.debug and target_enemy is not None:
-        #     self.screenshot('find_target_enemy')
+        if self.debug and target_enemy is None:
+            self.screenshot('find_target_enemy')
         logger.debug(f'find_target_enemy {target_enemy} {time.time() - start}')
         return target_enemy is not None
 
@@ -162,16 +163,19 @@ class CombatCheck:
                 if not self.check_target_enemy():
                     return self.reset_to_false(recheck=False, reason="no target enemy")
                 if self.check_count_down():
-                    return True
+                    return self.log_time(now, 'check_count_down')
                 if self.boss_lv_template is not None:
                     if self.check_boss():
-                        return True
+                        return self.log_time(now, 'check_boss')
                 if self.check_health_bar():
-                    return True
+                    return self.log_time(now, 'check_health_bar')
+                if self.find_target_enemy():
+                    return self.log_time(now, 'find_target_enemy')
                 if self.ocr_lv_text():
-                    return True
+                    return self.log_time(now, 'ocr_lv_text')
+                self.next_frame()
                 if self.target_enemy():
-                    return True
+                    return self.log_time(now, 'target_enemy')
                 logger.error('target_enemy failed, try recheck break out of combat')
                 return self.reset_to_false(recheck=True, reason='target enemy failed')
             else:
@@ -188,6 +192,10 @@ class CombatCheck:
                 self._in_combat = True
                 return True
 
+    def log_time(self, start, name):
+        logger.debug(f'check cost {name} {time.time() - start}')
+        return True
+
     def ocr_lv_text(self):
         lvs = self.ocr(box=self.target_area_box,
                        match=re.compile(r'lv\.\d{1,3}', re.IGNORECASE),
@@ -197,9 +205,10 @@ class CombatCheck:
     def check_target_enemy(self):
         if self.calculate_color_percentage(text_white_color,
                                            self.get_box_by_name('box_target_enemy')) == 0:
+            logger.info(f'check target_enemy failed, wait 3 seconds')
             if self.wait_until(lambda: self.calculate_color_percentage(text_white_color,
                                                                        self.get_box_by_name('box_target_enemy')) != 0,
-                               wait_until_before_delay=0,
+                               wait_until_before_delay=0, wait_until_check_delay=0,
                                time_out=3):
                 return True
             self.log_error(
