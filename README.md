@@ -11,7 +11,7 @@
 ![GitHub release (with filter)](https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves)
 ![GitHub all releases](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)
 ![Static Badge](https://img.shields.io/badge/QQ%E7%BE%A4-970523295-purple)
-
+![Static Badge](https://img.shields.io/badge/Discord-blue?link=https%3A%2F%2Fdiscord.gg%2FZMHXx5QBuH)
 ### English | [简体中文](README_cn.md)
 
 ![img.png](readme/img.png)
