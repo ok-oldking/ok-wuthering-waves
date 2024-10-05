@@ -143,7 +143,7 @@ class CombatCheck:
     def find_target_enemy(self):
         start = time.time()
         target_enemy = self.find_one('target_enemy_white', box=self.target_area_box,
-                                     use_gray_scale=True, threshold=0.7,
+                                     use_gray_scale=True, threshold=0.85,
                                      frame_processor=keep_only_white)
         if self.debug and target_enemy is None:
             self.screenshot('find_target_enemy')
