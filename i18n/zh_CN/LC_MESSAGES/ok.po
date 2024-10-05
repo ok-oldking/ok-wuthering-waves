@@ -370,4 +370,4 @@ msgid "Data Merge Completed!"
 msgstr "自动合成声骸完成!"
 
 msgid "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (HDR/Game Filter)"
-msgstr "自动战斗错误:请确认已装备声骸, 并关闭HDR/显卡滤镜等一切改变游戏颜色的配置."
+msgstr "自动战斗错误:请确认已装备声骸, 游戏为默认亮度, 并关闭夜灯模式/显示器高级色彩/显卡滤镜等一切改变游戏颜色的配置."
