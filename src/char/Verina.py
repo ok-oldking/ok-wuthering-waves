@@ -8,10 +8,8 @@ class Verina(Healer):
         if self.flying():
             self.normal_attack()
             return self.switch_next_char()
-        if self.click_resonance(send_click=False)[0]:
-            return self.switch_next_char()
+        self.click_resonance(send_click=False)
         self.click_echo()
         if self.is_forte_full():
             self.heavy_attack()
-        # self.normal_attack()
         self.switch_next_char()

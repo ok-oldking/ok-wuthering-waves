@@ -199,7 +199,7 @@ class CombatCheck:
     def ocr_lv_text(self):
         lvs = self.ocr(box=self.target_area_box,
                        match=re.compile(r'lv\.\d{1,3}', re.IGNORECASE),
-                       target_height=720, name='lv_text', log=True)
+                       target_height=540, name='lv_text', log=True)
         return lvs
 
     def check_target_enemy(self):
@@ -209,10 +209,10 @@ class CombatCheck:
             if self.wait_until(lambda: self.calculate_color_percentage(text_white_color,
                                                                        self.get_box_by_name('box_target_enemy')) != 0,
                                wait_until_before_delay=0, wait_until_check_delay=0,
-                               time_out=3):
+                               time_out=5):
                 return True
             self.log_error(
-                "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (HDR/Game Filter)",
+                "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options",
                 notify=True, tray=True)
             self.screenshot('check_target_enemy')
             self.pause()
