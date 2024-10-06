@@ -9,5 +9,4 @@ class ShoreKeeper(Healer):
         self.click_echo()
         if self.is_forte_full():
             self.heavy_attack()
-        # self.normal_attack()
         self.switch_next_char()

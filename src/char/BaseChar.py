@@ -11,6 +11,7 @@ class Priority(IntEnum):
     MIN = -999999999
     SWITCH_CD = -1000
     CURRENT_CHAR = -100
+    CURRENT_CHAR_PLUS = CURRENT_CHAR + 1
     SKILL_AVAILABLE = 100
     ALL_IN_CD = 0
     NORMAL = 10
