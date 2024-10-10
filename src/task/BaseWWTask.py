@@ -29,8 +29,8 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
 
     def __init__(self):
         super().__init__()
-        self.pick_echo_config = self.get_config(pick_echo_config_option)
-        self.monthly_card_config = self.get_config(monthly_card_config_option)
+        self.pick_echo_config = self.get_global_config(pick_echo_config_option)
+        self.monthly_card_config = self.get_global_config(monthly_card_config_option)
         self.next_monthly_card_start = 0
 
         self.multiplayer_check_interval = 3
