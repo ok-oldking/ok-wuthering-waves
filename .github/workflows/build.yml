@@ -71,11 +71,9 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           body: |
-            ok-ww-Nvidia-GPU-full GPU完整版, 需要英伟达RTX2000显卡以上或部分10显卡, 最新显卡驱动, 不需要再下载依赖,
-            ok-ww-CPU-full CPU完整版, 不需要再下载依赖,
-            ok-ww-release 无依赖版, 安装后需要下载依赖
-            ok-ww.zip zip压缩版, 无法解压7z的可以下载
-            更新内容：
+            ok-ww-Nvidia-GPU-full (Nvidia GPU >=RTX2000 with latest driver)
+            ok-ww-CPU-full (AMD or other GPUs)
+            Updates：
             ${{ steps.changes.outputs.changes }}
           draft: false
           prerelease: true
