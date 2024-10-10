@@ -43,7 +43,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         CombatCheck.__init__(self)
         self.chars = [None, None, None]
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
-        self.key_config = self.get_config(key_config_option)
+        self.key_config = self.get_global_config(key_config_option)
 
         self.mouse_pos = None
         self.combat_start = 0
