@@ -45,6 +45,9 @@ python main_debug.py # run the debug version
 python main_gpu_debug.py # run the gpu debug version
 python main_gpu.py # run the gpu release version
 ```
+### Must Set Game Settings
+![image](https://github.com/user-attachments/assets/7d5f27b4-7b28-4471-bf7b-096dccd4ec4d)
+![image](https://github.com/user-attachments/assets/66deba93-d0e7-41c0-985c-248deee9b8ff)
 
 ### FAQ
 
