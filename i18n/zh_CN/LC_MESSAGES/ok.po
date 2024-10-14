@@ -1,6 +1,9 @@
 #
 msgid ""
 msgstr ""
+
+msgid ""
+msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: you@example.com\n"
 "Last-Translator: you@example.com\n"
@@ -8,9 +11,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-msgid ""
-msgstr ""
 
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
 msgstr "(1-6) 重要, 选择你对应世界等级可以产出声骸的难度, 从上到下为1-6"
@@ -371,3 +371,18 @@ msgstr "自动合成声骸完成!"
 
 msgid "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
 msgstr "自动战斗错误:请确认已装备声骸,关闭运动模糊,游戏为默认亮度,并关闭夜灯模式/显示器高级色彩/显卡滤镜等一切改变游戏颜色的配置."
+
+msgid "Auto Login"
+msgstr "自动登录游戏"
+
+msgid "Auto Login After Game Starts"
+msgstr "游戏启动后自动登录游戏"
+
+msgid "Auto Start Game"
+msgstr "自动启动游戏"
+
+msgid "Auto Start Game When App Starts"
+msgstr "APP启动后自动启动游戏"
+
+msgid "Auto Login Success"
+msgstr "自动登录成功"
