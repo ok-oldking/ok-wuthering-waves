@@ -323,6 +323,12 @@
             "height": 2160,
             "id": 53,
             "file_name": "images/53.png"
+        },
+        {
+            "width": 3840,
+            "height": 2160,
+            "id": 54,
+            "file_name": "images/54.png"
         }
     ],
     "categories": [
@@ -748,74 +754,78 @@
         },
         {
             "id": 105,
-            "name": "monthly_card"
+            "name": "login_account"
         },
         {
             "id": 106,
-            "name": "multiplayer_world_mark"
+            "name": "monthly_card"
         },
         {
             "id": 107,
-            "name": "pick_up_f_hcenter_vcenter"
+            "name": "multiplayer_world_mark"
         },
         {
             "id": 108,
-            "name": "purple_target_distance_icon"
+            "name": "pick_up_f_hcenter_vcenter"
         },
         {
             "id": 109,
-            "name": "remove_custom"
+            "name": "purple_target_distance_icon"
         },
         {
             "id": 110,
-            "name": "revive_confirm_hcenter_vcenter"
+            "name": "remove_custom"
         },
         {
             "id": 111,
-            "name": "set_name_0"
+            "name": "revive_confirm_hcenter_vcenter"
         },
         {
             "id": 112,
-            "name": "set_name_1"
+            "name": "set_name_0"
         },
         {
             "id": 113,
-            "name": "set_name_2"
+            "name": "set_name_1"
         },
         {
             "id": 114,
-            "name": "set_name_3"
+            "name": "set_name_2"
         },
         {
             "id": 115,
-            "name": "set_name_4"
+            "name": "set_name_3"
         },
         {
             "id": 116,
-            "name": "set_name_5"
+            "name": "set_name_4"
         },
         {
             "id": 117,
-            "name": "set_name_6"
+            "name": "set_name_5"
         },
         {
             "id": 118,
-            "name": "set_name_7"
+            "name": "set_name_6"
         },
         {
             "id": 119,
-            "name": "set_name_8"
+            "name": "set_name_7"
         },
         {
             "id": 120,
-            "name": "skip_quest_confirm"
+            "name": "set_name_8"
         },
         {
             "id": 121,
-            "name": "target_enemy_white"
+            "name": "skip_quest_confirm"
         },
         {
             "id": 122,
+            "name": "target_enemy_white"
+        },
+        {
+            "id": 123,
             "name": "ww"
         }
     ],
@@ -1168,7 +1178,7 @@
         {
             "id": 23,
             "image_id": 8,
-            "category_id": 110,
+            "category_id": 111,
             "segmentation": [],
             "bbox": [
                 2887.0,
@@ -1543,7 +1553,7 @@
         {
             "id": 48,
             "image_id": 21,
-            "category_id": 109,
+            "category_id": 110,
             "segmentation": [],
             "bbox": [
                 3083.8938053097336,
@@ -1618,7 +1628,7 @@
         {
             "id": 53,
             "image_id": 24,
-            "category_id": 108,
+            "category_id": 109,
             "segmentation": [],
             "bbox": [
                 2090.0,
@@ -1753,7 +1763,7 @@
         {
             "id": 62,
             "image_id": 28,
-            "category_id": 105,
+            "category_id": 106,
             "segmentation": [],
             "bbox": [
                 1555.0000000000002,
@@ -1783,7 +1793,7 @@
         {
             "id": 64,
             "image_id": 30,
-            "category_id": 107,
+            "category_id": 108,
             "segmentation": [],
             "bbox": [
                 2440.9999999999995,
@@ -1843,7 +1853,7 @@
         {
             "id": 68,
             "image_id": 33,
-            "category_id": 121,
+            "category_id": 122,
             "segmentation": [],
             "bbox": [
                 1688.0,
@@ -1873,7 +1883,7 @@
         {
             "id": 70,
             "image_id": 34,
-            "category_id": 106,
+            "category_id": 107,
             "segmentation": [],
             "bbox": [
                 76.77271661865221,
@@ -1888,7 +1898,7 @@
         {
             "id": 71,
             "image_id": 35,
-            "category_id": 120,
+            "category_id": 121,
             "segmentation": [],
             "bbox": [
                 2296.991150442478,
@@ -2053,7 +2063,7 @@
         {
             "id": 82,
             "image_id": 39,
-            "category_id": 111,
+            "category_id": 112,
             "segmentation": [],
             "bbox": [
                 2010.731069247442,
@@ -2068,7 +2078,7 @@
         {
             "id": 83,
             "image_id": 39,
-            "category_id": 113,
+            "category_id": 114,
             "segmentation": [],
             "bbox": [
                 2010.138498421424,
@@ -2083,7 +2093,7 @@
         {
             "id": 84,
             "image_id": 39,
-            "category_id": 114,
+            "category_id": 115,
             "segmentation": [],
             "bbox": [
                 1475.0999455437145,
@@ -2098,7 +2108,7 @@
         {
             "id": 85,
             "image_id": 39,
-            "category_id": 119,
+            "category_id": 120,
             "segmentation": [],
             "bbox": [
                 1742.61922198257,
@@ -2113,7 +2123,7 @@
         {
             "id": 86,
             "image_id": 39,
-            "category_id": 118,
+            "category_id": 119,
             "segmentation": [],
             "bbox": [
                 1207.5806691048583,
@@ -2128,7 +2138,7 @@
         {
             "id": 87,
             "image_id": 39,
-            "category_id": 116,
+            "category_id": 117,
             "segmentation": [],
             "bbox": [
                 134.87430187125648,
@@ -2143,7 +2153,7 @@
         {
             "id": 88,
             "image_id": 39,
-            "category_id": 115,
+            "category_id": 116,
             "segmentation": [],
             "bbox": [
                 402.8245815888193,
@@ -2158,7 +2168,7 @@
         {
             "id": 89,
             "image_id": 39,
-            "category_id": 112,
+            "category_id": 113,
             "segmentation": [],
             "bbox": [
                 2010.2654867256613,
@@ -2338,7 +2348,7 @@
         {
             "id": 101,
             "image_id": 50,
-            "category_id": 117,
+            "category_id": 118,
             "segmentation": [],
             "bbox": [
                 1742.61922198257,
@@ -2394,6 +2404,21 @@
             "ignore": 0,
             "iscrowd": 0,
             "area": 24511.23815490614
+        },
+        {
+            "id": 105,
+            "image_id": 54,
+            "category_id": 105,
+            "segmentation": [],
+            "bbox": [
+                3567.136929460579,
+                1187.5518672199169,
+                129.95850622406957,
+                103.07053941908717
+            ],
+            "ignore": 0,
+            "iscrowd": 0,
+            "area": 13394.893338613647
         }
     ],
     "info": {
@@ -2402,6 +2427,6 @@
         "description": "",
         "contributor": "Label Studio",
         "url": "",
-        "date_created": "2024-10-04 19:35:09.109616"
+        "date_created": "2024-10-14 23:31:11.716414"
     }
 }
