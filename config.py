@@ -121,6 +121,7 @@ config = {
         ["src.task.AutoPickTask", "AutoPickTask"],
         ["src.task.SkipDialogTask", "AutoDialogTask"],
         ["src.task.MultiplayerAutoCombatTask", "MultiplayerAutoCombatTask"],
-        ["src.task.MouseResetTask", "MouseResetTask"]
+        ["src.task.MouseResetTask", "MouseResetTask"],
+        ["src.task.AutoLoginTask", "AutoLoginTask"],
     ]
 }

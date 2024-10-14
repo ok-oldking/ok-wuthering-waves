@@ -560,3 +560,18 @@ msgstr ""
 
 msgid "load chars success [Encore, ShoreKeeper, Xiangliyao]"
 msgstr ""
+
+msgid "Auto Echo Data Merge"
+msgstr ""
+
+msgid "Auto Login"
+msgstr ""
+
+msgid "Auto Login After Game Starts"
+msgstr ""
+
+msgid "Auto Start Game"
+msgstr ""
+
+msgid "Auto Start Game When App Starts"
+msgstr ""
