@@ -386,3 +386,6 @@ msgstr "APP启动后自动启动游戏"
 
 msgid "Auto Login Success"
 msgstr "自动登录成功"
+
+msgid "Must choose at least 2 Boss to Farm"
+msgstr "必须至少选择两个Boss"
