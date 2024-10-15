@@ -26,10 +26,12 @@ class AutoLoginTask(BaseWWTask, TriggerTask):
         elif self.find_one('login_account', threshold=0.7):
             self.wait_until(lambda: self.find_one('login_account', threshold=0.7) is None,
                             pre_action=lambda: self.click_relative(0.5, 0.9),
-                            wait_until_check_delay=3, time_out=20)
+                            wait_until_check_delay=3, time_out=30)
             self.wait_until(lambda: self.find_one('monthly_card', threshold=0.7) or self.in_team_and_world(),
                             pre_action=lambda: self.click_relative(0.5, 0.9),
-                            wait_until_check_delay=3, time_out=60)
-            self.click_relative(0.5, 0.9)
+                            wait_until_check_delay=3, time_out=120)
+            self.wait_until(lambda: self.in_team_and_world(),
+                            post_action=lambda: self.click_relative(0.5, 0.9),
+                            wait_until_check_delay=3, time_out=5)
             self.log_info('Auto Login Success', notify=True)
             self._logged_in = True
