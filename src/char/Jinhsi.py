@@ -38,8 +38,6 @@ class Jinhsi(BaseChar):
             self.logger.info(
                 f'switch priority max because has_intro {has_intro} incarnation {self.incarnation} incarnation_cd {self.incarnation_cd}')
             return Priority.MAX
-        elif self.echo_available():
-            return super().do_get_switch_priority(current_char, has_intro)
         else:
             return Priority.MIN
 
