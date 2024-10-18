@@ -63,7 +63,7 @@
 
 ### Usage (Python Source Code)
 
-Use Python 3.11, other versions might work but are not tested.
+Use Python 3.12，other versions might work but are not tested.
 
 ```
 pip install -r requirements.txt #install python dependencies
@@ -72,6 +72,14 @@ python main_debug.py # run the debug version
 python main_gpu_debug.py # run the gpu debug version
 python main_gpu.py # run the gpu release version
 ```
+
+cli/)
+
+### 加入我们
+
+* 由于基于[ok-script](https://github.com/ok-oldking/ok-script)开发，项目代码仅有3000行（Python），简单易维护
+* 也欢迎使用[ok-script](https://github.com/ok-oldking/ok-script)开发你自己的开源项目，一套代码同时支持PC，模拟器，真机。分辨率自适应，宽屏自适应。无服务器增量更新等功能
+* 有兴趣的请加开发者群926858895
 
 ### 致谢
 
