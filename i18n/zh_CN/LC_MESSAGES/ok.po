@@ -389,3 +389,6 @@ msgstr "自动登录成功"
 
 msgid "Must choose at least 2 Boss to Farm"
 msgstr "必须至少选择两个Boss"
+
+msgid "Can not auto combat because team can only have one healer at most"
+msgstr "无法自动战斗, 队伍最多只能有一个治疗角色"
