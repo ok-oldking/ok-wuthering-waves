@@ -29,10 +29,17 @@ role_values = [role for role in Role]
 
 char_lib_check_marks = ['char_1_lib_check_mark', 'char_2_lib_check_mark', 'char_3_lib_check_mark']
 
+from enum import Enum
+class WWRole(Enum):
+    Default = 0
+    MainDps = 1
+    SubDps = 2
+    Healer = 3
 
 class BaseChar:
-
-    def __init__(self, task, index, res_cd=20, echo_cd=20):
+    def __init__(self, task, index, res_cd=20, echo_cd=20,role: WWRole = WWRole.Default,full_con_swap_to: WWRole = WWRole.Default):
+        self.role = role
+        self.full_con_swap_to = full_con_swap_to
         self.white_off_threshold = 0.01
         self.echo_cd = echo_cd
         self.task = task
@@ -309,13 +316,22 @@ class BaseChar:
 
     def get_switch_priority(self, current_char, has_intro, target_low_con):
         priority = self.do_get_switch_priority(current_char, has_intro, target_low_con)
-        if priority < Priority.MAX and time.time() - self.last_switch_time < 0.9:
+        switch_cd = time.time() - self.last_switch_time
+        if priority > Priority.MAX:#if its mandatory to switch to this character we do normal attacks to wait the switch timer
+            if switch_cd < 1:
+                self.continues_normal_attack(switch_cd+0.1)
+            return priority
+        elif switch_cd < 0.9:
             return Priority.SWITCH_CD  # switch cd
         else:
             return priority
 
     def do_get_switch_priority(self, current_char, has_intro=False, target_low_con=False):
+        if self.role == current_char.full_con_swap_to and has_intro:
+            return Priority.MAX*2
         priority = 0
+        if self.role == WWRole.Healer and has_intro and not target_low_con:
+            priority = Priority.MIN
         if self.count_liberation_priority() and self.liberation_available():
             priority += self.count_liberation_priority()
         if self.count_resonance_priority() and self.resonance_available():
