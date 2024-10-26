@@ -5,12 +5,12 @@ class Zhezhi(BaseChar):
     def count_liberation_priority(self):
         return 30
     def do_perform(self):
-        if self.has_intro:
+        if self.has_intro and self.is_forte_full() == False:
             self.continues_normal_attack(1.5)
         if self.liberation_available():
             self.click_liberation()
-        if self.is_con_full():
-            self.click_resonance(post_sleep=0.4)
+        if self.is_forte_full():
+            self.click_resonance(post_sleep=0.5)
             self.normal_attack()
         if self.echo_available():
             self.click_echo()

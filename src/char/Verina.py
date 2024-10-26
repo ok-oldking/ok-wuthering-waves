@@ -1,7 +1,6 @@
-from src.char.Healer import Healer
+from src.char.BaseChar import BaseChar
 
-
-class Verina(Healer):
+class Verina(BaseChar):
 
     def do_perform(self):
         self.click_liberation()

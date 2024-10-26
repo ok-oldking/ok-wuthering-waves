@@ -1,8 +1,6 @@
-from src.char.Healer import Healer
+from src.char.BaseChar import BaseChar
 
-
-class Baizhi(Healer):
-
+class Baizhi(BaseChar):
     def do_perform(self):
         if self.has_intro:
             self.logger.debug('has_intro wait click 1.2 sec')

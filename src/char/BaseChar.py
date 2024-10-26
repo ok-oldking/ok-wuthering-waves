@@ -6,7 +6,7 @@ from ok.logging.Logger import get_logger
 from src import text_white_color
 from typing import Any
 
-
+from src.char._echoes import Echos
 class Priority(IntEnum):
     MIN = -999999999
     SWITCH_CD = -1000
@@ -35,13 +35,27 @@ class WWRole(Enum):
     MainDps = 1
     SubDps = 2
     Healer = 3
-
+class UseLiberationState(Enum):
+    Default = 0
+    UseAfterIntro = 1
+    UseAfterUnswappableBuffIntro = 2
+class UseFullForteState(Enum):
+    Default = 0
+    UseAfterIntro = 1
+    UseAfterUnswappableBuffIntro = 2
 class BaseChar:
-    def __init__(self, task, index, res_cd=20, echo_cd=20,role: WWRole = WWRole.Default,full_con_swap_to: WWRole = WWRole.Default):
+    def __init__(self, task, index, res_cd=20,role: WWRole = WWRole.Default,full_con_swap_to: WWRole = WWRole.Default,has_unswappable_buff: bool = False, use_liberation_sate: UseLiberationState =UseLiberationState.Default
+    , use_fullforte_state: UseFullForteState= UseFullForteState.Default,echo:Echos = Echos.DEFAULT20):
+        self.use_liberation_sate = use_liberation_sate
+        self.use_fullforte_state = use_fullforte_state
         self.role = role
         self.full_con_swap_to = full_con_swap_to
+        self.has_unswappable_buff = has_unswappable_buff
+        self.has_unswappablebuffed_intro = False
+        self.echo= echo
+
         self.white_off_threshold = 0.01
-        self.echo_cd = echo_cd
+        self.echo_cd = echo.echo_cd
         self.task = task
         self.sleep_adjust = 0
         self.index = index
@@ -110,6 +124,7 @@ class BaseChar:
         self.last_switch_time = time.time()
         self.is_current_char = False
         self.has_intro = False
+        self.has_unswappablebuffed_intro = False
         if self.current_con == 1:
             self.logger.info(f'switch_out at full con set current_con to 0')
             self.current_con = 0
@@ -120,6 +135,7 @@ class BaseChar:
     def switch_next_char(self, post_action=None, free_intro=False, target_low_con=False):
         self.is_forte_full()
         self.has_intro = False
+        self.has_unswappablebuffed_intro = False
         self.liberation_available_mark = self.liberation_available()
         self.task.switch_next_char(self, post_action=post_action, free_intro=free_intro,
                                    target_low_con=target_low_con)
@@ -238,6 +254,7 @@ class BaseChar:
     def reset_state(self):
         self.logger.info('reset state')
         self.has_intro = False
+        self.has_unswappablebuffed_intro = False
 
     def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0):
         if con_less_than > 0:
@@ -384,6 +401,10 @@ class BaseChar:
         return self.current_con
 
     def is_forte_full(self):
+        if self.use_fullforte_state == UseFullForteState.UseAfterIntro and self.has_intro == False:
+            return False
+        if self.use_fullforte_state == UseFullForteState.UseAfterUnswappableBuffIntro and self.has_unswappablebuffed_intro == False:
+            return False
         box = self.task.box_of_screen_scaled(3840, 2160, 2251, 1993, 2311, 2016, name='forte_full', hcenter=True)
         white_percent = self.task.calculate_color_percentage(forte_white_color, box)
         # num_labels, stats = get_connected_area_by_color(box.crop_frame(self.task.frame), forte_white_color,
@@ -403,6 +424,10 @@ class BaseChar:
         return self._is_forte_full
 
     def liberation_available(self):
+        if self.use_liberation_sate == UseLiberationState.UseAfterIntro and self.has_intro == False:
+            return False
+        if self.use_liberation_sate == UseLiberationState.UseAfterUnswappableBuffIntro and self.has_unswappablebuffed_intro == False:
+            return False
         if self.liberation_available_mark:
             return True
         if self.is_current_char:

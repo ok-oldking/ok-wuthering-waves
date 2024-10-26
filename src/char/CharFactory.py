@@ -14,60 +14,67 @@ from src.char.Zhezhi import Zhezhi
 from src.char.Verina import Verina
 from src.char.Yinlin import Yinlin
 from src.char.Taoqi import Taoqi
-from src.char.BaseChar import BaseChar, WWRole
+from src.char.BaseChar import BaseChar, UseFullForteState, UseLiberationState, WWRole
 from src.char.HavocRover import HavocRover
 from src.char.Sanhua import Sanhua
 from src.char.Jianxin import Jianxin
 from src.char.Encore import Encore
 from typing import Type
 from dataclasses import dataclass
+
+from src.char._echoes import Echos
 @dataclass
 class Character:
     char_name: str
     cls: Type
     res_cd: int
-    echo_cd: int
     role: WWRole
     full_con_swap_to: WWRole
+    has_unswappable_buff: bool
+    use_liberation_sate: UseLiberationState
+    use_fullforte_state: UseFullForteState
+    echo: Echos
 
 def get_char_by_pos(task, box, index):
     char_list = [
         # Healers
-        Character('char_verina', Verina, 12, 20, WWRole.Healer, WWRole.Default),
-        Character('char_shorekeeper', ShoreKeeper, 15, 20, WWRole.Healer, WWRole.Default),
-        Character('char_baizhi', Baizhi, 16, 20, WWRole.Healer, WWRole.MainDps),
-        # Supportive
-        Character('char_jianxin', Jianxin, 12, 20, WWRole.Default, WWRole.Default),
-        Character('char_taoqi', Taoqi, 15, 20, WWRole.Default, WWRole.MainDps),
-        Character('char_yuanwu', Yuanwu, 3, 20, WWRole.Default, WWRole.Default),
-        # Rest
-        Character('char_rover', HavocRover, 12, 20, WWRole.MainDps, WWRole.Default),
-        Character('char_rover_male', HavocRover, 12, 20, WWRole.MainDps, WWRole.Default),
-        Character('char_encore', Encore, 10, 20, WWRole.MainDps, WWRole.Default),
-        Character('char_danjin', Danjin, 9999999, 20, WWRole.SubDps, WWRole.MainDps),
-        Character('char_mortefi', Mortefi, 14, 20, WWRole.SubDps, WWRole.MainDps),
-        Character('char_yinlin', Yinlin, 12, 15, WWRole.Default, WWRole.Default),
-        Character('char_sanhua', Sanhua, 10, 20, WWRole.Default, WWRole.Default),
-        Character('char_jinhsi', Jinhsi, 3, 20, WWRole.Default, WWRole.Default),
-        Character('chang_changli', Changli, 12, 20, WWRole.Default, WWRole.Default),
-        Character('char_chixia', Chixia, 9, 20, WWRole.Default, WWRole.Default),
-        Character('char_calcharo', Calcharo, 99999, 20, WWRole.Default, WWRole.Default),
-        Character('char_jiyan', Jiyan, 16, 20, WWRole.Default, WWRole.Default),
-        Character('char_zhezhi', Zhezhi, 6, 20, WWRole.Default, WWRole.Default),
-        Character('char_xiangliyao', Xiangliyao, 5, 20, WWRole.Default, WWRole.Default),
+        Character('char_verina',        Verina, 12, WWRole.Healer, WWRole.Default,          False,UseLiberationState.Default,UseFullForteState.Default,     Echos.DEFAULT20),
+        Character('char_shorekeeper',   ShoreKeeper, 15, WWRole.Healer, WWRole.SubDps,      False,UseLiberationState.Default,UseFullForteState.Default,     Echos.DEFAULT20),
+        Character('char_baizhi',        Baizhi, 16, WWRole.Healer, WWRole.MainDps,          False,UseLiberationState.Default,UseFullForteState.Default,     Echos.DEFAULT20),
+        # Supportive    
+        Character('char_jianxin',       Jianxin, 12, WWRole.Default, WWRole.MainDps,        True,UseLiberationState.Default,UseFullForteState.Default,      Echos.DEFAULT20),
+        Character('char_taoqi',         Taoqi, 15, WWRole.Default, WWRole.MainDps,          True,UseLiberationState.Default,UseFullForteState.Default,      Echos.DEFAULT20),
+        Character('char_yuanwu',        Yuanwu, 3, WWRole.Default, WWRole.Default,          False,UseLiberationState.Default,UseFullForteState.Default,     Echos.DEFAULT20),
+        # Rest  
+        Character('char_rover',         HavocRover, 12, WWRole.MainDps, WWRole.Default,     False,UseLiberationState.Default,UseFullForteState.Default,     Echos.DREAMLESS),
+        Character('char_rover_male',    HavocRover, 12, WWRole.MainDps, WWRole.Default,     False,UseLiberationState.Default,UseFullForteState.Default,     Echos.DREAMLESS),
+        Character('char_encore',        Encore, 10, WWRole.MainDps, WWRole.Default,         False,UseLiberationState.Default,UseFullForteState.Default,     Echos.INFERNO_RIDER),
+        Character('char_danjin',        Danjin, 9999999, WWRole.SubDps, WWRole.MainDps,     True,UseLiberationState.Default,UseFullForteState.Default,      Echos.DREAMLESS),
+        Character('char_mortefi',       Mortefi, 14, WWRole.SubDps, WWRole.MainDps,         True,UseLiberationState.Default,UseFullForteState.Default,      Echos.IMPERMANENCE_HERON),
+        Character('char_yinlin',        Yinlin, 12, WWRole.Default, WWRole.MainDps,         True,UseLiberationState.Default,UseFullForteState.Default,      Echos.DEFAULT20),
+        Character('char_sanhua',        Sanhua, 10, WWRole.Default, WWRole.MainDps,         True,UseLiberationState.Default,UseFullForteState.Default,      Echos.IMPERMANENCE_HERON),
+        Character('char_jinhsi',        Jinhsi, 3, WWRole.MainDps, WWRole.Default,          False,UseLiberationState.Default,UseFullForteState.Default,     Echos.JUE),
+        Character('chang_changli',      Changli, 12, WWRole.Default, WWRole.MainDps,        True,UseLiberationState.Default,UseFullForteState.Default,      Echos.INFERNO_RIDER),
+        Character('char_chixia',        Chixia, 9, WWRole.Default, WWRole.Default,          False,UseLiberationState.Default,UseFullForteState.Default,     Echos.INFERNO_RIDER),
+        Character('char_calcharo',      Calcharo, 99999, WWRole.Default, WWRole.Default,    False,UseLiberationState.Default,UseFullForteState.Default,     Echos.DEFAULT20),
+        Character('char_jiyan',         Jiyan, 16, WWRole.MainDps, WWRole.Healer,           False,UseLiberationState.Default,UseFullForteState.Default,     Echos.FEILIAN_BERINGAL),
+        Character('char_zhezhi',        Zhezhi, 6, WWRole.SubDps, WWRole.MainDps,           True,UseLiberationState.Default,UseFullForteState.Default,      Echos.IMPERMANENCE_HERON),
+        Character('char_xiangliyao',    Xiangliyao, 5, WWRole.MainDps, WWRole.Default,      False,UseLiberationState.Default,UseFullForteState.Default,     Echos.DEFAULT20),
+        #missing characters Aalto,Youhu,Lingyang, Spectro Rover
     ]
     highest_confidence = 0
-    charinfo = None
+    found_char = None
     for char in char_list:
         feature = task.find_one(char.char_name, box=box, threshold=0.6)
         if feature:
             task.log_info(f'found char {char.char_name} {feature.confidence} {highest_confidence}')
-        if feature and feature.confidence > highest_confidence:
-            highest_confidence = feature.confidence
-            charinfo = char
-    if charinfo is not None:
-        return char.cls(task, index, char.res_cd, char.echo_cd, char.role,char.full_con_swap_to)
-    task.log_info(f'could not find char {charinfo} {highest_confidence}')
+            if feature.confidence > highest_confidence:
+                highest_confidence = feature.confidence
+                found_char = char
+    if found_char is not None:
+        return found_char.cls(task, index, found_char.res_cd, found_char.role,found_char.full_con_swap_to,
+            found_char.has_unswappable_buff, found_char.use_liberation_sate,found_char. use_fullforte_state, found_char.echo)
+    task.log_info(f'could not find char {found_char} {highest_confidence}')
     has_cd = task.ocr(box=box)
     if has_cd and is_float(has_cd[0].name):
         task.log_info(f'found char {has_cd[0]} wait and reload')

@@ -3,6 +3,7 @@ from src.char.BaseChar import BaseChar, WWRole
 
 class HavocRover(BaseChar):
     def do_perform(self):
+        self.wait_down()
         if self.role == WWRole.MainDps:
             self.main_dps()
         else:

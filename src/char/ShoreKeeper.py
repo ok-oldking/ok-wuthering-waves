@@ -5,7 +5,7 @@ class ShoreKeeper(BaseChar):
         if self.liberation_available():
             self.click_liberation()
         if self.resonance_available():
-            self.click_resonance(send_click=False)
+            self.click_resonance(post_sleep=0.3)
         self.click_echo()
         if self.is_forte_full():
             self.heavy_attack()
