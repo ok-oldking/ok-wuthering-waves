@@ -6,11 +6,8 @@ class Sanhua(BaseChar):
         if self.has_intro:
             self.continues_normal_attack(1.2)
         self.click_liberation()
-        if self.click_resonance()[0]:
-            return self.switch_next_char()
-        if self.click_echo():
-            return self.switch_next_char()
-
+        self.click_resonance()
         self.heavy_attack(0.75)
         self.sleep(0.4)
+        self.click_echo()
         self.switch_next_char()

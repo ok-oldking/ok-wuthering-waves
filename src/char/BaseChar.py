@@ -219,6 +219,8 @@ class BaseChar:
             self.last_echo = time.time()
 
     def click_echo(self, duration=0, sleep_time=0):
+        if duration==0:
+            duration = self.echo.echo_animation_duration # adding the selected echo duration by default
         self.logger.debug(f'click_echo start duration: {duration}')
         if self.has_cd('echo'):
             self.logger.debug('click_echo has cd return ')

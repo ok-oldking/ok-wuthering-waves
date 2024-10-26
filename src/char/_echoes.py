@@ -9,7 +9,7 @@ class Echos(Enum):
     THUNDERING_MEPHIS =     (20, 2.2)#not checked
     TEMPEST_MEPHIS =        (20, 1)#not checked
     INFERNO_RIDER =         (20, 1.6)
-    FEILIAN_BERINGAL =      (20, 0.7)#not checked
+    FEILIAN_BERINGAL =      (20, 0.8)
     MOURNING_AIX =          (20, 1)#not checked
     IMPERMANENCE_HERON =    (20, 0)
     LAMPYLUMEN_MYRIAD =     (20, 2.5)#not checked

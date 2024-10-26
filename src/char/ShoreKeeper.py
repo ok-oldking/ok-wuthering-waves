@@ -2,8 +2,7 @@ from src.char.BaseChar import BaseChar
 
 class ShoreKeeper(BaseChar):
     def do_perform(self):
-        if self.liberation_available():
-            self.click_liberation()
+        self.click_liberation()
         if self.resonance_available():
             self.click_resonance(post_sleep=0.3)
         self.click_echo()

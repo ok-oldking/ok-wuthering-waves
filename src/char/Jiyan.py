@@ -8,16 +8,11 @@ class Jiyan(BaseChar):
             self.continues_normal_attack(duration=2.0)
             # fly check not work for jiyan
         self.jiyan_check_and_do_liberation()
-        i = 0
         while not self.is_forte_full() and not self.is_con_full():
-            if i % 4 == 0:
-                self.heavy_attack()
-                if self.resonance_available() or self.echo_available():
-                    self.task.middle_click_relative(0.5, 0.5)
-                    break
-                i = 0
-            self.normal_attack()
-            i += 1
+            self.normal_attack()  
+            if self.resonance_available() or self.echo_available():
+                self.task.middle_click_relative(0.5, 0.5)
+                break
         if not self.is_forte_full() and self.resonance_available():
             self.click_resonance(post_sleep=1.0)
         if self.echo_available():

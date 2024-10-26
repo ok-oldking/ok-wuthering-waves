@@ -16,12 +16,10 @@ class Yuanwu(BaseChar):
         if self.has_intro:
             self.continues_normal_attack(1)
             return self.switch_next_char()
-        if self.liberation_available():
-            self.click_liberation(con_less_than=1)
+        self.click_liberation(con_less_than=1)
         if self.is_forte_full():
             self.heavy_attack()
-        if self.resonance_available():
-            self.click_resonance()
-        if self.echo_available():
-            self.click_echo()
+        self.click_resonance()
+        self.normal_attack()
+        self.click_echo()
         self.switch_next_char()
