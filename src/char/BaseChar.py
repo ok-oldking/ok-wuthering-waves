@@ -217,6 +217,13 @@ class BaseChar:
         current = time.time()
         if current - self.last_echo > self.echo_cd:  # count the first click only
             self.last_echo = time.time()
+    def click_echo_and_swapout(self,only_if_echo_has_animation=False, min_animation_duration_for_swap = 0):
+        if self.click_echo():
+            if only_if_echo_has_animation:
+                if self.echo.echo_animation_duration > min_animation_duration_for_swap:
+                    return self.switch_next_char()
+                return
+            return self.switch_next_char() 
 
     def click_echo(self, duration=0, sleep_time=0):
         if duration==0:
@@ -350,7 +357,7 @@ class BaseChar:
             return Priority.MAX*2
         priority = 0
         if self.role == WWRole.Healer and has_intro and not target_low_con:
-            priority = Priority.MIN
+            priority = Priority.CURRENT_CHAR - 1
         if self.count_liberation_priority() and self.liberation_available():
             priority += self.count_liberation_priority()
         if self.count_resonance_priority() and self.resonance_available():
