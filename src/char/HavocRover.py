@@ -15,8 +15,7 @@ class HavocRover(BaseChar):
             if self.role == WWRole.MainDps:
                 self.continues_normal_attack(duration=3)
             if self.click_liberation():
-                if self.click_echo():
-                    return self.switch_next_char()
+                self.click_echo_and_swapout()
         if self.click_resonance()[0]:
             return self.switch_next_char()
         self.click_liberation()

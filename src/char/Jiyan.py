@@ -15,8 +15,7 @@ class Jiyan(BaseChar):
                 break
         if not self.is_forte_full() and self.resonance_available():
             self.click_resonance(post_sleep=1.0)
-        if self.echo_available():
-            self.click_echo(self.echo.echo_animation_duration)
+        self.click_echo()
         self.jiyan_liberation()
         self.switch_next_char()
     def jiyan_liberation(self):

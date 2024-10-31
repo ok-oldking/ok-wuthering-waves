@@ -217,7 +217,12 @@ class BaseChar:
         current = time.time()
         if current - self.last_echo > self.echo_cd:  # count the first click only
             self.last_echo = time.time()
-    def click_echo_and_swapout(self,only_if_echo_has_animation=False, min_animation_duration_for_swap = 0):
+    def click_echo_and_swapout(self,only_if_echo_has_animation=False, min_animation_duration_for_swap = 0.0):
+        '''
+        If successfuly used echo the character will swap out else NOT. \n
+        If used with 0 sec duration echo and you dont want to swap use only_if_echo_has_animaation=True \n
+        and then you can specify the duration via min_animation_duration_for_swap = 0.0 
+        '''
         if self.click_echo():
             if only_if_echo_has_animation:
                 if self.echo.echo_animation_duration > min_animation_duration_for_swap:
