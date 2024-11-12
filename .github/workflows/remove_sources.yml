@@ -1,0 +1,29 @@
+name: Remove Source Archives
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  remove-source-archives:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up GitHub CLI
+        run: |
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
+          sudo apt-add-repository https://cli.github.com/packages
+          sudo apt-get update
+          sudo apt-get install gh
+
+      - name: Authenticate GitHub CLI
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh auth login --with-token <<< "$GITHUB_TOKEN"
+
+      - name: Remove Source Archives
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release_id=$(gh release view ${{ github.event.release.tag_name }} --json id --jq .id)
+          gh api repos/${{ github.repository }}/releases/$release_id/assets --jq '.[] | select(.name | endswith(".zip") or endswith(".tar.gz")).id' |
+          xargs -I {} gh api repos/${{ github.repository }}/releases/assets/{} -X DELETE
