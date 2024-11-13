@@ -1,8 +1,8 @@
 from qfluentwidgets import FluentIcon
 
+from ok.Task import TriggerTask
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
-from ok.task.TriggerTask import TriggerTask
 from src.task.BaseWWTask import BaseWWTask
 
 logger = get_logger(__name__)

@@ -2,12 +2,12 @@ import time
 
 import re
 from datetime import datetime, timedelta
+from ok.Task import BaseTask
+from ok.Task import CannotFindException
 from ok.config.ConfigOption import ConfigOption
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
-from ok.task.BaseTask import BaseTask
-from ok.task.TaskExecutor import CannotFindException
 
 logger = get_logger(__name__)
 
