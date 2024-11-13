@@ -145,6 +145,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
         max_priority = Priority.MIN
         switch_to = current_char
         has_intro = free_intro
+        has_unswappablebuffed_intro = False
         if not has_intro:
             current_con = current_char.get_current_con()
             if current_con > 0.8 and current_con != 1:
@@ -154,6 +155,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
                 current_con = current_char.get_current_con()
             if current_con == 1:
                 has_intro = True
+                has_unswappablebuffed_intro = current_char.has_unswappable_buff
         low_con = 200
 
         for i, char in enumerate(self.chars):
@@ -181,6 +183,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             logger.warning(f"can't find next char to switch to, performing too fast add a normal attack")
             return current_char.switch_next_char()
         switch_to.has_intro = has_intro
+        switch_to.has_unswappablebuffed_intro = has_unswappablebuffed_intro
         logger.info(f'switch_next_char {current_char} -> {switch_to} has_intro {has_intro}')
         last_click = 0
         start = time.time()
@@ -205,6 +208,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             if current_index != switch_to.index:
                 has_intro = free_intro if free_intro else current_char.is_con_full()
                 switch_to.has_intro = has_intro
+                switch_to.has_unswappablebuffed_intro = current_char.has_unswappable_buff and has_intro
                 if now - start > 10:
                     if self.debug:
                         self.screenshot(f'switch_not_detected_{current_char}_to_{switch_to}')
