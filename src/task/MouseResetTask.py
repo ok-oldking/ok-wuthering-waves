@@ -3,8 +3,8 @@ import math
 import win32api
 from qfluentwidgets import FluentIcon
 
+from ok.Task import TriggerTask
 from ok.logging.Logger import get_logger
-from ok.task.TriggerTask import TriggerTask
 
 logger = get_logger(__name__)
 
