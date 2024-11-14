@@ -27,7 +27,7 @@ class Camellya(BaseChar):
         self.click_liberation()
         i = 0
         start_con = self.get_current_con()
-        if start_con < 0.7:
+        if start_con < 0.8:
             loop_time = 1.1
         else:
             loop_time = 4.1
