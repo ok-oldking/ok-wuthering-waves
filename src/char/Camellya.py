@@ -5,6 +5,8 @@ class Camellya(BaseChar):
 
     def do_perform(self):
         self.click_liberation()
+        if self.click_echo():
+            return self.switch_next_char()
         if self.is_con_full():
             self.logger.info(f'confull')
             if self.click_resonance()[0]:
