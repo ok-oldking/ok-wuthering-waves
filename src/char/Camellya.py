@@ -33,7 +33,10 @@ class Camellya(BaseChar):
         # budding_wait = self.get_current_con() > 0.6
         # self.task.screenshot('click_reso1')
         start_con = self.get_current_con()
-        if self.click_resonance()[0]:
+        if self.is_con_full():
+            self.handle_budding()
+            return self.switch_next_char()
+        elif self.click_resonance()[0]:
             # self.task.screenshot('click_reso2')
             self.sleep(0.1)
             while self.get_current_con() == start_con:
@@ -43,25 +46,27 @@ class Camellya(BaseChar):
             self.task.next_frame()
             con_change = start_con - self.get_current_con()
             self.logger.debug(f'con_change {con_change}')
-            if con_change > 0.2:
-                self.logger.info('camellya_budding start')
-                self.task.screenshot('budding_start')
-                # if budding_wait:
-                #     # self.task.screenshot('budding_wait_1')
-                #     self.sleep(0.4)
-                #     # self.task.screenshot('budding_wait_2')
-                # budding = False
-                self.click_resonance()
-                budding_start_time = time.time()
-                while time.time() - budding_start_time < 4 or self.task.find_one('camellya_budding', threshold=0.7):
-                    budding = True
-                    self.click(after_sleep=0.2)
-                # if budding:
-                self.task.screenshot('budding_end')
-                self.logger.info(f'camellya_budding end')
-                self.click_resonance()
+            if con_change > 0.2 or self.is_con_full():
+                self.handle_budding()
             return self.switch_next_char()
-        self.continues_normal_attack(1.6)
-        self.heavy_attack(0.8)
+        self.click(after_sleep=0.1)
+        self.heavy_attack(1.1)
         self.last_heavy = time.time()
+        if self.is_con_full():
+            self.click_resonance()
+            self.handle_budding()
         self.switch_next_char()
+
+    def handle_budding(self):
+        self.logger.info('camellya_budding start')
+        # if budding_wait:
+        #     # self.task.screenshot('budding_wait_1')
+        #     self.sleep(0.4)
+        #     # self.task.screenshot('budding_wait_2')
+        # budding = False
+        self.click_resonance()
+        budding_start_time = time.time()
+        while time.time() - budding_start_time < 4 or self.task.find_one('camellya_budding', threshold=0.7):
+            self.click(after_sleep=0.2)
+        self.logger.info(f'camellya_budding end')
+        self.click_resonance()
