@@ -380,13 +380,15 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         if self.find_one(['fast_travel_custom', 'remove_custom', 'gray_teleport'], threshold=0.6):
             self.click_relative(0.91, 0.92, after_sleep=1)
             if self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
-                                       relative_x=-1, raise_if_not_found=True,
+                                       relative_x=-1, raise_if_not_found=False,
                                        threshold=0.7,
-                                       time_out=5):
+                                       time_out=4):
                 self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
                                         relative_x=-1, raise_if_not_found=False,
                                         threshold=0.7,
                                         time_out=1)
+                return True
+            else:
                 return True
         elif btn := self.find_one('gray_teleport', threshold=0.7):
             return self.click_box(btn, relative_x=1)
