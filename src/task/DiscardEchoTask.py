@@ -80,7 +80,10 @@ class DiscardEchoTask(BaseCombatTask):
                 self.add_5()
         else:
             self.check_main()
-            self.send_key('esc')
+            self.send_key_down('alt')
+            self.sleep(0.1)
+            self.click_relative(0.95, 0.05)
+            self.send_key_up('alt')
             self.sleep(2)
             self.click_relative(0.75, 0.46, after_sleep=1)
             self.click_relative(0.04, 0.55, after_sleep=1)
