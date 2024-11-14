@@ -178,7 +178,7 @@ class BaseCombatTask(BaseWWTask, FindFeature, OCR, CombatCheck):
             # logger.warning(f"can't find next char to switch to, maybe switching too fast click and wait")
             # if time.time() - current_char.last_perform < 0.1:
             current_char.continues_normal_attack(0.2)
-            logger.warning(f"can't find next char to switch to, performing too fast add a normal attack")
+            logger.warning(f"{current_char} can't find next char to switch to, performing too fast add a normal attack")
             return current_char.switch_next_char()
         switch_to.has_intro = has_intro
         logger.info(f'switch_next_char {current_char} -> {switch_to} has_intro {has_intro}')
