@@ -349,7 +349,11 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         self.log_info(f'teleport to {boss_name} index {index} in_dungeon {in_dungeon}')
         self.sleep(1)
         self.log_info('click f2 to open the book')
-        self.send_key('f2')
+        self.send_key_down('alt')
+        self.sleep(0.1)
+        self.click_relative(0.77, 0.05)
+        self.send_key_up('alt')
+        # self.send_key('F2')
         gray_book_boss = self.wait_book()
         if not gray_book_boss:
             self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
@@ -377,19 +381,25 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         self.wait_in_team_and_world(time_out=120)
 
     def click_traval_button(self):
-        if self.find_one(['fast_travel_custom', 'remove_custom', 'gray_teleport'], threshold=0.6):
-            self.click_relative(0.91, 0.92, after_sleep=1)
-            if self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
-                                       relative_x=-1, raise_if_not_found=False,
-                                       threshold=0.7,
-                                       time_out=4):
-                self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
-                                        relative_x=-1, raise_if_not_found=False,
-                                        threshold=0.7,
-                                        time_out=1)
+        if feature := self.find_one(['fast_travel_custom', 'remove_custom', 'gray_teleport'], threshold=0.6):
+            if feature.name == 'gray_teleport':
+                if not self.wait_click_feature('custom_teleport_hcenter_vcenter', raise_if_not_found=False, time_out=2):
+                    self.click_relative(0.5, 0.5)
+                self.wait_click_feature('gray_custom_way_point', raise_if_not_found=True)
+                self.sleep(1)
+                self.click_relative(0.91, 0.92, after_sleep=1)
                 return True
             else:
-                return True
+                self.click_relative(0.91, 0.92, after_sleep=1)
+                if self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
+                                           relative_x=-1, raise_if_not_found=True,
+                                           threshold=0.7,
+                                           time_out=4):
+                    self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
+                                            relative_x=-1, raise_if_not_found=False,
+                                            threshold=0.7,
+                                            time_out=1)
+                    return True
         elif btn := self.find_one('gray_teleport', threshold=0.7):
             return self.click_box(btn, relative_x=1)
 
