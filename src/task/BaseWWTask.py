@@ -385,8 +385,8 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
             if feature.name == 'gray_teleport':
                 if not self.wait_click_feature('custom_teleport_hcenter_vcenter', raise_if_not_found=False, time_out=2):
                     self.click_relative(0.5, 0.5)
-                self.wait_click_feature('gray_custom_way_point', raise_if_not_found=True)
-                self.sleep(1)
+                if self.wait_click_feature('gray_custom_way_point', raise_if_not_found=False, time_out=2):
+                    self.sleep(1)
                 self.click_relative(0.91, 0.92, after_sleep=1)
                 return True
             else:
