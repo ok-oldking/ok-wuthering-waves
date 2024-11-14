@@ -1,27 +1,28 @@
 from src.char.Baizhi import Baizhi
+from src.char.BaseChar import BaseChar
 from src.char.Calcharo import Calcharo
+from src.char.Camellya import Camellya
 from src.char.Changli import Changli
 from src.char.CharSkillButton import is_float
 from src.char.Chixia import Chixia
 from src.char.Danjin import Danjin
+from src.char.Encore import Encore
+from src.char.HavocRover import HavocRover
+from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
 from src.char.Jiyan import Jiyan
 from src.char.Mortefi import Mortefi
+from src.char.Sanhua import Sanhua
 from src.char.ShoreKeeper import ShoreKeeper
+from src.char.Taoqi import Taoqi
+from src.char.Verina import Verina
 from src.char.Xiangliyao import Xiangliyao
+from src.char.Yinlin import Yinlin
 from src.char.Yuanwu import Yuanwu
 from src.char.Zhezhi import Zhezhi
 
 
 def get_char_by_pos(task, box, index):
-    from src.char.Verina import Verina
-    from src.char.Yinlin import Yinlin
-    from src.char.Taoqi import Taoqi
-    from src.char.BaseChar import BaseChar
-    from src.char.HavocRover import HavocRover
-    from src.char.Sanhua import Sanhua
-    from src.char.Jianxin import Jianxin
-    from src.char.Encore import Encore
     char_dict = {
         'char_yinlin': {'cls': Yinlin, 'res_cd': 12, 'echo_cd': 15},
         'char_verina': {'cls': Verina, 'res_cd': 12, 'echo_cd': 20},
@@ -43,6 +44,7 @@ def get_char_by_pos(task, box, index):
         'char_mortefi': {'cls': Mortefi, 'res_cd': 14, 'echo_cd': 20},
         'char_zhezhi': {'cls': Zhezhi, 'res_cd': 6, 'echo_cd': 20},
         'char_xiangliyao': {'cls': Xiangliyao, 'res_cd': 5, 'echo_cd': 20},
+        'char_camellya': {'cls': Camellya, 'res_cd': 4, 'echo_cd': 20},
     }
     highest_confidence = 0
     info = None
