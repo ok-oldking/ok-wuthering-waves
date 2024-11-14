@@ -24,10 +24,11 @@ class Camellya(BaseChar):
                 self.logger.error('wait wait_resonance_not_gray timed out')
 
     def do_perform(self):
+        if self.has_intro:
+            self.continues_normal_attack(1.2)
         self.click_liberation()
-        i = 0
         start_con = self.get_current_con()
-        if start_con < 0.8:
+        if start_con < 0.82:
             loop_time = 1.1
         else:
             loop_time = 4.1
@@ -46,19 +47,19 @@ class Camellya(BaseChar):
                 loop_time = 1
                 budding_start_time = time.time()
             start_con = current_con
-            if self.resonance_available():
-                self.send_resonance_key(interval=0.1)
-                if self.get_current_con() < 0.7 and not budding:
-                    # self.task.screenshot(f'camellya_fast_end_{self.get_current_con()}')
+            if self.click_liberation():
+                pass
+            elif self.click_resonance(send_click=False)[0]:
+                if self.get_current_con() < 0.82 and not budding:
+                    self.click_echo()
                     return self.switch_next_char()
             else:
                 self.click(interval=0.1)
             self.task.next_frame()
-            i += 1
+            self.check_combat()
         if budding:
             self.click_resonance()
         self.click_echo()
-        # self.task.screenshot(f'camellya_end_{self.get_current_con()}')
         self.switch_next_char()
 
     # def handle_budding(self):
