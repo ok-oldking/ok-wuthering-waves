@@ -281,8 +281,8 @@ class BaseChar:
             self.logger.info(f'click_liberation end {duration}')
         return clicked
 
-    def add_freeze_duration(self, start, duration=-1, freeze_time=0.1):
-        if duration == -1:
+    def add_freeze_duration(self, start, duration=-1.0, freeze_time=0.1):
+        if duration < 0:
             duration = time.time() - start
         if start > 0 and duration > freeze_time:
             current_time = time.time()
