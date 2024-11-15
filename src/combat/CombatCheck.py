@@ -220,8 +220,8 @@ class CombatCheck(BaseWWTask):
         else:
             if self.has_target():
                 return True
-            return self.wait_until(self.has_target, time_out=1.2, wait_until_before_delay=0,
-                                   wait_until_check_delay=0.1,
+            return self.wait_until(self.has_target, time_out=1.5, wait_until_before_delay=0,
+                                   wait_until_check_delay=0.3,
                                    pre_action=self.middle_click)
 
     def check_health_bar(self):
