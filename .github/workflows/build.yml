@@ -3,8 +3,10 @@ name: Build Windows Executable
 on:
   push:
     # Sequence of patterns matched against refs/tags
-    tags:
-      - 'v*'
+    #    tags:
+    #      - 'v*'
+    branches:
+      - master
 
 jobs:
   build:
@@ -15,6 +17,11 @@ jobs:
         name: Checkout code
         with:
           fetch-depth: 0  # Important: fetch all history for all tags and branches
+
+      - name: Set up Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
 
       - name: Get Changes between Tags
         id: changes
