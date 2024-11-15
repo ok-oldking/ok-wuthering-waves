@@ -43,7 +43,7 @@ jobs:
       - name: amend git to add ok-script
         run: |
           git add -f ok/
-          git commit --amend --no-edit
+          git commit --amend --no-edit --author="$(git log -1 --format='%an <%ae>')"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
