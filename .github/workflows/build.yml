@@ -52,10 +52,8 @@ jobs:
         run: |
           git add -f ok/
           git commit --amend --no-edit
-          for /f %%i in ('git rev-parse HEAD') do set new_commit=%%i          
-          for /f %%i in ('git tag --points-at HEAD@{1}') do (
-            git tag -d %%i git tag %%i %new_commit% 
-          )
+          git tag -d ${{ steps.tagName.outputs.tag }}
+          git tag ${{ steps.tagName.outputs.tag }}
 
       - name: Push to GitHub update
         run: |
