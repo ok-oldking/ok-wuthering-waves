@@ -11,14 +11,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Fetch all branches
-        run: git fetch --all
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+          
+      - name: Check out pull_request
+        run: git checkout pull_request
 
       - name: Merge master into pull request
-        run: |
-          git checkout pull_request
-          git merge origin/master
+        run: git merge origin/master
 
       - name: Push changes
         run: git push origin pull_request
