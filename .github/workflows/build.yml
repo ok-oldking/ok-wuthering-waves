@@ -24,11 +24,6 @@ jobs:
           token: ${{ secrets.OK_GH }}
           fetch-depth: 0
 
-      - name: Set up Git
-        run: |
-          git config --global user.email "ok-oldking@users.noreply.github.com"
-          git config --global user.name "ok-oldking"
-
       - name: Get Changes between Tags
         id: changes
         uses: simbo/changes-between-tags-action@v1
@@ -55,7 +50,6 @@ jobs:
 
       - name: amend git to add ok-script
         run: |
-          git checkout master
           git add -f ok/
           git commit --amend --no-edit
 
