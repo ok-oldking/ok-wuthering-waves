@@ -145,16 +145,6 @@ class CombatCheck(BaseWWTask):
     def target_area_box(self):
         return self.box_of_screen(0.1, 0.10, 0.9, 0.9, hcenter=True, name="target_area_box")
 
-    def find_target_enemy(self):
-        start = time.time()
-        target_enemy = self.find_one('target_enemy_white', box=self.target_area_box,
-                                     use_gray_scale=True, threshold=0.88,
-                                     frame_processor=keep_only_white)
-        if self.debug and target_enemy is None:
-            self.screenshot('find_target_enemy')
-        logger.debug(f'find_target_enemy {target_enemy} {time.time() - start}')
-        return target_enemy is not None
-
     def in_combat(self):
         if self.in_liberation or self.recent_liberation():
             return True
@@ -162,28 +152,7 @@ class CombatCheck(BaseWWTask):
             now = time.time()
             if now - self.last_combat_check > self.combat_check_interval:
                 self.last_combat_check = now
-                self.reaim_enemy()
-                if self.check_team:
-                    if not self.in_team()[0]:
-                        logger.info('not in team break out of combat')
-                        return self.reset_to_false(recheck=False, reason="not in team")
-                elif not self.in_realm_or_multi():
-                    return self.reset_to_false(recheck=False, reason="not in_realm_or_multi")
-                if not self.check_target_enemy():
-                    return self.reset_to_false(recheck=False, reason="no target enemy")
-                if self.check_count_down():
-                    return self.log_time(now, 'check_count_down')
-                if self.boss_lv_template is not None:
-                    if self.check_boss():
-                        return self.log_time(now, 'check_boss')
-                if self.check_health_bar():
-                    return self.log_time(now, 'check_health_bar')
-                if self.find_target_enemy():
-                    return self.log_time(now, 'find_target_enemy')
-                if self.ocr_lv_text():
-                    return self.log_time(now, 'ocr_lv_text')
-                self.next_frame()
-                if self.target_enemy():
+                if self.target_enemy(wait=True):
                     return self.log_time(now, 'target_enemy')
                 logger.error('target_enemy failed, try recheck break out of combat')
                 return self.reset_to_false(recheck=True, reason='target enemy failed')
@@ -194,11 +163,10 @@ class CombatCheck(BaseWWTask):
             self._in_realm = self.in_realm()
             if not self._in_realm:
                 self._in_multiplayer = self.in_multiplayer()
-            in_combat = (not self.check_team or self.in_team()[0]) and self.check_health_bar()
+            in_combat = self.has_target() or ((not self.check_team or self.in_team()[0]) and self.check_health_bar())
+            in_combat = in_combat and self.check_target_enemy_btn()
             if in_combat:
                 self.target_enemy(wait=False)
-                if self.boss_lv_template is None:
-                    self.find_boss_lv_text()
                 logger.info(
                     f'enter combat cost {(time.time() - start):2f} boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
                 self._in_combat = True
@@ -218,13 +186,13 @@ class CombatCheck(BaseWWTask):
                        target_height=540, name='lv_text', log=True)
         return lvs
 
-    def check_target_enemy(self):
+    def check_target_enemy_btn(self):
         if not self.in_realm_or_multi() and self.calculate_color_percentage(text_white_color,
                                                                             self.get_box_by_name(
-                                                                                'box_target_enemy')) == 0:
+                                                                                'box_target_mouse')) == 0:
             logger.info(f'check target_enemy failed, wait 3 seconds')
             if self.wait_until(lambda: self.calculate_color_percentage(text_white_color,
-                                                                       self.get_box_by_name('box_target_enemy')) != 0,
+                                                                       self.get_box_by_name('box_target_mouse')) != 0,
                                wait_until_before_delay=0, wait_until_check_delay=0,
                                time_out=5):
                 return True
@@ -241,19 +209,18 @@ class CombatCheck(BaseWWTask):
         elif self._in_multiplayer:
             return self.in_multiplayer()
 
-    def reaim_enemy(self):
+    def has_target(self):
         aim_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name('box_target_enemy'))
-        if aim_percent == 0:
-            logger.info(f'Not focus on enemies, aim percent {aim_percent} ')
-            self.middle_click()
+        if aim_percent > 0.005:
+            return True
 
     def target_enemy(self, wait=True):
         if not wait:
             self.middle_click()
         else:
-            if self.find_target_enemy():
+            if self.has_target():
                 return True
-            return self.wait_until(self.find_target_enemy, time_out=2.5, wait_until_before_delay=0,
+            return self.wait_until(self.has_target, time_out=1.2, wait_until_before_delay=0,
                                    wait_until_check_delay=0.1,
                                    pre_action=self.middle_click)
 
@@ -362,7 +329,7 @@ boss_health_color = {
 }
 
 aim_color = {
-    'r': (165, 175),  # Red range
-    'g': (150, 160),  # Green range
-    'b': (38, 48)  # Blue range
+    'r': (160, 175),  # Red range
+    'g': (148, 160),  # Green range
+    'b': (36, 48)  # Blue range
 }
