@@ -18,10 +18,7 @@ jobs:
         with:
           fetch-depth: 0  # Important: fetch all history for all tags and branches
 
-      - name: Set up Git
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "GitHub Actions"
+     
 
       - name: Get Changes between Tags
         id: changes
@@ -50,12 +47,13 @@ jobs:
       - name: amend git to add ok-script
         run: |
           git add -f ok/
+          git rm -r --cached ok/**/__pycache__
           git commit --amend --no-edit
 
       - name: Push to GitHub update
         run: |
-          git remote add gitupdate https://${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update.git
-          git push gitupdate --force
+          git remote add update https://${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update.git
+          git push update --force
 
       - name: Push to Coding.net
         run: |
