@@ -55,18 +55,19 @@ jobs:
 
       - name: amend git to add ok-script
         run: |
+          git checkout master
           git add -f ok/
           git commit --amend --no-edit
 
       - name: Push to GitHub update
         run: |
           git remote add ghupdate https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update.git
-          git push ghupdate --force
+          git push ghupdate --force HEAD:master
 
       - name: Push to Coding.net
         run: |
           git remote add coding https://${{ secrets.CODING_USERNAME }}:${{ secrets.CODING_PASSWORD }}@e.coding.net/g-frfh1513/ok-wuthering-waves/ok-wuthering-waves.git
-          git push coding --force
+          git push coding --force HEAD:master
 
       - name: Build Executable
         run: |
