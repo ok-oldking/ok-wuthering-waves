@@ -17,11 +17,11 @@ jobs:
 
       - name: Merge master into pull request
         run: |
-          git checkout ${{ github.event.pull_request.head.ref }}
+          git checkout pull_request
           git merge origin/master
 
       - name: Push changes
-        run: git push origin HEAD:${{ github.event.pull_request.head.ref }}
+        run: git push origin pull_request
         if: success()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
