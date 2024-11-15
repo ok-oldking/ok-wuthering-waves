@@ -19,6 +19,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.OK_GH }}
+          fetch-depth: 0
 
       - name: Add destination repository as a remote
         run: |
