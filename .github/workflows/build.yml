@@ -60,7 +60,7 @@ jobs:
           CODING_PASSWORD: ${{ secrets.CODING_PASSWORD }}
         run: |
           git config --global credential.helper store
-          echo "https://${CODING_USERNAME}:${CODING_PASSWORD}@e.coding.net" > ~/.git-credentials
+          echo "https://${CODING_USERNAME}:${CODING_PASSWORD}@e.coding.net" > $env:HOMEPATH\.git-credentials
 
       - name: Push to Coding.net
         run: |
