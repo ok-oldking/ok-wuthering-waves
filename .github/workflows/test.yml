@@ -11,7 +11,9 @@ jobs:
 
     steps:
       - name: Checkout source repository
-        uses: actions/checkout@v2
+        run: |
+          git clone https://github.com/ok-oldking/ok-wuthering-waves.git
+          cd ok-wuthering-waves
 
       - name: Configure git
         run: |
@@ -21,5 +23,8 @@ jobs:
       - name: Add destination repository as a remote
         run: |
           git remote add ghupdate https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update.git
+
+      - name: push
+        run: |
           git push ghupdate --force
 
