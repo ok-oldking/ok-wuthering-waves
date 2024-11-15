@@ -13,10 +13,16 @@ jobs:
     name: Build exe with launcher
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-        name: Checkout code
+      - name: Configure git
+        run: |
+          git config --global user.email "ok-oldking@users.noreply.github.com"
+          git config --global user.name "ok-oldking"
+
+      - name: Checkout source repository
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Important: fetch all history for all tags and branches
+          token: ${{ secrets.OK_GH }}
+          fetch-depth: 0
 
       - name: Set up Git
         run: |
