@@ -391,10 +391,11 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
     def click_traval_button(self):
         if feature := self.find_one(['fast_travel_custom', 'remove_custom', 'gray_teleport'], threshold=0.6):
             if feature.name == 'gray_teleport':
-                if not self.wait_click_feature('custom_teleport_hcenter_vcenter', raise_if_not_found=False, time_out=2):
-                    self.click_relative(0.5, 0.5)
-                if self.wait_click_feature('gray_custom_way_point', raise_if_not_found=False, time_out=2):
-                    self.sleep(1)
+                # if not self.wait_click_feature('custom_teleport_hcenter_vcenter', raise_if_not_found=False, time_out=3):
+                self.click_relative(0.5, 0.5, after_sleep=1)
+                # if self.wait_click_feature('gray_custom_way_point', raise_if_not_found=False, time_out=4):
+                #     self.sleep(1)
+                self.click_relative(0.7, 0.6, after_sleep=1)
                 self.click_relative(0.91, 0.92, after_sleep=1)
                 return True
             else:
