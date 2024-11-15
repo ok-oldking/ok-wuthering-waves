@@ -64,7 +64,7 @@ jobs:
 
       - name: Push to GitHub update
         run: |
-          git remote add gitupdate https://${{ secrets.USERNAME }}:${{ secrets.PASSWORD }}@github.com/ok-oldking/ok-ww-update.git
+          git remote add gitupdate https://${{ secrets.GITHUB_TOKEN }}@github.com/ok-oldking/ok-ww-update.git
           git push gitupdate --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
