@@ -414,12 +414,12 @@ class BaseCombatTask(CombatCheck, FindFeature, OCR):
         if max_is_full:
             percent = 1
         if max_is_full and char_config:
-            self.logger.info(
-                f'is_con_full found a full ring {char_config.get("_full_ring_area", 0)} -> {max_area}  {color_index}')
+            # self.logger.info(
+            #     f'is_con_full found a full ring {char_config.get("_full_ring_area", 0)} -> {max_area}  {color_index}')
             char_config['_full_ring_area'] = max_area
             char_config['_ring_color_index'] = color_index
-            self.logger.info(
-                f'is_con_full2 found a full ring {char_config.get("_full_ring_area", 0)} -> {max_area}  {color_index}')
+            # self.logger.info(
+            #     f'is_con_full2 found a full ring {char_config.get("_full_ring_area", 0)} -> {max_area}  {color_index}')
         if percent != 1 and char_config and char_config.get('_full_ring_area', 0) > 0:
             percent = max_area / char_config['_full_ring_area']
         if not max_is_full and percent >= 1:
