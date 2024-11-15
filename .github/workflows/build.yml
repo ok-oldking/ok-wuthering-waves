@@ -54,7 +54,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up coding Git credentials
+      - name: Push to Coding.net
         env:
           CODING_USERNAME: ${{ secrets.CODING_USERNAME }}
           CODING_PASSWORD: ${{ secrets.CODING_PASSWORD }}
@@ -64,11 +64,8 @@ jobs:
           if (-not (Test-Path -Path $credentialsPath -PathType Leaf)) { 
               New-Item -ItemType File -Force -Path $credentialsPath 
           }
-          "https://${{ secrets.CODING_USERNAME }}:${{ secrets.CODING_PASSWORD }}@e.coding.net" | Out-File -FilePath $credentialsPath -Encoding ASCII
-
-      - name: Push to Coding.net
-        run: |
-          git remote add coding https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-wuthering-waves.git
+          echo "https://${CODING_USERNAME}:${CODING_PASSWORD}@e.coding.net" > $env:HOMEPATH\.git-credentials
+          git remote add coding https://${CODING_USERNAME}:${CODING_PASSWORD}@e.coding.net/g-frfh1513/ok-wuthering-waves/ok-wuthering-waves.git
           git push coding --force
 
       - name: Push to GitHub update
