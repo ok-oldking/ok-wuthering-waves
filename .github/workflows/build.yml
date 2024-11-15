@@ -55,7 +55,7 @@ jobs:
 
       - name: Push to GitHub update
         run: |
-          git remote add update https://${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update.git
+          git remote add update https://github-actions[bot]:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update.git
           git push update --force
 
       - name: Push to Coding.net
