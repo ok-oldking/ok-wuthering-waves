@@ -164,9 +164,8 @@ class CombatCheck(BaseWWTask):
             if not self._in_realm:
                 self._in_multiplayer = self.in_multiplayer()
             in_combat = self.has_target() or ((not self.check_team or self.in_team()[0]) and self.check_health_bar())
-            in_combat = in_combat and self.check_target_enemy_btn()
+            in_combat = in_combat and self.check_target_enemy_btn() and self.target_enemy(wait=True)
             if in_combat:
-                self.target_enemy(wait=False)
                 logger.info(
                     f'enter combat cost {(time.time() - start):2f} boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
                 self._in_combat = True
@@ -220,9 +219,11 @@ class CombatCheck(BaseWWTask):
         else:
             if self.has_target():
                 return True
-            return self.wait_until(self.has_target, time_out=1.5, wait_until_before_delay=0,
-                                   wait_until_check_delay=0.3,
-                                   pre_action=self.middle_click)
+            else:
+                logger.info(f'target lost try retarget')
+                return self.wait_until(self.has_target, time_out=2.1, wait_until_before_delay=0.1,
+                                       wait_until_check_delay=0.5,
+                                       pre_action=self.middle_click)
 
     def check_health_bar(self):
         if self._in_combat:
