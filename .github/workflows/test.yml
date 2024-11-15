@@ -1,0 +1,25 @@
+name: Sync and Push to Another Repo
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  sync-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v2
+
+      - name: Configure git
+        run: |
+          git config --global user.email "ok-oldking@users.noreply.github.com"
+          git config --global user.name "ok-oldking"
+
+      - name: Add destination repository as a remote
+        run: |
+          git remote add ghupdate https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update.git
+          git push ghupdate --force
+
