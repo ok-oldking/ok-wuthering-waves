@@ -16,9 +16,7 @@ jobs:
           git config --global user.name "ok-oldking"
 
       - name: Checkout source repository
-        run: |
-          git clone https://github.com/ok-oldking/ok-wuthering-waves.git
-          cd ok-wuthering-waves
+        uses: actions/checkout@v2
 
       - name: Add destination repository as a remote
         run: |
