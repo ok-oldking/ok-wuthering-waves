@@ -7,18 +7,18 @@ on:
 
 jobs:
   sync-and-push:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
-      - name: Checkout source repository
-        run: |
-          git clone https://github.com/ok-oldking/ok-wuthering-waves.git
-          cd ok-wuthering-waves
-
       - name: Configure git
         run: |
           git config --global user.email "ok-oldking@users.noreply.github.com"
           git config --global user.name "ok-oldking"
+
+      - name: Checkout source repository
+        run: |
+          git clone https://github.com/ok-oldking/ok-wuthering-waves.git
+          cd ok-wuthering-waves
 
       - name: Add destination repository as a remote
         run: |
