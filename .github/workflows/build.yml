@@ -21,7 +21,7 @@ jobs:
       - name: Set up Git
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
+          git config --global user.name "ok-oldking"
 
       - name: Get Changes between Tags
         id: changes
@@ -55,7 +55,7 @@ jobs:
 
       - name: Push to GitHub update
         run: |
-          git remote add ghupdate https://${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update.git
+          git remote add ghupdate https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update.git
           git push ghupdate --force
 
       - name: Push to Coding.net
