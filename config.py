@@ -111,7 +111,6 @@ config = {
     'launcher_error_log_file': 'logs/launcher_error.log',
     'version': version,
     'onetime_tasks': [  # tasks to execute
-        ["src.task.IllusiveRealmTask", "IllusiveRealmTask"],
         ["src.task.FarmEchoTask", "FarmEchoTask"],
         ["src.task.FarmWorldBossTask", "FarmWorldBossTask"],
         ["src.task.DiscardEchoTask", "DiscardEchoTask"],
@@ -120,7 +119,6 @@ config = {
         ["src.task.AutoCombatTask", "AutoCombatTask"],
         ["src.task.AutoPickTask", "AutoPickTask"],
         ["src.task.SkipDialogTask", "AutoDialogTask"],
-        ["src.task.MultiplayerAutoCombatTask", "MultiplayerAutoCombatTask"],
         ["src.task.MouseResetTask", "MouseResetTask"],
         ["src.task.AutoLoginTask", "AutoLoginTask"],
     ]
