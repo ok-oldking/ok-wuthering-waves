@@ -16,7 +16,9 @@ jobs:
           git config --global user.name "ok-oldking"
 
       - name: Checkout source repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.OK_GH }}
 
       - name: Add destination repository as a remote
         run: |
