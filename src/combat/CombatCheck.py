@@ -162,6 +162,7 @@ class CombatCheck(BaseWWTask):
             now = time.time()
             if now - self.last_combat_check > self.combat_check_interval:
                 self.last_combat_check = now
+                self.reaim_enemy()
                 if self.check_team:
                     if not self.in_team()[0]:
                         logger.info('not in team break out of combat')
@@ -239,6 +240,12 @@ class CombatCheck(BaseWWTask):
             return self.in_realm()
         elif self._in_multiplayer:
             return self.in_multiplayer()
+
+    def reaim_enemy(self):
+        aim_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name('box_target_enemy'))
+        if aim_percent == 0:
+            logger.info(f'Not focus on enemies, aim percent {aim_percent} ')
+            self.middle_click()
 
     def target_enemy(self, wait=True):
         if not wait:
@@ -352,4 +359,10 @@ boss_health_color = {
     'r': (245, 255),  # Red range
     'g': (30, 185),  # Green range
     'b': (4, 75)  # Blue range
+}
+
+aim_color = {
+    'r': (165, 175),  # Red range
+    'g': (150, 160),  # Green range
+    'b': (38, 48)  # Blue range
 }
