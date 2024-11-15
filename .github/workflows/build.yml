@@ -42,8 +42,10 @@ jobs:
 
       - name: amend git to add ok-script
         run: |
-          git add ok/
+          git add -f ok/
           git commit --amend --no-edit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up coding Git credentials
         env:
