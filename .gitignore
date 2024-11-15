@@ -18,6 +18,8 @@ test_scripts/
 screenshots/
 thread_dumps.txt
 # C extensions
+ok
+ok/
 *.so
 *.bat
 **/__pycache__/
