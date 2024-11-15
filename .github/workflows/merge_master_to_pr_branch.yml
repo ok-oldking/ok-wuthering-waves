@@ -1,0 +1,27 @@
+name: Merge master into pull request
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Fetch all branches
+        run: git fetch --all
+
+      - name: Merge master into pull request
+        run: |
+          git checkout ${{ github.event.pull_request.head.ref }}
+          git merge origin/master
+
+      - name: Push changes
+        run: git push origin HEAD:${{ github.event.pull_request.head.ref }}
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
