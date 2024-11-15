@@ -60,7 +60,11 @@ jobs:
           CODING_PASSWORD: ${{ secrets.CODING_PASSWORD }}
         run: |
           git config --global credential.helper store
-          echo "https://${CODING_USERNAME}:${CODING_PASSWORD}@e.coding.net" > $env:HOMEPATH\.git-credentials
+          $credentialsPath = [System.IO.Path]::Combine($env:HOMEPATH, ".git-credentials")
+          if (-not (Test-Path -Path $credentialsPath -PathType Leaf)) { 
+              New-Item -ItemType File -Force -Path $credentialsPath 
+          }
+          "https://${{ secrets.CODING_USERNAME }}:${{ secrets.CODING_PASSWORD }}@e.coding.net" | Out-File -FilePath $credentialsPath -Encoding ASCII
 
       - name: Push to Coding.net
         run: |
