@@ -32,6 +32,10 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
     def trigger(self):
         if f := self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box,
                               threshold=0.8):
+            if self.in_realm():
+                logger.info(f'found f in realm click f')
+                self.send_key('f', after_sleep=1)
+                return True
             dialog_search = f.copy(x_offset=f.width * 3, width_offset=f.width * 2, height_offset=f.height * 2,
                                    y_offset=-f.height,
                                    name='search_dialog')
