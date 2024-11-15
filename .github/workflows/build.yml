@@ -55,8 +55,7 @@ jobs:
 
       - name: amend git to add ok-script
         run: |
-          git add -f ok/
-          git rm -r --cached ok/**/__pycache__
+          git add ok/
           git commit --amend --no-edit
 
       - name: Push to GitHub update
