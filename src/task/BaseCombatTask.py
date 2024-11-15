@@ -49,17 +49,19 @@ class BaseCombatTask(CombatCheck, FindFeature, OCR):
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
 
-    def send_key_and_wait_animation(self, key, check_function, total_wait=10, animation_wait=5):
+    def send_key_and_wait_animation(self, key, check_function, total_wait=7, enter_animation_wait=0.7):
         start = time.time()
         animation_start = 0
-        while time.time() - start < total_wait and (
-                animation_start == 0 or time.time() - animation_start < animation_wait):
+        while time.time() - start < total_wait:
             if check_function():
                 if animation_start > 0:
                     self._in_liberation = False
                     logger.debug(f'animation ended')
                     return
                 else:
+                    if time.time() - start > enter_animation_wait:
+                        logger.info(f'send_key_and_wait_animation failed to enter animation')
+                        return
                     logger.debug(f'animation not started send key {key}')
                     self.send_key(key, after_sleep=0.1)
             else:
