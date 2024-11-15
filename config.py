@@ -48,7 +48,7 @@ config = {
     },
     'git_update': {'sources': [{
         'name': 'Global',
-        'git_url': 'https://github.com/ok-oldking/ok-wuthering-waves.git',
+        'git_url': 'https://github.com/ok-oldking/ok-ww-update.git',
         'pip_url': 'https://pypi.org/simple/'
     }, {
         'name': '清华大学',
