@@ -7,13 +7,15 @@ from ok.color.Color import find_color_rectangles, get_mask_in_color_range, is_pu
 from ok.feature.Box import find_boxes_by_name
 from ok.logging.Logger import get_logger
 from src import text_white_color
+from src.task.BaseWWTask import BaseWWTask
 
 logger = get_logger(__name__)
 
 
-class CombatCheck:
+class CombatCheck(BaseWWTask):
 
     def __init__(self):
+        super().__init__()
         self._in_combat = False
         self.boss_lv_template = None
         self.boss_lv_mask = None
@@ -27,6 +29,7 @@ class CombatCheck:
         self.out_of_combat_reason = ""
         self.combat_check_interval = 1
         self._last_liberation = 0
+        self._in_realm = False
 
     @property
     def in_liberation(self):
@@ -66,6 +69,8 @@ class CombatCheck:
         self.boss_lv_box = None
         self.boss_health = None
         self.boss_health_box = None
+        self._in_realm = False
+        self._in_multiplayer = False
         return False
 
     def recent_liberation(self):
@@ -150,16 +155,19 @@ class CombatCheck:
         logger.debug(f'find_target_enemy {target_enemy} {time.time() - start}')
         return target_enemy is not None
 
-    def in_combat(self, check_team=True):
+    def in_combat(self):
         if self.in_liberation or self.recent_liberation():
             return True
         if self._in_combat:
             now = time.time()
             if now - self.last_combat_check > self.combat_check_interval:
                 self.last_combat_check = now
-                if check_team and not self.in_team()[0]:
-                    logger.info('not in team break out of combat')
-                    return self.reset_to_false(recheck=False, reason="not in team")
+                if self.check_team:
+                    if not self.in_team()[0]:
+                        logger.info('not in team break out of combat')
+                        return self.reset_to_false(recheck=False, reason="not in team")
+                elif not self.in_realm_or_multi():
+                    return self.reset_to_false(recheck=False, reason="not in_realm_or_multi")
                 if not self.check_target_enemy():
                     return self.reset_to_false(recheck=False, reason="no target enemy")
                 if self.check_count_down():
@@ -182,7 +190,10 @@ class CombatCheck:
                 return True
         else:
             start = time.time()
-            in_combat = ((not check_team) or self.in_team()[0]) and self.check_health_bar()
+            self._in_realm = self.in_realm()
+            if not self._in_realm:
+                self._in_multiplayer = self.in_multiplayer()
+            in_combat = (not self.check_team or self.in_team()[0]) and self.check_health_bar()
             if in_combat:
                 self.target_enemy(wait=False)
                 if self.boss_lv_template is None:
@@ -191,6 +202,10 @@ class CombatCheck:
                     f'enter combat cost {(time.time() - start):2f} boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
                 self._in_combat = True
                 return True
+
+    @property
+    def check_team(self):
+        return not self._in_realm and not self._in_multiplayer
 
     def log_time(self, start, name):
         logger.debug(f'check cost {name} {time.time() - start}')
@@ -203,8 +218,9 @@ class CombatCheck:
         return lvs
 
     def check_target_enemy(self):
-        if self.calculate_color_percentage(text_white_color,
-                                           self.get_box_by_name('box_target_enemy')) == 0:
+        if not self.in_realm_or_multi() and self.calculate_color_percentage(text_white_color,
+                                                                            self.get_box_by_name(
+                                                                                'box_target_enemy')) == 0:
             logger.info(f'check target_enemy failed, wait 3 seconds')
             if self.wait_until(lambda: self.calculate_color_percentage(text_white_color,
                                                                        self.get_box_by_name('box_target_enemy')) != 0,
@@ -217,6 +233,12 @@ class CombatCheck:
             self.screenshot('check_target_enemy')
             self.pause()
         return True
+
+    def in_realm_or_multi(self):
+        if self._in_realm:
+            return self.in_realm()
+        elif self._in_multiplayer:
+            return self.in_multiplayer()
 
     def target_enemy(self, wait=True):
         if not wait:

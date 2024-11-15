@@ -96,7 +96,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
     def f_search_box(self):
         f_search_box = self.get_box_by_name('pick_up_f_hcenter_vcenter')
         f_search_box = f_search_box.copy(x_offset=-f_search_box.width * 0.3,
-                                         width_offset=f_search_box.width * 0.6,
+                                         width_offset=f_search_box.width * 0.65,
                                          height_offset=f_search_box.height * 6,
                                          y_offset=-f_search_box.height * 5,
                                          name='search_dialog')
@@ -137,6 +137,14 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
                 cost = time.time() - start
                 return cost
         return 0
+
+    def in_realm(self):
+        illusive_realm_menu = self.find_one('illusive_realm_menu',
+                                            use_gray_scale=False, threshold=0.4)
+        if illusive_realm_menu:
+            illusive_realm_exit = self.find_one('illusive_realm_exit',
+                                                use_gray_scale=False, threshold=0.4)
+            return illusive_realm_exit is not None
 
     def walk_find_echo(self, backward_time=1):
         if self.walk_until_f(time_out=6, backward_time=backward_time, target_text=self.absorb_echo_text(),
