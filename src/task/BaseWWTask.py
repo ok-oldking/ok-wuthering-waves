@@ -349,7 +349,7 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
             return 'en_US'
         return 'unknown_lang'
 
-    def teleport_to_boss(self, boss_name):
+    def teleport_to_boss(self, boss_name, use_custom=False):
         pos = self.bosses_pos.get(boss_name)
         page = pos[0]
         index = pos[1]
@@ -385,17 +385,18 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         self.log_info(f'index after scrolling down {index}')
         self.click_relative(0.89, 0.91)
         self.sleep(1)
-        self.wait_click_travel()
+        self.wait_click_travel(use_custom=use_custom)
         self.wait_in_team_and_world(time_out=120)
 
-    def click_traval_button(self):
+    def click_traval_button(self, use_custom=False):
         if feature := self.find_one(['fast_travel_custom', 'remove_custom', 'gray_teleport'], threshold=0.6):
             if feature.name == 'gray_teleport':
-                # if not self.wait_click_feature('custom_teleport_hcenter_vcenter', raise_if_not_found=False, time_out=3):
-                self.click_relative(0.5, 0.5, after_sleep=1)
-                # if self.wait_click_feature('gray_custom_way_point', raise_if_not_found=False, time_out=4):
-                #     self.sleep(1)
-                self.click_relative(0.7, 0.6, after_sleep=1)
+                if use_custom:
+                    # if not self.wait_click_feature('custom_teleport_hcenter_vcenter', raise_if_not_found=False, time_out=3):
+                    self.click_relative(0.5, 0.5, after_sleep=1)
+                    # if self.wait_click_feature('gray_custom_way_point', raise_if_not_found=False, time_out=4):
+                    #     self.sleep(1)
+                    self.click_relative(0.7, 0.6, after_sleep=1)
                 self.click_relative(0.91, 0.92, after_sleep=1)
                 return True
             else:
@@ -412,8 +413,8 @@ class BaseWWTask(BaseTask, FindFeature, OCR):
         elif btn := self.find_one('gray_teleport', threshold=0.7):
             return self.click_box(btn, relative_x=1)
 
-    def wait_click_travel(self):
-        self.wait_until(self.click_traval_button, raise_if_not_found=True, time_out=10)
+    def wait_click_travel(self, use_custom=False):
+        self.wait_until(lambda: self.click_traval_button(use_custom=use_custom), raise_if_not_found=True, time_out=10)
 
     def wait_book(self):
         gray_book_boss = self.wait_until(
