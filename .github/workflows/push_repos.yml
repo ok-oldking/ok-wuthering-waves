@@ -1,10 +1,14 @@
+#on:
+#  push:
+#    # Sequence of patterns matched against refs/tags
+#    tags:
+#      - 'lts'
+#      - 'v*'
 on:
   push:
-    # Sequence of patterns matched against refs/tags
-    tags:
-      #      - 'lts'
-      #      - 'v*'
-      - '*'
+    branches:
+      - master
+      
 jobs:
   build:
     name: push to update repos
