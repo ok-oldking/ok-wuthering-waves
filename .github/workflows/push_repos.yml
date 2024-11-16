@@ -2,12 +2,12 @@ on:
   push:
     # Sequence of patterns matched against refs/tags
     tags:
-      - 'lts'
-      - 'v*'
-
+      #      - 'lts'
+      #      - 'v*'
+      - '*'
 jobs:
   build:
-    name: Build exe with launcher
+    name: push to update repos
     runs-on: windows-latest
     steps:
       - name: Configure git
@@ -20,16 +20,6 @@ jobs:
         with:
           token: ${{ secrets.OK_GH }}
           fetch-depth: 0
-
-      - name: Get Changes between Tags
-        id: changes
-        uses: simbo/changes-between-tags-action@v1
-        with:
-          validate-tag: false
-
-      - name: Get tag name
-        id: tagName
-        uses: olegtarasov/get-tag@v2.1.3
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -45,21 +35,7 @@ jobs:
         run: |
           python -m ok.update.copy_ok_folder
 
-      - name: amend git to add ok-script
+      - name: push to test
         run: |
-          $tags = git tag --points-at HEAD
-          foreach ($tag in $tags) {
-              git tag -d $tag
-          }
-          git add -f ok/
-          git commit --amend --no-edit
-          foreach ($tag in $tags) {
-              git tag -d $tag
-              git tag $tag -m "tag_$tag"
-          }
+          python -m ok.update.push_repos --repos https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/test --files src ok config.py launcher.json launcher.py main.py ok-ww.exe main.py main_debug.py main_gpu.py main_gpu_debug.py assets i18n icon.png requirements.txt
 
-      - name: Push to GitHub update
-        run: |
-          git remote add ghupdate https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update.git
-          git push ghupdate --force --tags HEAD:master 
-          git push ghupdate ${{ steps.tagName.outputs.tag }}
