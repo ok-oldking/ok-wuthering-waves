@@ -48,7 +48,7 @@ config = {
     },
     'git_update': {'sources': [{
         'name': 'Global',
-        'git_url': 'https://github.com/ok-oldking/ok-ww-update.git',
+        'git_url': 'https://github.com/ok-oldking/test.git',
         'pip_url': 'https://pypi.org/simple/'
     }, {
         'name': '清华大学',
