@@ -1,4 +1,4 @@
-ok-script==0.0.321
+ok-script==0.0.322
 #rapidocr_onnxruntime
 rapidocr_openvino
 pySide6-Fluent-Widgets>=1.5.5
