@@ -31,7 +31,7 @@ class Camellya(BaseChar):
     def do_perform(self):
         if self.has_intro:
             self.continues_normal_attack(1.2)
-        self.click_liberation()
+        self.click_liberation(con_less_than=1)
         start_con = self.get_current_con()
         if start_con < 0.82:
             loop_time = 1.1
@@ -52,12 +52,12 @@ class Camellya(BaseChar):
                 loop_time = 1
                 budding_start_time = time.time()
             start_con = current_con
-            if self.click_liberation():
-                pass
-            elif self.click_resonance(send_click=False)[0]:
+            if self.click_resonance(send_click=False)[0]:
                 if self.get_current_con() < 0.82 and not budding:
                     self.click_echo()
                     return self.switch_next_char()
+                if budding:
+                    self.click_liberation()
             else:
                 self.click(interval=0.1)
             self.task.next_frame()
@@ -66,21 +66,3 @@ class Camellya(BaseChar):
             self.click_resonance()
         self.click_echo()
         self.switch_next_char()
-
-    # def handle_budding(self):
-    #     self.logger.info('camellya_budding start')
-    #     budding_start_time = time.time()
-    #     i = 0
-    #     while time.time() - budding_start_time < 4 or self.task.find_one('camellya_budding', threshold=0.7):
-    #         if self.resonance_available():
-    #             self.send_resonance_key(interval=0.1)
-    #             if self.current_resonance() < 0.7:
-    #                 return
-    #         else:
-    #             self.click(interval=0.1)
-    #         i += 1
-    #     self.logger.info(f'camellya_budding end')
-    #     self.click_resonance()
-    # def switch_next_char(self, *args):
-    #     self.task.screenshot(f'ca_switch_out_{self.current_con}')
-    #     super().switch_next_char(*args)
