@@ -23,6 +23,11 @@ class Camellya(BaseChar):
             if time.time() - start > timeout:
                 self.logger.error('wait wait_resonance_not_gray timed out')
 
+    def on_combat_end(self, chars):
+        next_char = str((self.index + 1) % len(chars) + 1)
+        self.logger.debug(f'Camellya on_combat_end {self.index} switch next char: {next_char}')
+        self.task.send_key(next_char)
+
     def do_perform(self):
         if self.has_intro:
             self.continues_normal_attack(1.2)

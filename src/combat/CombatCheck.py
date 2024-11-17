@@ -221,7 +221,7 @@ class CombatCheck(BaseWWTask):
                 return True
             else:
                 logger.info(f'target lost try retarget')
-                return self.wait_until(self.has_target, time_out=2.1, wait_until_before_delay=0.1,
+                return self.wait_until(self.has_target, time_out=3.1, wait_until_before_delay=0.1,
                                        wait_until_check_delay=0.5,
                                        pre_action=self.middle_click)
 

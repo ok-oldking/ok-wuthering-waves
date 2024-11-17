@@ -1,6 +1,6 @@
+from ok.Task import TriggerTask
 from qfluentwidgets import FluentIcon
 
-from ok.Task import TriggerTask
 from ok.logging.Logger import get_logger
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharDeadException
 
@@ -34,7 +34,9 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                     logger.error('teleport to heal error', e)
                 break
             except NotInCombatException as e:
-                logger.info(f'auto_combat_task_out_of_combat {e}')
+                current_char = self.get_current_char()
+                logger.info(f'auto_combat_task_out_of_combat {current_char} {e}')
+                current_char.on_combat_end(self.chars)
                 if self.debug:
                     self.screenshot(f'auto_combat_task_out_of_combat {e}')
                 break

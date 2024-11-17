@@ -281,6 +281,9 @@ class BaseChar:
             self.logger.info(f'click_liberation end {duration}')
         return clicked
 
+    def on_combat_end(self, chars):
+        pass
+
     def add_freeze_duration(self, start, duration=-1.0, freeze_time=0.1):
         if duration < 0:
             duration = time.time() - start
