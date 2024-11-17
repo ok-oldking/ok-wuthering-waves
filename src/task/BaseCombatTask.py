@@ -119,6 +119,7 @@ class BaseCombatTask(CombatCheck, FindFeature, OCR):
             except CharDeadException as e:
                 raise e
             except NotInCombatException as e:
+                self.get_current_char().on_combat_end(self.chars)
                 logger.info(f'combat_once out of combat break {e}')
                 # self.screenshot(f'combat_once_ooc {self.out_of_combat_reason}')
                 break
