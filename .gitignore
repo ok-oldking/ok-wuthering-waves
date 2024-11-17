@@ -25,7 +25,8 @@ ok/
 **/__pycache__/
 # Distribution / packaging
 .Python
-test/
+tests/configs/
+tests/logs/
 logs/
 build/
 develop-eggs/

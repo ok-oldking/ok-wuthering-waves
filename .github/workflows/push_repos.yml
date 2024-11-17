@@ -33,6 +33,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: test
+        run: |
+          python -m unittest discover tests
+
       - name: Copy ok-script lib
         run: |
           python -m ok.update.copy_ok_folder
