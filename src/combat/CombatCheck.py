@@ -164,8 +164,13 @@ class CombatCheck(BaseWWTask):
             if not self._in_realm:
                 self._in_multiplayer = self.in_multiplayer()
             in_combat = self.has_target() or ((not self.check_team or self.in_team()[0]) and self.check_health_bar())
-            in_combat = in_combat and self.check_target_enemy_btn() and self.target_enemy(wait=True)
+            in_combat = in_combat and self.check_target_enemy_btn()
             if in_combat:
+                if not self.target_enemy(wait=True):
+                    self.log_error(
+                        "Auto combat error: Make sure to turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter/HDR)",
+                        notify=True, tray=True)
+                    return False
                 logger.info(
                     f'enter combat cost {(time.time() - start):2f} boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
                 self._in_combat = True
@@ -210,6 +215,7 @@ class CombatCheck(BaseWWTask):
 
     def has_target(self):
         aim_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name('box_target_enemy'))
+        logger.debug(f'aim_percent {aim_percent}')
         if aim_percent > 0.005:
             return True
 
@@ -330,7 +336,7 @@ boss_health_color = {
 }
 
 aim_color = {
-    'r': (160, 175),  # Red range
-    'g': (148, 160),  # Green range
-    'b': (36, 48)  # Blue range
+    'r': (160, 190),  # Red range
+    'g': (148, 170),  # Green range
+    'b': (22, 48)  # Blue range
 }
