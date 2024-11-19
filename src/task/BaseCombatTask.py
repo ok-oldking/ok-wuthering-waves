@@ -2,6 +2,7 @@ import time
 
 import cv2
 import numpy as np
+from ok.Util import safe_get
 
 import re
 from ok.color.Color import get_connected_area_by_color, color_range_to_bound
@@ -9,7 +10,6 @@ from ok.config.ConfigOption import ConfigOption
 from ok.feature.FindFeature import FindFeature
 from ok.logging.Logger import get_logger
 from ok.ocr.OCR import OCR
-from ok.util.list import safe_get
 from src import text_white_color
 from src.char import BaseChar
 from src.char.BaseChar import Priority, dot_color
