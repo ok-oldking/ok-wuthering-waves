@@ -36,7 +36,7 @@ config = {
         'check_hdr': False,
         'force_no_hdr': False,
         'check_night_light': True,
-        'force_no_night_light': True,
+        'force_no_night_light': False,
         'require_bg': True
     },
     'supported_resolution': {
