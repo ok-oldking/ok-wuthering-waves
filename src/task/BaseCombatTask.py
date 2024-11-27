@@ -372,8 +372,9 @@ class BaseCombatTask(CombatCheck, FindFeature, OCR):
         self.log_info(f'load chars success {self.chars}')
 
     @staticmethod
-    def should_update(char, old_char):
-        return (type(char) is BaseChar and old_char is None) or (type(char) is not BaseChar and old_char != char)
+    def should_update(the_char, old_char):
+        return (type(the_char) is BaseChar and old_char is None) or (
+                type(the_char) is not BaseChar and old_char != the_char)
 
     def box_resonance(self):
         return self.get_box_by_name('box_resonance_cd')
