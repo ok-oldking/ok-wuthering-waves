@@ -16,6 +16,9 @@ class TestCombatCheck(TaskTestCase):
         self.set_image('tests/images/in_combat.png')
         in_combat = self.task.in_combat()
         self.assertTrue(in_combat)
+        self.set_image('tests/images/in_combat2.png')
+        in_combat = self.task.in_combat()
+        self.assertTrue(in_combat)
         logger.debug('in_combat_check task done')
 
 
