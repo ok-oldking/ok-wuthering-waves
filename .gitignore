@@ -20,6 +20,8 @@ thread_dumps.txt
 # C extensions
 ok
 ok/
+*.cpp
+*.pyx
 *.so
 *.bat
 **/__pycache__/
