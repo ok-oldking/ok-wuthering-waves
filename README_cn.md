@@ -78,7 +78,7 @@ cli/)
 ### 加入我们
 
 * 由于基于[ok-script](https://github.com/ok-oldking/ok-script)开发，项目代码仅有3000行（Python），简单易维护
-* 也欢迎使用[ok-script](https://github.com/ok-oldking/ok-script)开发你自己的开源项目，一套代码同时支持PC，模拟器，真机。分辨率自适应，宽屏自适应。无服务器增量更新等功能
+* 被Merge的PR(新功能,优化或BUG修复)可以获得30-100元的奖励, 提前联系
 * 有兴趣的请加开发者群926858895
 
 ### 致谢
