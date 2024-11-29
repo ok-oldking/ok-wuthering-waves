@@ -11,3 +11,4 @@ main_gpu.py
 assets
 icon.png
 requirements.txt
+i18n
