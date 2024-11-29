@@ -85,8 +85,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          name: Release ${{ github.ref }}
           body: |
             ok-ww-Nvidia-GPU-full (Nvidia GPU >=RTX2000 with latest driver)
             ok-ww-CPU-full (AMD or other GPUs)
