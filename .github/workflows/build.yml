@@ -63,7 +63,7 @@ jobs:
       - name: Build Executable
         run: |
           echo "tag: ${{ steps.changes.outputs.tag }}"
-          echo "changes: ${{ steps.changes.outputs.changes }}"
+          echo "changes: ${{ steps.changes.outpucts.changes }}"
           
           python -m ok.update.package_launcher ${{ steps.tagName.outputs.tag }} deploy.txt
           
