@@ -1,7 +1,5 @@
 import time
 
-import cv2
-
 import re
 from ok.color.Color import find_color_rectangles, get_mask_in_color_range, is_pure_black
 from ok.feature.Box import find_boxes_by_name
@@ -102,44 +100,6 @@ class CombatCheck(BaseWWTask):
                     self.has_count_down = True
                 logger.info(f'set count_down to {self.has_count_down}  {numbers} {count_down:.2f}%')
             return self.has_count_down
-
-    def check_boss(self):
-        if self.boss_lv_box is not None:
-            current = self.boss_lv_box.crop_frame(self.frame)
-        else:
-            self.boss_lv_template = None
-            self.boss_lv_box = None
-            current = None
-        max_val = 0
-        if current is not None:
-            res = cv2.matchTemplate(current, self.boss_lv_template, cv2.TM_CCOEFF_NORMED, mask=self.boss_lv_mask)
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-        if max_val < 0.8:
-            if self.debug:
-                self.screenshot_boss_lv(current, f'boss lv not detected by edge {max_val}')
-            logger.debug(f'boss lv not detected by edge')
-            if not self.find_boss_lv_text():  # double check by text
-                if self.debug:
-                    self.screenshot_boss_lv(current, 'out_of combat boss_health disappeared')
-                self.boss_lv_template = None
-                self.boss_lv_box = None
-                logger.info(f'out of combat because of boss_health disappeared, res:{max_val}')
-                return False
-            else:
-                return True
-        else:
-            logger.debug(f'check boss edge passed {max_val}')
-            return True
-
-    def screenshot_boss_lv(self, current, name):
-        if self.debug:
-            if self.boss_lv_box is not None and self.boss_lv_template is not None and current is not None:
-                frame = self.frame.copy()
-                frame[self.boss_lv_box.y:self.boss_lv_box.y + self.boss_lv_box.height,
-                self.boss_lv_box.x:self.boss_lv_box.x + self.boss_lv_box.width] = current
-                x, y, w, h = self.boss_lv_box.x, self.boss_lv_box.height + 50 + self.boss_lv_box.y, self.boss_lv_box.width, self.boss_lv_box.height
-                frame[y:y + h, x:x + w] = self.boss_lv_template
-                self.screenshot(name, frame)
 
     @property
     def target_area_box(self):
@@ -336,7 +296,7 @@ boss_health_color = {
 }
 
 aim_color = {
-    'r': (160, 190),  # Red range
-    'g': (148, 170),  # Green range
-    'b': (22, 48)  # Blue range
+    'r': (150, 190),  # Red range
+    'g': (148, 172),  # Green range
+    'b': (22, 62)  # Blue range
 }
