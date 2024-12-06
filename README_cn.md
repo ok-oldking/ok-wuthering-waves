@@ -10,8 +10,6 @@
 ![Static Badge](https://img.shields.io/badge/platfrom-Windows-blue?color=blue)
 [![GitHub release (with filter)](https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
 [![GitHub all releases](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
-[![Static Badge](https://img.shields.io/badge/QQ%E7%BE%A4-970523295-purple)](https://qm.qq.com/q/ufUCrCEq6A)
-[![Static Badge](https://img.shields.io/badge/Discord-blue?link=https%3A%2F%2Fdiscord.gg%2FZMHXx5QBuH)](https://discord.gg/Sy6etyCRed)
 
 演示和教程 [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/apalaRDDmVw)
 
@@ -32,23 +30,22 @@
 ### 使用说明
 
 * 点击[releases](https://github.com/ok-oldking/ok-wuthering-waves/releases), 下载7z压缩包(80M左右的), 解压缩双击运行.exe
-* 下载有问题的, 也可加入腾讯QQ频道，[OK-WW](https://pd.qq.com/s/2jhl3oogp) 问题答案: 老王同学OK
-* QQ水群，只聊游戏, 不下载不讨论软件: [970523295](https://qm.qq.com/q/qMezq2IDGU) 问题答案: 老王同学OK
 
 ### 有多强?
 
-1. 4K分辨率流畅运行,支持所有16:9分辨率,1600x900以上, 1280x720不支持是因为鸣潮bug, 它的1280x720并不是1280x720. 大多数功能也可以在21:9等宽屏分辨率运行
+1. 4K分辨率流畅运行,支持所有16:9分辨率,1600x900以上, 1280x720不支持是因为鸣潮bug, 它的1280x720并不是1280x720.
+   大多数功能也可以在21:9等宽屏分辨率运行
 2. 可后台运行,可窗口化,可全屏,屏幕缩放比例无要求
-3. 自动战斗比大多数玩家手操都强, 深渊可满星, 演示视频: [今汐12秒轴](https://www.bilibili.com/vi
-4. 全角色自动识别，无需配置出招表，一键运行
-5. 可后台自动静音游戏
+3. 全角色自动识别，无需配置出招表，一键运行
+4. 可后台自动静音游戏
 
 ### 出现问题请检查
 
 有问题点这里, 挨个检查再提问:
 
 1. GPU版本解压后5个G, 必须英伟达显卡更新最新驱动. CPU版本所有设备都支持
-2. 下载前下载目录和解压目录添加杀毒软件白名单, 不要在QQ下载目录直接解压使用, 也不要在下载目录里直接解压使用,不要放在中文目录, 单独创建一个英文目录，重新解压
+2. 下载前下载目录和解压目录添加杀毒软件白名单, 不要在QQ下载目录直接解压使用, 也不要在下载目录里直接解压使用,不要放在中文目录,
+   单独创建一个英文目录，重新解压
 3. 关闭windows HDR, 护眼低蓝光模式, 高级管理器设置-自动管理应用颜色, 游戏使用默认亮度, 关闭显卡滤镜\锐化, 关闭游戏加加,
    小飞机等游戏上显示FPS,GPU等信息的浮层
 4. 所有角色必须装备主声骸, 否则一直平A
@@ -73,12 +70,10 @@ python main_gpu_debug.py # run the gpu debug version
 python main_gpu.py # run the gpu release version
 ```
 
-cli/)
-
 ### 加入我们
 
 * 由于基于[ok-script](https://github.com/ok-oldking/ok-script)开发，项目代码仅有3000行（Python），简单易维护
-* 被Merge的PR(新功能,优化或BUG修复)可以获得30-100元的奖励, 提前联系
+* 被Merge的PR(新功能,优化或BUG修复)
 * 有兴趣的请加开发者群926858895
 
 ### 致谢
