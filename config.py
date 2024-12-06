@@ -39,6 +39,12 @@ config = {
         'force_no_night_light': False,
         'require_bg': True
     },
+    'window_size': {
+        'width': 800,
+        'height': 600,
+        'min_width': 600,
+        'min_height': 450,
+    },
     'supported_resolution': {
         'ratio': '16:9',
         'min_size': (1280, 720)
@@ -71,18 +77,10 @@ config = {
     'links': {
         'default': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
-            'discord': 'https://discord.gg/Sy6etyCRed',
-            'sponsor': 'https://patreon.com/ok_oldking?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink',
-            'share': 'Download OK-WW from https://github.com/ok-oldking/ok-wuthering-waves/releases/latest',
             'faq': 'https://github.com/ok-oldking/ok-wuthering-waves#FAQ'
         },
         'zh_CN': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
-            'discord': 'https://discord.gg/Sy6etyCRed',
-            'sponsor': 'https://afdian.com/a/ok-oldking',
-            'share': 'OK-WW 腾讯频道下载: https://pd.qq.com/s/75758wrmp 夸克网盘下载：https://pan.quark.cn/s/75b55ef72a34 GitHub下载: https://github.com/ok-oldking/ok-wuthering-waves/releases/latest',
-            'qq_group': 'https://qm.qq.com/q/ufUCrCEq6A',
-            'qq_channel': 'https://pd.qq.com/s/1t9xeti1z',
             'faq': 'https://gitee.com/ok-olding/ok-wuthering-waves/blob/master/README_cn.md#%E5%87%BA%E7%8E%B0%E9%97%AE%E9%A2%98%E8%AF%B7%E6%A3%80%E6%9F%A5',
         },
     },
