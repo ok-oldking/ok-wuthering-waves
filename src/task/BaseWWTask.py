@@ -2,12 +2,10 @@ import time
 
 import re
 from datetime import datetime, timedelta
-from ok.Task import BaseTask
-from ok.Task import CannotFindException
+from ok import BaseTask
+from ok import CannotFindException
+from ok import get_logger
 from ok.config.ConfigOption import ConfigOption
-from ok.feature.FindFeature import FindFeature
-from ok.logging.Logger import get_logger
-from ok.ocr.OCR import OCR
 
 logger = get_logger(__name__)
 
@@ -25,10 +23,10 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
 })
 
 
-class BaseWWTask(BaseTask, FindFeature, OCR):
+class BaseWWTask(BaseTask):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.pick_echo_config = self.get_global_config(pick_echo_config_option)
         self.monthly_card_config = self.get_global_config(monthly_card_config_option)
         self.next_monthly_card_start = 0

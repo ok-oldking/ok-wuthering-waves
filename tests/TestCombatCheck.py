@@ -1,8 +1,8 @@
-from ok.OK import logger
+from ok.TaskTestCase import TaskTestCase
 
 import unittest
 from config import config
-from ok.test.TaskTestCase import TaskTestCase
+from ok import logger
 from src.task.AutoCombatTask import AutoCombatTask
 
 config['debug'] = True
