@@ -1,9 +1,9 @@
 import time
 
 import re
-from ok.color.Color import find_color_rectangles, get_mask_in_color_range, is_pure_black
-from ok.feature.Box import find_boxes_by_name
-from ok.logging.Logger import get_logger
+from ok import find_boxes_by_name
+from ok import find_color_rectangles, get_mask_in_color_range, is_pure_black
+from ok import get_logger
 from src import text_white_color
 from src.task.BaseWWTask import BaseWWTask
 
@@ -12,8 +12,8 @@ logger = get_logger(__name__)
 
 class CombatCheck(BaseWWTask):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._in_combat = False
         self.boss_lv_template = None
         self.boss_lv_mask = None

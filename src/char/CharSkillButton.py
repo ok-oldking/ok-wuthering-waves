@@ -2,7 +2,7 @@ import time
 
 import cv2
 
-from ok.logging.Logger import get_logger
+from ok import get_logger
 
 logger = get_logger(__name__)
 

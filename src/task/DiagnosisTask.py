@@ -1,6 +1,6 @@
 import time
 
-from ok.logging.Logger import get_logger
+from ok import get_logger
 from src.task.BaseCombatTask import BaseCombatTask
 
 logger = get_logger(__name__)
@@ -8,8 +8,8 @@ logger = get_logger(__name__)
 
 class DiagnosisTask(BaseCombatTask):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.description = "Diagnosis Problem, Performance Test, Run in Game World"
         self.name = "Diagnosis"
         self.start = 0
