@@ -1,6 +1,6 @@
 from qfluentwidgets import FluentIcon
 
-from ok.logging.Logger import get_logger
+from ok import get_logger
 from src.task.BaseCombatTask import BaseCombatTask
 
 logger = get_logger(__name__)
@@ -8,8 +8,8 @@ logger = get_logger(__name__)
 
 class FarmEchoTask(BaseCombatTask):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.description = "Click Start in Game World"
         self.name = "Farm Echo in Dungeon"
         self.default_config.update({

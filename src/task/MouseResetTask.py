@@ -3,16 +3,16 @@ import math
 import win32api
 from qfluentwidgets import FluentIcon
 
-from ok.Task import TriggerTask
-from ok.logging.Logger import get_logger
+from ok import TriggerTask
+from ok import get_logger
 
 logger = get_logger(__name__)
 
 
 class MouseResetTask(TriggerTask):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.default_config = {'_enabled': True}
         self.trigger_interval = 10
         self.name = "Prevent Wuthering Waves from moving the mouse"

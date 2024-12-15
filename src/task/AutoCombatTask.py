@@ -1,7 +1,7 @@
-from ok.Task import TriggerTask
 from qfluentwidgets import FluentIcon
 
-from ok.logging.Logger import get_logger
+from ok import TriggerTask
+from ok import get_logger
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharDeadException
 
 logger = get_logger(__name__)
@@ -9,8 +9,8 @@ logger = get_logger(__name__)
 
 class AutoCombatTask(BaseCombatTask, TriggerTask):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.default_config = {'_enabled': True}
         self.trigger_interval = 0.1
         self.name = "Auto Combat"
