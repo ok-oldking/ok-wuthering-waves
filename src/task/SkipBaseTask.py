@@ -1,9 +1,9 @@
 import time
 
 import re
-from ok.feature.FindFeature import FindFeature
-from ok.logging.Logger import get_logger
-from ok.ocr.OCR import OCR
+from ok import FindFeature
+from ok import OCR
+from ok import get_logger
 from src.task.BaseWWTask import BaseWWTask
 
 logger = get_logger(__name__)
@@ -11,8 +11,8 @@ logger = get_logger(__name__)
 
 class SkipBaseTask(BaseWWTask, FindFeature, OCR):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.confirm_dialog_checked = False
         self.has_eye_time = 0
 

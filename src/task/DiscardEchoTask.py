@@ -1,4 +1,4 @@
-from ok.Util import find_index_in_list
+from ok import find_index_in_list
 
 from ok.feature.Feature import Feature
 from ok.feature.FeatureSet import mask_white
@@ -7,8 +7,8 @@ from src.task.BaseCombatTask import BaseCombatTask
 
 class DiscardEchoTask(BaseCombatTask):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.description = "Check configs to keep, click start in game world, must be in a 16:9 screen ratio"
         self.name = "Auto Echo Data Merge"
         self.default_config = {
