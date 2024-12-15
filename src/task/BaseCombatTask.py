@@ -2,14 +2,12 @@ import time
 
 import cv2
 import numpy as np
-from ok.Util import safe_get
 
 import re
-from ok.color.Color import get_connected_area_by_color, color_range_to_bound
+from ok import get_connected_area_by_color, color_range_to_bound
+from ok import get_logger
+from ok import safe_get
 from ok.config.ConfigOption import ConfigOption
-from ok.feature.FindFeature import FindFeature
-from ok.logging.Logger import get_logger
-from ok.ocr.OCR import OCR
 from src import text_white_color
 from src.char import BaseChar
 from src.char.BaseChar import Priority, dot_color
@@ -36,10 +34,10 @@ key_config_option = ConfigOption('Game Hotkey Config', {
 }, description='In Game Hotkey for Skills')
 
 
-class BaseCombatTask(CombatCheck, FindFeature, OCR):
+class BaseCombatTask(CombatCheck):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.chars = [None, None, None]
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.key_config = self.get_global_config(key_config_option)

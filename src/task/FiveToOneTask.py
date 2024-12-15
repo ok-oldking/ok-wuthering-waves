@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 
 import re
-from ok.feature.Box import find_boxes_by_name, find_boxes_within_boundary
-from ok.logging.Logger import get_logger
+from ok import find_boxes_by_name, find_boxes_within_boundary
+from ok import get_logger
 from src.task.BaseCombatTask import BaseCombatTask
 
 logger = get_logger(__name__)
@@ -11,8 +11,8 @@ logger = get_logger(__name__)
 
 class FiveToOneTask(BaseCombatTask):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.description = "数据坞五合一 + 自动上锁, 游戏语言必须为简体中文,必须16:9分辨率"
         self.name = "在数据坞五合一界面启动"
         self.default_config = {

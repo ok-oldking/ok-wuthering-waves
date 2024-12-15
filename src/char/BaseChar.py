@@ -1,8 +1,8 @@
 import time
 
 from enum import IntEnum, StrEnum
+from ok import get_logger
 from ok.config.Config import Config
-from ok.logging.Logger import get_logger
 from src import text_white_color
 from typing import Any
 
