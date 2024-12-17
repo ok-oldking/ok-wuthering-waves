@@ -1,13 +1,12 @@
 import time
 
 import re
-from ok import find_boxes_by_name
+from ok import find_boxes_by_name, Logger
 from ok import find_color_rectangles, get_mask_in_color_range, is_pure_black
-from ok import get_logger
 from src import text_white_color
 from src.task.BaseWWTask import BaseWWTask
 
-logger = get_logger(__name__)
+logger = Logger.get_logger(__name__)
 
 
 class CombatCheck(BaseWWTask):

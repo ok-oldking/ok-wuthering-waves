@@ -1,8 +1,7 @@
-from ok import TriggerTask
-from ok import get_logger
+from ok import TriggerTask, Logger
 from src.task.SkipBaseTask import SkipBaseTask
 
-logger = get_logger(__name__)
+logger = Logger.get_logger(__name__)
 
 
 class AutoDialogTask(TriggerTask, SkipBaseTask):

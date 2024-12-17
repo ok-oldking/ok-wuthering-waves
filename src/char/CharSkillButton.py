@@ -2,9 +2,9 @@ import time
 
 import cv2
 
-from ok import get_logger
+from ok import Logger
 
-logger = get_logger(__name__)
+logger = Logger.get_logger(__name__)
 
 
 class CharSkillButton:

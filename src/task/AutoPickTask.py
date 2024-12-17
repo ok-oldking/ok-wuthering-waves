@@ -1,11 +1,10 @@
 from qfluentwidgets import FluentIcon
 
-from ok import FindFeature
+from ok import FindFeature, Logger
 from ok import TriggerTask
-from ok import get_logger
 from src.task.BaseWWTask import BaseWWTask
 
-logger = get_logger(__name__)
+logger = Logger.get_logger(__name__)
 
 
 class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):

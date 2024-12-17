@@ -1,9 +1,9 @@
 from qfluentwidgets import FluentIcon
 
-from ok import get_logger
+from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask
 
-logger = get_logger(__name__)
+logger = Logger.get_logger(__name__)
 
 
 class FarmEchoTask(BaseCombatTask):
