@@ -1,7 +1,7 @@
-from ok import find_index_in_list
+from ok import Feature
 
-from ok.feature.Feature import Feature
-from ok.feature.FeatureSet import mask_white
+from ok import find_index_in_list
+from ok import mask_white
 from src.task.BaseCombatTask import BaseCombatTask
 
 

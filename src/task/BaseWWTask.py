@@ -2,12 +2,11 @@ import time
 
 import re
 from datetime import datetime, timedelta
-from ok import BaseTask
+from ok import BaseTask, Logger
 from ok import CannotFindException
-from ok import get_logger
-from ok.config.ConfigOption import ConfigOption
+from ok import ConfigOption
 
-logger = get_logger(__name__)
+logger = Logger.get_logger(__name__)
 
 pick_echo_config_option = ConfigOption('Pick Echo Config', {
     'Use OCR': False

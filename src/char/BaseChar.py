@@ -1,8 +1,7 @@
 import time
 
 from enum import IntEnum, StrEnum
-from ok import get_logger
-from ok.config.Config import Config
+from ok import Config, Logger
 from src import text_white_color
 from typing import Any
 
@@ -45,7 +44,7 @@ class BaseChar:
         self.res_cd = res_cd
         self.is_current_char = False
         self.liberation_available_mark = False
-        self.logger = get_logger(self.name)
+        self.logger = Logger.get_logger(self.name)
         self.full_ring_area = 0
         self.freeze_durations = []
         self.last_perform = 0
