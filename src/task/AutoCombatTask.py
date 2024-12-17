@@ -1,10 +1,9 @@
 from qfluentwidgets import FluentIcon
 
-from ok import TriggerTask
-from ok import get_logger
+from ok import TriggerTask, Logger
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharDeadException
 
-logger = get_logger(__name__)
+logger = Logger.get_logger(__name__)
 
 
 class AutoCombatTask(BaseCombatTask, TriggerTask):
