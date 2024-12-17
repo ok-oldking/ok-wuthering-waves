@@ -4,10 +4,9 @@ import cv2
 import numpy as np
 
 import re
+from ok import ConfigOption, Logger
 from ok import get_connected_area_by_color, color_range_to_bound
-from ok import get_logger
 from ok import safe_get
-from ok.config.ConfigOption import ConfigOption
 from src import text_white_color
 from src.char import BaseChar
 from src.char.BaseChar import Priority, dot_color
@@ -15,7 +14,7 @@ from src.char.CharFactory import get_char_by_pos
 from src.char.Healer import Healer
 from src.combat.CombatCheck import CombatCheck
 
-logger = get_logger(__name__)
+logger = Logger.get_logger(__name__)
 
 
 class NotInCombatException(Exception):
