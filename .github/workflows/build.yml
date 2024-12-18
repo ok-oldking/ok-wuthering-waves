@@ -67,7 +67,10 @@ jobs:
 
       - name: Run tests
         run: |
-          python -m ok.test.RunTests
+          Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
+            Write-Host "Running tests in $($_.FullName)"
+            python -m unittest $_.FullName
+          }
 
       - name: Build Executable
         run: |
