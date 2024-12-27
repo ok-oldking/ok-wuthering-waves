@@ -81,7 +81,7 @@ config = {
         },
         'zh_CN': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
-            'faq': 'https://gitee.com/ok-olding/ok-wuthering-waves/blob/master/README_cn.md#%E5%87%BA%E7%8E%B0%E9%97%AE%E9%A2%98%E8%AF%B7%E6%A3%80%E6%9F%A5',
+            'faq': 'https://github.com/ok-oldking/ok-wuthering-waves#FAQ',
         },
     },
     'about': """

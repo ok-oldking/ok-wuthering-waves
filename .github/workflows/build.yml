@@ -35,6 +35,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Set UTF-8 encoding
+        run: |
+          set PYTHONIOENCODING=utf-8
+          set PYTHONLEGACYWINDOWSSTDIO=utf-8
+          echo PYTHONIOENCODING=utf-8 >> $GITHUB_ENV
+
       - name: Get Changes between Tags
         id: changes
         uses: simbo/changes-between-tags-action@v1
@@ -75,18 +81,11 @@ jobs:
       - name: Build Executable
         run: |
           echo "tag: ${{ steps.changes.outputs.tag }}"
-          echo "changes: ${{ steps.changes.outpucts.changes }}"
+          echo "changes: ${{ steps.changes.outputs.changes }}"
           
           python -m ok.update.package_launcher ${{ steps.tagName.outputs.tag }} deploy.txt
-          
-          python -m ok.update.package_full_with_profile ${{ steps.tagName.outputs.tag }} 1
           Copy-Item -Path "dist" -Destination "ok-ww" -Recurse
-          7z a -t7z -r "ok-ww-CPU-full-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"     
-          Remove-Item -Path "ok-ww" -Recurse -Force
-          
-          python -m ok.update.package_full_with_profile ${{ steps.tagName.outputs.tag }} 0
-          Copy-Item -Path "dist" -Destination "ok-ww" -Recurse
-          7z a -t7z -r "ok-ww-Nvidia-GPU-full-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"
+          7z a -t7z -r "ok-ww-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"     
           Remove-Item -Path "ok-ww" -Recurse -Force
 
         shell: pwsh
@@ -98,21 +97,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           body: |
-            ok-ww-Nvidia-GPU-full (Nvidia GPU >=RTX2000 with latest driver)
             ok-ww-CPU-full (AMD or other GPUs)
             Updates：
             ${{ steps.changes.outputs.changes }}
           draft: false
           prerelease: true
           files: |
-            ok-ww-CPU-full-${{ steps.tagName.outputs.tag }}.7z
-            ok-ww-Nvidia-GPU-full-${{ steps.tagName.outputs.tag }}.7z
+            ok-ww-${{ steps.tagName.outputs.tag }}.7z
 
-      - name: push to ok-ww-update
-        run: |
-          python -m ok.update.push_repos --repos https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update --files deploy.txt
-
-      - name: push to coding
-        run: |
-          python -m ok.update.push_repos --repos https://${{ secrets.CODING_USERNAME }}:${{ secrets.CODING_PASSWORD }}@e.coding.net/g-frfh1513/ok-wuthering-waves/ok-wuthering-waves.git --files deploy.txt
-
+#      - name: push to ok-ww-update
+#        run: |
+#          python -m ok.update.push_repos --repos https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update --files deploy.txt
+#
+#      - name: push to coding
+#        run: |
+#          python -m ok.update.push_repos --repos https://${{ secrets.CODING_USERNAME }}:${{ secrets.CODING_PASSWORD }}@e.coding.net/g-frfh1513/ok-wuthering-waves/ok-wuthering-waves.git --files deploy.txt
+#
