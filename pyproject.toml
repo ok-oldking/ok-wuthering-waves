@@ -1,0 +1,20 @@
+[project]
+name = "test-uv"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "PySide6-Fluent-Widgets==1.7.3",
+    "darkdetect==0.8.0",
+    "requests==2.32.3",
+    "pydirectinput==1.0.4",
+    "rapidocr-openvino==1.3.25",
+    "pycaw==20240210",
+    "psutil==6.1.0",
+    "WMI==1.5.1",
+    "typing-extensions>=4.11.0",
+    "numpy==1.26.4",
+    "opencv-contrib-python>=4.10.0.84",
+    "gitpython>=3.1.43",
+]

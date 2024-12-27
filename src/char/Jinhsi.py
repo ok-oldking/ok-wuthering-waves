@@ -101,26 +101,21 @@ class Jinhsi(BaseChar):
             self.click_echo()
             self.logger.info(f'handle_intro in cd switch {start - self.last_fly_e_time}')
             return
-
-        clicked_resonance = False
+        wait_til_no_cd = False
         while True:
             self.task.next_frame()
             self.check_combat()
             if not self.has_cd('resonance'):
                 self.send_resonance_key(interval=0.1)
-                if not clicked_resonance:
-                    clicked_resonance = True
-                    self.last_fly_e_time = time.time()
-                continue
-            if time.time() - self.last_fly_e_time > 2.5:
-                break
-            if time.time() - start < 3:
-                if not clicked_resonance:
+                wait_til_no_cd = False
+            else:
+                if wait_til_no_cd or time.time() - start < 2:
+                    wait_til_no_cd = True
                     self.task.click(interval=0.1)
-                continue
-            if self.task.debug:
-                self.task.screenshot(f'handle_intro e end {time.time() - start}')
-            break
+                elif wait_til_no_cd:
+                    self.task.click(interval=0.1)
+                else:
+                    break
         self.last_fly_e_time = start
         if self.click_liberation(send_click=True):
             self.continues_normal_attack(0.3)
