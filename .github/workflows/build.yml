@@ -106,9 +106,9 @@ jobs:
           files: |
             ok-ww-${{ steps.tagName.outputs.tag }}.7z
 
-#      - name: push to ok-ww-update
-#        run: |
-#          python -m ok.update.push_repos --repos https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update --files deploy.txt
+      - name: push to ok-ww-update
+        run: |
+          python -m ok.update.push_repos --repos https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update --files deploy.txt
 #
 #      - name: push to coding
 #        run: |
