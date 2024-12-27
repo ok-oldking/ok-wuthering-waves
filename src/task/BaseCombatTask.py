@@ -26,7 +26,7 @@ class CharDeadException(NotInCombatException):
 
 
 key_config_option = ConfigOption('Game Hotkey Config', {
-    'HotKey Verify': True,
+    'HotKey Verify': False,
     'Echo Key': 'q',
     'Liberation Key': 'r',
     'Resonance Key': 'e',
@@ -45,6 +45,7 @@ class BaseCombatTask(CombatCheck):
         self.combat_start = 0
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
+        self.add_text_fix({'Ｅ':'e'})
 
     def send_key_and_wait_animation(self, key, check_function, total_wait=7, enter_animation_wait=0.7):
         start = time.time()
@@ -303,11 +304,11 @@ class BaseCombatTask(CombatCheck):
         if not self.key_config['HotKey Verify'] or force:
 
             resonance_key = self.ocr(0.82, 0.92, 0.85, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
-                                     name='resonance_key', use_grayscale=True)
+                                     name='resonance_key',log=True)
             echo_key = self.ocr(0.88, 0.92, 0.90, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
-                                name='echo_key')
+                                name='echo_key',log=True)
             liberation_key = self.ocr(0.93, 0.92, 0.96, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
-                                      name='liberation_key')
+                                      name='liberation_key',log=True)
             keys_str = str(resonance_key) + str(echo_key) + str(liberation_key)
 
             if echo_key:
