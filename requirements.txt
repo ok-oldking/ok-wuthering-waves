@@ -29,7 +29,7 @@ numpy==1.26.4
     #   openvino
     #   rapidocr-openvino
     #   shapely
-ok-script==0.0.424
+ok-script==0.0.425
     # via -r .\requirements.in
 opencv-contrib-python==4.10.0.84
     # via -r .\requirements.in
