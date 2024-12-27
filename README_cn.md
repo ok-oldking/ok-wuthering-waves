@@ -29,7 +29,7 @@
 
 ### 使用说明
 
-* 点击[releases](https://github.com/ok-oldking/ok-wuthering-waves/releases), 下载7z压缩包(80M左右的), 解压缩双击运行.exe
+* 点击[releases](https://github.com/ok-oldking/ok-wuthering-waves/releases), 下载7z压缩包(200M左右的), 解压缩双击运行.exe
 
 ### 有多强?
 
