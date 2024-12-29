@@ -175,8 +175,11 @@ class CombatCheck(BaseWWTask):
     def has_target(self):
         aim_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name('box_target_enemy'))
         # logger.debug(f'aim_percent {aim_percent}')
+        if aim_percent < 0.005:
+            aim_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name('box_target_enemy_long'))
         if aim_percent > 0.005:
             return True
+
 
     def target_enemy(self, wait=True):
         if not wait:
