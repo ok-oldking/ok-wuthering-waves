@@ -18,6 +18,7 @@ from src.char.Taoqi import Taoqi
 from src.char.Verina import Verina
 from src.char.Xiangliyao import Xiangliyao
 from src.char.Yinlin import Yinlin
+from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
 from src.char.Zhezhi import Zhezhi
 
@@ -45,6 +46,7 @@ def get_char_by_pos(task, box, index):
         'char_zhezhi': {'cls': Zhezhi, 'res_cd': 6, 'echo_cd': 20},
         'char_xiangliyao': {'cls': Xiangliyao, 'res_cd': 5, 'echo_cd': 20},
         'char_camellya': {'cls': Camellya, 'res_cd': 4, 'echo_cd': 20},
+        'char_youhu': {'cls': Youhu, 'res_cd': 4, 'echo_cd': 20},
     }
     highest_confidence = 0
     info = None
