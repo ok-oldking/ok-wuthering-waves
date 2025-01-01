@@ -1,6 +1,6 @@
 if __name__ == '__main__':
     from config import config
-    from ok.OK import OK
+    from ok import OK
 
     config = config
     config['ocr']['lib'] = 'paddleocr'
