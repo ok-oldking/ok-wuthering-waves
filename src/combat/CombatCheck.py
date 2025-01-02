@@ -126,9 +126,9 @@ class CombatCheck(BaseWWTask):
             in_combat = in_combat and self.check_target_enemy_btn()
             if in_combat:
                 if not self.target_enemy(wait=True):
-                    self.log_error(
-                        "Auto combat error: Make sure to turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter/HDR)",
-                        notify=True, tray=True)
+                    # self.log_error(
+                    #     "Auto combat error: Make sure to turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter/HDR)",
+                    #     notify=True, tray=True)
                     return False
                 logger.info(
                     f'enter combat cost {(time.time() - start):2f} boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
