@@ -85,11 +85,6 @@ config = {
         },
     },
     'about': """
-    <h3>OK-WW</h3>
-    <p>GitHub <a href="https://github.com/ok-oldking/ok-wuthering-waves">https://github.com/ok-oldking/ok-wuthering-waves</></p>
-    <p>Report a BUG <a href="https://github.com/ok-oldking/ok-wuthering-waves/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D">https://github.com/ok-oldking/ok-wuthering-waves/issues/new?assignees=ok-oldking&labels=bug&projects=&template=%E6%8A%A5%E5%91%8Abug-.md&title=%5BBUG%5D</></p>
-    <p>QQ群:<a href="https://qm.qq.com/q/qMezq2IDGU">970523295</a></p>
-    <p>QQ频道:<a href="https://pd.qq.com/s/75758wrmp">OK-WW</a></p>
     <p style="color:red;">
     <strong>本软件是免费开源的。</strong> 如果你被收费，请立即退款。请访问QQ频道或GitHub下载最新的官方版本。
     </p>

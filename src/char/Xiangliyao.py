@@ -17,7 +17,7 @@ class Xiangliyao(BaseChar):
                 self.continues_normal_attack(1)
         elif self.echo_available():
             self.logger.debug('click_echo')
-            self.click_echo(duration=1.5)
+            self.click_echo()
         else:
             self.click_resonance(send_click=True)
         self.switch_next_char()
