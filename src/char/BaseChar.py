@@ -231,7 +231,7 @@ class BaseChar:
         self.logger.info('reset state')
         self.has_intro = False
 
-    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0):
+    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0, timeout=5):
         if con_less_than > 0:
             if self.get_current_con() > con_less_than:
                 return False
@@ -252,7 +252,7 @@ class BaseChar:
                 self.liberation_available_mark = False
                 clicked = True
                 last_click = now
-            if time.time() - start > 5:
+            if time.time() - start > timeout:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
         if clicked:
