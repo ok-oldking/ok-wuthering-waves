@@ -2,6 +2,7 @@ from src.char.Baizhi import Baizhi
 from src.char.BaseChar import BaseChar
 from src.char.Calcharo import Calcharo
 from src.char.Camellya import Camellya
+from src.char.Carlotta import Carlotta
 from src.char.Changli import Changli
 from src.char.CharSkillButton import is_float
 from src.char.Chixia import Chixia
@@ -35,6 +36,7 @@ def get_char_by_pos(task, box, index):
         'char_jianxin': {'cls': Jianxin, 'res_cd': 12, 'echo_cd': 20},
         'char_sanhua': {'cls': Sanhua, 'res_cd': 10, 'echo_cd': 20},
         'char_jinhsi': {'cls': Jinhsi, 'res_cd': 3, 'echo_cd': 20},
+        'char_jinhsi2': {'cls': Jinhsi, 'res_cd': 3, 'echo_cd': 20},
         'char_yuanwu': {'cls': Yuanwu, 'res_cd': 3, 'echo_cd': 20},
         'chang_changli': {'cls': Changli, 'res_cd': 12, 'echo_cd': 20},
         'char_chixia': {'cls': Chixia, 'res_cd': 9, 'echo_cd': 20},
@@ -47,6 +49,7 @@ def get_char_by_pos(task, box, index):
         'char_xiangliyao': {'cls': Xiangliyao, 'res_cd': 5, 'echo_cd': 20},
         'char_camellya': {'cls': Camellya, 'res_cd': 4, 'echo_cd': 20},
         'char_youhu': {'cls': Youhu, 'res_cd': 4, 'echo_cd': 20},
+        'char_carlotta': {'cls': Carlotta, 'res_cd': 10, 'echo_cd': 20},
     }
     highest_confidence = 0
     info = None
