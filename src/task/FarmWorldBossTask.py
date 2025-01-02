@@ -12,7 +12,10 @@ class FarmWorldBossTask(BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.description = "Click Start in Game World"
         self.name = "Farm World Boss(Must Drop a WayPoint on the Boss First)"
-        self.boss_names = ['N/A', 'Bell-Borne Geochelone', 'Crownless', 'Thundering Mephis', 'Tempest Mephis',
+        self.boss_names = ['N/A','Sentry Construct','Dragon of Dirge','Nightmare: Feilian Beringal',
+                           'Nightmare: Impermanence Heron','Nightmare: Thundering Mephis',
+                           'Nightmare: Tempest Mephis', 'Nightmare: Crownless',
+                           'Nightmare: Inferno Rider','Nightmare: Mourning Aix','Bell-Borne Geochelone', 'Crownless', 'Thundering Mephis', 'Tempest Mephis',
                            'Inferno Rider',
                            'Feilian Beringal',
                            'Mourning Aix', 'Impermanence Heron', 'Lampylumen Myriad', 'Mech Abomination',
@@ -49,6 +52,11 @@ class FarmWorldBossTask(BaseCombatTask):
     # not current in use because not stable, right now using one click to scroll down
 
     def run(self):
+        # self.click_relative(1136 / 2560, 0.222)  # 1
+        # self.click_relative(1136 / 2560, 0.272) #2
+        # self.click_relative(1136 / 2560, 0.321)  # 3
+        # return
+
         self.set_check_monthly_card()
         self.check_main()
         count = 0
@@ -72,6 +80,7 @@ class FarmWorldBossTask(BaseCombatTask):
                         elif boss_name == 'Bell-Borne Geochelone':
                             logger.info(f'sleep for the Bell-Borne model to appear')
                             self.sleep(15)
+                        self.run_until(self.in_combat, 'w', time_out=10, running=True)
                         try:
                             self.combat_once(wait_before=0)
                         except CharDeadException:

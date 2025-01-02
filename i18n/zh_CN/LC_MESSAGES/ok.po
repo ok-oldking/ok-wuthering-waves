@@ -72,8 +72,36 @@ msgstr "无冠者"
 msgid "Jue"
 msgstr "角"
 
-msgid "Dreamless"
-msgstr "无妄者"
+msgid "Hecate"
+msgstr "赫卡忒"
+
+msgid "Sentry Construct"
+msgstr "异构武装"
+
+msgid "Dragon of Dirge"
+msgstr "叹息古龙"
+
+msgid "Nightmare: Feilian Beringal"
+msgstr "梦魇:猴子"
+
+msgid "Nightmare: Impermanence Heron"
+msgstr "梦魇:黑鸟"
+
+msgid "Nightmare: Thundering Mephis"
+msgstr "梦魇:云闪之鳞"
+
+msgid "Nightmare: Tempest Mephis"
+msgstr "梦魇:朔雷之鳞"
+
+msgid "Nightmare: Inferno Rider"
+msgstr "梦魇:摩托车"
+
+msgid "Nightmare: Crownless"
+msgstr "梦魇:无冠者"
+
+msgid "Nightmare: Mourning Aix"
+msgstr "梦魇:哀声鸷"
+
 
 msgid "Enable auto combat in Abyss, Game World etc"
 msgstr "在大世界,深渊,无音区等开启自动战斗"
@@ -106,10 +134,10 @@ msgid "Skip Dialog during Quests"
 msgstr "任务跳过对话"
 
 msgid "Tempest Mephis"
-msgstr "第一个雷Boss"
+msgstr "朔雷之鳞"
 
 msgid "Thundering Mephis"
-msgstr "第二个雷Boss"
+msgstr "云闪之鳞"
 
 msgid "Combat Count"
 msgstr "战斗次数"
