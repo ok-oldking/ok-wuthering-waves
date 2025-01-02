@@ -11,5 +11,5 @@ class Jianxin(BaseChar):
         if self.resonance_available():
             self.click_resonance()
         if self.echo_available():
-            self.click_echo(duration=0.8)
+            self.click_echo()
         self.switch_next_char()

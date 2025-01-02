@@ -217,6 +217,8 @@ class BaseWWTask(BaseTask):
             return
         self.send_key_down(direction)
         if running:
+            self.sleep(0.5)
+            logger.debug(f'run_until condiction {condiction} direction {direction}')
             self.mouse_down(key='right')
         self.sleep(1)
         result = self.wait_until(condiction, time_out=time_out,

@@ -14,11 +14,7 @@ class Yinlin(BaseChar):
         elif self.click_resonance(send_click=False)[0]:
             self.sleep(0.1)
         elif self.echo_available():
-            echo_key = self.get_echo_key()
-            self.sleep(0.1)
-            self.task.send_key_down(echo_key)
-            self.sleep(.6)
-            return self.switch_next_char(post_action=self.echo_post_action)
+            self.click_echo()
         else:
             self.heavy_attack()
         self.switch_next_char()
