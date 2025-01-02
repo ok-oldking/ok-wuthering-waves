@@ -37,16 +37,27 @@ class BaseWWTask(BaseTask):
             'Bell-Borne Geochelone': [0, 0, False],
             'Dreamless': [0, 2, True],
             'Jue': [0, 3, True],
-            'Tempest Mephis': [0, 4, False],
-            'Inferno Rider': [0, 5, False],
-            'Impermanence Heron': [0, 6, False],
-            'Lampylumen Myriad': [1, 0, False],
-            'Feilian Beringal': [1, 1, False],
-            'Mourning Aix': [1, 2, False],
-            'Crownless': [1, 3, False],
-            'Mech Abomination': [1, 4, False],
-            'Thundering Mephis': [1, 5, False],
-            'Fallacy of No Return': [1, 6, False],
+            'Hecate': [0, 4, True],
+            'Tempest Mephis': [0, 5, False],
+            'Inferno Rider': [0, 6, False],
+            'Impermanence Heron': [1, 0, False],
+            'Lampylumen Myriad': [1, 1, False],
+            'Feilian Beringal': [1, 2, False],
+            'Mourning Aix': [1, 3, False],
+            'Crownless': [1, 4, False],
+            'Mech Abomination': [1, 5, False],
+            'Thundering Mephis': [1, 6, False],
+            'Fallacy of No Return':[2, 0, False],
+            'Lorelei': [2, 1, False],
+            'Sentry Construct': [2, 2, False],
+            'Dragon of Dirge': [2, 3, False],
+            'Nightmare: Feilian Beringal': [2, 4, False],
+            'Nightmare: Impermanence Heron': [2, 5, False],
+            'Nightmare: Thundering Mephis': [2, 6, False],
+            'Nightmare: Tempest Mephis': [3, 0, False],
+            'Nightmare: Crownless': [3, 1, False],
+            'Nightmare: Inferno Rider': [3, 2, False],
+            'Nightmare: Mourning Aix': [3, 3, False],
         }
 
     def validate(self, key, value):
@@ -207,6 +218,7 @@ class BaseWWTask(BaseTask):
         self.send_key_down(direction)
         if running:
             self.mouse_down(key='right')
+        self.sleep(1)
         result = self.wait_until(condiction, time_out=time_out,
                                  raise_if_not_found=raise_if_not_found, wait_until_before_delay=0)
         self.send_key_up(direction)
@@ -369,8 +381,16 @@ class BaseWWTask(BaseTask):
         self.sleep(2)
 
         if page == 1:  # weekly turtle
-            logger.info('scroll down a page')
-            self.click_relative(1136 / 2560, 0.27)
+            logger.info('scroll down page 1')
+            self.click_relative(1136 / 2560, 0.222)
+            self.sleep(1)
+        elif page == 2:
+            logger.info('scroll down page 2')
+            self.click_relative(1136 / 2560, 0.272)
+            self.sleep(1)
+        elif page == 3:
+            logger.info('scroll down page 3')
+            self.click_relative(1136 / 2560, 0.321)
             self.sleep(1)
 
         x = 0.24
@@ -384,6 +404,7 @@ class BaseWWTask(BaseTask):
         self.sleep(1)
         self.wait_click_travel(use_custom=use_custom)
         self.wait_in_team_and_world(time_out=120)
+        self.sleep(0.5)
 
     def click_traval_button(self, use_custom=False):
         if feature := self.find_one(['fast_travel_custom', 'remove_custom', 'gray_teleport'], threshold=0.6):
