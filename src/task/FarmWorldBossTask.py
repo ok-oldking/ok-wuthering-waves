@@ -81,6 +81,9 @@ class FarmWorldBossTask(BaseCombatTask):
                             logger.info(f'sleep for the Bell-Borne model to appear')
                             self.sleep(15)
                         self.run_until(self.in_combat, 'w', time_out=10, running=True)
+                        if boss_name == 'Sentry Construct':
+                            logger.debug('Sentry Construct sleep')
+                            self.sleep(5)
                         try:
                             self.combat_once(wait_before=0)
                         except CharDeadException:
