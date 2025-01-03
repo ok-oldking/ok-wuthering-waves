@@ -20,7 +20,7 @@ class FarmEchoTask(BaseCombatTask):
         self.config_description = {
             'Level': '(1-6) Important, Choose which level to farm, lower levels might not produce a echo'
         }
-        self.config_type["Boss"] = {'type': "drop_down", 'options': ['Dreamless', 'Jue']}
+        self.config_type["Boss"] = {'type': "drop_down", 'options': ['Hecate', 'Dreamless', 'Jue']}
 
         self.icon = FluentIcon.ALBUM
 
@@ -50,9 +50,9 @@ class FarmEchoTask(BaseCombatTask):
 
             self.combat_once()
             logger.info(f'farm echo move {self.config.get("Boss")} walk_until_f to find echo')
-            if self.config.get('Boss') == 'Dreamless':
-                dropped = self.walk_find_echo(1)
-                logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
+            if self.config.get('Boss') != 'Jue':
+                dropped = self.turn_and_find_echo()
+                logger.debug(f'farm echo turn_and_find_echo')
             else:
                 self.sleep(2)
                 dropped = self.run_in_circle_to_find_echo(3)
