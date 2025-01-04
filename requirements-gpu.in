@@ -1,0 +1,14 @@
+ok-script
+PySide6-Fluent-Widgets>=1.7.3
+darkdetect>=0.8.0
+requests>=2.32.3
+pydirectinput>=1.0.4
+pycaw>=20240210
+psutil>=6.1.0
+WMI>=1.5.1
+typing-extensions>=4.11.0
+numpy>=1.26.4
+opencv-contrib-python>=4.10.0.84
+paddleocr==2.9.1
+paddlepaddle-gpu==3.0.0rc0
+#pip-compile.exe .\requirements-gpu.in --extra-index-url https://www.paddlepaddle.org.cn/packages/stable/cu123/ --index-url https://mirrors.aliyun.com/pypi/simple
