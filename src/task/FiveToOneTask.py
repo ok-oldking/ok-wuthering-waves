@@ -4,49 +4,42 @@ import numpy as np
 import re
 from ok import find_boxes_by_name, find_boxes_within_boundary, Logger
 from src.task.BaseCombatTask import BaseCombatTask
+from src.task.BaseWWTask import BaseWWTask
 
 logger = Logger.get_logger(__name__)
 
 
-class FiveToOneTask(BaseCombatTask):
+class FiveToOneTask(BaseWWTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.description = "数据坞五合一 + 自动上锁, 游戏语言必须为简体中文,必须16:9分辨率"
+        self.description = "数据坞五合一 + 自动上锁, 游戏语言必须为简体中文, 必须16:9分辨率"
         self.name = "在数据坞五合一界面启动"
         self.default_config = {
             '处理声骸COST': ["4", "3", "1"],
-            '4C舍弃': ["主属性攻击力百分比", "主属性防御力百分比", "主属性生命值百分比"],
+            # '4C舍弃': ["主属性攻击力百分比", "主属性防御力百分比", "主属性生命值百分比"],
             '锁定_1C_生命': [],
             '锁定_1C_防御': [],
-            '锁定_1C_攻击': [
-                '凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光', '轻云出月',
-                '不绝余音'],
+            '锁定_1C_攻击': [],
             '锁定_3C_生命': [],
             '锁定_3C_防御': [],
             '锁定_3C_攻击': [],
-            '锁定_3C_气动伤害加成': ['啸谷长风', '轻云出月'],
-            '锁定_3C_热熔伤害加成': ['熔山裂谷', '轻云出月'],
-            '锁定_3C_导电伤害加成': ['彻空冥雷', '轻云出月'],
-            '锁定_3C_衍射伤害加成': ['浮星祛暗', '轻云出月'],
-            '锁定_3C_湮灭伤害加成': ['沉日劫明', '轻云出月'],
-            '锁定_3C_冷凝伤害加成': ['凝夜白霜', '轻云出月'],
-            '锁定_3C_共鸣效率': [
-                '凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光', '轻云出月',
-                '不绝余音'],
-            # '锁定_4C_暴击': ['凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光',
-            #                  '轻云出月',
-            #                  '不绝余音'],
-            # '锁定_4C_暴击伤害': ['凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光',
-            #                      '轻云出月',
-            #                      '不绝余音'],
-            # '锁定_4C_治疗效果加成': ['隐世回光'],
-            # '锁定_4C_生命': [],
-            # '锁定_4C_防御': [],
-            # '锁定_4C_攻击': [],
+            '锁定_3C_气动伤害加成': [],
+            '锁定_3C_热熔伤害加成': [],
+            '锁定_3C_导电伤害加成': [],
+            '锁定_3C_衍射伤害加成': [],
+            '锁定_3C_湮灭伤害加成': [],
+            '锁定_3C_冷凝伤害加成': [],
+            '锁定_3C_共鸣效率': [],
+            '锁定_4C_暴击': [],
+            '锁定_4C_暴击伤害': [],
+            '锁定_4C_治疗效果加成': [],
+            '锁定_4C_生命': [],
+            '锁定_4C_防御': [],
+            '锁定_4C_攻击': [],
         }
         self.sets = [
-            '凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光', '轻云出月', '不绝余音']
+            '凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光', '轻云出月', '不绝余音', '高天共奏之曲', '无惧浪涛之勇', '海渊孽生之威', '流云逝尽之空', '幽夜隐匿之帷', '此间永驻之光', '凌冽决断之心']
 
         self.main_stats = ["攻击", "防御", "生命", "共鸣效率", "冷凝伤害加成", "热熔伤害加成", "导电伤害加成",
                            "气动伤害加成", "衍射伤害加成", "湮灭伤害加成", "治疗效果加成", "暴击伤害", "暴击"]
@@ -83,11 +76,7 @@ class FiveToOneTask(BaseCombatTask):
         if len(to_handle) > self.current_cost_index:
             self.current_cost = to_handle[self.current_cost_index]
             self.current_cost_index += 1
-            if self.current_cost == '4' and not self.config.get('4C舍弃'):
-                self.log_info(f'4C 什么都没选!')
-                return self.incr_cost_filter()
-            else:
-                self.set_filter()
+            self.set_filter()
             return True
         else:
             return False
@@ -101,12 +90,12 @@ class FiveToOneTask(BaseCombatTask):
         self.click(find_boxes_by_name(boxes, names='五星'), after_sleep=1)
         self.click(find_boxes_by_name(boxes, names=re.compile(f'ost{self.current_cost}')), after_sleep=1)
 
-        if self.current_cost == '4':
-            if "全部未加锁" in self.config.get('4C舍弃'):
-                self.logger.info('全部舍弃4C')
-            else:
-                for throw in self.config.get('4C舍弃'):
-                    self.click(find_boxes_by_name(boxes, names=throw), after_sleep=1)
+        # if self.current_cost == '4':
+        #     if "全部未加锁" in self.config.get('4C舍弃'):
+        #         self.logger.info('全部舍弃4C')
+        #     else:
+        #         for throw in self.config.get('4C舍弃'):
+        #             self.click(find_boxes_by_name(boxes, names=throw), after_sleep=1)
 
         self.click(find_boxes_by_name(boxes, names='确定'), after_sleep=2)
         self.click_empty_area()
