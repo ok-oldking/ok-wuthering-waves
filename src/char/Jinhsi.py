@@ -95,12 +95,12 @@ class Jinhsi(BaseChar):
         # self.task.screenshot(f'handle_intro start')
         self.logger.info(f'handle_intro start')
         start = time.time()
-        if (self.time_elapsed_accounting_for_freeze(self.last_fly_e_time) < 10.5 or self.has_cd(
-                'resonance')) and not self.incarnation_cd:
-            self.incarnation_cd = True
-            self.click_echo()
-            self.logger.info(f'handle_intro in cd switch {start - self.last_fly_e_time}')
-            return
+        # if (self.time_elapsed_accounting_for_freeze(self.last_fly_e_time) < 10.5 or self.has_cd(
+        #         'resonance')) and not self.incarnation_cd:
+        #     self.incarnation_cd = True
+        #     self.click_echo()
+        #     self.logger.info(f'handle_intro in cd switch {start - self.last_fly_e_time}')
+        #     return
         wait_til_no_cd = False
         while True:
             self.task.next_frame()
