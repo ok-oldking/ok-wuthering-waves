@@ -1,8 +1,6 @@
 src
 ok
 config.py
-launcher.json
-launcher.py
 main.py
 ok-ww.exe
 main.py
