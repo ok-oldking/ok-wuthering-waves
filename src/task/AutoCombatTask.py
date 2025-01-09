@@ -26,11 +26,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                 else:
                     self.get_current_char().perform()
             except CharDeadException:
-                logger.info(f'char dead try teleport to heal')
-                try:
-                    self.teleport_to_heal()
-                except Exception as e:
-                    logger.error('teleport to heal error', e)
+                self.log_error(f'Characters dead', notify=True, tray=True)
                 break
             except NotInCombatException as e:
                 current_char = self.get_current_char()
