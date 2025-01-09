@@ -86,10 +86,9 @@ class FarmWorldBossTask(BaseCombatTask):
                             self.sleep(5)
                         try:
                             self.combat_once(wait_before=0)
-                        except CharDeadException:
-                            logger.info(f'char dead try teleport to heal')
-                            self.teleport_to_heal()
-                            continue
+                        except CharDeadException as e:
+                            self.log_error(f'Characters dead', notify=True, tray=True)
+                            return
                         logger.info(f'farm echo combat end')
                         if boss_name == 'Bell-Borne Geochelone':
                             logger.info(f'sleep for the Boss model to disappear')
