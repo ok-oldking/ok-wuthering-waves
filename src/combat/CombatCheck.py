@@ -160,10 +160,10 @@ class CombatCheck(BaseWWTask):
                                time_out=5):
                 return True
             self.log_error(
-                "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options",
-                notify=True, tray=True)
-            self.screenshot('check_target_enemy')
-            self.pause()
+                "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
+                )
+            # self.screenshot('check_target_enemy')
+            # self.pause()
         return True
 
     def in_realm_or_multi(self):
