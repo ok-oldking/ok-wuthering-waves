@@ -13,6 +13,14 @@ assignees: ok-oldking
 搜索现有ISSUE:
 [https://github.com/ok-oldking/ok-wuthering-waves/issues?q=](https://github.com/ok-oldking/ok-wuthering-waves/issues?q=)
 
+讨论区
+[https://github.com/ok-oldking/ok-wuthering-waves/discussions](https://github.com/ok-oldking/ok-wuthering-waves/discussions)
+
+
+只处理老版本没问题, 新版本会出现的BUG. 其他问题请通过上面的方法解决.
+如有角色适配不好, 可能是我没抽或者不玩, 如需改进可以自己提PR, 将来可能跳大多数角色.
+可以尝试使用支持好的角色.
+
 描述错误:
 [请清晰简洁地描述错误是什么]
 
