@@ -19,6 +19,7 @@ class FarmWorldTask(BaseCombatTask):
         self.run_to_combat()
 
     def run_to_combat(self):
+        self.middle_click_relative(0.5, 0.5)
         self.run_until(self.check_health_bar, 'w', time_out=60, running=True)
         self.combat_once()
         self.run_in_circle_to_find_echo(3)
