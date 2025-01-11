@@ -19,7 +19,7 @@ class FarmWorldBossTask(BaseCombatTask):
                            'Inferno Rider',
                            'Feilian Beringal',
                            'Mourning Aix', 'Impermanence Heron', 'Lampylumen Myriad', 'Mech Abomination',
-                           'Fallacy of No Return'
+                           'Fallacy of No Return', 'Lorelei'
                            ]
 
         self.find_echo_method = ['Walk', 'Run in Circle', 'Turn Around and Search']
@@ -80,6 +80,9 @@ class FarmWorldBossTask(BaseCombatTask):
                         elif boss_name == 'Bell-Borne Geochelone':
                             logger.info(f'sleep for the Bell-Borne model to appear')
                             self.sleep(15)
+                        elif boss_name == 'Lorelei':
+                            if count % 6 < 3:                                
+                                self.change_time()
                         self.middle_click_relative(0.5, 0.5)
                         self.sleep(0.4)
                         self.run_until(self.in_combat, 'w', time_out=10, running=True)
@@ -109,3 +112,18 @@ class FarmWorldBossTask(BaseCombatTask):
             if count <= 2:
                 self.log_error('Must choose at least 3 Boss to Farm', notify=True)
                 return
+                
+    def change_time(self):
+        logger.info(f'change time to night')
+        self.send_key("esc")
+        self.sleep(1)
+        self.click_relative(0.71,0.96) 
+        self.sleep(2)
+        self.click_relative(0.19,0.14)
+        self.sleep(1)
+        self.click_relative(0.52,0.90)
+        self.sleep(6)
+        self.send_key("esc")
+        self.sleep(1)
+        self.send_key("esc")
+        self.sleep(1)
