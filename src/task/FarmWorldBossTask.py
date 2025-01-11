@@ -12,14 +12,14 @@ class FarmWorldBossTask(BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.description = "Click Start in Game World"
         self.name = "Farm World Boss(Must Drop a WayPoint on the Boss First)"
-        self.boss_names = ['N/A','Sentry Construct','Dragon of Dirge','Nightmare: Feilian Beringal',
+        self.boss_names = ['N/A', 'Lorelei', 'Sentry Construct','Dragon of Dirge','Nightmare: Feilian Beringal',
                            'Nightmare: Impermanence Heron','Nightmare: Thundering Mephis',
                            'Nightmare: Tempest Mephis', 'Nightmare: Crownless',
                            'Nightmare: Inferno Rider','Nightmare: Mourning Aix','Bell-Borne Geochelone', 'Crownless', 'Thundering Mephis', 'Tempest Mephis',
                            'Inferno Rider',
                            'Feilian Beringal',
                            'Mourning Aix', 'Impermanence Heron', 'Lampylumen Myriad', 'Mech Abomination',
-                           'Fallacy of No Return', 'Lorelei'
+                           'Fallacy of No Return'
                            ]
 
         self.find_echo_method = ['Walk', 'Run in Circle', 'Turn Around and Search']
@@ -82,7 +82,7 @@ class FarmWorldBossTask(BaseCombatTask):
                             self.sleep(15)
                         elif boss_name == 'Lorelei':
                             if count % 6 < 3:                                
-                                self.change_time()
+                                self.change_time_to_night()
                         self.middle_click_relative(0.5, 0.5)
                         self.sleep(0.4)
                         self.run_until(self.in_combat, 'w', time_out=10, running=True)
@@ -113,8 +113,8 @@ class FarmWorldBossTask(BaseCombatTask):
                 self.log_error('Must choose at least 3 Boss to Farm', notify=True)
                 return
                 
-    def change_time(self):
-        logger.info(f'change time to night')
+    def change_time_to_night(self):
+        logger.info('change time to night')
         self.send_key("esc")
         self.sleep(1)
         self.click_relative(0.71,0.96) 

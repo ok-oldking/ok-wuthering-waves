@@ -286,6 +286,9 @@ msgstr "半自动肉鸽(深坠异想奇境)"
 msgid "Fallacy of No Return"
 msgstr "无归的谬误"
 
+msgid "Lorelei"
+msgstr "罗莱蕾"
+
 msgid "click f2 to open the book"
 msgstr "点击F2打开书"
 
