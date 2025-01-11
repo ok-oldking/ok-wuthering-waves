@@ -13,6 +13,7 @@ from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
 from src.char.Jiyan import Jiyan
 from src.char.Mortefi import Mortefi
+from src.char.Roccia import Roccia
 from src.char.Sanhua import Sanhua
 from src.char.ShoreKeeper import ShoreKeeper
 from src.char.Taoqi import Taoqi
@@ -50,6 +51,7 @@ def get_char_by_pos(task, box, index):
         'char_camellya': {'cls': Camellya, 'res_cd': 4, 'echo_cd': 25},
         'char_youhu': {'cls': Youhu, 'res_cd': 4, 'echo_cd': 25},
         'char_carlotta': {'cls': Carlotta, 'res_cd': 10, 'echo_cd': 25},
+        'char_roccia': {'cls': Roccia, 'res_cd': 10, 'echo_cd': 25},
     }
     highest_confidence = 0
     info = None
