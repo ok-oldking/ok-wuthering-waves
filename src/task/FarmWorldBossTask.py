@@ -80,6 +80,8 @@ class FarmWorldBossTask(BaseCombatTask):
                         elif boss_name == 'Bell-Borne Geochelone':
                             logger.info(f'sleep for the Bell-Borne model to appear')
                             self.sleep(15)
+                        self.middle_click_relative(0.5, 0.5)
+                        self.sleep(0.4)
                         self.run_until(self.in_combat, 'w', time_out=10, running=True)
                         if boss_name == 'Sentry Construct':
                             logger.debug('Sentry Construct sleep')
