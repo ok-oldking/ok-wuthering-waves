@@ -77,7 +77,18 @@ class BaseChar:
             self.task.click()
             self.sleep(0.2)
 
+    def wait_intro(self, time_out=1.2,click=True):
+        self.task.wait_until(self.down, post_action=self.click_with_interval if click else None, time_out=time_out, wait_until_before_delay=0,
+                                       wait_until_check_delay=0)
+
+    def down(self):
+        return (self.current_echo() > 0  and not self.has_cd('echo')) or (self.current_resonance() > 0  and not self.has_cd('resonance'))
+
+    def click_with_interval(self, interval=0.1):
+        self.click(interval=interval)
+
     def click(self, *args: Any, **kwargs: Any):
+        self.logger.debug(f'click {args} {kwargs}')
         self.task.click(*args, **kwargs)
 
     def do_perform(self):
@@ -156,7 +167,7 @@ class BaseChar:
             self.logger.debug(f'click_resonance resonance_available click {current_resonance}')
 
             if now - last_click > 0.1:
-                if ((current_resonance == 0) and send_click) or last_op == 'resonance':
+                if send_click and (current_resonance == 0 or last_op == 'resonance'):
                     self.task.click()
                     last_op = 'click'
                     continue
@@ -242,7 +253,8 @@ class BaseChar:
         while time.time() - start < wait_if_cd_ready and not self.liberation_available() and not self.has_cd(
                 'liberation'):
             self.logger.debug(f'click_liberation wait ready {wait_if_cd_ready}')
-            self.click(interval=0.1)
+            if send_click:
+                self.click(interval=0.1)
             self.task.next_frame()
         while self.liberation_available():  # clicked and still in team wait for animation
             self.logger.debug(f'click_liberation liberation_available click')
@@ -268,7 +280,7 @@ class BaseChar:
             self.task.in_liberation = True
             clicked = True
             if send_click:
-                self.task.click(interval=0.1)
+                self.click(interval=0.1)
             if time.time() - start > 7:
                 self.task.in_liberation = False
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
