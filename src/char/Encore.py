@@ -20,9 +20,18 @@ class Encore(BaseChar):
 
     def do_perform(self):
         if self.has_intro:
-            self.logger.debug('encore wait intro')
-            self.continues_normal_attack(1.4)
-            self.wait_down()
+            elapsed = self.time_elapsed_accounting_for_freeze(self.liberation_time)
+            self.logger.debug(f'encore wait intro {elapsed}')
+            if 6 < elapsed < 10 and self.is_forte_full():
+                self.logger.debug('encore heavy attack after intro')
+                self.task.mouse_down()
+                self.wait_intro(time_out=1.4, click=False)
+                self.task.mouse_up()
+                self.sleep(0.1)
+                self.last_heavy = time.time()
+                return self.switch_next_char()
+            else:
+                self.wait_intro(time_out=1.4, click=True)
         if self.still_in_liberation():
             self.n4()
             return self.switch_next_char()
@@ -57,7 +66,7 @@ class Encore(BaseChar):
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         self.logger.debug(
             f'encore last heavy time {self.last_heavy} {self.time_elapsed_accounting_for_freeze(self.last_heavy)}')
-        if self.time_elapsed_accounting_for_freeze(self.last_heavy) < 4.5:
+        if self.time_elapsed_accounting_for_freeze(self.last_heavy) < 4.6:
             return Priority.MIN
         elif self.still_in_liberation() or self.can_resonance_step2():
             self.logger.info(
