@@ -16,12 +16,17 @@ class Sanhua(BaseChar):
         if self.click_liberation(send_click=False):
             sleep_time += 0.40
             pass
-        clicked, duration, _ = self.click_resonance(send_click=False)
-        if not clicked:
-            self.click_echo()
+        clicked_resonance, duration, _ = self.click_resonance(send_click=False)
+        clicked_echo = self.click_echo()
         sleep_time -= self.time_elapsed_accounting_for_freeze(start)
         self.logger.debug('Sanhua to_sleep {}'.format(sleep_time))
         self.sleep(sleep_time)
         self.task.mouse_up()
-        self.sleep(0.45)
+        if clicked_resonance and not clicked_echo:
+            after_sleep = 0.6
+        else:
+            after_sleep = 0.3
+        if self.has_intro:
+            after_sleep += 0.8
+        self.sleep(after_sleep)
         self.switch_next_char()
