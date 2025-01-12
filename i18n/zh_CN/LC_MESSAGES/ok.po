@@ -36,8 +36,8 @@ msgstr "入口方向"
 msgid "Farm Echo in Dungeon"
 msgstr "刷副本Boss声骸"
 
-msgid "Farm World Boss(Must Drop a WayPoint on the Boss First)"
-msgstr "刷大世界4C Boss声骸(先在要刷的Boss脸上放锚点)"
+msgid "Farm World Boss"
+msgstr "刷大世界4C Boss声骸"
 
 msgid "Game Hotkey Config"
 msgstr "游戏快捷键设置"
@@ -387,6 +387,21 @@ msgstr "沉日劫明"
 
 msgid "Void Thunder"
 msgstr "彻空冥雷"
+
+msgid "Frosty Resolve"
+msgstr "凌冽决断之心"
+
+msgid "Eternal Radiance"
+msgstr "此间永驻之光"
+
+msgid "Midnight Veil"
+msgstr "幽夜隐匿之帷"
+
+msgid "Empyrean Anthem"
+msgstr "高天共奏之曲"
+
+msgid "Tidebreaking Courage"
+msgstr "无惧浪涛之勇"
 
 msgid "Prevent Wuthering Waves from moving the mouse"
 msgstr "防止鸣潮游戏移动鼠标"
