@@ -66,6 +66,7 @@ class FarmWorldBossTask(BaseCombatTask):
                 if boss_name := self.config.get(key):
                     if boss_name != 'N/A':
                         count += 1
+                        self.send_key('space')
                         self.teleport_to_boss(boss_name, use_custom=True)
                         logger.info(f'farm echo combat once start')
                         if boss_name == 'Crownless':
