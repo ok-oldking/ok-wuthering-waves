@@ -315,6 +315,9 @@ class BaseChar:
     def get_liberation_key(self):
         return self.task.get_liberation_key()
 
+    def has_long_actionbar(self):
+        return False
+
     def get_echo_key(self):
         return self.task.get_echo_key()
 

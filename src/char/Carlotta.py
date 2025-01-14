@@ -29,3 +29,6 @@ class Carlotta(BaseChar):
             return self.switch_next_char()
         self.continues_normal_attack(0.31)
         self.switch_next_char()
+
+    def has_long_actionbar(self):
+        return True

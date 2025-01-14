@@ -162,8 +162,6 @@ class CombatCheck(BaseWWTask):
             self.log_error(
                 "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
                 )
-            # self.screenshot('check_target_enemy')
-            # self.pause()
         return True
 
     def in_realm_or_multi(self):
@@ -175,10 +173,18 @@ class CombatCheck(BaseWWTask):
     def has_target(self):
         aim_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name('box_target_enemy'))
         # logger.debug(f'aim_percent {aim_percent}')
-        if aim_percent < 0.005:
+        if aim_percent < 0.005 and self.has_long_actionbar_chars():
             aim_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name('box_target_enemy_long'))
         if aim_percent > 0.005:
             return True
+
+    def has_long_actionbar_chars(self):
+        if not self._in_combat:
+            self.load_chars()
+        current_char = self.get_current_char()
+        if current_char and current_char.has_long_actionbar():
+            return True
+        return False
 
 
     def target_enemy(self, wait=True):
