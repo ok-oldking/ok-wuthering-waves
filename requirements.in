@@ -1,4 +1,4 @@
-ok-script==0.0.425
+ok-script==0.0.441
 PySide6-Fluent-Widgets>=1.7.3
 darkdetect>=0.8.0
 requests>=2.32.3
