@@ -29,12 +29,11 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                 self.log_error(f'Characters dead', notify=True, tray=True)
                 break
             except NotInCombatException as e:
-                current_char = self.get_current_char()
-                logger.info(f'auto_combat_task_out_of_combat {current_char} {e}')
-                current_char.on_combat_end(self.chars)
+                logger.info(f'auto_combat_task_out_of_combat {e}')
                 if self.debug:
                     self.screenshot(f'auto_combat_task_out_of_combat {e}')
                 break
+        self.combat_end()
 
     def realm_perform(self):
         if not self.last_is_click:
