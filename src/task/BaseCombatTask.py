@@ -117,10 +117,10 @@ class BaseCombatTask(CombatCheck):
             except CharDeadException as e:
                 raise e
             except NotInCombatException as e:
-                self.get_current_char().on_combat_end(self.chars)
                 logger.info(f'combat_once out of combat break {e}')
                 # self.screenshot(f'combat_once_ooc {self.out_of_combat_reason}')
                 break
+        self.combat_end()
         self.wait_in_team_and_world(time_out=10)
         self.sleep(1)
         self.middle_click()
@@ -279,14 +279,19 @@ class BaseCombatTask(CombatCheck):
         self.logger.debug(f'{box_name} has_cd {has_cd} {invalid_count} {number_count} {has_dot}')
         return has_cd
 
-    def get_current_char(self) -> BaseChar:
+    def get_current_char(self, raise_exception=True) -> BaseChar:
         for char in self.chars:
-            if char.is_current_char:
+            if char and char.is_current_char:
                 return char
-        if not self.in_team()[0]:
-            self.raise_not_in_combat('can find current char!!')
-        self.load_chars()
-        return self.get_current_char()
+        if raise_exception and not self.in_team()[0]:
+                self.raise_not_in_combat('can find current char!!')
+        # self.load_chars()
+        return None
+
+    def combat_end(self):
+        current_char = self.get_current_char(raise_exception=False)
+        if current_char:
+            self.get_current_char().on_combat_end(self.chars)
 
     def sleep_check_combat(self, timeout, check_combat=True):
         start = time.time()
