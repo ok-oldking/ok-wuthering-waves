@@ -181,7 +181,7 @@ class CombatCheck(BaseWWTask):
     def has_long_actionbar_chars(self):
         if not self._in_combat:
             self.load_chars()
-        current_char = self.get_current_char()
+        current_char = self.get_current_char(raise_exception=False)
         if current_char and current_char.has_long_actionbar():
             return True
         return False
