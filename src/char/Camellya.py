@@ -26,7 +26,16 @@ class Camellya(BaseChar):
     def on_combat_end(self, chars):
         next_char = str((self.index + 1) % len(chars) + 1)
         self.logger.debug(f'Camellya on_combat_end {self.index} switch next char: {next_char}')
-        self.task.send_key(next_char)
+        start = time.time()
+        while time.time() - start < 6:
+            self.task.load_chars()
+            current_char = self.task.get_current_char(raise_exception=False)
+            if current_char and current_char.name != "Camellya":
+                break
+            else:
+                self.task.send_key(next_char)
+            self.sleep(0.2, False)
+        self.logger.debug(f'Camellya on_combat_end {self.index} switch end')
 
     def do_perform(self):
         if self.has_intro:
