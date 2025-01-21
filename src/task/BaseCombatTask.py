@@ -450,7 +450,7 @@ class BaseCombatTask(CombatCheck):
         # Define the color range
         lower_bound, upper_bound = color_range_to_bound(color_range)
 
-        image_with_contours = image.copy()
+        # image_with_contours = image.copy()
 
         # Create a binary mask
         mask = cv2.inRange(image, lower_bound, upper_bound)
@@ -498,8 +498,8 @@ class BaseCombatTask(CombatCheck):
             bounding_box_area = width * height
             component_mask = (labels == label).astype(np.uint8) * 255
             contours, _ = cv2.findContours(component_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            color = colors[label % len(colors)]
-            cv2.drawContours(image_with_contours, contours, -1, color, 2)
+            # color = colors[label % len(colors)]
+            # cv2.drawContours(image_with_contours, contours, -1, color, 2)
             if bounding_box_area >= min_area:
                 # Select a color from the list based on the label index
                 if is_full_ring(component_mask):
