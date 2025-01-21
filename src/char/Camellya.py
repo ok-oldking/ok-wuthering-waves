@@ -75,3 +75,9 @@ class Camellya(BaseChar):
             self.click_resonance()
         self.click_echo()
         self.switch_next_char()
+
+    def click_echo(self, *args):
+        if self.echo_available():
+            self.task.send_key(self.get_echo_key())
+            return True
+
