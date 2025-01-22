@@ -204,7 +204,7 @@ class BaseCombatTask(CombatCheck):
                         f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
                 continue
             switch_to.has_intro = switch_to.has_intro if switch_to.has_intro else current_char.is_con_full()
-            if current_index != switch_to.index:  
+            if current_index != switch_to.index:
                 if now - start > 10:
                     if self.debug:
                         self.screenshot(f'switch_not_detected_{current_char}_to_{switch_to}')
@@ -365,9 +365,9 @@ class BaseCombatTask(CombatCheck):
                     char.is_current_char = True
                 else:
                     char.is_current_char = False
-        if healer_count >= 2:
-            self.log_error(f"Can not auto combat because team can only have one healer at most", notify=True, tray=True)
-            self.pause()
+        # if healer_count >= 2:
+        #     self.log_error(f"Can not auto combat because team can only have one healer at most", notify=True, tray=True)
+        #     self.pause()
         self.combat_start = time.time()
 
         self.log_info(f'load chars success {self.chars}')
