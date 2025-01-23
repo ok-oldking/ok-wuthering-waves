@@ -146,8 +146,8 @@ class BaseCombatTask(CombatCheck):
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
         max_priority = Priority.MIN
         switch_to = current_char
-        switch_to.has_intro = free_intro
-        if not switch_to.has_intro:
+        has_intro = free_intro
+        if not has_intro:
             current_con = current_char.get_current_con()
             if current_con > 0.8 and current_con != 1:
                 logger.info(f'switch_next_char current_con {current_con:.2f} almost full, sleep and check again')
@@ -155,14 +155,14 @@ class BaseCombatTask(CombatCheck):
                 self.next_frame()
                 current_con = current_char.get_current_con()
             if current_con == 1:
-                switch_to.has_intro = True
+                has_intro = True
         low_con = 200
 
         for i, char in enumerate(self.chars):
             if char == current_char:
                 priority = Priority.CURRENT_CHAR
             else:
-                priority = char.get_switch_priority(current_char, switch_to.has_intro, target_low_con)
+                priority = char.get_switch_priority(current_char, has_intro, target_low_con)
                 logger.info(
                     f'switch_next_char priority: {char} {priority} {char.current_con} target_low_con {target_low_con}')
             if target_low_con:
@@ -182,6 +182,7 @@ class BaseCombatTask(CombatCheck):
             current_char.continues_normal_attack(0.2)
             logger.warning(f"{current_char} can't find next char to switch to, performing too fast add a normal attack")
             return current_char.switch_next_char()
+        switch_to.has_intro = has_intro
         logger.info(f'switch_next_char {current_char} -> {switch_to} has_intro {switch_to.has_intro}')
         last_click = 0
         start = time.time()
@@ -203,7 +204,7 @@ class BaseCombatTask(CombatCheck):
                     self.raise_not_in_combat(
                         f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
                 continue
-            switch_to.has_intro = switch_to.has_intro if switch_to.has_intro else current_char.is_con_full()
+            switch_to.has_intro = switch_to.has_intro or current_char.is_con_full()
             if current_index != switch_to.index:
                 if now - start > 10:
                     if self.debug:
