@@ -3,6 +3,8 @@ from src.char.BaseChar import BaseChar
 
 class HavocRover(BaseChar):
     def do_perform(self):
+        if self.has_intro:
+            self.wait_intro(click=True)
         self.click_liberation()
         if self.click_resonance()[0]:
             return self.switch_next_char()
