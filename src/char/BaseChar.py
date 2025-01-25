@@ -77,8 +77,9 @@ class BaseChar:
             self.task.click()
             self.sleep(0.2)
 
-    def wait_intro(self, time_out=1.2,click=True):
-        self.task.wait_until(self.down, post_action=self.click_with_interval if click else None, time_out=time_out, wait_until_before_delay=0,
+    def wait_intro(self, time_out=1.2, click=True):
+        if self.has_intro:
+            self.task.wait_until(self.down, post_action=self.click_with_interval if click else None, time_out=time_out, wait_until_before_delay=0,
                                        wait_until_check_delay=0)
 
     def down(self):
@@ -326,10 +327,10 @@ class BaseChar:
 
     def get_switch_priority(self, current_char, has_intro, target_low_con):
         priority = self.do_get_switch_priority(current_char, has_intro, target_low_con)
-        if priority < Priority.MAX and time.time() - self.last_switch_time < 0.9:
-            return Priority.SWITCH_CD  # switch cd
-        else:
-            return priority
+        # if priority < Priority.MAX and time.time() - self.last_switch_time < 0.9:
+        #     return Priority.SWITCH_CD  # switch cd
+        # else:
+        return priority
 
     def do_get_switch_priority(self, current_char, has_intro=False, target_low_con=False):
         priority = 0

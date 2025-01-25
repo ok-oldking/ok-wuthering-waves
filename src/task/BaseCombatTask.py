@@ -203,6 +203,7 @@ class BaseCombatTask(CombatCheck):
                 if now - start > 5:
                     self.raise_not_in_combat(
                         f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
+                self.next_frame()
                 continue
             switch_to.has_intro = switch_to.has_intro or current_char.is_con_full()
             if current_index != switch_to.index:
