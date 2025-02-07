@@ -51,7 +51,7 @@ def get_char_by_pos(task, box, index):
         'char_camellya': {'cls': Camellya, 'res_cd': 4, 'echo_cd': 25},
         'char_youhu': {'cls': Youhu, 'res_cd': 4, 'echo_cd': 25},
         'char_carlotta': {'cls': Carlotta, 'res_cd': 10, 'echo_cd': 25},
-        'char_roccia': {'cls': Roccia, 'res_cd': 10, 'echo_cd': 25},
+        'char_roccia': {'cls': Roccia, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd':20},
     }
     highest_confidence = 0
     info = None
@@ -64,7 +64,7 @@ def get_char_by_pos(task, box, index):
             info = char_info
     if info is not None:
         cls = info.get('cls')
-        return cls(task, index, info.get('res_cd'), info.get('echo_cd'))
+        return cls(task, index, info.get('res_cd'), info.get('echo_cd'), info.get('liberation_cd') or 25)
     task.log_info(f'could not find char {info} {highest_confidence}')
     has_cd = task.ocr(box=box)
     if has_cd and is_float(has_cd[0].name):
