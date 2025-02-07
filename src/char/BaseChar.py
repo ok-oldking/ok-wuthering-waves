@@ -31,15 +31,17 @@ char_lib_check_marks = ['char_1_lib_check_mark', 'char_2_lib_check_mark', 'char_
 
 class BaseChar:
 
-    def __init__(self, task, index, res_cd=20, echo_cd=20):
+    def __init__(self, task, index, res_cd=20, echo_cd=20, liberation_cd=25):
         self.white_off_threshold = 0.01
         self.echo_cd = echo_cd
         self.task = task
+        self.liberation_cd = liberation_cd
         self.sleep_adjust = 0
         self.index = index
         self.last_switch_time = -1
         self.last_res = -1
         self.last_echo = -1
+        self.last_liberation = -1
         self.has_intro = False
         self.res_cd = res_cd
         self.is_current_char = False
@@ -83,7 +85,7 @@ class BaseChar:
                                        wait_until_check_delay=0)
 
     def down(self):
-        return (self.current_echo() > 0  and not self.has_cd('echo')) or (self.current_resonance() > 0  and not self.has_cd('resonance'))
+        return (self.current_resonance() > 0  and not self.has_cd('resonance')) or (self.current_liberation() > 0 and not self.has_cd('liberation'))
 
     def click_with_interval(self, interval=0.1):
         self.click(interval=interval)
@@ -132,7 +134,7 @@ class BaseChar:
         if sec > 0:
             self.task.sleep_check_combat(sec + self.sleep_adjust, check_combat=check_combat)
 
-    def click_resonance(self, post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0):
+    def click_resonance(self, post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0, check_cd=False):
         clicked = False
         self.logger.debug(f'click_resonance start')
         last_click = 0
@@ -161,7 +163,7 @@ class BaseChar:
             self.check_combat()
             now = time.time()
             current_resonance = self.current_resonance()
-            if not self.resonance_available(current_resonance) and (
+            if not self.resonance_available(current_resonance, check_cd=check_cd) and (
                     not has_animation or now - start > animation_min_duration):
                 self.logger.debug(f'click_resonance not available break')
                 break
@@ -200,6 +202,12 @@ class BaseChar:
         current = time.time()
         if current - self.last_res > self.res_cd:  # count the first click only
             self.last_res = time.time()
+
+    def update_liberation_cd(self):
+        current = time.time()
+        if current - self.last_liberation > (self.liberation_cd - 2):  # count the first click only
+            self.last_liberation = time.time()
+
 
     def update_echo_cd(self):
         current = time.time()
@@ -263,7 +271,9 @@ class BaseChar:
             if now - last_click > 0.1:
                 self.task.send_key(self.get_liberation_key())
                 self.liberation_available_mark = False
-                clicked = True
+                if not clicked:
+                    clicked = True
+                    self.update_liberation_cd()
                 last_click = now
             if time.time() - start > timeout:
                 self.task.raise_not_in_combat('too long clicking a liberation')
@@ -279,7 +289,9 @@ class BaseChar:
         start = time.time()
         while not self.task.in_team()[0]:
             self.task.in_liberation = True
-            clicked = True
+            if not clicked:
+                clicked = True
+                self.update_liberation_cd()
             if send_click:
                 self.click(interval=0.1)
             if time.time() - start > 7:
@@ -362,7 +374,9 @@ class BaseChar:
     def count_forte_priority(self):
         return 0
 
-    def resonance_available(self, current=None, check_ready=False):
+    def resonance_available(self, current=None, check_ready=False, check_cd=False):
+        if check_cd:
+            return time.time() - self.last_res > self.res_cd
         if self.is_current_char:
             snap = self.current_resonance() if current is None else current
             if check_ready and snap == 0:
@@ -370,6 +384,9 @@ class BaseChar:
             return self.is_available(snap, 'resonance')
         elif self.res_cd > 0:
             return time.time() - self.last_res > self.res_cd
+
+    def liberation_cd_ready(self, offset = 1):
+        return self.time_elapsed_accounting_for_freeze(self.last_liberation + 1) >= self.liberation_cd
 
     def echo_available(self, current=None):
         if self.is_current_char:

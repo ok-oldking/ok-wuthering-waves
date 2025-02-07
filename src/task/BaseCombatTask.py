@@ -212,7 +212,7 @@ class BaseCombatTask(CombatCheck):
                         self.screenshot(f'switch_not_detected_{current_char}_to_{switch_to}')
                     self.raise_not_in_combat('failed switch chars')
                 else:
-                    self.next_frame()
+                    self.click(interval=0.1)
             else:
                 self.in_liberation = False
                 current_char.switch_out()
