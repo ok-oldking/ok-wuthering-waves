@@ -8,7 +8,7 @@ class Roccia(BaseChar):
     def __init__(self, *args):
         super().__init__(*args)
         self.plunge_count = 0
-
+        self.last_e = 0
     # def do_perform(self):
     #     self.wait_intro(time_out=1.2, click=True)
     #     if self.get_plunge_count() > 0:
@@ -28,21 +28,19 @@ class Roccia(BaseChar):
     #     self.switch_next_char(post_action=post_action)
 
     def do_perform(self):
-        self.wait_intro(time_out=1.4, click=True)
-        self.plunge_count = self.get_plunge_count()
-        if self.plunge_count > 0:
-            self.plunge_count = 0
-            # self.()
+        if self.has_intro:
+            self.heavy_attack(2.0)
+            self.sleep(0.2)
+            self.last_e = time.time()
             return self.switch_next_char()
-        # if not self.is_forte_full():
-        #     self.heavy_attack(1.5)
-        #     return super().switch_next_char()
-        if self.is_forte_full() and self.resonance_available() and self.liberation_available():
+        # self.wait_intro(time_out=1.4, click=True)
+        if self.liberation_available() and self.resonance_available(check_cd=True) and self.is_forte_full():
             self.click_liberation()
+            self.task.wait_until(self.resonance_available, time_out=1, post_action=self.click_with_interval,
+                                 wait_until_before_delay=0, wait_until_check_delay=0)
         if self.click_resonance()[0]:
-            self.plunge_count = 2
-            return self.switch_next_char()
-        self.plunge_count = 0
+            self.last_e = time.time()
+        self.click()
         self.switch_next_char()
 
     def switch_next_char(self, *args):
@@ -61,9 +59,9 @@ class Roccia(BaseChar):
         self.sleep(0.01)
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if has_intro and self.plunge_count > 0:
-            return Priority.MIN
-        if self.plunge_count > 0 or has_intro:
+        # if has_intro and self.plunge_count > 0:
+        #     return Priority.MIN
+        if has_intro or time.time() - self.last_e < 4:
             self.logger.info(
                 f'switch priority max because plunge count is {self.plunge_count}')
             return Priority.MAX - 1
@@ -83,22 +81,22 @@ class Roccia(BaseChar):
     def is_color_ok(self, box):
         purple_percent = self.task.calculate_color_percentage(forte_purple_color, self.task.get_box_by_name(box))
         self.logger.debug(f'purple percent: {box} {purple_percent}')
-        if purple_percent > 0.15:
+        if purple_percent > 0.16:
             return True
 
-    def plunge(self, starting_count=3):
-        start = time.time()
-        while self.is_forte_full() and time.time() - start < 4:
-            # plunge_count = self.get_plunge_count()
-            # if plunge_count > 0:
-            #     starting_count = plunge_count - 1
-            # elif  starting_count > 1:
-            self.click(interval=0.1)
-            if self.get_plunge_count() == 1:
-                break
-        self.plunge_count = 0
-        self.logger.debug(f'plunge ended after: {time.time() - start} {self.get_plunge_count()}  {self.is_forte_full()}')
-        return True
+    # def plunge(self, starting_count=3):
+    #     start = time.time()
+    #     while self.is_forte_full() and time.time() - start < 0.4:
+    #         # plunge_count = self.get_plunge_count()
+    #         # if plunge_count > 0:
+    #         #     starting_count = plunge_count - 1
+    #         # elif  starting_count > 1:
+    #         self.click(interval=0.1)
+    #         # if self.get_plunge_count() == 1:
+    #         #     break
+    #     self.plunge_count = 0
+    #     self.logger.debug(f'plunge ended after: {time.time() - start} {self.get_plunge_count()}  {self.is_forte_full()}')
+    #     return True
 
     def c6_continues_plunge(self):
         start = time.time()
