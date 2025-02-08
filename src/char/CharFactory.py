@@ -57,8 +57,8 @@ def get_char_by_pos(task, box, index):
     info = None
     for char_name, char_info in char_dict.items():
         feature = task.find_one(char_name, box=box, threshold=0.6)
-        if feature:
-            task.log_info(f'found char {char_name} {feature.confidence} {highest_confidence}')
+        # if feature:
+        #     task.log_info(f'found char {char_name} {feature.confidence} {highest_confidence}')
         if feature and feature.confidence > highest_confidence:
             highest_confidence = feature.confidence
             info = char_info

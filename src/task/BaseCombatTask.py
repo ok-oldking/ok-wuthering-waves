@@ -331,7 +331,7 @@ class BaseCombatTask(CombatCheck):
         in_team, current_index, count = self.in_team()
         if not in_team:
             return
-        self.log_info('load chars')
+        # self.log_info('load chars')
         char = get_char_by_pos(self, self.get_box_by_name('box_char_1'), 0)
         old_char = safe_get(self.chars, 0)
         if self.should_update(char, old_char):
@@ -372,7 +372,7 @@ class BaseCombatTask(CombatCheck):
         #     self.pause()
         self.combat_start = time.time()
 
-        self.log_info(f'load chars success {self.chars}')
+        # self.log_info(f'load chars success {self.chars}')
 
     @staticmethod
     def should_update(the_char, old_char):
