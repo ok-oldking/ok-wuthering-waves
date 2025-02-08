@@ -1,5 +1,6 @@
 import re
 import time
+from decimal import Decimal, ROUND_UP, ROUND_DOWN
 
 import cv2
 import numpy as np
@@ -367,7 +368,7 @@ class BaseCombatTask(CombatCheck):
         return self.get_current_con(char_config) == 1
 
     def get_current_con(self, char_config=None):
-        box = self.box_of_screen_scaled(3840, 2160, 1422, 1939, to_x=1566, to_y=2076, name='con_full',
+        box = self.box_of_screen_scaled(3840, 2160, 1431, 1942, 1557, 2068, name='con_full',
                                         hcenter=True)
         box.confidence = 0
 
@@ -424,14 +425,27 @@ class BaseCombatTask(CombatCheck):
     def count_rings(self, image, color_range, min_area):
         # Define the color range
         lower_bound, upper_bound = color_range_to_bound(color_range)
+        masked_image = image.copy()
+        h, w = image.shape[:2]
+        center = (w // 2, h // 2)
 
-        # image_with_contours = image.copy()
+        # draw mask
+        r1, r2 = h*0.35119, h*0.42261
+        r1 = Decimal(str(r1)).quantize(Decimal('0'), rounding=ROUND_DOWN)
+        r2 = Decimal(str(r2)).quantize(Decimal('0'), rounding=ROUND_UP)
 
-        # Create a binary mask
-        mask = cv2.inRange(image, lower_bound, upper_bound)
+        ring_mask = np.zeros((h, w), dtype=np.uint8)
+        cv2.circle(ring_mask, center, int(r2), 255, -1)
+        cv2.circle(ring_mask, center, int(r1), 0, -1)
+        masked_image = cv2.bitwise_and(masked_image, masked_image, mask=ring_mask)
+
+        # Perform closing operation (Dilation followed by Erosion)
+        raw_mask = cv2.inRange(masked_image, lower_bound, upper_bound)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+        closed_mask = cv2.morphologyEx(raw_mask, cv2.MORPH_CLOSE, kernel)
 
         # Find connected components
-        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
+        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(closed_mask, connectivity=8)
 
         colors = [
             (0, 255, 0),  # Green
@@ -464,6 +478,7 @@ class BaseCombatTask(CombatCheck):
             # All conditions met, likely a close ring.
             return True
 
+        # output_image = image.copy()
         # Iterate over each component
         ring_count = 0
         is_full = False
@@ -472,9 +487,9 @@ class BaseCombatTask(CombatCheck):
             x, y, width, height, area = stats[label, :5]
             bounding_box_area = width * height
             component_mask = (labels == label).astype(np.uint8) * 255
-            contours, _ = cv2.findContours(component_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             # color = colors[label % len(colors)]
-            # cv2.drawContours(image_with_contours, contours, -1, color, 2)
+            # mask = labels == label
+            # output_image[mask] = color
             if bounding_box_area >= min_area:
                 # Select a color from the list based on the label index
                 if is_full_ring(component_mask):
@@ -483,7 +498,8 @@ class BaseCombatTask(CombatCheck):
                 ring_count += 1
 
         # Save or display the image with contours
-        # cv2.imwrite(f'test\\test_{self}_{is_full}_{the_area}_{lower_bound}.jpg', image_with_contours)
+        # cv2.imwrite(fr'test\count_rings_{is_full}_{self.screen_width}_mask.png', output_image)
+        # cv2.imwrite(fr'test\count_rings_{is_full}_{self.screen_width}.png', masked_image)
         if ring_count > 1:
             is_full = False
             the_area = 0
