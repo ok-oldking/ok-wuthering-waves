@@ -9,59 +9,45 @@ class Roccia(BaseChar):
         super().__init__(*args)
         self.plunge_count = 0
         self.last_e = 0
-    # def do_perform(self):
-    #     self.wait_intro(time_out=1.2, click=True)
-    #     if self.get_plunge_count() > 0:
-    #         self.plunge()
-    #         return self.switch_next_char()
-    #     if self.is_forte_full() and self.resonance_available():
-    #         self.click_liberation()
-    #     if self.click_resonance()[0]:
-    #         plunge_count = self.task.wait_until(self.get_plunge_count, time_out=2, post_action=self.click_with_interval, wait_until_before_delay=0,
-    #                            wait_until_check_delay=0)
-    #         self.logger.debug('wait plunge count: {}'.format(plunge_count))
-    #         # if plunge_count == 3:
-    #         #     self.plunge()
-    #         return self.switch_next_char()
-    #     self.click()
-    #     post_action = self.use_t_action if self.is_con_full() else None
-    #     self.switch_next_char(post_action=post_action)
+        self.last_intro = 0
+
 
     def do_perform(self):
         if self.has_intro:
-            self.heavy_attack(2.0)
-            self.sleep(0.2)
+            self.heavy_attack(1.6)
+            self.sleep(0.1)
             self.last_e = time.time()
+            self.last_intro = time.time()
             return self.switch_next_char()
         # self.wait_intro(time_out=1.4, click=True)
         if self.liberation_available() and self.resonance_available(check_cd=True) and self.is_forte_full():
             self.click_liberation()
-            self.task.wait_until(self.resonance_available, time_out=1, post_action=self.click_with_interval,
+            self.task.wait_until(self.resonance_available, time_out=4, post_action=self.click_with_interval,
                                  wait_until_before_delay=0, wait_until_check_delay=0)
-        if self.click_resonance()[0]:
+        if self.click_resonance(check_cd=True)[0]:
             self.last_e = time.time()
         self.click()
         self.switch_next_char()
 
-    def switch_next_char(self, *args):
-        # self.click(interval=0.2)
-        # while time.time() - self.last_perform < 1.1:
-        #     self.click(interval=0.2)
-        self.click()
-        # if self.plunge_count == 0:
-        #     self.plunge_count = self.get_plunge_count()
-        # self.logger.debug('wait plunge count: {}'.format(self.plunge_count))
-        # post_action = self.use_t_action if self.is_con_full() else None
-        return super().switch_next_char(*args)
+    # def switch_next_char(self, *args):
+    #     # self.click(interval=0.2)
+    #     # while time.time() - self.last_perform < 1.1:
+    #     #     self.click(interval=0.2)
+    #     self.click()
+    #     # if self.plunge_count == 0:
+    #     #     self.plunge_count = self.get_plunge_count()
+    #     # self.logger.debug('wait plunge count: {}'.format(self.plunge_count))
+    #     # post_action = self.use_t_action if self.is_con_full() else None
+    #     return super().switch_next_char(*args)
 
     def use_t_action(self):
         self.task.send_key('t')
         self.sleep(0.01)
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        # if has_intro and self.plunge_count > 0:
-        #     return Priority.MIN
-        if has_intro or time.time() - self.last_e < 4:
+        if time.time() - self.last_intro < 4 and has_intro:
+            return Priority.MIN + 1
+        if time.time() - self.last_e < 4 and not has_intro:
             self.logger.info(
                 f'switch priority max because plunge count is {self.plunge_count}')
             return Priority.MAX - 1
