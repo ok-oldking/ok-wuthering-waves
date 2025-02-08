@@ -174,7 +174,7 @@ class BaseChar:
                     self.task.click()
                     last_op = 'click'
                     continue
-                if current_resonance > 0:
+                if current_resonance > 0 and self.resonance_available(current_resonance):
                     if resonance_click_time == 0:
                         clicked = True
                         resonance_click_time = now
@@ -248,7 +248,7 @@ class BaseChar:
         self.task.check_combat()
 
     def reset_state(self):
-        self.logger.info('reset state')
+        # self.logger.info('reset state')
         self.has_intro = False
 
     def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0, timeout=5):
@@ -375,8 +375,8 @@ class BaseChar:
         return 0
 
     def resonance_available(self, current=None, check_ready=False, check_cd=False):
-        if check_cd:
-            return time.time() - self.last_res > self.res_cd
+        if check_cd and time.time() - self.last_res > self.res_cd:
+            return True
         if self.is_current_char:
             snap = self.current_resonance() if current is None else current
             if check_ready and snap == 0:
