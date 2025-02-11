@@ -15,7 +15,7 @@ class Roccia(BaseChar):
     def do_perform(self):
         if self.has_intro:
             self.heavy_attack(1.6)
-            self.sleep(0.1)
+            self.sleep(0.2)
             self.last_e = time.time()
             self.last_intro = time.time()
             return self.switch_next_char()
