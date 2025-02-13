@@ -384,15 +384,15 @@ class BaseWWTask(BaseTask):
 
         if page == 1:  # weekly turtle
             logger.info('scroll down page 1')
-            self.click_relative(1136 / 2560, 0.219)
+            self.click_relative(1136 / 2560, 0.222)
             self.sleep(1)
         elif page == 2:
             logger.info('scroll down page 2')
-            self.click_relative(1136 / 2560, 0.266)
+            self.click_relative(1136 / 2560, 0.272)
             self.sleep(1)
         elif page == 3:
             logger.info('scroll down page 3')
-            self.click_relative(1136 / 2560, 0.312)
+            self.click_relative(1136 / 2560, 0.321)
             self.sleep(1)
 
         x = 0.24
