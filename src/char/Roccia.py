@@ -26,7 +26,8 @@ class Roccia(BaseChar):
                                  wait_until_before_delay=0, wait_until_check_delay=0)
         if self.click_resonance(check_cd=True)[0]:
             self.last_e = time.time()
-        self.click()
+            return self.switch_next_char()
+        self.plunge()
         self.switch_next_char()
 
     # def switch_next_char(self, *args):
@@ -70,19 +71,22 @@ class Roccia(BaseChar):
         if purple_percent > 0.16:
             return True
 
-    # def plunge(self, starting_count=3):
-    #     start = time.time()
-    #     while self.is_forte_full() and time.time() - start < 0.4:
-    #         # plunge_count = self.get_plunge_count()
-    #         # if plunge_count > 0:
-    #         #     starting_count = plunge_count - 1
-    #         # elif  starting_count > 1:
-    #         self.click(interval=0.1)
-    #         # if self.get_plunge_count() == 1:
-    #         #     break
-    #     self.plunge_count = 0
-    #     self.logger.debug(f'plunge ended after: {time.time() - start} {self.get_plunge_count()}  {self.is_forte_full()}')
-    #     return True
+    def plunge(self):
+        start = time.time()
+        starting_count = 0
+        while (self.is_forte_full() and time.time() - start < 0.4) or (starting_count >0 and time.time() - start < 3):
+            self.click(interval=0.1)
+            plunge_count = self.get_plunge_count()
+            if plunge_count > 0:
+                starting_count = plunge_count
+            if self.get_plunge_count() == 1:
+                self.logger.debug(f'plunge count is {self.get_plunge_count()}')
+                self.sleep(0.3)
+                self.click()
+                break
+        self.plunge_count = 0
+        self.logger.debug(f'plunge ended after: {time.time() - start} {self.get_plunge_count()}  {self.is_forte_full()}')
+        return True
 
     def c6_continues_plunge(self):
         start = time.time()
