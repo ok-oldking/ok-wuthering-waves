@@ -3,4 +3,5 @@ from src.char.BaseChar import BaseChar
 
 class Phoebe(BaseChar):
 
-    pass
+    def has_long_actionbar(self):
+        return True
