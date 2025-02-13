@@ -446,6 +446,7 @@ class BaseWWTask(BaseTask):
 
     def check_main(self):
         if not self.in_team()[0]:
+            self.click_relative(0, 0)
             self.send_key('esc')
             self.sleep(1)
             if not self.in_team()[0]:
