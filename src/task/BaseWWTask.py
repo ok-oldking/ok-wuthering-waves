@@ -418,7 +418,9 @@ class BaseWWTask(BaseTask):
                     # if self.wait_click_feature('gray_custom_way_point', raise_if_not_found=False, time_out=4):
                     #     self.sleep(1)
                     self.click_relative(0.68, 0.6, after_sleep=1)
-                self.click_relative(0.91, 0.92, after_sleep=1)
+                    self.click_relative(0.75, 0.92, after_sleep=1) # custom way point teleport
+                else:
+                    self.click_relative(0.91, 0.92, after_sleep=1) # fast travel teleport
                 return True
             else:
                 self.click_relative(0.91, 0.92, after_sleep=1)
