@@ -24,6 +24,8 @@ class FarmWorldBossTask(BaseCombatTask):
 
         self.find_echo_method = ['Walk', 'Run in Circle', 'Turn Around and Search']
 
+        self.use_custom_waypoint = ['False', 'True']
+
         default_config = {
             'Boss1': 'N/A',
             'Boss1 Echo Pickup Method': 'Turn Around and Search',
@@ -31,7 +33,8 @@ class FarmWorldBossTask(BaseCombatTask):
             'Boss2 Echo Pickup Method': 'Turn Around and Search',
             'Boss3': 'N/A',
             'Boss3 Echo Pickup Method': 'Turn Around and Search',
-            'Repeat Farm Count': 1000
+            'Repeat Farm Count': 1000,
+            'With Custom Waypoint': 'True'
         }
         self.config_type['Boss1 Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
         self.config_type['Boss2 Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
@@ -41,6 +44,7 @@ class FarmWorldBossTask(BaseCombatTask):
         self.config_type["Boss1"] = {'type': "drop_down", 'options': self.boss_names}
         self.config_type["Boss2"] = {'type': "drop_down", 'options': self.boss_names}
         self.config_type["Boss3"] = {'type': "drop_down", 'options': self.boss_names}
+        self.config_type["With Custom Waypoint"] = {'type': "drop_down", 'options': self.use_custom_waypoint}
         self.config_description = {
             'Level': '(1-6) Important, Choose which level to farm, lower levels might not produce a echo',
             'Entrance Direction': 'Choose Forward for Dreamless, Backward for Jue'
@@ -60,13 +64,15 @@ class FarmWorldBossTask(BaseCombatTask):
         self.set_check_monthly_card()
         self.check_main()
         count = 0
+        use_custom = 0
         while True:
             for i in range(1, 4):
                 key = 'Boss' + str(i)
                 if boss_name := self.config.get(key):
                     if boss_name != 'N/A':
                         count += 1
-                        self.teleport_to_boss(boss_name, use_custom=True)
+                        use_custom = True if self.config.get('With Custom Waypoint') == 'True' else False
+                        self.teleport_to_boss(boss_name, use_custom)
                         logger.info(f'farm echo combat once start')
                         if boss_name == 'Crownless':
                             self.wait_in_team_and_world(time_out=20)
