@@ -384,15 +384,15 @@ class BaseWWTask(BaseTask):
 
         if page == 1:  # weekly turtle
             logger.info('scroll down page 1')
-            self.click_relative(1136 / 2560, 0.222)
+            self.click_relative(1136 / 2560, 0.219)
             self.sleep(1)
         elif page == 2:
             logger.info('scroll down page 2')
-            self.click_relative(1136 / 2560, 0.272)
+            self.click_relative(1136 / 2560, 0.266)
             self.sleep(1)
         elif page == 3:
             logger.info('scroll down page 3')
-            self.click_relative(1136 / 2560, 0.321)
+            self.click_relative(1136 / 2560, 0.312)
             self.sleep(1)
 
         x = 0.24
@@ -416,7 +416,7 @@ class BaseWWTask(BaseTask):
                     self.click_relative(0.5, 0.5, after_sleep=1)
                     # if self.wait_click_feature('gray_custom_way_point', raise_if_not_found=False, time_out=4):
                     #     self.sleep(1)
-                    self.click_relative(0.7, 0.6, after_sleep=1)
+                    self.click_relative(0.68, 0.6, after_sleep=1)
                 self.click_relative(0.91, 0.92, after_sleep=1)
                 return True
             else:
@@ -446,6 +446,7 @@ class BaseWWTask(BaseTask):
 
     def check_main(self):
         if not self.in_team()[0]:
+            self.click_relative(0, 0)
             self.send_key('esc')
             self.sleep(1)
             if not self.in_team()[0]:
