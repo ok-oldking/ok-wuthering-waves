@@ -39,9 +39,6 @@ msgstr ""
 msgid "Farm Echo in Dungeon"
 msgstr ""
 
-msgid "Farm World Boss(Must Drop a WayPoint on the Boss First)"
-msgstr ""
-
 msgid "Game Hotkey Config"
 msgstr ""
 
