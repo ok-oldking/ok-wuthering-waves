@@ -417,10 +417,10 @@ class BaseWWTask(BaseTask):
                     # if self.wait_click_feature('gray_custom_way_point', raise_if_not_found=False, time_out=4):
                     #     self.sleep(1)
                     self.click_relative(0.68, 0.6, after_sleep=1)
-                self.click_relative(0.91, 0.92, after_sleep=1)
+                self.click_relative(0.74, 0.92, after_sleep=1)
                 return True
             else:
-                self.click_relative(0.91, 0.92, after_sleep=1)
+                self.click_relative(0.74, 0.92, after_sleep=1)
                 if self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
                                            relative_x=-1, raise_if_not_found=True,
                                            threshold=0.7,
