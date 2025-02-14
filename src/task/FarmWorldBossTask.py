@@ -11,7 +11,7 @@ class FarmWorldBossTask(BaseCombatTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.description = "Click Start in Game World"
-        self.name = "Farm World Boss"
+        self.name = "Farm World Boss(May need to drop waypoint on Boss)"
         self.boss_names = ['N/A', 'Lorelei', 'Sentry Construct','Dragon of Dirge','Nightmare: Feilian Beringal',
                            'Nightmare: Impermanence Heron','Nightmare: Thundering Mephis',
                            'Nightmare: Tempest Mephis', 'Nightmare: Crownless',
