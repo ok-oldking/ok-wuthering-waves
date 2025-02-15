@@ -73,8 +73,8 @@ class FiveToOneTask(BaseWWTask):
             self.click_relative(0.95, 0.05)
             self.send_key_up('alt')
             self.sleep(2)
-            self.click_relative(0.75, 0.46, after_sleep=1)
-            self.click_relative(0.04, 0.55, after_sleep=1)
+            self.click_relative(0.75, 0.46, after_sleep=3)
+            self.click_relative(0.04, 0.55, after_sleep=3)
             self.click_relative(0.53, 0.2, after_sleep=1)
         self.incr_cost_filter()
         starting_index = 0
@@ -93,6 +93,7 @@ class FiveToOneTask(BaseWWTask):
         if self.find_one('data_merge_first_add_slot', threshold=0.6):
             if self.incr_cost_filter():
                 self.add_5()
+                start_index = 0
             else:
                 return -1
         for i in range(start_index, len(self.echo_positions)):
