@@ -24,6 +24,8 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
 
 class BaseWWTask(BaseTask):
 
+    map_zoomed = False
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.pick_echo_config = self.get_global_config(pick_echo_config_option)
@@ -59,6 +61,15 @@ class BaseWWTask(BaseTask):
             'Nightmare: Inferno Rider': [3, 2, False],
             'Nightmare: Mourning Aix': [3, 3, False],
         }
+
+    def zoom_map(self):
+        if not self.map_zoomed:
+            self.log_info('zoom map to max')
+            self.map_zoomed = True
+            self.send_key('m', after_sleep=1)
+            for i in range(11):
+                self.click(0.95, 0.29, after_sleep=0.1)
+            self.send_key('esc', after_sleep=1)
 
     def validate(self, key, value):
         message = self.validate_config(key, value)
@@ -361,6 +372,7 @@ class BaseWWTask(BaseTask):
         return 'unknown_lang'
 
     def teleport_to_boss(self, boss_name, use_custom=False):
+        self.zoom_map()
         pos = self.bosses_pos.get(boss_name)
         page = pos[0]
         index = pos[1]
