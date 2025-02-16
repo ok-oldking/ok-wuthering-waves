@@ -30,23 +30,12 @@ class Roccia(BaseChar):
         self.plunge()
         self.switch_next_char()
 
-    # def switch_next_char(self, *args):
-    #     # self.click(interval=0.2)
-    #     # while time.time() - self.last_perform < 1.1:
-    #     #     self.click(interval=0.2)
-    #     self.click()
-    #     # if self.plunge_count == 0:
-    #     #     self.plunge_count = self.get_plunge_count()
-    #     # self.logger.debug('wait plunge count: {}'.format(self.plunge_count))
-    #     # post_action = self.use_t_action if self.is_con_full() else None
-    #     return super().switch_next_char(*args)
-
     def use_t_action(self):
         self.task.send_key('t')
         self.sleep(0.01)
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if time.time() - self.last_intro < 4 and has_intro:
+        if time.time() - self.last_intro < 3 and has_intro:
             return Priority.MIN + 1
         if time.time() - self.last_e < 4 and not has_intro:
             self.logger.info(
@@ -74,14 +63,14 @@ class Roccia(BaseChar):
     def plunge(self):
         start = time.time()
         starting_count = 0
-        while (self.is_forte_full() and time.time() - start < 0.4) or (starting_count >0 and time.time() - start < 3):
+        while (self.is_forte_full() and time.time() - start < 0.4) or (starting_count > 0 and time.time() - start < 3):
             self.click(interval=0.1)
             plunge_count = self.get_plunge_count()
             if plunge_count > 0:
                 starting_count = plunge_count
             if self.get_plunge_count() == 1:
                 self.logger.debug(f'plunge count is {self.get_plunge_count()}')
-                self.sleep(0.3)
+                self.sleep(0.2)
                 self.click()
                 break
         self.plunge_count = 0
