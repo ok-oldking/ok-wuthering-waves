@@ -16,15 +16,17 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         self.description = "Enable auto combat in Abyss, Game World etc"
         self.icon = FluentIcon.CALORIES
         self.last_is_click = False
+        self.default_config.update({
+            'Auto Target': True,
+        })
+        self.config_description = {
+            'Auto Target': 'Turn off to enable auto combat only when manually target enemy using middle click'
+        }
 
     def run(self):
         while self.in_combat():
             try:
-                logger.debug(f'autocombat loop {self.chars}')
-                if self._in_realm:
-                    self.realm_perform()
-                else:
-                    self.get_current_char().perform()
+                self.get_current_char().perform()
             except CharDeadException:
                 self.log_error(f'Characters dead', notify=True, tray=True)
                 break
@@ -34,20 +36,6 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                     self.screenshot(f'auto_combat_task_out_of_combat {e}')
                 break
         self.combat_end()
-
-    def realm_perform(self):
-        if not self.last_is_click:
-            self.click()
-        else:
-            if self.available('liberation'):
-                self.send_key_and_wait_animation(self.get_liberation_key(), self.in_realm_or_multi)
-            elif self.available('echo'):
-                self.send_key(self.get_echo_key())
-            elif self.available('resonance'):
-                self.send_key(self.get_resonance_key())
-            elif self.is_con_full() and self.in_team()[0]:
-                self.send_key_and_wait_animation('2', self.in_realm_or_multi)
-        self.last_is_click = not self.last_is_click
 
     def trigger(self):
         if self.in_combat():
