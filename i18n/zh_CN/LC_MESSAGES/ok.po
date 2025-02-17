@@ -51,6 +51,12 @@ msgstr "等级"
 msgid "Liberation Key"
 msgstr "共鸣解放快捷键(默认r)"
 
+msgid "Auto Target"
+msgstr "自动选取敌人"
+
+msgid "Turn off to enable auto combat only when manually target enemy using middle click"
+msgstr "关闭时仅在手动鼠标中键选取敌人后才会自动战斗"
+
 msgid "Repeat Farm Count"
 msgstr "刷多少次"
 
