@@ -26,7 +26,6 @@ class CombatCheck(BaseWWTask):
         self.out_of_combat_reason = ""
         self.combat_check_interval = 1
         self._last_liberation = 0
-        self._in_realm = False
 
     @property
     def in_liberation(self):
@@ -66,8 +65,6 @@ class CombatCheck(BaseWWTask):
         self.boss_lv_box = None
         self.boss_health = None
         self.boss_health_box = None
-        self._in_realm = False
-        self._in_multiplayer = False
         return False
 
     def recent_liberation(self):
@@ -119,10 +116,8 @@ class CombatCheck(BaseWWTask):
                 return True
         else:
             start = time.time()
-            self._in_realm = self.in_realm()
-            if not self._in_realm:
-                self._in_multiplayer = self.in_multiplayer()
-            in_combat = self.has_target() or ((not self.check_team or self.in_team()[0]) and self.check_health_bar())
+            from src.task.AutoCombatTask import AutoCombatTask
+            in_combat = self.has_target() or ((self.config.get('Auto Target') or not isinstance(self, AutoCombatTask)) and self.check_health_bar())
             in_combat = in_combat and self.check_target_enemy_btn()
             if in_combat:
                 if not self.target_enemy(wait=True):
@@ -131,10 +126,6 @@ class CombatCheck(BaseWWTask):
                     f'enter combat cost {(time.time() - start):2f} boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
                 self._in_combat = True
                 return True
-
-    @property
-    def check_team(self):
-        return not self._in_realm and not self._in_multiplayer
 
     def log_time(self, start, name):
         logger.debug(f'check cost {name} {time.time() - start}')
@@ -147,7 +138,7 @@ class CombatCheck(BaseWWTask):
         return lvs
 
     def check_target_enemy_btn(self):
-        if not self.in_realm_or_multi() and self.calculate_color_percentage(text_white_color,
+        if self.calculate_color_percentage(text_white_color,
                                                                             self.get_box_by_name(
                                                                                 'box_target_mouse')) == 0:
             logger.info(f'check target_enemy failed, wait 3 seconds')
@@ -160,12 +151,6 @@ class CombatCheck(BaseWWTask):
                 "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
                 )
         return True
-
-    def in_realm_or_multi(self):
-        if self._in_realm:
-            return self.in_realm()
-        elif self._in_multiplayer:
-            return self.in_multiplayer()
 
     def has_target(self):
         aim_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name('box_target_enemy'))
