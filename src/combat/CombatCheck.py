@@ -116,7 +116,8 @@ class CombatCheck(BaseWWTask):
                 return True
         else:
             start = time.time()
-            in_combat = self.has_target() or (self.config.get('Auto Target') and self.check_health_bar())
+            from src.task.AutoCombatTask import AutoCombatTask
+            in_combat = self.has_target() or ((self.config.get('Auto Target') or not isinstance(self, AutoCombatTask)) and self.check_health_bar())
             in_combat = in_combat and self.check_target_enemy_btn()
             if in_combat:
                 if not self.target_enemy(wait=True):
