@@ -31,10 +31,6 @@ class BaseWWTask(BaseTask):
         self.pick_echo_config = self.get_global_config(pick_echo_config_option)
         self.monthly_card_config = self.get_global_config(monthly_card_config_option)
         self.next_monthly_card_start = 0
-
-        self.multiplayer_check_interval = 3
-        self._in_multiplayer = False
-        self._multiplayer_last_check = 0
         self.bosses_pos = {
             'Bell-Borne Geochelone': [0, 0, False],
             'Dreamless': [0, 2, True],
@@ -307,22 +303,7 @@ class BaseWWTask(BaseTask):
         return self.in_team()[
             0]  # and self.find_one(f'gray_book_button', threshold=0.7, canny_lower=50, canny_higher=150)
 
-    def check_in_multiplayer(self):
-        self._multiplayer_last_check = time.time()
-        self._in_multiplayer = self.find_one('multiplayer_world_mark',
-                                             threshold=0.75) is not None
-        return self._in_multiplayer
-
-    def in_multiplayer(self):
-        if self._in_multiplayer or self._multiplayer_last_check == 0:
-            return self.check_in_multiplayer()
-        if not self._in_multiplayer and time.time() - self._multiplayer_last_check > self.multiplayer_check_interval:
-            return self.check_in_multiplayer()
-        return self._in_multiplayer
-
     def in_team(self):
-        if self.in_multiplayer():
-            return False, -1, -1
         c1 = self.find_one('char_1_text',
                            threshold=0.75)
         c2 = self.find_one('char_2_text',
