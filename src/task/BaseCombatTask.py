@@ -202,9 +202,14 @@ class BaseCombatTask(CombatCheck):
                 if self.debug:
                     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
                 confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2)
-                if confirm:   
-                    self.log_info(f'char dead')
-                    self.raise_not_in_combat(f'char dead', exception_type=CharDeadException)
+                if confirm:
+                    # 死亡传送复活，不报错
+                    self.sleep(1)
+                    self.send_key('esc')
+                    self.teleport_to_boss(ChangeHotkey.key_teleportlive(), use_custom=True)
+                    # 
+                    # self.log_info(f'char dead')
+                    # self.raise_not_in_combat(f'char dead', exception_type=CharDeadException)
                 if now - start > 5:
                     self.raise_not_in_combat(
                         f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
