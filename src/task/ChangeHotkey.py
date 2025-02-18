@@ -8,24 +8,26 @@
 # self.send_key(ChangeHotkey.key_char1() )
 class ChangeHotkey :
     def key_char1() :
-        return 'z'
-
+        return '1'
+   # 切换1号队员
+    
     def key_char2() :
-        return  'x'
-
+        return  '2'
+    # 切换2号队员
 
     def key_char3() :
-        return  'c'
-
+        return  '3'
+    # 切换3号队员
 
     def key_map() :
-        return  'T'
-
+        return  'm'
+    # 打开地图
     def key_pick() :
-        return  'e'
-
+        return  'f'
+    # 拾取声骸
     def key_teleportlive():
-        return  'Tempest Mephis'
+        return  ''
+    # 传送指定boss复活
             # 'Bell-Borne Geochelone': [0, 0, False],
             # 'Dreamless': [0, 2, True],
             # 'Jue': [0, 3, True],
@@ -51,11 +53,8 @@ class ChangeHotkey :
             # 'Nightmare: Inferno Rider': [3, 2, False],
             # 'Nightmare: Mourning Aix': [3, 3, False],
 
-    # 切换1号队员
-
-
-    # 切换2号队员
+ 
 
 
 
-    # 切换3号队员
+
