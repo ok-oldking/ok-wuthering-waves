@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from ok import BaseTask, Logger
 from ok import CannotFindException
 from ok import ConfigOption
-
+from src.task.ChangeHotkey import ChangeHotkey
 logger = Logger.get_logger(__name__)
 
 pick_echo_config_option = ConfigOption('Pick Echo Config', {
