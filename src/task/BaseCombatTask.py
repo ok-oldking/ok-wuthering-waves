@@ -13,7 +13,7 @@ from src.char.BaseChar import Priority, dot_color
 from src.char.CharFactory import get_char_by_pos
 from src.char.Healer import Healer
 from src.combat.CombatCheck import CombatCheck
-
+from src.task.ChangeHotkey import ChangeHotkey
 logger = Logger.get_logger(__name__)
 
 
