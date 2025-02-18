@@ -62,7 +62,7 @@ class BaseWWTask(BaseTask):
         if not self.map_zoomed:
             self.log_info('zoom map to max')
             self.map_zoomed = True
-            self.send_key('m', after_sleep=1)
+            self.send_key(ChangeHotkey.key_map(), after_sleep=1)
             for i in range(11):
                 self.click(0.95, 0.29, after_sleep=0.1)
             self.send_key('esc', after_sleep=1)
@@ -177,7 +177,7 @@ class BaseWWTask(BaseTask):
             return self.send_key_and_wait_f(direction, raise_if_not_found, time_out,
                                             target_text=target_text) and self.sleep(0.5)
         else:
-            self.send_key('f')
+            self.send_key(ChangeHotkey.key_pick())
             if self.handle_claim_button():
                 return False
         self.sleep(0.5)
@@ -193,7 +193,7 @@ class BaseWWTask(BaseTask):
         f_found = self.wait_until(lambda: self.find_f_with_text(target_text=target_text), time_out=time_out,
                                   raise_if_not_found=False, wait_until_before_delay=0)
         if f_found:
-            self.send_key('f')
+            self.send_key(ChangeHotkey.key_pick())
             self.sleep(0.1)
         self.send_key_up(direction)
         if running:
