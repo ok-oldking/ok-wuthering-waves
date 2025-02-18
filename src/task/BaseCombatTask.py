@@ -202,7 +202,8 @@ class BaseCombatTask(CombatCheck):
                 if self.debug:
                     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
                 confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2)
-                    # 死亡传送指定boss复活，不报错
+                if confirm:
+                    # 死亡传送复活，不报错
                     self.sleep(1)
                     self.send_key('esc')
                     self.teleport_to_boss(ChangeHotkey.key_teleportlive(), use_custom=True)
