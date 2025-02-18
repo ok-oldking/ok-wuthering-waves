@@ -397,10 +397,44 @@ class BaseWWTask(BaseTask):
         self.log_info(f'index after scrolling down {index}')
         self.click_relative(0.89, 0.91)
         self.sleep(1)
-        self.wait_click_travel(use_custom=use_custom)
+        # 增加特定BOSS不传信标（溯雷）
+        if boss_name == ChangeHotkey.key_teleportlive():
+            self.wait_click_travel2(use_custom=use_custom)
+        else :
+            self.wait_click_travel(use_custom=use_custom)   
+
+        # 
         self.wait_in_team_and_world(time_out=120)
         self.sleep(0.5)
-
+        # 新增函数2（不传信标，只改了函数名和点击参数）
+    def click_traval_button2(self, use_custom=False):
+        if feature := self.find_one(['fast_travel_custom', 'remove_custom', 'gray_teleport'], threshold=0.6):
+            if feature.name == 'gray_teleport':
+                if use_custom:
+                    # if not self.wait_click_feature('custom_teleport_hcenter_vcenter', raise_if_not_found=False, time_out=3):
+                    self.click_relative(0.5, 0.5, after_sleep=1)
+                    # if self.wait_click_feature('gray_custom_way_point', raise_if_not_found=False, time_out=4):
+                    #     self.sleep(1)
+                    self.click_relative(0.7, 0.6, after_sleep=1)
+                self.click_relative(0.91, 0.92, after_sleep=1)
+                return True
+            else:
+                self.click_relative(0.91, 0.92, after_sleep=1)
+                if self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
+                                           relative_x=-1, raise_if_not_found=True,
+                                           threshold=0.7,
+                                           time_out=4):
+                    self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
+                                            relative_x=-1, raise_if_not_found=False,
+                                            threshold=0.7,
+                                            time_out=1)
+                    return True
+        elif btn := self.find_one('gray_teleport', threshold=0.7):
+            return self.click_box(btn, relative_x=1)
+         
+    def wait_click_travel2(self, use_custom=False):
+        self.wait_until(lambda: self.click_traval_button2(use_custom=use_custom), raise_if_not_found=True, time_out=10)
+# 
     def click_traval_button(self, use_custom=False):
         if feature := self.find_one(['fast_travel_custom', 'remove_custom', 'gray_teleport'], threshold=0.6):
             if feature.name == 'gray_teleport':
