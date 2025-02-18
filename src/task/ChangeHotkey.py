@@ -7,24 +7,27 @@
 # BaseCombatTask.py
 # self.send_key(ChangeHotkey.key_char1() )
 class ChangeHotkey :
+    @staticmethod
     def key_char1() :
         return '1'
    # 切换1号队员
-    
+    @staticmethod
     def key_char2() :
         return  '2'
     # 切换2号队员
-
+    @staticmethod
     def key_char3() :
         return  '3'
     # 切换3号队员
-
+    @staticmethod
     def key_map() :
         return  'm'
     # 打开地图
+    @staticmethod
     def key_pick() :
         return  'f'
     # 拾取声骸
+    @staticmethod
     def key_teleportlive():
         return  ''
     # 传送指定boss复活
