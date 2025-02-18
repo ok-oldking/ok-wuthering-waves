@@ -75,7 +75,7 @@ class BaseCombatTask(CombatCheck):
         self.send_key('esc')
         self.sleep(1)
         self.log_info('click m to open the map')
-        self.send_key('m')
+        self.send_key(ChangeHotkey.key_map())
         self.sleep(2)
         for i in range(4):
             self.click_relative(0.94, 0.29, after_sleep=0.5)
@@ -189,7 +189,12 @@ class BaseCombatTask(CombatCheck):
         while True:
             now = time.time()
             if now - last_click > 0.1:
-                self.send_key(switch_to.index + 1)
+                if switch_to.index + 1 ==1 :
+                    self.send_key(ChangeHotkey.key_char1() )
+                if switch_to.index + 1 ==2 :
+                    self.send_key(ChangeHotkey.key_char2() )
+                if switch_to.index + 1 ==3 :
+                    self.send_key(ChangeHotkey.key_char3())                   
                 last_click = now
             in_team, current_index, size = self.in_team()
             if not in_team:
