@@ -352,7 +352,7 @@ class BaseWWTask(BaseTask):
             return 'en_US'
         return 'unknown_lang'
 
-    def teleport_to_boss(self, boss_name, use_custom=False):
+    def teleport_to_boss(self, boss_name, use_custom=False, dead=False):
         self.zoom_map()
         pos = self.bosses_pos.get(boss_name)
         page = pos[0]
@@ -397,7 +397,13 @@ class BaseWWTask(BaseTask):
         self.log_info(f'index after scrolling down {index}')
         self.click_relative(0.89, 0.91)
         self.sleep(1)
-        self.wait_click_travel(use_custom=use_custom)
+        # 判断是否是角色死亡，需要传送复活状态
+        if not dead:
+            self.wait_click_travel(use_custom=use_custom)
+        else:
+            self.click_relative(0.92, 0.91)
+            self.sleep(1)
+            self.click_relative(0.68, 0.6)
         self.wait_in_team_and_world(time_out=120)
         self.sleep(0.5)
 
