@@ -81,7 +81,7 @@ class FarmWorldBossTask(BaseCombatTask):
                             logger.info(f'sleep for the Bell-Borne model to appear')
                             self.sleep(15)
                         elif boss_name == 'Lorelei':
-                            if count % 6 < 3:                                
+                            if count % 6 < 3:
                                 self.change_time_to_night()
                         self.middle_click_relative(0.5, 0.5)
                         self.sleep(0.4)
@@ -92,8 +92,12 @@ class FarmWorldBossTask(BaseCombatTask):
                         try:
                             self.combat_once(wait_before=0)
                         except CharDeadException as e:
-                            self.log_error(f'Characters dead', notify=True, tray=True)
-                            return
+                            # self.log_error(f'Characters dead', notify=True, tray=True)
+                            # 打开书，选择一个没有传送点的Boss（老朔雷），传送到附近坐标复活角色，再从下一个boss继续
+                            self.sleep(1)
+                            self.send_key('esc')
+                            self.teleport_to_boss('Tempest Mephis', use_custom=True, dead=True)
+                            continue
                         logger.info(f'farm echo combat end')
                         if boss_name == 'Bell-Borne Geochelone':
                             logger.info(f'sleep for the Boss model to disappear')
