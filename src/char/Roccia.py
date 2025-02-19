@@ -11,7 +11,6 @@ class Roccia(BaseChar):
         self.last_e = 0
         self.last_intro = 0
 
-
     def do_perform(self):
         if self.has_intro:
             self.heavy_attack(1.6)
@@ -20,10 +19,7 @@ class Roccia(BaseChar):
             self.last_intro = time.time()
             return self.switch_next_char()
         # self.wait_intro(time_out=1.4, click=True)
-        if self.liberation_available() and self.resonance_available(check_cd=True) and self.is_forte_full():
-            self.click_liberation()
-            self.task.wait_until(self.resonance_available, time_out=4, post_action=self.click_with_interval,
-                                 wait_until_before_delay=0, wait_until_check_delay=0)
+        self.click_liberation()
         if self.click_resonance(check_cd=True)[0]:
             self.last_e = time.time()
             return self.switch_next_char()
