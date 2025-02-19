@@ -4,7 +4,10 @@ from src.char.BaseChar import BaseChar
 class HavocRover(BaseChar):
     def do_perform(self):
         if self.has_intro:
-            self.wait_intro(click=True)
+            if self.is_forte_full():
+                self.heavy_attack(1)
+            else:
+                self.wait_intro(click=True)
         self.click_liberation()
         if self.click_resonance()[0]:
             return self.switch_next_char()
@@ -15,5 +18,6 @@ class HavocRover(BaseChar):
             self.sleep(0.4)
             if self.click_resonance()[0]:
                 return self.switch_next_char()
-        self.click_echo()
+        if not self.click_echo():
+            self.click()
         self.switch_next_char()
