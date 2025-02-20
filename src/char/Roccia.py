@@ -10,6 +10,7 @@ class Roccia(BaseChar):
         self.plunge_count = 0
         self.last_e = 0
         self.last_intro = 0
+        self.can_plunge = False
 
     def do_perform(self):
         if self.has_intro:
@@ -17,11 +18,14 @@ class Roccia(BaseChar):
             self.sleep(0.2)
             self.last_e = time.time()
             self.last_intro = time.time()
+            self.can_plunge = True
             return self.switch_next_char()
         # self.wait_intro(time_out=1.4, click=True)
-        self.click_liberation()
-        if self.click_resonance(check_cd=True)[0]:
+        if self.time_elapsed_accounting_for_freeze(self.last_e) < 10 and self.is_forte_full() and self.resonance_available():
+            self.click_liberation()
+        if self.click_resonance()[0]:
             self.last_e = time.time()
+            self.can_plunge = True
             return self.switch_next_char()
         self.plunge()
         self.switch_next_char()
@@ -31,9 +35,7 @@ class Roccia(BaseChar):
         self.sleep(0.01)
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if time.time() - self.last_intro < 3 and has_intro:
-            return Priority.MIN + 1
-        if time.time() - self.last_e < 4 and not has_intro:
+        if has_intro or self.can_plunge:
             self.logger.info(
                 f'switch priority max because plunge count is {self.plunge_count}')
             return Priority.MAX - 1
@@ -59,16 +61,14 @@ class Roccia(BaseChar):
     def plunge(self):
         start = time.time()
         starting_count = 0
-        while (self.is_forte_full() and time.time() - start < 0.4) or (starting_count > 0 and time.time() - start < 3):
+        while (self.is_forte_full() and time.time() - start < 0.6) or (starting_count > 0 and time.time() - start < 5):
             self.click(interval=0.1)
-            plunge_count = self.get_plunge_count()
-            if plunge_count > 0:
-                starting_count = plunge_count
-            if self.get_plunge_count() == 1:
-                self.logger.debug(f'plunge count is {self.get_plunge_count()}')
-                self.sleep(0.2)
-                self.click()
+            if starting_count == 0:
+                starting_count = self.get_plunge_count()
+            if starting_count > 0 and not self.is_forte_full():
+                self.can_plunge = False
                 break
+            self.task.next_frame()
         self.plunge_count = 0
         self.logger.debug(f'plunge ended after: {time.time() - start} {self.get_plunge_count()}  {self.is_forte_full()}')
         return True
