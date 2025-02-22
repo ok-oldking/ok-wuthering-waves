@@ -55,9 +55,15 @@ class BaseChar:
         if type(self) is not BaseChar:
             self.config = Config(self.name, self.config)
         self.current_con = 0
+        self.has_tool_box = False
 
     def char_config(self):
         return {}
+
+    def use_tool_box(self):
+        if self.has_tool_box:
+            self.task.send_key('t')
+            self.has_tool_box = False
 
     @property
     def name(self):
@@ -127,6 +133,7 @@ class BaseChar:
         self.is_forte_full()
         self.has_intro = False
         self.liberation_available_mark = self.liberation_available()
+        self.use_tool_box()
         self.task.switch_next_char(self, post_action=post_action, free_intro=free_intro,
                                    target_low_con=target_low_con)
 
