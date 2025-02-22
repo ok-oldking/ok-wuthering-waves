@@ -28,11 +28,15 @@ class Roccia(BaseChar):
             self.can_plunge = True
             return self.switch_next_char()
         self.plunge()
+        self.click_echo()
         self.switch_next_char()
 
-    def use_t_action(self):
-        self.task.send_key('t')
-        self.sleep(0.01)
+    def switch_next_char(self, post_action=None, free_intro=False, target_low_con=False):
+        super().switch_next_char(post_action=self.update_tool_box, free_intro=free_intro,
+                                       target_low_con=target_low_con)
+
+    def update_tool_box(self, next_char):
+        next_char.has_tool_box = True
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if has_intro or self.can_plunge:
