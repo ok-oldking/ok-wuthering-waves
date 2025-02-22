@@ -74,6 +74,7 @@ python main_gpu.py # run the gpu release version
 
 * 由于基于[ok-script](https://github.com/ok-oldking/ok-script)开发，项目代码仅有3000行（Python），简单易维护
 * 被Merge的PR(新功能,优化或BUG修复)
+* 鸣潮水群 970523295 933070924
 * 有兴趣的请加开发者群926858895
 
 ### 致谢
