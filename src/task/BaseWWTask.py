@@ -167,20 +167,24 @@ class BaseWWTask(BaseTask):
             logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
             return True
 
-    def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0, target_text=None):
+    def walk_until_f(self, direction='w', time_out=4, raise_if_not_found=True, backward_time=0, target_text=None):
         logger.info(f'walk_until_f direction {direction} target_text: {target_text}')
+        
         if not self.find_f_with_text(target_text=target_text):
+            if self.send_key_and_wait_f(direction, raise_if_not_found, time_out, target_text=target_text):
+                self.sleep(1.5)
+                return True
+                
             if backward_time > 0:
                 if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, target_text=target_text):
                     logger.info('walk backward found f')
                     return True
-            return self.send_key_and_wait_f(direction, raise_if_not_found, time_out,
-                                            target_text=target_text) and self.sleep(0.5)
         else:
             self.send_key('f')
             if self.handle_claim_button():
                 return False
-        self.sleep(0.5)
+                
+        self.sleep(1.0)
         return True
 
     def send_key_and_wait_f(self, direction, raise_if_not_found, time_out, running=False, target_text=None):
