@@ -49,9 +49,6 @@ config = {
         'ratio': '16:9',
         'min_size': (1280, 720)
     },
-    'analytics': {
-        'report_url': 'http://111.231.71.225/report'
-    },
     'git_update': {'sources': [{
         'name': 'Global',
         'git_url': 'https://github.com/ok-oldking/ok-ww-update.git',
