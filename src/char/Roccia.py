@@ -21,7 +21,7 @@ class Roccia(BaseChar):
             self.can_plunge = True
             return self.switch_next_char()
         # self.wait_intro(time_out=1.4, click=True)
-        if self.time_elapsed_accounting_for_freeze(self.last_e) < 10 and self.is_forte_full() and self.resonance_available():
+        if self.resonance_available():
             self.click_liberation()
         if self.click_resonance()[0]:
             self.last_e = time.time()
