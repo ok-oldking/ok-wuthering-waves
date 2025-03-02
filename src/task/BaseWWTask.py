@@ -1,13 +1,14 @@
-import time
-
 import re
+import time
 from datetime import datetime, timedelta
-from ok import BaseTask, Logger
+
+from ok import BaseTask, Logger, find_boxes_by_name
 from ok import CannotFindException
 from ok import ConfigOption
 
 logger = Logger.get_logger(__name__)
-
+number_re = re.compile(r'^(\d+)$')
+stamina_re = re.compile(r'^(\d+)/(\d+)$')
 pick_echo_config_option = ConfigOption('Pick Echo Config', {
     'Use OCR': False
 }, config_description={
@@ -23,7 +24,6 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
 
 
 class BaseWWTask(BaseTask):
-
     map_zoomed = False
 
     def __init__(self, *args, **kwargs):
@@ -31,6 +31,7 @@ class BaseWWTask(BaseTask):
         self.pick_echo_config = self.get_global_config(pick_echo_config_option)
         self.monthly_card_config = self.get_global_config(monthly_card_config_option)
         self.next_monthly_card_start = 0
+        self._logged_in = False
         self.bosses_pos = {
             'Bell-Borne Geochelone': [0, 0, False],
             'Dreamless': [0, 2, True],
@@ -45,7 +46,7 @@ class BaseWWTask(BaseTask):
             'Crownless': [1, 4, False],
             'Mech Abomination': [1, 5, False],
             'Thundering Mephis': [1, 6, False],
-            'Fallacy of No Return':[2, 0, False],
+            'Fallacy of No Return': [2, 0, False],
             'Lorelei': [2, 1, False],
             'Sentry Construct': [2, 2, False],
             'Dragon of Dirge': [2, 3, False],
@@ -128,6 +129,65 @@ class BaseWWTask(BaseTask):
                 return None
         return f
 
+    def walk_to_box(self, find_function):
+        if not find_function():
+            self.log_info('find_function not found, break')
+            return False
+        last_direction = None
+        while True:
+            treasure_icon = find_function()
+            if not treasure_icon:
+                self.log_info('find_function not found, break')
+                break
+            x, y = treasure_icon.center()
+            y = max(0, y - self.height_of_screen(0.05))
+            next_direction = self.get_direction(x, y, self.width, self.height)
+            if next_direction != last_direction:
+                if last_direction:
+                    self.send_key_up(last_direction)
+                    self.sleep(0.02)
+                last_direction = next_direction
+                self.send_key_down(next_direction)
+            self.next_frame()
+        if last_direction:
+            self.send_key_up(last_direction)
+            self.sleep(0.2)
+        return last_direction is not None
+
+    def get_direction(self, location_x, location_y, screen_width, screen_height):
+        """
+        Determines the location (top, left, bottom, right) of a point
+        on a screen divided by two diagonal lines.
+
+        Args:
+            location_x: The x-coordinate of the point.
+            location_y: The y-coordinate of the point.
+            screen_width: The width of the screen.
+            screen_height: The height of the screen.
+
+        Returns:
+            A string representing the location of the point:
+            "top", "left", "bottom", or "right".
+        """
+
+        # Diagonal line 1: Top-left to bottom-right (y = (height/width) * x)
+        diagonal1_y = (screen_height / screen_width) * location_x
+
+        # Diagonal line 2: Top-right to bottom-left (y = - (height/width) * x + height)
+        diagonal2_y = - (screen_height / screen_width) * location_x + screen_height
+
+        if location_y < diagonal1_y and location_y < diagonal2_y:
+            return "w"
+        elif location_y > diagonal1_y and location_y > diagonal2_y:
+            return "s"
+        elif location_y < diagonal1_y and location_y > diagonal2_y:
+            return "d"
+        else:  # location_y > diagonal1_y and location_y < diagonal2_y:
+            return "a"
+
+    def find_treasure_icon(self):
+        return self.find_one('treasure_icon', box=self.box_of_screen(0.1, 0.2, 0.9, 0.8))
+
     def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1, move=True, down_time=0.01, after_sleep=0):
         if x == -1 and y == -1:
             x = self.width_of_screen(0.5)
@@ -167,7 +227,8 @@ class BaseWWTask(BaseTask):
             logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
             return True
 
-    def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0, target_text=None):
+    def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0, target_text=None,
+                     cancel=True):
         logger.info(f'walk_until_f direction {direction} target_text: {target_text}')
         if not self.find_f_with_text(target_text=target_text):
             if backward_time > 0:
@@ -178,10 +239,49 @@ class BaseWWTask(BaseTask):
                                             target_text=target_text) and self.sleep(0.5)
         else:
             self.send_key('f')
-            if self.handle_claim_button():
+            if cancel and self.handle_claim_button():
                 return False
         self.sleep(0.5)
         return True
+
+    def get_stamina(self):
+        boxes = self.wait_ocr(0.49, 0.01, 0.92, 0.10, log=True, raise_if_not_found=True,
+                              match=[number_re, stamina_re])
+        current_box = find_boxes_by_name(boxes, stamina_re)[0]
+        current = int(current_box.name.split('/')[0])
+        back_up_box = find_boxes_by_name(boxes, number_re)[0]
+        back_up = int(back_up_box.name)
+        self.info_set('current_stamina', current)
+        self.info_set('back_up_stamina', back_up)
+        return current, back_up
+
+    def ensure_stamina(self, min_stamina, max_stamina):
+        current, back_up = self.get_stamina()
+        if current >= max_stamina:
+            return max_stamina, current + back_up - max_stamina, current - max_stamina, False
+        elif current + back_up >= max_stamina:
+            self.add_stamina(max_stamina - current)
+            return max_stamina, current + back_up - max_stamina, 0, True
+        elif current >= min_stamina:
+            return min_stamina, current + back_up - min_stamina, current - min_stamina, False
+        elif current + back_up >= min_stamina:
+            self.add_stamina(min_stamina - current)
+            return min_stamina, current + back_up - min_stamina, 0, True
+
+    def add_stamina(self, to_add):
+        self.click(0.83, 0.05, after_sleep=1)
+        self.wait_ocr(0.41, 0.47, 0.45, 0.54, match=number_re, raise_if_not_found=True)
+        self.click(0.7, 0.7, after_sleep=1)
+        back_up = int(
+            self.wait_ocr(0.6, 0.53, 0.66, 0.62, match=number_re, raise_if_not_found=True)[0].name)
+        to_minus = back_up - to_add
+        self.log_info(f'add_stamina, to_minus:{to_minus}, to_add:{to_add}, back_up:{back_up}')
+        for _ in range(to_minus):
+            self.click(0.24, 0.58, after_sleep=0.01)
+        self.click_relative(0.69, 0.71, after_sleep=2)
+        self.info_set('add_stamina', to_add)
+        self.back(after_sleep=1)
+        self.back(after_sleep=1)
 
     def send_key_and_wait_f(self, direction, raise_if_not_found, time_out, running=False, target_text=None):
         if time_out <= 0:
@@ -295,9 +395,43 @@ class BaseWWTask(BaseTask):
     def sleep(self, timeout):
         return super().sleep(timeout - self.check_for_monthly_card())
 
-    def wait_in_team_and_world(self, time_out=10, raise_if_not_found=True):
+    def wait_in_team_and_world(self, time_out=10, raise_if_not_found=True, esc=False):
         return self.wait_until(self.in_team_and_world, time_out=time_out, raise_if_not_found=raise_if_not_found,
+                               post_action=lambda: self.back(after_sleep=2) if esc else None,
                                wait_until_before_delay=0)
+
+    def ensure_main(self, esc=True, time_out=30):
+        self.info_set('current task', 'wait main')
+        if not self.wait_until(lambda: self.is_main(esc=esc), time_out=time_out, raise_if_not_found=False,
+                               wait_until_before_delay=0):
+            raise Exception('Please start in game world and in team!')
+        self.info_set('current task', 'in main')
+
+    def is_main(self, esc=True):
+        if self.in_team_and_world():
+            self._logged_in = True
+            return True
+        if self.handle_monthly_card():
+            return True
+        if self.wait_login():
+            return True
+        if esc:
+            self.back(after_sleep=1.5)
+
+    def wait_login(self):
+        if not self._logged_in and self.find_one('login_account', threshold=0.7):
+            self.wait_until(lambda: self.find_one('login_account', threshold=0.7) is None,
+                            pre_action=lambda: self.click_relative(0.5, 0.9),
+                            wait_until_check_delay=3, time_out=30)
+            self.wait_until(lambda: self.find_one('monthly_card', threshold=0.7) or self.in_team_and_world(),
+                            pre_action=lambda: self.click_relative(0.5, 0.9),
+                            wait_until_check_delay=3, time_out=120)
+            self.wait_until(lambda: self.in_team_and_world(),
+                            post_action=lambda: self.click_relative(0.5, 0.9),
+                            wait_until_check_delay=3, time_out=5)
+            self.log_info('Auto Login Success', notify=True)
+            self._logged_in = True
+            return True
 
     def in_team_and_world(self):
         return self.in_team()[
@@ -360,16 +494,9 @@ class BaseWWTask(BaseTask):
         in_dungeon = pos[2]
         self.log_info(f'teleport to {boss_name} index {index} in_dungeon {in_dungeon}')
         self.sleep(1)
-        self.log_info('click f2 to open the book')
-        self.send_key_down('alt')
-        self.sleep(0.1)
-        self.click_relative(0.77, 0.05)
-        self.send_key_up('alt')
-        # self.send_key('F2')
+        self.openF2Book()
+
         gray_book_boss = self.wait_book()
-        if not gray_book_boss:
-            self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
-            raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")
 
         self.log_info(f'click {gray_book_boss}')
         self.click_box(gray_book_boss)
@@ -406,6 +533,17 @@ class BaseWWTask(BaseTask):
             self.click_relative(0.68, 0.6)
         self.wait_in_team_and_world(time_out=120)
         self.sleep(0.5)
+
+    def openF2Book(self):
+        self.log_info('click f2 to open the book')
+        self.send_key_down('alt')
+        self.sleep(0.05)
+        self.click_relative(0.77, 0.05)
+        self.send_key_up('alt')
+        gray_book_boss = self.wait_book()
+        if not gray_book_boss:
+            self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
+            raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")
 
     def click_traval_button(self, use_custom=False):
         if feature := self.find_one(['fast_travel_custom', 'remove_custom', 'gray_teleport'], threshold=0.6):

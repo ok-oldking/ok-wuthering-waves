@@ -106,6 +106,8 @@ config = {
     'launcher_error_log_file': 'logs/launcher_error.log',
     'version': version,
     'onetime_tasks': [  # tasks to execute
+        ["src.task.DailyTask", "DailyTask"],
+        ["src.task.TacetTask", "TacetTask"],
         ["src.task.FarmEchoTask", "FarmEchoTask"],
         ["src.task.FarmWorldBossTask", "FarmWorldBossTask"],
         ["src.task.DiagnosisTask", "DiagnosisTask"],

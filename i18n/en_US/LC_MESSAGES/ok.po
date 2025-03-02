@@ -572,3 +572,81 @@ msgstr ""
 
 msgid "Auto Start Game When App Starts"
 msgstr ""
+
+msgid "0"
+msgstr ""
+
+msgid "23"
+msgstr ""
+
+msgid "Auto Target"
+msgstr ""
+
+msgid "Daily Task"
+msgstr ""
+
+msgid "Dragon of Dirge"
+msgstr ""
+
+msgid "Farm World Boss(May need to drop waypoint on Boss)"
+msgstr ""
+
+msgid "Farm selected Tacet Suppression until out of stamina, will use the backup stamina, you need to be able to teleport from the menu(F2)"
+msgstr ""
+
+msgid "Hecate"
+msgstr ""
+
+msgid "Login, claim monthly card, farm echo twice, and claim daily reward"
+msgstr ""
+
+msgid "Lorelei"
+msgstr ""
+
+msgid "Nightmare: Crownless"
+msgstr ""
+
+msgid "Nightmare: Feilian Beringal"
+msgstr ""
+
+msgid "Nightmare: Impermanence Heron"
+msgstr ""
+
+msgid "Nightmare: Inferno Rider"
+msgstr ""
+
+msgid "Nightmare: Mourning Aix"
+msgstr ""
+
+msgid "Nightmare: Tempest Mephis"
+msgstr ""
+
+msgid "Nightmare: Thundering Mephis"
+msgstr ""
+
+msgid "Sentry Construct"
+msgstr ""
+
+msgid "Tacet Suppression (Must explore first to be able to teleport)"
+msgstr ""
+
+msgid "Task completed"
+msgstr ""
+
+msgid "Turn off to enable auto combat only when manually target enemy using middle click"
+msgstr ""
+
+msgid "Which Tacet Suppression to Farm"
+msgstr ""
+
+msgid "back_up_stamina"
+msgstr ""
+
+msgid "current_stamina"
+msgstr ""
+
+msgid "not enough stamina to farm"
+msgstr ""
+
+msgid "the Nth number in the Tacet Suppression list (F2)"
+msgstr ""

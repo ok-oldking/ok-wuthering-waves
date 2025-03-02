@@ -1,9 +1,6 @@
 #
 msgid ""
 msgstr ""
-
-msgid ""
-msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: you@example.com\n"
 "Last-Translator: you@example.com\n"
@@ -11,6 +8,9 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+msgid ""
+msgstr ""
 
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
 msgstr "(1-6) 重要, 选择你对应世界等级可以产出声骸的难度, 从上到下为1-6"
@@ -107,7 +107,6 @@ msgstr "梦魇:无冠者"
 
 msgid "Nightmare: Mourning Aix"
 msgstr "梦魇:哀声鸷"
-
 
 msgid "Enable auto combat in Abyss, Game World etc"
 msgstr "在大世界,深渊,无音区等开启自动战斗"
@@ -447,3 +446,42 @@ msgstr "必须至少选择3个Boss"
 
 msgid "Can not auto combat because team can only have one healer at most"
 msgstr "无法自动战斗, 队伍最多只能有一个治疗角色"
+
+msgid "Daily Task"
+msgstr "日常一条龙"
+
+msgid "Dreamless"
+msgstr "无妄者"
+
+msgid "Farm selected Tacet Suppression until out of stamina, will use the backup stamina, you need to be able to teleport from the menu(F2)"
+msgstr "刷选定无音区知道没体力(包括后备体力), 需要可传送"
+
+msgid "Login, claim monthly card, farm echo, and claim daily reward"
+msgstr "启动游戏, 登录, 领月卡, 刷声骸, 领日常任务奖励, 领邮件"
+
+msgid "Tacet Suppression (Must explore first to be able to teleport)"
+msgstr "无音区(必须先探索, 保证可以传送)"
+
+msgid "Task completed"
+msgstr "任务完成"
+
+msgid "Which Tacet Suppression to Farm"
+msgstr "刷哪个无音区"
+
+msgid "back_up_stamina"
+msgstr "备用体力"
+
+msgid "current_stamina"
+msgstr "当前体力"
+
+msgid "used all stamina"
+msgstr "体力已用尽"
+
+msgid "the Nth number in the Tacet Suppression list (F2)"
+msgstr "F2列表中是第几个无音区"
+
+msgid "Please start in game world and in team!"
+msgstr "请在大世界并在队伍中开始!"
+
+msgid "Can't complete daily task, may need to increase stamina manually!"
+msgstr "无法完成日常任务, 可能需要手动吃体力药!"
