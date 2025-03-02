@@ -5,8 +5,8 @@ from src.char.BaseChar import BaseChar
 
 class Xiangliyao(BaseChar):
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.liberation_time = 0
 
     def do_perform(self):

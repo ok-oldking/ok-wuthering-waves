@@ -26,7 +26,7 @@ from src.char.Yuanwu import Yuanwu
 from src.char.Zhezhi import Zhezhi
 
 
-def get_char_by_pos(task, box, index):
+def get_char_by_pos(task, box, index, old_char):
     char_dict = {
         'char_yinlin': {'cls': Yinlin, 'res_cd': 12, 'echo_cd': 25},
         'char_verina': {'cls': Verina, 'res_cd': 12, 'echo_cd': 25},
@@ -57,6 +57,7 @@ def get_char_by_pos(task, box, index):
     }
     highest_confidence = 0
     info = None
+    name = "unknown"
     for char_name, char_info in char_dict.items():
         feature = task.find_one(char_name, box=box, threshold=0.6)
         # if feature:
@@ -64,15 +65,21 @@ def get_char_by_pos(task, box, index):
         if feature and feature.confidence > highest_confidence:
             highest_confidence = feature.confidence
             info = char_info
+            name = char_name
     if info is not None:
-        cls = info.get('cls')
-        return cls(task, index, info.get('res_cd'), info.get('echo_cd'), info.get('liberation_cd') or 25)
+        if old_char and old_char.char_name == name:
+            return old_char
+        else:
+            cls = info.get('cls')
+            return cls(task, index, info.get('res_cd'), info.get('echo_cd'), info.get('liberation_cd') or 25, char_name=name)
     task.log_info(f'could not find char {info} {highest_confidence}')
+    if old_char:
+        return old_char
     has_cd = task.ocr(box=box)
     if has_cd and is_float(has_cd[0].name):
         task.log_info(f'found char {has_cd[0]} wait and reload')
         task.next_frame()
-        return get_char_by_pos(task, box, index)
+        return get_char_by_pos(task, box, index, old_char)
     if task.debug:
         task.screenshot(f'could not find char {index}')
-    return BaseChar(task, index)
+    return BaseChar(task, index, char_name=name)

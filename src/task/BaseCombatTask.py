@@ -333,17 +333,10 @@ class BaseCombatTask(CombatCheck):
         if not in_team:
             return
         # self.log_info('load chars')
-        char = get_char_by_pos(self, self.get_box_by_name('box_char_1'), 0)
-        old_char = safe_get(self.chars, 0)
-        if self.should_update(char, old_char):
-            self.chars[0] = char
-            logger.info(f'update char1 to {char.name} {type(char)} {type(char) is not BaseChar}')
+        self.chars[0] = get_char_by_pos(self, self.get_box_by_name('box_char_1'), 0, safe_get(self.chars, 0))
+        self.chars[1] = get_char_by_pos(self, self.get_box_by_name('box_char_2'), 1, safe_get(self.chars, 1))
+        self.chars[2] = get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2, safe_get(self.chars, 2))
 
-        char = get_char_by_pos(self, self.get_box_by_name('box_char_2'), 1)
-        old_char = safe_get(self.chars, 1)
-        if self.should_update(char, old_char):
-            self.chars[1] = char
-            logger.info(f'update char2 to {char.name}')
         if count == 3:
             char = get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2)
             old_char = safe_get(self.chars, 2)

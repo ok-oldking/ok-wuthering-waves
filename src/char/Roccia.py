@@ -5,8 +5,8 @@ from src.char.BaseChar import BaseChar, Priority
 
 class Roccia(BaseChar):
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.plunge_count = 0
         self.last_e = 0
         self.last_intro = 0
