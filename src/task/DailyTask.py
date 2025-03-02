@@ -19,7 +19,19 @@ class DailyTask(TacetTask):
         self.farm_tacet()
         self.claim_daily()
         self.claim_mail()
-        self.log_info('Task completed')
+        self.claim_millage()
+        self.log_info('Task completed', notify=True)
+
+    def claim_millage(self):
+        self.log_info('open_millage')
+        self.send_key_down('alt')
+        self.sleep(0.05)
+        self.click_relative(0.86, 0.05)
+        self.send_key_up('alt')
+        self.wait_ocr(0.12, 0.14, 0.19, 0.26, match=number_re, raise_if_not_found=True)
+        self.click(0.04, 0.3, after_sleep=1)
+        self.click(0.68, 0.91, after_sleep=1)
+        self.ensure_main()
 
     def claim_daily(self):
         self.info_set('current task', 'claim daily')

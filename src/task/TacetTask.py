@@ -59,6 +59,7 @@ class TacetTask(BaseCombatTask):
             self.sleep(1)
             used, remaining_total, remaining_current, used_back_up = self.ensure_stamina(60, 120)
             total_used += used
+            self.info_set('used stamina', total_used)
             if not used:
                 return self.not_enough_stamina()
             self.wait_click_ocr(0.02, 0.56, 0.67, 0.67, match=str(used), raise_if_not_found=True)
