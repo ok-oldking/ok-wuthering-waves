@@ -5,8 +5,8 @@ from src.char.BaseChar import BaseChar, Priority
 
 class Jinhsi(BaseChar):
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.last_free_intro = 0  # free intro every 25 sec
         self.has_free_intro = False
         self.incarnation = False
