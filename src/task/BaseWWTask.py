@@ -419,19 +419,24 @@ class BaseWWTask(BaseTask):
             self.back(after_sleep=1.5)
 
     def wait_login(self):
-        if not self._logged_in and self.find_one('login_account', threshold=0.7):
-            self.wait_until(lambda: self.find_one('login_account', threshold=0.7) is None,
-                            pre_action=lambda: self.click_relative(0.5, 0.9),
-                            wait_until_check_delay=3, time_out=30)
-            self.wait_until(lambda: self.find_one('monthly_card', threshold=0.7) or self.in_team_and_world(),
-                            pre_action=lambda: self.click_relative(0.5, 0.9),
-                            wait_until_check_delay=3, time_out=120)
-            self.wait_until(lambda: self.in_team_and_world(),
-                            post_action=lambda: self.click_relative(0.5, 0.9),
-                            wait_until_check_delay=3, time_out=5)
-            self.log_info('Auto Login Success', notify=True)
-            self._logged_in = True
-            return True
+        if not self._logged_in:
+            if login := self.ocr(0.3, 0.3, 0.7, 0.7, match="登录"):
+                self.click(login)
+                self.log_info('点击登录按钮!')
+                return False
+            if self.find_one('login_account', threshold=0.7):
+                self.wait_until(lambda: self.find_one('login_account', threshold=0.7) is None,
+                                pre_action=lambda: self.click_relative(0.5, 0.9),
+                                wait_until_check_delay=3, time_out=30)
+                self.wait_until(lambda: self.find_one('monthly_card', threshold=0.7) or self.in_team_and_world(),
+                                pre_action=lambda: self.click_relative(0.5, 0.9),
+                                wait_until_check_delay=3, time_out=120)
+                self.wait_until(lambda: self.in_team_and_world(),
+                                post_action=lambda: self.click_relative(0.5, 0.9),
+                                wait_until_check_delay=3, time_out=5)
+                self.log_info('Auto Login Success', notify=True)
+                self._logged_in = True
+                return True
 
     def in_team_and_world(self):
         return self.in_team()[
@@ -455,6 +460,7 @@ class BaseWWTask(BaseTask):
             else:
                 exist_count += 1
         if exist_count == 2 or exist_count == 1:
+            self._logged_in = True
             return True, current, exist_count + 1
         else:
             return False, -1, exist_count + 1
