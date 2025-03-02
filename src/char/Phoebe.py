@@ -3,8 +3,8 @@ import time
 from src.char.BaseChar import BaseChar, Priority
 
 class Phoebe(BaseChar):
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.first_liberation = False
         self.perform_intro = 0
         
