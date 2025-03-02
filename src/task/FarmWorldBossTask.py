@@ -92,7 +92,6 @@ class FarmWorldBossTask(BaseCombatTask):
                         try:
                             self.combat_once(wait_before=0)
                         except CharDeadException as e:
-                            # self.log_error(f'Characters dead', notify=True, tray=True)
                             # 打开书，选择一个没有传送点的Boss（老朔雷），传送到附近坐标复活角色，再从下一个boss继续
                             self.sleep(1)
                             self.send_key('esc')
