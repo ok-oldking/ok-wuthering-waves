@@ -28,7 +28,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
             try:
                 self.get_current_char().perform()
             except CharDeadException:
-                self.log_error(f'Characters dead', notify=True, tray=True)
+                self.log_error(f'Characters dead', notify=True)
                 break
             except NotInCombatException as e:
                 logger.info(f'auto_combat_task_out_of_combat {e}')

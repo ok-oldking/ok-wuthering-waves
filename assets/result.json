@@ -389,6 +389,12 @@
             "height": 2160,
             "id": 64,
             "file_name": "images/64.png"
+        },
+        {
+            "width": 3840,
+            "height": 2160,
+            "id": 65,
+            "file_name": "images/65.png"
         }
     ],
     "categories": [
@@ -982,6 +988,10 @@
         },
         {
             "id": 147,
+            "name": "treasure_icon"
+        },
+        {
+            "id": 148,
             "name": "ww"
         }
     ],
@@ -2830,6 +2840,21 @@
             "ignore": 0,
             "iscrowd": 0,
             "area": 7605.6278988530785
+        },
+        {
+            "id": 123,
+            "image_id": 65,
+            "category_id": 147,
+            "segmentation": [],
+            "bbox": [
+                2926.7772973706797,
+                974.5442885324425,
+                55.92019269671451,
+                45.57760466015267
+            ],
+            "ignore": 0,
+            "iscrowd": 0,
+            "area": 2548.7084352504107
         }
     ],
     "info": {
@@ -2838,6 +2863,6 @@
         "description": "",
         "contributor": "Label Studio",
         "url": "",
-        "date_created": "2025-02-13 20:32:28.567731"
+        "date_created": "2025-03-02 09:21:50.656497"
     }
 }

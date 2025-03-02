@@ -324,7 +324,7 @@ class BaseCombatTask(CombatCheck):
             if resonance_key:
                 self.key_config['Resonance Key'] = resonance_key[0].name.lower()
             self.key_config['HotKey Verify'] = True
-            self.log_info(f'set hotkey success {self.key_config.values()}', notify=True, tray=True)
+            self.log_info(f'set hotkey success {self.key_config.values()}', notify=True)
             self.info['Skill HotKeys'] = keys_str
 
     def load_chars(self):
@@ -368,9 +368,6 @@ class BaseCombatTask(CombatCheck):
                     char.is_current_char = True
                 else:
                     char.is_current_char = False
-        # if healer_count >= 2:
-        #     self.log_error(f"Can not auto combat because team can only have one healer at most", notify=True, tray=True)
-        #     self.pause()
         self.combat_start = time.time()
 
         # self.log_info(f'load chars success {self.chars}')
