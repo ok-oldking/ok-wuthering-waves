@@ -258,6 +258,7 @@ class BaseChar:
     def reset_state(self):
         # self.logger.info('reset state')
         self.has_intro = False
+        self.has_tool_box = False
 
     def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0, timeout=5):
         if con_less_than > 0:

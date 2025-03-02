@@ -335,17 +335,9 @@ class BaseCombatTask(CombatCheck):
         # self.log_info('load chars')
         self.chars[0] = get_char_by_pos(self, self.get_box_by_name('box_char_1'), 0, safe_get(self.chars, 0))
         self.chars[1] = get_char_by_pos(self, self.get_box_by_name('box_char_2'), 1, safe_get(self.chars, 1))
-        self.chars[2] = get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2, safe_get(self.chars, 2))
 
         if count == 3:
-            char = get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2)
-            old_char = safe_get(self.chars, 2)
-            if self.should_update(char, old_char):
-                if len(self.chars) == 3:
-                    self.chars[2] = char
-                else:
-                    self.chars.append(char)
-                logger.info(f'update char3 to {char.name}')
+            self.chars[2] = get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2, safe_get(self.chars, 2))
         else:
             if len(self.chars) == 3:
                 self.chars = self.chars[:2]
