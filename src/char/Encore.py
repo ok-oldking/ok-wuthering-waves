@@ -5,8 +5,8 @@ from src.char.BaseChar import BaseChar, Priority
 
 class Encore(BaseChar):
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.last_heavy = 0
         self.liberation_time = 0
         self.last_resonance = 0

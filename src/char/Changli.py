@@ -3,8 +3,8 @@ from src.char.BaseChar import BaseChar, Priority
 
 class Changli(BaseChar):
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.enhanced_normal = False
         self.last_e = 0
 

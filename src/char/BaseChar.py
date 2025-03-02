@@ -31,12 +31,13 @@ char_lib_check_marks = ['char_1_lib_check_mark', 'char_2_lib_check_mark', 'char_
 
 class BaseChar:
 
-    def __init__(self, task, index, res_cd=20, echo_cd=20, liberation_cd=25):
+    def __init__(self, task, index, res_cd=20, echo_cd=20, liberation_cd=25, char_name=None):
         self.white_off_threshold = 0.01
         self.echo_cd = echo_cd
         self.task = task
         self.liberation_cd = liberation_cd
         self.sleep_adjust = 0
+        self.char_name = char_name
         self.index = index
         self.last_switch_time = -1
         self.last_res = -1

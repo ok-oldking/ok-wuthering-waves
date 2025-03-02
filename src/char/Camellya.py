@@ -5,8 +5,8 @@ from src.char.BaseChar import BaseChar, Priority
 
 class Camellya(BaseChar):
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.last_heavy = 0
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):

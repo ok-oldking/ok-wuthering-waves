@@ -3,8 +3,8 @@ from src.char.BaseChar import BaseChar
 
 class Danjin(BaseChar):
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         # self.bullets = 0
 
     def count_resonance_priority(self):
