@@ -15,7 +15,7 @@ class DailyTask(TacetTask):
         self.name = "Daily Task"
 
     def run(self):
-        self.ensure_main(time_out=120)
+        self.ensure_main(time_out=180)
         self.farm_tacet()
         self.claim_daily()
         self.claim_mail()
