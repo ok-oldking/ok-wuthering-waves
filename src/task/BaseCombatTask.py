@@ -1,9 +1,9 @@
+import re
 import time
 
 import cv2
 import numpy as np
 
-import re
 from ok import ConfigOption, Logger
 from ok import get_connected_area_by_color, color_range_to_bound
 from ok import safe_get
@@ -45,7 +45,7 @@ class BaseCombatTask(CombatCheck):
         self.combat_start = 0
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
-        self.add_text_fix({'Ｅ':'e'})
+        self.add_text_fix({'Ｅ': 'e'})
 
     def send_key_and_wait_animation(self, key, check_function, total_wait=7, enter_animation_wait=0.7):
         start = time.time()
@@ -285,7 +285,7 @@ class BaseCombatTask(CombatCheck):
             if char and char.is_current_char:
                 return char
         if raise_exception and not self.in_team()[0]:
-                self.raise_not_in_combat('can find current char!!')
+            self.raise_not_in_combat('can find current char!!')
         # self.load_chars()
         return None
 
@@ -310,11 +310,11 @@ class BaseCombatTask(CombatCheck):
         if not self.key_config['HotKey Verify'] or force:
 
             resonance_key = self.ocr(0.82, 0.92, 0.85, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
-                                     name='resonance_key',log=True)
+                                     name='resonance_key', log=True)
             echo_key = self.ocr(0.88, 0.92, 0.90, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
-                                name='echo_key',log=True)
+                                name='echo_key', log=True)
             liberation_key = self.ocr(0.93, 0.92, 0.96, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
-                                      name='liberation_key',log=True)
+                                      name='liberation_key', log=True)
             keys_str = str(resonance_key) + str(echo_key) + str(liberation_key)
 
             if echo_key:
@@ -337,7 +337,11 @@ class BaseCombatTask(CombatCheck):
         self.chars[1] = get_char_by_pos(self, self.get_box_by_name('box_char_2'), 1, safe_get(self.chars, 1))
 
         if count == 3:
-            self.chars[2] = get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2, safe_get(self.chars, 2))
+            new_char = get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2, safe_get(self.chars, 2))
+            if len(self.chars) == 2:
+                self.chars.append(new_char)
+            else:
+                self.chars[2] = new_char
         else:
             if len(self.chars) == 3:
                 self.chars = self.chars[:2]
