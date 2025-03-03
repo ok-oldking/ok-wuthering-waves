@@ -54,7 +54,9 @@ class TacetTask(BaseCombatTask):
             else:
                 self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
             self.combat_once()
-            self.walk_to_box(self.find_treasure_icon)
+            self.sleep(2)
+            if self.find_treasure_icon():
+                self.walk_to_box(self.find_treasure_icon)
             self.walk_until_f(time_out=2, backward_time=0, raise_if_not_found=True, cancel=False)
             self.sleep(1)
             used, remaining_total, remaining_current, used_back_up = self.ensure_stamina(60, 120)
