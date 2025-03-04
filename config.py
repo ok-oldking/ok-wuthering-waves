@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+import numpy as np
+
 version = "v5.0.11"
 
 
@@ -9,10 +11,45 @@ def calculate_pc_exe_path(running_path):
     return str(game_exe_folder / "Wuthering Waves.exe")
 
 
+def make_bottom_right_black(frame):
+    """
+    Changes a portion of the frame's pixels at the bottom right to black.
+
+    Args:
+        frame: The input frame (NumPy array) from OpenCV.
+
+    Returns:
+        The modified frame with the bottom-right corner blackened.  Returns the original frame
+        if there's an error (e.g., invalid frame).
+    """
+    try:
+        height, width = frame.shape[:2]  # Get height and width
+
+        # Calculate the size of the black rectangle
+        black_width = int(0.13 * width)
+        black_height = int(0.025 * height)
+
+        # Calculate the starting coordinates of the rectangle
+        start_x = width - black_width
+        start_y = height - black_height
+
+        # Create a black rectangle (NumPy array of zeros)
+        black_rect = np.zeros((black_height, black_width, frame.shape[2]), dtype=frame.dtype)  # Ensure same dtype
+
+        # Replace the bottom-right portion of the frame with the black rectangle
+        frame[start_y:height, start_x:width] = black_rect
+
+        return frame
+    except Exception as e:
+        print(f"Error processing frame: {e}")
+        return frame
+
+
 config = {
     'debug': False,  # Optional, default: False
     'use_gui': True,
     'config_folder': 'configs',
+    'screenshot_processor': make_bottom_right_black,
     'gui_icon': 'icon.png',
     'ocr': {
         'lib': 'rapidocr_openvino'
