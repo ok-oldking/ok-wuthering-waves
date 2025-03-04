@@ -436,6 +436,7 @@ class BaseWWTask(BaseTask):
                                 wait_until_check_delay=3, time_out=5)
                 self.log_info('Auto Login Success', notify=True)
                 self._logged_in = True
+                self.sleep(3)
                 return True
 
     def in_team_and_world(self):
