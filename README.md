@@ -20,6 +20,7 @@
 ## Key Features
 
 * Farm Boss Echo (Dreamless, Jue, and World Bosses)
+* One Press Clear All Daily Tasks and Tacet Field
 * Auto Combat in Abyss, Game World, Tacet Field, etc.
 * Auto Skip Dialogs in Quests
 * Auto Pick-up (Echos, Flowers, Chests)
