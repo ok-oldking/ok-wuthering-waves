@@ -147,6 +147,7 @@ config = {
         ["src.task.TacetTask", "TacetTask"],
         ["src.task.FarmEchoTask", "FarmEchoTask"],
         ["src.task.FarmWorldBossTask", "FarmWorldBossTask"],
+        ["src.task.FiveToOneTask", "FiveToOneTask"],
         ["src.task.DiagnosisTask", "DiagnosisTask"],
     ], 'trigger_tasks': [
         ["src.task.AutoCombatTask", "AutoCombatTask"],
