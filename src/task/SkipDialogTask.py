@@ -10,7 +10,7 @@ class AutoDialogTask(TriggerTask, SkipBaseTask):
         super().__init__(*args, **kwargs)
         self.default_config = {'_enabled': True}
         self.skip = None
-        self.trigger_interval = 1
+        self.trigger_interval = 0.5
         self.name = "Skip Dialog during Quests"
 
     def run(self):

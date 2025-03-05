@@ -17,6 +17,7 @@ class DailyTask(TacetTask):
     def run(self):
         self.ensure_main(time_out=180)
         self.farm_tacet()
+        self.sleep(4)
         self.claim_daily()
         self.claim_mail()
         self.claim_millage()
@@ -35,6 +36,7 @@ class DailyTask(TacetTask):
 
     def claim_daily(self):
         self.info_set('current task', 'claim daily')
+        self.ensure_main(time_out=5)
         self.openF2Book()
         self.click(0.04, 0.15, after_sleep=1.5)
         while True:
