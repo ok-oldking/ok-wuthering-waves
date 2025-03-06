@@ -283,7 +283,8 @@ class BaseWWTask(BaseTask):
         self.back(after_sleep=1)
         self.back(after_sleep=1)
 
-    def send_key_and_wait_f(self, direction, raise_if_not_found, time_out, running=False, target_text=None):
+    def send_key_and_wait_f(self, direction, raise_if_not_found, time_out, running=False, target_text=None,
+                            cancel=True):
         if time_out <= 0:
             return
         start = time.time()
@@ -291,7 +292,7 @@ class BaseWWTask(BaseTask):
             self.mouse_down(key='right')
         self.send_key_down(direction)
         f_found = self.wait_until(lambda: self.find_f_with_text(target_text=target_text), time_out=time_out,
-                                  raise_if_not_found=False, wait_until_before_delay=0)
+                                  raise_if_not_found=False, wait_until_before_delay=0, cancel=cancel)
         if f_found:
             self.send_key('f')
             self.sleep(0.1)
@@ -307,7 +308,7 @@ class BaseWWTask(BaseTask):
 
         remaining = time.time() - start
 
-        if self.handle_claim_button():
+        if cancel and self.handle_claim_button():
             self.sleep(0.5)
             self.send_key_down(direction)
             if running:
