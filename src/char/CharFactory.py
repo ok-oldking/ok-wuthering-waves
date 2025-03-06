@@ -1,5 +1,6 @@
 from src.char.Baizhi import Baizhi
 from src.char.BaseChar import BaseChar
+from src.char.Brant import Brant
 from src.char.Calcharo import Calcharo
 from src.char.Camellya import Camellya
 from src.char.Carlotta import Carlotta
@@ -37,6 +38,7 @@ def get_char_by_pos(task, box, index, old_char):
         'char_encore': {'cls': Encore, 'res_cd': 10, 'echo_cd': 25},
         'char_jianxin': {'cls': Jianxin, 'res_cd': 12, 'echo_cd': 25},
         'char_sanhua': {'cls': Sanhua, 'res_cd': 10, 'echo_cd': 25},
+        'char_sanhua2': {'cls': Sanhua, 'res_cd': 10, 'echo_cd': 25},
         'char_jinhsi': {'cls': Jinhsi, 'res_cd': 3, 'echo_cd': 25},
         'char_jinhsi2': {'cls': Jinhsi, 'res_cd': 3, 'echo_cd': 25},
         'char_yuanwu': {'cls': Yuanwu, 'res_cd': 3, 'echo_cd': 25},
@@ -52,8 +54,9 @@ def get_char_by_pos(task, box, index, old_char):
         'char_camellya': {'cls': Camellya, 'res_cd': 4, 'echo_cd': 25},
         'char_youhu': {'cls': Youhu, 'res_cd': 4, 'echo_cd': 25},
         'char_carlotta': {'cls': Carlotta, 'res_cd': 10, 'echo_cd': 25},
-        'char_roccia': {'cls': Roccia, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd':20},
+        'char_roccia': {'cls': Roccia, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd': 20},
         'char_phoebe': {'cls': Phoebe, 'res_cd': 12, 'echo_cd': 25, 'liberation_cd': 25},
+        'char_brant': {'cls': Brant, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 24},
     }
     highest_confidence = 0
     info = None
@@ -71,7 +74,8 @@ def get_char_by_pos(task, box, index, old_char):
             return old_char
         else:
             cls = info.get('cls')
-            return cls(task, index, info.get('res_cd'), info.get('echo_cd'), info.get('liberation_cd') or 25, char_name=name)
+            return cls(task, index, info.get('res_cd'), info.get('echo_cd'), info.get('liberation_cd') or 25,
+                       char_name=name)
     task.log_info(f'could not find char {info} {highest_confidence}')
     if old_char:
         return old_char
