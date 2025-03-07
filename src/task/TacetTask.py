@@ -23,7 +23,7 @@ class TacetTask(BaseCombatTask):
         self.door_walk_method = {  # starts with 0
             0: [["a", 0.3]],
             1: [["d", 0.6]],
-            2: [["a", 1.6], ["w", 3], ["a", 2.5]],
+            2: [["a", 1.5], ["w", 3], ["a", 2.5]],
         }
 
     def run(self):

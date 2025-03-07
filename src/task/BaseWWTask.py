@@ -129,18 +129,19 @@ class BaseWWTask(BaseTask):
                 return None
         return f
 
-    def walk_to_box(self, find_function):
+    def walk_to_box(self, find_function, time_out=30):
         if not find_function():
             self.log_info('find_function not found, break')
             return False
         last_direction = None
-        while True:
+        start = time.time()
+        while time.time() - start < time_out:
             treasure_icon = find_function()
             if not treasure_icon:
                 self.log_info('find_function not found, break')
                 break
             x, y = treasure_icon.center()
-            y = max(0, y - self.height_of_screen(0.05))
+            y = max(0, y - self.height_of_screen(0.04))
             next_direction = self.get_direction(x, y, self.width, self.height)
             if next_direction != last_direction:
                 if last_direction:
@@ -292,7 +293,7 @@ class BaseWWTask(BaseTask):
             self.mouse_down(key='right')
         self.send_key_down(direction)
         f_found = self.wait_until(lambda: self.find_f_with_text(target_text=target_text), time_out=time_out,
-                                  raise_if_not_found=False, wait_until_before_delay=0, cancel=cancel)
+                                  raise_if_not_found=False, wait_until_before_delay=0)
         if f_found:
             self.send_key('f')
             self.sleep(0.1)
