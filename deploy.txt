@@ -6,6 +6,9 @@ ok-ww.exe
 main.py
 main_debug.py
 main_gpu.py
+readme
+README.md
+README_cn.md
 assets
 icon.png
 requirements.txt

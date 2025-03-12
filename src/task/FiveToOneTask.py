@@ -2,7 +2,6 @@ from ok import Feature
 
 from ok import find_index_in_list
 from ok import mask_white
-from src.task.BaseCombatTask import BaseCombatTask
 from src.task.BaseWWTask import BaseWWTask
 
 
@@ -22,8 +21,8 @@ class FiveToOneTask(BaseWWTask):
             'Keep 3C Aero DMG': ['Sierra Gale', 'Moonlit Clouds'],
             'Keep 3C Fusion DMG': ['Molten Rift', 'Moonlit Clouds'],
             'Keep 3C Electro DMG': ['Void Thunder', 'Moonlit Clouds'],
-            'Keep 3C Spectro DMG': ['Celestial Light','Eternal Radiance', 'Moonlit Clouds'],
-            'Keep 3C Havoc DMG': ['Sun-sinking Eclipse', 'Midnight Veil','Moonlit Clouds'],
+            'Keep 3C Spectro DMG': ['Celestial Light', 'Eternal Radiance', 'Moonlit Clouds'],
+            'Keep 3C Havoc DMG': ['Sun-sinking Eclipse', 'Midnight Veil', 'Moonlit Clouds'],
             'Keep 3C Glacio DMG': ['Freezing Frost', 'Frosty Resolve', 'Moonlit Clouds'],
             'Keep 3C Energy Regen': [],
             'Keep 4C Crit': [],
@@ -38,7 +37,8 @@ class FiveToOneTask(BaseWWTask):
             'Freezing Frost', 'Molten Rift', 'Void Thunder', 'Sierra Gale', 'Celestial Light', 'Sun-sinking Eclipse',
             'Rejuvenating Glow',
             'Moonlit Clouds',
-            'Lingering Tunes','Frosty Resolve','Eternal Radiance','Midnight Veil','Empyrean Anthem','Tidebreaking Courage']
+            'Lingering Tunes', 'Frosty Resolve', 'Eternal Radiance', 'Midnight Veil', 'Empyrean Anthem',
+            'Tidebreaking Courage']
 
         self.main_stats = ["攻击", "防御", "生命", "共鸣效率", "冷凝伤害加成", "热熔伤害加成", "导电伤害加成",
                            "气动伤害加成", "衍射伤害加成", "湮灭伤害加成", "治疗效果加成", "暴击伤害", "暴击"]
@@ -117,7 +117,7 @@ class FiveToOneTask(BaseWWTask):
     def wait_merge(self):
         self.wait_click_feature('button_echo_merge', raise_if_not_found=True)
         self.handle_confirm()
-        self.wait_feature('data_merge_hcenter', pre_action=self.click_empty_area, wait_until_before_delay=1,
+        self.wait_feature('data_merge_hcenter', pre_action=self.click_empty_area,
                           time_out=15, raise_if_not_found=True)
         self.click_relative(0.53, 0.19, after_sleep=1)
         self.info_incr('Merge Count', 1)
@@ -125,7 +125,7 @@ class FiveToOneTask(BaseWWTask):
     def handle_confirm(self):
         if not self.confirmed:
             confirm = self.wait_feature('confirm_btn_hcenter_vcenter', time_out=3, raise_if_not_found=False,
-                                        wait_until_before_delay=1.5)
+                                        settle_time=1.5)
             if confirm:
                 self.click_relative(0.44, 0.55)
                 self.sleep(0.5)
