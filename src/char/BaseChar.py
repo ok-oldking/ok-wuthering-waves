@@ -1,9 +1,9 @@
 import time
-
 from enum import IntEnum, StrEnum
+from typing import Any
+
 from ok import Config, Logger
 from src import text_white_color
-from typing import Any
 
 
 class Priority(IntEnum):
@@ -88,11 +88,11 @@ class BaseChar:
 
     def wait_intro(self, time_out=1.2, click=True):
         if self.has_intro:
-            self.task.wait_until(self.down, post_action=self.click_with_interval if click else None, time_out=time_out, wait_until_before_delay=0,
-                                       wait_until_check_delay=0)
+            self.task.wait_until(self.down, post_action=self.click_with_interval if click else None, time_out=time_out)
 
     def down(self):
-        return (self.current_resonance() > 0  and not self.has_cd('resonance')) or (self.current_liberation() > 0 and not self.has_cd('liberation'))
+        return (self.current_resonance() > 0 and not self.has_cd('resonance')) or (
+                self.current_liberation() > 0 and not self.has_cd('liberation'))
 
     def click_with_interval(self, interval=0.1):
         self.click(interval=interval)
@@ -142,7 +142,8 @@ class BaseChar:
         if sec > 0:
             self.task.sleep_check_combat(sec + self.sleep_adjust, check_combat=check_combat)
 
-    def click_resonance(self, post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0, check_cd=False):
+    def click_resonance(self, post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0,
+                        check_cd=False):
         clicked = False
         self.logger.debug(f'click_resonance start')
         last_click = 0
@@ -216,7 +217,6 @@ class BaseChar:
         if current - self.last_liberation > (self.liberation_cd - 2):  # count the first click only
             self.last_liberation = time.time()
 
-
     def update_echo_cd(self):
         current = time.time()
         if current - self.last_echo > self.echo_cd:  # count the first click only
@@ -288,7 +288,7 @@ class BaseChar:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
         if clicked:
-            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4, wait_until_before_delay=0):
+            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4):
                 self.task.in_liberation = True
                 self.logger.debug(f'not in_team successfully casted liberation')
             else:
@@ -394,7 +394,7 @@ class BaseChar:
         elif self.res_cd > 0:
             return time.time() - self.last_res > self.res_cd
 
-    def liberation_cd_ready(self, offset = 1):
+    def liberation_cd_ready(self, offset=1):
         return self.time_elapsed_accounting_for_freeze(self.last_liberation + 1) >= self.liberation_cd
 
     def echo_available(self, current=None):
