@@ -580,7 +580,8 @@ class BaseWWTask(BaseTask):
             return self.click_box(btn, relative_x=1)
 
     def wait_click_travel(self, use_custom=False):
-        self.wait_until(lambda: self.click_traval_button(use_custom=use_custom), raise_if_not_found=True, time_out=10)
+        self.wait_until(lambda: self.click_traval_button(use_custom=use_custom), raise_if_not_found=True, time_out=10,
+                        settle_time=1)
 
     def wait_book(self):
         gray_book_boss = self.wait_until(

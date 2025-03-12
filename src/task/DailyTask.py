@@ -41,12 +41,18 @@ class DailyTask(TacetTask):
         self.click(0.04, 0.15, after_sleep=1.5)
         while True:
             boxes = self.ocr(0.23, 0.16, 0.31, 0.69, match=re.compile(r"^[1-9]\d*/\d+$"))
-            count = len(boxes)
+            count = 0
+            for box in boxes:
+                parts = box.name.split('/')
+                if len(parts) == 2 and parts[0] == parts[1]:
+                    count += 1
+                    
             self.log_info(f'can claim count {count}')
             if count == 0:
                 break
             for _ in range(count):
                 self.click(0.87, 0.17, after_sleep=0.5)
+            self.sleep(1)
 
         total_points = int(self.ocr(0.19, 0.8, 0.26, 0.88, match=number_re)[0].name)
         self.info_set('daily points', total_points)
