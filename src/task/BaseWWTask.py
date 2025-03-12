@@ -293,7 +293,7 @@ class BaseWWTask(BaseTask):
             self.mouse_down(key='right')
         self.send_key_down(direction)
         f_found = self.wait_until(lambda: self.find_f_with_text(target_text=target_text), time_out=time_out,
-                                  raise_if_not_found=False, wait_until_before_delay=0)
+                                  raise_if_not_found=False)
         if f_found:
             self.send_key('f')
             self.sleep(0.1)
@@ -331,7 +331,7 @@ class BaseWWTask(BaseTask):
             self.mouse_down(key='right')
         self.sleep(1)
         result = self.wait_until(condiction, time_out=time_out,
-                                 raise_if_not_found=raise_if_not_found, wait_until_before_delay=0)
+                                 raise_if_not_found=raise_if_not_found)
         self.send_key_up(direction)
         if running:
             self.mouse_up(key='right')
@@ -342,7 +342,7 @@ class BaseWWTask(BaseTask):
 
     def handle_claim_button(self):
         if self.wait_feature('claim_cancel_button_hcenter_vcenter', raise_if_not_found=False, horizontal_variance=0.05,
-                             vertical_variance=0.1, time_out=1.5, threshold=0.8, wait_until_before_delay=0.8):
+                             vertical_variance=0.1, time_out=1.5, threshold=0.8):
             self.sleep(0.5)
             self.send_key('esc')
             self.sleep(0.5)
@@ -399,13 +399,11 @@ class BaseWWTask(BaseTask):
 
     def wait_in_team_and_world(self, time_out=10, raise_if_not_found=True, esc=False):
         return self.wait_until(self.in_team_and_world, time_out=time_out, raise_if_not_found=raise_if_not_found,
-                               post_action=lambda: self.back(after_sleep=2) if esc else None,
-                               wait_until_before_delay=0)
+                               post_action=lambda: self.back(after_sleep=2) if esc else None)
 
     def ensure_main(self, esc=True, time_out=30):
         self.info_set('current task', 'wait main')
-        if not self.wait_until(lambda: self.is_main(esc=esc), time_out=time_out, raise_if_not_found=False,
-                               wait_until_before_delay=0):
+        if not self.wait_until(lambda: self.is_main(esc=esc), time_out=time_out, raise_if_not_found=False):
             raise Exception('Please start in game world and in team!')
         self.info_set('current task', 'in main')
 
@@ -428,14 +426,11 @@ class BaseWWTask(BaseTask):
                 return False
             if self.find_one('login_account', threshold=0.7):
                 self.wait_until(lambda: self.find_one('login_account', threshold=0.7) is None,
-                                pre_action=lambda: self.click_relative(0.5, 0.9),
-                                wait_until_check_delay=3, time_out=30)
+                                pre_action=lambda: self.click_relative(0.5, 0.9, after_sleep=3), time_out=30)
                 self.wait_until(lambda: self.find_one('monthly_card', threshold=0.7) or self.in_team_and_world(),
-                                pre_action=lambda: self.click_relative(0.5, 0.9),
-                                wait_until_check_delay=3, time_out=120)
+                                pre_action=lambda: self.click_relative(0.5, 0.9, after_sleep=3), time_out=120)
                 self.wait_until(lambda: self.in_team_and_world(),
-                                post_action=lambda: self.click_relative(0.5, 0.9),
-                                wait_until_check_delay=3, time_out=5)
+                                post_action=lambda: self.click_relative(0.5, 0.9, after_sleep=3), time_out=5)
                 self.log_info('Auto Login Success', notify=True)
                 self._logged_in = True
                 self.sleep(3)
@@ -480,8 +475,8 @@ class BaseWWTask(BaseTask):
             # self.screenshot('monthly_card2')
             self.click_relative(0.50, 0.89)
             self.sleep(2)
-            self.wait_until(self.in_team_and_world, time_out=10, post_action=lambda: self.click_relative(0.50, 0.89),
-                            wait_until_before_delay=1)
+            self.wait_until(self.in_team_and_world, time_out=10,
+                            post_action=lambda: self.click_relative(0.50, 0.89, after_sleep=1))
             # self.screenshot('monthly_card3')
             self.set_check_monthly_card(next_day=True)
         logger.debug(f'check_monthly_card {monthly_card}')
@@ -587,7 +582,7 @@ class BaseWWTask(BaseTask):
         gray_book_boss = self.wait_until(
             lambda: self.find_one('gray_book_all_monsters', vertical_variance=0.8, horizontal_variance=0.05,
                                   threshold=0.4),
-            time_out=3, wait_until_before_delay=2)
+            time_out=3, settle_time=2)
         logger.info(f'found gray_book_boss {gray_book_boss}')
         return gray_book_boss
 

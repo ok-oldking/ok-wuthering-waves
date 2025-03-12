@@ -19,6 +19,7 @@
 
 ## Key Features
 
+* Works while the Game is in the Background
 * Farm Boss Echo (Dreamless, Jue, and World Bosses)
 * One Press Clear All Daily Tasks and Tacet Field
 * Auto Combat in Abyss, Game World, Tacet Field, etc.
@@ -51,26 +52,17 @@ python main_gpu.py # run the gpu release version
 
 ### FAQ
 
-1. Do not extract in a directory with non-English characters.
-2. Add the download and extraction directories to the antivirus software or Windows Defender whitelist, then extract the
-   files again.
-3. If you encounter an error when running the program, try extracting the files again.
-4. You may need to turn off Windows HDR, eye protection low blue light mode, and automatic application color management
-   in advanced display settings. Use default brightness for games, disable all features that change game colors, like
-   Nvidia/AMD game filters/sharpening, and close any overlays displaying FPS, GPU information, etc.
-5. If you are not using the default QER keys, change the keys in the ok-ww settings. Mouse side buttons are not
-   supported as shortcuts; otherwise, they will only perform basic attacks.
-6. If ok-ww is not updated to the latest version, update to the latest version.
-7. If you have manually changed the DPI settings of Wuthering Waves or the Wuthering Waves launcher, reset them.
-8. If the update does not open, manually copy the files from the update folder to overwrite the installation, or
-   download the latest version from the group files and overwrite.
-9. The automatic battle and automatic pickup features are not enabled by default. You need to click "Trigger" to enable
-   them.
-10. The minimum resolution is 1280x720, and it is best to choose a resolution that is 16:9. Wider resolutions (like 21:
-    9) might work for some features.
-11. Ensure the game can run stably at 60fps; otherwise, the battle may end prematurely, and you may not be able to pick
-    up the sound skeleton. If this is not possible, try lowering the graphics resolution.
-12. If you still have issues, submit a BUG report.
+## Frequently Asked Questions (FAQ)
+
+1. **Extraction Issues:** Extract the archive to a directory with only English characters.
+2. **Antivirus Interference:** Add the download and extraction directories to your antivirus/Windows Defender whitelist.
+3. **Display Settings:** Disable Windows HDR, eye protection modes, and automatic color management. Use default game
+   brightness and disable external overlays (FPS, GPU info).
+4. **Custom Keybinding:** If you are not using default keybindings, Set yours in the app settings, keys not in the
+   settings are not supported.
+5. **Outdated Version:** Ensure you are using the latest version of OK-GI.
+6. **Performance:** Maintain a stable 60 FPS in the game, reduce resolution if needed.
+7. **Further Assistance:** Submit a bug report if issues persist.
 
 # Disclaimer
 
