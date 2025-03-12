@@ -105,9 +105,8 @@ class BaseCombatTask(CombatCheck):
         if current > 0 and not self.has_cd(name):
             return True
 
-    def combat_once(self, wait_combat_time=200, wait_before=1.5):
-        self.wait_until(self.in_combat, time_out=wait_combat_time, raise_if_not_found=True,
-                        wait_until_before_delay=wait_before)
+    def combat_once(self, wait_combat_time=200):
+        self.wait_until(self.in_combat, time_out=wait_combat_time, raise_if_not_found=True)
         self.load_chars()
         self.info['Combat Count'] = self.info.get('Combat Count', 0) + 1
         while self.in_combat():

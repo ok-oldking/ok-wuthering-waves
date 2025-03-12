@@ -74,8 +74,7 @@ class FarmWorldBossTask(BaseCombatTask):
                             self.sleep(2)
                             logger.info('Crownless walk to f')
                             self.walk_until_f(raise_if_not_found=True, time_out=4, backward_time=1)
-                            in_combat = self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10,
-                                                        wait_until_before_delay=0)
+                            in_combat = self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10)
                             if not in_combat:  # try click again
                                 self.walk_until_f(raise_if_not_found=True, time_out=4)
                         elif boss_name == 'Bell-Borne Geochelone':
@@ -91,7 +90,7 @@ class FarmWorldBossTask(BaseCombatTask):
                             logger.debug('Sentry Construct sleep')
                             self.sleep(5)
                         try:
-                            self.combat_once(wait_before=0)
+                            self.combat_once()
                         except CharDeadException as e:
                             # 打开书，选择一个没有传送点的Boss（老朔雷），传送到附近坐标复活角色，再从下一个boss继续
                             self.sleep(1)
