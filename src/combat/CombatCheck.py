@@ -1,6 +1,6 @@
+import re
 import time
 
-import re
 from ok import find_boxes_by_name, Logger
 from ok import find_color_rectangles, get_mask_in_color_range, is_pure_black
 from src import text_white_color
@@ -47,8 +47,7 @@ class CombatCheck(BaseWWTask):
             logger.info('out of combat start double check')
             if self.debug:
                 self.screenshot('out of combat start double check')
-            if self.wait_until(self.check_health_bar, time_out=1.2, wait_until_before_delay=0,
-                               wait_until_check_delay=0):
+            if self.wait_until(self.check_health_bar, time_out=1.2):
                 return True
         self.out_of_combat_reason = reason
         self.do_reset_to_false()
@@ -117,7 +116,8 @@ class CombatCheck(BaseWWTask):
         else:
             start = time.time()
             from src.task.AutoCombatTask import AutoCombatTask
-            in_combat = self.has_target() or ((self.config.get('Auto Target') or not isinstance(self, AutoCombatTask)) and self.check_health_bar())
+            in_combat = self.has_target() or ((self.config.get('Auto Target') or not isinstance(self,
+                                                                                                AutoCombatTask)) and self.check_health_bar())
             in_combat = in_combat and self.check_target_enemy_btn()
             if in_combat:
                 if not self.target_enemy(wait=True):
@@ -139,17 +139,16 @@ class CombatCheck(BaseWWTask):
 
     def check_target_enemy_btn(self):
         if self.calculate_color_percentage(text_white_color,
-                                                                            self.get_box_by_name(
-                                                                                'box_target_mouse')) == 0:
+                                           self.get_box_by_name(
+                                               'box_target_mouse')) == 0:
             logger.info(f'check target_enemy failed, wait 3 seconds')
             if self.wait_until(lambda: self.calculate_color_percentage(text_white_color,
                                                                        self.get_box_by_name('box_target_mouse')) != 0,
-                               wait_until_before_delay=0, wait_until_check_delay=0,
                                time_out=5):
                 return True
             self.log_error(
                 "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
-                )
+            )
         return True
 
     def has_target(self):
@@ -168,7 +167,6 @@ class CombatCheck(BaseWWTask):
             return True
         return False
 
-
     def target_enemy(self, wait=True):
         if not wait:
             self.middle_click()
@@ -177,9 +175,8 @@ class CombatCheck(BaseWWTask):
                 return True
             else:
                 logger.info(f'target lost try retarget')
-                return self.wait_until(self.has_target, time_out=3.1, wait_until_before_delay=0.1,
-                                       wait_until_check_delay=0.5,
-                                       pre_action=self.middle_click)
+                return self.wait_until(self.has_target, time_out=3.1,
+                                       pre_action=lambda: self.middle_click(after_sleep=1))
 
     def check_health_bar(self):
         if self._in_combat:
