@@ -4,7 +4,7 @@ import time
 import cv2
 import numpy as np
 
-from ok import ConfigOption, Logger
+from ok import Logger
 from ok import get_connected_area_by_color, color_range_to_bound
 from ok import safe_get
 from src import text_white_color
@@ -25,21 +25,13 @@ class CharDeadException(NotInCombatException):
     pass
 
 
-key_config_option = ConfigOption('Game Hotkey Config', {
-    'HotKey Verify': False,
-    'Echo Key': 'q',
-    'Liberation Key': 'r',
-    'Resonance Key': 'e',
-}, description='In Game Hotkey for Skills')
-
-
 class BaseCombatTask(CombatCheck):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.chars = [None, None, None]
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
-        self.key_config = self.get_global_config(key_config_option)
+        self.key_config = self.get_global_config('Game Hotkey Config')
 
         self.mouse_pos = None
         self.combat_start = 0
