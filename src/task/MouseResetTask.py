@@ -39,8 +39,9 @@ class MouseResetTask(TriggerTask):
     def mouse_reset(self):
         try:
             current_position = win32api.GetCursorPos()
-            if self.mouse_pos and self.hwnd and self.hwnd.exists and not self.hwnd.visible:
-                center_pos = self.hwnd.x + self.hwnd.width / 2, self.hwnd.y + self.hwnd.height / 2
+            if self.mouse_pos and self.hwnd and self.hwnd.exists and not self.hwnd.visible and self.executor.interaction and self.executor.interaction.capture:
+                center_pos = self.executor.interaction.capture.get_abs_cords(self.width_of_screen(0.5),
+                                                                             self.height_of_screen(0.5))
                 close_to_center = math.sqrt(
                     (current_position[0] - center_pos[0]) ** 2
                     + (current_position[1] - center_pos[1]) ** 2
