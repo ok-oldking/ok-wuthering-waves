@@ -29,7 +29,7 @@ class DailyTask(TacetTask):
         self.sleep(0.05)
         self.click_relative(0.86, 0.05)
         self.send_key_up('alt')
-        self.wait_ocr(0.12, 0.14, 0.19, 0.26, match=number_re, raise_if_not_found=True)
+        self.wait_ocr(0.12, 0.14, 0.19, 0.26, match=number_re, settle_time=1, raise_if_not_found=True)
         self.click(0.04, 0.3, after_sleep=1)
         self.click(0.68, 0.91, after_sleep=1)
         self.ensure_main()
@@ -46,7 +46,7 @@ class DailyTask(TacetTask):
                 parts = box.name.split('/')
                 if len(parts) == 2 and parts[0] == parts[1]:
                     count += 1
-                    
+
             self.log_info(f'can claim count {count}')
             if count == 0:
                 break
