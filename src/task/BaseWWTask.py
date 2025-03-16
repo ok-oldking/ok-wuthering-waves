@@ -9,18 +9,6 @@ from ok import ConfigOption
 logger = Logger.get_logger(__name__)
 number_re = re.compile(r'^(\d+)$')
 stamina_re = re.compile(r'^(\d+)/(\d+)$')
-pick_echo_config_option = ConfigOption('Pick Echo Config', {
-    'Use OCR': False
-}, config_description={
-    'Use OCR': 'Turn on if your CPU is Powerful for more accuracy'}, description='Turn on to enable auto pick echo')
-
-monthly_card_config_option = ConfigOption('Monthly Card Config', {
-    'Check Monthly Card': False,
-    'Monthly Card Time': 4
-}, description='Turn on to avoid interruption by monthly card when executing tasks', config_description={
-    'Check Monthly Card': 'Check for monthly card to avoid interruption of tasks',
-    'Monthly Card Time': 'Your computer\'s local time when the monthly card will popup, hour in (1-24)'
-})
 
 
 class BaseWWTask(BaseTask):
@@ -28,8 +16,8 @@ class BaseWWTask(BaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.pick_echo_config = self.get_global_config(pick_echo_config_option)
-        self.monthly_card_config = self.get_global_config(monthly_card_config_option)
+        self.pick_echo_config = self.get_global_config('Pick Echo Config')
+        self.monthly_card_config = self.get_global_config('Monthly Card Config')
         self.next_monthly_card_start = 0
         self._logged_in = False
         self.bosses_pos = {
