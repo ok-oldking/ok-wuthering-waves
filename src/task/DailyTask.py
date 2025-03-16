@@ -13,6 +13,7 @@ class DailyTask(TacetTask):
         super().__init__(*args, **kwargs)
         self.description = "Login, claim monthly card, farm echo, and claim daily reward"
         self.name = "Daily Task"
+        self.add_exit_after_config()
 
     def run(self):
         self.ensure_main(time_out=180)
