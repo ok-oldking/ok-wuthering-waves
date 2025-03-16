@@ -49,6 +49,7 @@ class FarmWorldBossTask(BaseCombatTask):
         self.config_type["Entrance Direction"] = {'type': "drop_down", 'options': ['Forward', 'Backward']}
         self.crownless_pos = (0.9, 0.4)
         self.icon = FluentIcon.GLOBE
+        self.add_exit_after_config()
 
     # not current in use because not stable, right now using one click to scroll down
 

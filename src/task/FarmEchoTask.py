@@ -23,6 +23,7 @@ class FarmEchoTask(BaseCombatTask):
         self.config_type["Boss"] = {'type': "drop_down", 'options': ['Hecate', 'Dreamless', 'Jue']}
 
         self.icon = FluentIcon.ALBUM
+        self.add_exit_after_config()
 
     def run(self):
         self.set_check_monthly_card()

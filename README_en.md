@@ -45,6 +45,16 @@ python main_gpu_debug.py # run the gpu debug version
 python main_gpu.py # run the gpu release version
 ```
 
+### Command Line Arguments
+
+```
+ok-ww.exe -t 1 -e
+```
+
+- `-t` or `--task` represents the task number to execute automatically upon startup. `1` means the first task, a
+  one-click execution task.
+- `-e` or `--exit` when added, indicates that the program should automatically exit after the task is completed.
+
 ### Must Set Game Settings
 
 ![image](https://github.com/user-attachments/assets/7d5f27b4-7b28-4471-bf7b-096dccd4ec4d)
