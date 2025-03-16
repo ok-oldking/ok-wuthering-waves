@@ -248,6 +248,8 @@ class BaseWWTask(BaseTask):
     def get_stamina(self):
         boxes = self.wait_ocr(0.49, 0.01, 0.92, 0.10, log=True, raise_if_not_found=True,
                               match=[number_re, stamina_re])
+        if len(boxes) == 0:
+            return -1, -1
         current_box = find_boxes_by_name(boxes, stamina_re)[0]
         current = int(current_box.name.split('/')[0])
         back_up_box = find_boxes_by_name(boxes, number_re)[0]
