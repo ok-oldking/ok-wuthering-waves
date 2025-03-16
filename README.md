@@ -71,8 +71,8 @@ python main_gpu.py # run the gpu release version
 ok-ww.exe -t 1 -e
 ```
 
--t 或 --task 代表启动后自动执行第几个任务, 1就是第一个, 一条龙任务
--e 或 --exit 加上代表如果执行完任务之后自动退出
+- -t 或 --task 代表启动后自动执行第几个任务, 1就是第一个, 一条龙任务
+- -e 或 --exit 加上代表如果执行完任务之后自动退出
 
 ### 加入我们
 
