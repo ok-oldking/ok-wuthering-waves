@@ -36,6 +36,9 @@ class TacetTask(BaseCombatTask):
             self.openF2Book()
             self.click_relative(0.04, 0.27, after_sleep=1)
             current, back_up = self.get_stamina()
+            if current == -1:
+                self.click_relative(0.04, 0.4, after_sleep=1)
+                current, back_up = self.get_stamina()
             if current + back_up < 60:
                 return self.not_enough_stamina()
             self.click_relative(0.18, 0.48, after_sleep=1)
