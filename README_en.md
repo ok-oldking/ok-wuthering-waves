@@ -72,7 +72,8 @@ ok-ww.exe -t 1 -e
    settings are not supported.
 5. **Outdated Version:** Ensure you are using the latest version of OK-GI.
 6. **Performance:** Maintain a stable 60 FPS in the game, reduce resolution if needed.
-7. **Further Assistance:** Submit a bug report if issues persist.
+7. **Disconnection** If you often got disconnected, try open the game first, and start playing 5 mins later, or when disconnected, don't close the game, and relogin.
+8. **Further Assistance:** Submit a bug report if issues persist.
 
 # Disclaimer
 
