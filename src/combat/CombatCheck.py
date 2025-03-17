@@ -25,6 +25,7 @@ class CombatCheck(BaseWWTask):
         self.boss_health = None
         self.out_of_combat_reason = ""
         self.combat_check_interval = 1
+        self.last_in_realm_not_combat = 0
         self._last_liberation = 0
 
     @property
@@ -64,6 +65,7 @@ class CombatCheck(BaseWWTask):
         self.boss_lv_box = None
         self.boss_health = None
         self.boss_health_box = None
+        self.last_in_realm_not_combat = 0
         return False
 
     def recent_liberation(self):
@@ -107,8 +109,19 @@ class CombatCheck(BaseWWTask):
             now = time.time()
             if now - self.last_combat_check > self.combat_check_interval:
                 self.last_combat_check = now
-                if self.target_enemy(wait=True):
+                if self.has_target():
+                    self.last_in_realm_not_combat = 0
                     return self.log_time(now, 'target_enemy')
+                if self.last_in_realm_not_combat == 0 and self.in_realm():
+                    self.last_in_realm_not_combat = now
+                    logger.debug(f'in_realm multiple wave, try wait {now - self.last_in_realm_not_combat}')
+                    return True
+                elif now - self.last_in_realm_not_combat < 3 and self.in_realm():  # fix multiple waves in realm
+                    logger.debug(f'in_realm multiple wave, try wait {now - self.last_in_realm_not_combat}')
+                    return True
+                if self.target_enemy(wait=True):
+                    logger.debug(f'retarget enemy succeeded')
+                    return True
                 logger.error('target_enemy failed, try recheck break out of combat')
                 return self.reset_to_false(recheck=True, reason='target enemy failed')
             else:

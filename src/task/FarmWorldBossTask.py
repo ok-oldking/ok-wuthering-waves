@@ -54,9 +54,8 @@ class FarmWorldBossTask(BaseCombatTask):
     # not current in use because not stable, right now using one click to scroll down
 
     def run(self):
-
+        self.ensure_main(time_out=180)
         self.set_check_monthly_card()
-        self.check_main()
         count = 0
         while True:
             for i in range(1, 4):
