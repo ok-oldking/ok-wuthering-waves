@@ -203,12 +203,9 @@ class BaseWWTask(BaseTask):
         return 0
 
     def in_realm(self):
-        illusive_realm_menu = self.find_one('illusive_realm_menu',
-                                            use_gray_scale=False, threshold=0.4)
-        if illusive_realm_menu:
-            illusive_realm_exit = self.find_one('illusive_realm_exit',
-                                                use_gray_scale=False, threshold=0.4)
-            return illusive_realm_exit is not None
+        illusive_realm_exit = self.find_one('illusive_realm_exit',
+                                            use_gray_scale=False, threshold=0.5)
+        return illusive_realm_exit is not None
 
     def walk_find_echo(self, backward_time=1):
         if self.walk_until_f(time_out=6, backward_time=backward_time, target_text=self.absorb_echo_text(),
