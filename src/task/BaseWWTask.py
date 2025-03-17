@@ -129,7 +129,7 @@ class BaseWWTask(BaseTask):
                 self.log_info('find_function not found, break')
                 break
             x, y = treasure_icon.center()
-            y = max(0, y - self.height_of_screen(0.04))
+            y = max(0, y - self.height_of_screen(0.05))
             next_direction = self.get_direction(x, y, self.width, self.height)
             if next_direction != last_direction:
                 if last_direction:
@@ -140,7 +140,7 @@ class BaseWWTask(BaseTask):
             self.next_frame()
         if last_direction:
             self.send_key_up(last_direction)
-            self.sleep(0.2)
+            self.sleep(0.02)
         return last_direction is not None
 
     def get_direction(self, location_x, location_y, screen_width, screen_height):
