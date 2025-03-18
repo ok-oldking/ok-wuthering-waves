@@ -8,7 +8,7 @@ main_debug.py
 main_gpu.py
 readme
 README.md
-README_en.md
+README_cn.md
 assets
 icon.png
 requirements.txt
