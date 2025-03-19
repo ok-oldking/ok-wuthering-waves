@@ -1,3 +1,5 @@
+from qfluentwidgets import FluentIcon
+
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask
 
@@ -8,6 +10,7 @@ class TacetTask(BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.icon = FluentIcon.FLAG
         self.description = "Farm selected Tacet Suppression until out of stamina, will use the backup stamina, you need to be able to teleport from the menu(F2)"
         self.name = "Tacet Suppression (Must explore first to be able to teleport)"
         default_config = {
