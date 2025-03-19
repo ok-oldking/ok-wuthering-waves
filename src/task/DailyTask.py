@@ -1,5 +1,7 @@
 import re
 
+from qfluentwidgets import FluentIcon
+
 from ok import Logger
 from src.task.BaseWWTask import number_re
 from src.task.TacetTask import TacetTask
@@ -14,6 +16,8 @@ class DailyTask(TacetTask):
         self.description = "Login, claim monthly card, farm echo, and claim daily reward"
         self.name = "Daily Task"
         self.add_exit_after_config()
+        self.show_create_shortcut = True
+        self.icon = FluentIcon.CAR
 
     def run(self):
         self.ensure_main(time_out=180)
