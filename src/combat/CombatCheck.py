@@ -27,7 +27,6 @@ class CombatCheck(BaseWWTask):
         self.combat_check_interval = 0.5
         self.last_in_realm_not_combat = 0
         self._last_liberation = 0
-        self.check_in_realm = True
 
     @property
     def in_liberation(self):
@@ -112,15 +111,7 @@ class CombatCheck(BaseWWTask):
                 self.last_combat_check = now
                 if self.has_target():
                     self.last_in_realm_not_combat = 0
-                    return self.log_time(now, 'target_enemy')
-                if self.check_in_realm:
-                    if self.last_in_realm_not_combat == 0 and self.in_realm():
-                        self.last_in_realm_not_combat = now
-                        logger.debug(f'in_realm multiple wave, try wait {now - self.last_in_realm_not_combat}')
-                        return True
-                    elif now - self.last_in_realm_not_combat < 3 and self.in_realm():  # fix multiple waves in realm
-                        logger.debug(f'in_realm multiple wave, try wait {now - self.last_in_realm_not_combat}')
-                        return True
+                    return True
                 if self.target_enemy(wait=True):
                     logger.debug(f'retarget enemy succeeded')
                     return True
