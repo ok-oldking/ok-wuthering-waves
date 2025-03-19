@@ -91,6 +91,11 @@ personal behavior, and this software is not authorized for boosting services. An
 such use are unrelated to this software. This software is not authorized for sale, and any sold versions may contain
 malicious code, leading to the theft of game accounts or computer data, which is unrelated to this software.
 
+### Related Projects
+
+* [ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact) Genshin Impact Automation
+* [ok-gf2](https://github.com/ok-oldking/ok-gf2) Girls Frontline 2 Automation(Simplified-Chinese Only)
+
 ### Credits
 
 [https://github.com/lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss) 
