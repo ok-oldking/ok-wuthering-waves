@@ -24,7 +24,6 @@ class FarmEchoTask(BaseCombatTask):
 
         self.icon = FluentIcon.ALBUM
         self.add_exit_after_config()
-        self.check_in_realm = False
 
     def run(self):
         self.set_check_monthly_card()
