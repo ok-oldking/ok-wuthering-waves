@@ -184,7 +184,7 @@ class BaseWWTask(BaseTask):
             move = False
             down_time = 0.01
         else:
-            down_time = 0.16
+            down_time = 0.2
         return super().click(x, y, move_back, name, interval, move=move, down_time=down_time, after_sleep=after_sleep)
 
     def check_for_monthly_card(self):
