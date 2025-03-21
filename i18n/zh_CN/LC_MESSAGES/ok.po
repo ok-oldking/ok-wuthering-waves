@@ -485,3 +485,10 @@ msgstr "请在大世界并在队伍中开始!"
 
 msgid "Can't complete daily task, may need to increase stamina manually!"
 msgstr "无法完成日常任务, 可能需要手动吃体力药!"
+
+msgid "Auto Enhance Echo"
+msgstr "自动强化声骸"
+
+msgid "Auto Enhance and Tune Echo after you add EXP Material"
+msgstr "在添加经验素材后自动强化声骸和调谐"
+
