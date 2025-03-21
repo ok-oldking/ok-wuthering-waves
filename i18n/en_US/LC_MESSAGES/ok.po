@@ -650,3 +650,21 @@ msgstr ""
 
 msgid "the Nth number in the Tacet Suppression list (F2)"
 msgstr ""
+
+msgid "Auto Enhance Echo"
+msgstr ""
+
+msgid "Auto Enhance Enhance Echo after you add EXP Material"
+msgstr ""
+
+msgid "Login, claim monthly card, farm echo, and claim daily reward"
+msgstr ""
+
+msgid "found do_handle_pop_up: Box(name='echo_enhance_btn', x=382, y=1939, width=206, height=105, confidence=98)"
+msgstr ""
+
+msgid "found do_handle_pop_up: Box(name='red_dot', x=221, y=577, width=31, height=32, confidence=100)"
+msgstr ""
+
+msgid "found red dot feature: Box(name='red_dot', x=221, y=577, width=31, height=32, confidence=100)"
+msgstr ""
