@@ -46,7 +46,7 @@ class SkipBaseTask(BaseWWTask, FindFeature, OCR):
             btn_dialog_close = self.find_one('btn_dialog_close', use_gray_scale=True, threshold=0.8)
             if btn_dialog_close:
                 self.click(btn_dialog_close, move_back=True)
-                return
+                return True
         btn_dialog_eye = self.find_one('btn_dialog_eye', use_gray_scale=True, threshold=0.8)
         if btn_dialog_eye:
             self.has_eye_time = time.time()
@@ -66,7 +66,7 @@ class SkipBaseTask(BaseWWTask, FindFeature, OCR):
                     self.click(dots[-1])
                     logger.info('choose dot')
                     self.sleep(0.2)
-            return
+            return True
 
 
 dialog_white_color = {

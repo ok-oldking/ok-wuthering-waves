@@ -1,6 +1,7 @@
 from qfluentwidgets import FluentIcon
 
 from ok import TriggerTask, Logger
+from src.scene.WWScene import WWScene
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharDeadException
 
 logger = Logger.get_logger(__name__)
@@ -16,6 +17,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         self.description = "Enable auto combat in Abyss, Game World etc"
         self.icon = FluentIcon.CALORIES
         self.last_is_click = False
+        self.scene: WWScene | None = None
         self.default_config.update({
             'Auto Target': True,
         })
@@ -24,7 +26,11 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         }
 
     def run(self):
+        ret = False
+        if not self.scene.in_team(self.in_team_and_world):
+            return ret
         while self.in_combat():
+            ret = True
             try:
                 self.get_current_char().perform()
             except CharDeadException:
@@ -35,9 +41,6 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                 if self.debug:
                     self.screenshot(f'auto_combat_task_out_of_combat {e}')
                 break
-        self.combat_end()
-
-    def trigger(self):
-        if self.in_combat():
-            self.load_chars()
-            return True
+        if ret:
+            self.combat_end()
+        return ret

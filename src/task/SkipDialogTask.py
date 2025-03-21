@@ -14,7 +14,6 @@ class AutoDialogTask(TriggerTask, SkipBaseTask):
         self.name = "Skip Dialog during Quests"
 
     def run(self):
-        pass
-
-    def trigger(self):
-        self.check_skip()
+        if self.scene.in_team(self.in_team_and_world):
+            return
+        return self.check_skip()
