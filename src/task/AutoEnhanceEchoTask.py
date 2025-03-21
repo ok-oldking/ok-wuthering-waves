@@ -1,5 +1,4 @@
 from qfluentwidgets import FluentIcon
-from skimage.filters.rank import threshold
 
 from ok import FindFeature, Logger
 from ok import TriggerTask
