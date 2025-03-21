@@ -33,7 +33,9 @@ class AutoEnhanceEchoTask(TriggerTask, BaseWWTask, FindFeature):
                 self.click(enhance_button, after_sleep=0.5)
                 wait = True
             if wait:
-                self.wait_until(lambda: self.do_handle_pop_up(1), time_out=6)
+                handled = self.wait_until(lambda: self.do_handle_pop_up(1), time_out=6)
+                if handled == 'exit':
+                    return True
 
             if feature := self.wait_feature('red_dot', time_out=3) if wait else self.find_one('red_dot'):
                 self.log_info(f'found red dot feature: {feature}')
@@ -48,9 +50,9 @@ class AutoEnhanceEchoTask(TriggerTask, BaseWWTask, FindFeature):
             self.click(btn, after_sleep=1)
         elif feature := self.find_one(['echo_enhance_btn', 'red_dot']):
             self.log_info(f'found do_handle_pop_up: {feature}')
-            if self.debug:
-                self.screenshot('echo_enhance_confirm')
-            return True
+            return 'ok'
+        elif self.find_one('echo_merge'):
+            return 'exit'
         elif step == 1:
             self.click(0.51, 0.87, after_sleep=0.5)
         else:
