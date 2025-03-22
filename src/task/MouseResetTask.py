@@ -21,13 +21,6 @@ class MouseResetTask(TriggerTask):
         self.mouse_pos = None
 
     def run(self):
-        pass
-
-    def on_create(self):
-        super().on_create()
-        self.trigger()
-
-    def trigger(self):
         if self.enabled:
             if not self.running:
                 logger.info('start mouse reset')
