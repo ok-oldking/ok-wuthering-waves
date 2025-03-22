@@ -179,5 +179,6 @@ config = {
         ["src.task.AutoEnhanceEchoTask", "AutoEnhanceEchoTask"],
         ["src.task.SkipDialogTask", "AutoDialogTask"],
         ["src.task.AutoLoginTask", "AutoLoginTask"],
+        ["src.task.MouseResetTask", "MouseResetTask"],
     ], 'scene': ["src.scene.WWScene", "WWScene"],
 }
