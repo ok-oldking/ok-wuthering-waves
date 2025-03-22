@@ -61,10 +61,7 @@ class TacetTask(BaseCombatTask):
                 self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
             self.combat_once()
             self.sleep(2)
-            if self.find_treasure_icon():
-                self.walk_to_box(self.find_treasure_icon)
-            self.walk_until_f(time_out=2, backward_time=0, raise_if_not_found=True, cancel=False)
-            self.sleep(1)
+            self.walk_to_treasure()
             used, remaining_total, remaining_current, used_back_up = self.ensure_stamina(60, 120)
             total_used += used
             self.info_set('used stamina', total_used)
@@ -77,6 +74,17 @@ class TacetTask(BaseCombatTask):
                 return self.not_enough_stamina(back=False)
             if total_used >= 180 and remaining_current == 0:
                 return self.not_enough_stamina(back=True)
+
+    def walk_to_treasure(self, retry=0):
+        if retry > 4:
+            raise RuntimeError('walk_to_treasure too many retries!')
+        if self.find_treasure_icon():
+            self.walk_to_box(self.find_treasure_icon)
+        self.walk_until_f(time_out=2, backward_time=0, raise_if_not_found=True, cancel=False)
+        self.sleep(1)
+        if self.find_treasure_icon():
+            self.log_info('retry walk_to_treasure')
+            self.walk_to_treasure(retry=retry + 1)
 
     def not_enough_stamina(self, back=True):
         self.log_info(f"used all stamina", notify=True)
