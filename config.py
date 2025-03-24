@@ -76,7 +76,8 @@ config = {
     'gui_icon': 'icon.png',
     'global_configs': [key_config_option, pick_echo_config_option, monthly_card_config_option],
     'ocr': {
-        'lib': 'rapidocr_openvino'
+        'lib': 'rapidocr_openvino',
+        'target_height': 1080,
     },
     'start_timeout': 120,  # default 60
     'wait_until_settle_time': 0,
@@ -86,7 +87,6 @@ config = {
         'default_horizontal_variance': 0.002,
         'default_vertical_variance': 0.002,
         'default_threshold': 0.8,
-        'target_height': 540,
     },
     'windows': {  # required  when supporting windows game
         'exe': 'Client-Win64-Shipping.exe',
