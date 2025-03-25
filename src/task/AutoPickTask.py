@@ -19,7 +19,7 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
         self.default_config.update({
             '_enabled': True,
             'Pick Up White List': ['吸收', 'Absorb'],
-            'Pick Up Black List': ['开始合成']
+            'Pick Up Black List': ['开始合成', '领取奖励', 'Claim']
         })
 
     def send_fs(self):
@@ -35,11 +35,7 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
             return
         if f := self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box,
                               threshold=0.8):
-            if self.in_realm():
-                logger.info(f'found f in realm click f')
-                self.send_key('f', after_sleep=1)
-                self.send_fs()
-                return True
+
             dialog_search = f.copy(x_offset=f.width * 3, width_offset=f.width * 2, height_offset=f.height * 2,
                                    y_offset=-f.height,
                                    name='search_dialog')
@@ -52,16 +48,14 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
 
             if dialog_3_dots:
                 if self.config.get('Pick Up White List'):
-                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up White List'), log=True,
-                                     target_height=540)
+                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up White List'), log=True)
                     if texts:
                         logger.info(f'found Pick Up White List {texts}')
                         self.send_fs()
                         return True
             else:
                 if self.config.get('Pick Up Black List'):
-                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up Black List'), log=True,
-                                     target_height=540)
+                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up Black List'), log=True)
                     if texts:
                         logger.info(f'found Pick Up Black List: {texts}')
                         return False

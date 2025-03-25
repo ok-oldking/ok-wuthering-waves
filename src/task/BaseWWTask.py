@@ -177,7 +177,7 @@ class BaseWWTask(BaseTask):
     def find_treasure_icon(self):
         return self.find_one('treasure_icon', box=self.box_of_screen(0.1, 0.2, 0.9, 0.8))
 
-    def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1, move=True, down_time=0.01, after_sleep=0):
+    def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1, move=True, down_time=0.01, after_sleep=0, key="left"):
         if x == -1 and y == -1:
             x = self.width_of_screen(0.5)
             y = self.height_of_screen(0.5)
@@ -185,7 +185,7 @@ class BaseWWTask(BaseTask):
             down_time = 0.01
         else:
             down_time = 0.2
-        return super().click(x, y, move_back, name, interval, move=move, down_time=down_time, after_sleep=after_sleep)
+        return super().click(x, y, move_back, name, interval, move=move, down_time=down_time, after_sleep=after_sleep, key=key)
 
     def check_for_monthly_card(self):
         if self.should_check_monthly_card():
@@ -523,7 +523,7 @@ class BaseWWTask(BaseTask):
             self.sleep(1)
             self.click_relative(0.68, 0.6)
         self.wait_in_team_and_world(time_out=120)
-        self.sleep(0.5)
+        self.sleep(1)
 
     def openF2Book(self):
         self.log_info('click f2 to open the book')
