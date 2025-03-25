@@ -14,5 +14,15 @@
 *.ps1 filter=lfs diff=lfs merge=lfs -text
 *.toml filter=lfs diff=lfs merge=lfs -text
 *.in filter=lfs diff=lfs merge=lfs -text
+*.gitmodules filter=lfs diff=lfs merge=lfs -text
+*.manifest filter=lfs diff=lfs merge=lfs -text
+*.cpp filter=lfs diff=lfs merge=lfs -text
+*.sln filter=lfs diff=lfs merge=lfs -text
+*.vcxproj filter=lfs diff=lfs merge=lfs -text
+*.filters filter=lfs diff=lfs merge=lfs -text
+*.user filter=lfs diff=lfs merge=lfs -text
+*.aps filter=lfs diff=lfs merge=lfs -text
+*.rc filter=lfs diff=lfs merge=lfs -text
+*.h filter=lfs diff=lfs merge=lfs -text
 tests/images/** filter=lfs diff=lfs merge=lfs -text
 * !text !filter !merge !diff
