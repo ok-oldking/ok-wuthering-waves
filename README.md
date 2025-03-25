@@ -38,11 +38,9 @@ Use Python 3.12, other versions might work but are not tested.
 
 ```
 git clone https://github.com/ok-oldking/ok-wuthering-waves
-pip install -r requirements.txt #install python dependencies
+pip install -r requirements.txt #install python dependencies, you might need do run this again after updating the code
 python main.py # run the release version
 python main_debug.py # run the debug version
-python main_gpu_debug.py # run the gpu debug version
-python main_gpu.py # run the gpu release version
 ```
 
 ### Command Line Arguments

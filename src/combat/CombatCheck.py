@@ -166,7 +166,7 @@ class CombatCheck(BaseWWTask):
             inner_box = 'box_target_enemy_inner'
         aim_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name(outer_box))
         aim_inner_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name(inner_box))
-        logger.debug(f'box_target_enemy yellow percent {aim_percent} {aim_inner_percent}')
+        # logger.debug(f'box_target_enemy yellow percent {aim_percent} {aim_inner_percent}')
         if aim_percent - aim_inner_percent > 0.02:
             return True
 
@@ -187,7 +187,7 @@ class CombatCheck(BaseWWTask):
             else:
                 logger.info(f'target lost try retarget')
                 return self.wait_until(self.has_target, time_out=3.1,
-                                       pre_action=lambda: self.middle_click(after_sleep=1))
+                                       pre_action=lambda: self.middle_click(interval=0.2))
 
     def check_health_bar(self):
         if self._in_combat:

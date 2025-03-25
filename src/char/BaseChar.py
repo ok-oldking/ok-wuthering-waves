@@ -222,7 +222,7 @@ class BaseChar:
         if current - self.last_echo > self.echo_cd:  # count the first click only
             self.last_echo = time.time()
 
-    def click_echo(self, duration=0, sleep_time=0):
+    def click_echo(self, duration=0, sleep_time=0, time_out=1):
         self.logger.debug(f'click_echo start duration: {duration}')
         if self.has_cd('echo'):
             self.logger.debug('click_echo has cd return ')
@@ -230,7 +230,11 @@ class BaseChar:
         clicked = False
         start = time.time()
         last_click = 0
+        time_out += duration
         while True:
+            if time.time() - start > time_out:
+                self.logger.info('click_echo time out')
+                return False
             self.check_combat()
             current = self.current_echo()
             if not self.echo_available(current) and (duration == 0 or not clicked):
@@ -348,10 +352,10 @@ class BaseChar:
 
     def get_switch_priority(self, current_char, has_intro, target_low_con):
         priority = self.do_get_switch_priority(current_char, has_intro, target_low_con)
-        # if priority < Priority.MAX and time.time() - self.last_switch_time < 0.9:
-        #     return Priority.SWITCH_CD  # switch cd
-        # else:
-        return priority
+        if priority < Priority.MAX and time.time() - self.last_switch_time < 0.9 and not has_intro:
+            return Priority.SWITCH_CD  # switch cd
+        else:
+            return priority
 
     def do_get_switch_priority(self, current_char, has_intro=False, target_low_con=False):
         priority = 0
