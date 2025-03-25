@@ -20,7 +20,6 @@ class Roccia(BaseChar):
             self.last_intro = time.time()
             self.can_plunge = True
             return self.switch_next_char()
-        # self.wait_intro(time_out=1.4, click=True)
         if self.resonance_available():
             self.click_liberation()
         if self.click_resonance()[0]:
