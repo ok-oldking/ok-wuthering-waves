@@ -5,6 +5,7 @@ from qfluentwidgets import FluentIcon
 from ok import Logger
 from src.task.BaseWWTask import number_re
 from src.task.TacetTask import TacetTask
+from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
 
@@ -20,6 +21,7 @@ class DailyTask(TacetTask):
         self.icon = FluentIcon.CAR
 
     def run(self):
+        super().run()
         self.ensure_main(time_out=180)
         self.farm_tacet()
         self.sleep(4)
