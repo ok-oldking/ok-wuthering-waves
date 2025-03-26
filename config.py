@@ -46,7 +46,6 @@ def make_bottom_right_black(frame):
         print(f"Error processing frame: {e}")
         return frame
 
-
 key_config_option = ConfigOption('Game Hotkey Config', {
     'HotKey Verify': False,
     'Echo Key': 'q',
