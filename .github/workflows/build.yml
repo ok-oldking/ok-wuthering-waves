@@ -4,7 +4,7 @@ on:
   push:
     # Sequence of patterns matched against refs/tags
     tags:
-      - 'v*'
+      - 'z*'
 
 jobs:
   build:
@@ -29,7 +29,8 @@ jobs:
           echo "action_state=yellow" >> $env:GITHUB_ENV
           echo "${{ env.action_state }}"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -46,7 +47,7 @@ jobs:
         uses: simbo/changes-between-tags-action@v1
         with:
           include-hashes: false
-          validate-tag: true
+          validate-tag: false
 
       - name: Get tag name
         id: tagName
@@ -79,6 +80,17 @@ jobs:
             python -m unittest $_.FullName
           }
 
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build OK-EXE
+        run: |
+          cp icon.ico src-win-launcher\icon.ico
+          cd src-win-launcher
+          msbuild ok-launcher.sln /p:Configuration=Release
+          cd ..
+          cp ok-win-launcher/x64/Release/ok-ww.exe .
+
       - name: Build Executable
         run: |
           echo "tag: ${{ steps.changes.outputs.tag }}"
@@ -100,6 +112,7 @@ jobs:
           body: |
             ok-ww-CPU-full (AMD or other GPUs)
             Updates：
+               ${{ steps.changes.outputs.changes }}
           draft: false
           prerelease: false
           files: |
