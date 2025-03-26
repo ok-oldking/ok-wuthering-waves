@@ -2,11 +2,12 @@ from qfluentwidgets import FluentIcon
 
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask
+from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
 
 
-class FarmEchoTask(BaseCombatTask):
+class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -26,6 +27,7 @@ class FarmEchoTask(BaseCombatTask):
         self.add_exit_after_config()
 
     def run(self):
+        super().run()
         self.set_check_monthly_card()
         self.ensure_main(time_out=180)
         if not self.in_team()[0]:

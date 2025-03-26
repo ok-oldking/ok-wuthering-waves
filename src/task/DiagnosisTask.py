@@ -2,11 +2,12 @@ import time
 
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask
+from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
 
 
-class DiagnosisTask(BaseCombatTask):
+class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -15,6 +16,7 @@ class DiagnosisTask(BaseCombatTask):
         self.start = 0
 
     def run(self):
+        super().run()
         if not self.in_team()[0]:
             self.log_error('must be in game world and in teams, please check you game resolution is 16:9', notify=True)
             return
