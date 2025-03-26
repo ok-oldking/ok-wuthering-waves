@@ -2,11 +2,12 @@ from qfluentwidgets import FluentIcon
 
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask
+from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
 
 
-class TacetTask(BaseCombatTask):
+class TacetTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -30,6 +31,7 @@ class TacetTask(BaseCombatTask):
         }
 
     def run(self):
+        super().run()
         self.wait_in_team_and_world(esc=True)
         self.farm_tacet()
 

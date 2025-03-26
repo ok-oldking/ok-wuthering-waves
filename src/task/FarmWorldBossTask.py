@@ -2,11 +2,12 @@ from qfluentwidgets import FluentIcon
 
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask, CharDeadException
+from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
 
 
-class FarmWorldBossTask(BaseCombatTask):
+class FarmWorldBossTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -54,6 +55,7 @@ class FarmWorldBossTask(BaseCombatTask):
     # not current in use because not stable, right now using one click to scroll down
 
     def run(self):
+        super().run()
         self.ensure_main(time_out=180)
         self.set_check_monthly_card()
         count = 0

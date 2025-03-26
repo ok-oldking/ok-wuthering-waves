@@ -17,17 +17,17 @@ class MouseResetTask(TriggerTask):
         self.name = "Prevent Wuthering Waves from moving the mouse"
         self.description = "Turn on if you mouse jumps around"
         self.icon = FluentIcon.MOVE
-        self.running = False
+        self.running_reset = False
         self.mouse_pos = None
 
     def run(self):
         if self.enabled:
-            if not self.running:
+            if not self.running_reset:
                 logger.info('start mouse reset')
-                self.running = True
+                self.running_reset = True
                 self.handler.post(self.mouse_reset, 0.01)
         else:
-            self.running = False
+            self.running_reset = False
 
     def mouse_reset(self):
         try:
