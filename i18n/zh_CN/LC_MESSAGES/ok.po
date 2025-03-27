@@ -9,8 +9,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid ""
-msgstr ""
+msgid "Fleurdelys"
+msgstr "芙露德莉斯"
 
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
 msgstr "(1-6) 重要, 选择你对应世界等级可以产出声骸的难度, 从上到下为1-6"

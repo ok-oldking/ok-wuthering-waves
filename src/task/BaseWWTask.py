@@ -25,26 +25,27 @@ class BaseWWTask(BaseTask):
             'Dreamless': [0, 2, True],
             'Jue': [0, 3, True],
             'Hecate': [0, 4, True],
-            'Tempest Mephis': [0, 5, False],
-            'Inferno Rider': [0, 6, False],
-            'Impermanence Heron': [1, 0, False],
-            'Lampylumen Myriad': [1, 1, False],
-            'Feilian Beringal': [1, 2, False],
-            'Mourning Aix': [1, 3, False],
-            'Crownless': [1, 4, False],
-            'Mech Abomination': [1, 5, False],
-            'Thundering Mephis': [1, 6, False],
-            'Fallacy of No Return': [2, 0, False],
-            'Lorelei': [2, 1, False],
-            'Sentry Construct': [2, 2, False],
-            'Dragon of Dirge': [2, 3, False],
-            'Nightmare: Feilian Beringal': [2, 4, False],
-            'Nightmare: Impermanence Heron': [2, 5, False],
-            'Nightmare: Thundering Mephis': [2, 6, False],
-            'Nightmare: Tempest Mephis': [3, 0, False],
-            'Nightmare: Crownless': [3, 1, False],
-            'Nightmare: Inferno Rider': [3, 2, False],
-            'Nightmare: Mourning Aix': [3, 3, False],
+            'Fleurdelys': [0, 5, True],
+            'Tempest Mephis': [0, 6, False],
+            'Inferno Rider': [1, 0, False],
+            'Impermanence Heron': [1, 1, False],
+            'Lampylumen Myriad': [1, 2, False],
+            'Feilian Beringal': [1, 3, False],
+            'Mourning Aix': [1, 4, False],
+            'Crownless': [1, 5, False],
+            'Mech Abomination': [1, 6, False],
+            'Thundering Mephis': [2, 0, False],
+            'Fallacy of No Return': [2, 1, False],
+            'Lorelei': [2, 2, False],
+            'Sentry Construct': [2, 3, False],
+            'Dragon of Dirge': [2, 4, False],
+            'Nightmare: Feilian Beringal': [2, 5, False],
+            'Nightmare: Impermanence Heron': [2, 6, False],
+            'Nightmare: Thundering Mephis': [3, 0, False],
+            'Nightmare: Tempest Mephis': [3, 1, False],
+            'Nightmare: Crownless': [3, 2, False],
+            'Nightmare: Inferno Rider': [3, 3, False],
+            'Nightmare: Mourning Aix': [3, 4, False],
         }
 
     def zoom_map(self):
@@ -495,15 +496,15 @@ class BaseWWTask(BaseTask):
 
         if page == 1:  # weekly turtle
             logger.info('scroll down page 1')
-            self.click_relative(1136 / 2560, 0.219)
+            self.click_relative(1136 / 2560, 455 / 2160)
             self.sleep(1)
         elif page == 2:
             logger.info('scroll down page 2')
-            self.click_relative(1136 / 2560, 0.266)
+            self.click_relative(1136 / 2560, 550 / 2160)
             self.sleep(1)
         elif page == 3:
             logger.info('scroll down page 3')
-            self.click_relative(1136 / 2560, 0.312)
+            self.click_relative(1136 / 2560, 640 / 2160)
             self.sleep(1)
 
         x = 0.24
