@@ -25,9 +25,10 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         }
         self.default_config = default_config
         self.door_walk_method = {  # starts with 0
-            0: [["a", 0.3]],
-            1: [["d", 0.6]],
-            2: [["a", 1.5], ["w", 3], ["a", 2.5]],
+            0:[],
+            1: [["a", 0.3]],
+            2: [["d", 0.6]],
+            3: [["a", 1.5], ["w", 3], ["a", 2.5]],
         }
 
     def run(self):
@@ -52,8 +53,8 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.wait_click_travel()
             self.wait_in_team_and_world()
             self.sleep(1)
-            if methods := self.door_walk_method.get(index):
-                for method in methods:
+            if self.door_walk_method.get(index) is not None:
+                for method in self.door_walk_method.get(index):
                     self.send_key_down(method[0])
                     self.sleep(method[1])
                     self.send_key_up(method[0])
