@@ -120,6 +120,12 @@ class FarmWorldBossTask(WWOneTimeTask, BaseCombatTask):
         self.sleep(2)
         self.click_relative(0.19, 0.14)
         self.sleep(1)
+
+        # 调整时间到晚上
+        for i in range(4):
+            self.click_relative(0.82, 0.53)
+            self.sleep(1)
+
         self.click_relative(0.52, 0.90)
         self.sleep(6)
         self.send_key("esc")
