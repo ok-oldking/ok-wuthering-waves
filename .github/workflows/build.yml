@@ -46,7 +46,7 @@ jobs:
         uses: simbo/changes-between-tags-action@v1
         with:
           include-hashes: false
-          validate-tag: true
+          validate-tag: false
 
       - name: Get tag name
         id: tagName
@@ -100,6 +100,7 @@ jobs:
           body: |
             ok-ww-CPU-full (AMD or other GPUs)
             Updates：
+              ${{ steps.changes.outputs.changes }}
           draft: false
           prerelease: false
           files: |
