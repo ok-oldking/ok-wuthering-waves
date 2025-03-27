@@ -3,6 +3,7 @@ from src.char.BaseChar import BaseChar
 from src.char.Brant import Brant
 from src.char.Calcharo import Calcharo
 from src.char.Camellya import Camellya
+from src.char.Cantarella import Cantarella
 from src.char.Carlotta import Carlotta
 from src.char.Changli import Changli
 from src.char.CharSkillButton import is_float
@@ -57,6 +58,7 @@ def get_char_by_pos(task, box, index, old_char):
         'char_roccia': {'cls': Roccia, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd': 20},
         'char_phoebe': {'cls': Phoebe, 'res_cd': 12, 'echo_cd': 25, 'liberation_cd': 25},
         'char_brant': {'cls': Brant, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 24},
+        'char_cantarella': {'cls': Cantarella, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd': 25},
     }
     highest_confidence = 0
     info = None
