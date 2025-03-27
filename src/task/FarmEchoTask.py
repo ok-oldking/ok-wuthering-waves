@@ -21,7 +21,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.config_description = {
             'Level': '(1-6) Important, Choose which level to farm, lower levels might not produce a echo'
         }
-        self.config_type["Boss"] = {'type': "drop_down", 'options': ['Hecate', 'Dreamless', 'Jue']}
+        self.config_type["Boss"] = {'type': "drop_down", 'options': ['Hecate', 'Dreamless', 'Jue', 'Fleurdelys']}
 
         self.icon = FluentIcon.ALBUM
         self.add_exit_after_config()
@@ -59,7 +59,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 logger.debug(f'farm echo turn_and_find_echo')
             else:
                 self.sleep(2)
-                dropped = self.run_in_circle_to_find_echo(3)
+                dropped = self.turn_and_find_echo()
             self.incr_drop(dropped)
             self.sleep(0.5)
             self.send_key('esc')
