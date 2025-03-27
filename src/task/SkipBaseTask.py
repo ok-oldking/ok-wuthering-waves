@@ -36,7 +36,7 @@ class SkipBaseTask(BaseWWTask, FindFeature, OCR):
             return True
 
     def check_skip(self):
-        skip = self.ocr(0.03, 0.03, 0.11, 0.10, target_height=540, match=re.compile(r'跳过', re.IGNORECASE),
+        skip = self.ocr(0.03, 0.03, 0.11, 0.10, target_height=540, match=re.compile(r'SKIP|跳过', re.IGNORECASE),
                         threshold=0.7)
         if skip:
             logger.info('Click Skip Dialog')
