@@ -39,8 +39,8 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
     def farm_tacet(self):
         total_used = 0
         while True:
-            self.openF2Book()
-            self.click_relative(0.04, 0.27, after_sleep=1)
+            gray_book_boss = self.openF2Book("gray_book_boss")
+            self.click_box(gray_book_boss, after_sleep=1)
             current, back_up = self.get_stamina()
             if current == -1:
                 self.click_relative(0.04, 0.4, after_sleep=1)
@@ -106,7 +106,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         height = (0.85 - 0.28) / 4
         y = 0.25
         y += height * index
-        self.click_relative(x, y)
+        self.click_relative(x, y, after_sleep=2)
 
 
 echo_color = {
