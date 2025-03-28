@@ -624,6 +624,9 @@ msgstr ""
 msgid "Nightmare: Thundering Mephis"
 msgstr ""
 
+msgid "Nightmare: Lampylumen Myriad"
+msgstr ""
+
 msgid "Sentry Construct"
 msgstr ""
 
