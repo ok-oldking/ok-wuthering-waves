@@ -108,6 +108,9 @@ msgstr "梦魇:无冠者"
 msgid "Nightmare: Mourning Aix"
 msgstr "梦魇:哀声鸷"
 
+msgid "Nightmare: Lampylumen Myriad"
+msgstr "梦魇:辉萤军势"
+
 msgid "Enable auto combat in Abyss, Game World etc"
 msgstr "在大世界,深渊,无音区等开启自动战斗"
 
