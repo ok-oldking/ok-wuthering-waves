@@ -45,7 +45,8 @@ class DailyTask(TacetTask):
         self.info_set('current task', 'claim daily')
         self.ensure_main(time_out=5)
         self.openF2Book()
-        self.click(0.04, 0.15, after_sleep=1.5)
+        gray_book_quest = self.openF2Book("gray_book_quest")
+        self.click_box(gray_book_quest, after_sleep=1.5)
         while True:
             boxes = self.ocr(0.23, 0.16, 0.31, 0.69, match=re.compile(r"^[1-9]\d*/\d+$"))
             count = 0

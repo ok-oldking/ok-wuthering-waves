@@ -526,16 +526,17 @@ class BaseWWTask(BaseTask):
         self.wait_in_team_and_world(time_out=120)
         self.sleep(1)
 
-    def openF2Book(self):
+    def openF2Book(self, feature="gray_book_all_monsters"):
         self.log_info('click f2 to open the book')
         self.send_key_down('alt')
         self.sleep(0.05)
         self.click_relative(0.77, 0.05)
         self.send_key_up('alt')
-        gray_book_boss = self.wait_book()
+        gray_book_boss = self.wait_book(feature)
         if not gray_book_boss:
             self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
             raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")
+        return gray_book_boss
 
     def click_traval_button(self, use_custom=False):
         if feature := self.find_one(['fast_travel_custom', 'remove_custom', 'gray_teleport'], threshold=0.6):
@@ -566,12 +567,14 @@ class BaseWWTask(BaseTask):
         self.wait_until(lambda: self.click_traval_button(use_custom=use_custom), raise_if_not_found=True, time_out=10,
                         settle_time=1)
 
-    def wait_book(self):
+    def wait_book(self, feature="gray_book_all_monsters"):
         gray_book_boss = self.wait_until(
-            lambda: self.find_one('gray_book_all_monsters', vertical_variance=0.8, horizontal_variance=0.05,
-                                  threshold=0.4),
+            lambda: self.find_one(feature, vertical_variance=0.8, horizontal_variance=0.05,
+                                  threshold=0.3),
             time_out=3, settle_time=2)
         logger.info(f'found gray_book_boss {gray_book_boss}')
+        if self.debug:
+            self.screenshot(feature)
         return gray_book_boss
 
     def check_main(self):
