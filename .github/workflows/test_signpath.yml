@@ -1,0 +1,50 @@
+name: Test SignPath
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    branches:
+      - '*'
+jobs:
+  build:
+    name: Build exe with launcher
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build OK-EXE
+        run: |
+          cp icon.ico src-win-launcher\icon.ico
+          cd src-win-launcher
+          msbuild ok-launcher.sln /p:Configuration=Release
+          cd ..
+          cp src-win-launcher/x64/Release/ok-ww.exe .
+
+      - name: upload-unsigned-artifact
+        id: upload-unsigned-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: ok-ww.exe
+
+      - name : sign OK-EXE
+        uses: signpath/github-action-submit-signing-request@v1.1
+        with:
+          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
+          organization-id: '${{ secrets.SignPath_organization_id }}'
+          project-slug: 'ok-wuthering-waves'
+          signing-policy-slug: 'test-signing'
+          github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
+          wait-for-completion: true
+          output-artifact-directory: '.'
+          parameters: |
+            version: ${{ toJSON("0.0.1") }}
+
+      - name: upload-signed-artifact
+        id: upload-signed-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: ok-ww.exe
