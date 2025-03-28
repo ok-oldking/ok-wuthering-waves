@@ -167,7 +167,7 @@ config = {
         ["src.task.TacetTask", "TacetTask"],
         ["src.task.FarmEchoTask", "FarmEchoTask"],
         ["src.task.FarmWorldBossTask", "FarmWorldBossTask"],
-        ["src.task.DiagnosisTask", "DiagnosisTask"],
+        ["ok", "DiagnosisTask"],
     ], 'trigger_tasks': [
         ["src.task.AutoCombatTask", "AutoCombatTask"],
         ["src.task.AutoPickTask", "AutoPickTask"],
