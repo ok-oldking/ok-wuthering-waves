@@ -46,6 +46,7 @@ class BaseWWTask(BaseTask):
             'Nightmare: Crownless': [3, 2, False],
             'Nightmare: Inferno Rider': [3, 3, False],
             'Nightmare: Mourning Aix': [3, 4, False],
+            'Nightmare: Lampylumen Myriad': [3, 5, False],
         }
 
     def zoom_map(self):
