@@ -21,7 +21,7 @@ class DailyTask(TacetTask):
         self.icon = FluentIcon.CAR
 
     def run(self):
-        super().run()
+        WWOneTimeTask.run(self)
         self.ensure_main(time_out=180)
         self.farm_tacet()
         self.sleep(4)
