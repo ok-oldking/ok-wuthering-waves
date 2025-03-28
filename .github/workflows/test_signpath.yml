@@ -11,6 +11,11 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - name: Set Version
+        env:
+          VERSION: 0.0.1
+        run: echo "Version is set to $VERSION"
+
       - uses: actions/checkout@v4
 
       - name: Set up MSBuild
@@ -34,14 +39,13 @@ jobs:
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
-          organization-id: '${{ secrets.SignPath_organization_id }}'
+          organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
           project-slug: 'ok-wuthering-waves'
           signing-policy-slug: 'test-signing'
+          artifact-configuration-slug: "github"
           github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
           wait-for-completion: true
           output-artifact-directory: '.'
-          parameters: |
-            version: ${{ toJSON("0.0.1") }}
 
       - name: upload-signed-artifact
         id: upload-signed-artifact
