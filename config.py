@@ -117,7 +117,7 @@ config = {
     }, {
         'name': 'China',
         'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-wuthering-waves.git',
-        'pip_url': 'https://mirrors.cloud.tencent.com/pypi/simple'
+        'pip_url': 'https://mirrors.aliyun.com/pypi/simple'
     }, {
         'name': '腾讯云',
         'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-wuthering-waves.git',
