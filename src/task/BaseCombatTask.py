@@ -64,21 +64,23 @@ class BaseCombatTask(CombatCheck):
 
     def teleport_to_heal(self):
         self.info['Death Count'] = self.info.get('Death Count', 0) + 1
-        self.send_key('esc')
-        self.sleep(1)
-        self.log_info('click m to open the map')
-        self.send_key('m')
+        self.send_key('esc', after_sleep=2)
         self.sleep(2)
-        for i in range(4):
-            self.click_relative(0.94, 0.29, after_sleep=0.5)
-            logger.info(f'click zoom')
-        self.click_relative(0.91, 0.77, after_sleep=1)
-        self.click_relative(0.63, 0.17, after_sleep=1, name="first_map")
-        self.log_info('click change map')
-        self.click_relative(0.77, 0.15, after_sleep=1)
-        self.click_relative(0.48, 0.26, after_sleep=1)
-        logger.info(f'click heal')
+        self.log_info('click m to open the map')
+        self.send_key('m', after_sleep=2)
+
+        teleport = self.find_best_match_in_box(self.box_of_screen(0.1, 0.1, 0.9,0.9),['map_way_point', 'map_way_point_big'], 0.8)
+        if not teleport:
+            raise RuntimeError(f'Can not find a teleport to heal')
+        self.click(teleport, after_sleep=1)
         travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
+        if not travel:
+            pop_up = self.find_feature('map_way_point', box='map_way_point_pop_up_box')
+            if pop_up:
+                self.click(pop_up, after_sleep=1)
+                travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
+        if not travel:
+            raise RuntimeError(f'Can not find the travel button')
         self.click_box(travel, relative_x=1.5)
         self.wait_in_team_and_world(time_out=20)
         self.sleep(2)
