@@ -18,7 +18,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             'Which Tacet Suppression to Farm': 1  # starts with 1
         }
         self.row_per_page = 5
-        self.total_number = 10
+        self.total_number = 11
         default_config.update(self.default_config)
         self.config_description = {
             'Which Tacet Suppression to Farm': 'the Nth number in the Tacet Suppression list (F2)',
@@ -99,8 +99,12 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         if index >= self.total_number:
             raise IndexError(f'Index out of range, max is {self.total_number}')
         if index >= self.row_per_page:
-            index -= self.row_per_page
-            self.click_relative(0.98, 0.86)
+            if index >= self.row_per_page * 2: # page 3
+                self.click_relative(0.98, 0.87)
+                index -= self.row_per_page + 1 # only 1 in last page
+            else:
+                index -= self.row_per_page
+                self.click_relative(0.98, 0.8)
             self.log_info(f'teleport_to_tacet scroll down a page new index: {index}')
         x = 0.88
         height = (0.85 - 0.28) / 4
