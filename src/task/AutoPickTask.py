@@ -67,6 +67,7 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
                         return False
                 self.send_fs()
                 return True
+            self.next_frame()
 
 f_white_color = {
     'r': (235, 255),  # Red range
