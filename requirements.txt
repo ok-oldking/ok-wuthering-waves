@@ -54,7 +54,7 @@ numpy==2.2.4
     #   onnxruntime-directml
     #   opencv-python
     #   shapely
-ok-rapidocr-dml==0.0.2
+ok-rapidocr-dml==0.0.5
     # via -r .\requirements.in
 ok-script==0.0.505
     # via -r .\requirements.in
