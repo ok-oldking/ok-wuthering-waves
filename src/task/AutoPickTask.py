@@ -19,10 +19,12 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
         self.default_config.update({
             '_enabled': True,
             'Pick Up White List': ['吸收', 'Absorb'],
-            'Pick Up Black List': ['开始合成', '领取奖励', 'Claim']
+            'Pick Up Black List': ['开始合成', '领取奖励', 'Claim', '合成台']
         })
 
     def send_fs(self):
+        if self.debug:
+            self.screenshot('pick_up')
         self.send_key('f')
         self.sleep(0.2)
         self.send_key('f')
@@ -33,9 +35,13 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
     def run(self):
         if not self.scene.in_team(self.in_team_and_world):
             return
-        if f := self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box,
+        while f := self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box,
                               threshold=0.8):
-
+            percent = self.calculate_color_percentage(f_white_color, f)
+            if percent < 0.5:
+                self.log_debug(f'f white color percent: {percent} wait')
+                self.next_frame()
+                continue
             dialog_search = f.copy(x_offset=f.width * 3, width_offset=f.width * 2, height_offset=f.height * 2,
                                    y_offset=-f.height,
                                    name='search_dialog')
@@ -61,3 +67,9 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
                         return False
                 self.send_fs()
                 return True
+
+f_white_color = {
+    'r': (235, 255),  # Red range
+    'g': (235, 255),  # Green range
+    'b': (235, 255)  # Blue range
+}
