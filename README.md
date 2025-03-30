@@ -38,7 +38,7 @@ Use Python 3.12, other versions might work but are not tested.
 
 ```
 git clone https://github.com/ok-oldking/ok-wuthering-waves
-pip install -r requirements.txt #install python dependencies, you might need do run this again after updating the code
+pip install -r requirements.txt --upgrade #install python dependencies, you might need do run this again after updating the code
 python main.py # run the release version
 python main_debug.py # run the debug version
 ```
