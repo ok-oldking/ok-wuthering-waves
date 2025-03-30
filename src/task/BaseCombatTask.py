@@ -212,7 +212,7 @@ class BaseCombatTask(CombatCheck):
 
         if post_action:
             logger.debug(f'post_action {post_action}')
-            post_action(switch_to)
+            post_action(switch_to, has_intro)
         logger.info(f'switch_next_char end {(current_char.last_switch_time - start):.3f}s')
 
     def get_liberation_key(self):

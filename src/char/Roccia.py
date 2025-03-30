@@ -34,8 +34,9 @@ class Roccia(BaseChar):
         super().switch_next_char(post_action=self.update_tool_box, free_intro=free_intro,
                                        target_low_con=target_low_con)
 
-    def update_tool_box(self, next_char):
-        next_char.has_tool_box = True
+    def update_tool_box(self, next_char, has_intro):
+        if has_intro:
+            next_char.has_tool_box = True
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if has_intro or self.can_plunge:
