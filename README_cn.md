@@ -59,7 +59,7 @@
 Use Python 3.12，other versions might work but are not tested.
 
 ```
-pip install -r requirements.txt #install python dependencies, 更新代码后可能需要重新运行
+pip install -r requirements.txt --upgrade #install python dependencies, 更新代码后可能需要重新运行
 python main.py # run the release version
 python main_debug.py # run the debug version
 ```
