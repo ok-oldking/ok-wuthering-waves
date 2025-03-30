@@ -10,7 +10,7 @@
 ![Static Badge](https://img.shields.io/badge/platfrom-Windows-blue?color=blue)
 [![GitHub release (with filter)](https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
 [![GitHub all releases](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
-[![Static Badge](https://img.shields.io/badge/Discord-blue?link=https%3A%2F%2Fdiscord.gg%2FZMHXx5QBuH)](https://discord.gg/Sy6etyCRed)
+[![Discord](https://img.shields.io/discord/296598043787132928?color=5865f2&label=%20Discord)](https://discord.gg/vVyCatEBgA)
 
 ### English Readme | [中文说明](README_cn.md)
 
