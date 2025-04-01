@@ -14,14 +14,18 @@ class Roccia(BaseChar):
 
     def do_perform(self):
         if self.has_intro:
-            self.heavy_attack(1.6)
-            self.sleep(0.2)
-            self.last_e = time.time()
-            self.last_intro = time.time()
-            self.can_plunge = True
+            if self.liberation_available() and self.resonance_available():
+                self.click_liberation()
+                self.click_resonance()
+                self.click_echo()
+            else:
+                self.heavy_attack(1.6)
+                self.sleep(0.2)
+                self.last_e = time.time()
+                self.last_intro = time.time()
+                self.can_plunge = True
             return self.switch_next_char()
-        if self.resonance_available():
-            self.click_liberation()
+        self.click_liberation()
         if self.click_resonance()[0]:
             self.last_e = time.time()
             self.can_plunge = True
