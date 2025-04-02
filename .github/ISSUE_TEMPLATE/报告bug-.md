@@ -7,11 +7,13 @@ assignees: ok-oldking
 
 ---
 
+### 评论小于5个的ISSUE不会回复 (新版本的BUG除外)
+
+先搜索现有ISSUE:
+[https://github.com/ok-oldking/ok-wuthering-waves/issues?q=](https://github.com/ok-oldking/ok-wuthering-waves/issues?q=)
+
 请先挨个检查:
 [常见问题](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/README_cn.md#出现问题请检查)
-
-搜索现有ISSUE:
-[https://github.com/ok-oldking/ok-wuthering-waves/issues?q=](https://github.com/ok-oldking/ok-wuthering-waves/issues?q=)
 
 讨论区
 [https://github.com/ok-oldking/ok-wuthering-waves/discussions](https://github.com/ok-oldking/ok-wuthering-waves/discussions)
