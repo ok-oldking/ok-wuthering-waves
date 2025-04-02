@@ -13,3 +13,32 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-label: needs-reply
+
+      - name: Find and Close Enhancement Issues
+        env:
+          # Use the built-in GITHUB_TOKEN for authentication
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Get the repository name dynamically
+          REPO: ${{ github.repository }}
+          # Define the label to target
+          LABEL: "enhancement"
+          # Construct the closing comment using the manual input or default
+          COMMENT: "Automatically closing this '${LABEL}' issue. Reason: ${{ github.event.inputs.reason || 'Closing due to policy or inactivity.' }} \n\nPlease feel free to reopen with updated details if this is still relevant and actionable."
+        run: |
+          echo "Fetching open issues with label '${LABEL}' in repository ${REPO}..."
+          # List open issues with the specified label, outputting only their numbers
+          issue_numbers=$(gh issue list --repo ${REPO} --label "${LABEL}" --state open --json number --jq '.[] | .number')
+          if [[ -z "$issue_numbers" ]]; then
+            echo "No open issues found with the label '${LABEL}'."
+            exit 0 # Exit successfully, nothing to do
+          fi
+          echo "Found issues: ${issue_numbers}"
+          echo "Closing issues with comment: ${COMMENT}"
+          # Loop through each issue number and close it with a comment
+          for issue_number in $issue_numbers; do
+            echo "Closing issue #${issue_number}..."
+            gh issue close ${issue_number} --repo ${REPO} --comment "${COMMENT}"
+            # Optional: Add a small delay to avoid hitting rate limits if you expect many issues
+            # sleep 1
+          done
+          echo "Finished closing enhancement issues."
