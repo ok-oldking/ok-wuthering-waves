@@ -31,6 +31,3 @@ class Yinlin(BaseChar):
     def count_echo_priority(self):
         return 1
 
-    def echo_post_action(self):  # hold down the echo for 1 seconds and switch and then release the echo key
-        self.task.send_key_up(self.get_echo_key())
-        self.sleep(0.01)

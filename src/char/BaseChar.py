@@ -46,7 +46,9 @@ class BaseChar:
         self.has_intro = False
         self.res_cd = res_cd
         self.is_current_char = False
-        self.liberation_available_mark = False
+        self._liberation_available = False
+        self._resonance_available = False
+        self._echo_available = False
         self.logger = Logger.get_logger(self.name)
         self.full_ring_area = 0
         self.freeze_durations = []
@@ -133,7 +135,7 @@ class BaseChar:
     def switch_next_char(self, post_action=None, free_intro=False, target_low_con=False):
         self.is_forte_full()
         self.has_intro = False
-        self.liberation_available_mark = self.liberation_available()
+        self._liberation_available = self.liberation_available()
         self.use_tool_box()
         self.task.switch_next_char(self, post_action=post_action, free_intro=free_intro,
                                    target_low_con=target_low_con)
@@ -204,8 +206,16 @@ class BaseChar:
         return clicked, duration, animated
 
     def send_resonance_key(self, post_sleep=0, interval=-1, down_time=0.01):
-        self.task.send_key(self.task.key_config.get('Resonance Key'), interval=interval, down_time=down_time)
-        self.sleep(post_sleep)
+        self._resonance_available = False
+        self.task.send_key(self.get_resonance_key(), interval=interval, down_time=down_time, after_sleep=post_sleep)
+
+    def send_echo_key(self, after_sleep=0, interval=-1, down_time=0.01):
+        self._echo_available = False
+        self.task.send_key(self.get_echo_key(), interval=interval, down_time=down_time, after_sleep=after_sleep)
+
+    def send_liberation_key(self, after_sleep=0, interval=-1, down_time=0.01):
+        self._liberation_available = False
+        self.task.send_key(self.get_liberation_key(), interval=interval, down_time=down_time, after_sleep=after_sleep)
 
     def update_res_cd(self):
         current = time.time()
@@ -247,7 +257,7 @@ class BaseChar:
                 if not clicked:
                     self.update_echo_cd()
                     clicked = True
-                self.task.send_key(self.get_echo_key())
+                self.send_echo_key()
                 last_click = now
             if now - start > 5:
                 self.logger.error(f'click_echo too long {clicked}')
@@ -260,9 +270,11 @@ class BaseChar:
         self.task.check_combat()
 
     def reset_state(self):
-        # self.logger.info('reset state')
         self.has_intro = False
         self.has_tool_box = False
+        self._liberation_available = False
+        self._echo_available = False
+        self._resonance_available = False
 
     def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0, timeout=5):
         if con_less_than > 0:
@@ -282,8 +294,7 @@ class BaseChar:
             self.logger.debug(f'click_liberation liberation_available click')
             now = time.time()
             if now - last_click > 0.1:
-                self.task.send_key(self.get_liberation_key())
-                self.liberation_available_mark = False
+                self.send_liberation_key()
                 if not clicked:
                     clicked = True
                     self.update_liberation_cd()
@@ -435,14 +446,14 @@ class BaseChar:
         return self._is_forte_full
 
     def liberation_available(self):
-        if self.liberation_available_mark:
+        if self._liberation_available:
             return True
         if self.is_current_char:
             snap = self.current_liberation()
             if snap == 0:
                 return False
             else:
-                return self.is_available(snap, 'liberation')
+                self._liberation_available = self.is_available(snap, 'liberation')
 
     def __str__(self):
         return self.__repr__()
