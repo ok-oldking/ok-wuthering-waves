@@ -78,6 +78,6 @@ class Camellya(BaseChar):
 
     def click_echo(self, *args):
         if self.echo_available():
-            self.task.send_key(self.get_echo_key())
+            self.send_echo_key()
             return True
 

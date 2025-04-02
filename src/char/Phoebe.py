@@ -63,7 +63,7 @@ class Phoebe(BaseChar):
             self.check_combat()
             if time.time() - start > 0.1:
                 break
-            self.task.send_key(self.get_resonance_key())
+            self.send_resonance_key()
             self.task.next_frame()
     
     def litany_ready(self):
