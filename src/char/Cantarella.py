@@ -47,7 +47,7 @@ class Cantarella(BaseChar):
             if click == 0:
                 self.click()
             else:
-                self.task.send_key(self.get_resonance_key())
+                self.send_resonance_key()
             click = 1 - click
             self.check_combat()
             self.task.next_frame()
@@ -70,7 +70,7 @@ class Cantarella(BaseChar):
         start = time.time()
         b = False
         while self.resonance_havoc() or time.time() - start < 0.5:
-            self.task.send_key(self.get_resonance_key())  
+            self.task.send_resonance_key()
             b = True
             if time.time() - start > 2:
                 return False

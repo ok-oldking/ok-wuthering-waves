@@ -44,7 +44,7 @@ class Brant(BaseChar):
     def resonance_forte_full(self):
         start = time.time()        
         while self.resonance_available() and self.is_forte_full():
-            self.task.send_key(self.get_resonance_key())            
+            self.send_resonance_key()
             if time.time() - start > 1 :
                 break
             self.check_combat()

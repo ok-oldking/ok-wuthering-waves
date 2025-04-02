@@ -18,5 +18,5 @@ class Danjin(BaseChar):
         elif self.click_echo():
             pass
         else:
-            self.task.send_key(self.get_resonance_key())
+            self.send_resonance_key()
         self.switch_next_char()
