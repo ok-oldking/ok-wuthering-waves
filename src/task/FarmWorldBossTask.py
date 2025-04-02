@@ -88,10 +88,7 @@ class FarmWorldBossTask(WWOneTimeTask, BaseCombatTask):
                         try:
                             self.combat_once()
                         except CharDeadException as e:
-                            # 打开书，选择一个没有传送点的Boss（老朔雷），传送到附近坐标复活角色，再从下一个boss继续
-                            self.sleep(1)
-                            self.send_key('esc')
-                            self.teleport_to_boss('Tempest Mephis', use_custom=True, dead=True)
+                            self.teleport_to_heal()
                             continue
                         logger.info(f'farm echo combat end')
                         if boss_name == 'Bell-Borne Geochelone':
