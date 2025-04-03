@@ -185,8 +185,8 @@ class BaseCombatTask(CombatCheck):
             in_team, current_index, size = self.in_team()
             if not in_team:
                 logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                if self.debug:
-                    self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
+                # if self.debug:
+                #     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
                 confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2)
                 if confirm:
                     self.log_info(f'char dead')
@@ -293,8 +293,8 @@ class BaseCombatTask(CombatCheck):
 
     def check_combat(self):
         if not self.in_combat():
-            if self.debug:
-                self.screenshot('not_in_combat_calling_check_combat')
+            # if self.debug:
+            #     self.screenshot('not_in_combat_calling_check_combat')
             self.raise_not_in_combat('combat check not in combat')
 
     def load_hotkey(self, force=False):

@@ -46,8 +46,8 @@ class CombatCheck(BaseWWTask):
             return True
         if recheck:
             logger.info('out of combat start double check')
-            if self.debug:
-                self.screenshot('out of combat start double check')
+            # if self.debug:
+            #     self.screenshot('out of combat start double check')
             if self.wait_until(self.check_health_bar, time_out=1.2):
                 return True
         self.out_of_combat_reason = reason
