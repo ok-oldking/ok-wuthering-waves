@@ -78,6 +78,7 @@ config = {
         'lib': 'rapidocr_openvino',
         'target_height': 1080,
     },
+    'my_app': ['src.globals', 'Globals'],
     'start_timeout': 120,  # default 60
     'wait_until_settle_time': 0,
     # required if using feature detection

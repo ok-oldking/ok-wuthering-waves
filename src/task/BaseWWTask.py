@@ -2,9 +2,11 @@ import re
 import time
 from datetime import datetime, timedelta
 
-from ok import BaseTask, Logger, find_boxes_by_name
+import numpy as np
+
+from ok import BaseTask, Logger, find_boxes_by_name, og, Box
 from ok import CannotFindException
-from ok import ConfigOption
+import cv2
 
 logger = Logger.get_logger(__name__)
 number_re = re.compile(r'^(\d+)$')
@@ -119,17 +121,26 @@ class BaseWWTask(BaseTask):
                 return None
         return f
 
-    def walk_to_box(self, find_function, time_out=30):
+    def walk_to_box(self, find_function, time_out=30, end_condition=None):
         if not find_function():
             self.log_info('find_function not found, break')
             return False
         last_direction = None
         start = time.time()
+        ended = False
         while time.time() - start < time_out:
+            if end_condition:
+                ended = end_condition()
+                if ended:
+                    break
             treasure_icon = find_function()
             if not treasure_icon:
-                self.log_info('find_function not found, break')
-                break
+                if not end_condition:
+                    self.log_info('find_function not found, break')
+                    break
+                else:
+                    self.next_frame()
+                    continue
             x, y = treasure_icon.center()
             y = max(0, y - self.height_of_screen(0.05))
             next_direction = self.get_direction(x, y, self.width, self.height)
@@ -143,38 +154,70 @@ class BaseWWTask(BaseTask):
         if last_direction:
             self.send_key_up(last_direction)
             self.sleep(0.02)
-        return last_direction is not None
+        if not end_condition:
+            return last_direction is not None
+        else:
+            return ended
 
     def get_direction(self, location_x, location_y, screen_width, screen_height):
         """
-        Determines the location (top, left, bottom, right) of a point
-        on a screen divided by two diagonal lines.
-
+        Determines the location (w, a, s, d) based on diagonals
+        spanning the middle 2/3 of the screen width.
+        Regions outside this middle strip default to left ('a') or right ('d').
         Args:
             location_x: The x-coordinate of the point.
             location_y: The y-coordinate of the point.
             screen_width: The width of the screen.
             screen_height: The height of the screen.
-
         Returns:
-            A string representing the location of the point:
-            "top", "left", "bottom", or "right".
+            A string "w", "a", "s", or "d".
         """
-
-        # Diagonal line 1: Top-left to bottom-right (y = (height/width) * x)
-        diagonal1_y = (screen_height / screen_width) * location_x
-
-        # Diagonal line 2: Top-right to bottom-left (y = - (height/width) * x + height)
-        diagonal2_y = - (screen_height / screen_width) * location_x + screen_height
-
-        if location_y < diagonal1_y and location_y < diagonal2_y:
-            return "w"
-        elif location_y > diagonal1_y and location_y > diagonal2_y:
-            return "s"
-        elif location_y < diagonal1_y and location_y > diagonal2_y:
-            return "d"
-        else:  # location_y > diagonal1_y and location_y < diagonal2_y:
-            return "a"
+        # Prevent division by zero or invalid inputs
+        if screen_width <= 0 or screen_height <= 0:
+            # Return a default or raise an error, here returning middle-ish default
+            return "a" if location_x < screen_width / 2 else "d"
+        # --- Define the central strip ---
+        strip_width = (2 / 3) * screen_width
+        # Start x-coordinate of the strip (left edge)
+        x_start = (screen_width - strip_width) / 2
+        # End x-coordinate of the strip (right edge)
+        x_end = x_start + strip_width
+        # --- Handle points outside the strip ---
+        if location_x < x_start:
+            return "a"  # Point is in the left 1/6th of the screen
+        elif location_x > x_end:
+            return "d"  # Point is in the right 1/6th of the screen
+        else:
+            # --- Point is within the central strip ---
+            # Calculate diagonals as if the strip (width = strip_width) was the full screen
+            # Avoid division by zero if strip_width is effectively zero
+            if strip_width < 1e-9: # Use tolerance for float comparison
+                 return "a" if location_x < screen_width / 2 else "d"
+            # Slope magnitude: rise (screen_height) / run (strip_width)
+            slope = screen_height / strip_width
+            # Adjusted Diagonal 1: From (x_start, 0) to (x_end, screen_height)
+            # Equation: y - 0 = slope * (x - x_start)
+            # Calculate y value on this diagonal *at the point's location_x*
+            adj_diagonal1_y = slope * (location_x - x_start)
+            # Adjusted Diagonal 2: From (x_end, 0) to (x_start, screen_height)
+            # Equation: y - 0 = -slope * (x - x_end)
+            # Calculate y value on this diagonal *at the point's location_x*
+            adj_diagonal2_y = -slope * (location_x - x_end)
+            # --- Apply original comparison logic using adjusted diagonals ---
+            # Note: The original comments/logic might map differently than visual intuition.
+            # We are strictly following the original code's comparison structure.
+            if location_y < adj_diagonal1_y and location_y > adj_diagonal2_y:
+                 # Below adjusted diag 1, Above adjusted diag 2 -> 'd' in original logic (Right wedge)
+                return "d"
+            elif location_y > adj_diagonal1_y and location_y < adj_diagonal2_y:
+                 # Above adjusted diag 1, Below adjusted diag 2 -> 'a' in original logic (Left wedge)
+                return "a"
+            elif location_y < adj_diagonal1_y and location_y < adj_diagonal2_y:
+                 # Below both adjusted diagonals -> 'w' in original logic (Top wedge)
+                return "w"
+            else: # location_y >= adj_diagonal1_y and location_y >= adj_diagonal2_y:
+                 # Above both adjusted diagonals -> 's' in original logic (Bottom wedge)
+                return "s"
 
     def find_treasure_icon(self):
         return self.find_one('treasure_icon', box=self.box_of_screen(0.1, 0.2, 0.9, 0.8))
@@ -208,12 +251,6 @@ class BaseWWTask(BaseTask):
         illusive_realm_exit = self.find_one('illusive_realm_exit',
                                             use_gray_scale=False, threshold=0.5)
         return illusive_realm_exit is not None
-
-    def walk_find_echo(self, backward_time=1):
-        if self.walk_until_f(time_out=6, backward_time=backward_time, target_text=self.absorb_echo_text(),
-                             raise_if_not_found=False):  # find and pick echo
-            logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
-            return True
 
     def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0, target_text=None,
                      cancel=True):
@@ -338,49 +375,46 @@ class BaseWWTask(BaseTask):
             logger.info(f"found a claim reward")
             return True
 
-    def turn_and_find_echo(self):
-        if self.walk_until_f(target_text=self.absorb_echo_text(), raise_if_not_found=False):
+    def find_echo(self, threshold=0.5) -> Box:
+        """
+        Main function to load ONNX model, perform inference, draw bounding boxes, and display the output image.
+
+        Args:
+            onnx_model (str): Path to the ONNX model.
+            input_image (ndarray): Path to the input image.
+
+        Returns:
+            list: List of dictionaries containing detection information such as class_id, class_name, confidence, etc.
+        """
+        # Load the ONNX model
+        boxes = og.my_app.yolo_detect(self.frame, label=12)
+        ret = sorted(boxes, key=lambda detection: detection.confidence, reverse=True)
+        if ret:
+            return ret[0]
+
+    def pick_echo(self):
+        if self.find_f_with_text(target_text=self.absorb_echo_text()):
+            self.send_key('f')
+            if not self.handle_claim_button():
+                return True
+
+    def yolo_find_echo(self):
+        if self.pick_echo():
+            self.sleep(0.5)
             return True
-        box = self.box_of_screen(0.25, 0.20, 0.75, 0.53, hcenter=True)
-        highest_percent = 0
-        highest_index = 0
-        threshold = 0.02
-        highest_frame = None
         for i in range(4):
             self.middle_click_relative(0.5, 0.5, down_time=0.2)
             self.sleep(1)
-            color_percent = self.calculate_color_percentage(echo_color, box)
-            if color_percent > highest_percent:
-                highest_percent = color_percent
-                highest_index = i
-                if self.debug:
-                    highest_frame = self.frame.copy()
-                if color_percent > threshold:
-                    found = self.walk_find_echo(backward_time=0.5)
-                    if found and self.debug and highest_frame is not None:
-                        self.screenshot('echo_picked', frame=highest_frame)
-                    self.log_debug(f'found color_percent {color_percent} > {threshold}, walk now')
-                    return found
-            # if self.debug:
-            #     self.screenshot(f'find_echo_{highest_index}_{float(color_percent):.3f}_{float(highest_percent):.3f}')
-            logger.debug(f'searching for echo {i} {float(color_percent):.3f} {float(highest_percent):.3f}')
-            # self.click_relative(0.25, 0.25)
-            self.send_key('a', down_time=0.05)
-            self.sleep(0.5)
-
-        if highest_percent > 0.0001:
-            for i in range((highest_index + 1) % 4):
-                self.middle_click_relative(0.5, 0.5)
-                self.sleep(0.5)
+            echo = self.find_echo()
+            self.draw_boxes('echo', echo)
+            if not echo or echo.center()[1] > self.height_of_screen(0.5):
+                if i == 3:
+                    return False
                 self.send_key('a', down_time=0.05)
                 self.sleep(0.5)
-            # if self.debug:
-            #     self.screenshot(f'pick_echo_{highest_index}')
-            logger.info(f'found echo {highest_index} walk')
-            found = self.walk_find_echo(backward_time=0)
-            if found and self.debug and highest_frame is not None:
-                self.screenshot('echo_picked', frame=highest_frame)
-            return found
+                continue
+            self.walk_to_box(self.find_echo, time_out=15, end_condition=self.pick_echo)
+            return True
 
     def incr_drop(self, dropped):
         if dropped:

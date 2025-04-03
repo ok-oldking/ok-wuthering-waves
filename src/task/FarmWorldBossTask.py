@@ -28,16 +28,10 @@ class FarmWorldBossTask(WWOneTimeTask, BaseCombatTask):
 
         default_config = {
             'Boss1': 'N/A',
-            'Boss1 Echo Pickup Method': 'Turn Around and Search',
             'Boss2': 'N/A',
-            'Boss2 Echo Pickup Method': 'Turn Around and Search',
             'Boss3': 'N/A',
-            'Boss3 Echo Pickup Method': 'Turn Around and Search',
             'Repeat Farm Count': 1000
         }
-        self.config_type['Boss1 Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
-        self.config_type['Boss2 Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
-        self.config_type['Boss3 Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
         default_config.update(self.default_config)
         self.default_config = default_config
         self.config_type["Boss1"] = {'type': "drop_down", 'options': self.boss_names}
@@ -95,14 +89,8 @@ class FarmWorldBossTask(WWOneTimeTask, BaseCombatTask):
                             logger.info(f'sleep for the Boss model to disappear')
                             self.sleep(5)
                         logger.info(f'farm echo move forward walk_until_f to find echo')
-                        method = self.config.get(f'Boss{i} Echo Pickup Method', 'Walk')
 
-                        if method == 'Run in Circle':
-                            dropped = self.run_in_circle_to_find_echo()
-                        elif method == 'Turn Around and Search':
-                            dropped = self.turn_and_find_echo()
-                        else:
-                            dropped = self.walk_find_echo()
+                        dropped = self.yolo_find_echo()
                         self.incr_drop(dropped)
 
             if count < 2:
