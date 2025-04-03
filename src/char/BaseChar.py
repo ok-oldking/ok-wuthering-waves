@@ -401,21 +401,27 @@ class BaseChar:
     def resonance_available(self, current=None, check_ready=False, check_cd=False):
         if check_cd and time.time() - self.last_res > self.res_cd:
             return True
+        if self._resonance_available:
+            return True
         if self.is_current_char:
             snap = self.current_resonance() if current is None else current
             if check_ready and snap == 0:
                 return False
-            return self.is_available(snap, 'resonance')
+            self._resonance_available = self.is_available(snap, 'resonance')
         elif self.res_cd > 0:
             return time.time() - self.last_res > self.res_cd
+        return self._resonance_available
 
     def liberation_cd_ready(self, offset=1):
         return self.time_elapsed_accounting_for_freeze(self.last_liberation + 1) >= self.liberation_cd
 
     def echo_available(self, current=None):
         if self.is_current_char:
+            if self._echo_available:
+                return True
             snap = self.current_echo() if current is None else current
-            return self.is_available(snap, 'echo')
+            self._echo_available = self.is_available(snap, 'echo')
+            return self._echo_available
         elif self.echo_cd > 0:
             return time.time() - self.last_echo > self.echo_cd
 
@@ -454,6 +460,7 @@ class BaseChar:
                 return False
             else:
                 self._liberation_available = self.is_available(snap, 'liberation')
+        return self._liberation_available
 
     def __str__(self):
         return self.__repr__()
