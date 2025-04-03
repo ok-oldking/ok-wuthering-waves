@@ -90,4 +90,5 @@ ok-ww.exe -t 1 -e
 ### 致谢
 
 [https://github.com/lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss) 后台点击代码
+[https://gitee.com/LanRenZhiNeng/ming-chao-ai](https://gitee.com/LanRenZhiNeng/ming-chao-ai) 声骸yolo模型
   

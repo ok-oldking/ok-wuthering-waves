@@ -54,12 +54,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
             self.combat_once()
             logger.info(f'farm echo move {self.config.get("Boss")} walk_until_f to find echo')
-            if self.config.get('Boss') != 'Jue':
-                dropped = self.turn_and_find_echo()
-                logger.debug(f'farm echo turn_and_find_echo')
-            else:
-                self.sleep(2)
-                dropped = self.turn_and_find_echo()
+            dropped = self.yolo_find_echo()
             self.incr_drop(dropped)
             self.sleep(0.5)
             self.send_key('esc')
