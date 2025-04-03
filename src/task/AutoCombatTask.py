@@ -38,8 +38,8 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                 break
             except NotInCombatException as e:
                 logger.info(f'auto_combat_task_out_of_combat {e}')
-                if self.debug:
-                    self.screenshot(f'auto_combat_task_out_of_combat {e}')
+                # if self.debug:
+                #     self.screenshot(f'auto_combat_task_out_of_combat {e}')
                 break
         if ret:
             self.combat_end()

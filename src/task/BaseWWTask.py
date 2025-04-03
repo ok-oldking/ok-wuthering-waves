@@ -345,6 +345,7 @@ class BaseWWTask(BaseTask):
         highest_percent = 0
         highest_index = 0
         threshold = 0.02
+        highest_frame = None
         for i in range(4):
             self.middle_click_relative(0.5, 0.5, down_time=0.2)
             self.sleep(1)
@@ -352,11 +353,16 @@ class BaseWWTask(BaseTask):
             if color_percent > highest_percent:
                 highest_percent = color_percent
                 highest_index = i
+                if self.debug:
+                    highest_frame = self.frame.copy()
                 if color_percent > threshold:
+                    found = self.walk_find_echo(backward_time=0.5)
+                    if found and self.debug and highest_frame is not None:
+                        self.screenshot('echo_picked', frame=highest_frame)
                     self.log_debug(f'found color_percent {color_percent} > {threshold}, walk now')
-                    return self.walk_find_echo(backward_time=0.5)
-            if self.debug:
-                self.screenshot(f'find_echo_{highest_index}_{float(color_percent):.3f}_{float(highest_percent):.3f}')
+                    return found
+            # if self.debug:
+            #     self.screenshot(f'find_echo_{highest_index}_{float(color_percent):.3f}_{float(highest_percent):.3f}')
             logger.debug(f'searching for echo {i} {float(color_percent):.3f} {float(highest_percent):.3f}')
             # self.click_relative(0.25, 0.25)
             self.send_key('a', down_time=0.05)
@@ -368,10 +374,13 @@ class BaseWWTask(BaseTask):
                 self.sleep(0.5)
                 self.send_key('a', down_time=0.05)
                 self.sleep(0.5)
-            if self.debug:
-                self.screenshot(f'pick_echo_{highest_index}')
+            # if self.debug:
+            #     self.screenshot(f'pick_echo_{highest_index}')
             logger.info(f'found echo {highest_index} walk')
-            return self.walk_find_echo(backward_time=0)
+            found = self.walk_find_echo(backward_time=0)
+            if found and self.debug and highest_frame is not None:
+                self.screenshot('echo_picked', frame=highest_frame)
+            return found
 
     def incr_drop(self, dropped):
         if dropped:
@@ -574,8 +583,8 @@ class BaseWWTask(BaseTask):
                                   threshold=0.3),
             time_out=3, settle_time=2)
         logger.info(f'found gray_book_boss {gray_book_boss}')
-        if self.debug:
-            self.screenshot(feature)
+        # if self.debug:
+        #     self.screenshot(feature)
         return gray_book_boss
 
     def check_main(self):
