@@ -24,5 +24,6 @@
 *.aps filter=lfs diff=lfs merge=lfs -text
 *.rc filter=lfs diff=lfs merge=lfs -text
 *.h filter=lfs diff=lfs merge=lfs -text
+*.onnx filter=lfs diff=lfs merge=lfs -text
 tests/images/** filter=lfs diff=lfs merge=lfs -text
 * !text !filter !merge !diff
