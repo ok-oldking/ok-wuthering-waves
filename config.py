@@ -124,13 +124,13 @@ config = {
     'links': {
         'default': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
-            'discord': 'https://discord.gg/Sy6etyCRed',
+            'discord': 'https://discord.gg/vVyCatEBgA',
             'share': 'Download OK-WW from https://github.com/ok-oldking/ok-wuthering-waves/releases/latest',
             'faq': 'https://github.com/ok-oldking/ok-wuthering-waves/blob/master/README_en.md'
         },
         'zh_CN': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
-            'discord': 'https://discord.gg/Sy6etyCRed',
+            'discord': 'https://discord.gg/vVyCatEBgA',
             'share': 'OK-WW 夸克网盘下载：https://pan.quark.cn/s/75b55ef72a34 GitHub下载: https://github.com/ok-oldking/ok-wuthering-waves/releases/latest',
             'qq_group': 'https://qm.qq.com/q/ufUCrCEq6A',
             'faq': 'https://g-frfh1513.coding.net/public/ok-wuthering-waves/ok-wuthering-waves/git/files',
