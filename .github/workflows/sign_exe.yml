@@ -3,8 +3,8 @@ name: Test SignPath
 on:
   push:
     # Sequence of patterns matched against refs/tags
-    tags:
-      - 't*'
+    branches:
+      - 'build_exe'
 jobs:
   build:
     name: Build exe with launcher
@@ -36,8 +36,6 @@ jobs:
           name: to-sign
           path: |
             ok-ww.exe
-            ok/
-            src/
 
       - name : sign OK-EXE
         uses: signpath/github-action-submit-signing-request@v1.1
@@ -45,7 +43,7 @@ jobs:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
           organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
           project-slug: 'ok-wuthering-waves'
-          signing-policy-slug: 'test-signing'
+          signing-policy-slug: 'release-signing'
           artifact-configuration-slug: "zip"
           github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
           wait-for-completion: true

@@ -80,39 +80,6 @@ jobs:
             python -m unittest $_.FullName
           }
 
-      - name: Set up MSBuild
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Build OK-EXE
-        run: |
-          cp icon.ico src-win-launcher\icon.ico
-          cd src-win-launcher
-          msbuild ok-launcher.sln /p:Configuration=Release
-          cd ..
-          cp src-win-launcher/x64/Release/ok-ww.exe .
-
-      - name: upload-unsigned-artifact
-        id: upload-unsigned-artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: to-sign
-          path: |
-            ok-ww.exe
-            ok/
-            src/
-
-      - name : sign OK-EXE
-        uses: signpath/github-action-submit-signing-request@v1.1
-        with:
-          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
-          organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
-          project-slug: 'ok-wuthering-waves'
-          signing-policy-slug: 'release-signing'
-          artifact-configuration-slug: "zip"
-          github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
-          wait-for-completion: true
-          output-artifact-directory: '.'
-
       - name: Build Executable
         run: |
           echo "tag: ${{ steps.changes.outputs.tag }}"
