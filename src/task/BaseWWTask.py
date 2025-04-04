@@ -407,7 +407,7 @@ class BaseWWTask(BaseTask):
             self.sleep(1)
             echo = self.find_echo()
             self.draw_boxes('echo', echo)
-            if not echo or echo.center()[1] > self.height_of_screen(0.5):
+            if not echo or echo.center()[1] > self.height_of_screen(0.55):
                 if i == 3:
                     return False
                 self.send_key('a', down_time=0.05)
