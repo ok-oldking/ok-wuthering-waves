@@ -104,8 +104,8 @@ config = {
     'window_size': {
         'width': 800,
         'height': 600,
-        'min_width': 600,
-        'min_height': 450,
+        'min_width': 800,
+        'min_height': 600,
     },
     'supported_resolution': {
         'ratio': '16:9',
