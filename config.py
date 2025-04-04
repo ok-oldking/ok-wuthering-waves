@@ -117,14 +117,6 @@ config = {
         'pip_url': 'https://pypi.org/simple/'
     }, {
         'name': 'China',
-        'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-wuthering-waves.git',
-        'pip_url': 'https://mirrors.aliyun.com/pypi/simple'
-    }, {
-        'name': '腾讯Coding',
-        'git_url': 'https://e.coding.net/g-frfh1513/ok-wuthering-waves/ok-wuthering-waves.git',
-        'pip_url': 'https://mirrors.aliyun.com/pypi/simple'
-    }, {
-        'name': '腾讯CNB',
         'git_url': 'https://cnb.cool/ok-oldking/ok-wuthering-waves.git',
         'pip_url': 'https://mirrors.aliyun.com/pypi/simple'
     }
