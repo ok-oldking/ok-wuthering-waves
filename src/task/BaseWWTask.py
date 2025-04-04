@@ -413,8 +413,8 @@ class BaseWWTask(BaseTask):
                 self.send_key('a', down_time=0.05)
                 self.sleep(0.5)
                 continue
-            self.walk_to_box(self.find_echo, time_out=15, end_condition=self.pick_echo)
-            return True
+            picked = self.walk_to_box(self.find_echo, time_out=15, end_condition=self.pick_echo)
+            return picked
 
     def incr_drop(self, dropped):
         if dropped:
