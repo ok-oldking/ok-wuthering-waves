@@ -24,7 +24,7 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
 
     def send_fs(self):
         if self.debug:
-            self.screenshot('pick_up')
+            self.screenshot('pick_up', show_box=True)
         self.send_key('f')
         self.sleep(0.2)
         self.send_key('f')
@@ -50,7 +50,7 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
                                            height_offset=0,
                                            y_offset=0)
             dialog_3_dots = self.find_feature('dialog_3_dots', box=dialog_search,
-                                              threshold=0.8)
+                                              threshold=0.6)
 
             if dialog_3_dots:
                 if self.config.get('Pick Up White List'):
