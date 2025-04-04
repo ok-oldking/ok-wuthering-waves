@@ -44,7 +44,7 @@ jobs:
           organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
           project-slug: 'ok-wuthering-waves'
           signing-policy-slug: 'release-signing'
-          artifact-configuration-slug: "zip"
+          artifact-configuration-slug: "single-exe"
           github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
           wait-for-completion: true
           output-artifact-directory: '.'
