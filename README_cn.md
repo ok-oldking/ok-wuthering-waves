@@ -74,6 +74,10 @@ ok-ww.exe -t 1 -e
 - -t 或 --task 代表启动后自动执行第几个任务, 1就是第一个, 一条龙任务
 - -e 或 --exit 加上代表如果执行完任务之后自动退出
 
+## 赞助商
+
+- EXE签名: Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/)
+
 ### 加入我们
 
 * 由于基于[ok-script](https://github.com/ok-oldking/ok-script)开发，项目代码仅有3000行（Python），简单易维护

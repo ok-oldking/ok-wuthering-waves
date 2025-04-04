@@ -89,6 +89,10 @@ personal behavior, and this software is not authorized for boosting services. An
 such use are unrelated to this software. This software is not authorized for sale, and any sold versions may contain
 malicious code, leading to the theft of game accounts or computer data, which is unrelated to this software.
 
+## Sponsorship
+
+- Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/)
+
 ### Related Projects
 
 * [ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact) Genshin Impact Automation
