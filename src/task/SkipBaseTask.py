@@ -1,14 +1,14 @@
 import re
 import time
 
-from ok import FindFeature, Logger
-from ok import OCR
+from ok import Logger
+
 from src.task.BaseWWTask import BaseWWTask
 
 logger = Logger.get_logger(__name__)
 
 
-class SkipBaseTask(BaseWWTask, FindFeature, OCR):
+class SkipBaseTask(BaseWWTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
