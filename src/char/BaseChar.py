@@ -53,7 +53,6 @@ class BaseChar:
         self.full_ring_area = 0
         self.freeze_durations = []
         self.last_perform = 0
-        self._is_forte_full = False
         self.config = {"_full_ring_area": 0, "_ring_color_index": -1}
         if type(self) is not BaseChar:
             self.config = Config(self.name, self.config)
@@ -374,7 +373,7 @@ class BaseChar:
             priority += self.count_liberation_priority()
         if self.count_resonance_priority() and self.resonance_available():
             priority += self.count_resonance_priority()
-        if self.count_forte_priority() and self._is_forte_full:
+        if self.count_forte_priority():
             priority += self.count_forte_priority()
         if self.echo_available():
             priority += self.count_echo_priority()
@@ -448,8 +447,7 @@ class BaseChar:
         self.logger.debug(f'is_forte_full {white_percent}')
         box.confidence = white_percent
         self.task.draw_boxes('forte_full', box)
-        self._is_forte_full = white_percent > 0.08
-        return self._is_forte_full
+        return white_percent > 0.08
 
     def liberation_available(self):
         if self._liberation_available:
