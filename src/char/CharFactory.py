@@ -27,9 +27,7 @@ from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
 from src.char.Zhezhi import Zhezhi
 
-
-def get_char_by_pos(task, box, index, old_char):
-    char_dict = {
+char_dict = {
         'char_yinlin': {'cls': Yinlin, 'res_cd': 12, 'echo_cd': 25},
         'char_verina': {'cls': Verina, 'res_cd': 12, 'echo_cd': 25},
         'char_shorekeeper': {'cls': ShoreKeeper, 'res_cd': 15, 'echo_cd': 25},
@@ -60,21 +58,24 @@ def get_char_by_pos(task, box, index, old_char):
         'char_brant': {'cls': Brant, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 24},
         'char_cantarella': {'cls': Cantarella, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd': 25},
     }
+
+char_names = char_dict.keys()
+
+def get_char_by_pos(task, box, index, old_char):
     highest_confidence = 0
     info = None
     name = "unknown"
-    for char_name, char_info in char_dict.items():
-        feature = task.find_one(char_name, box=box, threshold=0.6)
-        # if feature:
-        #     task.log_info(f'found char {char_name} {feature.confidence} {highest_confidence}')
-        if feature and feature.confidence > highest_confidence:
-            highest_confidence = feature.confidence
-            info = char_info
-            name = char_name
-    if info is not None:
-        if old_char and old_char.char_name == name:
+    char = None
+    if old_char:
+        char = task.find_one(old_char.char_name, box=box, threshold=0.6)
+        if char:
             return old_char
-        else:
+
+    if not char:
+        char = task.find_best_match_in_box(box, char_names, threshold=0.6)
+        if char:
+            info = char_dict.get(char.name)
+            name = char.name
             cls = info.get('cls')
             return cls(task, index, info.get('res_cd'), info.get('echo_cd'), info.get('liberation_cd') or 25,
                        char_name=name)
