@@ -25,12 +25,13 @@ class Roccia(BaseChar):
                 self.last_intro = time.time()
                 self.can_plunge = True
             return self.switch_next_char()
-        self.click_liberation()
+        liberated = self.click_liberation()
         if self.click_resonance()[0]:
             self.last_e = time.time()
             self.can_plunge = True
             return self.switch_next_char()
-        self.plunge()
+        if not liberated:
+            self.plunge()
         if not self.click_resonance()[0]:
             self.click_echo()
         self.switch_next_char()
@@ -70,7 +71,7 @@ class Roccia(BaseChar):
     def plunge(self):
         start = time.time()
         starting_count = 0
-        while (self.is_forte_full() and time.time() - start < 0.6) or (starting_count > 0 and time.time() - start < 5):
+        while (self.is_forte_full() and time.time() - start < 1.1) or (starting_count > 0 and time.time() - start < 5):
             self.click(interval=0.1)
             if starting_count == 0:
                 starting_count = self.get_plunge_count()

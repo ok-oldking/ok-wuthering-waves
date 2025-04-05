@@ -56,7 +56,7 @@ numpy==2.2.4
     #   shapely
 rapidocr==2.0.6
     # via -r .\requirements.in
-ok-script==0.0.517
+ok-script==0.0.519
     # via -r .\requirements.in
 omegaconf==2.3.0
     # via ok-rapidocr-dml
