@@ -398,23 +398,44 @@ class BaseWWTask(BaseTask):
             if not self.handle_claim_button():
                 return True
 
-    def yolo_find_echo(self):
+    def yolo_find_echo(self, use_color=True):
         if self.pick_echo():
             self.sleep(0.5)
             return True
+        front_box = self.box_of_screen(0.35, 0.35, 0.65, 0.53, hcenter=True)
+        color_threshold = 0.02
         for i in range(4):
             self.middle_click_relative(0.5, 0.5, down_time=0.2)
-            self.sleep(1)
+            self.sleep(0.4)
             echo = self.find_echo()
-            self.draw_boxes('echo', echo)
-            if not echo or echo.center()[1] > self.height_of_screen(0.55):
-                if i == 3:
-                    return False
-                self.send_key('a', down_time=0.05)
-                self.sleep(0.5)
-                continue
-            picked = self.walk_to_box(self.find_echo, time_out=15, end_condition=self.pick_echo)
-            return picked
+            if self.debug:
+                self.draw_boxes('echo', echo)
+            if echo and echo.center()[1] > self.height_of_screen(0.55):
+                self.log_info(f'yolo found echo {echo}')
+                if self.debug:
+                    self.screenshot('echo_yolo_picked')
+                return self.walk_to_box(self.find_echo, time_out=15, end_condition=self.pick_echo)
+            if use_color:
+                color_percent = self.calculate_color_percentage(echo_color, front_box)
+                self.log_debug(f'pick_echo color_percent:{color_percent}')
+                if color_percent > color_threshold:
+                    if self.debug:
+                        self.screenshot('echo_color_picked')
+                    found = self.walk_find_echo(backward_time=0.5)
+                    self.log_debug(f'found color_percent {color_percent} > {color_threshold}, walk now')
+                    return found
+            self.send_key('a', down_time=0.04)
+            self.sleep(0.6)
+
+        self.middle_click_relative(0.5, 0.5, down_time=0.2)
+        picked = self.walk_find_echo()
+        return picked
+
+    def walk_find_echo(self, backward_time=1):
+        if self.walk_until_f(time_out=4, backward_time=backward_time, target_text=self.absorb_echo_text(),
+                             raise_if_not_found=False):  # find and pick echo
+            logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
+            return True
 
     def incr_drop(self, dropped):
         if dropped:
