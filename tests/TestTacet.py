@@ -13,7 +13,12 @@ class TestTacet(TaskTestCase):
     def test_find_treasure_icon(self):
         self.set_image('tests/images/treasure.png')
         treasure = self.task.find_treasure_icon()
-        self.logger.info(f'find_treasure_icon {treasure}')
+        self.logger.info(f'find_treasure_icon1 {treasure}')
+        self.assertIsNotNone(treasure)
+
+        self.set_image('tests/images/treasure2.png')
+        treasure = self.task.find_treasure_icon()
+        self.logger.info(f'find_treasure_icon2 {treasure}')
         self.assertIsNotNone(treasure)
 
 if __name__ == '__main__':
