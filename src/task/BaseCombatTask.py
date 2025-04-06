@@ -63,9 +63,9 @@ class BaseCombatTask(CombatCheck):
         logger.info(f'send_key_and_wait_animation timed out {key}')
 
     def teleport_to_heal(self):
+        self.sleep(1)
         self.info['Death Count'] = self.info.get('Death Count', 0) + 1
         self.send_key('esc', after_sleep=2)
-        self.sleep(2)
         self.log_info('click m to open the map')
         self.send_key('m', after_sleep=2)
 

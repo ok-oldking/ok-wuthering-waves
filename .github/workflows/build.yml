@@ -115,8 +115,3 @@ jobs:
       - name: push to cnb
         run: |
           python -m ok.update.push_repos --repos https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-wuthering-waves.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
-
-      - name: push to coding
-        run: |
-          python -m ok.update.push_repos --repos https://${{ secrets.CODING_USERNAME }}:${{ secrets.CODING_PASSWORD }}@e.coding.net/g-frfh1513/ok-wuthering-waves/ok-wuthering-waves.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
-

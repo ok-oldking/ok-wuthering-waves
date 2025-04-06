@@ -66,7 +66,7 @@ def get_char_by_pos(task, box, index, old_char):
     info = None
     name = "unknown"
     char = None
-    if old_char:
+    if old_char and old_char.name in char_names:
         char = task.find_one(old_char.char_name, box=box, threshold=0.6)
         if char:
             return old_char
