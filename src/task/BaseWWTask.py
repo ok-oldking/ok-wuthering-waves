@@ -405,8 +405,7 @@ class BaseWWTask(BaseTask):
         front_box = self.box_of_screen(0.35, 0.35, 0.65, 0.53, hcenter=True)
         color_threshold = 0.02
         for i in range(4):
-            self.middle_click_relative(0.5, 0.5, down_time=0.2)
-            self.sleep(0.4)
+            self.center_camera()
             echo = self.find_echo()
             if self.debug:
                 self.draw_boxes('echo', echo)
@@ -421,15 +420,17 @@ class BaseWWTask(BaseTask):
                 if color_percent > color_threshold:
                     if self.debug:
                         self.screenshot('echo_color_picked')
-                    found = self.walk_find_echo(backward_time=0.5)
                     self.log_debug(f'found color_percent {color_percent} > {color_threshold}, walk now')
-                    return found
-            self.send_key('a', down_time=0.04)
-            self.sleep(0.6)
+                    return self.walk_find_echo()
+            self.send_key('a', down_time=0.05)
+            self.sleep(0.5)
 
-        self.middle_click_relative(0.5, 0.5, down_time=0.2)
+        self.center_camera()
         picked = self.walk_find_echo()
         return picked
+
+    def center_camera(self):
+        self.click(0.5, 0.5, down_time=0.2, after_sleep=0.5, key='middle')
 
     def walk_find_echo(self, backward_time=1):
         if self.walk_until_f(time_out=4, backward_time=backward_time, target_text=self.absorb_echo_text(),
