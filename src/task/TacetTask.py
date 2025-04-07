@@ -19,6 +19,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         }
         self.row_per_page = 5
         self.total_number = 11
+        self.target_enemy_time_out = 6
         default_config.update(self.default_config)
         self.config_description = {
             'Which Tacet Suppression to Farm': 'the Nth number in the Tacet Suppression list (F2)',
@@ -63,14 +64,13 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             else:
                 self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
             self.combat_once()
-            self.sleep(2)
             self.walk_to_treasure()
             used, remaining_total, remaining_current, used_back_up = self.ensure_stamina(60, 120)
             total_used += used
             self.info_set('used stamina', total_used)
             if not used:
                 return self.not_enough_stamina()
-            self.wait_click_ocr(0.02, 0.56, 0.67, 0.67, match=str(used), raise_if_not_found=True)
+            self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'], raise_if_not_found=True, log=True)
             self.sleep(4)
             self.click(0.51, 0.84, after_sleep=1)
             if remaining_total < 60:
@@ -108,7 +108,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.log_info(f'teleport_to_tacet scroll down a page new index: {index}')
         x = 0.88
         height = (0.85 - 0.28) / 4
-        y = 0.25
+        y = 0.275
         y += height * index
         self.click_relative(x, y, after_sleep=2)
 
