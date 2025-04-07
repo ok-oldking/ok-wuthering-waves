@@ -108,7 +108,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.log_info(f'teleport_to_tacet scroll down a page new index: {index}')
         x = 0.88
         height = (0.85 - 0.28) / 4
-        y = 0.25
+        y = 0.275
         y += height * index
         self.click_relative(x, y, after_sleep=2)
 
