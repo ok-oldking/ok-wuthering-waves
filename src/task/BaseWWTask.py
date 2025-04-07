@@ -167,7 +167,7 @@ class BaseWWTask(BaseTask):
                     self.next_frame()
                     continue
             x, y = treasure_icon.center()
-            self.draw_boxes(treasure_icon)
+
             y = max(0, y - self.height_of_screen(0.05))
             next_direction = self.get_direction(x, y, self.width, self.height)
             if next_direction != last_direction:
