@@ -49,7 +49,7 @@ class FarmWorldBossTask(WWOneTimeTask, BaseCombatTask):
     # not current in use because not stable, right now using one click to scroll down
 
     def run(self):
-        super().run()
+        WWOneTimeTask.run(self)
         self.ensure_main(time_out=180)
         self.set_check_monthly_card()
         count = 0
@@ -90,7 +90,7 @@ class FarmWorldBossTask(WWOneTimeTask, BaseCombatTask):
                             self.sleep(5)
                         logger.info(f'farm echo move forward walk_until_f to find echo')
 
-                        dropped = self.yolo_find_echo()
+                        dropped = self.yolo_find_echo()[0]
                         self.incr_drop(dropped)
 
             if count < 2:
