@@ -1,3 +1,5 @@
+import time
+
 from qfluentwidgets import FluentIcon
 
 from ok import FindFeature, Logger
@@ -35,8 +37,12 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
     def run(self):
         if not self.scene.in_team(self.in_team_and_world):
             return
-        while f := self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box,
-                              threshold=0.8):
+        start = time.time()
+        while time.time() - start < 1:
+            f = self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box,
+                               threshold=0.8)
+            if not f:
+                return
             percent = self.calculate_color_percentage(f_white_color, f)
             if percent < 0.5:
                 self.log_debug(f'f white color percent: {percent} wait')

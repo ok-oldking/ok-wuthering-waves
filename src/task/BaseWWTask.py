@@ -61,8 +61,7 @@ class BaseWWTask(BaseTask):
             self.log_info('zoom map to max')
             self.map_zoomed = True
             self.send_key('m', after_sleep=1)
-            for i in range(11):
-                self.click(0.95, 0.29, after_sleep=0.1)
+            self.click_relative(0.94, 0.33, after_sleep=0.5)
             self.send_key('esc', after_sleep=1)
 
     def validate(self, key, value):
@@ -140,8 +139,8 @@ class BaseWWTask(BaseTask):
                 return None
         return f
 
-    def walk_to_box(self, find_function, time_out=30, end_condition=None):
-        if not find_function():
+    def walk_to_box(self, find_function, time_out=30, end_condition=None, y_offset=0.05):
+        if not find_function:
             self.log_info('find_function not found, break')
             return False
         last_direction = None
@@ -168,7 +167,7 @@ class BaseWWTask(BaseTask):
                     continue
             x, y = treasure_icon.center()
 
-            y = max(0, y - self.height_of_screen(0.05))
+            y = max(0, y - self.height_of_screen(y_offset))
             next_direction = self.get_direction(x, y, self.width, self.height)
             if next_direction != last_direction:
                 if last_direction:
@@ -414,7 +413,7 @@ class BaseWWTask(BaseTask):
         """
         # Load the ONNX model
         boxes = og.my_app.yolo_detect(self.frame, threshold=threshold, label=12)
-        ret = sorted(boxes, key=lambda detection: abs(detection.y - self.height/2), reverse=True)
+        ret = sorted(boxes, key=lambda detection: detection.x, reverse=True)
         return ret
 
     def yolo_find_all(self, threshold=0.3):
@@ -435,9 +434,16 @@ class BaseWWTask(BaseTask):
 
     def pick_echo(self):
         if self.find_f_with_text(target_text=self.absorb_echo_text()):
+            if self.debug:
+                self.screenshot('pick_echo')
             self.send_key('f')
             if not self.handle_claim_button():
                 return True
+
+    def pick_f(self):
+        if self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box, threshold=0.8):
+            self.send_key('f')
+            return True
 
     def yolo_find_echo(self, use_color=True, walk=True, turn=True):
         max_echo_count = 0
@@ -452,13 +458,13 @@ class BaseWWTask(BaseTask):
             echos = self.find_echo()
             if self.debug:
                 self.draw_boxes('echo', echos)
+                if echos:
+                    self.screenshot('echo')
             max_echo_count = max(max_echo_count, len(echos))
             self.log_debug(f'max_echo_count {max_echo_count}')
-            if echos and echos[0].center()[1] < self.height_of_screen(0.45):
+            if echos:
                 self.log_info(f'yolo found echo {echos}')
-                if self.debug:
-                    self.screenshot('echo_yolo_picked')
-                return self.walk_to_box(self.find_echo, time_out=15, end_condition=self.pick_echo), max_echo_count > 1
+                return self.walk_to_box(self.find_echo, time_out=15, end_condition=self.pick_echo, y_offset=0.2), max_echo_count > 1
             if use_color:
                 color_percent = self.calculate_color_percentage(echo_color, front_box)
                 self.log_debug(f'pick_echo color_percent:{color_percent}')
@@ -599,7 +605,7 @@ class BaseWWTask(BaseTask):
             return 'en_US'
         return 'unknown_lang'
 
-    def teleport_to_boss(self, boss_name, use_custom=False, dead=False):
+    def teleport_to_boss(self, boss_name, use_custom=False):
         self.zoom_map()
         pos = self.bosses_pos.get(boss_name)
         page = pos[0]
@@ -637,13 +643,8 @@ class BaseWWTask(BaseTask):
         self.log_info(f'index after scrolling down {index}')
         self.click_relative(0.89, 0.91)
         self.sleep(1)
-        # 判断是否是角色死亡，需要传送复活状态
-        if not dead:
-            self.wait_click_travel(use_custom=use_custom)
-        else:
-            self.click_relative(0.92, 0.91)
-            self.sleep(1)
-            self.click_relative(0.68, 0.6)
+
+        self.wait_click_travel(use_custom=use_custom)
         self.wait_in_team_and_world(time_out=120)
         self.sleep(1)
 
@@ -674,11 +675,11 @@ class BaseWWTask(BaseTask):
                 self.click_relative(0.74, 0.92, after_sleep=1)
                 if self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
                                            relative_x=-1, raise_if_not_found=True,
-                                           threshold=0.7,
+                                           threshold=0.6,
                                            time_out=4):
                     self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
                                             relative_x=-1, raise_if_not_found=False,
-                                            threshold=0.7,
+                                            threshold=0.6,
                                             time_out=1)
                     return True
         elif btn := self.find_one('gray_teleport', threshold=0.7):
