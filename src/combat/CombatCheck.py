@@ -27,6 +27,7 @@ class CombatCheck(BaseWWTask):
         self.combat_check_interval = 0.5
         self.last_in_realm_not_combat = 0
         self._last_liberation = 0
+        self.target_enemy_time_out = 3
 
     @property
     def in_liberation(self):
@@ -186,7 +187,7 @@ class CombatCheck(BaseWWTask):
                 return True
             else:
                 logger.info(f'target lost try retarget')
-                return self.wait_until(self.has_target, time_out=3.1,
+                return self.wait_until(self.has_target, time_out=self.target_enemy_time_out,
                                        pre_action=lambda: self.middle_click(interval=0.2))
 
     def check_health_bar(self):
