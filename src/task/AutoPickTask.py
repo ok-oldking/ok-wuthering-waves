@@ -3,7 +3,7 @@ from qfluentwidgets import FluentIcon
 from ok import FindFeature, Logger
 from ok import TriggerTask
 from src.scene.WWScene import WWScene
-from src.task.BaseWWTask import BaseWWTask
+from src.task.BaseWWTask import BaseWWTask, f_white_color
 
 logger = Logger.get_logger(__name__)
 
@@ -69,8 +69,3 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
                 return True
             self.next_frame()
 
-f_white_color = {
-    'r': (235, 255),  # Red range
-    'g': (235, 255),  # Green range
-    'b': (235, 255)  # Blue range
-}

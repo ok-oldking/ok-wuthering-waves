@@ -20,6 +20,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         self.scene: WWScene | None = None
         self.default_config.update({
             'Auto Target': True,
+            'Auto Pick Echo After Combat': True,
         })
         self.config_description = {
             'Auto Target': 'Turn off to enable auto combat only when manually target enemy using middle click'
@@ -38,9 +39,10 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                 break
             except NotInCombatException as e:
                 logger.info(f'auto_combat_task_out_of_combat {e}')
-                # if self.debug:
-                #     self.screenshot(f'auto_combat_task_out_of_combat {e}')
                 break
         if ret:
             self.combat_end()
+            if self.config.get('Auto Pick Echo After Combat'):
+                while self.yolo_find_echo(use_color=False, walk=False, turn=False)[1]:
+                    pass
         return ret
