@@ -1,3 +1,5 @@
+import time
+
 from qfluentwidgets import FluentIcon
 
 from ok import Logger
@@ -27,7 +29,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.add_exit_after_config()
 
     def run(self):
-        super().run()
+        WWOneTimeTask.run(self)
         self.set_check_monthly_card()
         self.ensure_main(time_out=180)
         if not self.in_team()[0]:
@@ -54,7 +56,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
             self.combat_once()
             logger.info(f'farm echo move {self.config.get("Boss")} walk_until_f to find echo')
-            dropped = self.yolo_find_echo()
+            dropped = self.yolo_find_echo()[0]
             self.incr_drop(dropped)
             self.sleep(0.5)
             self.send_key('esc')
@@ -62,10 +64,6 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                     use_gray_scale=True, settle_time=2)
             self.wait_in_team_and_world(time_out=120)
             self.sleep(2)
-
-    def incr_drop(self, dropped):
-        if dropped:
-            self.info['Echo Count'] = self.info.get('Echo Count', 0) + 1
 
     def choose_level(self, start):
         y = 0.17

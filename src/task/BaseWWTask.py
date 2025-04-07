@@ -8,10 +8,15 @@ from ok import BaseTask, Logger, find_boxes_by_name, og, Box
 from ok import CannotFindException
 import cv2
 
+
 logger = Logger.get_logger(__name__)
 number_re = re.compile(r'^(\d+)$')
 stamina_re = re.compile(r'^(\d+)/(\d+)$')
-
+f_white_color = {
+    'r': (235, 255),  # Red range
+    'g': (235, 255),  # Green range
+    'b': (235, 255)  # Blue range
+}
 
 class BaseWWTask(BaseTask):
     map_zoomed = False
@@ -112,7 +117,21 @@ class BaseWWTask(BaseTask):
 
     def find_f_with_text(self, target_text=None):
         f = self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box, threshold=0.8)
-        if f and target_text:
+        if not f:
+            return None
+
+        start = time.time()
+        percent = 0.0
+        while time.time() - start < 1:
+            percent = self.calculate_color_percentage(f_white_color, f)
+            if percent > 0.5:
+                break
+            self.next_frame()
+            self.log_debug(f'f white color percent: {percent} wait')
+        if percent < 0.5:
+            return None
+
+        if target_text:
             search_text_box = f.copy(x_offset=f.width * 5, width_offset=f.width * 7, height_offset=1.5 * f.height,
                                      y_offset=-0.8 * f.height, name='search_text_box')
             text = self.ocr(box=search_text_box, match=target_text, target_height=540)
@@ -129,11 +148,17 @@ class BaseWWTask(BaseTask):
         start = time.time()
         ended = False
         while time.time() - start < time_out:
+            self.next_frame()
             if end_condition:
                 ended = end_condition()
                 if ended:
                     break
             treasure_icon = find_function()
+            if isinstance(treasure_icon, list):
+                if len(treasure_icon) > 0:
+                    treasure_icon = treasure_icon[0]
+                else:
+                    treasure_icon = None
             if not treasure_icon:
                 if not end_condition:
                     self.log_info('find_function not found, break')
@@ -142,6 +167,7 @@ class BaseWWTask(BaseTask):
                     self.next_frame()
                     continue
             x, y = treasure_icon.center()
+            self.draw_boxes(treasure_icon)
             y = max(0, y - self.height_of_screen(0.05))
             next_direction = self.get_direction(x, y, self.width, self.height)
             if next_direction != last_direction:
@@ -149,8 +175,8 @@ class BaseWWTask(BaseTask):
                     self.send_key_up(last_direction)
                     self.sleep(0.02)
                 last_direction = next_direction
-                self.send_key_down(next_direction)
-            self.next_frame()
+                if next_direction:
+                    self.send_key_down(next_direction)
         if last_direction:
             self.send_key_up(last_direction)
             self.sleep(0.02)
@@ -375,7 +401,7 @@ class BaseWWTask(BaseTask):
             logger.info(f"found a claim reward")
             return True
 
-    def find_echo(self, threshold=0.5) -> Box:
+    def find_echo(self, threshold=0.5):
         """
         Main function to load ONNX model, perform inference, draw bounding boxes, and display the output image.
 
@@ -387,10 +413,25 @@ class BaseWWTask(BaseTask):
             list: List of dictionaries containing detection information such as class_id, class_name, confidence, etc.
         """
         # Load the ONNX model
-        boxes = og.my_app.yolo_detect(self.frame, label=12)
+        boxes = og.my_app.yolo_detect(self.frame, threshold=threshold, label=12)
+        ret = sorted(boxes, key=lambda detection: abs(detection.y - self.height/2), reverse=True)
+        return ret
+
+    def yolo_find_all(self, threshold=0.3):
+        """
+        Main function to load ONNX model, perform inference, draw bounding boxes, and display the output image.
+
+        Args:
+            onnx_model (str): Path to the ONNX model.
+            input_image (ndarray): Path to the input image.
+
+        Returns:
+            list: List of dictionaries containing detection information such as class_id, class_name, confidence, etc.
+        """
+        # Load the ONNX model
+        boxes = og.my_app.yolo_detect(self.frame, threshold=threshold, label=-1)
         ret = sorted(boxes, key=lambda detection: detection.confidence, reverse=True)
-        if ret:
-            return ret[0]
+        return ret
 
     def pick_echo(self):
         if self.find_f_with_text(target_text=self.absorb_echo_text()):
@@ -398,22 +439,26 @@ class BaseWWTask(BaseTask):
             if not self.handle_claim_button():
                 return True
 
-    def yolo_find_echo(self, use_color=True):
+    def yolo_find_echo(self, use_color=True, walk=True, turn=True):
+        max_echo_count = 0
         if self.pick_echo():
             self.sleep(0.5)
-            return True
+            return True, True
         front_box = self.box_of_screen(0.35, 0.35, 0.65, 0.53, hcenter=True)
         color_threshold = 0.02
         for i in range(4):
-            self.center_camera()
-            echo = self.find_echo()
+            if turn:
+                self.center_camera()
+            echos = self.find_echo()
             if self.debug:
-                self.draw_boxes('echo', echo)
-            if echo and echo.center()[1] > self.height_of_screen(0.55):
-                self.log_info(f'yolo found echo {echo}')
+                self.draw_boxes('echo', echos)
+            max_echo_count = max(max_echo_count, len(echos))
+            self.log_debug(f'max_echo_count {max_echo_count}')
+            if echos and echos[0].center()[1] < self.height_of_screen(0.45):
+                self.log_info(f'yolo found echo {echos}')
                 if self.debug:
                     self.screenshot('echo_yolo_picked')
-                return self.walk_to_box(self.find_echo, time_out=15, end_condition=self.pick_echo)
+                return self.walk_to_box(self.find_echo, time_out=15, end_condition=self.pick_echo), max_echo_count > 1
             if use_color:
                 color_percent = self.calculate_color_percentage(echo_color, front_box)
                 self.log_debug(f'pick_echo color_percent:{color_percent}')
@@ -421,16 +466,25 @@ class BaseWWTask(BaseTask):
                     if self.debug:
                         self.screenshot('echo_color_picked')
                     self.log_debug(f'found color_percent {color_percent} > {color_threshold}, walk now')
-                    return self.walk_find_echo()
+                    return self.walk_find_echo(), max_echo_count > 1
+            if not turn and i==0:
+                return False, max_echo_count > 1
             self.send_key('a', down_time=0.05)
             self.sleep(0.5)
 
         self.center_camera()
-        picked = self.walk_find_echo()
-        return picked
+        if walk:
+            picked = self.walk_find_echo()
+            return picked, max_echo_count > 1
+        return False, max_echo_count > 1
 
     def center_camera(self):
         self.click(0.5, 0.5, down_time=0.2, after_sleep=0.5, key='middle')
+
+    def turn_direction(self, direction):
+        if direction != 'w':
+            self.send_key(direction, down_time=0.05, after_sleep=0.5)
+        self.center_camera()
 
     def walk_find_echo(self, backward_time=1):
         if self.walk_until_f(time_out=4, backward_time=backward_time, target_text=self.absorb_echo_text(),
@@ -441,6 +495,7 @@ class BaseWWTask(BaseTask):
     def incr_drop(self, dropped):
         if dropped:
             self.info['Echo Count'] = self.info.get('Echo Count', 0) + 1
+            self.info['Echo per Hour'] = round(self.info.get('Echo Count', 0) / max(time.time() - self.start_time, 1) * 3600)
 
     def should_check_monthly_card(self):
         if self.next_monthly_card_start > 0:

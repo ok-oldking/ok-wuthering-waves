@@ -1,7 +1,6 @@
 from qfluentwidgets import FluentIcon
 
 from ok import Logger, BaseScene
-from src.task.BaseWWTask import BaseWWTask
 
 logger = Logger.get_logger(__name__)
 
