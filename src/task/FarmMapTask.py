@@ -1,58 +1,60 @@
 import math
 import re
 import time
+from typing import List
 
 import cv2
 import numpy as np
 from qfluentwidgets import FluentIcon
 
-from ok import Logger
+from ok import Logger, Box, get_bounding_box
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
 
-
-class FarmMapTask(WWOneTimeTask, BaseCombatTask):
-
+class BigMap(WWOneTimeTask, BaseCombatTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.icon = FluentIcon.FLAG
-        self.description = "Farm selected Tacet Suppression until out of stamina, will use the backup stamina, you need to be able to teleport from the menu(F2)"
-        self.name = "Tacet Suppression (Must explore first to be able to teleport)"
-        default_config = {
-            'Which Tacet Suppression to Farm': 1  # starts with 1
-        }
-        self.row_per_page = 5
-        self.total_number = 11
-        default_config.update(self.default_config)
-        self.config_description = {
-            'Which Tacet Suppression to Farm': 'the Nth number in the Tacet Suppression list (F2)',
-        }
-        self.default_config = default_config
-        self.max_star_distance = 1000
-        self.last_star = None
-        self.last_angle = None
-        self.stuck_keys = [['space', 0.2], ['a',2], ['d',2]]
-        self.stuck_index = 0
-        self.last_cords = None
-        self.cords_re = re.compile('^\d+,\d+,\d+$')
+        self.big_map_frame = None
+        self.stars = None
+        self.bounding_box = None
 
-    @property
-    def star_move_distance_threshold(self):
-        return self.height_of_screen(0.02)
 
-    def run(self):
-        self.last_star = None
-        self.last_angle = None
-        self.go_to_star()
+    def reset(self):
+        self.frame = None
+        self.stars = None
 
-    def get_cords(self):
-        cords = self.ocr(0.01, 0.95, 0.21, 1, match=self.cords_re, log=True)
-        if cords:
-            return cords[0].name
+    def load_stars(self):
+        self.click_relative(0.94, 556 / 1080, after_sleep=1)
+        self.big_map_frame = self.frame
+        self.stars = self.find_feature('big_map_star', threshold=0.7, frame=self.big_map_frame, box=Box(0,0,self.big_map_frame.shape[1],self.big_map_frame.shape[0]))
+        all_star_len = len(self.stars)
+        self.stars = group_boxes_by_center_distance(self.stars, self.height_of_screen(0.2))
+        if len(self.stars) <= 2:
+            raise Exception('Need be in the map screen and have a path of at least 3 stars!')
+        self.log_info(f'Loaded {len(self.stars)} from {all_star_len} Stars', notify=True)
+        self.bounding_box = get_bounding_box(self.stars)
+        mini_map_box = self.get_box_by_name('box_minimap')
+        self.bounding_box.width += mini_map_box.width * 2
+        self.bounding_box.height += mini_map_box.height * 2
+        self.bounding_box.x -= mini_map_box.width
+        self.bounding_box.y -= mini_map_box.height
+        self.info_set('Stars', len(self.stars))
+        self.send_key('esc', after_sleep=1)
 
-    def get_angle(self):
+    def get_angle_between(self, my_angle, angle):
+        if my_angle > angle:
+            to_turn = angle - my_angle
+        else:
+            to_turn = -(my_angle - angle)
+        if to_turn > 180:
+            to_turn -= 360
+        elif to_turn < -180:
+            to_turn += 360
+        return to_turn
+
+    def get_my_angle(self):
         arrow_template = self.get_feature_by_name('arrow')
         original_mat = arrow_template.mat
         max_conf = 0
@@ -68,60 +70,141 @@ class FarmMapTask(WWOneTimeTask, BaseCombatTask):
         for angle in range(0, 360):
             # Rotate the template image
             rotation_matrix = cv2.getRotationMatrix2D(center, -angle, 1.0)
-            arrow_template.mat = cv2.warpAffine(original_mat, rotation_matrix, (w, h))
-            arrow_template.mask = np.where(np.all(arrow_template.mat == [0, 0, 0], axis=2), 0, 255).astype(np.uint8)
+            template = cv2.warpAffine(original_mat, rotation_matrix, (w, h))
+            # mask = np.where(np.all(template == [0, 0, 0], axis=2), 0, 255).astype(np.uint8)
 
-            target = self.find_one(f'arrow_{angle}', box=target_box,
-                                   template=arrow_template, threshold=0.01)
+            target = self.find_one(box=target_box,
+                                   template=template, threshold=0.01)
             # if self.debug and angle % 90 == 0:
             #     self.screenshot(f'arrow_rotated_{angle}', arrow_template.mat)
             if target and target.confidence > max_conf:
                 max_conf = target.confidence
                 max_angle = angle
-                max_target = target
-                max_mat = arrow_template.mat
-        arrow_template.mat = original_mat
+                # max_target = target
+                # max_mat = template
+        # arrow_template.mat = original_mat
         # arrow_template.mask = None
         # if self.debug and max_mat is not None:
         #     self.screenshot('max_mat',frame=max_mat)
         # self.log_debug(f'turn_east max_conf: {max_conf} {max_angle}')
-        return max_angle , max_target
+        return max_angle
 
-    def set_last_angle(self, angle):
-        self.last_angle = angle
-        self.info_set('Last Angle', angle)
-
-    def find_next_star(self):
-        stars = self.find_stars()
-        min_distance = self.max_star_distance
-        nearest_star = None
-        x2, y2 = self.get_box_by_name('box_minimap').center()
-        for star in stars:
-            if not self.last_star:
-                x1, y1 = star.center()
-                angle = calculate_angle_clockwise(x1, y1, x2, y2)
-                if self.last_angle is not None and abs(angle - self.last_angle) < 90:
-                    self.log_debug(f'old path continue {abs(angle - self.last_angle)} {star}')
-                    continue
-                self.last_star = star
-                self.log_debug(f'no last star return nearest {self.last_star} {self.last_angle}')
-                return -1, star, 360 - angle
-            distance = star.center_distance(self.last_star)
+    def find_direction_angle(self):
+        my_box = self.find_my_location()
+        min_distance = 100000
+        min_star = None
+        if len(self.stars) == 0:
+            return None, 0, 0
+        for star in self.stars:
+            distance = star.center_distance(my_box)
             if distance < min_distance:
                 min_distance = distance
-                nearest_star = star
-        if nearest_star:
-            self.last_star = nearest_star
-        self.log_debug(f'nearest_star: {min_distance} {nearest_star}')
-        return min_distance, nearest_star, -1
+                min_star = star
+        self.draw_boxes('star', min_star, color='green')
+        # if self.debug:
+        #     self.screenshot('parse_read_big_map', frame=self.big_map_frame, show_box=True)
+        direction_angle = calculate_angle_clockwise(my_box, min_star)
+        my_angle = self.get_my_angle()
+        to_turn = self.get_angle_between(my_angle, direction_angle)
+        self.log_debug(f'direction_angle {to_turn} {my_angle} {direction_angle}  min_distance {min_distance} min_star {min_star} ')
+        return min_star, min_distance, to_turn
+
+    def remove_star(self, star):
+        before = len(self.stars)
+        self.stars.remove(star)
+        self.info_set('Stars', len(self.stars))
+        self.log_debug(f'removed star {before} -> {len(self.stars)}')
+
+
+    def find_my_location(self):
+        frame = self.big_map_frame
+        mat = self.get_box_by_name('box_minimap').crop_frame(self.frame)
+        mat = keep_circle(mat)
+        in_big_map = self.find_one(frame=frame, template=mat, threshold=0.01, box=self.bounding_box, mask_function=create_circle_mask_with_hole)
+        # in_big_maps = self.find_feature(frame=frame, template=mat, threshold=0.01, box=self.bounding_box)
+        if not in_big_map:
+            raise RuntimeError('can not find my cords on big map!')
+        self.log_debug(f'found big map: {in_big_map}')
+        if self.debug and in_big_map:
+            self.draw_boxes('stars', self.stars)
+            self.draw_boxes('search_map', self.bounding_box)
+            self.draw_boxes('in_big_map', in_big_map.scale(0.1), color='blue')
+            # self.screenshot('box_minimap', frame=mat, show_box=True)
+        return in_big_map
+
+def keep_circle(img):
+    height, width = img.shape[:2]
+    # Create a black mask with the same dimensions
+    mask = np.zeros((height, width), dtype=np.uint8)
+    # Define circle parameters (center and radius)
+    center_x, center_y = width // 2, height // 2
+    radius = min(center_x, center_y)  # Fit circle within image bounds
+    # Draw a filled white circle on the mask
+    cv2.circle(mask, (center_x, center_y), radius, (255), thickness=-1)
+    # Apply the mask to the original image using bitwise AND
+    result = cv2.bitwise_and(img, img, mask=mask)
+    return result
+
+def create_circle_mask_with_hole(image):
+    """
+    Creates a binary circular mask with a rectangular hole in the center.
+    The circle fills the mask dimensions, and the hole is 1/4 width and height.
+    Args:
+        shape (tuple): The (height, width) of the desired mask.
+    Returns:
+        numpy.ndarray: A uint8 NumPy array representing the mask
+                       (255 in the circle ring, 0 elsewhere and in the hole).
+    """
+    h, w = image.shape[:2]
+    mask = np.zeros((h, w), dtype=np.uint8)
+    center_x, center_y = w // 2, h // 2
+    radius = min(w, h) // 2
+    # 1. Draw the outer filled white circle
+    cv2.circle(mask, (center_x, center_y), radius, 255, -1)
+    # 2. Calculate rectangle dimensions and corners for the hole
+    rect_w = round(w / 4.4)
+    rect_h = round(h / 4.4)
+    # Calculate top-left corner centered
+    rect_x1 = center_x - rect_w // 2
+    rect_y1 = center_y - rect_h // 2
+    # Calculate bottom-right corner
+    rect_x2 = rect_x1 + rect_w
+    rect_y2 = rect_y1 + rect_h
+    # 3. Draw the inner filled black rectangle (the hole)
+    # Use color=0 and thickness=-1 to fill with black
+    cv2.rectangle(mask, (rect_x1, rect_y1), (rect_x2, rect_y2), 0, -1)
+    return mask
+
+class FarmMapTask(BigMap):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.icon = FluentIcon.GLOBE
+        self.description = "Farm world map with a marked path of stars, start in the map screen"
+        self.name = "Farm Map with Star Path"
+        self.max_star_distance = 1000
+        self.stuck_keys = [['space', 0.2], ['a',2], ['d',2]]
+        self.stuck_index = 0
+        self.last_distance = 0
+        self.check_pick_echo = True
+
+    @property
+    def star_move_distance_threshold(self):
+        return self.height_of_screen(0.025)
+
+    def run(self):
+        self.stuck_index = 0
+        self.last_distance = 0
+        self.load_stars()
+        self.go_to_star()
 
     def go_to_star(self):
-        return self.yolo_find_echo(use_color=False, walk=False)
         current_direction = None
         self.center_camera()
         current_adjust = None
         while True:
             self.sleep(0.01)
+            self.middle_click(interval=1, after_sleep=0.2)
             if self.in_combat():
                 if current_direction is not None:
                     self.mouse_up(key='right')
@@ -129,45 +212,47 @@ class FarmMapTask(WWOneTimeTask, BaseCombatTask):
                     current_direction = None
                 self.combat_once()
                 while self.yolo_find_echo(use_color=False, walk=False)[1]:
+                    self.incr_drop(True)
                     self.sleep(0.5)
                 continue
-            distance, star, last_angle = self.find_next_star()
+            star, distance, angle = self.find_direction_angle()
+            # self.draw_boxes('next_star', star, color='green')
             if not star:
                 self.log_info('cannot find any stars, stop farming', notify=True)
                 break
-            if distance == 0:
+            if distance <= self.star_move_distance_threshold:
+                self.log_info(f'reached star {star} {distance} {self.star_move_distance_threshold}')
+                self.remove_star(star)
+                continue
+            elif distance >= self.height_of_screen(0.35):
+                self.log_error('too far from next star, stop farming', notify=True)
+                if self.debug:
+                    self.screenshot('too_far',frame=self.big_map_frame,show_box=True)
+                    self.screenshot('far',frame=self.get_box_by_name('box_minimap').crop(self.frame))
+                break
+            elif distance == self.last_distance:
                 logger.info(f'might be stuck, try {[self.stuck_index % 3]}')
                 self.send_key(self.stuck_keys[self.stuck_index % 3][0], down_time=self.stuck_keys[self.stuck_index % 3][1], after_sleep=0.5)
                 self.stuck_index += 1
                 continue
-            elif distance > self.star_move_distance_threshold:
-                if self.debug:
-                    self.screenshot('star_moved')
-                self.log_info(f'star moved continue forward {distance} {self.star_move_distance_threshold}')
-                self.last_star = None
-                self.sleep(4)
-                continue
-            if last_angle > 0:
-                self.set_last_angle(last_angle)
 
-            angle = self.get_angle_to_star(star)
+            self.last_distance = distance
+
             if current_direction == 'w':
-                if 4 <= angle <= 70:
+                if 15 <= angle <= 75:
                     minor_adjust = 'd'
-                elif -70 <= angle <= -4:
+                elif -75 <= angle <= -15:
                     minor_adjust = 'a'
                 else:
                     minor_adjust = None
-                if minor_adjust != current_adjust and minor_adjust is not None:
-                    if current_adjust:
-                        self.send_key_up(current_adjust)
-                    # if self.debug:
-                    #     self.screenshot(f'minor_adjust_{minor_adjust}_{angle}')
-                    self.log_info(f'minor_adjust to {minor_adjust}_{angle}')
+
+                if minor_adjust:
                     self.send_key_down(minor_adjust)
                     # self.center_camera()
-                    self.sleep(0.5)
-                    current_adjust = minor_adjust
+                    self.sleep(0.1)
+                    self.middle_click(down_time=0.1)
+                    self.send_key_up(minor_adjust)
+                    self.sleep(0.2)
                     continue
             if current_adjust:
                 self.send_key_up(current_adjust)
@@ -198,48 +283,61 @@ class FarmMapTask(WWOneTimeTask, BaseCombatTask):
             self.mouse_up(key='right')
             self.send_key_up(current_direction)
 
-    def get_angle_to_star(self, star):
-        x1, y1 = self.get_box_by_name('box_minimap').center()
-        x2, y2 = star.center()
-        target_angle = calculate_angle_clockwise(x1, y1, x2, y2)
-        my_angle = self.get_angle()[0]
-        if my_angle >= target_angle:
-            turn_angle = -(my_angle - target_angle)
-        else:
-            turn_angle = target_angle - my_angle
-        if turn_angle > 180:
-            turn_angle = 360 - turn_angle
-        if turn_angle < -180:
-            turn_angle = 360 + turn_angle
-        logger.debug(f'go to turn_angle {my_angle} {target_angle} {turn_angle}')
-        return turn_angle
-
-    def find_stars(self):
-        box_minimap = self.get_box_by_name('box_minimap')
-        stars = self.find_feature('star', threshold=0.65, box=box_minimap)
-        sorted_stars = sorted(stars, key=lambda star: - box_minimap.center_distance(star))
-        # if self.debug:
-        #     self.screenshot('starts', show_box=True)
-        #     self.screenshot('stars_mask', frame=mask_star(self.frame), show_box=True)
-        return sorted_stars
-
-
-def calculate_angle_clockwise(x1, y1, x2, y2):
+def calculate_angle_clockwise(box1, box2):
   """
   Calculates angle (radians) from horizontal right to line (x1,y1)->(x2,y2).
   Positive clockwise, negative counter-clockwise.
   """
+  x1, y1 = box1.center()
+  x2, y2 = box2.center()
   dx = x2 - x1
   dy = y2 - y1
   # math.atan2(dy, dx) gives angle from positive x-axis, positive CCW.
   # Negate for positive CW convention.
-  return math.degrees(math.atan2(dy, dx))
+
+  degree = math.degrees(math.atan2(dy, dx))
+  if degree < 0:
+      degree += 360
+  return degree
 
 star_color = {
     'r': (190, 220),  # Red range
     'g': (190, 220),  # Green range
     'b': (190, 220)  # Blue range
 }
+
+def group_boxes_by_center_distance(boxes: List[Box], distance_threshold: float) -> List[Box]:
+    """
+    Groups boxes where any box is close (center_distance < threshold)
+    to any other box in the group (connected components).
+    Returns the largest group.
+    """
+    if not boxes:
+        return []
+    n = len(boxes)
+    visited = [False] * n
+    all_groups = []
+    # Find connected components using DFS
+    for i in range(n):
+        if not visited[i]:
+            current_group = []
+            stack = [i]
+            visited[i] = True
+            while stack:
+                current_idx = stack.pop()
+                current_group.append(boxes[current_idx])
+                for j in range(n):
+                    if not visited[j]:
+                        # Use center_distance as requested
+                        dist = boxes[current_idx].center_distance(boxes[j])
+                        if dist < distance_threshold:
+                            visited[j] = True
+                            stack.append(j)
+            all_groups.append(current_group)
+    # Return the largest group found
+    if not all_groups:
+         return [] # Should not happen if boxes is not empty, but safe check
+    return max(all_groups, key=len)
 
 def mask_star(image):
     # return image

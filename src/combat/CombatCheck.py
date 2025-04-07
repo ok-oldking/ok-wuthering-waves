@@ -28,6 +28,7 @@ class CombatCheck(BaseWWTask):
         self.last_in_realm_not_combat = 0
         self._last_liberation = 0
         self.target_enemy_time_out = 3
+        self.check_pick_echo = False
 
     @property
     def in_liberation(self):
@@ -110,6 +111,8 @@ class CombatCheck(BaseWWTask):
             now = time.time()
             if now - self.last_combat_check > self.combat_check_interval:
                 self.last_combat_check = now
+                if self.check_pick_echo:
+                    self.incr_drop(self.pick_f())
                 if self.has_target():
                     self.last_in_realm_not_combat = 0
                     return True

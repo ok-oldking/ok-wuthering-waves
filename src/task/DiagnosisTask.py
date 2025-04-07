@@ -55,12 +55,12 @@ class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
         self.click_relative(x, y + (start - 1) * distance)
         self.sleep(0.5)
 
-        self.wait_click_feature('gray_button_challenge', raise_if_not_found=True, use_gray_scale=True,
+        self.wait_click_feature('gray_button_challenge', raise_if_not_found=True,
                                 click_after_delay=0.5)
         self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False,
-                                use_gray_scale=True, time_out=3, click_after_delay=0.5, threshold=0.8)
+                                time_out=3, click_after_delay=0.5, threshold=0.8)
         self.wait_click_feature('gray_start_battle', relative_x=-1, raise_if_not_found=True,
-                                use_gray_scale=True, click_after_delay=0.5, threshold=0.8)
+                               click_after_delay=0.5, threshold=0.8)
 
 
 echo_color = {

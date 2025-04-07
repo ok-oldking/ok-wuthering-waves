@@ -44,7 +44,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.walk_until_f(time_out=10,
                           raise_if_not_found=True)
         logger.info(f'enter success')
-        challenge = self.wait_feature('gray_button_challenge', raise_if_not_found=True, use_gray_scale=True)
+        challenge = self.wait_feature('gray_button_challenge', raise_if_not_found=True)
         logger.info(f'found challenge {challenge}')
         self.sleep(1)
         self.choose_level(self.config.get("Level"))
@@ -59,9 +59,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             dropped = self.yolo_find_echo()[0]
             self.incr_drop(dropped)
             self.sleep(0.5)
-            self.send_key('esc')
+            self.send_key('esc', after_sleep=0.5)
             self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
-                                    use_gray_scale=True, settle_time=2)
+                                    post_action=lambda: self.send_key('esc', after_sleep=1),
+                                    settle_time=2)
             self.wait_in_team_and_world(time_out=120)
             self.sleep(2)
 
@@ -74,12 +75,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.click_relative(x, y + (start - 1) * distance)
         self.sleep(0.5)
 
-        self.wait_click_feature('gray_button_challenge', raise_if_not_found=True, use_gray_scale=True,
+        self.wait_click_feature('gray_button_challenge', raise_if_not_found=True,
                                 click_after_delay=0.5)
         self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False,
-                                use_gray_scale=True, time_out=3, click_after_delay=0.5, threshold=0.8)
+                                time_out=3, click_after_delay=0.5, threshold=0.8)
         self.wait_click_feature('gray_start_battle', relative_x=-1, raise_if_not_found=True,
-                                use_gray_scale=True, click_after_delay=0.5, threshold=0.8)
+                                click_after_delay=0.5, threshold=0.8)
 
 
 echo_color = {
