@@ -267,7 +267,7 @@ class BaseCombatTask(CombatCheck):
         # if self.debug:
         #     self.screenshot(f'{self}_{box_name}_has_cd', output_image)
         has_cd = (has_dot and 2 <= number_count <= 3)
-        self.logger.debug(f'{box_name} has_cd {has_cd} {invalid_count} {number_count} {has_dot}')
+        # self.logger.debug(f'{box_name} has_cd {has_cd} {invalid_count} {number_count} {has_dot}')
         return has_cd
 
     def get_current_char(self, raise_exception=True) -> BaseChar:
