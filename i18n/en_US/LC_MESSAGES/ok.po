@@ -671,3 +671,48 @@ msgstr ""
 
 msgid "found red dot feature: Box(name='red_dot', x=221, y=577, width=31, height=32, confidence=100)"
 msgstr ""
+
+msgid "16"
+msgstr ""
+
+msgid "17"
+msgstr ""
+
+msgid "18"
+msgstr ""
+
+msgid "19"
+msgstr ""
+
+msgid "Auto Enhance and Tune Echo after you add EXP Material"
+msgstr ""
+
+msgid "Auto Pick Echo After Combat"
+msgstr ""
+
+msgid "Farm Map with Star Path"
+msgstr ""
+
+msgid "Farm world map with a marked path of stars, start in the map screen"
+msgstr ""
+
+msgid "Fleurdelys"
+msgstr ""
+
+msgid "Loaded 19 from 19 Stars"
+msgstr ""
+
+msgid "Stars"
+msgstr ""
+
+msgid "changed direction -150.3112134396332 None -> s"
+msgstr ""
+
+msgid "reached star Box(name='big_map_star', x=600, y=408, width=30, height=28, confidence=93) 19.313207915827967 27"
+msgstr ""
+
+msgid "reached star Box(name='big_map_star', x=640, y=447, width=30, height=28, confidence=96) 24.041630560342615 27"
+msgstr ""
+
+msgid "reached star Box(name='big_map_star', x=694, y=480, width=30, height=28, confidence=97) 18.35755975068582 27"
+msgstr ""
