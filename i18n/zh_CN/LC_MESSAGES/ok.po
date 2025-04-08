@@ -495,3 +495,14 @@ msgstr "自动强化声骸"
 msgid "Auto Enhance and Tune Echo after you add EXP Material"
 msgstr "在添加经验素材后自动强化声骸和调谐"
 
+msgid "Auto Pick Echo After Combat"
+msgstr "战斗后自动拾取声骸"
+
+msgid "Farm Map with Star Path"
+msgstr "标记寻路刷大地图"
+
+msgid "Farm world map with a marked path of stars, start in the map screen"
+msgstr "刷用星星标记的路径, 传送到起点后, 在大地图界面开始"
+
+msgid "Stars"
+msgstr "星星标记"

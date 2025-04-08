@@ -99,7 +99,7 @@ class BaseChar:
         self.click(interval=interval)
 
     def click(self, *args: Any, **kwargs: Any):
-        self.logger.debug(f'click {args} {kwargs}')
+        # self.logger.debug(f'click {args} {kwargs}')
         self.task.click(*args, **kwargs)
 
     def do_perform(self):
@@ -444,7 +444,7 @@ class BaseChar:
         # white_percent = total_area / box.width / box.height
         # if self.task.debug:
         #     self.task.screenshot(f'{self}_forte_{white_percent}')
-        self.logger.debug(f'is_forte_full {white_percent}')
+        # self.logger.debug(f'is_forte_full {white_percent}')
         box.confidence = white_percent
         self.task.draw_boxes('forte_full', box)
         return white_percent > 0.08

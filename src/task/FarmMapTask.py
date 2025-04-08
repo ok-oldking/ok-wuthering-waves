@@ -19,13 +19,17 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         self.big_map_frame = None
         self.stars = None
         self.bounding_box = None
+        self.sorted = False
 
 
     def reset(self):
-        self.frame = None
+        self.big_map_frame = None
         self.stars = None
+        self.bounding_box = None
+        self.sorted = False
 
     def load_stars(self):
+        self.reset()
         self.click_relative(0.94, 556 / 1080, after_sleep=1)
         self.big_map_frame = self.frame
         self.stars = self.find_feature('big_map_star', threshold=0.7, frame=self.big_map_frame, box=Box(0,0,self.big_map_frame.shape[1],self.big_map_frame.shape[0]))
@@ -89,8 +93,7 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         # self.log_debug(f'turn_east max_conf: {max_conf} {max_angle}')
         return max_angle
 
-    def find_direction_angle(self):
-        my_box = self.find_my_location()
+    def find_closest(self, my_box):
         min_distance = 100000
         min_star = None
         if len(self.stars) == 0:
@@ -100,13 +103,45 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
             if distance < min_distance:
                 min_distance = distance
                 min_star = star
+        return min_star
+
+    def sort_stars(self, my_box):
+        if self.sorted:
+            return
+        remaining_boxes = self.stars[:]  # Make a copy
+        sorted_boxes = []
+        # Start with the first box in the original list
+        current_box = self.find_closest(my_box)
+        remaining_boxes.remove(current_box)
+        sorted_boxes.append(current_box)
+        while remaining_boxes:
+            min_dist = float('inf')
+            best_idx = -1
+            # Find the box in remaining_boxes closest to the current_box
+            for i, box in enumerate(remaining_boxes):
+                dist = current_box.center_distance(box)
+                if dist < min_dist:
+                    min_dist = dist
+                    best_idx = i
+            # Add the closest box to the sorted list and remove from remaining
+            next_box = remaining_boxes.pop(best_idx)
+            sorted_boxes.append(next_box)
+            current_box = next_box  # Update the reference point
+        self.stars = sorted_boxes
+        self.sorted = True
+
+    def find_direction_angle(self):
+        if len(self.stars) == 0:
+            return None, 0, 0
+        my_box = self.find_my_location()
+        self.sort_stars(my_box)
+        min_star = self.stars[0]
+        min_distance = my_box.center_distance(min_star)
         self.draw_boxes('star', min_star, color='green')
-        # if self.debug:
-        #     self.screenshot('parse_read_big_map', frame=self.big_map_frame, show_box=True)
         direction_angle = calculate_angle_clockwise(my_box, min_star)
         my_angle = self.get_my_angle()
         to_turn = self.get_angle_between(my_angle, direction_angle)
-        self.log_debug(f'direction_angle {to_turn} {my_angle} {direction_angle}  min_distance {min_distance} min_star {min_star} ')
+        # self.log_debug(f'direction_angle {to_turn} {my_angle} {direction_angle}  min_distance {min_distance} min_star {min_star} ')
         return min_star, min_distance, to_turn
 
     def remove_star(self, star):
@@ -202,6 +237,7 @@ class FarmMapTask(BigMap):
         current_direction = None
         self.center_camera()
         current_adjust = None
+        too_far_count = 0
         while True:
             self.sleep(0.01)
             self.middle_click(interval=1, after_sleep=0.2)
@@ -211,10 +247,12 @@ class FarmMapTask(BigMap):
                     self.send_key_up(current_direction)
                     current_direction = None
                 self.combat_once()
-                while self.yolo_find_echo(use_color=False, walk=False)[1]:
-                    self.incr_drop(True)
+                while True:
+                    dropped, has_more = self.yolo_find_echo(use_color=False, walk=False)[1]
+                    self.incr_drop(dropped)
                     self.sleep(0.5)
-                continue
+                    if not dropped or not has_more:
+                        break
             star, distance, angle = self.find_direction_angle()
             # self.draw_boxes('next_star', star, color='green')
             if not star:
@@ -224,12 +262,16 @@ class FarmMapTask(BigMap):
                 self.log_info(f'reached star {star} {distance} {self.star_move_distance_threshold}')
                 self.remove_star(star)
                 continue
-            elif distance >= self.height_of_screen(0.35):
-                self.log_error('too far from next star, stop farming', notify=True)
+            elif distance >= self.height_of_screen(0.4):
+                too_far_count += 1
                 if self.debug:
                     self.screenshot('too_far',frame=self.big_map_frame,show_box=True)
-                    self.screenshot('far',frame=self.get_box_by_name('box_minimap').crop(self.frame))
-                break
+                    self.screenshot('far',frame=self.get_box_by_name('box_minimap').crop_frame(self.frame))
+                if too_far_count >= 3:
+                    self.log_error('too far from next star, stop farming', notify=True)
+                    break
+                else:
+                    continue
             elif distance == self.last_distance:
                 logger.info(f'might be stuck, try {[self.stuck_index % 3]}')
                 self.send_key(self.stuck_keys[self.stuck_index % 3][0], down_time=self.stuck_keys[self.stuck_index % 3][1], after_sleep=0.5)
