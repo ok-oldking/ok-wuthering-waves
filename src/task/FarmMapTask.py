@@ -20,6 +20,7 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         self.stars = None
         self.bounding_box = None
         self.sorted = False
+        self.my_box = None
 
 
     def reset(self):
@@ -27,6 +28,7 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         self.stars = None
         self.bounding_box = None
         self.sorted = False
+        self.my_box = None
 
     def load_stars(self):
         self.reset()
@@ -44,8 +46,10 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         self.bounding_box.height += mini_map_box.height * 2
         self.bounding_box.x -= mini_map_box.width
         self.bounding_box.y -= mini_map_box.height
+
         self.info_set('Stars', len(self.stars))
         self.send_key('esc', after_sleep=1)
+
 
     def get_angle_between(self, my_angle, angle):
         if my_angle > angle:
@@ -59,6 +63,9 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         return to_turn
 
     def get_my_angle(self):
+        return self.rotate_arrow_and_find('box_arrow')[0]
+
+    def rotate_arrow_and_find(self, box):
         arrow_template = self.get_feature_by_name('arrow')
         original_mat = arrow_template.mat
         max_conf = 0
@@ -68,7 +75,7 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         (h, w) = arrow_template.mat.shape[:2]
         # self.log_debug(f'turn_east h:{h} w:{w}')
         center = (w // 2, h // 2)
-        target_box = self.get_box_by_name('box_arrow')
+        target_box = self.get_box_by_name(box) if isinstance(box, str) else box
         # if self.debug:
         #     self.screenshot('arrow_original', original_ mat)
         for angle in range(0, 360):
@@ -84,14 +91,14 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
             if target and target.confidence > max_conf:
                 max_conf = target.confidence
                 max_angle = angle
-                # max_target = target
+                max_target = target
                 # max_mat = template
         # arrow_template.mat = original_mat
         # arrow_template.mask = None
         # if self.debug and max_mat is not None:
         #     self.screenshot('max_mat',frame=max_mat)
         # self.log_debug(f'turn_east max_conf: {max_conf} {max_angle}')
-        return max_angle
+        return max_angle, max_target
 
     def find_closest(self, my_box):
         min_distance = 100000
@@ -130,10 +137,10 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         self.stars = sorted_boxes
         self.sorted = True
 
-    def find_direction_angle(self):
+    def find_direction_angle(self, screenshot=False):
         if len(self.stars) == 0:
             return None, 0, 0
-        my_box = self.find_my_location()
+        my_box = self.find_my_location(screenshot=screenshot)
         self.sort_stars(my_box)
         min_star = self.stars[0]
         min_distance = my_box.center_distance(min_star)
@@ -150,12 +157,14 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         self.info_set('Stars', len(self.stars))
         self.log_debug(f'removed star {before} -> {len(self.stars)}')
 
-
-    def find_my_location(self):
+    def find_my_location(self, screenshot=False):
         frame = self.big_map_frame
         mat = self.get_box_by_name('box_minimap').crop_frame(self.frame)
         mat = keep_circle(mat)
-        in_big_map = self.find_one(frame=frame, template=mat, threshold=0.01, box=self.bounding_box, mask_function=create_circle_mask_with_hole)
+        # in_big_map = self.find_one(frame=frame, template=mat, threshold=0.01, match_method=cv2.TM_SQDIFF_NORMED, box=self.bounding_box, mask_function=create_circle_mask_with_hole, screenshot=screenshot, canny_lower=50, canny_higher=150)
+        in_big_map = self.find_one(frame=frame, template=mat, threshold=0.01,
+                                   box=self.my_box.scale(1.3) if self.my_box is not None else self.bounding_box, mask_function=create_circle_mask_with_hole,
+                                   screenshot=screenshot)
         # in_big_maps = self.find_feature(frame=frame, template=mat, threshold=0.01, box=self.bounding_box)
         if not in_big_map:
             raise RuntimeError('can not find my cords on big map!')
@@ -163,8 +172,10 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         if self.debug and in_big_map:
             self.draw_boxes('stars', self.stars)
             self.draw_boxes('search_map', self.bounding_box)
-            self.draw_boxes('in_big_map', in_big_map.scale(0.1), color='blue')
-            # self.screenshot('box_minimap', frame=mat, show_box=True)
+            self.draw_boxes('in_big_map', in_big_map, color='yellow')
+            self.draw_boxes('me', in_big_map.scale(0.1), color='blue')
+            # self.screenshot('box_minimap', frame=frame, show_box=True)
+        self.my_box = in_big_map
         return in_big_map
 
 def keep_circle(img):
@@ -248,7 +259,7 @@ class FarmMapTask(BigMap):
                     current_direction = None
                 self.combat_once()
                 while True:
-                    dropped, has_more = self.yolo_find_echo(use_color=False, walk=False)[1]
+                    dropped, has_more = self.yolo_find_echo(use_color=False, walk=False)
                     self.incr_drop(dropped)
                     self.sleep(0.5)
                     if not dropped or not has_more:
