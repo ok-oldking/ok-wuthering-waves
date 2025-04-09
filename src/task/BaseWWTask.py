@@ -139,12 +139,15 @@ class BaseWWTask(BaseTask):
                 return None
         return f
 
-    def walk_to_box(self, find_function, time_out=30, end_condition=None, y_offset=0.05):
+    def walk_to_box(self, find_function, time_out=30, end_condition=None, y_offset=0.05, v_move_fix_time=0):
         if not find_function:
             self.log_info('find_function not found, break')
             return False
         last_direction = None
+        v_fix_count = 0
+        original_y_offset = y_offset
         start = time.time()
+        last_v_move = start
         ended = False
         while time.time() - start < time_out:
             self.next_frame()
@@ -158,17 +161,27 @@ class BaseWWTask(BaseTask):
                     treasure_icon = treasure_icon[0]
                 else:
                     treasure_icon = None
-            if not treasure_icon:
+            next_direction = None
+            if treasure_icon is None:
                 if not end_condition:
                     self.log_info('find_function not found, break')
-                    break
+                break
+            if 0 < v_move_fix_time < time.time() - last_v_move:
+                if v_fix_count > 3:
+                    v_fix_count += 1
+                    y_offset = original_y_offset + 0.05 * v_fix_count
                 else:
-                    self.next_frame()
-                    continue
-            x, y = treasure_icon.center()
+                    v_fix_count += 1
+                    y_offset = original_y_offset - 0.05 * (v_fix_count - 4)
 
-            y = max(0, y - self.height_of_screen(y_offset))
-            next_direction = self.get_direction(x, y, self.width, self.height)
+            if next_direction is None:
+                x, y = treasure_icon.center()
+                y = max(0, y - self.height_of_screen(y_offset))
+                next_direction = self.get_direction(x, y, self.width, self.height)
+
+            if next_direction == 'w' or next_direction == 's':
+                last_v_move = time.time()
+
             if next_direction != last_direction:
                 if last_direction:
                     self.send_key_up(last_direction)
@@ -183,6 +196,18 @@ class BaseWWTask(BaseTask):
             return last_direction is not None
         else:
             return ended
+
+    def opposite_direction(self, direction):
+        if direction == 'w':
+            return 's'
+        elif direction == 's':
+            return 'w'
+        elif direction == 'a':
+            return 'd'
+        elif direction == 'd':
+            return 'a'
+        else:
+            return 'w'
 
     def get_direction(self, location_x, location_y, screen_width, screen_height):
         """
@@ -413,7 +438,11 @@ class BaseWWTask(BaseTask):
         """
         # Load the ONNX model
         boxes = og.my_app.yolo_detect(self.frame, threshold=threshold, label=12)
+
         ret = sorted(boxes, key=lambda detection: detection.x, reverse=True)
+        for box in ret:
+            box.y += box.height - 1
+            box.height = 1
         return ret
 
     def yolo_find_all(self, threshold=0.3):
@@ -464,7 +493,7 @@ class BaseWWTask(BaseTask):
             self.log_debug(f'max_echo_count {max_echo_count}')
             if echos:
                 self.log_info(f'yolo found echo {echos}')
-                return self.walk_to_box(self.find_echo, time_out=15, end_condition=self.pick_echo, y_offset=0.2), max_echo_count > 1
+                return self.walk_to_box(self.find_echo, time_out=15, end_condition=self.pick_echo, v_move_fix_time=5), max_echo_count > 1
             if use_color:
                 color_percent = self.calculate_color_percentage(echo_color, front_box)
                 self.log_debug(f'pick_echo color_percent:{color_percent}')
@@ -660,33 +689,22 @@ class BaseWWTask(BaseTask):
             raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")
         return gray_book_boss
 
-    def click_traval_button(self, use_custom=False):
-        if feature := self.find_one(['fast_travel_custom', 'remove_custom', 'gray_teleport'], threshold=0.6):
-            if feature.name == 'gray_teleport':
-                if use_custom:
-                    # if not self.wait_click_feature('custom_teleport_hcenter_vcenter', raise_if_not_found=False, time_out=3):
-                    self.click_relative(0.5, 0.5, after_sleep=1)
-                    # if self.wait_click_feature('gray_custom_way_point', raise_if_not_found=False, time_out=4):
-                    #     self.sleep(1)
-                    self.click_relative(0.68, 0.6, after_sleep=1)
-                self.click_relative(0.74, 0.92, after_sleep=1)
-                return True
-            else:
-                self.click_relative(0.74, 0.92, after_sleep=1)
+    def click_traval_button(self):
+        if feature := self.find_first_match_in_box('bottom_right', ['fast_travel_custom', 'gray_teleport', 'remove_custom'], threshold=0.8):
+            self.click(feature, after_sleep=1)
+            if feature.name == 'fast_travel_custom':
                 if self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
-                                           relative_x=-1, raise_if_not_found=True,
-                                           threshold=0.6,
-                                           time_out=4):
+                                       relative_x=-1, raise_if_not_found=False,
+                                       threshold=0.6,
+                                       time_out=2):
                     self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
-                                            relative_x=-1, raise_if_not_found=False,
-                                            threshold=0.6,
-                                            time_out=1)
-                    return True
-        elif btn := self.find_one('gray_teleport', threshold=0.7):
-            return self.click_box(btn, relative_x=1)
+                                        relative_x=-1, raise_if_not_found=False,
+                                        threshold=0.6,
+                                        time_out=1)
+            return True
 
-    def wait_click_travel(self, use_custom=False):
-        self.wait_until(lambda: self.click_traval_button(use_custom=use_custom), raise_if_not_found=True, time_out=10,
+    def wait_click_travel(self):
+        self.wait_until(self.click_traval_button, raise_if_not_found=True, time_out=10,
                         settle_time=1)
 
     def wait_book(self, feature="gray_book_all_monsters"):
