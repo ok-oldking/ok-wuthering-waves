@@ -634,7 +634,7 @@ class BaseWWTask(BaseTask):
             return 'en_US'
         return 'unknown_lang'
 
-    def teleport_to_boss(self, boss_name, use_custom=False):
+    def teleport_to_boss(self, boss_name):
         self.zoom_map()
         pos = self.bosses_pos.get(boss_name)
         page = pos[0]
@@ -673,7 +673,7 @@ class BaseWWTask(BaseTask):
         self.click_relative(0.89, 0.91)
         self.sleep(1)
 
-        self.wait_click_travel(use_custom=use_custom)
+        self.wait_click_travel()
         self.wait_in_team_and_world(time_out=120)
         self.sleep(1)
 
