@@ -501,8 +501,14 @@ msgstr "战斗后自动拾取声骸"
 msgid "Farm Map with Star Path"
 msgstr "标记寻路刷大地图"
 
-msgid "Farm world map with a marked path of stars, start in the map screen"
-msgstr "刷用星星标记的路径, 传送到起点后, 在大地图界面开始"
+msgid "Farm world map with a marked path of stars (diamond as the starting point), start in the map screen"
+msgstr "刷用星星标记的路径, 钻石作为起点, 在大地图界面开始, 工具使用钩锁."
 
 msgid "Stars"
 msgstr "星星标记"
+
+msgid  "Need be in the map screen and have a diamond as the starting point!"
+msgstr "需要在大地图界面并且标记一个钻石为起点!"
+
+msgid "Need be in the map screen and have a path of at least 3 stars!"
+msgstr "需要在大地图界面并且至少有3个星星标记为路径!"

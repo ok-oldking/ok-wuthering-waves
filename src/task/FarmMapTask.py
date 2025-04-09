@@ -18,38 +18,43 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.big_map_frame = None
         self.stars = None
-        self.bounding_box = None
-        self.sorted = False
         self.my_box = None
+        self.diamond = None
 
 
     def reset(self):
         self.big_map_frame = None
         self.stars = None
-        self.bounding_box = None
-        self.sorted = False
         self.my_box = None
+        self.diamond = None
 
-    def load_stars(self):
+    def load_stars(self, wait_world=True):
         self.reset()
         self.click_relative(0.94, 556 / 1080, after_sleep=1)
         self.big_map_frame = self.frame
+        self.diamond = self.find_one('big_map_diamond', threshold=0.7, frame=self.big_map_frame, box=Box(0,0,self.big_map_frame.shape[1],self.big_map_frame.shape[0]))
+        if not self.diamond:
+            raise Exception('Need be in the map screen and have a diamond as the starting point!')
         self.stars = self.find_feature('big_map_star', threshold=0.7, frame=self.big_map_frame, box=Box(0,0,self.big_map_frame.shape[1],self.big_map_frame.shape[0]))
         all_star_len = len(self.stars)
-        self.stars = group_boxes_by_center_distance(self.stars, self.height_of_screen(0.2))
+        self.stars = sort_stars(self.stars, self.diamond, self.height_of_screen(0.2))
+        self.stars.insert(0, self.diamond)
+        mini_map_box = self.get_box_by_name('box_minimap')
+        self.my_box = self.diamond.scale(mini_map_box.width/self.diamond.width * 2)
+        # if self.debug:
+        #     init_my_box = self.my_box.crop_frame(self.frame)
+        #     self.screenshot('init_my_box', frame=init_my_box)
         if len(self.stars) <= 2:
             raise Exception('Need be in the map screen and have a path of at least 3 stars!')
-        self.log_info(f'Loaded {len(self.stars)} from {all_star_len} Stars', notify=True)
-        self.bounding_box = get_bounding_box(self.stars)
-        mini_map_box = self.get_box_by_name('box_minimap')
-        self.bounding_box.width += mini_map_box.width * 2
-        self.bounding_box.height += mini_map_box.height * 2
-        self.bounding_box.x -= mini_map_box.width
-        self.bounding_box.y -= mini_map_box.height
 
+        self.log_info(f'Loaded {len(self.stars)} from {all_star_len + 1} Stars', notify=True)
+
+        # self.click(self.diamond, after_sleep=1)
+        # self.wait_click_travel()
+        self.send_key('esc')
         self.info_set('Stars', len(self.stars))
-        self.send_key('esc', after_sleep=1)
-
+        if wait_world:
+            self.wait_in_team_and_world()
 
     def get_angle_between(self, my_angle, angle):
         if my_angle > angle:
@@ -63,9 +68,9 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         return to_turn
 
     def get_my_angle(self):
-        return self.rotate_arrow_and_find('box_arrow')[0]
+        return self.rotate_arrow_and_find()[0]
 
-    def rotate_arrow_and_find(self, box):
+    def rotate_arrow_and_find(self):
         arrow_template = self.get_feature_by_name('arrow')
         original_mat = arrow_template.mat
         max_conf = 0
@@ -75,7 +80,7 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         (h, w) = arrow_template.mat.shape[:2]
         # self.log_debug(f'turn_east h:{h} w:{w}')
         center = (w // 2, h // 2)
-        target_box = self.get_box_by_name(box) if isinstance(box, str) else box
+        target_box = self.get_box_by_name('arrow')
         # if self.debug:
         #     self.screenshot('arrow_original', original_ mat)
         for angle in range(0, 360):
@@ -112,36 +117,11 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
                 min_star = star
         return min_star
 
-    def sort_stars(self, my_box):
-        if self.sorted:
-            return
-        remaining_boxes = self.stars[:]  # Make a copy
-        sorted_boxes = []
-        # Start with the first box in the original list
-        current_box = self.find_closest(my_box)
-        remaining_boxes.remove(current_box)
-        sorted_boxes.append(current_box)
-        while remaining_boxes:
-            min_dist = float('inf')
-            best_idx = -1
-            # Find the box in remaining_boxes closest to the current_box
-            for i, box in enumerate(remaining_boxes):
-                dist = current_box.center_distance(box)
-                if dist < min_dist:
-                    min_dist = dist
-                    best_idx = i
-            # Add the closest box to the sorted list and remove from remaining
-            next_box = remaining_boxes.pop(best_idx)
-            sorted_boxes.append(next_box)
-            current_box = next_box  # Update the reference point
-        self.stars = sorted_boxes
-        self.sorted = True
-
     def find_direction_angle(self, screenshot=False):
         if len(self.stars) == 0:
             return None, 0, 0
         my_box = self.find_my_location(screenshot=screenshot)
-        self.sort_stars(my_box)
+        sort_stars(self.stars, my_box,0)
         min_star = self.stars[0]
         min_distance = my_box.center_distance(min_star)
         self.draw_boxes('star', min_star, color='green')
@@ -160,36 +140,25 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
     def find_my_location(self, screenshot=False):
         frame = self.big_map_frame
         mat = self.get_box_by_name('box_minimap').crop_frame(self.frame)
-        mat = keep_circle(mat)
-        # in_big_map = self.find_one(frame=frame, template=mat, threshold=0.01, match_method=cv2.TM_SQDIFF_NORMED, box=self.bounding_box, mask_function=create_circle_mask_with_hole, screenshot=screenshot, canny_lower=50, canny_higher=150)
-        in_big_map = self.find_one(frame=frame, template=mat, threshold=0.01,
-                                   box=self.my_box.scale(1.3) if self.my_box is not None else self.bounding_box, mask_function=create_circle_mask_with_hole,
+        # mask = create_circle_mask_with_hole(mat)
+        # mat = cv2.bitwise_and(mat, mat, mask=mask)
+
+        in_big_map = self.find_one(frame=frame, template=mat, threshold=0.2,
+                                   box=self.my_box, mask_function=create_circle_mask_with_hole,
                                    screenshot=screenshot)
         # in_big_maps = self.find_feature(frame=frame, template=mat, threshold=0.01, box=self.bounding_box)
         if not in_big_map:
             raise RuntimeError('can not find my cords on big map!')
-        self.log_debug(f'found big map: {in_big_map}')
+        self.log_debug(f'found in_big_map: {in_big_map}')
         if self.debug and in_big_map:
             self.draw_boxes('stars', self.stars)
-            self.draw_boxes('search_map', self.bounding_box)
+            self.draw_boxes('my_box', self.my_box, color='green')
             self.draw_boxes('in_big_map', in_big_map, color='yellow')
             self.draw_boxes('me', in_big_map.scale(0.1), color='blue')
             # self.screenshot('box_minimap', frame=frame, show_box=True)
-        self.my_box = in_big_map
+            # self.screenshot('template_minimap', frame=mat)
+        self.my_box = in_big_map.scale(1.25)
         return in_big_map
-
-def keep_circle(img):
-    height, width = img.shape[:2]
-    # Create a black mask with the same dimensions
-    mask = np.zeros((height, width), dtype=np.uint8)
-    # Define circle parameters (center and radius)
-    center_x, center_y = width // 2, height // 2
-    radius = min(center_x, center_y)  # Fit circle within image bounds
-    # Draw a filled white circle on the mask
-    cv2.circle(mask, (center_x, center_y), radius, (255), thickness=-1)
-    # Apply the mask to the original image using bitwise AND
-    result = cv2.bitwise_and(img, img, mask=mask)
-    return result
 
 def create_circle_mask_with_hole(image):
     """
@@ -226,23 +195,27 @@ class FarmMapTask(BigMap):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.icon = FluentIcon.GLOBE
-        self.description = "Farm world map with a marked path of stars, start in the map screen"
+        self.description = "Farm world map with a marked path of stars (diamond as the starting point), start in the map screen"
         self.name = "Farm Map with Star Path"
         self.max_star_distance = 1000
-        self.stuck_keys = [['space', 0.2], ['a',2], ['d',2]]
+        self.stuck_keys = [['space', 0.02], ['a',2], ['d',2], ['t', 0.02]]
         self.stuck_index = 0
         self.last_distance = 0
-        self.check_pick_echo = True
 
     @property
     def star_move_distance_threshold(self):
-        return self.height_of_screen(0.025)
+        return self.height_of_screen(0.03)
 
     def run(self):
         self.stuck_index = 0
         self.last_distance = 0
         self.load_stars()
         self.go_to_star()
+
+    def on_combat_check(self):
+        self.incr_drop(self.pick_f())
+        self.find_my_location()
+        return True
 
     def go_to_star(self):
         current_direction = None
@@ -253,17 +226,22 @@ class FarmMapTask(BigMap):
             self.sleep(0.01)
             self.middle_click(interval=1, after_sleep=0.2)
             if self.in_combat():
+                self.sleep(2)
                 if current_direction is not None:
                     self.mouse_up(key='right')
                     self.send_key_up(current_direction)
                     current_direction = None
+                start = time.time()
                 self.combat_once()
-                while True:
-                    dropped, has_more = self.yolo_find_echo(use_color=False, walk=False)
-                    self.incr_drop(dropped)
-                    self.sleep(0.5)
-                    if not dropped or not has_more:
-                        break
+                duration = time.time() - start
+                if duration > 8:
+                    self.my_box = self.my_box.scale(1.1)
+                    while True:
+                        dropped, has_more = self.yolo_find_echo(use_color=False, walk=False)
+                        self.incr_drop(dropped)
+                        self.sleep(0.5)
+                        if not dropped or not has_more:
+                            break
             star, distance, angle = self.find_direction_angle()
             # self.draw_boxes('next_star', star, color='green')
             if not star:
@@ -284,17 +262,17 @@ class FarmMapTask(BigMap):
                 else:
                     continue
             elif distance == self.last_distance:
-                logger.info(f'might be stuck, try {[self.stuck_index % 3]}')
-                self.send_key(self.stuck_keys[self.stuck_index % 3][0], down_time=self.stuck_keys[self.stuck_index % 3][1], after_sleep=0.5)
+                logger.info(f'might be stuck, try {[self.stuck_index % 4]}')
+                self.send_key(self.stuck_keys[self.stuck_index % 4][0], down_time=self.stuck_keys[self.stuck_index % 4][1], after_sleep=0.5)
                 self.stuck_index += 1
                 continue
 
             self.last_distance = distance
 
             if current_direction == 'w':
-                if 15 <= angle <= 75:
+                if 10 <= angle <= 80:
                     minor_adjust = 'd'
-                elif -75 <= angle <= -15:
+                elif -80 <= angle <= -10:
                     minor_adjust = 'a'
                 else:
                     minor_adjust = None
@@ -305,7 +283,7 @@ class FarmMapTask(BigMap):
                     self.sleep(0.1)
                     self.middle_click(down_time=0.1)
                     self.send_key_up(minor_adjust)
-                    self.sleep(0.2)
+                    self.sleep(0.01)
                     continue
             if current_adjust:
                 self.send_key_up(current_adjust)
@@ -320,9 +298,8 @@ class FarmMapTask(BigMap):
                 new_direction = 's'
             if current_direction != new_direction:
                 self.log_info(f'changed direction {angle} {current_direction} -> {new_direction}')
-                if self.debug:
-                    self.screenshot(f'{current_direction}_{new_direction}_{angle}')
                 if current_direction:
+                    self.mouse_up(key='right')
                     self.send_key_up(current_direction)
                     self.sleep(0.2)
                 self.turn_direction(new_direction)
@@ -359,38 +336,36 @@ star_color = {
     'b': (190, 220)  # Blue range
 }
 
-def group_boxes_by_center_distance(boxes: List[Box], distance_threshold: float) -> List[Box]:
+
+def sort_stars(points, start_point, max_distance = 0):
     """
-    Groups boxes where any box is close (center_distance < threshold)
-    to any other box in the group (connected components).
-    Returns the largest group.
+    BUILDS A PATH using Nearest Neighbor heuristic starting from 'start_point'.
+    Filters steps where distance < 'min_distance'. Prepends start_point.
+    NOTE: This is a HEURISTIC, likely NOT the absolute shortest total path.
     """
-    if not boxes:
+    unvisited = points[:]  # Copy the list of points to visit
+    if not unvisited:  # Handle empty input list
         return []
-    n = len(boxes)
-    visited = [False] * n
-    all_groups = []
-    # Find connected components using DFS
-    for i in range(n):
-        if not visited[i]:
-            current_group = []
-            stack = [i]
-            visited[i] = True
-            while stack:
-                current_idx = stack.pop()
-                current_group.append(boxes[current_idx])
-                for j in range(n):
-                    if not visited[j]:
-                        # Use center_distance as requested
-                        dist = boxes[current_idx].center_distance(boxes[j])
-                        if dist < distance_threshold:
-                            visited[j] = True
-                            stack.append(j)
-            all_groups.append(current_group)
-    # Return the largest group found
-    if not all_groups:
-         return [] # Should not happen if boxes is not empty, but safe check
-    return max(all_groups, key=len)
+
+    path_result = []  # Initialize empty list for the results (excluding start)
+    current_point = start_point  # Start the calculation from start_point
+    while unvisited:
+        # Find points reachable according to min_distance
+        # If min_distance is 0, distance(..) >= 0 is always true for distinct points.
+        reachable_points = [p for p in unvisited if max_distance == 0 or current_point.center_distance(p) <= max_distance]
+        if not reachable_points:
+            # Stop if no remaining points meet the criteria (or if unvisited is empty)
+            # print(f"Stopping: No remaining points meet criteria from {current_point}.") # Optional debug
+            break
+            # Find the closest point among the reachable ones
+        next_point = min(reachable_points, key=lambda p: current_point.center_distance(p))
+
+        path_result.append(next_point)  # Add the chosen point to the result list
+        unvisited.remove(next_point)  # Mark as visited
+        current_point = next_point  # Update the current point for the next iteration
+    return path_result
+
+
 
 def mask_star(image):
     # return image
