@@ -59,7 +59,7 @@ class FarmWorldBossTask(WWOneTimeTask, BaseCombatTask):
                 if boss_name := self.config.get(key):
                     if boss_name != 'N/A':
                         count += 1
-                        self.teleport_to_boss(boss_name, use_custom=True)
+                        self.teleport_to_boss(boss_name)
                         logger.info(f'farm echo combat once start')
                         if boss_name == 'Crownless':
                             self.wait_in_team_and_world(time_out=20)
