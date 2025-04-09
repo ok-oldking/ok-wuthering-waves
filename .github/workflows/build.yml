@@ -102,7 +102,7 @@ jobs:
             ok-ww
             Updates：
               ${{ steps.changes.outputs.changes }}
-          draft: true
+          draft: false
           prerelease: false
           files: |
             ok-ww-${{ steps.tagName.outputs.tag }}.7z
