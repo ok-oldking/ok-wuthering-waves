@@ -488,6 +488,8 @@ class BaseWWTask(BaseTask):
             if self.debug and i == 0:
                 # self.draw_boxes('echo', echos)
                 self.screenshot('yolo_echo_start')
+            elif len(echos) > 0:
+                self.draw_boxes('yolo_echo', echos)
             max_echo_count = max(max_echo_count, len(echos))
             self.log_debug(f'max_echo_count {max_echo_count}')
             if echos:
@@ -689,18 +691,19 @@ class BaseWWTask(BaseTask):
         return gray_book_boss
 
     def click_traval_button(self):
-        if feature := self.find_first_match_in_box('bottom_right', ['fast_travel_custom', 'gray_teleport', 'remove_custom'], threshold=0.8):
-            self.click(feature, after_sleep=1)
-            if feature.name == 'fast_travel_custom':
-                if self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
-                                       relative_x=-1, raise_if_not_found=False,
-                                       threshold=0.6,
-                                       time_out=2):
-                    self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
-                                        relative_x=-1, raise_if_not_found=False,
-                                        threshold=0.6,
-                                        time_out=1)
-            return True
+        for feature_name in ['fast_travel_custom', 'gray_teleport', 'remove_custom']:
+            if feature := self.find_one(feature_name, threshold=0.7):
+                self.click(feature, after_sleep=1)
+                if feature.name == 'fast_travel_custom':
+                    if self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
+                                           relative_x=-1, raise_if_not_found=False,
+                                           threshold=0.6,
+                                           time_out=2):
+                        self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
+                                            relative_x=-1, raise_if_not_found=False,
+                                            threshold=0.6,
+                                            time_out=1)
+                return True
 
     def wait_click_travel(self):
         self.wait_until(self.click_traval_button, raise_if_not_found=True, time_out=10,
