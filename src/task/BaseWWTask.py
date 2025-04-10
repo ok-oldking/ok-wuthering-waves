@@ -463,8 +463,8 @@ class BaseWWTask(BaseTask):
 
     def pick_echo(self):
         if self.find_f_with_text(target_text=self.absorb_echo_text()):
-            if self.debug:
-                self.screenshot('pick_echo')
+            # if self.debug:
+            #     self.screenshot('pick_echo')
             self.send_key('f')
             if not self.handle_claim_button():
                 return True
@@ -485,10 +485,9 @@ class BaseWWTask(BaseTask):
             if turn:
                 self.center_camera()
             echos = self.find_echo()
-            if self.debug:
-                self.draw_boxes('echo', echos)
-                if echos:
-                    self.screenshot('echo')
+            if self.debug and i == 0:
+                # self.draw_boxes('echo', echos)
+                self.screenshot('yolo_echo_start')
             max_echo_count = max(max_echo_count, len(echos))
             self.log_debug(f'max_echo_count {max_echo_count}')
             if echos:
@@ -498,8 +497,8 @@ class BaseWWTask(BaseTask):
                 color_percent = self.calculate_color_percentage(echo_color, front_box)
                 self.log_debug(f'pick_echo color_percent:{color_percent}')
                 if color_percent > color_threshold:
-                    if self.debug:
-                        self.screenshot('echo_color_picked')
+                    # if self.debug:
+                    #     self.screenshot('echo_color_picked')
                     self.log_debug(f'found color_percent {color_percent} > {color_threshold}, walk now')
                     return self.walk_find_echo(), max_echo_count > 1
             if not turn and i==0:
