@@ -41,7 +41,10 @@ assignees: ok-oldking
 录屏:
 最好有录屏上传QQ频道
 
-脚本软件版本：
+ok-ww出现bug的版本：
+[如]1.1.1
+
+ok-ww最近未出现bug的版本：
 [如]1.1.1
 
 windows操作系统:

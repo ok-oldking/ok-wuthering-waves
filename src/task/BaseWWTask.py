@@ -118,6 +118,8 @@ class BaseWWTask(BaseTask):
         f = self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box, threshold=0.8)
         if not f:
             return None
+        if not target_text:
+            return f
 
         start = time.time()
         percent = 0.0
@@ -149,6 +151,7 @@ class BaseWWTask(BaseTask):
         start = time.time()
         last_v_move = start
         ended = False
+        last_target = None
         while time.time() - start < time_out:
             self.next_frame()
             if end_condition:
@@ -161,21 +164,23 @@ class BaseWWTask(BaseTask):
                     treasure_icon = treasure_icon[0]
                 else:
                     treasure_icon = None
+            if treasure_icon:
+                last_target = treasure_icon
             next_direction = None
-            if treasure_icon is None:
+            if last_target is None:
                 if not end_condition:
                     self.log_info('find_function not found, break')
                 break
             if 0 < v_move_fix_time < time.time() - last_v_move:
-                if v_fix_count > 3:
+                if v_fix_count < 5:
                     v_fix_count += 1
-                    y_offset = original_y_offset + 0.05 * v_fix_count
+                    y_offset = original_y_offset - 0.05 * v_fix_count
                 else:
                     v_fix_count += 1
-                    y_offset = original_y_offset - 0.05 * (v_fix_count - 4)
+                    y_offset = original_y_offset + 0.05 * (v_fix_count - 4)
 
             if next_direction is None:
-                x, y = treasure_icon.center()
+                x, y = last_target.center()
                 y = max(0, y - self.height_of_screen(y_offset))
                 next_direction = self.get_direction(x, y, self.width, self.height)
 
@@ -211,9 +216,7 @@ class BaseWWTask(BaseTask):
 
     def get_direction(self, location_x, location_y, screen_width, screen_height):
         """
-        Determines the location (w, a, s, d) based on diagonals
-        spanning the middle 2/3 of the screen width.
-        Regions outside this middle strip default to left ('a') or right ('d').
+        Determines the direction ('w', 'a', 's', 'd') closest to the screen center.
         Args:
             location_x: The x-coordinate of the point.
             location_y: The y-coordinate of the point.
@@ -222,52 +225,21 @@ class BaseWWTask(BaseTask):
         Returns:
             A string "w", "a", "s", or "d".
         """
-        # Prevent division by zero or invalid inputs
         if screen_width <= 0 or screen_height <= 0:
-            # Return a default or raise an error, here returning middle-ish default
+            # Handle invalid dimensions, default based on horizontal position
             return "a" if location_x < screen_width / 2 else "d"
-        # --- Define the central strip ---
-        strip_width = (2 / 3) * screen_width
-        # Start x-coordinate of the strip (left edge)
-        x_start = (screen_width - strip_width) / 2
-        # End x-coordinate of the strip (right edge)
-        x_end = x_start + strip_width
-        # --- Handle points outside the strip ---
-        if location_x < x_start:
-            return "a"  # Point is in the left 1/6th of the screen
-        elif location_x > x_end:
-            return "d"  # Point is in the right 1/6th of the screen
+        center_x = screen_width / 2
+        center_y = screen_height / 2
+        # Calculate vector from point towards the center
+        delta_x = center_x - location_x
+        delta_y = center_y - location_y
+        # Determine dominant direction based on vector magnitude
+        if abs(delta_x) > abs(delta_y):
+            # More horizontal movement needed
+            return "a" if delta_x > 0 else "d"
         else:
-            # --- Point is within the central strip ---
-            # Calculate diagonals as if the strip (width = strip_width) was the full screen
-            # Avoid division by zero if strip_width is effectively zero
-            if strip_width < 1e-9: # Use tolerance for float comparison
-                 return "a" if location_x < screen_width / 2 else "d"
-            # Slope magnitude: rise (screen_height) / run (strip_width)
-            slope = screen_height / strip_width
-            # Adjusted Diagonal 1: From (x_start, 0) to (x_end, screen_height)
-            # Equation: y - 0 = slope * (x - x_start)
-            # Calculate y value on this diagonal *at the point's location_x*
-            adj_diagonal1_y = slope * (location_x - x_start)
-            # Adjusted Diagonal 2: From (x_end, 0) to (x_start, screen_height)
-            # Equation: y - 0 = -slope * (x - x_end)
-            # Calculate y value on this diagonal *at the point's location_x*
-            adj_diagonal2_y = -slope * (location_x - x_end)
-            # --- Apply original comparison logic using adjusted diagonals ---
-            # Note: The original comments/logic might map differently than visual intuition.
-            # We are strictly following the original code's comparison structure.
-            if location_y < adj_diagonal1_y and location_y > adj_diagonal2_y:
-                 # Below adjusted diag 1, Above adjusted diag 2 -> 'd' in original logic (Right wedge)
-                return "d"
-            elif location_y > adj_diagonal1_y and location_y < adj_diagonal2_y:
-                 # Above adjusted diag 1, Below adjusted diag 2 -> 'a' in original logic (Left wedge)
-                return "a"
-            elif location_y < adj_diagonal1_y and location_y < adj_diagonal2_y:
-                 # Below both adjusted diagonals -> 'w' in original logic (Top wedge)
-                return "w"
-            else: # location_y >= adj_diagonal1_y and location_y >= adj_diagonal2_y:
-                 # Above both adjusted diagonals -> 's' in original logic (Bottom wedge)
-                return "s"
+            # More vertical movement needed (or equal)
+            return "w" if delta_y > 0 else "s"
 
     def find_treasure_icon(self):
         return self.find_one('treasure_icon', box=self.box_of_screen(0.1, 0.2, 0.9, 0.8), threshold=0.7)
@@ -425,6 +397,12 @@ class BaseWWTask(BaseTask):
             logger.info(f"found a claim reward")
             return True
 
+    def test_absorb(self):
+        # self.set_image('tests/images/absorb.png')
+        image = cv2.imread('tests/images/absorb.png')
+        result = self.executor.ocr_lib(image, use_det=True, use_cls=False, use_rec=True)
+        self.logger.info(f'ocr_result {result}')
+
     def find_echo(self, threshold=0.5):
         """
         Main function to load ONNX model, perform inference, draw bounding boxes, and display the output image.
@@ -441,7 +419,7 @@ class BaseWWTask(BaseTask):
 
         ret = sorted(boxes, key=lambda detection: detection.x, reverse=True)
         for box in ret:
-            box.y += box.height - 1
+            box.y -= box.height * 2/3
             box.height = 1
         return ret
 
@@ -475,6 +453,9 @@ class BaseWWTask(BaseTask):
             return True
 
     def yolo_find_echo(self, use_color=True, walk=True, turn=True):
+        if self.debug:
+            # self.draw_boxes('echo', echos)
+            self.screenshot('yolo_echo_start')
         max_echo_count = 0
         if self.pick_echo():
             self.sleep(0.5)
@@ -485,10 +466,7 @@ class BaseWWTask(BaseTask):
             if turn:
                 self.center_camera()
             echos = self.find_echo()
-            if self.debug and i == 0:
-                # self.draw_boxes('echo', echos)
-                self.screenshot('yolo_echo_start')
-            elif len(echos) > 0:
+            if len(echos) > 0:
                 self.draw_boxes('yolo_echo', echos)
             max_echo_count = max(max_echo_count, len(echos))
             self.log_debug(f'max_echo_count {max_echo_count}')
