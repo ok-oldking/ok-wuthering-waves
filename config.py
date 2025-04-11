@@ -3,7 +3,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ok import ConfigOption
+from ok import ConfigOption, get_path_relative_to_exe
 
 version = "v5.0.11"
 
@@ -75,11 +75,12 @@ config = {
     'gui_icon': 'icon.png',
     'global_configs': [key_config_option, pick_echo_config_option, monthly_card_config_option],
     'ocr': {
-        'lib': 'rapidocr_openvino',
+        'lib': 'rapidocr',
         'target_height': 1080,
         'params': {
             'Global.with_openvino': True,
             'EngineConfig.openvino.inference_num_threads': 1,
+            'Rec.rec_keys_path': get_path_relative_to_exe(os.path.join('assets', 'ppocr_keys_v1.txt')),
         }
     },
     'my_app': ['src.globals', 'Globals'],
