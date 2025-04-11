@@ -82,7 +82,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         if retry > 4:
             raise RuntimeError('walk_to_treasure too many retries!')
         if self.find_treasure_icon():
-            self.walk_to_box(self.find_treasure_icon)
+            self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text)
         self.walk_until_f(time_out=2, backward_time=0, raise_if_not_found=True, cancel=False)
         self.sleep(1)
         if self.find_treasure_icon():
