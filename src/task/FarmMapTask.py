@@ -143,7 +143,7 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         # mask = create_circle_mask_with_hole(mat)
         # mat = cv2.bitwise_and(mat, mat, mask=mask)
 
-        in_big_map = self.find_one(frame=frame, template=mat, threshold=0.2,
+        in_big_map = self.find_one(frame=frame, template=mat, threshold=0.05,
                                    box=self.my_box, mask_function=create_circle_mask_with_hole,
                                    screenshot=screenshot)
         # in_big_maps = self.find_feature(frame=frame, template=mat, threshold=0.01, box=self.bounding_box)
