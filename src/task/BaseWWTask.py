@@ -182,7 +182,7 @@ class BaseWWTask(BaseTask):
             if next_direction is None:
                 x, y = last_target.center()
                 y = max(0, y - self.height_of_screen(y_offset))
-                next_direction = self.get_direction(x, y, self.width, self.height)
+                next_direction = self.get_direction(x, y, self.width, self.height, current_direction=last_direction)
 
             if next_direction == 'w' or next_direction == 's':
                 last_v_move = time.time()
@@ -214,7 +214,7 @@ class BaseWWTask(BaseTask):
         else:
             return 'w'
 
-    def get_direction(self, location_x, location_y, screen_width, screen_height):
+    def get_direction(self, location_x, location_y, screen_width, screen_height, current_direction):
         """
         Determines the direction ('w', 'a', 's', 'd') closest to the screen center.
         Args:
@@ -234,12 +234,14 @@ class BaseWWTask(BaseTask):
         delta_x = center_x - location_x
         delta_y = center_y - location_y
         # Determine dominant direction based on vector magnitude
-        if abs(delta_x) > abs(delta_y):
+        direction = None
+        if (abs(delta_x) > abs(delta_y) or (not current_direction and abs(delta_x) > 0.05 * screen_height)
+                or abs(delta_x) > 0.15 * screen_height):
             # More horizontal movement needed
             return "a" if delta_x > 0 else "d"
-        else:
+
             # More vertical movement needed (or equal)
-            return "w" if delta_y > 0 else "s"
+        return "w" if delta_y > 0 else "s"
 
     def find_treasure_icon(self):
         return self.find_one('treasure_icon', box=self.box_of_screen(0.1, 0.2, 0.9, 0.8), threshold=0.7)
