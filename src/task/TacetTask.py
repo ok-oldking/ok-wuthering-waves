@@ -72,11 +72,12 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                 return self.not_enough_stamina()
             self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'], raise_if_not_found=True, log=True)
             self.sleep(4)
-            self.click(0.51, 0.84, after_sleep=1)
+            self.click(0.51, 0.84, after_sleep=2)
             if remaining_total < 60:
                 return self.not_enough_stamina(back=False)
             if total_used >= 180 and remaining_current == 0:
                 return self.not_enough_stamina(back=True)
+
 
     def walk_to_treasure(self, retry=0):
         if retry > 4:

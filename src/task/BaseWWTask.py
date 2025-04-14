@@ -660,10 +660,12 @@ class BaseWWTask(BaseTask):
 
     def openF2Book(self, feature="gray_book_all_monsters"):
         self.log_info('click f2 to open the book')
-        self.send_key_down('alt')
-        self.sleep(0.05)
-        self.click_relative(0.77, 0.05)
-        self.send_key_up('alt')
+        # self.send_key_down('alt')
+        # self.sleep(0.05)
+        # self.click_relative(0.77, 0.05)
+        # self.send_key_up('alt')
+        self.sleep(1)
+        self.send_key('f2')
         gray_book_boss = self.wait_book(feature)
         if not gray_book_boss:
             self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
