@@ -28,7 +28,7 @@ class OpenVinoYoloDetect: # Renamed class
         # --- OpenVINO Initialization ---
         self.core = Core()
         self.core.set_property("CPU", {"INFERENCE_NUM_THREADS": str(1)})
-        device = "AUTO" # Default device, tries GPU then CPU etc.
+        device = "CPU" # Default device, tries GPU then CPU etc.
 
         try:
             logger.info(f"Compiling OpenVINO model for {device}...")
