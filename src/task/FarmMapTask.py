@@ -157,7 +157,7 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
             self.draw_boxes('me', in_big_map.scale(0.1), color='blue')
             # self.screenshot('box_minimap', frame=frame, show_box=True)
             # self.screenshot('template_minimap', frame=mat)
-        self.my_box = in_big_map.scale(1.25)
+        self.my_box = in_big_map.scale(1.3)
         return in_big_map
 
 def create_circle_mask_with_hole(image):
@@ -201,6 +201,7 @@ class FarmMapTask(BigMap):
         self.stuck_keys = [['space', 0.02], ['a',2], ['d',2], ['t', 0.02]]
         self.stuck_index = 0
         self.last_distance = 0
+        self._has_health_bar = False
 
     @property
     def star_move_distance_threshold(self):
@@ -215,6 +216,8 @@ class FarmMapTask(BigMap):
     def on_combat_check(self):
         self.incr_drop(self.pick_f())
         self.find_my_location()
+        if not self._has_health_bar:
+            self._has_health_bar = self.has_health_bar()
         return True
 
     def go_to_star(self):
@@ -225,6 +228,7 @@ class FarmMapTask(BigMap):
         while True:
             self.sleep(0.01)
             self.middle_click(interval=1, after_sleep=0.2)
+            self._has_health_bar = False
             if self.in_combat():
                 self.sleep(2)
                 if current_direction is not None:
@@ -234,14 +238,13 @@ class FarmMapTask(BigMap):
                 start = time.time()
                 self.combat_once()
                 duration = time.time() - start
-                if duration > 8:
-                    self.my_box = self.my_box.scale(1.1)
-                    while True:
-                        dropped, has_more = self.yolo_find_echo(use_color=False, walk=False)
-                        self.incr_drop(dropped)
-                        self.sleep(0.5)
-                        if not dropped or not has_more:
-                            break
+
+                while True:
+                    dropped, has_more = self.yolo_find_echo(use_color=False, turn=duration > 15 or self._has_health_bar)
+                    self.incr_drop(dropped)
+                    self.sleep(0.5)
+                    if not dropped or not has_more:
+                        break
             star, distance, angle = self.find_direction_angle()
             # self.draw_boxes('next_star', star, color='green')
             if not star:
