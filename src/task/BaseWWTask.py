@@ -141,15 +141,59 @@ class BaseWWTask(BaseTask):
                 return None
         return f
 
-    def walk_to_box(self, find_function, time_out=30, end_condition=None, y_offset=0.05, v_move_fix_time=0):
+    def walk_to_yolo_echo(self, time_out=15):
+        last_direction = None
+        start = time.time()
+        no_echo_start = 0
+        while time.time() - start < time_out:
+            self.next_frame()
+            if self.pick_echo():
+                return True
+            echos = self.find_echos()
+            if not echos:
+                if no_echo_start == 0:
+                    no_echo_start = time.time()
+                elif time.time() - no_echo_start > 1.5:
+                    self.log_debug(f'walk front to_echo, no echos found, break')
+                    break
+                continue
+            else:
+                no_echo_start = 0
+            echo = echos[0]
+            center_distance = echo.center()[0] - self.width_of_screen(0.5)
+            threshold = 0.05 if not last_direction else 0.15
+            if abs(center_distance) < self.height_of_screen(threshold):
+                if echo.y + echo.height > self.height_of_screen(0.65):
+                    next_direction = 's'
+                else:
+                    next_direction = 'w'
+            elif center_distance > 0:
+                next_direction = 'd'
+            else:
+                next_direction = 'a'
+            last_direction = self._walk_direction(last_direction, next_direction)
+        self._stop_last_direction(last_direction)
+
+
+    def _walk_direction(self, last_direction, next_direction):
+        if next_direction != last_direction:
+            self._stop_last_direction(last_direction)
+            if next_direction:
+                self.send_key_down(next_direction)
+        return next_direction
+
+    def _stop_last_direction(self, last_direction):
+        if last_direction:
+            self.send_key_up(last_direction)
+            self.sleep(0.01)
+        return None
+
+    def walk_to_box(self, find_function, time_out=30, end_condition=None, y_offset=0.05):
         if not find_function:
             self.log_info('find_function not found, break')
             return False
         last_direction = None
-        v_fix_count = 0
-        original_y_offset = y_offset
         start = time.time()
-        last_v_move = start
         ended = False
         last_target = None
         while time.time() - start < time_out:
@@ -166,26 +210,13 @@ class BaseWWTask(BaseTask):
                     treasure_icon = None
             if treasure_icon:
                 last_target = treasure_icon
-            next_direction = None
             if last_target is None:
-                if not end_condition:
-                    self.log_info('find_function not found, break')
-                break
-            if 0 < v_move_fix_time < time.time() - last_v_move:
-                if v_fix_count < 5:
-                    v_fix_count += 1
-                    y_offset = original_y_offset - 0.05 * v_fix_count
-                else:
-                    v_fix_count += 1
-                    y_offset = original_y_offset + 0.05 * (v_fix_count - 4)
-
-            if next_direction is None:
+                next_direction = self.opposite_direction(last_direction)
+                self.log_info('find_function not found, change to opposite direction')
+            else:
                 x, y = last_target.center()
                 y = max(0, y - self.height_of_screen(y_offset))
                 next_direction = self.get_direction(x, y, self.width, self.height, current_direction=last_direction)
-
-            if next_direction == 'w' or next_direction == 's':
-                last_v_move = time.time()
 
             if next_direction != last_direction:
                 if last_direction:
@@ -405,7 +436,7 @@ class BaseWWTask(BaseTask):
         result = self.executor.ocr_lib(image, use_det=True, use_cls=False, use_rec=True)
         self.logger.info(f'ocr_result {result}')
 
-    def find_echo(self, threshold=0.5):
+    def find_echos(self, threshold=0.6):
         """
         Main function to load ONNX model, perform inference, draw bounding boxes, and display the output image.
 
@@ -417,12 +448,12 @@ class BaseWWTask(BaseTask):
             list: List of dictionaries containing detection information such as class_id, class_name, confidence, etc.
         """
         # Load the ONNX model
-        boxes = og.my_app.yolo_detect(self.frame, threshold=threshold, label=12)
+        ret = og.my_app.yolo_detect(self.frame, threshold=threshold, label=0)
 
-        ret = sorted(boxes, key=lambda detection: detection.x, reverse=True)
         for box in ret:
-            box.y -= box.height * 2/3
+            box.y += box.height * 1/3
             box.height = 1
+        self.draw_boxes("echo", ret)
         return ret
 
     def yolo_find_all(self, threshold=0.3):
@@ -454,7 +485,7 @@ class BaseWWTask(BaseTask):
             self.send_key('f')
             return True
 
-    def yolo_find_echo(self, use_color=True, walk=True, turn=True):
+    def yolo_find_echo(self, use_color=False, turn=True):
         if self.debug:
             # self.draw_boxes('echo', echos)
             self.screenshot('yolo_echo_start')
@@ -467,14 +498,13 @@ class BaseWWTask(BaseTask):
         for i in range(4):
             if turn:
                 self.center_camera()
-            echos = self.find_echo()
-            if len(echos) > 0:
-                self.draw_boxes('yolo_echo', echos)
+            echos = self.find_echos()
             max_echo_count = max(max_echo_count, len(echos))
             self.log_debug(f'max_echo_count {max_echo_count}')
             if echos:
                 self.log_info(f'yolo found echo {echos}')
-                return self.walk_to_box(self.find_echo, time_out=15, end_condition=self.pick_echo, v_move_fix_time=5), max_echo_count > 1
+                # return self.walk_to_box(self.find_echos, time_out=15, end_condition=self.pick_echo), max_echo_count > 1
+                return self.walk_to_yolo_echo(), max_echo_count > 1
             if use_color:
                 color_percent = self.calculate_color_percentage(echo_color, front_box)
                 self.log_debug(f'pick_echo color_percent:{color_percent}')
@@ -482,28 +512,26 @@ class BaseWWTask(BaseTask):
                     # if self.debug:
                     #     self.screenshot('echo_color_picked')
                     self.log_debug(f'found color_percent {color_percent} > {color_threshold}, walk now')
-                    return self.walk_find_echo(), max_echo_count > 1
-            if not turn and i==0:
+                    #return self.walk_to_box(self.find_echos, time_out=15, end_condition=self.pick_echo), max_echo_count > 1
+                    return self.walk_to_yolo_echo(), max_echo_count > 1
+            if not turn and i == 0:
                 return False, max_echo_count > 1
             self.send_key('a', down_time=0.05)
             self.sleep(0.5)
 
         self.center_camera()
-        if walk:
-            picked = self.walk_find_echo()
-            return picked, max_echo_count > 1
         return False, max_echo_count > 1
 
     def center_camera(self):
-        self.click(0.5, 0.5, down_time=0.2, after_sleep=0.5, key='middle')
+        self.click(0.5, 0.5, down_time=0.2, after_sleep=1, key='middle')
 
     def turn_direction(self, direction):
         if direction != 'w':
             self.send_key(direction, down_time=0.05, after_sleep=0.5)
         self.center_camera()
 
-    def walk_find_echo(self, backward_time=1):
-        if self.walk_until_f(time_out=4, backward_time=backward_time, target_text=self.absorb_echo_text(),
+    def walk_find_echo(self, backward_time=1, time_out=4):
+        if self.walk_until_f(time_out=time_out, backward_time=backward_time, target_text=self.absorb_echo_text(),
                              raise_if_not_found=False):  # find and pick echo
             logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
             return True
@@ -659,13 +687,13 @@ class BaseWWTask(BaseTask):
         self.sleep(1)
 
     def openF2Book(self, feature="gray_book_all_monsters"):
-        self.log_info('click f2 to open the book')
-        # self.send_key_down('alt')
-        # self.sleep(0.05)
-        # self.click_relative(0.77, 0.05)
-        # self.send_key_up('alt')
         self.sleep(1)
-        self.send_key('f2')
+        self.log_info('click f2 to open the book')
+        self.send_key_down('alt')
+        self.sleep(0.05)
+        self.click_relative(0.77, 0.05)
+        self.send_key_up('alt')
+        # self.send_key('f2')
         gray_book_boss = self.wait_book(feature)
         if not gray_book_boss:
             self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
