@@ -20,7 +20,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         self.scene: WWScene | None = None
         self.default_config.update({
             'Auto Target': True,
-            'Auto Pick Echo After Combat': True,
+            'Auto Pick Echo After Combat': False,
         })
         self.config_description = {
             'Auto Target': 'Turn off to enable auto combat only when manually target enemy using middle click'
