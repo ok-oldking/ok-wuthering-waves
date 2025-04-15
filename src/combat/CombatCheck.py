@@ -196,7 +196,7 @@ class CombatCheck(BaseWWTask):
                 return self.wait_until(self.has_target, time_out=self.target_enemy_time_out,
                                        pre_action=lambda: self.middle_click(interval=0.2))
 
-    def check_health_bar(self):
+    def has_health_bar(self):
         if self._in_combat:
             min_height = self.height_of_screen(12 / 2160)
             max_height = min_height * 3
@@ -221,8 +221,13 @@ class CombatCheck(BaseWWTask):
                 self.boss_health = self.boss_health_box.crop_frame(self.frame)
                 self.draw_boxes('boss_health', boxes, color='blue')
                 return True
+        return False
 
-        return self.find_boss_lv_text()
+    def check_health_bar(self):
+        if self.has_health_bar():
+            return True
+        else:
+            return self.find_boss_lv_text()
 
     def find_boss_lv_text(self):
         texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160, hcenter=True),

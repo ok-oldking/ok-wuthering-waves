@@ -116,7 +116,7 @@ class BaseCombatTask(CombatCheck):
         self.wait_in_team_and_world(time_out=10)
         self.sleep(1)
         self.middle_click()
-        self.sleep(0.2)
+        self.sleep(1)
 
     def run_in_circle_to_find_echo(self, circle_count=3):
         directions = ['w', 'a', 's', 'd']
