@@ -99,9 +99,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           body: |
-            ok-ww
-            Updates：
-              ${{ steps.changes.outputs.changes }}
+            下载 ok-ww.7z, Download ok-ww.7z
+            不要下载SourceCode Do Not Download the SourceCode
+
           draft: false
           prerelease: false
           files: |
