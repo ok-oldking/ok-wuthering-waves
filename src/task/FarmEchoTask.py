@@ -55,7 +55,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.sleep(1)
 
             self.combat_once()
-            logger.info(f'farm echo move {self.config.get("Boss")} walk_until_f to find echo')
+            logger.info(f'farm echo move {self.config.get("Boss")} yolo_find_echo')
             dropped = self.yolo_find_echo()[0]
             self.incr_drop(dropped)
             self.sleep(0.5)
