@@ -147,7 +147,8 @@ class BaseWWTask(BaseTask):
         no_echo_start = 0
         while time.time() - start < time_out:
             self.next_frame()
-            if self.pick_echo():
+            if self.pick_f():
+                self.log_debug('pick echo success')
                 self._stop_last_direction(last_direction)
                 return True
             echos = self.find_echos()
@@ -479,12 +480,15 @@ class BaseWWTask(BaseTask):
             #     self.screenshot('pick_echo')
             self.send_key('f')
             if not self.handle_claim_button():
+                self.log_debug('found a echo picked')
                 return True
 
     def pick_f(self):
         if self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box, threshold=0.8):
             self.send_key('f')
-            return True
+            if not self.handle_claim_button():
+                self.log_debug('found a echo picked')
+                return True
 
     def yolo_find_echo(self, use_color=False, turn=True):
         if self.debug:
