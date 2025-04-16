@@ -148,6 +148,7 @@ class BaseWWTask(BaseTask):
         while time.time() - start < time_out:
             self.next_frame()
             if self.pick_echo():
+                self._stop_last_direction(last_direction)
                 return True
             echos = self.find_echos()
             if not echos:
