@@ -100,6 +100,5 @@ malicious code, leading to the theft of game accounts or computer data, which is
 
 ### Credits
 
-[https://github.com/lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss) 
-[https://gitee.com/LanRenZhiNeng/ming-chao-ai](https://gitee.com/LanRenZhiNeng/ming-chao-ai)
+[https://github.com/lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss)
   
