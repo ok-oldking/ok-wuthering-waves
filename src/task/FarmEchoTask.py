@@ -26,6 +26,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.config_type["Boss"] = {'type': "drop_down", 'options': ['Hecate', 'Dreamless', 'Jue', 'Fleurdelys']}
 
         self.icon = FluentIcon.ALBUM
+        self.combat_end_condition = self.find_echos
         self.add_exit_after_config()
 
     def run(self):
@@ -56,13 +57,13 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
             self.combat_once()
             logger.info(f'farm echo move {self.config.get("Boss")} yolo_find_echo')
-            dropped = self.yolo_find_echo()[0]
+            dropped = self.yolo_find_echo(turn=False)[0]
             self.incr_drop(dropped)
             self.sleep(0.5)
             self.send_key('esc', after_sleep=0.5)
             self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
                                     post_action=lambda: self.send_key('esc', after_sleep=1),
-                                    settle_time=2)
+                                    settle_time=1)
             self.wait_in_team_and_world(time_out=120)
             self.sleep(2)
 
