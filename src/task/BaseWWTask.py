@@ -155,24 +155,24 @@ class BaseWWTask(BaseTask):
             if not echos:
                 if no_echo_start == 0:
                     no_echo_start = time.time()
-                elif time.time() - no_echo_start > 1.5:
+                elif time.time() - no_echo_start > 3:
                     self.log_debug(f'walk front to_echo, no echos found, break')
                     break
-                continue
+                next_direction = 'w'
             else:
                 no_echo_start = 0
-            echo = echos[0]
-            center_distance = echo.center()[0] - self.width_of_screen(0.5)
-            threshold = 0.05 if not last_direction else 0.15
-            if abs(center_distance) < self.height_of_screen(threshold):
-                if echo.y + echo.height > self.height_of_screen(0.65):
-                    next_direction = 's'
+                echo = echos[0]
+                center_distance = echo.center()[0] - self.width_of_screen(0.5)
+                threshold = 0.05 if not last_direction else 0.15
+                if abs(center_distance) < self.height_of_screen(threshold):
+                    if echo.y + echo.height > self.height_of_screen(0.65):
+                        next_direction = 's'
+                    else:
+                        next_direction = 'w'
+                elif center_distance > 0:
+                    next_direction = 'd'
                 else:
-                    next_direction = 'w'
-            elif center_distance > 0:
-                next_direction = 'd'
-            else:
-                next_direction = 'a'
+                    next_direction = 'a'
             last_direction = self._walk_direction(last_direction, next_direction)
         self._stop_last_direction(last_direction)
 
@@ -438,7 +438,7 @@ class BaseWWTask(BaseTask):
         result = self.executor.ocr_lib(image, use_det=True, use_cls=False, use_rec=True)
         self.logger.info(f'ocr_result {result}')
 
-    def find_echos(self, threshold=0.6):
+    def find_echos(self, threshold=0.46):
         """
         Main function to load ONNX model, perform inference, draw bounding boxes, and display the output image.
 
