@@ -141,7 +141,7 @@ class BaseWWTask(BaseTask):
                 return None
         return f
 
-    def walk_to_yolo_echo(self, time_out=15):
+    def walk_to_yolo_echo(self, time_out=15, update_function=None):
         last_direction = None
         start = time.time()
         no_echo_start = 0
@@ -174,6 +174,8 @@ class BaseWWTask(BaseTask):
                 else:
                     next_direction = 'a'
             last_direction = self._walk_direction(last_direction, next_direction)
+            if update_function is not None:
+                update_function()
         self._stop_last_direction(last_direction)
 
 
@@ -438,7 +440,7 @@ class BaseWWTask(BaseTask):
         result = self.executor.ocr_lib(image, use_det=True, use_cls=False, use_rec=True)
         self.logger.info(f'ocr_result {result}')
 
-    def find_echos(self, threshold=0.46):
+    def find_echos(self, threshold=0.3):
         """
         Main function to load ONNX model, perform inference, draw bounding boxes, and display the output image.
 
@@ -490,7 +492,7 @@ class BaseWWTask(BaseTask):
                 self.log_debug('found a echo picked')
                 return True
 
-    def yolo_find_echo(self, use_color=False, turn=True):
+    def yolo_find_echo(self, use_color=False, turn=True, update_function=None):
         if self.debug:
             # self.draw_boxes('echo', echos)
             self.screenshot('yolo_echo_start')
@@ -509,7 +511,7 @@ class BaseWWTask(BaseTask):
             if echos:
                 self.log_info(f'yolo found echo {echos}')
                 # return self.walk_to_box(self.find_echos, time_out=15, end_condition=self.pick_echo), max_echo_count > 1
-                return self.walk_to_yolo_echo(), max_echo_count > 1
+                return self.walk_to_yolo_echo(update_function=update_function), max_echo_count > 1
             if use_color:
                 color_percent = self.calculate_color_percentage(echo_color, front_box)
                 self.log_debug(f'pick_echo color_percent:{color_percent}')
@@ -518,7 +520,7 @@ class BaseWWTask(BaseTask):
                     #     self.screenshot('echo_color_picked')
                     self.log_debug(f'found color_percent {color_percent} > {color_threshold}, walk now')
                     #return self.walk_to_box(self.find_echos, time_out=15, end_condition=self.pick_echo), max_echo_count > 1
-                    return self.walk_to_yolo_echo(), max_echo_count > 1
+                    return self.walk_to_yolo_echo(update_function=update_function), max_echo_count > 1
             if not turn and i == 0:
                 return False, max_echo_count > 1
             self.send_key('a', down_time=0.05)
