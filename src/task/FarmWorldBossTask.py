@@ -44,6 +44,7 @@ class FarmWorldBossTask(WWOneTimeTask, BaseCombatTask):
         self.config_type["Entrance Direction"] = {'type': "drop_down", 'options': ['Forward', 'Backward']}
         self.crownless_pos = (0.9, 0.4)
         self.icon = FluentIcon.GLOBE
+        self.combat_end_condition = self.find_echos
         self.add_exit_after_config()
 
     # not current in use because not stable, right now using one click to scroll down
@@ -90,7 +91,7 @@ class FarmWorldBossTask(WWOneTimeTask, BaseCombatTask):
                             self.sleep(5)
                         logger.info(f'farm echo move forward walk_until_f to find echo')
 
-                        dropped = self.yolo_find_echo()[0]
+                        dropped = self.yolo_find_echo(turn=False)[0]
                         self.incr_drop(dropped)
 
             if count < 2:
