@@ -123,7 +123,7 @@ class OpenVinoYolo8Detect:  # Renamed class
         class_ids = []
 
         # Calculate the scaling factors for the bounding box coordinates
-        gain = min(orig_shape[0] / orig_shape[0], self.input_width / orig_shape[1])
+        gain = min(self.input_height / orig_shape[0], self.input_width / orig_shape[1])
 
         outputs[:, 0] -= padding[1]
         outputs[:, 1] -= padding[0]
