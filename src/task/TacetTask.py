@@ -101,7 +101,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             raise IndexError(f'Index out of range, max is {self.total_number}')
         if index >= self.row_per_page:
             if index >= self.row_per_page * 2: # page 3
-                self.click_relative(0.98, 0.87)
+                self.click_relative(0.98, 0.86)
                 index -= self.row_per_page + 1 # only 1 in last page
             else:
                 index -= self.row_per_page
@@ -112,7 +112,6 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         y = 0.275
         y += height * index
         self.click_relative(x, y, after_sleep=2)
-
 
 echo_color = {
     'r': (200, 255),  # Red range
