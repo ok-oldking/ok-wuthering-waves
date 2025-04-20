@@ -71,8 +71,8 @@ class FarmWorldBossTask(WWOneTimeTask, BaseCombatTask):
                             if not in_combat:  # try click again
                                 self.walk_until_f(raise_if_not_found=True, time_out=4)
                         elif boss_name == 'Lorelei':
-                            if count % 6 < 3:
-                                self.change_time_to_night()
+                            # if count % 6 < 3:
+                            self.change_time_to_night()
                         self.middle_click_relative(0.5, 0.5)
                         self.sleep(0.4)
                         self.run_until(self.in_combat, 'w', time_out=5, running=True)
