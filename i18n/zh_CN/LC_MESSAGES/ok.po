@@ -3,11 +3,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: you@example.com\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
 "Last-Translator: you@example.com\n"
 "Language-Team: English\n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.6\n"
 
 msgid "Fleurdelys"
 msgstr "芙露德莉斯"
@@ -457,10 +461,10 @@ msgid "Dreamless"
 msgstr "无妄者"
 
 msgid "Farm selected Tacet Suppression until out of stamina, will use the backup stamina, you need to be able to teleport from the menu(F2)"
-msgstr "刷选定无音区知道没体力(包括后备体力), 需要可传送"
+msgstr "刷选定选项直到没体力(包括后备体力), 需要可传送"
 
 msgid "Login, claim monthly card, farm echo, and claim daily reward"
-msgstr "启动游戏, 登录, 领月卡, 刷声骸, 领日常任务奖励, 领邮件"
+msgstr "启动游戏, 登录, 领月卡, 刷体力, 领日常任务奖励, 领邮件"
 
 msgid "Tacet Suppression (Must explore first to be able to teleport)"
 msgstr "无音区(必须先探索, 保证可以传送)"
@@ -469,7 +473,10 @@ msgid "Task completed"
 msgstr "任务完成"
 
 msgid "Which Tacet Suppression to Farm"
-msgstr "刷哪个无音区"
+msgstr "刷哪个选项"
+
+msgid "What materials to brush"
+msgstr "刷什么材料"
 
 msgid "back_up_stamina"
 msgstr "备用体力"
@@ -480,8 +487,11 @@ msgstr "当前体力"
 msgid "used all stamina"
 msgstr "体力已用尽"
 
+msgid "Counting from top to bottom(Forgery Challenge ETC.)"
+msgstr "从上往下数是第几个(燃素领域 等)"
+
 msgid "the Nth number in the Tacet Suppression list (F2)"
-msgstr "F2列表中是第几个无音区"
+msgstr "F2列表中是第几个选项"
 
 msgid "Please start in game world and in team!"
 msgstr "请在大世界并在队伍中开始!"
@@ -507,7 +517,7 @@ msgstr "刷用星星标记的路径, 钻石作为起点, 在大地图界面开�
 msgid "Stars"
 msgstr "星星标记"
 
-msgid  "Need be in the map screen and have a diamond as the starting point!"
+msgid "Need be in the map screen and have a diamond as the starting point!"
 msgstr "需要在大地图界面并且标记一个钻石为起点!"
 
 msgid "Need be in the map screen and have a path of at least 3 stars!"
