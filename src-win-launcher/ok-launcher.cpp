@@ -222,15 +222,12 @@ std::wstring ReadOutputFromPipe(HANDLE hRead) {
 // Waits for process completion, checks exit code, and handles errors
 void HandleProcessResult(PROCESS_INFORMATION& pi, HANDLE hReadPipe) {
     // Wait reasonably long, but not indefinitely
-    WaitForSingleObject(pi.hProcess, 30000); // 30 seconds timeout
+    WaitForSingleObject(pi.hProcess, 1000); // 30 seconds timeout
     DWORD exitCode = STILL_ACTIVE; // Check if it's still running after wait
     GetExitCodeProcess(pi.hProcess, &exitCode);
     std::wstring outputStr = ReadOutputFromPipe(hReadPipe); // Read output regardless of timeout or exit code
-    if (exitCode == STILL_ACTIVE) {
-        ShowError(L"Process Error", L"Python script timed out.");
-        TerminateProcess(pi.hProcess, 1); // Forcefully terminate
-    }
-    else if (exitCode != 0) {
+
+    if (exitCode != 0 and exitCode != 259) {
         std::wstring errorMsg = L"Python script failed with exit code: " + std::to_wstring(exitCode) + L"\n\nOutput:\n" + outputStr;
         ShowError(L"Python Script Error", errorMsg);
     }
