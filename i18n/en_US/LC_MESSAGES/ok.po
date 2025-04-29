@@ -716,3 +716,33 @@ msgstr ""
 
 msgid "reached star Box(name='big_map_star', x=694, y=480, width=30, height=28, confidence=97) 18.35755975068582 27"
 msgstr ""
+
+msgid "37"
+msgstr ""
+
+msgid "86"
+msgstr ""
+
+msgid "Click Start after Entering Dungeon or Teleporting to The Boss"
+msgstr ""
+
+msgid "Farm 4C Echo in Dungeon/World"
+msgstr ""
+
+msgid "Farm world map with a marked path of stars (diamond as the starting point), start in the map screen"
+msgstr ""
+
+msgid "Teleport to Tacet Suppression"
+msgstr ""
+
+msgid "current task"
+msgstr ""
+
+msgid "in main"
+msgstr ""
+
+msgid "used all stamina"
+msgstr ""
+
+msgid "wait main"
+msgstr ""
