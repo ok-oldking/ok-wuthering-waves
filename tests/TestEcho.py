@@ -14,7 +14,7 @@ class TestEcho(TaskTestCase):
 
     def test_find_echo(self):
         self.set_image('tests/images/echo.png')
-        echos = self.task.find_echos()
+        echos = self.task.find_echos(threshold=0.3)
         self.task.log_info('Found1 {} echos'.format(len(echos)))
         self.assertEqual(1, len(echos))
         time.sleep(1)
