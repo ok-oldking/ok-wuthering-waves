@@ -206,6 +206,7 @@ class BaseWWTask(BaseTask):
         start = time.time()
         ended = False
         last_target = None
+        centered = False
         while time.time() - start < time_out:
             self.next_frame()
             if end_condition:
@@ -226,18 +227,29 @@ class BaseWWTask(BaseTask):
             else:
                 x, y = last_target.center()
                 y = max(0, y - self.height_of_screen(y_offset))
-                next_direction = self.get_direction(x, y, self.width, self.height, current_direction=last_direction)
-
+                x_abs = abs(x - self.width_of_screen(0.5))
+                threshold = 0.05 if not last_direction else 0.1
+                centered = centered or x_abs <= self.width_of_screen(threshold)
+                if not centered:
+                    if x > self.width_of_screen(0.5):
+                        next_direction = 'd'
+                    else:
+                        next_direction = 'a'
+                else:
+                    if y > self.height_of_screen(0.5):
+                        next_direction = 's'
+                    else:
+                        next_direction = 'w'
             if next_direction != last_direction:
                 if last_direction:
                     self.send_key_up(last_direction)
-                    self.sleep(0.02)
+                    self.sleep(0.01)
                 last_direction = next_direction
                 if next_direction:
                     self.send_key_down(next_direction)
         if last_direction:
             self.send_key_up(last_direction)
-            self.sleep(0.02)
+            self.sleep(0.01)
         if not end_condition:
             return last_direction is not None
         else:
@@ -255,7 +267,7 @@ class BaseWWTask(BaseTask):
         else:
             return 'w'
 
-    def get_direction(self, location_x, location_y, screen_width, screen_height, current_direction):
+    def get_direction(self, location_x, location_y, screen_width, screen_height, centered, current_direction):
         """
         Determines the direction ('w', 'a', 's', 'd') closest to the screen center.
         Args:
@@ -498,6 +510,20 @@ class BaseWWTask(BaseTask):
             if not self.handle_claim_button():
                 self.log_debug('found a echo picked')
                 return True
+
+    def walk_to_treasure(self, retry=0, send_f = True):
+        if retry > 4:
+            raise RuntimeError('walk_to_treasure too many retries!')
+        if self.find_treasure_icon():
+            self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text)
+        if send_f:
+            self.walk_until_f(time_out=2, backward_time=0, raise_if_not_found=True, cancel=False)
+        self.sleep(1)
+        if self.find_treasure_icon():
+            self.log_info('retry walk_to_treasure')
+            self.walk_to_treasure(retry=retry + 1)
+        else:
+            return True
 
     def yolo_find_echo(self, use_color=False, turn=True, update_function=None):
         if self.debug:
