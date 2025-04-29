@@ -17,9 +17,9 @@ class TestTacet(TaskTestCase):
     def test_absorb(self):
         # self.set_image('tests/images/absorb.png')
         image = cv2.imread('tests/images/absorb.png')
-        result = self.task.executor.ocr_lib(image, use_det=True, use_cls=False, use_rec=True)
+        result = self.task.ocr()
         # angle, box = self.task.get_my_angle()
-        self.logger.info(f'ocr_result {result}')
+        self.assertTrue(len(result) > 0)
 
 
 
