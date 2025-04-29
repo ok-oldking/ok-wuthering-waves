@@ -41,8 +41,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.sleep(2)
             elif self.find_treasure_icon():
                 if self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text):
+                    self.sleep(0.5)
                     self.scroll_relative(0.5, 0.5, -1)
-                    self.sleep(0.01)
+                    self.sleep(0.1)
                     self.send_key('f')
             count += 1
             self.combat_once()
