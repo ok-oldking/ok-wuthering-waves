@@ -25,6 +25,7 @@ from src.char.Xiangliyao import Xiangliyao
 from src.char.Yinlin import Yinlin
 from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
+from src.char.Zani import Zani
 from src.char.Zhezhi import Zhezhi
 
 char_dict = {
@@ -57,6 +58,7 @@ char_dict = {
         'char_phoebe': {'cls': Phoebe, 'res_cd': 12, 'echo_cd': 25, 'liberation_cd': 25},
         'char_brant': {'cls': Brant, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 24},
         'char_cantarella': {'cls': Cantarella, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd': 25},
+        'char_zani': {'cls': Zani, 'res_cd': 14, 'echo_cd': 25},
     }
 
 char_names = char_dict.keys()
