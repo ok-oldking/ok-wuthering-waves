@@ -447,7 +447,7 @@ class BaseWWTask(BaseTask):
         result = self.executor.ocr_lib(image, use_det=True, use_cls=False, use_rec=True)
         self.logger.info(f'ocr_result {result}')
 
-    def find_echos(self, threshold=0.45):
+    def find_echos(self, threshold=0.3):
         """
         Main function to load ONNX model, perform inference, draw bounding boxes, and display the output image.
 
