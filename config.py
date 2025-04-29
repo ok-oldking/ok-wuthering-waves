@@ -165,7 +165,6 @@ config = {
         ["src.task.DailyTask", "DailyTask"],
         ["src.task.TacetTask", "TacetTask"],
         ["src.task.FarmEchoTask", "FarmEchoTask"],
-        ["src.task.FarmWorldBossTask", "FarmWorldBossTask"],
         ["src.task.FarmMapTask", "FarmMapTask"],
         ["ok", "DiagnosisTask"],
     ], 'trigger_tasks': [
