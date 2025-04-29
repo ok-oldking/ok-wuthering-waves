@@ -507,8 +507,16 @@ msgstr "刷用星星标记的路径, 钻石作为起点, 在大地图界面开�
 msgid "Stars"
 msgstr "星星标记"
 
-msgid  "Need be in the map screen and have a diamond as the starting point!"
+msgid "Need be in the map screen and have a diamond as the starting point!"
 msgstr "需要在大地图界面并且标记一个钻石为起点!"
 
 msgid "Need be in the map screen and have a path of at least 3 stars!"
 msgstr "需要在大地图界面并且至少有3个星星标记为路径!"
+
+msgid "Click Start after Entering Dungeon or Teleporting to The Boss"
+msgstr "在进入BOSS战斗后点击开始"
+
+msgid "Farm 4C Echo in Dungeon/World"
+msgstr "刷需要重新挑战的4C(大世界/副本)"
+
+

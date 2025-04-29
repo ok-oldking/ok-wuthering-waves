@@ -78,18 +78,6 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             if total_used >= 180 and remaining_current == 0:
                 return self.not_enough_stamina(back=True)
 
-
-    def walk_to_treasure(self, retry=0):
-        if retry > 4:
-            raise RuntimeError('walk_to_treasure too many retries!')
-        if self.find_treasure_icon():
-            self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text)
-        self.walk_until_f(time_out=2, backward_time=0, raise_if_not_found=True, cancel=False)
-        self.sleep(1)
-        if self.find_treasure_icon():
-            self.log_info('retry walk_to_treasure')
-            self.walk_to_treasure(retry=retry + 1)
-
     def not_enough_stamina(self, back=True):
         self.log_info(f"used all stamina", notify=True)
         if back:
