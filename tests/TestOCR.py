@@ -15,11 +15,11 @@ class TestTacet(TaskTestCase):
     config = config
 
     def test_absorb(self):
-        # self.set_image('tests/images/absorb.png')
-        image = cv2.imread('tests/images/absorb.png')
-        result = self.task.ocr()
+        self.set_image('tests/images/absorb.png')
+        # image = cv2.imread('tests/images/absorb.png')
+        result = self.task.pick_echo()
         # angle, box = self.task.get_my_angle()
-        self.assertTrue(len(result) > 0)
+        self.assertTrue(result)
 
 
 

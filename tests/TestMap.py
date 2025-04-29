@@ -13,8 +13,8 @@ class TestTacet(TaskTestCase):
 
     def test_find_treasure_icon(self):
         self.set_image('tests/images/angle_130.png')
-        angle, box = self.task.get_my_angle()
-        self.logger.info(f'test_find_treasure_icon {angle, box}')
+        angle = self.task.get_my_angle()
+        self.logger.info(f'test_find_treasure_icon {angle}')
         self.assertTrue(100 <= angle <= 200)
 
     def test_find_path(self):
