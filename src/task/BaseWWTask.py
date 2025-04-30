@@ -144,7 +144,7 @@ class BaseWWTask(BaseTask):
     def has_target(self):
         return False
 
-    def walk_to_yolo_echo(self, time_out=8, update_function=None):
+    def walk_to_yolo_echo(self, time_out=8, update_function=None, echo_threshold=0.5):
         last_direction = None
         start = time.time()
         no_echo_start = 0
@@ -157,7 +157,7 @@ class BaseWWTask(BaseTask):
             if self.has_target():
                 self.log_debug('pick echo has_target return fail')
                 return False
-            echos = self.find_echos()
+            echos = self.find_echos(threshold=echo_threshold)
             if not echos:
                 if no_echo_start == 0:
                     no_echo_start = time.time()
@@ -525,7 +525,7 @@ class BaseWWTask(BaseTask):
         else:
             return True
 
-    def yolo_find_echo(self, use_color=False, turn=True, update_function=None):
+    def yolo_find_echo(self, use_color=False, turn=True, update_function=None, time_out=8, threshold=0.5):
         if self.debug:
             # self.draw_boxes('echo', echos)
             self.screenshot('yolo_echo_start')
@@ -538,13 +538,13 @@ class BaseWWTask(BaseTask):
         for i in range(4):
             if turn:
                 self.center_camera()
-            echos = self.find_echos()
+            echos = self.find_echos(threshold=threshold)
             max_echo_count = max(max_echo_count, len(echos))
             self.log_debug(f'max_echo_count {max_echo_count}')
             if echos:
                 self.log_info(f'yolo found echo {echos}')
                 # return self.walk_to_box(self.find_echos, time_out=15, end_condition=self.pick_echo), max_echo_count > 1
-                return self.walk_to_yolo_echo(update_function=update_function), max_echo_count > 1
+                return self.walk_to_yolo_echo(update_function=update_function, time_out=time_out), max_echo_count > 1
             if use_color:
                 color_percent = self.calculate_color_percentage(echo_color, front_box)
                 self.log_debug(f'pick_echo color_percent:{color_percent}')

@@ -43,6 +43,6 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         if ret:
             self.combat_end()
             if self.config.get('Auto Pick Echo After Combat'):
-                while self.yolo_find_echo(use_color=False, turn=False)[1]:
+                while self.yolo_find_echo(use_color=False, turn=False, time_out=4, threshold=0.6)[1]:
                     pass
         return ret
