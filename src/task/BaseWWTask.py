@@ -144,7 +144,7 @@ class BaseWWTask(BaseTask):
     def has_target(self):
         return False
 
-    def walk_to_yolo_echo(self, time_out=15, update_function=None):
+    def walk_to_yolo_echo(self, time_out=8, update_function=None):
         last_direction = None
         start = time.time()
         no_echo_start = 0
@@ -511,13 +511,13 @@ class BaseWWTask(BaseTask):
                 self.log_debug('found a echo picked')
                 return True
 
-    def walk_to_treasure(self, retry=0, send_f = True):
+    def walk_to_treasure(self, retry=0, send_f = True, raise_if_not_found=True):
         if retry > 4:
             raise RuntimeError('walk_to_treasure too many retries!')
         if self.find_treasure_icon():
             self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text)
         if send_f:
-            self.walk_until_f(time_out=2, backward_time=0, raise_if_not_found=True, cancel=False)
+            self.walk_until_f(time_out=2, backward_time=0, raise_if_not_found=raise_if_not_found, cancel=False)
         self.sleep(1)
         if self.find_treasure_icon():
             self.log_info('retry walk_to_treasure')
