@@ -98,8 +98,8 @@ class BaseCombatTask(CombatCheck):
         if current > 0 and not self.has_cd(name):
             return True
 
-    def combat_once(self, wait_combat_time=200):
-        self.wait_until(self.in_combat, time_out=wait_combat_time, raise_if_not_found=True)
+    def combat_once(self, wait_combat_time=200, raise_if_not_found=True):
+        self.wait_until(self.in_combat, time_out=wait_combat_time, raise_if_not_found=raise_if_not_found)
         self.load_chars()
         self.info['Combat Count'] = self.info.get('Combat Count', 0) + 1
         while self.in_combat():
@@ -113,7 +113,7 @@ class BaseCombatTask(CombatCheck):
                 # self.screenshot(f'combat_once_ooc {self.out_of_combat_reason}')
                 break
         self.combat_end()
-        self.wait_in_team_and_world(time_out=10)
+        self.wait_in_team_and_world(time_out=10, raise_if_not_found=False)
 
     def run_in_circle_to_find_echo(self, circle_count=3):
         directions = ['w', 'a', 's', 'd']
