@@ -39,19 +39,29 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                         settle_time=1)
                 self.wait_in_team_and_world(time_out=120)
                 self.sleep(2)
-            elif self.find_treasure_icon():
-                if self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text):
-                    self.sleep(0.5)
-                    self.scroll_relative(0.5, 0.5, -1)
-                    self.sleep(0.1)
-                    self.send_key('f')
+            elif self.walk_to_treasure_and_restart():
+                pass
+            elif self.find_f_with_text():
+                self.scroll_and_click_buttons()
             count += 1
-            self.combat_once()
+            self.combat_once(wait_combat_time=15, raise_if_not_found=False)
             logger.info(f'farm echo move {self.config.get("Boss")} yolo_find_echo')
             dropped = self.yolo_find_echo(turn=False)[0]
             self.incr_drop(dropped)
             self.sleep(0.5)
 
+    def scroll_and_click_buttons(self):
+        while True:
+            self.scroll_relative(0.5, 0.5, 1)
+            self.sleep(0.1)
+            self.send_key('f')
+            if not self.handle_claim_button():
+                break
+
+    def walk_to_treasure_and_restart(self):
+        if self.find_treasure_icon() and self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text):
+            self.scroll_and_click_buttons()
+            return True
 
     def choose_level(self, start):
         y = 0.17
