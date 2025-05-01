@@ -31,8 +31,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.set_check_monthly_card()
 
         count = 0
+        in_realm = self.in_realm()
         while count < self.config.get("Repeat Farm Count", 0):
-            if self.in_realm():
+            if in_realm:
                 self.send_key('esc', after_sleep=0.5)
                 self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
                                         post_action=lambda: self.send_key('esc', after_sleep=1),

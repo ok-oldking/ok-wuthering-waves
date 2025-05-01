@@ -326,7 +326,7 @@ class BaseWWTask(BaseTask):
 
     def in_realm(self):
         illusive_realm_exit = self.find_one('illusive_realm_exit',
-                                            use_gray_scale=False, threshold=0.5)
+                                            use_gray_scale=False, threshold=0.65)
         return illusive_realm_exit is not None
 
     def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0, target_text=None,
