@@ -527,7 +527,6 @@ class BaseWWTask(BaseTask):
 
     def yolo_find_echo(self, use_color=False, turn=True, update_function=None, time_out=8, threshold=0.5):
         if self.debug:
-            # self.draw_boxes('echo', echos)
             self.screenshot('yolo_echo_start')
         max_echo_count = 0
         if self.pick_echo():
