@@ -13,7 +13,6 @@ class Zani(BaseChar):
     def reset_state(self):
         super().reset_state()
         self.liberaction_time = 0
-        self.in_liberation = False
         
     def do_perform(self):
         if self.has_intro:
@@ -38,8 +37,10 @@ class Zani(BaseChar):
             
         if not self.in_liberation and self.liberation_available():
             if self.click_liberation():
+                self.in_liberation = True
                 self.liberaction_time = time.time()
                 self.continues_normal_attack(0.3)
+                
         self.check_liber()                           
         if self.in_liberation:
             self.continues_normal_attack(0.8)
@@ -87,7 +88,7 @@ class Zani(BaseChar):
         return False
         
     def has_long_actionbar(self):
-        if self.in_liberation:
+        if self.check_liber():
             return True
         return False
         
@@ -122,10 +123,9 @@ class Zani(BaseChar):
     def check_liber(self):
         if self.has_target(self.in_liberation):
             pass
-        elif self.has_target(not self.in_liberation):
+        else:
             self.in_liberation = not self.in_liberation
-        self.check_combat()
-        return self.in_liberation
+        return self.in_liberation        
         
     def is_forte_full(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 2251, 1993, 2311, 2016, name='forte_full', hcenter=True)
