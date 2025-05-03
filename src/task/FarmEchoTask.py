@@ -28,8 +28,16 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
     def run(self):
         WWOneTimeTask.run(self)
-        self.set_check_monthly_card()
+        try:
+            return self.do_run()
+        except Exception as e:
+            logger.error('farm 4c error, try handle monthly card', e)
+            if self.handle_monthly_card():
+                self.run()
+            else:
+                raise
 
+    def do_run(self):
         count = 0
         in_realm = self.in_realm()
         while count < self.config.get("Repeat Farm Count", 0):
