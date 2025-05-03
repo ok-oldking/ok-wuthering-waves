@@ -228,7 +228,7 @@ class BaseWWTask(BaseTask):
                 x, y = last_target.center()
                 y = max(0, y - self.height_of_screen(y_offset))
                 x_abs = abs(x - self.width_of_screen(0.5))
-                threshold = 0.05 if not last_direction else 0.1
+                threshold = 0.04 if not last_direction else 0.07
                 centered = centered or x_abs <= self.width_of_screen(threshold)
                 if not centered:
                     if x > self.width_of_screen(0.5):
