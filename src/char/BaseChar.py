@@ -731,6 +731,23 @@ class BaseChar:
         while time.time() - start < duration:
             self.task.send_key(key, interval=interval)
 
+    def continues_right_click(self, duration, interval=0.1, direction_key=None):
+        """持续进行鼠标右键点击操作一段时间，可选同时按住方向键。
+
+        Args:
+            duration (float): 持续时间 (秒)。
+            interval (float, optional): 每次发送按键的间隔。默认为 0.1。
+            direction_key (str, optional): 如果指定，则在点击期间同时按下此键（如 'w'、'a'、's'、'd'）。
+        """
+        if direction_key is not None:
+            self.task.send_key_down(direction_key)
+            self.task.next_frame()
+        start = time.time()
+        while time.time() - start < duration:
+            self.task.click(interval=interval, key="right")
+        if direction_key is not None:
+            self.task.send_key_up(direction_key)
+
     def normal_attack(self):
         """执行一次普通攻击。"""
         self.logger.debug('normal attack')
