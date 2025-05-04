@@ -16,7 +16,11 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.description = "Click Start after Entering Dungeon or Teleporting to The Boss"
         self.name = "Farm 4C Echo in Dungeon/World"
         self.default_config.update({
-            'Repeat Farm Count': 1000
+            'Repeat Farm Count': 10000,
+            'Combat Wait Time': 0,
+        })
+        self.config_description.update({
+            'Combat Wait Time': 'Wait time before each combat(seconds), set 5 if farming Sentry Construct',
         })
         self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
@@ -53,6 +57,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             elif self.find_f_with_text():
                 self.scroll_and_click_buttons()
             count += 1
+            self.wait_until(self.in_combat, raise_if_not_found=True, time_out=120)
+            self.sleep(self.config.get("Combat Wait Time", 0))
             self.combat_once(wait_combat_time=15, raise_if_not_found=False)
             logger.info(f'farm echo move {self.config.get("Boss")} yolo_find_echo')
             dropped = self.yolo_find_echo(turn=False, use_color=False, time_out=4, threshold=0.6)[0]
@@ -68,7 +74,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 break
 
     def walk_to_treasure_and_restart(self):
-        if self.find_treasure_icon() and self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text):
+        if self.find_treasure_icon() and self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text, y_offset=0.1):
             self.scroll_and_click_buttons()
             return True
 
