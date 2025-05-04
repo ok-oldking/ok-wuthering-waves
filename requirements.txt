@@ -95,7 +95,7 @@ pyside6-essentials==6.8.2.1
     #   pyside6-addons
 pyside6-fluent-widgets==1.7.6
     # via -r .\requirements.in
-pysidesix-frameless-window==0.5.1
+pysidesix-frameless-window==0.6.2
     # via
     #   ok-script
     #   pyside6-fluent-widgets
