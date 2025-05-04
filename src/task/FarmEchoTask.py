@@ -52,18 +52,24 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                         settle_time=1)
                 self.wait_in_team_and_world(time_out=120)
                 self.sleep(2)
-            elif self.walk_to_treasure_and_restart():
-                pass
-            elif self.find_f_with_text():
-                self.scroll_and_click_buttons()
+            elif not self.in_combat():
+                self.walk_to_treasure_and_restart()
+                while self.find_f_with_text() and not self.in_combat():
+                    self.log_info('scroll_and_click_buttons')
+                    self.scroll_and_click_buttons()
+                    self.sleep(1)
             count += 1
-            self.wait_until(self.in_combat, raise_if_not_found=True, time_out=120)
+            self.log_info('start wait in combat')
+            self.wait_until(self.in_combat, raise_if_not_found=False, time_out=12)
             self.sleep(self.config.get("Combat Wait Time", 0))
-            self.combat_once(wait_combat_time=15, raise_if_not_found=False)
+            self.combat_once(wait_combat_time=0, raise_if_not_found=False)
             logger.info(f'farm echo move {self.config.get("Boss")} yolo_find_echo')
             dropped = self.yolo_find_echo(turn=False, use_color=False, time_out=4, threshold=0.6)[0]
             self.incr_drop(dropped)
-            self.sleep(0.5)
+            if dropped:
+                self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
+            else:
+                self.sleep(1)
 
     def scroll_and_click_buttons(self):
         while True:
@@ -74,8 +80,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 break
 
     def walk_to_treasure_and_restart(self):
-        if self.find_treasure_icon() and self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text, y_offset=0.1):
-            self.scroll_and_click_buttons()
+        if self.find_treasure_icon():
+            self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text, y_offset=0.1)
             return True
 
     def choose_level(self, start):
