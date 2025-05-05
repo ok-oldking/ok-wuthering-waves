@@ -445,13 +445,16 @@ class BaseWWTask(BaseTask):
         return False
 
     def handle_claim_button(self):
-        if self.wait_feature('claim_cancel_button_hcenter_vcenter', raise_if_not_found=False, horizontal_variance=0.05,
-                             vertical_variance=0.1, time_out=1.5, threshold=0.8):
+        if self.wait_until(self.has_claim, raise_if_not_found=False, time_out=1.5):
             self.sleep(0.5)
             self.send_key('esc')
             self.sleep(0.5)
             logger.info(f"found a claim reward")
             return True
+
+    def has_claim(self):
+        return not self.in_team()[0] and self.find_one('claim_cancel_button_hcenter_vcenter', horizontal_variance=0.05,
+                             vertical_variance=0.1, threshold=0.8)
 
     def test_absorb(self):
         # self.set_image('tests/images/absorb.png')

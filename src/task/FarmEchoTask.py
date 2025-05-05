@@ -2,7 +2,7 @@ import time
 
 from qfluentwidgets import FluentIcon
 
-from ok import Logger
+from ok import Logger, TaskDisabledException
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 
@@ -34,6 +34,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         WWOneTimeTask.run(self)
         try:
             return self.do_run()
+        except TaskDisabledException as e:
+            pass
         except Exception as e:
             logger.error('farm 4c error, try handle monthly card', e)
             if self.handle_monthly_card():
@@ -54,17 +56,19 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.sleep(2)
             elif not self.in_combat():
                 self.walk_to_treasure_and_restart()
-                while self.find_f_with_text() and not self.in_combat():
-                    self.log_info('scroll_and_click_buttons')
-                    self.scroll_and_click_buttons()
-                    self.sleep(1)
+                self.log_info('scroll_and_click_buttons')
+                self.scroll_and_click_buttons()
+
             count += 1
             self.log_info('start wait in combat')
             self.wait_until(self.in_combat, raise_if_not_found=False, time_out=12)
             self.sleep(self.config.get("Combat Wait Time", 0))
             self.combat_once(wait_combat_time=0, raise_if_not_found=False)
             logger.info(f'farm echo move {self.config.get("Boss")} yolo_find_echo')
-            dropped = self.yolo_find_echo(turn=False, use_color=False, time_out=4, threshold=0.6)[0]
+            if self.find_f_with_text():
+                dropped = self.pick_echo()
+            else:
+                dropped = self.yolo_find_echo(turn=False, use_color=False, time_out=4, threshold=0.6)[0]
             self.incr_drop(dropped)
             if dropped:
                 self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
@@ -72,12 +76,11 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.sleep(1)
 
     def scroll_and_click_buttons(self):
-        while True:
+        while self.find_f_with_text() and not self.in_combat():
             self.scroll_relative(0.5, 0.5, 1)
             self.sleep(0.1)
             self.send_key('f')
-            if not self.handle_claim_button():
-                break
+            self.handle_claim_button()
 
     def walk_to_treasure_and_restart(self):
         if self.find_treasure_icon():

@@ -517,7 +517,7 @@ msgid "Click Start after Entering Dungeon or Teleporting to The Boss"
 msgstr "在进入BOSS战斗后点击开始"
 
 msgid "Farm 4C Echo in Dungeon/World"
-msgstr "刷需要重新挑战的4C(大世界/副本)"
+msgstr "刷4C(大世界/副本)"
 
 msgid "Combat Wait Time"
 msgstr "战斗开始前等待时间(秒)"

@@ -201,7 +201,7 @@ class BaseChar:
         duration = time.time() - resonance_click_time if resonance_click_time != 0 else 0
         if animated:
             self.add_freeze_duration(resonance_click_time, duration)
-        self.logger.info(f'click_resonance end clicked {clicked} duration {duration} animated {animated}')
+        self.logger.debug(f'click_resonance end clicked {clicked} duration {duration} animated {animated}')
         return clicked, duration, animated
 
     def send_resonance_key(self, post_sleep=0, interval=-1, down_time=0.01):

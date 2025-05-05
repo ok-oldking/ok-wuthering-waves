@@ -152,7 +152,7 @@ class BaseCombatTask(CombatCheck):
                 priority = Priority.CURRENT_CHAR
             else:
                 priority = char.get_switch_priority(current_char, has_intro, target_low_con)
-                logger.info(
+                logger.debug(
                     f'switch_next_char priority: {char} {priority} {char.current_con} target_low_con {target_low_con}')
             if target_low_con:
                 if char.current_con < low_con and char != current_char:
