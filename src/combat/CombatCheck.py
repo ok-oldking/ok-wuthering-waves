@@ -120,8 +120,6 @@ class CombatCheck(BaseWWTask):
                 if self.has_target():
                     self.last_in_realm_not_combat = 0
                     return True
-                if self.pick_echo() or self.find_echos():
-                    return self.reset_to_false(recheck=False, reason='echo dropped')
                 if self.combat_end_condition is not None and self.combat_end_condition():
                     return self.reset_to_false(recheck=True, reason='end condition reached')
                 if self.target_enemy(wait=True):
