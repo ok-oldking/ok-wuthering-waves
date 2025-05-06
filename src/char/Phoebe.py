@@ -8,13 +8,15 @@ class Phoebe(BaseChar):
         self.first_liberation = False
         self.perform_intro = 0
         self.attribute = 0
+        self.star_available = False
         
     def reset_state(self):
         super().reset_state()
         self.first_liberation = False
         self.perform_intro = 0
         self.attribute = 0
-    
+        self.star_available = False
+        
     def flying(self):
         return self.current_resonance() == 0 or self.current_echo() == 0
 
@@ -23,9 +25,11 @@ class Phoebe(BaseChar):
             self.decide_teammate()
         if self.has_intro:
             self.continues_normal_attack(1.5)
+            self.click_echo()
             if not self.in_absolutin():
                 self.starflash_combo() 
                 return self.switch_next_char()
+        self.click_echo()
         if self.flying():
             self.logger.debug('Pheobe flying')
             self.continues_normal_attack(0.1)
@@ -38,8 +42,8 @@ class Phoebe(BaseChar):
             self.click_resonance_once()
             self.starflash_combo()                                   
             return self.switch_next_char()        
-        if self.click_echo():
-            return self.switch_next_char()
+#        if self.click_echo():
+#            return self.switch_next_char()
         self.continues_normal_attack(0.1)
         self.switch_next_char()
 
@@ -62,10 +66,7 @@ class Phoebe(BaseChar):
             self.sleep(0.3)
                 
     def perform_heavy_attack(self, duration=0.6):
-# FIXME: ui淡入有小概率导致菲比在辅助模式下错识别进错状态
-# FIXME: UI fading in has a small probability of causing Phoebe to misidentify,
-#        and enter the wrong state in assistant mode.
-        if self.attribute == 2 and (self.litany_ready() or not self.in_absolutin()):
+        if self.attribute == 2 and (self.litany_ready() or not self.in_absolutin() or not self.check_middle_star()):
             self.hold_resonance(duration=duration)
         else:
             self.heavy_attack(duration=duration)
@@ -75,7 +76,7 @@ class Phoebe(BaseChar):
         start = time.time()
         while self.resonance_available():
             self.check_combat()
-            if time.time() - start > 0.1:
+            if time.time() - start > 0.5:
                 break
             self.send_resonance_key()
             self.task.next_frame()
@@ -90,16 +91,16 @@ class Phoebe(BaseChar):
     
     def litany_ready(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 3149, 1832, 3225, 1857, name='phoebe_resonance', hcenter=True)
-        blue_percent = self.task.calculate_color_percentage(phoebe_blue_color, box)
-        self.logger.info(f'blue_percent {blue_percent}')
+        blue_percent = self.task.calculate_color_percentage(pheobe_litany_blue_color, box)
+        self.logger.debug(f'blue_percent {blue_percent}')
         return blue_percent > 0.15        
 
     def heavy_attack_ready(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 2740, 1832, 2803, 1857, name='phoebe_attack', hcenter=True)
         light_percent = self.task.calculate_color_percentage(phoebe_light_color, box)
-        self.logger.info(f'light_percent {light_percent}')
+        self.logger.debug(f'light_percent {light_percent}')
         if not self.in_absolutin():
-            self.logger.info(f'litany_light_percent {light_percent}')
+            self.logger.debug(f'litany_light_percent {light_percent}')
         if light_percent > 0.15 and (self.is_forte_full() or self.litany_ready()):
             return True
         blue_percent = self.task.calculate_color_percentage(phoebe_blue_color, box)
@@ -108,10 +109,14 @@ class Phoebe(BaseChar):
     def in_absolutin(self):           
         box = self.task.box_of_screen_scaled(3840, 2160, 1633, 1987, 1671, 2008, name='phoebe_forte', hcenter=True)
         forte_percent = self.task.calculate_color_percentage(phoebe_forte_light_color, box)
-        if forte_percent > 0.01:
+        self.logger.debug(f'forte_light_percent {forte_percent}')
+        if forte_percent > 0.03:
+            if self.attribute == 2:
+                self.logger.info('in wrong mode')
             return True
         forte_percent = self.task.calculate_color_percentage(phoebe_forte_blue_color, box) 
-        return forte_percent > 0.01
+        self.logger.debug(f'forte_blue_percent {forte_percent}')
+        return forte_percent > 0.03
             
     def has_long_actionbar(self):
         return True
@@ -127,6 +132,22 @@ class Phoebe(BaseChar):
         else:
             return super().do_get_switch_priority(current_char, has_intro)
             
+    def check_middle_star(self):
+        if self.star_available:
+            return True
+        box = self.task.box_of_screen_scaled(3840, 2160, 1890, 2010, 1930, 2030, name='phoebe_middle_star', hcenter=True)
+        forte_percent = self.task.calculate_color_percentage(phiebe_star_light_cloor, box)
+        self.logger.info(f'middle_star_light_percent {forte_percent}')
+        if forte_percent > 0.1:
+            self.star_available = True
+            return True
+        forte_percent = self.task.calculate_color_percentage(phiebe_star_blue_cloor, box)
+        self.logger.info(f'middle_star_blue_percent {forte_percent}')
+        if forte_percent > 0.1:
+            self.star_available = True
+            return True    
+        return False
+        
     def decide_teammate(self):
         for i, char in enumerate(self.task.chars):
             self.logger.debug(f'phoebe teammate char: {char.char_name}')
@@ -138,17 +159,24 @@ class Phoebe(BaseChar):
         self.attribute = 1
         return 
     
-            
+  
 phoebe_blue_color = {
-    'r': (140, 170),  # Red range
+    'r': (130, 170),  # Red range
     'g': (205, 235),  # Green range
     'b': (240, 255)   # Blue range
 }  
+
+pheobe_litany_blue_color = {
+    'r': (115, 170),  # Red range
+    'g': (160, 235),  # Green range
+    'b': (230, 255)   # Blue range
+}
 
 phoebe_light_color = {
     'r': (240, 255),  # Red range
     'g': (240, 255),  # Green range
     'b': (200, 230)   # Blue range
+
 }  
 
 phoebe_forte_light_color = {
@@ -161,4 +189,16 @@ phoebe_forte_blue_color = {
     'r': (220, 250),  # Red range
     'g': (225, 255),  # Green range
     'b': (185, 215)   # Blue range
+}  
+
+phiebe_star_light_cloor = {
+    'r': (235, 255),  # Red range
+    'g': (220, 250),  # Green range
+    'b': (160, 190)   # Blue range
+}  
+
+phiebe_star_blue_cloor = {
+    'r': (240, 255),  # Red range
+    'g': (240, 255),  # Green range
+    'b': (240, 255)   # Blue range
 }  

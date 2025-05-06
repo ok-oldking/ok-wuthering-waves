@@ -18,6 +18,7 @@ class Zani(BaseChar):
         if self.has_intro:
             self.continues_normal_attack(1.5)
         self.check_liber()
+        self.click_echo() 
         if self.in_liberation and self.liberation_available() and self.liberation2_ready():   
             start = time.time()
             self.click_liberation()
@@ -26,7 +27,7 @@ class Zani(BaseChar):
                 self.switch_next_char()
                 if time.time() - start > 2:
                     self.add_freeze_duration(start, time.time()-start)
-                    self.logger.debug(f'Zani click liber2 in {time.time()-start}')  
+                    self.logger.info(f'Zani click liber2 in {time.time()-start}')  
                     self.in_liberation = False
                 return
             
@@ -39,45 +40,41 @@ class Zani(BaseChar):
             if self.click_liberation():
                 self.in_liberation = True
                 self.liberaction_time = time.time()
-                self.continues_normal_attack(0.3)
+                self.continues_normal_attack(0.5)
+                self.logger.info('Zani click liber1.')
                 
         self.check_liber()                           
         if self.in_liberation:
-            self.continues_normal_attack(0.8)
-            if self.liberation_available() and self.liberation2_ready():   
-                start = time.time()
-                self.click_liberation()
-                self.check_liber()
-                if self.in_liberation:
-                    self.switch_next_char()
-                    if time.time() - start > 2:
-                        self.add_freeze_duration(start, time.time()-start)
-                        self.logger.debug(f'Zani click liber2 in {time.time()-start}')  
-                        self.in_liberation = False
-                    return
+            self.continues_normal_attack(0.6)
+#            if self.liberation_available() and self.liberation2_ready():   
+#                start = time.time()
+#                self.click_liberation()
+#                self.check_liber()
+#                if self.in_liberation:
+#                    self.switch_next_char()
+#                    if time.time() - start > 2:
+#                        self.add_freeze_duration(start, time.time()-start)
+#                        self.logger.debug(f'Zani click liber2 in {time.time()-start}')  
+#                        self.in_liberation = False
+#                    return
             return self.switch_next_char()    
         if self.resonance_available():
             self.resonance_until_not_light()
             self.continues_normal_attack(0.4)
-            return self.switch_next_char()   
-        if self.echo_available():
-            self.click_echo()
-            return self.switch_next_char()        
+            return self.switch_next_char()          
         self.continues_normal_attack(0.1)
         self.switch_next_char()          
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-# FIXME: 3c阵容菲比延奏有概率给到其他第三人
-# FIXME: In a party with 3 attacker, Phoebe may switch to others while under intro.
         if self.in_liberation:
-            if self.time_elapsed_accounting_for_freeze(self.liberaction_time) > 17:
+            if self.time_elapsed_accounting_for_freeze(self.liberaction_time) > 18:
                 return Priority.MAX
             return 10000
         else:
             return super().do_get_switch_priority(current_char, has_intro)
             
     def liberation2_ready(self):
-        if self.time_elapsed_accounting_for_freeze(self.liberaction_time) > 16:
+        if self.time_elapsed_accounting_for_freeze(self.liberaction_time) > 18:
             return True
 # FIXME: 当能量空时尝试提早r2结束状态，但Forte图像为淡入，高概率出现误识别情况
 # FIXME: An attempt is made to end the state of liberation earlier while energy empty.
@@ -104,7 +101,7 @@ class Zani(BaseChar):
     def resonance_light(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 3105, 1845, 3285, 2010, name='zani_resonance', hcenter=True)
         light_percent = self.task.calculate_color_percentage(zani_light_color, box)
-        self.logger.info(f'Zani_resonance_light_percent {light_percent}')
+#        self.logger.info(f'Zani_resonance_light_percent {light_percent}')
         return light_percent > 0.005  
             
     def has_target(self,in_liber = False):
@@ -137,4 +134,4 @@ zani_light_color = {
     'r': (245, 255),  # Red range
     'g': (245, 255),  # Green range
     'b': (205, 225)  # Blue range
-}  
+}
