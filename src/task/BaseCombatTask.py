@@ -192,8 +192,8 @@ class BaseCombatTask(CombatCheck):
                         f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
                 self.next_frame()
                 continue
-            switch_to.has_intro = switch_to.has_intro or current_char.is_con_full()
             if current_index != switch_to.index:
+                switch_to.has_intro = switch_to.has_intro or current_char.is_con_full()
                 if now - start > 10:
                     if self.debug:
                         self.screenshot(f'switch_not_detected_{current_char}_to_{switch_to}')
@@ -283,7 +283,7 @@ class BaseCombatTask(CombatCheck):
 
     def sleep_check_combat(self, timeout, check_combat=True):
         start = time.time()
-        if not self.in_combat() and check_combat:
+        if check_combat and not self.in_combat():
             self.raise_not_in_combat('sleep check not in combat')
         self.sleep(timeout - (time.time() - start))
 
