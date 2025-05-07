@@ -173,7 +173,7 @@ class BaseCombatTask(CombatCheck):
         logger.info(f'switch_next_char {current_char} -> {switch_to} has_intro {switch_to.has_intro}')
         last_click = 0
         start = time.time()
-        while True:            
+        while True:
             now = time.time()
             if now - last_click > 0.1:
                 self.send_key(switch_to.index + 1)
