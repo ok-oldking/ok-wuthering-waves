@@ -25,13 +25,15 @@ class Phoebe(BaseChar):
             self.decide_teammate()
         if self.has_intro:
             self.continues_normal_attack(1.5)
-            self.click_echo()
+            if self.attribute == 1:
+                self.click_echo()
             if not self.in_absolutin():
                 self.starflash_combo() 
                 return self.switch_next_char()
-        self.click_echo()
+        if self.attribute == 1:
+            self.click_echo()
         if self.flying():
-            self.logger.debug('Pheobe flying')
+            self.logger.info('Pheobe flying')
             self.continues_normal_attack(0.1)
             return self.switch_next_char()
         if self.liberation_available() and self.first_liberation:
@@ -39,11 +41,12 @@ class Phoebe(BaseChar):
             self.starflash_combo() 
             return self.switch_next_char()
         if self.resonance_available():
-            self.click_resonance_once()
+            if not self.click_resonance_once():
+                self.logger.debug('resonance failed')
             self.starflash_combo()                                   
             return self.switch_next_char()        
-#        if self.click_echo():
-#            return self.switch_next_char()
+        if self.attribute == 2 and self.click_echo():
+            return self.switch_next_char()
         self.continues_normal_attack(0.1)
         self.switch_next_char()
 
@@ -60,7 +63,7 @@ class Phoebe(BaseChar):
                 self.task.next_frame()
             self.perform_heavy_attack()
         else:
-            self.perform_heavy_attack(1.2)
+            self.perform_heavy_attack(1)
         self.first_liberation = True
         if self.is_con_full():
             self.sleep(0.3)
@@ -72,14 +75,14 @@ class Phoebe(BaseChar):
             self.heavy_attack(duration=duration)
 
     def click_resonance_once(self):
-        self._resonance_available = False
         start = time.time()
         while self.resonance_available():
             self.check_combat()
             if time.time() - start > 0.5:
-                break
+                return True
             self.send_resonance_key()
             self.task.next_frame()
+        return False
             
     def hold_resonance(self, duration=0.6):        
         self.check_combat()
@@ -176,7 +179,6 @@ phoebe_light_color = {
     'r': (240, 255),  # Red range
     'g': (240, 255),  # Green range
     'b': (200, 230)   # Blue range
-
 }  
 
 phoebe_forte_light_color = {
