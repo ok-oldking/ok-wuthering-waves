@@ -173,8 +173,7 @@ class BaseCombatTask(CombatCheck):
         logger.info(f'switch_next_char {current_char} -> {switch_to} has_intro {switch_to.has_intro}')
         last_click = 0
         start = time.time()
-        while True:
-            switch_to.has_intro = switch_to.has_intro or current_char.is_con_full()
+        while True:            
             now = time.time()
             if now - last_click > 0.1:
                 self.send_key(switch_to.index + 1)
@@ -194,6 +193,7 @@ class BaseCombatTask(CombatCheck):
                 self.next_frame()
                 continue
             if current_index != switch_to.index:
+                switch_to.has_intro = switch_to.has_intro or current_char.is_con_full()
                 if now - start > 10:
                     if self.debug:
                         self.screenshot(f'switch_not_detected_{current_char}_to_{switch_to}')
