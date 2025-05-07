@@ -174,6 +174,7 @@ class BaseCombatTask(CombatCheck):
         last_click = 0
         start = time.time()
         while True:
+            switch_to.has_intro = switch_to.has_intro or current_char.is_con_full()
             now = time.time()
             if now - last_click > 0.1:
                 self.send_key(switch_to.index + 1)
@@ -192,7 +193,6 @@ class BaseCombatTask(CombatCheck):
                         f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
                 self.next_frame()
                 continue
-            switch_to.has_intro = switch_to.has_intro or current_char.is_con_full()
             if current_index != switch_to.index:
                 if now - start > 10:
                     if self.debug:
