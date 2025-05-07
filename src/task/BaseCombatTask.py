@@ -283,7 +283,7 @@ class BaseCombatTask(CombatCheck):
 
     def sleep_check_combat(self, timeout, check_combat=True):
         start = time.time()
-        if not self.in_combat() and check_combat:
+        if check_combat and not self.in_combat():
             self.raise_not_in_combat('sleep check not in combat')
         self.sleep(timeout - (time.time() - start))
 
