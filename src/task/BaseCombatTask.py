@@ -226,7 +226,9 @@ class BaseCombatTask(CombatCheck):
     def has_cd(self, box_name):
         box = self.get_box_by_name(f'box_{box_name}')
         cropped = box.crop_frame(self.frame)
-        num_labels, stats, labels = get_connected_area_by_color(cropped, dot_color, connectivity=8, gray_range=22)
+        lower_bound, upper_bound = color_range_to_bound(dot_color)
+        mask = cv2.inRange(cropped, lower_bound, upper_bound)
+        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
         big_area_count = 0
         has_dot = False
         number_count = 0
