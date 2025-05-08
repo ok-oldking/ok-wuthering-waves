@@ -46,6 +46,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
     def do_run(self):
         count = 0
         in_realm = self.in_realm()
+        threshold = 0.3 if in_realm else 0.6
+        time_out = 12 if in_realm else 4
         while count < self.config.get("Repeat Farm Count", 0):
             if in_realm:
                 self.send_key('esc', after_sleep=0.5)
@@ -68,7 +70,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             if self.find_f_with_text():
                 dropped = self.pick_echo()
             else:
-                dropped = self.yolo_find_echo(turn=False, use_color=False, time_out=4, threshold=0.6)[0]
+                dropped = self.yolo_find_echo(turn=in_realm, use_color=False, time_out=time_out, threshold=threshold)[0]
             self.incr_drop(dropped)
             if dropped:
                 self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
