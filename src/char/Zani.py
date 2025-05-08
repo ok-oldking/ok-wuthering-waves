@@ -12,14 +12,14 @@ class Zani(BaseChar):
         
     def reset_state(self):
         super().reset_state()
-        self.liberaction_time = 0
+#        self.liberaction_time = 0
         
     def do_perform(self):
         if self.has_intro:
             self.continues_normal_attack(1.5)
         self.check_liber()
         self.click_echo() 
-        if self.in_liberation and self.liberation_available() and self.liberation2_ready():   
+        if self.in_liberation and self.liberation_available() and self.liberation2_ready():            
             start = time.time()
             self.click_liberation()
             self.check_liber()
@@ -31,32 +31,19 @@ class Zani(BaseChar):
                     self.in_liberation = False
                 return
             
-        if not self.in_liberation and self.resonance_available() and self.resonance_light():
-            self.resonance_until_not_light()
-            self.continues_normal_attack(0.4)            
-            return self.switch_next_char()
-            
         if not self.in_liberation and self.liberation_available():
+            if self.resonance_light():
+                if not self.resonance_until_not_light():
+                    self.logger.info('res+liber combo failed')
+                self.continues_normal_attack(0.5)
             if self.click_liberation():
                 self.in_liberation = True
                 self.liberaction_time = time.time()
                 self.continues_normal_attack(0.5)
-                self.logger.info('Zani click liber1.')
-                
+                self.logger.info('Zani click liber1.')               
         self.check_liber()                           
         if self.in_liberation:
             self.continues_normal_attack(0.6)
-#            if self.liberation_available() and self.liberation2_ready():   
-#                start = time.time()
-#                self.click_liberation()
-#                self.check_liber()
-#                if self.in_liberation:
-#                    self.switch_next_char()
-#                    if time.time() - start > 2:
-#                        self.add_freeze_duration(start, time.time()-start)
-#                        self.logger.debug(f'Zani click liber2 in {time.time()-start}')  
-#                        self.in_liberation = False
-#                    return
             return self.switch_next_char()    
         if self.resonance_available():
             self.resonance_until_not_light()
@@ -91,17 +78,19 @@ class Zani(BaseChar):
         
     def resonance_until_not_light(self):
         start = time.time()
+        b = False
         while self.current_resonance() and not self.has_cd('resonance'):
             self.send_resonance_key()            
+            b = True
             if time.time() - start > 1:
-                return
+                return False
             self.check_combat()
             self.task.next_frame()
+        return b
             
     def resonance_light(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 3105, 1845, 3285, 2010, name='zani_resonance', hcenter=True)
         light_percent = self.task.calculate_color_percentage(zani_light_color, box)
-#        self.logger.info(f'Zani_resonance_light_percent {light_percent}')
         return light_percent > 0.005  
             
     def has_target(self,in_liber = False):
