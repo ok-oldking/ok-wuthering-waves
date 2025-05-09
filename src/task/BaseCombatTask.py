@@ -110,7 +110,6 @@ class BaseCombatTask(CombatCheck):
                 raise e
             except NotInCombatException as e:
                 logger.info(f'combat_once out of combat break {e}')
-                # self.screenshot(f'combat_once_ooc {self.out_of_combat_reason}')
                 break
         self.combat_end()
         self.wait_in_team_and_world(time_out=10, raise_if_not_found=False)
@@ -175,6 +174,7 @@ class BaseCombatTask(CombatCheck):
         start = time.time()
         while True:
             now = time.time()
+            switch_to.has_intro = switch_to.has_intro or current_char.is_con_full()
             if now - last_click > 0.1:
                 self.send_key(switch_to.index + 1)
                 last_click = now
@@ -193,7 +193,6 @@ class BaseCombatTask(CombatCheck):
                 self.next_frame()
                 continue
             if current_index != switch_to.index:
-                switch_to.has_intro = switch_to.has_intro or current_char.is_con_full()
                 if now - start > 10:
                     if self.debug:
                         self.screenshot(f'switch_not_detected_{current_char}_to_{switch_to}')
