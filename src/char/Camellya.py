@@ -198,5 +198,5 @@ camellya_forte_color = {
 camellya_budding_forte_color = {
     'r': (238, 255),  # Red range
     'g': (173, 216),  # Green range
-    'b': (190, 230)   # Blue range
+    'b': (180, 230)   # Blue range
 } 
