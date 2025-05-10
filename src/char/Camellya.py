@@ -1,8 +1,9 @@
 import time
 from decimal import Decimal, ROUND_HALF_UP
-
+from ok import color_range_to_bound
 from src.char.BaseChar import BaseChar, Priority
-
+import cv2
+import numpy as np
 
 class Camellya(BaseChar):
 
@@ -11,7 +12,7 @@ class Camellya(BaseChar):
         self.last_heavy = 0
         self.waiting_for_forte_drop = False
         self.forte_drop_timestamp = 0
-        self.forte_drop_reference = 0
+        self.forte_diff_buffer = []
 
     def reset_state(self):
         super().reset_state()
@@ -127,14 +128,98 @@ class Camellya(BaseChar):
         box = self.task.box_of_screen_scaled(2560, 1440, 1087, 1335, 1451, 1336, name='camellya_forte', hcenter=True)
         forte_percent = 0
         if not budding:
-            forte_percent = self.task.calculate_color_percentage(camellya_forte_color, box)
+            forte_percent = self.calculate_forte_percent(camellya_forte_color, box)
             self.logger.debug(f'forte_percent {forte_percent}')
         else:
-            forte_percent = self.task.calculate_color_percentage(camellya_budding_forte_color, box)
+            forte_percent = self.calculate_forte_percent(camellya_budding_forte_color, box)
             self.logger.debug(f'forte_percent_budding {forte_percent}')
         forte_percent = Decimal(str(forte_percent)).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
         return forte_percent
     
+    def detect_stripe_region(self, gray: np.ndarray, white_ratio_range=(0.05, 0.75), 
+                            fft_thresh_ratio: float = 0.3, max_fail_count: int = 3) -> tuple:
+        height, width = gray.shape[:2]
+        if height == 0 or width < 64 or not np.array_equal(np.unique(gray), [0, 255]):
+            return -1, -1
+        
+        win_w = max(8, int(width * 0.045))
+        step = max(1, int(width * 0.012))
+
+        scores = []
+        positions = []
+        start_x = None
+        end_x = None
+        fail_count = 0
+        x = 0
+        while x + win_w <= width:
+            window = gray[:, x:x+win_w]
+            white_ratio = np.count_nonzero(window == 255) / window.size
+            if not (white_ratio_range[0] <= white_ratio <= white_ratio_range[1]):
+                score = 0
+            else:
+                profile = np.sum(window == 255, axis=0).astype(np.float32)
+                profile -= np.mean(profile)
+                spectrum = np.abs(np.fft.fft(profile))[:win_w//2]
+                score = np.max(spectrum[1:])
+            scores.append(score)
+            positions.append((x, x + win_w))
+            if score != 0:
+                fail_count = 0
+            else:
+                fail_count += 1
+                if fail_count >= max_fail_count:
+                    break
+            x += step
+
+        if len(scores) == 0:
+            return -1, -1
+        
+        scores = np.array(scores)
+        max_score = np.max(scores)
+        if max_score < 1e-3:
+            return 0, 0
+        
+        fft_thresh = max_score * fft_thresh_ratio
+        keep = scores >= fft_thresh
+
+        fail_count = 0
+        end_idx = 0
+        for i in range(len(keep)):
+            if keep[i]:
+                end_idx = i
+                fail_count = 0
+            else:
+                fail_count += 1
+                if fail_count >= max_fail_count:
+                    break
+
+        start_x = 0
+        if end_idx == 0:
+            end_x = 0
+        else:
+            if positions[end_idx][1] + step >= width:
+                end_x = width
+            else:
+                end_x = positions[end_idx][0]
+        return start_x, end_x
+
+    def calculate_forte_percent(self, forte_color, box):
+        cropped = box.crop_frame(self.task.frame)
+        lower_bound, upper_bound = color_range_to_bound(forte_color)
+        gray = cv2.inRange(cropped, lower_bound, upper_bound)
+        
+        start_x, end_x = self.detect_stripe_region(gray)
+        if start_x != -1:
+            stripe_area = gray[:, start_x:end_x]
+
+            white_pixels = stripe_area.size
+            total_pixels = gray.size
+            ratio = white_pixels / total_pixels if total_pixels > 0 else 0
+        else:
+            ratio = self.task.calculate_color_percentage(forte_color, box)
+        self.logger.debug(f'forte_percent {ratio * 100:.2f}%')
+        return ratio
+
     def heavy_attack(self, duration, check_combat = True, until_con_full = False):
         self.logger.info(f'start heavy_attack')
         self.task.mouse_down()
@@ -154,16 +239,16 @@ class Camellya(BaseChar):
     def should_retry_heavy_attack(self, current_forte, budding = False):
         diff = current_forte - self.get_forte(budding)
         self.logger.debug(f'diff {diff}')
-        if not self.waiting_for_forte_drop and diff <= 0.002:
+        if not self.waiting_for_forte_drop and 0 <= diff <= 0.01:
             self.waiting_for_forte_drop = True
             self.forte_drop_timestamp = time.time()
-            if diff < 0:
-                self.forte_drop_reference = current_forte - diff
-            else:
-                self.forte_drop_reference = current_forte
-        elif diff > 0.002 or self.forte_drop_reference - self.get_forte(budding) > 0.002:
-            self.waiting_for_forte_drop = False
-        if self.waiting_for_forte_drop and self.time_elapsed_accounting_for_freeze(self.forte_drop_timestamp) > 0.7:
+            self.forte_diff_buffer = []
+        if self.waiting_for_forte_drop:
+            self.forte_diff_buffer.append(diff)
+            if np.array(self.forte_diff_buffer).sum() > 0.01:
+                self.waiting_for_forte_drop = False
+                self.logger.debug(f'diff {diff}')
+        if self.waiting_for_forte_drop and self.time_elapsed_accounting_for_freeze(self.forte_drop_timestamp) > 0.6:
             self.waiting_for_forte_drop = False
             self.logger.info(f'retry heavy attack')
             self.task.mouse_up()
