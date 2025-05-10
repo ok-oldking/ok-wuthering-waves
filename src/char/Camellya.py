@@ -216,7 +216,7 @@ class Camellya(BaseChar):
             total_pixels = gray.size
             ratio = white_pixels / total_pixels if total_pixels > 0 else 0
         else:
-            ratio = self.task.calculate_color_percentage(camellya_forte_color, box)
+            ratio = self.task.calculate_color_percentage(forte_color, box)
         self.logger.debug(f'forte_percent {ratio * 100:.2f}%')
         return ratio
 
