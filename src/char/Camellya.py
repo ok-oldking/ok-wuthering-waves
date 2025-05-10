@@ -124,7 +124,7 @@ class Camellya(BaseChar):
         self.sleep(1.1)
     
     def get_forte(self, budding=False):
-        box = self.task.box_of_screen_scaled(3840, 2160, 1627, 1992, 2178, 2012, name='camellya_forte', hcenter=True)
+        box = self.task.box_of_screen_scaled(2560, 1440, 1087, 1335, 1451, 1336, name='camellya_forte', hcenter=True)
         forte_percent = 0
         if not budding:
             forte_percent = self.task.calculate_color_percentage(camellya_forte_color, box)
@@ -152,27 +152,24 @@ class Camellya(BaseChar):
         self.waiting_for_forte_drop = False
 
     def should_retry_heavy_attack(self, current_forte, budding = False):
-        if not self.waiting_for_forte_drop:
-            diff = current_forte - self.get_forte(budding)
-            self.logger.debug(f'diff {diff}')
-            if diff <= 0.002:
-                self.waiting_for_forte_drop = True
-                self.forte_drop_timestamp = time.time()
-                if diff < 0:
-                    self.forte_drop_reference = current_forte - diff
-                else:
-                    self.forte_drop_reference = current_forte
-        else:
-            diff = self.forte_drop_reference - self.get_forte(budding)
-            self.logger.debug(f'drop_reference diff {diff}')
-            if diff > 0.002 or diff <= -0.007:
-                self.waiting_for_forte_drop = False
-            elif self.time_elapsed_accounting_for_freeze(self.forte_drop_timestamp) > 0.5:
-                self.logger.info(f'retry heavy attack')
-                self.task.mouse_up()
-                self.sleep(0.1, False)
-                self.task.mouse_down()
-                self.sleep(0.1, False)
+        diff = current_forte - self.get_forte(budding)
+        self.logger.debug(f'diff {diff}')
+        if not self.waiting_for_forte_drop and diff <= 0.002:
+            self.waiting_for_forte_drop = True
+            self.forte_drop_timestamp = time.time()
+            if diff < 0:
+                self.forte_drop_reference = current_forte - diff
+            else:
+                self.forte_drop_reference = current_forte
+        elif diff > 0.002 or self.forte_drop_reference - self.get_forte(budding) > 0.002:
+            self.waiting_for_forte_drop = False
+        if self.waiting_for_forte_drop and self.time_elapsed_accounting_for_freeze(self.forte_drop_timestamp) > 0.7:
+            self.waiting_for_forte_drop = False
+            self.logger.info(f'retry heavy attack')
+            self.task.mouse_up()
+            self.sleep(0.1, False)
+            self.task.mouse_down()
+            self.sleep(0.1, False)
     
     def check_target(self, is_heavy_att = False):
         if not self.task.has_target():
@@ -193,13 +190,13 @@ camellya_red_color = {
 } 
 
 camellya_forte_color = {
-    'r': (225, 255),  # Red range
-    'g': (40, 68),  # Green range
-    'b': (125, 149)   # Blue range
+    'r': (199, 255),  # Red range
+    'g': (47, 93),  # Green range
+    'b': (127, 149)   # Blue range
 } 
 
 camellya_budding_forte_color = {
-    'r': (251, 255),  # Red range
-    'g': (161, 200),  # Green range
-    'b': (181, 213)   # Blue range
+    'r': (238, 255),  # Red range
+    'g': (173, 216),  # Green range
+    'b': (180, 230)   # Blue range
 } 
