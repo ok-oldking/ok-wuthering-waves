@@ -9,6 +9,8 @@ class Phoebe(BaseChar):
         self.perform_intro = 0
         self.attribute = 0
         self.star_available = False
+        self.has_forte = True
+        self.last_holding = 0
         
     def reset_state(self):
         super().reset_state()
@@ -16,6 +18,7 @@ class Phoebe(BaseChar):
         self.perform_intro = 0
         self.attribute = 0
         self.star_available = False
+        self.has_forte = True
         
     def flying(self):
         return self.current_resonance() == 0 or self.current_echo() == 0
@@ -27,8 +30,7 @@ class Phoebe(BaseChar):
             self.continues_normal_attack(1.5)
             if self.attribute == 1:
                 self.click_echo()
-            if not self.in_absolutin():
-                self.starflash_combo() 
+            if self.heavy_attack_ready() and self.starflash_combo():
                 return self.switch_next_char()
         if self.attribute == 1:
             self.click_echo()
@@ -38,13 +40,15 @@ class Phoebe(BaseChar):
             return self.switch_next_char()
         if self.liberation_available() and self.first_liberation:
             self.click_liberation()
-            self.starflash_combo() 
-            return self.switch_next_char()
+            if self.starflash_combo(): 
+                return self.switch_next_char()
         if self.resonance_available():
+            if not self.has_forte and not self.heavy_attack_ready() and self.click_resonance()[0]:
+                return self.switch_next_char()
             if not self.click_resonance_once():
                 self.logger.debug('resonance failed')
-            self.starflash_combo()                                   
-            return self.switch_next_char()        
+            if self.starflash_combo():                                   
+                return self.switch_next_char()        
         if self.attribute == 2 and self.click_echo():
             return self.switch_next_char()
         self.continues_normal_attack(0.1)
@@ -53,13 +57,15 @@ class Phoebe(BaseChar):
     def starflash_combo(self):
         start = time.time()
         if not self.heavy_attack_ready():
+            if not self.has_forte:
+                return False
             while not self.heavy_attack_ready():
-                self.check_combat()
+                self.click()
                 if time.time() - start > 5:
                     break
-                if time.time() - start > 0.8 and not self.in_absolutin():
-                    return
-                self.click()
+                if time.time() - start > 0.8 and not self.in_absolutin():                
+                    return False
+                self.check_combat()
                 self.task.next_frame()
             self.perform_heavy_attack()
         else:
@@ -67,10 +73,12 @@ class Phoebe(BaseChar):
         self.first_liberation = True
         if self.is_con_full():
             self.sleep(0.3)
+        return True
                 
-    def perform_heavy_attack(self, duration=0.6):
+    def perform_heavy_attack(self, duration=0.6):    
         if self.attribute == 2 and (self.litany_ready() or not self.in_absolutin() or not self.check_middle_star()):
             self.hold_resonance(duration=duration)
+            self.last_holding = time.time()
         else:
             self.heavy_attack(duration=duration)
 
@@ -93,13 +101,13 @@ class Phoebe(BaseChar):
         self.logger.debug('hold resonance end')
     
     def litany_ready(self):
-        box = self.task.box_of_screen_scaled(3840, 2160, 3149, 1832, 3225, 1857, name='phoebe_resonance', hcenter=True)
+        box = self.task.box_of_screen_scaled(3840, 2160, 3149, 1832, 3225, 1857, name='phoebe_resonance', hcenter=False)
         blue_percent = self.task.calculate_color_percentage(pheobe_litany_blue_color, box)
         self.logger.debug(f'blue_percent {blue_percent}')
         return blue_percent > 0.15        
 
     def heavy_attack_ready(self):
-        box = self.task.box_of_screen_scaled(3840, 2160, 2740, 1832, 2803, 1857, name='phoebe_attack', hcenter=True)
+        box = self.task.box_of_screen_scaled(3840, 2160, 2740, 1832, 2803, 1857, name='phoebe_attack', hcenter=False)
         light_percent = self.task.calculate_color_percentage(phoebe_light_color, box)
         self.logger.debug(f'light_percent {light_percent}')
         if not self.in_absolutin():
@@ -127,10 +135,15 @@ class Phoebe(BaseChar):
     def switch_next_char(self, *args):
         if self.is_con_full():
             self.perform_intro = time.time()
+        if self.time_elapsed_accounting_for_freeze(self.last_holding) > 25:
+            self.has_forte = True
+        else:
+            self.has_forte = self.in_absolutin() or self.heavy_attack_ready()
+        
         return super().switch_next_char(*args)
         
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.time_elapsed_accounting_for_freeze(self.perform_intro) < 4.0:
+        if self.time_elapsed_accounting_for_freeze(self.perform_intro) < 4.5:
             return Priority.MIN
         else:
             return super().do_get_switch_priority(current_char, has_intro)
