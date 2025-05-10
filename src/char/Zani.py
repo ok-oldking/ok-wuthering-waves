@@ -9,17 +9,22 @@ class Zani(BaseChar):
         super().__init__(*args, **kwargs)
         self.liberaction_time = 0
         self.in_liberation = False
+        self.have_forte = False
+        self.last_attack = 0
         
     def reset_state(self):
+        self.last_attack = 0
         super().reset_state()
-#        self.liberaction_time = 0
         
-    def do_perform(self):
+    def do_perform(self): 
+        shield_attack = False
         if self.has_intro:
             self.continues_normal_attack(1.5)
+        elif self.in_liberation:
+            shield_attack = self.time_elapsed_accounting_for_freeze(self.last_attack) > 3
         self.check_liber()
         self.click_echo() 
-        if self.in_liberation and self.liberation_available() and self.liberation2_ready():            
+        if self.in_liberation and self.liberation2_ready():          
             start = time.time()
             self.click_liberation()
             self.check_liber()
@@ -30,45 +35,43 @@ class Zani(BaseChar):
                     self.logger.info(f'Zani click liber2 in {time.time()-start}')  
                     self.in_liberation = False
                 return
-            
+        if not self.in_liberation and self.resonance_available(): 
+            if not self.resonance_until_not_light():
+                self.logger.info('res+liber combo failed')
+            self.continues_normal_attack(0.55)
         if not self.in_liberation and self.liberation_available():
-            if self.resonance_light():
-                if not self.resonance_until_not_light():
-                    self.logger.info('res+liber combo failed')
-                self.continues_normal_attack(0.5)
             if self.click_liberation():
                 self.in_liberation = True
+                self.have_forte = True
                 self.liberaction_time = time.time()
-                self.continues_normal_attack(0.5)
-                self.logger.info('Zani click liber1.')               
-        self.check_liber()                           
+                self.last_attack = self.liberaction_time
+                self.continues_normal_attack(1.1)
+                self.logger.info('Zani click liber1.')   
+                return self.switch_next_char()
         if self.in_liberation:
+            self.last_attack = time.time()
+    #开大时，zani离场再登场的平a，会打出普通攻击而不是强化攻击
+    #算是bug，目前先延迟0.3秒，等kl修
+            if shield_attack and not self.attack_light():
+                self.continues_normal_attack(0.3)
             self.continues_normal_attack(0.6)
-            return self.switch_next_char()    
-        if self.resonance_available():
-            self.resonance_until_not_light()
-            self.continues_normal_attack(0.4)
-            return self.switch_next_char()          
+            return self.switch_next_char()              
         self.continues_normal_attack(0.1)
         self.switch_next_char()          
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if self.in_liberation:
-            if self.time_elapsed_accounting_for_freeze(self.liberaction_time) > 18:
-                return Priority.MAX
             return 10000
         else:
             return super().do_get_switch_priority(current_char, has_intro)
             
     def liberation2_ready(self):
-        if self.time_elapsed_accounting_for_freeze(self.liberaction_time) > 18:
+        if not self.liberation_available() or self.attack_light():
+            return False
+        if self.time_elapsed_accounting_for_freeze(self.liberaction_time) > 19:
             return True
-# FIXME: 当能量空时尝试提早r2结束状态，但Forte图像为淡入，高概率出现误识别情况
-# FIXME: An attempt is made to end the state of liberation earlier while energy empty.
-#        However the forte image fading in result in a high probability of misidentification.
-
-#        if self.time_elapsed_accounting_for_freeze(self.liberaction_time) > 12 and not self.is_forte_full():
-#            return True
+        if not self.have_forte and self.time_elapsed_accounting_for_freeze(self.liberaction_time) > 12:
+            return True
         return False
         
     def has_long_actionbar(self):
@@ -88,11 +91,18 @@ class Zani(BaseChar):
             self.task.next_frame()
         return b
             
-    def resonance_light(self):
-        box = self.task.box_of_screen_scaled(3840, 2160, 3105, 1845, 3285, 2010, name='zani_resonance', hcenter=True)
+#    def resonance_light(self):
+#        box = self.task.box_of_screen_scaled(3840, 2160, 3105, 1845, 3285, 2010, name='zani_resonance', hcenter=False)
+#        light_percent = self.task.calculate_color_percentage(zani_light_color, box)
+#        return light_percent > 0.005  
+    
+#由于进场前半秒会因为淡入识别不到，该检测实际只有协奏入场时能正常生效。
+#另zani开大后a2动作完全结束后平a键才会亮起，因此也无法在切走前进行记录
+    def attack_light(self):
+        box = self.task.box_of_screen_scaled(3840, 2160, 2690, 1845, 2860, 2010, name='zani_attack', hcenter=False)
         light_percent = self.task.calculate_color_percentage(zani_light_color, box)
-        return light_percent > 0.005  
-            
+        return light_percent > 0.01        
+        
     def has_target(self,in_liber = False):
         if in_liber:
             outer_box = 'box_target_enemy_long'
@@ -112,12 +122,10 @@ class Zani(BaseChar):
         else:
             self.in_liberation = not self.in_liberation
         return self.in_liberation        
-        
-    def is_forte_full(self):
-        box = self.task.box_of_screen_scaled(3840, 2160, 2251, 1993, 2311, 2016, name='forte_full', hcenter=True)
-        white_percent = self.task.calculate_color_percentage(forte_white_color, box)
-        self.logger.info(f'forte_color_percent {white_percent}')
-        return white_percent > 0.04   
+           
+    def switch_next_char(self, *args):
+        self.have_forte = self.is_forte_full()            
+        return super().switch_next_char(*args)
         
 zani_light_color = {
     'r': (245, 255),  # Red range
