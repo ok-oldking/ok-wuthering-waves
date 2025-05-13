@@ -13,6 +13,7 @@ class Camellya(BaseChar):
         self.waiting_for_forte_drop = False
         self.forte_drop_timestamp = 0
         self.forte_diff_buffer = []
+        self.last_forte = 0
 
     def reset_state(self):
         super().reset_state()
@@ -56,26 +57,29 @@ class Camellya(BaseChar):
         start_con = self.get_current_con()
         if start_con < 0.82:
             loop_time = 1.1
+            if self.resonance_available():
+                self.click_resonance()
         else:
-            loop_time = 4.1
+            loop_time = 4.6
         budding_start_time = time.time()
         budding = False
         heavy_att = False
+        freeze_forte_check = False
+        freeze_forte_time = 0
+        self.last_forte = 0
         while time.time() - budding_start_time < loop_time or self.task.find_one('camellya_budding', threshold=0.7):
             if not budding:
-                if self.ephemeral_ready():
+                if self.ephemeral_ready() and self.is_con_full():
                     self.ephemeral_cast()
                     budding = True
                 else:
                     self.click(interval=0.1)
                     current_con = self.get_current_con()
                     if current_con < 0.82:
-                        self.click_resonance()
-                        self.sleep(0.1)
                         if not self.is_con_full():
                             self.click_echo()
                             return self.switch_next_char()
-                        elif loop_time < 2.1:
+                        elif loop_time < 3.1:
                             loop_time += 1
                 if budding:
                     self.logger.info(f'start budding')
@@ -83,19 +87,23 @@ class Camellya(BaseChar):
                     budding_start_time = time.time()
                     loop_time = 5.1
             if budding:
-                current_forte = self.get_forte(True)
                 if not heavy_att:
                     heavy_att = True
                     self.task.mouse_down()
                 if time.time() - budding_start_time < 1.5 and self.liberation_available():
                     if self.click_liberation() and heavy_att:
                         self.logger.info(f'liberation retry heavy att')
+                        self.task.mouse_up()
                         self.sleep(0.2, False)
                         self.task.mouse_down()
             self.check_target(heavy_att)
             self.task.next_frame()
-            if heavy_att:
-                self.should_retry_heavy_attack(current_forte, True)
+            if freeze_forte_check and time.time() - freeze_forte_time >= 0.2:
+                freeze_forte_check = False
+            if not freeze_forte_check and heavy_att:
+                if self.should_retry_heavy_attack(budding) < 0:
+                    freeze_forte_check = True
+                    freeze_forte_time = time.time()
         self.waiting_for_forte_drop = False
         if heavy_att:
             self.task.mouse_up()
@@ -112,10 +120,51 @@ class Camellya(BaseChar):
             return True
         
     def ephemeral_ready(self):
-        box = self.task.box_of_screen_scaled(3840, 2160, 3149, 1832, 3225, 1857, name='camellya_resonance', hcenter=True)
-        red_percent = self.task.calculate_color_percentage(camellya_red_color, box)
+        box = self.task.box_of_screen_scaled(3840, 2160, 3100, 1840, 3289, 2029, name='camellya_resonance', hcenter=True)
+        red_percent = self.calculate_color_percentage_in_masked(camellya_red_color, box, 0.395, 0.496)
         self.logger.debug(f'red_percent {red_percent}')
-        return red_percent > 0.11
+        return red_percent > 0.1
+    
+    def calculate_color_percentage_in_masked(self, target_color, box, mask_r1_ratio=0.0, mask_r2_ratio=0.0, center_offset=0.0):
+        cropped = box.crop_frame(self.task.frame).copy()
+        if cropped is None or cropped.size == 0:
+            return 0.0
+        h, w = cropped.shape[:2]
+
+        if mask_r1_ratio != 0 and mask_r2_ratio != 0:
+            center_x, center_y = w // 2 + int(center_offset * w), h // 2 + int(center_offset * h)
+            center_x = np.clip(center_x, 0, w - 1)
+            center_y = np.clip(center_y, 0, h - 1)
+
+            distance = np.sqrt(center_x ** 2 + center_y ** 2)
+            r1 = int(h * mask_r1_ratio)
+            r2 = h * mask_r2_ratio
+            if r2 > distance:
+                r2_thickness = 1
+            else:
+                r2_thickness = max(1, int(distance - r2))
+            r2 = int((r2 + distance) / 2)
+
+        if r1 >= 0:
+            cv2.circle(cropped, (center_x, center_y), r1, 0, -1)
+        if r2 >= 0 and r2_thickness >= 0:
+            cv2.circle(cropped, (center_x, center_y), r2, 0, r2_thickness)
+            
+        if cropped.ndim == 3:
+            non_black_mask = np.all(cropped != 0, axis=2)
+        else:
+            return 0.0
+            
+        free_space = np.count_nonzero(non_black_mask)
+        if free_space == 0:
+            return 0.0
+
+        lower_bound, upper_bound = color_range_to_bound(target_color)
+        gray = cv2.inRange(cropped, lower_bound, upper_bound)
+        colored_pixels = np.count_nonzero(gray == 255)
+
+        color_percent = colored_pixels / free_space
+        return color_percent
 
     def ephemeral_cast(self):
         self.check_combat()
@@ -125,25 +174,50 @@ class Camellya(BaseChar):
         self.sleep(1.1)
     
     def get_forte(self, budding=False):
-        box = self.task.box_of_screen_scaled(2560, 1440, 1087, 1335, 1451, 1336, name='camellya_forte', hcenter=True)
+        box = self.task.box_of_screen_scaled(3840, 2160, 1630, 2002, 2176, 2004, name='camellya_forte', hcenter=True)
         forte_percent = 0
         if not budding:
             forte_percent = self.calculate_forte_percent(camellya_forte_color, box)
-            self.logger.debug(f'forte_percent {forte_percent}')
         else:
             forte_percent = self.calculate_forte_percent(camellya_budding_forte_color, box)
-            self.logger.debug(f'forte_percent_budding {forte_percent}')
         forte_percent = Decimal(str(forte_percent)).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
+        if forte_percent >= 0:
+            self.logger.debug(f'forte_percent {forte_percent * 100:.2f}% budding {budding}')
         return forte_percent
-    
+
     def detect_stripe_region(self, gray: np.ndarray, white_ratio_range=(0.05, 0.75), 
-                            fft_thresh_ratio: float = 0.3, max_fail_count: int = 3) -> tuple:
+                            fft_thresh_ratio: float = 0.45, max_fail_count: int = 1) -> tuple:
         height, width = gray.shape[:2]
-        if height == 0 or width < 64 or not np.array_equal(np.unique(gray), [0, 255]):
+        if height == 0 or width < 64 or not np.any((gray == 0) | (gray == 255)):
             return -1, -1
+        if not np.any((gray == 255)):
+            return 0, 0
+        
+        def remove_short_stripes(gray: np.ndarray, threshold=3) -> np.ndarray:
+            if threshold < 1:
+                return gray
+            
+            result = gray.copy()
+            height, width = gray.shape
+
+            for y in range(height):
+                row = gray[y]
+                x = 0
+                while x < width:
+                    if row[x] == 255:
+                        start = x
+                        while x < width and row[x] == 255:
+                            x += 1
+                        length = x - start
+                        if length < threshold:
+                            result[y, start:x] = 0
+                    else:
+                        x += 1
+            return result
         
         win_w = max(8, int(width * 0.045))
         step = max(1, int(width * 0.012))
+        gray = remove_short_stripes(gray, int(width * 0.009))
 
         scores = []
         positions = []
@@ -163,12 +237,6 @@ class Camellya(BaseChar):
                 score = np.max(spectrum[1:])
             scores.append(score)
             positions.append((x, x + win_w))
-            if score != 0:
-                fail_count = 0
-            else:
-                fail_count += 1
-                if fail_count >= max_fail_count:
-                    break
             x += step
 
         if len(scores) == 0:
@@ -176,10 +244,11 @@ class Camellya(BaseChar):
         
         scores = np.array(scores)
         max_score = np.max(scores)
+        fft_thresh = max(1.5, max_score * fft_thresh_ratio)
+
         if max_score < 1e-3:
             return 0, 0
         
-        fft_thresh = max_score * fft_thresh_ratio
         keep = scores >= fft_thresh
 
         fail_count = 0
@@ -189,9 +258,15 @@ class Camellya(BaseChar):
                 end_idx = i
                 fail_count = 0
             else:
-                fail_count += 1
-                if fail_count >= max_fail_count:
-                    break
+                a, b = positions[i]
+                window = gray[:, a:b]
+                white_ratio = np.count_nonzero(window == 255) / window.size
+                if white_ratio < 0.375:
+                    if np.any(scores[i+1:] > fft_thresh):
+                        return -2, -2
+                    fail_count += 1
+                    if fail_count >= max_fail_count:
+                        break
 
         start_x = 0
         if end_idx == 0:
@@ -207,37 +282,49 @@ class Camellya(BaseChar):
         cropped = box.crop_frame(self.task.frame)
         lower_bound, upper_bound = color_range_to_bound(forte_color)
         gray = cv2.inRange(cropped, lower_bound, upper_bound)
-        
         start_x, end_x = self.detect_stripe_region(gray)
+        if start_x == -2:
+            self.logger.debug(f'calculate_forte_percent failed due to interference')
+            return -1
         if start_x != -1:
             stripe_area = gray[:, start_x:end_x]
-
             white_pixels = stripe_area.size
             total_pixels = gray.size
             ratio = white_pixels / total_pixels if total_pixels > 0 else 0
         else:
-            ratio = self.task.calculate_color_percentage(forte_color, box)
-        self.logger.debug(f'forte_percent {ratio * 100:.2f}%')
+            self.logger.debug(f'using calculate_color_percentage')
+            ratio = self.task.calculate_color_percentage(forte_color, box) * 2
+            ratio = ratio if ratio <= 1 else 1
         return ratio
 
     def heavy_attack(self, duration, check_combat = True, until_con_full = False):
         self.logger.info(f'start heavy_attack')
+        self.last_forte = 0
+        freeze_forte_check = False
+        freeze_forte_time = 0
         self.task.mouse_down()
         start = time.time()
         while time.time() - start < duration:
-            current_forte = self.get_forte()
-            if until_con_full and self.is_con_full() or current_forte <= 0.01:
+            if until_con_full and self.is_con_full() or 0 <= self.get_forte() <= 0.01:
                 break
             if check_combat:
                 self.check_target(True)
             self.task.next_frame()
-            self.should_retry_heavy_attack(current_forte)
+            if freeze_forte_check and time.time() - freeze_forte_time >= 0.2:
+                freeze_forte_check = False
+            if not freeze_forte_check:
+                if self.should_retry_heavy_attack() < 0:
+                    freeze_forte_check = True
+                    freeze_forte_time = time.time()
         self.sleep(0.1, False)
         self.task.mouse_up()
         self.waiting_for_forte_drop = False
 
-    def should_retry_heavy_attack(self, current_forte, budding = False):
-        diff = current_forte - self.get_forte(budding)
+    def should_retry_heavy_attack(self, budding = False):
+        current_forte = self.get_forte(budding)
+        if current_forte < 0:
+            return -1
+        diff = self.last_forte - current_forte
         self.logger.debug(f'diff {diff}')
         if not self.waiting_for_forte_drop and 0 <= diff <= 0.01:
             self.waiting_for_forte_drop = True
@@ -255,6 +342,8 @@ class Camellya(BaseChar):
             self.sleep(0.1, False)
             self.task.mouse_down()
             self.sleep(0.1, False)
+        self.last_forte = current_forte
+        return 0
     
     def check_target(self, is_heavy_att = False):
         if not self.task.has_target():
@@ -269,19 +358,19 @@ class Camellya(BaseChar):
                 self.task.mouse_down()
 
 camellya_red_color = {
-    'r': (200, 250),  # Red range
-    'g': (60, 90),  # Green range
-    'b': (150, 190)   # Blue range
+    'r': (239, 240),  # Red range
+    'g': (76, 77),  # Green range
+    'b': (173, 174)   # Blue range
 } 
 
 camellya_forte_color = {
-    'r': (199, 255),  # Red range
-    'g': (47, 93),  # Green range
-    'b': (127, 149)   # Blue range
+    'r': (193, 255),  # Red range
+    'g': (46, 93),  # Green range
+    'b': (127, 163)   # Blue range
 } 
 
 camellya_budding_forte_color = {
-    'r': (238, 255),  # Red range
-    'g': (173, 216),  # Green range
-    'b': (180, 230)   # Blue range
-} 
+    'r': (220, 255),  # Red range
+    'g': (161, 213),  # Green range
+    'b': (168, 225)   # Blue range
+}
