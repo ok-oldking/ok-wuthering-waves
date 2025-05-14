@@ -1,5 +1,5 @@
 import time
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_UP, ROUND_DOWN, ROUND_UP
 from ok import color_range_to_bound
 from src.char.BaseChar import BaseChar, Priority
 import cv2
@@ -125,30 +125,22 @@ class Camellya(BaseChar):
         self.logger.debug(f'red_percent {red_percent}')
         return red_percent > 0.1
     
-    def calculate_color_percentage_in_masked(self, target_color, box, mask_r1_ratio=0.0, mask_r2_ratio=0.0, center_offset=0.0):
+    def calculate_color_percentage_in_masked(self, target_color, box, mask_r1_ratio=0.0, mask_r2_ratio=0.0):
         cropped = box.crop_frame(self.task.frame).copy()
         if cropped is None or cropped.size == 0:
             return 0.0
         h, w = cropped.shape[:2]
 
-        if mask_r1_ratio != 0 and mask_r2_ratio != 0:
-            center_x, center_y = w // 2 + int(center_offset * w), h // 2 + int(center_offset * h)
-            center_x = np.clip(center_x, 0, w - 1)
-            center_y = np.clip(center_y, 0, h - 1)
-
-            distance = np.sqrt(center_x ** 2 + center_y ** 2)
-            r1 = int(h * mask_r1_ratio)
-            r2 = h * mask_r2_ratio
-            if r2 > distance:
-                r2_thickness = 1
-            else:
-                r2_thickness = max(1, int(distance - r2))
-            r2 = int((r2 + distance) / 2)
-
-        if r1 >= 0:
-            cv2.circle(cropped, (center_x, center_y), r1, 0, -1)
-        if r2 >= 0 and r2_thickness >= 0:
-            cv2.circle(cropped, (center_x, center_y), r2, 0, r2_thickness)
+        center = (w // 2, h // 2)
+        r1, r2 = h*mask_r1_ratio, h*mask_r2_ratio
+        r1 = Decimal(str(r1)).quantize(Decimal('0'), rounding=ROUND_DOWN)
+        r2 = Decimal(str(r2)).quantize(Decimal('0'), rounding=ROUND_UP)
+        if r1 > 0:
+            cv2.circle(cropped, center, int(r1), 0, -1)
+        if r2 > 0:
+            mask = np.zeros((h, w), dtype=np.uint8)
+            cv2.circle(mask, center, int(r2), 255, -1)
+            cropped = cv2.bitwise_and(cropped, cropped, mask=mask)
             
         if cropped.ndim == 3:
             non_black_mask = np.all(cropped != 0, axis=2)
