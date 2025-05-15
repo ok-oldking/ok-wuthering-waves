@@ -11,6 +11,7 @@ class Zani(BaseChar):
         self.in_liberation = False
         self.have_forte = False
         self.last_attack = 0
+        self.final_attack = False
         
     def reset_state(self):
         self.last_attack = 0
@@ -52,7 +53,7 @@ class Zani(BaseChar):
             self.last_attack = time.time()
     #开大时，zani离场再登场的平a，会打出普通攻击而不是强化攻击
     #算是bug，目前先延迟0.3秒，等kl修
-            if shield_attack and not self.attack_light():
+            if shield_attack and not (self.final_attack or self.attack_light()):
                 self.continues_normal_attack(0.3)
             self.continues_normal_attack(0.6)
             return self.switch_next_char()              
@@ -66,9 +67,11 @@ class Zani(BaseChar):
             return super().do_get_switch_priority(current_char, has_intro)
             
     def liberation2_ready(self):
-        if not self.liberation_available() or self.attack_light():
+        if not self.liberation_available(): 
             return False
-        if self.time_elapsed_accounting_for_freeze(self.liberaction_time) > 19:
+        if (self.have_forte and self.final_attack) or self.attack_light():
+            return False
+        if self.time_elapsed_accounting_for_freeze(self.liberaction_time) > 18.3:
             return True
         if not self.have_forte and self.time_elapsed_accounting_for_freeze(self.liberaction_time) > 12:
             return True
@@ -91,13 +94,6 @@ class Zani(BaseChar):
             self.task.next_frame()
         return b
             
-#    def resonance_light(self):
-#        box = self.task.box_of_screen_scaled(3840, 2160, 3105, 1845, 3285, 2010, name='zani_resonance', hcenter=False)
-#        light_percent = self.task.calculate_color_percentage(zani_light_color, box)
-#        return light_percent > 0.005  
-    
-#由于进场前半秒会因为淡入识别不到，该检测实际只有协奏入场时能正常生效。
-#另zani开大后a2动作完全结束后平a键才会亮起，因此也无法在切走前进行记录
     def attack_light(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 2690, 1845, 2860, 2010, name='zani_attack', hcenter=False)
         light_percent = self.task.calculate_color_percentage(zani_light_color, box)
@@ -124,7 +120,14 @@ class Zani(BaseChar):
         return self.in_liberation        
            
     def switch_next_char(self, *args):
-        self.have_forte = self.is_forte_full()            
+        self.have_forte = self.is_forte_full()
+        if self.in_liberation:
+            if self.attack_light():
+                self.final_attack = False
+            else:
+                self.final_attack = not self.final_attack
+        else:
+            self.final_attack = False
         return super().switch_next_char(*args)
         
 zani_light_color = {
