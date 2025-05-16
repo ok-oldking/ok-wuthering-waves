@@ -39,6 +39,7 @@ class BaseChar:
         self.sleep_adjust = 0
         self.char_name = char_name
         self.index = index
+        self.ring_index = -1  # for con check
         self.last_switch_time = -1
         self.last_res = -1
         self.last_echo = -1
@@ -53,14 +54,8 @@ class BaseChar:
         self.full_ring_area = 0
         self.freeze_durations = []
         self.last_perform = 0
-        self.config = {"_full_ring_area": 0, "_ring_color_index": -1}
-        if type(self) is not BaseChar:
-            self.config = Config(self.name, self.config)
         self.current_con = 0
         self.has_tool_box = False
-
-    def char_config(self):
-        return {}
 
     def use_tool_box(self):
         if self.has_tool_box:
@@ -99,7 +94,6 @@ class BaseChar:
         self.click(interval=interval)
 
     def click(self, *args: Any, **kwargs: Any):
-        # self.logger.debug(f'click {args} {kwargs}')
         self.task.click(*args, **kwargs)
 
     def do_perform(self):
@@ -425,10 +419,10 @@ class BaseChar:
             return time.time() - self.last_echo > self.echo_cd
 
     def is_con_full(self):
-        return self.task.is_con_full(self.config)
+        return self.task.is_con_full()
 
     def get_current_con(self):
-        self.current_con = self.task.get_current_con(self.config)
+        self.current_con = self.task.get_current_con()
         return self.current_con
 
     def is_forte_full(self):
