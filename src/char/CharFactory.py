@@ -81,7 +81,7 @@ def get_char_by_pos(task, box, index, old_char):
             cls = info.get('cls')
             return cls(task, index, info.get('res_cd'), info.get('echo_cd'), info.get('liberation_cd') or 25,
                        char_name=name)
-    task.log_info(f'could not find char {info} {highest_confidence}')
+    task.log_info(f'could not find char {index} {info} {highest_confidence}')
     if old_char:
         return old_char
     has_cd = task.ocr(box=box)
