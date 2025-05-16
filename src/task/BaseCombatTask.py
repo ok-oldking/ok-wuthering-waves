@@ -69,7 +69,8 @@ class BaseCombatTask(CombatCheck):
         self.log_info('click m to open the map')
         self.send_key('m', after_sleep=2)
 
-        teleport = self.find_best_match_in_box(self.box_of_screen(0.1, 0.1, 0.9,0.9),['map_way_point', 'map_way_point_big'], 0.8)
+        teleport = self.find_best_match_in_box(self.box_of_screen(0.1, 0.1, 0.9, 0.9),
+                                               ['map_way_point', 'map_way_point_big'], 0.8)
         if not teleport:
             raise RuntimeError(f'Can not find a teleport to heal')
         self.click(teleport, after_sleep=1)
@@ -364,21 +365,33 @@ class BaseCombatTask(CombatCheck):
     def get_resonance_percentage(self):
         return self.calculate_color_percentage(white_color, self.get_box_by_name('box_resonance'))
 
-    def is_con_full(self, char_config=None):
-        return self.get_current_con(char_config) == 1
+    def is_con_full(self):
+        return self.get_current_con() == 1
 
-    def get_current_con(self, char_config=None):
-        box = self.box_of_screen_scaled(3840, 2160, 1431, 1942, 1557, 2068, name='con_full',
+    def _ensure_ring_index(self):
+        if self.get_current_char().ring_index < 0:
+            best = self.find_best_match_in_box(self.get_con_box(),
+                                               con_templates, 0.1)
+            if best:
+                self.get_current_char().ring_index = con_templates.index(best.name)
+                self.log_debug(
+                    f'_ensure_ring_index {self.get_current_char()} to {self.get_current_char().ring_index} {best.name}')
+        return self.get_current_char().ring_index
+
+    def get_con_box(self):
+        return self.box_of_screen_scaled(3840, 2160, 1431, 1942, 1557, 2068, name='con_full',
                                         hcenter=True)
+
+    def get_current_con(self):
+        box = self.get_con_box()
         box.confidence = 0
 
         max_area = 0
         percent = 0
         max_is_full = False
         color_index = -1
-        target_index = -1
-        if char_config:
-            target_index = char_config.get('_ring_color_index', target_index)
+        target_index = self._ensure_ring_index()
+
         cropped = box.crop_frame(self.frame)
         for i in range(len(con_colors)):
             if target_index != -1 and i != target_index:
@@ -394,15 +407,14 @@ class BaseCombatTask(CombatCheck):
                 max_area = int(area)
         if max_is_full:
             percent = 1
-        if max_is_full and char_config:
+        if max_is_full:
+            con_full_area[target_index] = max_area
             # self.logger.info(
             #     f'is_con_full found a full ring {char_config.get("_full_ring_area", 0)} -> {max_area}  {color_index}')
-            char_config['_full_ring_area'] = max_area
-            char_config['_ring_color_index'] = color_index
             # self.logger.info(
             #     f'is_con_full2 found a full ring {char_config.get("_full_ring_area", 0)} -> {max_area}  {color_index}')
-        if percent != 1 and char_config and char_config.get('_full_ring_area', 0) > 0:
-            percent = max_area / char_config['_full_ring_area']
+        if percent != 1 and con_full_area[target_index] > 0:
+            percent = max_area / con_full_area[target_index]
         if not max_is_full and percent >= 1:
             self.logger.warning(
                 f'is_con_full not full but percent greater than 1, set to 0.99, {percent} {max_is_full}')
@@ -545,4 +557,22 @@ con_colors = [
         'g': (65, 105),  # Green range    for havoc
         'b': (145, 175)  # Blue range
     }
+]
+
+con_full_area = [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+]
+
+con_templates = [
+    'con_spectro',
+    'con_electric',
+    'con_fire',
+    'con_ice',
+    'con_wind',
+    'con_havoc',
 ]
