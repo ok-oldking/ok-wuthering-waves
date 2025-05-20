@@ -8,7 +8,6 @@ from ok import BaseTask, Logger, find_boxes_by_name, og, Box
 from ok import CannotFindException
 import cv2
 
-
 logger = Logger.get_logger(__name__)
 number_re = re.compile(r'^(\d+)$')
 stamina_re = re.compile(r'^(\d+)/(\d+)$')
@@ -17,6 +16,7 @@ f_white_color = {
     'g': (235, 255),  # Green range
     'b': (235, 255)  # Blue range
 }
+
 
 class BaseWWTask(BaseTask):
     map_zoomed = False
@@ -184,7 +184,6 @@ class BaseWWTask(BaseTask):
                 update_function()
         self._stop_last_direction(last_direction)
 
-
     def _walk_direction(self, last_direction, next_direction):
         if next_direction != last_direction:
             self._stop_last_direction(last_direction)
@@ -299,7 +298,8 @@ class BaseWWTask(BaseTask):
     def find_treasure_icon(self):
         return self.find_one('treasure_icon', box=self.box_of_screen(0.1, 0.2, 0.9, 0.8), threshold=0.7)
 
-    def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1, move=True, down_time=0.01, after_sleep=0, key="left"):
+    def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1, move=True, down_time=0.01, after_sleep=0,
+              key="left"):
         if x == -1 and y == -1:
             x = self.width_of_screen(0.5)
             y = self.height_of_screen(0.5)
@@ -307,7 +307,8 @@ class BaseWWTask(BaseTask):
             down_time = 0.01
         else:
             down_time = 0.2
-        return super().click(x, y, move_back, name, interval, move=move, down_time=down_time, after_sleep=after_sleep, key=key)
+        return super().click(x, y, move_back, name, interval, move=move, down_time=down_time, after_sleep=after_sleep,
+                             key=key)
 
     def check_for_monthly_card(self):
         if self.should_check_monthly_card():
@@ -454,7 +455,7 @@ class BaseWWTask(BaseTask):
 
     def has_claim(self):
         return not self.in_team()[0] and self.find_one('claim_cancel_button_hcenter_vcenter', horizontal_variance=0.05,
-                             vertical_variance=0.1, threshold=0.8)
+                                                       vertical_variance=0.1, threshold=0.8)
 
     def test_absorb(self):
         # self.set_image('tests/images/absorb.png')
@@ -477,7 +478,7 @@ class BaseWWTask(BaseTask):
         ret = og.my_app.yolo_detect(self.frame, threshold=threshold, label=0)
 
         for box in ret:
-            box.y += box.height * 1/3
+            box.y += box.height * 1 / 3
             box.height = 1
         self.draw_boxes("echo", ret)
         return ret
@@ -507,14 +508,16 @@ class BaseWWTask(BaseTask):
                 self.log_debug('found a echo picked')
                 return True
 
-    def pick_f(self):
+    def pick_f(self, handle_claim=True):
         if self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box, threshold=0.8):
             self.send_key('f')
+            if not handle_claim:
+                return True
             if not self.handle_claim_button():
                 self.log_debug('found a echo picked')
                 return True
 
-    def walk_to_treasure(self, retry=0, send_f = True, raise_if_not_found=True):
+    def walk_to_treasure(self, retry=0, send_f=True, raise_if_not_found=True):
         if retry > 4:
             raise RuntimeError('walk_to_treasure too many retries!')
         if self.find_treasure_icon():
@@ -554,7 +557,7 @@ class BaseWWTask(BaseTask):
                     # if self.debug:
                     #     self.screenshot('echo_color_picked')
                     self.log_debug(f'found color_percent {color_percent} > {color_threshold}, walk now')
-                    #return self.walk_to_box(self.find_echos, time_out=15, end_condition=self.pick_echo), max_echo_count > 1
+                    # return self.walk_to_box(self.find_echos, time_out=15, end_condition=self.pick_echo), max_echo_count > 1
                     return self.walk_to_yolo_echo(update_function=update_function), max_echo_count > 1
             if not turn and i == 0:
                 return False, max_echo_count > 1
@@ -581,7 +584,8 @@ class BaseWWTask(BaseTask):
     def incr_drop(self, dropped):
         if dropped:
             self.info['Echo Count'] = self.info.get('Echo Count', 0) + 1
-            self.info['Echo per Hour'] = round(self.info.get('Echo Count', 0) / max(time.time() - self.start_time, 1) * 3600)
+            self.info['Echo per Hour'] = round(
+                self.info.get('Echo Count', 0) / max(time.time() - self.start_time, 1) * 3600)
 
     def should_check_monthly_card(self):
         if self.next_monthly_card_start > 0:
@@ -748,13 +752,14 @@ class BaseWWTask(BaseTask):
                 self.click(feature, after_sleep=1)
                 if feature.name == 'fast_travel_custom':
                     if self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
-                                           relative_x=-1, raise_if_not_found=False,
-                                           threshold=0.6,
-                                           time_out=2):
-                        self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
-                                            relative_x=-1, raise_if_not_found=False,
-                                            threshold=0.6,
-                                            time_out=1)
+                                               relative_x=-1, raise_if_not_found=False,
+                                               threshold=0.6,
+                                               time_out=2):
+                        self.wait_click_feature(
+                            ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
+                            relative_x=-1, raise_if_not_found=False,
+                            threshold=0.6,
+                            time_out=1)
                 return True
 
     def wait_click_travel(self):

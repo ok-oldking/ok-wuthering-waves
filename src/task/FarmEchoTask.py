@@ -27,7 +27,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.add_exit_after_config()
 
     def on_combat_check(self):
-        self.incr_drop(self.pick_f())
+        self.incr_drop(self.pick_f(handle_claim=False))
         return True
 
     def run(self):
@@ -65,7 +65,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.log_info('start wait in combat')
             self.wait_until(self.in_combat, raise_if_not_found=False, time_out=12)
             self.sleep(self.config.get("Combat Wait Time", 0))
-            
+
             self.combat_once(wait_combat_time=0, raise_if_not_found=False)
             logger.info(f'farm echo move {self.config.get("Boss")} yolo_find_echo')
             if self.find_f_with_text():
