@@ -46,7 +46,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
     def do_run(self):
         count = 0
         in_realm = self.in_realm()
-        threshold = 0.3 if in_realm else 0.6
+        threshold = 0.25 if in_realm else 0.65
         time_out = 12 if in_realm else 4
         while count < self.config.get("Repeat Farm Count", 0):
             if in_realm:
@@ -65,6 +65,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.log_info('start wait in combat')
             self.wait_until(self.in_combat, raise_if_not_found=False, time_out=12)
             self.sleep(self.config.get("Combat Wait Time", 0))
+            
             self.combat_once(wait_combat_time=0, raise_if_not_found=False)
             logger.info(f'farm echo move {self.config.get("Boss")} yolo_find_echo')
             if self.find_f_with_text():
