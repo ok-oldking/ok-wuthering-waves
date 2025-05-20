@@ -56,13 +56,14 @@ class BaseWWTask(BaseTask):
             'Nightmare: Lampylumen Myriad': [3, 5, False],
         }
 
-    def zoom_map(self):
+    def zoom_map(self, esc=True):
         if not self.map_zoomed:
             self.log_info('zoom map to max')
             self.map_zoomed = True
             self.send_key('m', after_sleep=1)
             self.click_relative(0.94, 0.33, after_sleep=0.5)
-            self.send_key('esc', after_sleep=1)
+            if esc:
+                self.send_key('esc', after_sleep=1)
 
     def validate(self, key, value):
         message = self.validate_config(key, value)
