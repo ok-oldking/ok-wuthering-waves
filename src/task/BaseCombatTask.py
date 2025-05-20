@@ -27,6 +27,7 @@ class CharDeadException(NotInCombatException):
 
 
 class BaseCombatTask(CombatCheck):
+    hot_key_verified = False
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -297,24 +298,30 @@ class BaseCombatTask(CombatCheck):
             self.raise_not_in_combat('combat check not in combat')
 
     def load_hotkey(self, force=False):
-        if not self.key_config['HotKey Verify'] or force:
+        if (self.key_config['Auto Set HotKey'] and not self.hot_key_verified) or force:
+            self.hot_key_verified = True
 
-            resonance_key = self.ocr(0.82, 0.92, 0.85, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
-                                     name='resonance_key', log=True)
-            echo_key = self.ocr(0.88, 0.92, 0.90, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
-                                name='echo_key', log=True)
-            liberation_key = self.ocr(0.93, 0.92, 0.96, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
-                                      name='liberation_key', log=True)
+            keys = self.ocr(0.82, 0.92, 0.96, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
+                            name='keys', log=True)
+            resonance_key = self.find_boxes(keys, boundary=self.box_of_screen(0.82, 0.92, 0.85, 0.96))
+
+            echo_key = self.find_boxes(keys, boundary=self.box_of_screen(0.88, 0.92, 0.90, 0.96))
+
+            liberation_key = self.find_boxes(keys, boundary=self.box_of_screen(0.93, 0.92, 0.96, 0.96))
             keys_str = str(resonance_key) + str(echo_key) + str(liberation_key)
 
-            if echo_key:
+            self.log_info(f'hotkeys {keys_str}')
+
+            if echo_key and self.key_config['Echo Key'] != echo_key[0].name.lower():
                 self.key_config['Echo Key'] = echo_key[0].name.lower()
-            if liberation_key:
+                self.log_info(f'Set Echo Key {echo_key[0].name.lower()}', notify=True)
+            if liberation_key and self.key_config['Liberation Key'] != liberation_key[0].name.lower():
                 self.key_config['Liberation Key'] = liberation_key[0].name.lower()
-            if resonance_key:
+                self.log_info(f'Set Liberation Key {liberation_key[0].name.lower()}', notify=True)
+            if resonance_key and self.key_config['Resonance Key'] != resonance_key[0].name.lower():
                 self.key_config['Resonance Key'] = resonance_key[0].name.lower()
-            self.key_config['HotKey Verify'] = True
-            self.log_info(f'set hotkey success {self.key_config.values()}', notify=True)
+                self.log_info(f'Set Resonance Key {resonance_key[0].name.lower()}', notify=True)
+
             self.info['Skill HotKeys'] = keys_str
 
     def load_chars(self):
@@ -380,7 +387,7 @@ class BaseCombatTask(CombatCheck):
 
     def get_con_box(self):
         return self.box_of_screen_scaled(3840, 2160, 1431, 1942, 1557, 2068, name='con_full',
-                                        hcenter=True)
+                                         hcenter=True)
 
     def get_current_con(self):
         box = self.get_con_box()
@@ -442,7 +449,7 @@ class BaseCombatTask(CombatCheck):
         center = (w // 2, h // 2)
 
         # draw mask
-        r1, r2 = h*0.35119, h*0.42261
+        r1, r2 = h * 0.35119, h * 0.42261
         r1 = Decimal(str(r1)).quantize(Decimal('0'), rounding=ROUND_DOWN)
         r2 = Decimal(str(r2)).quantize(Decimal('0'), rounding=ROUND_UP)
 
@@ -458,15 +465,6 @@ class BaseCombatTask(CombatCheck):
 
         # Find connected components
         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(closed_mask, connectivity=8)
-
-        colors = [
-            (0, 255, 0),  # Green
-            (0, 0, 255),  # Red
-            (255, 0, 0),  # Blue
-            (0, 255, 255),  # Yellow
-            (255, 0, 255),  # Magenta
-            (255, 255, 0)  # Cyan
-        ]
 
         # Function to check if a component forms a ring
         def is_full_ring(component_mask):
