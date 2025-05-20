@@ -234,8 +234,8 @@ msgstr "是"
 msgid "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}"
 msgstr "检测技能快捷键失败{},请确认已装备声骸,并且使用A-Z字母为游戏快捷键,如果确认无误依然报错,配置关闭快捷键检测."
 
-msgid "HotKey Verify"
-msgstr "验证快捷键"
+msgid "Auto Set HotKey"
+msgstr "自动设置快捷键"
 
 msgid "Turn on to avoid interruption by monthly card when executing tasks"
 msgstr "开启避免挂任务的时候被月卡中断"

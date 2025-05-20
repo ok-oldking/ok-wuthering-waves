@@ -46,8 +46,9 @@ def make_bottom_right_black(frame):
         print(f"Error processing frame: {e}")
         return frame
 
+
 key_config_option = ConfigOption('Game Hotkey Config', {
-    'HotKey Verify': False,
+    'Auto Set HotKey': True,
     'Echo Key': 'q',
     'Liberation Key': 'r',
     'Resonance Key': 'e',
@@ -65,7 +66,6 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
     'Check Monthly Card': 'Check for monthly card to avoid interruption of tasks',
     'Monthly Card Time': 'Your computer\'s local time when the monthly card will popup, hour in (1-24)'
 })
-
 
 config = {
     'debug': False,  # Optional, default: False
