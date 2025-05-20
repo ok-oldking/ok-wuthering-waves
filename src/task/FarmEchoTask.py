@@ -63,7 +63,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
             count += 1
             self.log_info('start wait in combat')
-            self.wait_until(self.in_combat, raise_if_not_found=False, time_out=12)
+            if not self.wait_until(self.in_combat, raise_if_not_found=False, time_out=12):
+                self.teleport_to_nearest_boss()
+                self.run_until(self.in_combat, 'w', time_out=5, running=True)
+
             self.sleep(self.config.get("Combat Wait Time", 0))
 
             self.combat_once(wait_combat_time=0, raise_if_not_found=False)
@@ -77,6 +80,18 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
             else:
                 self.sleep(1)
+
+    def teleport_to_nearest_boss(self):
+        self.zoom_map(esc=False)
+        boxes = self.find_feature(['boss_no_check_mark', 'boss_check_mark'], box=self.box_of_screen(0.1, 0.1, 0.9, 0.9),
+                                  threshold=0.6)
+        self.log_info(f'teleport_to_nearest_boss {boxes}')
+        if len(boxes) > 0:
+            center = self.box_of_screen(0.5, 0.5, 0.5, 0.5)
+            nearest_boss = center.find_closest_box('all', boxes)
+            self.click_box(nearest_boss)
+            self.wait_click_travel()
+            self.wait_in_team_and_world(time_out=30)
 
     def scroll_and_click_buttons(self):
         while self.find_f_with_text() and not self.in_combat():
