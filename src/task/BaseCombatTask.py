@@ -5,7 +5,7 @@ from decimal import Decimal, ROUND_UP, ROUND_DOWN
 import cv2
 import numpy as np
 
-from ok import Logger
+from ok import Logger, Config
 from ok import get_connected_area_by_color, color_range_to_bound
 from ok import safe_get
 from src import text_white_color
@@ -28,6 +28,16 @@ class CharDeadException(NotInCombatException):
 
 class BaseCombatTask(CombatCheck):
     hot_key_verified = False
+    con_full_size = None
+    if con_full_size is None:
+        con_full_size = Config("_con_full_size", {
+            "0": 0,
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+        })
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -396,7 +406,6 @@ class BaseCombatTask(CombatCheck):
         max_area = 0
         percent = 0
         max_is_full = False
-        color_index = -1
         target_index = self._ensure_ring_index()
 
         cropped = box.crop_frame(self.frame)
@@ -406,22 +415,17 @@ class BaseCombatTask(CombatCheck):
             color_range = con_colors[i]
             area, is_full = self.count_rings(cropped, color_range,
                                              1500 / 3840 / 2160 * self.screen_width * self.screen_height)
-            # self.logger.debug(f'is_con_full test color_range {color_range} {area, is_full}')
             if is_full:
                 max_is_full = is_full
-                color_index = i
             if area > max_area:
                 max_area = int(area)
         if max_is_full:
             percent = 1
         if max_is_full:
-            con_full_area[target_index] = max_area
-            # self.logger.info(
-            #     f'is_con_full found a full ring {char_config.get("_full_ring_area", 0)} -> {max_area}  {color_index}')
-            # self.logger.info(
-            #     f'is_con_full2 found a full ring {char_config.get("_full_ring_area", 0)} -> {max_area}  {color_index}')
-        if percent != 1 and con_full_area[target_index] > 0:
-            percent = max_area / con_full_area[target_index]
+            self.con_full_size[str(target_index)] = max_area
+
+        if percent != 1 and self.con_full_size[str(target_index)] > 0:
+            percent = max_area / self.con_full_size[str(target_index)]
         if not max_is_full and percent >= 1:
             self.logger.warning(
                 f'is_con_full not full but percent greater than 1, set to 0.99, {percent} {max_is_full}')
@@ -429,12 +433,7 @@ class BaseCombatTask(CombatCheck):
         if percent > 1:
             self.logger.error(f'is_con_full percent greater than 1, set to 1, {percent} {max_is_full}')
             percent = 1
-        # self.logger.info(
-        #     f'is_con_full {self} {percent} {max_area}/{self.config.get("_full_ring_area", 0)} {color_index} ')
-        # if self.task.debug:
-        #     self.task.screenshot(
-        #         f'is_con_full {self} {percent} {max_area}/{self.config.get("_full_ring_area", 0)} {color_index} ',
-        #         cropped)
+
         box.confidence = percent
         self.draw_boxes(f'is_con_full_{self}', box)
         if percent > 1:
@@ -555,15 +554,6 @@ con_colors = [
         'g': (65, 105),  # Green range    for havoc
         'b': (145, 175)  # Blue range
     }
-]
-
-con_full_area = [
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
 ]
 
 con_templates = [
