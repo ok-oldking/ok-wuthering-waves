@@ -106,6 +106,9 @@ config = {
         'force_no_night_light': False,
         'require_bg': True
     },
+    'analytics': {
+        'report_url': 'http://report.ok-script.cn:8080/report',
+    },
     'window_size': {
         'width': 820,
         'height': 600,
