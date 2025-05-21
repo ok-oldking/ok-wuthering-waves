@@ -5,7 +5,7 @@
 #    pip-compile '.\requirements.in'
 #
 
-ok-script==0.0.547
+ok-script==0.0.549
 
 antlr4-python3-runtime==4.9.3
     # via omegaconf
@@ -136,8 +136,6 @@ urllib3==2.3.0
     # via requests
 wheel==0.45.1
     # via pip-tools
-wmi==1.5.1
-    # via -r .\requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
