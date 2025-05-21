@@ -1,7 +1,6 @@
 pySide6-Fluent-Widgets==1.7.6
 pycaw==20240210
 psutil==6.1.0
-WMI==1.5.1
 typing-extensions>=4.11.0
 numpy>=1.19.5,<3.0.0
 opencv_python>=4.5.1.48
