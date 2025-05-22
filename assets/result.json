@@ -401,6 +401,12 @@
             "height": 2160,
             "id": 66,
             "file_name": "images/66.png"
+        },
+        {
+            "width": 3840,
+            "height": 2160,
+            "id": 67,
+            "file_name": "images/67.png"
         }
     ],
     "categories": [
@@ -1014,130 +1020,134 @@
         },
         {
             "id": 152,
-            "name": "pick_up_f_hcenter_vcenter"
+            "name": "new_realm_4"
         },
         {
             "id": 153,
-            "name": "purple_target_distance_icon"
+            "name": "pick_up_f_hcenter_vcenter"
         },
         {
             "id": 154,
-            "name": "red_dot"
+            "name": "purple_target_distance_icon"
         },
         {
             "id": 155,
-            "name": "remove_custom"
+            "name": "red_dot"
         },
         {
             "id": 156,
-            "name": "revive_confirm_hcenter_vcenter"
+            "name": "remove_custom"
         },
         {
             "id": 157,
-            "name": "set_name_0"
+            "name": "revive_confirm_hcenter_vcenter"
         },
         {
             "id": 158,
-            "name": "set_name_1"
+            "name": "set_name_0"
         },
         {
             "id": 159,
-            "name": "set_name_10"
+            "name": "set_name_1"
         },
         {
             "id": 160,
-            "name": "set_name_11"
+            "name": "set_name_10"
         },
         {
             "id": 161,
-            "name": "set_name_12"
+            "name": "set_name_11"
         },
         {
             "id": 162,
-            "name": "set_name_13"
+            "name": "set_name_12"
         },
         {
             "id": 163,
-            "name": "set_name_14"
+            "name": "set_name_13"
         },
         {
             "id": 164,
-            "name": "set_name_15"
+            "name": "set_name_14"
         },
         {
             "id": 165,
-            "name": "set_name_16"
+            "name": "set_name_15"
         },
         {
             "id": 166,
-            "name": "set_name_17"
+            "name": "set_name_16"
         },
         {
             "id": 167,
-            "name": "set_name_18"
+            "name": "set_name_17"
         },
         {
             "id": 168,
-            "name": "set_name_19"
+            "name": "set_name_18"
         },
         {
             "id": 169,
-            "name": "set_name_2"
+            "name": "set_name_19"
         },
         {
             "id": 170,
-            "name": "set_name_20"
+            "name": "set_name_2"
         },
         {
             "id": 171,
-            "name": "set_name_3"
+            "name": "set_name_20"
         },
         {
             "id": 172,
-            "name": "set_name_4"
+            "name": "set_name_3"
         },
         {
             "id": 173,
-            "name": "set_name_5"
+            "name": "set_name_4"
         },
         {
             "id": 174,
-            "name": "set_name_6"
+            "name": "set_name_5"
         },
         {
             "id": 175,
-            "name": "set_name_7"
+            "name": "set_name_6"
         },
         {
             "id": 176,
-            "name": "set_name_8"
+            "name": "set_name_7"
         },
         {
             "id": 177,
-            "name": "set_name_9"
+            "name": "set_name_8"
         },
         {
             "id": 178,
-            "name": "skip_quest_confirm"
+            "name": "set_name_9"
         },
         {
             "id": 179,
-            "name": "star"
+            "name": "skip_quest_confirm"
         },
         {
             "id": 180,
-            "name": "target_enemy_white"
+            "name": "star"
         },
         {
             "id": 181,
-            "name": "teleport_port"
+            "name": "target_enemy_white"
         },
         {
             "id": 182,
-            "name": "treasure_icon"
+            "name": "teleport_port"
         },
         {
             "id": 183,
+            "name": "treasure_icon"
+        },
+        {
+            "id": 184,
             "name": "ww"
         }
     ],
@@ -1550,7 +1560,7 @@
         {
             "id": 27,
             "image_id": 8,
-            "category_id": 156,
+            "category_id": 157,
             "segmentation": [],
             "bbox": [
                 2887.0,
@@ -1955,7 +1965,7 @@
         {
             "id": 54,
             "image_id": 21,
-            "category_id": 155,
+            "category_id": 156,
             "segmentation": [],
             "bbox": [
                 3083.8938053097336,
@@ -2030,7 +2040,7 @@
         {
             "id": 59,
             "image_id": 24,
-            "category_id": 153,
+            "category_id": 154,
             "segmentation": [],
             "bbox": [
                 2090.0,
@@ -2195,7 +2205,7 @@
         {
             "id": 70,
             "image_id": 30,
-            "category_id": 152,
+            "category_id": 153,
             "segmentation": [],
             "bbox": [
                 2440.9999999999995,
@@ -2255,7 +2265,7 @@
         {
             "id": 74,
             "image_id": 33,
-            "category_id": 180,
+            "category_id": 181,
             "segmentation": [],
             "bbox": [
                 1688.0,
@@ -2300,7 +2310,7 @@
         {
             "id": 77,
             "image_id": 35,
-            "category_id": 178,
+            "category_id": 179,
             "segmentation": [],
             "bbox": [
                 2296.991150442478,
@@ -2495,7 +2505,7 @@
         {
             "id": 90,
             "image_id": 45,
-            "category_id": 177,
+            "category_id": 178,
             "segmentation": [],
             "bbox": [
                 933.8808903432171,
@@ -2510,7 +2520,7 @@
         {
             "id": 91,
             "image_id": 45,
-            "category_id": 159,
+            "category_id": 160,
             "segmentation": [],
             "bbox": [
                 398.2300884955743,
@@ -2525,7 +2535,7 @@
         {
             "id": 92,
             "image_id": 45,
-            "category_id": 160,
+            "category_id": 161,
             "segmentation": [],
             "bbox": [
                 665.840707964601,
@@ -2540,7 +2550,7 @@
         {
             "id": 93,
             "image_id": 45,
-            "category_id": 161,
+            "category_id": 162,
             "segmentation": [],
             "bbox": [
                 1201.0619469026528,
@@ -2555,7 +2565,7 @@
         {
             "id": 94,
             "image_id": 46,
-            "category_id": 162,
+            "category_id": 163,
             "segmentation": [],
             "bbox": [
                 1466.8757841136517,
@@ -2645,7 +2655,7 @@
         {
             "id": 100,
             "image_id": 49,
-            "category_id": 182,
+            "category_id": 183,
             "segmentation": [],
             "bbox": [
                 2926.7772973706797,
@@ -2720,7 +2730,7 @@
         {
             "id": 105,
             "image_id": 53,
-            "category_id": 154,
+            "category_id": 155,
             "segmentation": [],
             "bbox": [
                 220.59609475776048,
@@ -2855,7 +2865,7 @@
         {
             "id": 114,
             "image_id": 60,
-            "category_id": 179,
+            "category_id": 180,
             "segmentation": [],
             "bbox": [
                 138.72446539368624,
@@ -2960,7 +2970,7 @@
         {
             "id": 121,
             "image_id": 62,
-            "category_id": 181,
+            "category_id": 182,
             "segmentation": [],
             "bbox": [
                 1826.9603524229085,
@@ -3020,7 +3030,7 @@
         {
             "id": 125,
             "image_id": 64,
-            "category_id": 183,
+            "category_id": 184,
             "segmentation": [],
             "bbox": [
                 789.7797356828196,
@@ -3061,6 +3071,21 @@
             "ignore": 0,
             "iscrowd": 0,
             "area": 8075.774890528138
+        },
+        {
+            "id": 128,
+            "image_id": 67,
+            "category_id": 152,
+            "segmentation": [],
+            "bbox": [
+                3472.958616685453,
+                1218.3118415189558,
+                33.05025982994538,
+                32.55329737048623
+            ],
+            "ignore": 0,
+            "iscrowd": 0,
+            "area": 1075.8949364160476
         }
     ],
     "info": {
@@ -3069,6 +3094,6 @@
         "description": "",
         "contributor": "Label Studio",
         "url": "",
-        "date_created": "2025-05-22 11:38:35.517932"
+        "date_created": "2025-05-23 00:34:43.642778"
     }
 }
