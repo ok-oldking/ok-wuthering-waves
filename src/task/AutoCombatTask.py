@@ -64,4 +64,4 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                 self.send_key_and_wait_animation('2', self.in_illusive_realm)
         self.last_is_click = not self.last_is_click
         self.op_index += 1
-        self.sleep(0.05)
+        self.sleep(0.02)
