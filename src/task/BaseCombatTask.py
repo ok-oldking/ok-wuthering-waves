@@ -50,7 +50,7 @@ class BaseCombatTask(CombatCheck):
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.add_text_fix({'Ｅ': 'e'})
 
-    def send_key_and_wait_animation(self, key, check_function, total_wait=7, enter_animation_wait=0.7):
+    def send_key_and_wait_animation(self, key, check_function, total_wait=7, enter_animation_wait=0.6):
         start = time.time()
         animation_start = 0
         while time.time() - start < total_wait:
