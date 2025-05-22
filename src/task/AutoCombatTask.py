@@ -24,6 +24,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         self.config_description = {
             'Auto Target': 'Turn off to enable auto combat only when manually target enemy using middle click'
         }
+        self.op_index = 0
 
     def run(self):
         ret = False
@@ -32,7 +33,10 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         while self.in_combat():
             ret = True
             try:
-                self.get_current_char().perform()
+                if self._in_illusive:
+                    self.realm_perform()
+                else:
+                    self.get_current_char().perform()
             except CharDeadException:
                 self.log_error(f'Characters dead', notify=True)
                 break
@@ -42,3 +46,22 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         if ret:
             self.combat_end()
         return ret
+
+    def realm_perform(self):
+        if not self.last_is_click:
+            if self.op_index % 10 == 0:
+                self.send_key_and_wait_animation('4', self.in_illusive_realm, enter_animation_wait=0.2)
+            else:
+                self.click()
+        else:
+            if self.available('liberation'):
+                self.send_key_and_wait_animation(self.get_liberation_key(), self.in_illusive_realm)
+            elif self.available('echo'):
+                self.send_key(self.get_echo_key())
+            elif self.available('resonance'):
+                self.send_key(self.get_resonance_key())
+            elif self.is_con_full() and self.in_team()[0]:
+                self.send_key_and_wait_animation('2', self.in_illusive_realm)
+        self.last_is_click = not self.last_is_click
+        self.op_index += 1
+        self.sleep(0.05)
