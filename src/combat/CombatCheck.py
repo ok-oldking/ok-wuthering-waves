@@ -29,6 +29,7 @@ class CombatCheck(BaseWWTask):
         self._last_liberation = 0
         self.target_enemy_time_out = 3
         self.combat_end_condition = None
+        self._in_illusive = False
 
     @property
     def in_liberation(self):
@@ -71,6 +72,7 @@ class CombatCheck(BaseWWTask):
         self.boss_health = None
         self.boss_health_box = None
         self.last_in_realm_not_combat = 0
+        self._in_illusive = False
         return False
 
     def recent_liberation(self):
@@ -136,6 +138,7 @@ class CombatCheck(BaseWWTask):
                                                                                                 AutoCombatTask)) and self.check_health_bar())
             in_combat = in_combat and self.check_target_enemy_btn()
             if in_combat:
+                self._in_illusive = self.in_illusive_realm()
                 if not self.target_enemy(wait=True):
                     return False
                 logger.info(
