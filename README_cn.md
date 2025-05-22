@@ -81,8 +81,9 @@ ok-ww.exe -t 1 -e
 ### 加入我们
 
 * 由于基于[ok-script](https://github.com/ok-oldking/ok-script)开发，项目代码仅有3000行（Python），简单易维护
-* 鸣潮水群 970523295 933070924 进群答案:老王同学OK
-* 有兴趣的请加开发者群926858895
+* 鸣潮水群 970523295 进群答案:老王同学OK
+* 群都满了 加QQ频道 [https://pd.qq.com/s/djmm6l44y](https://pd.qq.com/s/djmm6l44y)
+* 有兴趣开发的请加开发者群926858895
 
 ### 相关项目
 
