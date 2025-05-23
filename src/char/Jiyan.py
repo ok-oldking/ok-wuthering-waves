@@ -2,7 +2,6 @@ import time
 
 from src.char.BaseChar import BaseChar
 
-
 class Jiyan(BaseChar):
     def do_perform(self):
         if self.has_intro:
@@ -16,7 +15,7 @@ class Jiyan(BaseChar):
                     self.task.middle_click_relative(0.5, 0.5)
                     pass
                 self.normal_attack()
-            self.switch_next_char()
+            return self.switch_next_char()
         i = 0
         while not self.is_forte_full() and not self.is_con_full():
             if i % 4 == 0:
