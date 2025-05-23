@@ -115,6 +115,9 @@ class CombatCheck(BaseWWTask):
         if self._in_combat:
             now = time.time()
             if now - self.last_combat_check > self.combat_check_interval:
+                if current_char := self.get_current_char():
+                    if current_char.skip_combat_check():
+                        return True
                 self.last_combat_check = now
                 if not self.on_combat_check():
                     self.log_info('on_combat_check failed')
