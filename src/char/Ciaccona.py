@@ -10,6 +10,7 @@ class Ciaccona(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.attribute = 0
+        self.in_liberation = False
 
     def skip_combat_check(self):
         return self.time_elapsed_accounting_for_freeze(self.last_liberation) < 2
@@ -19,6 +20,7 @@ class Ciaccona(BaseChar):
         self.attribute = 0
 
     def do_perform(self):
+        self.in_liberation = False
         if self.attribute == 0:
             self.decide_teammate()
         if self.has_intro:
@@ -35,6 +37,7 @@ class Ciaccona(BaseChar):
             return self.switch_next_char()
         self.click_resonance()
         if self.click_liberation():
+            self.in_liberation = True
             if self.attribute == 2:
                 self.continues_click_a(0.6)
         self.switch_next_char()
@@ -42,7 +45,7 @@ class Ciaccona(BaseChar):
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         # 队友菲比时开大唱满20秒。可能导致菲比满协奏时夏空和奶妈双锁切人
         # 其他队友时，夏空会在主c满协奏时打断大招切出
-        if self.time_elapsed_accounting_for_freeze(self.last_liberation) < 20:
+        if self.in_liberation and self.time_elapsed_accounting_for_freeze(self.last_liberation) < 20:
             if self.attribute == 2 or (self.attribute == 1 and not has_intro):
                 return Priority.MIN
             else:
