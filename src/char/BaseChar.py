@@ -57,6 +57,9 @@ class BaseChar:
         self.current_con = 0
         self.has_tool_box = False
 
+    def skip_combat_check(self):
+        return False
+
     def use_tool_box(self):
         if self.has_tool_box:
             self.task.send_key('t')
