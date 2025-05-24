@@ -5,7 +5,7 @@
 #    pip-compile '.\requirements.in'
 #
 
-ok-script==0.0.553
+ok-script==0.0.554
 
 antlr4-python3-runtime==4.9.3
     # via omegaconf
