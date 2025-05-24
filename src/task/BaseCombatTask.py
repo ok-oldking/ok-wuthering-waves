@@ -454,6 +454,8 @@ class BaseCombatTask(CombatCheck):
         raw_mask = cv2.inRange(masked_image, lower_bound, upper_bound)
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
         closed_mask = cv2.morphologyEx(raw_mask, cv2.MORPH_CLOSE, kernel)
+        closed_mask[center[1] - 1:center[1] + 2, center[0] + 1:] = \
+            raw_mask[center[1] - 1:center[1] + 2, center[0] + 1:]
 
         # Find connected components
         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(closed_mask, connectivity=8)
