@@ -94,9 +94,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.wait_in_team_and_world(time_out=30)
 
     def scroll_and_click_buttons(self):
+        self.sleep(0.4)
         while self.find_f_with_text() and not self.in_combat():
             self.scroll_relative(0.5, 0.5, 1)
-            self.sleep(0.1)
+            self.sleep(0.4)
             self.send_key('f')
             self.handle_claim_button()
 
