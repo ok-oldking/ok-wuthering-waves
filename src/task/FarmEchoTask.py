@@ -59,10 +59,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.sleep(2)
             elif not self.in_combat():
                 if has_treasure:
-                    self.wait_until(self.find_treasure_icon, time_out=5, raise_if_not_found=False)
-                if self.walk_to_treasure_and_restart():
-                    has_treasure = True
-                    self.log_info('scroll_and_click_buttons')
+                    self.wait_until(lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(),
+                                    time_out=5, raise_if_not_found=False)
+                if not self.in_combat():
+                    if self.walk_to_treasure_and_restart():
+                        has_treasure = True
+                        self.log_info('scroll_and_click_buttons')
                     self.scroll_and_click_buttons()
 
             count += 1
