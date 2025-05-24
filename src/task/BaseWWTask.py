@@ -452,7 +452,16 @@ class BaseWWTask(BaseTask):
         while self.wait_until(self.has_claim, raise_if_not_found=False, time_out=1.5):
             self.sleep(0.5)
             self.send_key('esc')
-            logger.info(f"found a claim reward")
+            self.sleep(0.2)
+            logger.info(f"handle_claim_button found a claim reward")
+            return True
+
+    def handle_claim_button_now(self):
+        if self.has_claim():
+            self.sleep(0.5)
+            self.send_key('esc')
+            self.sleep(0.2)
+            logger.info(f"handle_claim_button_now found a claim reward")
             return True
 
     def has_claim(self):

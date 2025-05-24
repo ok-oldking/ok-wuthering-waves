@@ -25,9 +25,11 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
         self.add_exit_after_config()
+        self._has_treasure = False
+        self._in_realm = False
 
     def on_combat_check(self):
-        self.incr_drop(self.pick_f(handle_claim=False))
+        self.incr_drop(self.pick_f(handle_claim=self._has_treasure or self.in_realm))
         return True
 
     def run(self):
@@ -38,19 +40,19 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             pass
         except Exception as e:
             logger.error('farm 4c error, try handle monthly card', e)
-            if self.handle_monthly_card():
+            if self.handle_claim_button() or self.handle_monthly_card():
                 self.run()
             else:
                 raise
 
     def do_run(self):
         count = 0
-        in_realm = self.in_realm()
-        threshold = 0.25 if in_realm else 0.65
-        time_out = 12 if in_realm else 4
-        has_treasure = False
+        self._in_realm = self.in_realm()
+        threshold = 0.25 if self._in_realm else 0.65
+        time_out = 12 if self._in_realm else 4
+        self._has_treasure = False
         while count < self.config.get("Repeat Farm Count", 0):
-            if in_realm:
+            if self._in_realm:
                 self.send_key('esc', after_sleep=0.5)
                 self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
                                         post_action=lambda: self.send_key('esc', after_sleep=1),
@@ -58,18 +60,19 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.wait_in_team_and_world(time_out=120)
                 self.sleep(2)
             elif not self.in_combat():
-                if has_treasure:
+                if self._has_treasure:
                     self.wait_until(lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(),
                                     time_out=5, raise_if_not_found=False)
                 if not self.in_combat():
                     if self.walk_to_treasure_and_restart():
-                        has_treasure = True
+                        self._has_treasure = True
                         self.log_info('scroll_and_click_buttons')
                     self.scroll_and_click_buttons()
 
             count += 1
             self.log_info('start wait in combat')
-            if not self.wait_until(self.in_combat, raise_if_not_found=False, time_out=12):
+            if not self.wait_until(self.in_combat, raise_if_not_found=False,
+                                   time_out=12) and not self._in_realm and not self._has_treasure:
                 self.teleport_to_nearest_boss()
                 self.run_until(self.in_combat, 'w', time_out=5, running=True)
 
@@ -80,9 +83,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             if self.find_f_with_text():
                 dropped = self.pick_echo()
             else:
-                dropped = self.yolo_find_echo(turn=in_realm, use_color=False, time_out=time_out, threshold=threshold)[0]
+                dropped = \
+                self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=time_out, threshold=threshold)[0]
             self.incr_drop(dropped)
-            if dropped:
+            if dropped and not self._has_treasure:
                 self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
             else:
                 self.sleep(1)
