@@ -48,6 +48,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         in_realm = self.in_realm()
         threshold = 0.25 if in_realm else 0.65
         time_out = 12 if in_realm else 4
+        has_treasure = False
         while count < self.config.get("Repeat Farm Count", 0):
             if in_realm:
                 self.send_key('esc', after_sleep=0.5)
@@ -57,9 +58,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.wait_in_team_and_world(time_out=120)
                 self.sleep(2)
             elif not self.in_combat():
-                self.walk_to_treasure_and_restart()
-                self.log_info('scroll_and_click_buttons')
-                self.scroll_and_click_buttons()
+                if has_treasure:
+                    self.wait_until(self.find_treasure_icon, time_out=5, raise_if_not_found=False)
+                if self.walk_to_treasure_and_restart():
+                    has_treasure = True
+                    self.log_info('scroll_and_click_buttons')
+                    self.scroll_and_click_buttons()
 
             count += 1
             self.log_info('start wait in combat')
@@ -94,7 +98,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.wait_in_team_and_world(time_out=30)
 
     def scroll_and_click_buttons(self):
-        self.sleep(0.4)
+        self.sleep(0.2)
         while self.find_f_with_text() and not self.in_combat():
             self.scroll_relative(0.5, 0.5, 1)
             self.sleep(0.4)
