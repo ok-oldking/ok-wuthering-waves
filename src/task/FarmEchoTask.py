@@ -29,7 +29,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self._in_realm = False
 
     def on_combat_check(self):
-        self.incr_drop(self.pick_f(handle_claim=self._has_treasure or self.in_realm))
+        self.incr_drop(self.pick_f(handle_claim=True))
         return True
 
     def run(self):
@@ -64,9 +64,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.wait_until(lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(),
                                     time_out=5, raise_if_not_found=False)
                 if not self.in_combat():
+                    self.log_info('not in combat try click restart')
                     if self.walk_to_treasure_and_restart():
                         self._has_treasure = True
-                        self.log_info('scroll_and_click_buttons')
+                        self.log_info('_has_treasure = True')
                     self.scroll_and_click_buttons()
 
             count += 1
@@ -84,7 +85,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 dropped = self.pick_echo()
             else:
                 dropped = \
-                self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=time_out, threshold=threshold)[0]
+                    self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=time_out, threshold=threshold)[0]
             self.incr_drop(dropped)
             if dropped and not self._has_treasure:
                 self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
@@ -106,10 +107,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
     def scroll_and_click_buttons(self):
         self.sleep(0.2)
         while self.find_f_with_text() and not self.in_combat():
+            self.log_info('scroll_and_click_buttons')
             self.scroll_relative(0.5, 0.5, 1)
-            self.sleep(0.4)
+            self.sleep(0.2)
             self.send_key('f')
-            self.handle_claim_button()
+            if self.handle_claim_button():
+                self._has_treasure = True
 
     def walk_to_treasure_and_restart(self):
         if self.find_treasure_icon():
