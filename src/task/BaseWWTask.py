@@ -449,10 +449,9 @@ class BaseWWTask(BaseTask):
         return False
 
     def handle_claim_button(self):
-        if self.wait_until(self.has_claim, raise_if_not_found=False, time_out=1.5):
+        while self.wait_until(self.has_claim, raise_if_not_found=False, time_out=1.5):
             self.sleep(0.5)
             self.send_key('esc')
-            self.sleep(0.5)
             logger.info(f"found a claim reward")
             return True
 
@@ -504,8 +503,6 @@ class BaseWWTask(BaseTask):
 
     def pick_echo(self):
         if self.find_f_with_text(target_text=self.absorb_echo_text()):
-            # if self.debug:
-            #     self.screenshot('pick_echo')
             self.send_key('f')
             if not self.handle_claim_button():
                 self.log_debug('found a echo picked')
