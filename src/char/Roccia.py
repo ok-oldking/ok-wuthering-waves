@@ -36,7 +36,7 @@ class Roccia(BaseChar):
 
     def switch_next_char(self, post_action=None, free_intro=False, target_low_con=False):
         super().switch_next_char(post_action=self.update_tool_box, free_intro=free_intro,
-                                       target_low_con=target_low_con)
+                                 target_low_con=target_low_con)
 
     def update_tool_box(self, next_char, has_intro):
         if has_intro:
@@ -46,6 +46,8 @@ class Roccia(BaseChar):
         return Priority.MAX - 1
 
     def get_plunge_count(self):
+        if self.liberation_available():
+            return 0
         count = 0
         boxes = []
         if self.is_color_ok('box_forte_1'):
@@ -58,7 +60,14 @@ class Roccia(BaseChar):
             count = 3
             boxes.append(2)
         self.logger.debug(f'get plunge count: {count}, {boxes}')
-        return count
+        # if self.task.debug:
+        #     self.task.screenshot(f"plunge_{count}_{len(boxes)}_{self.count_gray_forte()}")
+        if self.count_gray_forte(right=0.56) > 20:
+            return 0
+        if count == len(boxes):
+            return count
+        else:
+            return 0
 
     def is_color_ok(self, box):
         purple_percent = self.task.calculate_color_percentage(forte_purple_color, self.task.get_box_by_name(box))
@@ -69,16 +78,20 @@ class Roccia(BaseChar):
     def plunge(self):
         start = time.time()
         starting_count = 0
-        while (self.is_forte_full() and time.time() - start < 1.1) or (starting_count > 0 and time.time() - start < 5):
-            self.click(interval=0.1)
+        self.task.send_key_down('w')
+        while (self.is_forte_full() and time.time() - start < 1.1) or (starting_count > 0 and time.time() - start < 4):
             if starting_count == 0:
                 starting_count = self.get_plunge_count()
             if starting_count > 0 and not self.is_forte_full():
                 self.can_plunge = False
                 break
-            self.task.next_frame()
+            # if time.time() - start > 1.1 and self.count_gray_forte() < 10 and self.get_plunge_count() == 0:
+            #     if self.task.debug:
+            #         self.task.screenshot(f"plunge_gray_break_{self.count_gray_forte()}")
+            #     break
+            self.click(interval=0.1)
+        self.task.send_key_up('w')
         self.plunge_count = 0
-        # self.logger.debug(f'plunge ended after: {time.time() - start} {self.get_plunge_count()}  {self.is_forte_full()}')
         return True
 
     def c6_continues_plunge(self):

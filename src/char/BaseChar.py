@@ -2,6 +2,9 @@ import time
 from enum import IntEnum, StrEnum
 from typing import Any
 
+import cv2
+import numpy as np
+
 from ok import Config, Logger
 from src import text_white_color
 
@@ -470,6 +473,11 @@ class BaseChar:
                 return
             self.task.click(interval=interval)
 
+    def continues_click(self, key, duration, interval=0.1):
+        start = time.time()
+        while time.time() - start < duration:
+            self.task.send_key(key, interval=interval)
+
     def normal_attack(self):
         self.logger.debug('normal attack')
         self.check_combat()
@@ -496,6 +504,233 @@ class BaseChar:
 
     def flying(self):
         return self.current_resonance() == 0
+
+    def count_gray_forte(self, left=0.42, right=0.57):
+        image = self.task.box_of_screen(left, 0.92, right, 0.94).crop_frame(self.task.frame)
+        # if self.task.debug:
+        #     self.task.screenshot("forte", image) # Original commented-out screenshot
+
+        debug_image = image.copy()
+        # debug_image = None
+
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+        lower_gray = np.array([0, 10, 140])
+        upper_gray = np.array([360, 95, 255])
+
+        mask = cv2.inRange(hsv, lower_gray, upper_gray)
+
+        if debug_image is not None:
+            self.task.screenshot("forte_mask", mask)
+
+        kernel_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
+        mask_opened = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel_open, iterations=1)
+
+        if debug_image is not None:
+            self.task.screenshot("forte_mask2", mask_opened)
+
+        kernel_dilate = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
+        mask_processed = cv2.dilate(mask_opened, kernel_dilate, iterations=1)
+
+        if debug_image is not None:
+            self.task.screenshot("forte_mask3", mask_processed)
+
+        contours, _ = cv2.findContours(mask_processed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        potential_rects = []
+
+        # debug_image = None
+        min_area = 0.000001
+        max_area = 0.00002
+        min_aspect_ratio_wh = 0.2
+        max_aspect_ratio_wh = 1.5
+
+        for cnt in contours:
+            area_raw = cv2.contourArea(cnt)
+            normalized_area = area_raw / self.task.screen_width / self.task.screen_height
+
+            x, y, w, h = cv2.boundingRect(cnt)
+            aspect_ratio_wh = float(w) / h if h != 0 else float(
+                'inf') if w != 0 else 0  # Avoid division by zero if h is 0
+            self.task.log_debug(
+                f'Contour: x={x},y={y},w={w},h={h}, Area (norm): {normalized_area:.10f}, AR: {aspect_ratio_wh:.2f}')
+
+            if min_area < normalized_area < max_area:
+                if h == 0:  # Original code had this check, if h=0, aspect ratio calculation modified above
+                    if debug_image is not None:
+                        cv2.rectangle(debug_image, (x, y), (x + w, y + h), (255, 0, 255), 1)
+                    continue
+
+                if min_aspect_ratio_wh < aspect_ratio_wh < max_aspect_ratio_wh:
+                    potential_rects.append((x, y, w, h))
+                    if debug_image is not None:
+                        cv2.rectangle(debug_image, (x, y), (x + w, y + h), (0, 255, 255), 1)
+                elif debug_image is not None:
+                    cv2.rectangle(debug_image, (x, y), (x + w, y + h), (0, 0, 255), 1)
+            elif debug_image is not None:
+                cv2.rectangle(debug_image, (x, y), (x + w, y + h), (255, 0, 0), 1)
+
+        if not potential_rects:
+            if debug_image is not None:
+                self.task.screenshot("debug_image", debug_image)
+            return 0
+
+        sorted_rects = sorted(potential_rects, key=lambda r: r[0], reverse=True)
+
+        final_count = 0
+        final_counted_rects_list = []
+        last_counted_rect_params = None
+
+        image_width = image.shape[1]  # Width of the cropped image
+
+        for i in range(len(sorted_rects)):
+            current_rect_params = sorted_rects[i]
+            x_curr, y_curr, w_curr, h_curr = current_rect_params
+
+            if w_curr == 0 and min_aspect_ratio_wh > 0:
+                # self.task.log_debug(
+                #     f"Warning: Encountered rectangle with zero width at x={x_curr} after initial filters.")
+                continue
+
+            if last_counted_rect_params is None:
+                if x_curr > 0.9 * image_width:
+                    last_counted_rect_params = current_rect_params
+                    final_count = 1
+                    final_counted_rects_list.append(current_rect_params)
+                    # self.task.log_debug(
+                    #     f"Starting continuous sequence with rect at x={x_curr}, w={w_curr}. "
+                    #     f"(Passed >0.9 width check: x_curr={x_curr} > threshold={0.9 * image_width:.2f} for image_width={image_width}).")
+                else:
+                    # self.task.log_debug(
+                    #     f"Rightmost rectangle at x={x_curr} (w={w_curr}) does not meet start condition: "
+                    #     f"x_curr={x_curr} is not > threshold={0.9 * image_width:.2f} (image_width={image_width}). Sequence cannot start."
+                    # )
+                    if debug_image is not None:
+                        cv2.rectangle(debug_image, (x_curr, y_curr), (x_curr + w_curr, y_curr + h_curr), (128, 0, 128),
+                                      1)
+                    break
+            else:
+                x_last, y_last, w_last, h_last = last_counted_rect_params
+
+                gap = x_last - (x_curr + w_curr)
+                distance_threshold = 4 * w_curr
+                x_gap_condition_met = (0 <= gap <= distance_threshold)
+
+                y_center_last = y_last + h_last / 2.0
+                y_center_curr = y_curr + h_curr / 2.0
+                y_center_distance = abs(y_center_curr - y_center_last)
+
+                y_alignment_condition_met = y_center_distance < w_curr
+
+                # self.task.log_debug(
+                #    f"Rect[{i}] (x={x_curr},y={y_curr},w={w_curr},h={h_curr}) vs Last (x={x_last},y={y_last},w={w_last},h={h_last}). "
+                #    f"X_Gap: {gap:.1f} (Thres:{distance_threshold:.1f}) Met:{x_gap_condition_met}. "
+                #    f"Y_Dist: {y_center_distance:.1f} (Thres(w_curr):{w_curr:.1f}) Met:{y_alignment_condition_met}."
+                # )
+
+                if x_gap_condition_met and y_alignment_condition_met:
+                    last_counted_rect_params = current_rect_params
+                    final_count += 1
+                    final_counted_rects_list.append(current_rect_params)
+                    # self.task.log_debug(
+                    #     f"Added rect at x={x_curr} to sequence. Current count: {final_count}.")
+                else:
+                    # log_message_parts = [f"Sequence broken. Candidate rect at x={x_curr}, w={w_curr}."]
+                    # if not x_gap_condition_met:
+                    #     log_message_parts.append(f"X Gap condition failed: gap {gap:.2f} not in [0, {distance_threshold:.2f}].")
+                    # if not y_alignment_condition_met:
+                    #     log_message_parts.append(f"Y Alignment condition failed: y_center_distance {y_center_distance:.2f} not < w_curr {w_curr:.2f} (actual w_curr).")
+                    # self.task.log_debug(" ".join(log_message_parts))
+                    break
+
+        if debug_image is not None:
+            for rect_params in final_counted_rects_list:
+                x, y, w, h = rect_params
+                cv2.rectangle(debug_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            self.task.screenshot("debug_image", debug_image)
+
+        return final_count
+
+    def count_all_forte(self):
+        """
+        Counts all pill-shaped segments in a progress bar image based on geometry,
+        regardless of their color.
+        """
+        # Assuming self.task and its methods are defined and initialized.
+        image = self.task.box_of_screen(0.41, 0.90, 0.57, 0.94).crop_frame(self.task.frame)
+
+        h_img, w_img = image.shape[:2]
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        # Apply Gaussian blur - (3,3) kernel is chosen to reduce noise
+        # while trying to preserve details of small oval shapes.
+        blurred = cv2.GaussianBlur(gray, (3, 3), 0)
+
+        # Edge Detection using Canny
+        # Thresholds (50, 150) are common starting points.
+        edges = cv2.Canny(blurred, 50, 150)
+
+        # Find Contours
+        # cv2.RETR_EXTERNAL retrieves only the extreme outer contours.
+        # cv2.CHAIN_APPROX_SIMPLE compresses contour segments.
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        progress_ovals_count = 0
+        badge_icons_count = 0
+
+        for cnt in contours:
+            area = cv2.contourArea(cnt)
+
+            # Filter out very small contours early to reduce processing
+            if area < 20:  # Adjusted minimum area threshold
+                continue
+
+            x, y, w, h = cv2.boundingRect(cnt)
+
+            if w == 0 or h == 0:
+                continue
+
+            aspect_ratio_bbox = float(w) / h
+            perimeter = cv2.arcLength(cnt, True)
+
+            if perimeter == 0:  # Avoid division by zero for degenerate contours
+                continue
+
+            # Approximate contour to a polygon
+            # Epsilon factor (0.03) determines the precision of approximation.
+            approx = cv2.approxPolyDP(cnt, 0.03 * perimeter, True)
+            num_vertices = len(approx)
+
+            centroid_y = y + h / 2.0  # Use float division for centroid
+
+            # Criteria for Badge Icons ("gray rectangle shapes")
+            # These are typically larger, at the top, and have 5-8 vertices.
+            is_badge_icon = False
+            if (centroid_y < h_img * 0.45) and \
+                    (1500 < area < 4500) and \
+                    (0.6 < aspect_ratio_bbox < 1.4) and \
+                    (5 <= num_vertices <= 8):  # Pentagonal to octagonal shapes
+                badge_icons_count += 1
+                is_badge_icon = True
+
+            # Criteria for Progress Ovals ("purple rectangle shapes")
+            # These are smaller, in the middle/lower part, more circular/oval.
+            # Check only if not already classified as a badge.
+            if not is_badge_icon:
+                if (h_img * 0.55 < centroid_y < h_img * 0.70) and \
+                        (40 < area < 200) and \
+                        (0.5 < aspect_ratio_bbox < 2.0) and \
+                        (num_vertices >= 6):  # Ovals/circles tend to have more vertices after approximation
+
+                    # Solidity check helps confirm "roundness" or "fullness" of the shape.
+                    # Ovals should be highly convex.
+                    hull = cv2.convexHull(cnt)
+                    if cv2.contourArea(hull) > 0:  # Avoid division by zero
+                        solidity = area / cv2.contourArea(hull)
+                        if solidity > 0.85:
+                            progress_ovals_count += 1
+
+        return progress_ovals_count, badge_icons_count
 
 
 forte_white_color = {

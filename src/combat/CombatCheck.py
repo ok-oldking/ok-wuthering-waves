@@ -315,7 +315,7 @@ boss_health_color = {
 }
 
 aim_color = {
-    'r': (150, 190),  # Red range
-    'g': (148, 172),  # Green range
+    'r': (150, 213),  # Red range
+    'g': (148, 185),  # Green range
     'b': (22, 62)  # Blue range
 }

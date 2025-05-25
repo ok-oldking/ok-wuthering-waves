@@ -304,8 +304,8 @@ class BaseCombatTask(CombatCheck):
         if (self.key_config['Auto Set HotKey'] and not self.hot_key_verified) or force:
             self.hot_key_verified = True
 
-            keys = self.ocr(0.82, 0.92, 0.96, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.8,
-                            name='keys', log=True)
+            keys = self.ocr(0.82, 0.92, 0.96, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.7,
+                            name='keys')
             resonance_key = self.find_boxes(keys, boundary=self.box_of_screen(0.82, 0.92, 0.85, 0.96))
 
             echo_key = self.find_boxes(keys, boundary=self.box_of_screen(0.88, 0.92, 0.90, 0.96))
