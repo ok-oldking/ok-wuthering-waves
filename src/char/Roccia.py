@@ -30,7 +30,7 @@ class Roccia(BaseChar):
             return self.switch_next_char()
         if not liberated:
             self.plunge()
-        if not self.click_resonance()[0]:
+        if not self.click_resonance(send_click=False)[0]:
             self.click_echo()
         self.switch_next_char()
 
@@ -46,7 +46,7 @@ class Roccia(BaseChar):
         return Priority.MAX - 1
 
     def get_plunge_count(self):
-        if self.liberation_available():
+        if not self.is_forte_full():
             return 0
         count = 0
         boxes = []
@@ -59,15 +59,14 @@ class Roccia(BaseChar):
         if self.is_color_ok('box_forte_3'):
             count = 3
             boxes.append(2)
-        self.logger.debug(f'get plunge count: {count}, {boxes}')
+        # self.logger.debug(f'get plunge count: {count}, {boxes}')
         # if self.task.debug:
-        #     self.task.screenshot(f"plunge_{count}_{len(boxes)}_{self.count_gray_forte()}")
-        if self.count_gray_forte(right=0.56) > 20:
-            return 0
+        #     self.task.screenshot(f"plunge_{count}_{len(boxes)}_")
+
         if count == len(boxes):
             return count
         else:
-            return 0
+            return -1
 
     def is_color_ok(self, box):
         purple_percent = self.task.calculate_color_percentage(forte_purple_color, self.task.get_box_by_name(box))
@@ -80,16 +79,14 @@ class Roccia(BaseChar):
         starting_count = 0
         self.task.send_key_down('w')
         while (self.is_forte_full() and time.time() - start < 1.1) or (starting_count > 0 and time.time() - start < 4):
+            self.click(interval=0.1)
             if starting_count == 0:
                 starting_count = self.get_plunge_count()
+                # if starting_count > 0:
+                #     self.task.screenshot(f"can_plunge_{starting_count}")
             if starting_count > 0 and not self.is_forte_full():
                 self.can_plunge = False
                 break
-            # if time.time() - start > 1.1 and self.count_gray_forte() < 10 and self.get_plunge_count() == 0:
-            #     if self.task.debug:
-            #         self.task.screenshot(f"plunge_gray_break_{self.count_gray_forte()}")
-            #     break
-            self.click(interval=0.1)
         self.task.send_key_up('w')
         self.plunge_count = 0
         return True
