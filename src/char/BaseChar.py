@@ -510,8 +510,8 @@ class BaseChar:
         # if self.task.debug:
         #     self.task.screenshot("forte", image) # Original commented-out screenshot
 
-        debug_image = image.copy()
-        # debug_image = None
+        # debug_image = image.copy()
+        debug_image = None
 
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
