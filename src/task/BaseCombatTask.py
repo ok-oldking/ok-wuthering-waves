@@ -29,6 +29,7 @@ class CharDeadException(NotInCombatException):
 class BaseCombatTask(CombatCheck):
     hot_key_verified = False
     con_full_size = None
+    freeze_durations = []
     if con_full_size is None:
         con_full_size = Config("_con_full_size", {
             "0": 0,
@@ -49,6 +50,23 @@ class BaseCombatTask(CombatCheck):
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.add_text_fix({'Ｅ': 'e'})
+
+    def add_freeze_duration(self, start, duration=-1.0, freeze_time=0.1):
+        if duration < 0:
+            duration = time.time() - start
+        if start > 0 and duration > freeze_time:
+            current_time = time.time()
+            self.freeze_durations = [item for item in self.freeze_durations if item[0] > current_time - 60]
+            self.freeze_durations.append((start, duration, freeze_time))
+
+    def time_elapsed_accounting_for_freeze(self, start):
+        to_minus = 0
+        for freeze_start, duration, freeze_time in self.freeze_durations:
+            if start < freeze_start:
+                to_minus += duration - freeze_time
+        if to_minus != 0:
+            self.log_debug(f'time_elapsed_accounting_for_freeze to_minus {to_minus}')
+        return time.time() - start - to_minus
 
     def send_key_and_wait_animation(self, key, check_function, total_wait=7, enter_animation_wait=0.6):
         start = time.time()
@@ -148,6 +166,7 @@ class BaseCombatTask(CombatCheck):
         max_priority = Priority.MIN
         switch_to = current_char
         has_intro = free_intro
+        current_con = 0
         if not has_intro:
             current_con = current_char.get_current_con()
             if current_con > 0.8 and current_con != 1:
@@ -182,7 +201,10 @@ class BaseCombatTask(CombatCheck):
             current_char.continues_normal_attack(0.2)
             return current_char.switch_next_char()
         switch_to.has_intro = has_intro
-        logger.info(f'switch_next_char {current_char} -> {switch_to} has_intro {switch_to.has_intro}')
+        logger.info(
+            f'switch_next_char {current_char} -> {switch_to} has_intro {switch_to.has_intro} current_con {current_con}')
+        # if self.debug:
+        #     self.screenshot(f'switch_next_char_{current_con}')
         last_click = 0
         start = time.time()
         while True:

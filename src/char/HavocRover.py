@@ -5,19 +5,13 @@ class HavocRover(BaseChar):
     def do_perform(self):
         if self.has_intro:
             if self.is_forte_full():
-                self.heavy_attack(1)
+                self.heavy_attack(0.8)
             else:
-                self.wait_intro(click=True)
-        self.click_liberation()
-        if self.click_resonance()[0]:
+                self.continues_normal_attack(0.9)
+        self.click_liberation(send_click=True)
+        if self.click_resonance(send_click=True)[0]:
             return self.switch_next_char()
-        if self.is_forte_full():
-            self.logger.info(f'forte_full, and liberation_available, heavy attack')
-            self.wait_down()
-            self.heavy_attack()
-            self.sleep(0.4)
-            if self.click_resonance()[0]:
-                return self.switch_next_char()
         if not self.click_echo():
             self.click()
+        self.continues_normal_attack(1.1 - self.time_elapsed_accounting_for_freeze(self.last_switch_time))
         self.switch_next_char()
