@@ -29,6 +29,15 @@ class TestCombatCheck(TaskTestCase):
         self.assertTrue(in_combat)
         self.logger.debug('in_combat_check task done')
 
+    def test_in_combat_check4(self):
+        self.task.do_reset_to_false()
+        self.set_image('tests/images/in_combat4.png')
+        in_combat = self.task.in_combat()
+        self.logger.debug('in_combat_check task done')
+        self.task.screenshot('in_combat4', show_box=True)
+        self.task.sleep(1)
+        self.assertTrue(in_combat)
+
 
 if __name__ == '__main__':
     unittest.main()
