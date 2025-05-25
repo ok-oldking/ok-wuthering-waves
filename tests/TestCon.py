@@ -49,6 +49,13 @@ class TestCon(TaskTestCase):
         con_full = self.task.get_current_char().is_con_full()
         self.assertFalse(con_full)
 
+    def test_con_full6(self):
+        self.task.do_reset_to_false()
+        self.set_image('tests/images/con_full2.png')
+        self.task.load_chars()
+        con_full = self.task.get_current_char().is_con_full()
+        self.assertTrue(con_full)
+
 
 if __name__ == '__main__':
     unittest.main()
