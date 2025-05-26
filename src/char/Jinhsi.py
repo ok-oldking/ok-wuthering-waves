@@ -92,30 +92,25 @@ class Jinhsi(BaseChar):
         self.logger.info(f'handle_incarnation  click_resonance end {time.time() - start}')
 
     def handle_intro(self):
-        # self.task.screenshot(f'handle_intro start')
         self.logger.info(f'handle_intro start')
         start = time.time()
-        # if (self.time_elapsed_accounting_for_freeze(self.last_fly_e_time) < 10.5 or self.has_cd(
-        #         'resonance')) and not self.incarnation_cd:
-        #     self.incarnation_cd = True
-        #     self.click_echo()
-        #     self.logger.info(f'handle_intro in cd switch {start - self.last_fly_e_time}')
-        #     return
-        wait_til_no_cd = False
         while True:
+            elapsed = time.time() - start
+            if self.has_cd('resonance'):
+                if 0.3 < elapsed < 1.5:
+                    self.incarnation_cd = True
+                    # self.task.screenshot('incarnation_cd')
+                    if not self.click_echo():
+                        self.click()
+                    return
+                elif elapsed > 1.5:
+                    # self.task.screenshot('incarnation_finished')
+                    break
+            else:
+                self.send_resonance_key(interval=0.1)
             self.task.next_frame()
             self.check_combat()
-            if not self.has_cd('resonance'):
-                self.send_resonance_key(interval=0.1)
-                wait_til_no_cd = False
-            else:
-                if wait_til_no_cd or time.time() - start < 2:
-                    wait_til_no_cd = True
-                    self.task.click(interval=0.1)
-                elif wait_til_no_cd:
-                    self.task.click(interval=0.1)
-                else:
-                    break
+
         self.last_fly_e_time = start
         if self.click_liberation(send_click=True):
             self.continues_normal_attack(0.3)
