@@ -59,10 +59,15 @@ class BaseCombatTask(CombatCheck):
             self.freeze_durations = [item for item in self.freeze_durations if item[0] > current_time - 60]
             self.freeze_durations.append((start, duration, freeze_time))
 
-    def time_elapsed_accounting_for_freeze(self, start):
+    def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
         to_minus = 0
         for freeze_start, duration, freeze_time in self.freeze_durations:
             if start < freeze_start:
+                if intro_motion_freeze:
+                    if freeze_time == -100:
+                        freeze_time = 0
+                elif freeze_time == -100:
+                    continue
                 to_minus += duration - freeze_time
         if to_minus != 0:
             self.log_debug(f'time_elapsed_accounting_for_freeze to_minus {to_minus}')
@@ -238,6 +243,10 @@ class BaseCombatTask(CombatCheck):
                 self.in_liberation = False
                 current_char.switch_out()
                 switch_to.is_current_char = True
+                if has_intro:
+                    current_time = time.time()
+                    self.add_freeze_duration(current_time, switch_to.intro_motion_freeze_duration, -100)
+                    current_char.last_outro_time = current_time
                 break
 
         if post_action:
