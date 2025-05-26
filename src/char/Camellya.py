@@ -350,9 +350,9 @@ class Camellya(BaseChar):
                 self.task.mouse_down()
 
 camellya_red_color = {
-    'r': (239, 240),  # Red range
-    'g': (76, 77),  # Green range
-    'b': (173, 174)   # Blue range
+    'r': (234, 245),  # Red range
+    'g': (71, 82),  # Green range
+    'b': (168, 179)   # Blue range
 } 
 
 camellya_forte_color = {
