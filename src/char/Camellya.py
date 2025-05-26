@@ -135,15 +135,16 @@ class Camellya(BaseChar):
         r1, r2 = h*mask_r1_ratio, h*mask_r2_ratio
         r1 = Decimal(str(r1)).quantize(Decimal('0'), rounding=ROUND_DOWN)
         r2 = Decimal(str(r2)).quantize(Decimal('0'), rounding=ROUND_UP)
-        if r1 > 0:
-            cv2.circle(cropped, center, int(r1), 0, -1)
+
+        ring_mask = np.zeros((h, w), dtype=np.uint8)
         if r2 > 0:
-            mask = np.zeros((h, w), dtype=np.uint8)
-            cv2.circle(mask, center, int(r2), 255, -1)
-            cropped = cv2.bitwise_and(cropped, cropped, mask=mask)
+            cv2.circle(ring_mask, center, int(r2), 255, -1)
+        if r1 > 0:
+            cv2.circle(ring_mask, center, int(r1), 0, -1)
+        masked_image = cv2.bitwise_and(cropped, cropped, mask=ring_mask)
             
-        if cropped.ndim == 3:
-            non_black_mask = np.all(cropped != 0, axis=2)
+        if masked_image.ndim == 3:
+            non_black_mask = np.all(masked_image != 0, axis=2)
         else:
             return 0.0
             
@@ -152,7 +153,7 @@ class Camellya(BaseChar):
             return 0.0
 
         lower_bound, upper_bound = color_range_to_bound(target_color)
-        gray = cv2.inRange(cropped, lower_bound, upper_bound)
+        gray = cv2.inRange(masked_image, lower_bound, upper_bound)
         colored_pixels = np.count_nonzero(gray == 255)
 
         color_percent = colored_pixels / free_space
