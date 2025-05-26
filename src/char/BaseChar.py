@@ -58,6 +58,8 @@ class BaseChar:
         self.last_perform = 0
         self.current_con = 0
         self.has_tool_box = False
+        self.intro_motion_freeze_duration = 0.9
+        self.last_outro_time = -1
 
     def skip_combat_check(self):
         return False
