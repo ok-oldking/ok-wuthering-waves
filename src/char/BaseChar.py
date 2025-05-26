@@ -335,8 +335,8 @@ class BaseChar:
     def add_freeze_duration(self, start, duration=-1.0, freeze_time=0.1):
         self.task.add_freeze_duration(start, duration, freeze_time)
 
-    def time_elapsed_accounting_for_freeze(self, start):
-        return self.task.time_elapsed_accounting_for_freeze(start)
+    def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+        return self.task.time_elapsed_accounting_for_freeze(start, intro_motion_freeze)
 
     def get_liberation_key(self):
         return self.task.get_liberation_key()
