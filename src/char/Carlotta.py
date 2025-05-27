@@ -42,7 +42,7 @@ class Carlotta(BaseChar):
         return True
         
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.time_elapsed_accounting_for_freeze(self.last_echo) < 3:
+        if self.time_elapsed_accounting_for_freeze(self.last_echo, True) < 3:
             return Priority.MIN
         else:
             return super().do_get_switch_priority(current_char, has_intro)
