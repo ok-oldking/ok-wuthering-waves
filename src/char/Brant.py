@@ -21,7 +21,7 @@ class Brant(BaseChar):
             self.in_liberaction = 0
             self.perform_anchor = time.time()
             return self.switch_next_char()
-        if self.click_liberation():
+        if not self.check_barrier() and self.click_liberation():
             self.liberaction_time = time.time()
             self.in_liberaction = 1 
             self.continues_normal_attack(0.8)
@@ -67,9 +67,9 @@ class Brant(BaseChar):
         return 0
         
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.time_elapsed_accounting_for_freeze(self.perform_anchor) < 4:
+        if self.time_elapsed_accounting_for_freeze(self.perform_anchor, True) < 4:
             return Priority.MIN
         elif self.still_in_liberation():
-            return 1000
+            return 10000
         else:
             return super().do_get_switch_priority(current_char, has_intro)
