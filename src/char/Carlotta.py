@@ -20,7 +20,7 @@ class Carlotta(BaseChar):
         if self.is_forte_full():
             self.heavy_attack()
             return self.switch_next_char()
-        if self.liberation_available():
+        if not self.check_barrier() and self.liberation_available():
             while self.liberation_available():
                 self.click_liberation()
                 self.check_combat()

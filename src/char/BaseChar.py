@@ -495,6 +495,18 @@ class BaseChar:
     def flying(self):
         return self.current_resonance() == 0
 
+    def check_barrier(self):
+        current_char = self.task.get_current_char(raise_exception=False)
+        for i, char in enumerate(self.task.chars):
+            if char == current_char:
+                pass
+            else:
+                priority = char.get_switch_priority(current_char, has_intro = False, target_low_con = False)
+                if priority >= 10000:
+                    self.logger.info(f'In lock with {char}')
+                    return True
+        return False
+        
     # def count_rectangle_forte(self, left=0.42, right=0.57):
     #     # Perform image cropping once, as it's independent of saturation ranges
     #     cropped_image_base = self.task.box_of_screen(left, 0.927, right, 0.931).crop_frame(self.task.frame)
