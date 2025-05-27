@@ -39,7 +39,7 @@ class Encore(BaseChar):
             if not self.can_resonance_step2(delay=4):
                 self.last_resonance = time.time()
                 return self.switch_next_char()
-        if self.click_liberation(wait_if_cd_ready=0.4):
+        if not self.check_barrier() and self.click_liberation(wait_if_cd_ready=0.4):
             self.liberation_time = time.time()
             self.n4()
             return self.switch_next_char()
@@ -61,12 +61,12 @@ class Encore(BaseChar):
         return 40
 
     def can_resonance_step2(self, delay=2):
-        return self.time_elapsed_accounting_for_freeze(self.last_resonance) < delay
+        return self.time_elapsed_accounting_for_freeze(self.last_resonance, True) < delay
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         self.logger.debug(
-            f'encore last heavy time {self.last_heavy} {self.time_elapsed_accounting_for_freeze(self.last_heavy)}')
-        if self.time_elapsed_accounting_for_freeze(self.last_heavy) < 4.6:
+            f'encore last heavy time {self.last_heavy} {self.time_elapsed_accounting_for_freeze(self.last_heavy, True)}')
+        if self.time_elapsed_accounting_for_freeze(self.last_heavy, True) < 4.6:
             return Priority.MIN
         elif self.still_in_liberation() or self.can_resonance_step2():
             self.logger.info(
