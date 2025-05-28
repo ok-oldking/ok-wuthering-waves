@@ -1,0 +1,21 @@
+name: mirrorchyan_uploading
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  mirrorchyan:
+    runs-on: macos-latest
+    steps:
+      - uses: MirrorChyan/uploading-action@v1
+        with:
+          filetype: latest-release
+          filename: "ok-ww-*.7z"
+          p7zip: true
+          mirrorchyan_rid: okww
+
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          owner: ok-oldking
+          repo: ok-wuthering-waves
+          upload_token: ${{ secrets.MirrorChyanUploadToken }}
