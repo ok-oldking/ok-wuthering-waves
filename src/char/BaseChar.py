@@ -18,6 +18,7 @@ class Priority(IntEnum):
     ALL_IN_CD = 0
     NORMAL = 10
     MAX = 9999999999
+    FAST_SWITCH = MAX - 100
 
 
 class Role(StrEnum):
@@ -79,9 +80,11 @@ class BaseChar:
         return False
 
     def perform(self):
-        # self.wait_down()
         self.last_perform = time.time()
-        self.do_perform()
+        if self.need_fast_perform():
+            self.do_fast_perform()
+        else:
+            self.do_perform()
         self.logger.debug(f'set current char false {self.index}')
 
     def wait_down(self):
@@ -114,6 +117,9 @@ class BaseChar:
             return self.switch_next_char()
         self.continues_normal_attack(0.31)
         self.switch_next_char()
+
+    def do_fast_perform(self):
+        self.do_perform()
 
     def has_cd(self, box_name):
         return self.task.has_cd(box_name)
@@ -495,18 +501,18 @@ class BaseChar:
     def flying(self):
         return self.current_resonance() == 0
 
-    def check_barrier(self):
+    def need_fast_perform(self):
         current_char = self.task.get_current_char(raise_exception=False)
         for i, char in enumerate(self.task.chars):
             if char == current_char:
                 pass
             else:
-                priority = char.do_get_switch_priority(current_char = current_char, has_intro = False, target_low_con = False)
-                if priority >= 10000:
+                priority = char.do_get_switch_priority(current_char=current_char, has_intro=False, target_low_con=False)
+                if priority >= Priority.FAST_SWITCH:
                     self.logger.info(f'In lock with {char}')
                     return True
         return False
-        
+
     # def count_rectangle_forte(self, left=0.42, right=0.57):
     #     # Perform image cropping once, as it's independent of saturation ranges
     #     cropped_image_base = self.task.box_of_screen(left, 0.927, right, 0.931).crop_frame(self.task.frame)
