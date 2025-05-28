@@ -57,7 +57,7 @@
 
 ### Usage (Python Source Code)
 
-Use Python 3.12，other versions might work but are not tested.
+仅支持Python 3.12
 
 ```
 pip install -r requirements.txt --upgrade #install python dependencies, 更新代码后可能需要重新运行
