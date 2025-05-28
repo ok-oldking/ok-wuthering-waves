@@ -8,6 +8,11 @@ profiles:
       true
     requirements:
       "requirements.txt"
+  direct-ml:
+    main_script:
+      "main_direct_ml.py"
+    requirements:
+      "requirements-direct-ml.txt"
   debug:
     main_script:
       "main_debug.py"
