@@ -2,6 +2,7 @@ import time
 
 from src.char.BaseChar import BaseChar, Priority
 
+
 class Carlotta(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -10,7 +11,7 @@ class Carlotta(BaseChar):
     def reset_state(self):
         super().reset_state()
         self.last_echo = 0
-        
+
     def do_perform(self):
         self.bullet = 0
         if self.has_intro:
@@ -20,7 +21,7 @@ class Carlotta(BaseChar):
         if self.is_forte_full():
             self.heavy_attack()
             return self.switch_next_char()
-        if self.liberation_available():
+        if not self.need_fast_perform() and self.liberation_available():
             while self.liberation_available():
                 self.click_liberation()
                 self.check_combat()
@@ -40,13 +41,13 @@ class Carlotta(BaseChar):
 
     def has_long_actionbar(self):
         return True
-        
+
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.time_elapsed_accounting_for_freeze(self.last_echo) < 3:
+        if self.time_elapsed_accounting_for_freeze(self.last_echo, True) < 3:
             return Priority.MIN
         else:
             return super().do_get_switch_priority(current_char, has_intro)
-            
+
     def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0, timeout=5):
         if con_less_than > 0:
             if self.get_current_con() > con_less_than:
