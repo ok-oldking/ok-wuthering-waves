@@ -676,6 +676,12 @@ class BaseChar:
         """返回角色类名作为其字符串表示。"""
         return self.__repr__()
 
+    def normal_attack_until_can_switch(self):
+        """普通攻击直到可以切人。"""
+        self.task.click(interval=0.1)
+        while self.time_elapsed_accounting_for_freeze(self.last_perform) < 1.1:
+            self.task.click(interval=0.1)
+
     def continues_normal_attack(self, duration, interval=0.1, click_resonance_if_ready_and_return=False,
                                 until_con_full=False):
         """持续进行普通攻击一段时间。
