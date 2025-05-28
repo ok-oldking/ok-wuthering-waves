@@ -32,7 +32,11 @@
 
 ### 使用说明
 
-* 点击[releases](https://github.com/ok-oldking/ok-wuthering-waves/releases), 下载7z压缩包(200M左右的), 解压缩双击运行.exe
+* 下载7z压缩包(200M左右的), 解压缩双击运行.exe
+* [GitHub下载](https://github.com/ok-oldking/ok-wuthering-waves/releases), 免费网页直链
+* [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okww), 国内网页直链, 下载需要购买CD-KEY,
+  已有Mirror酱CD-KEY可免费下载
+* [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
 
 ### 有多强?
 
@@ -76,7 +80,8 @@ ok-ww.exe -t 1 -e
 
 ## 赞助商
 
-- EXE签名: Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/)
+- EXE签名: Free code signing provided by [SignPath.io](https://signpath.io/), certificate
+  by [SignPath Foundation](https://signpath.org/)
 
 ### 加入我们
 

@@ -111,8 +111,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           body: |
-            下载 ok-ww.7z, Download ok-ww.7z
-            不要下载SourceCode Do Not Download the SourceCode
+            * 下载 ok-ww.7z, Download ok-ww.7z
+            * 不要下载SourceCode Do Not Download the SourceCode
+            * 如果下载过慢可以使用加速或者使用下面渠道下载
+            * [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okww), 国内网页直链, 下载需要购买CD-KEY, 已有Mirror酱CD-KEY可免费下载
+            * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
 
           draft: false
           prerelease: false
