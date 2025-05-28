@@ -34,7 +34,7 @@
 
 ### Usage (Run from Python Source Code)
 
-Use Python 3.12, other versions might work but are not tested.
+Use Python 3.12, other versions won't work.
 
 ```
 git clone https://github.com/ok-oldking/ok-wuthering-waves
