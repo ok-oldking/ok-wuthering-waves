@@ -89,7 +89,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 dropped = self.pick_echo()
             else:
                 dropped = \
-                    self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=time_out, threshold=threshold)[0]
+                self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=time_out, threshold=threshold)[0]
             self.incr_drop(dropped)
             if dropped and not self._has_treasure:
                 self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
