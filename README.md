@@ -37,10 +37,18 @@
 Use Python 3.12, other versions won't work.
 
 ```
+#CPU version
 git clone https://github.com/ok-oldking/ok-wuthering-waves
 pip install -r requirements.txt --upgrade #install python dependencies, you might need do run this again after updating the code
 python main.py # run the release version
 python main_debug.py # run the debug version
+```
+
+```
+#GPU version, use onnxruntime-directml, can reduce CPU and Memory usage by 50%, but requires a GPU with big memory
+pip install -r requirements-direct-ml.txt --upgrade #install python dependencies, 更新代码后可能需要重新运行
+python main_direct_ml.py # run the release version
+python main_direct_ml_debug.py # run the debug version
 ```
 
 ### Command Line Arguments
@@ -91,7 +99,8 @@ malicious code, leading to the theft of game accounts or computer data, which is
 
 ## Sponsorship
 
-- Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/)
+- Free code signing provided by [SignPath.io](https://signpath.io/), certificate
+  by [SignPath Foundation](https://signpath.org/)
 
 ### Related Projects
 
