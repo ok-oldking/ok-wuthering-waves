@@ -157,6 +157,7 @@ class BaseWWTask(BaseTask):
                 return True
             if self.in_combat():
                 self.log_debug('pick echo has_target return fail')
+                self._stop_last_direction(last_direction)
                 return False
             echos = self.find_echos(threshold=echo_threshold)
             if not echos:
