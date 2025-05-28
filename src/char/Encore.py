@@ -39,7 +39,7 @@ class Encore(BaseChar):
             if not self.can_resonance_step2(delay=4):
                 self.last_resonance = time.time()
                 return self.switch_next_char()
-        if not self.check_barrier() and self.click_liberation(wait_if_cd_ready=0.4):
+        if not self.need_fast_perform() and self.click_liberation(wait_if_cd_ready=0.4):
             self.liberation_time = time.time()
             self.n4()
             return self.switch_next_char()
