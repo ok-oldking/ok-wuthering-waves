@@ -13,3 +13,4 @@ main_direct_ml.py
 main_debug.py
 main_direct_ml_debug.py
 i18n
+.gitattributes
