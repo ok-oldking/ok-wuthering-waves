@@ -289,7 +289,6 @@ class BaseCombatTask(CombatCheck):
                 self.send_key(switch_to.index + 1)
                 last_click = now
                 self.sleep(0.01)
-                self.next_frame()
             in_team, current_index, size = self.in_team()
             if not in_team:
                 logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
