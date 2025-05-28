@@ -1,0 +1,15 @@
+requires_python:
+  "3.12"
+profiles:
+  default:
+    main_script:
+      "main.py"
+    admin:
+      true
+    requirements:
+      "requirements.txt"
+  debug:
+    main_script:
+      "main_debug.py"
+
+
