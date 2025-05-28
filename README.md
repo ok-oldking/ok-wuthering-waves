@@ -2,9 +2,9 @@
   <h1 align="center">
     <img src="icon.png" width="200"/>
     <br/>
-      ok-ww
+    ok-ww
   </h1> 
-<h3><i>Automation for Wuthering Waves using computer vision and win32api</i></h3>
+<h3><i>基于图像识别的鸣潮自动化, 使用windows接口模拟用户点击, 无读取游戏内存或侵入修改游戏文件/数据.</i></h3>
 </div>
 
 ![Static Badge](https://img.shields.io/badge/platfrom-Windows-blue?color=blue)
@@ -12,102 +12,100 @@
 [![GitHub all releases](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
 [![Discord](https://img.shields.io/discord/296598043787132928?color=5865f2&label=%20Discord)](https://discord.gg/vVyCatEBgA)
 
-### English Readme | [中文说明](README_cn.md)
+### [English Readme](README_en.md) | 中文说明
 
-![img.png](readme/img.png)
-![img_1.png](readme/img_1.png)
+演示和教程 [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/h6P1KWjdnB4)
 
-## Key Features
+# 免责声明
 
-* Works while the Game is in the Background
-* Farm Boss Echo (Dreamless, Jue, and World Bosses)
-* One Press Clear All Daily Tasks and Tacet Field
-* Auto Combat in Abyss, Game World, Tacet Field, etc.
-* Auto Skip Dialogs in Quests
-* Auto Pick-up (Echos, Flowers, Chests)
-* Supports All Game Languages (Most Features)
+本软件是一个外部工具，旨在自动化鸣潮的游戏玩法。它仅通过现有用户界面与游戏交互，并遵守相关法律法规。该软件包旨在简化用户与游戏的交互，不会破坏游戏平衡或提供不公平优势，也不会修改任何游戏文件或代码。
 
-### Usage (Run from Compiled .exe)
+本软件开源、免费，仅供个人学习交流使用，仅限于个人游戏账号，不得用于任何商业或营利性目的。开发者团队拥有本项目的最终解释权。使用本软件产生的所有问题与本项目及开发者团队无关。若您发现商家使用本软件进行代练并收费，这是商家的个人行为，本软件不授权用于代练服务，产生的问题及后果与本软件无关。本软件不授权任何人进行售卖，售卖的软件可能被加入恶意代码，导致游戏账号或电脑资料被盗，与本软件无关。
 
-* Download `ok-ww.7z` from the latest releases
-* Extract and double-click the `ok-ww.exe`
-
-### Usage (Run from Python Source Code)
-
-Use Python 3.12, other versions won't work.
+请注意，根据库洛的《鸣潮》公平运营声明:
 
 ```
-#CPU version
-git clone https://github.com/ok-oldking/ok-wuthering-waves
-pip install -r requirements.txt --upgrade #install python dependencies, you might need do run this again after updating the code
+严禁利用任何第三方工具破坏游戏体验。
+我们将严厉打击使用外挂、加速器、作弊软件、宏脚本等违规工具的行为，这些行为包括但不限于自动挂机、技能加速、无敌模式、瞬移、修改游戏数据等操作。
+一经查证，我们将视违规情况和次数，采取包括但不限于扣除违规收益、冻结或永久封禁游戏账号等措施。
+```
+
+### 使用说明
+
+* 下载7z压缩包(200M左右的), 解压缩双击运行.exe
+* [GitHub下载](https://github.com/ok-oldking/ok-wuthering-waves/releases), 免费网页直链
+* [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okww), 国内网页直链, 下载需要购买CD-KEY,
+  已有Mirror酱CD-KEY可免费下载
+* [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
+
+### 有多强?
+
+1. 4K分辨率流畅运行,支持所有16:9分辨率,1600x900以上, 1280x720不支持是因为鸣潮bug, 它的1280x720并不是1280x720.
+   部分功能也可以在21:9等宽屏分辨率运行
+2. 可后台运行,可窗口化,可全屏,屏幕缩放比例无要求
+3. 全角色自动识别，无需配置出招表，一键运行
+4. 后台自动静音游戏
+
+### 出现问题请检查
+
+有问题点这里, 挨个检查再提问:
+
+1. **解压问题:** 将压缩包解压到仅包含英文字符的目录中。
+2. **杀毒软件干扰:** 将下载和解压目录添加到您的杀毒软件/Windows Defender 白名单中。
+3. **显示设置:** 关闭显卡滤镜和锐化。使用默认游戏亮度并禁用在游戏上显示FPS(如小飞机)。
+4. **自定义按键绑定:** 如没有使用默认按键，请在APP设置中设置, 不在设置里的按键不支持。
+5. **版本过旧:** 确保您使用的是最新版本的 OK-GI。
+6. **性能:** 在游戏中保持稳定的 60 FPS，如果需要，降低分辨率。
+7. **游戏断线** 如果经常发现断开服务器链接的问题, 可以先打开游戏5分钟再开始玩, 或者断开后不要退出游戏, 重新登陆
+8. **进一步帮助:** 如果问题仍然存在，请提交错误报告。
+
+### Usage (Python Source Code)
+
+仅支持Python 3.12
+
+```
+#CPU版本, 使用openvino
+pip install -r requirements.txt --upgrade #install python dependencies, 更新代码后可能需要重新运行
 python main.py # run the release version
 python main_debug.py # run the debug version
 ```
 
 ```
-#GPU version, use onnxruntime-directml, can reduce CPU and Memory usage by 50%, but requires a GPU with big memory
+#GPU版本, 使用onnxruntime-directml加速, 推荐大显存显卡使用, 可以大约降低50%的CPU和内存消耗
 pip install -r requirements-direct-ml.txt --upgrade #install python dependencies, 更新代码后可能需要重新运行
 python main_direct_ml.py # run the release version
 python main_direct_ml_debug.py # run the debug version
 ```
 
-### Command Line Arguments
+### 命令行参数
 
 ```
 ok-ww.exe -t 1 -e
 ```
 
-- `-t` or `--task` represents the task number to execute automatically upon startup. `1` means the first task, a
-  one-click execution task.
-- `-e` or `--exit` when added, indicates that the program should automatically exit after the task is completed.
+- -t 或 --task 代表启动后自动执行第几个任务, 1就是第一个, 一条龙任务
+- -e 或 --exit 加上代表如果执行完任务之后自动退出
 
-### Must Set Game Settings
+## 赞助商
 
-![image](https://github.com/user-attachments/assets/7d5f27b4-7b28-4471-bf7b-096dccd4ec4d)
-![image](https://github.com/user-attachments/assets/66deba93-d0e7-41c0-985c-248deee9b8ff)
-
-### FAQ
-
-## Frequently Asked Questions (FAQ)
-
-1. **Extraction Issues:** Extract the archive to a directory with only English characters.
-2. **Antivirus Interference:** Add the download and extraction directories to your antivirus/Windows Defender whitelist.
-3. **Display Settings:** Disable Windows HDR, eye protection modes, and automatic color management. Use default game
-   brightness and disable external overlays (FPS, GPU info).
-4. **Custom Keybinding:** If you are not using default keybindings, Set yours in the app settings, keys not in the
-   settings are not supported.
-5. **Outdated Version:** Ensure you are using the latest version of OK-GI.
-6. **Performance:** Maintain a stable 60 FPS in the game, reduce resolution if needed.
-7. **Disconnection** If you often got disconnected, try open the game first, and start playing 5 mins later, or when
-   disconnected, don't close the game, and re-login.
-8. **Further Assistance:** Submit a bug report if issues persist.
-
-# Disclaimer
-
-This software is an external tool designed to automate the gameplay of “Wuthering Waves.” It interacts with the game
-solely through the existing user interface and complies with relevant laws and regulations. The package aims to simplify
-user interaction with the game without disrupting game balance or providing any unfair advantages. It does not modify
-any game files or code.
-
-This software is open-source and free, intended solely for personal learning and communication purposes, and is limited
-to personal game accounts. It is not allowed for any commercial or profit-making purposes. The development team reserves
-the final interpretation rights of this project. Any issues arising from the use of this software are unrelated to the
-project and the development team. If you find merchants using this software for paid boosting services, it is their
-personal behavior, and this software is not authorized for boosting services. Any issues and consequences arising from
-such use are unrelated to this software. This software is not authorized for sale, and any sold versions may contain
-malicious code, leading to the theft of game accounts or computer data, which is unrelated to this software.
-
-## Sponsorship
-
-- Free code signing provided by [SignPath.io](https://signpath.io/), certificate
+- EXE签名: Free code signing provided by [SignPath.io](https://signpath.io/), certificate
   by [SignPath Foundation](https://signpath.org/)
 
-### Related Projects
+### 加入我们
 
-* [ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact) Genshin Impact Automation
-* [ok-gf2](https://github.com/ok-oldking/ok-gf2) Girls Frontline 2 Automation(Simplified-Chinese Only)
+* 由于基于[ok-script](https://github.com/ok-oldking/ok-script)开发，项目代码仅有3000行（Python），简单易维护
+* 鸣潮水群 970523295 进群答案:老王同学OK
+* 群都满了 加QQ频道 [https://pd.qq.com/s/djmm6l44y](https://pd.qq.com/s/djmm6l44y)
+* 有兴趣开发的请加开发者群926858895
 
-### Credits
+### 相关项目
 
-[https://github.com/lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss)
+* [ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact) 原神自动化,一键日常,后台剧情 (
+  可后台,支持全游戏语言,支持全16:
+  9分辨率)
+* [ok-gf2](https://github.com/ok-oldking/ok-gf2) 少前2追放自动化,一键日常,竞技场,兵棋推演,尘烟 (支持PC版后台)
+
+### 致谢
+
+[https://github.com/lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss) 后台点击代码
   
