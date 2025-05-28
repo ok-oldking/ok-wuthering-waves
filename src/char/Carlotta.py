@@ -7,13 +7,19 @@ class Carlotta(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last_echo = 0
+        self.press_w = -1
 
     def reset_state(self):
         super().reset_state()
         self.last_echo = 0
+        self.press_w = -1
 
     def do_perform(self):
         self.bullet = 0
+        if self.press_w == -1:
+            self.press_w = 0
+            if self.task.name and self.task.name == "Farm 4C Echo in Dungeon/World":
+               self.press_w = 1 
         if self.has_intro:
             self.logger.debug('has_intro wait click 1.2 sec')
             self.bullet = 1
@@ -22,9 +28,17 @@ class Carlotta(BaseChar):
             self.heavy_attack()
             return self.switch_next_char()
         if not self.need_fast_perform() and self.liberation_available():
-            while self.liberation_available():
+            if self.press_w == 1:
+                self.task.send_key_down(key='w')
+            while self.liberation_available():                
                 self.click_liberation()
+                if self.press_w == 1:
+                    self.task.send_key_up(key='w')
                 self.check_combat()
+                if self.press_w == 1:
+                    self.task.send_key_down(key='w')
+            if self.press_w == 1:
+                    self.task.send_key_up(key='w')
             self.click_echo()
             self.last_echo = time.time()
             return self.switch_next_char()
@@ -74,7 +88,11 @@ class Carlotta(BaseChar):
             if time.time() - start > timeout:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             # new
+            if self.press_w == 1:
+                self.task.send_key_up(key='w')
             self.check_combat()
+            if self.press_w == 1:
+                self.task.send_key_down(key='w')
             self.task.next_frame()
         if clicked:
             if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4):
