@@ -284,7 +284,9 @@ class BaseCombatTask(CombatCheck):
         start = time.time()
         while True:
             now = time.time()
-            switch_to.has_intro = switch_to.has_intro or current_char.is_con_full()
+            if not switch_to.has_intro:
+                _, current_index, _ = self.in_team()
+                switch_to.has_intro = current_index == current_char.index
             if now - last_click > 0.1:
                 self.send_key(switch_to.index + 1)
                 last_click = now
