@@ -10,7 +10,7 @@ from ok import get_connected_area_by_color, color_range_to_bound
 from ok import safe_get
 from src import text_white_color
 from src.char import BaseChar
-from src.char.BaseChar import Priority, dot_color
+from src.char.BaseChar import Priority, dot_color  # noqa
 from src.char.CharFactory import get_char_by_pos
 from src.char.Healer import Healer
 from src.combat.CombatCheck import CombatCheck
@@ -19,17 +19,20 @@ logger = Logger.get_logger(__name__)
 
 
 class NotInCombatException(Exception):
+    """未处于战斗状态异常。"""
     pass
 
 
 class CharDeadException(NotInCombatException):
+    """角色死亡异常。"""
     pass
 
 
 class BaseCombatTask(CombatCheck):
-    hot_key_verified = False
-    con_full_size = None
-    freeze_durations = []
+    """基础战斗任务类，封装了游戏"鸣潮"中角色自动化操作的通用逻辑。"""
+    hot_key_verified = False  # 热键是否已验证
+    con_full_size = None  # 不同角色协奏值充满时的大小记录
+    freeze_durations = []  # 记录冻结/卡肉的持续时间
     if con_full_size is None:
         con_full_size = Config("_con_full_size", {
             "0": 0,
@@ -41,17 +44,30 @@ class BaseCombatTask(CombatCheck):
         })
 
     def __init__(self, *args, **kwargs):
+        """初始化战斗任务。
+
+        Args:
+            *args: 传递给父类的参数。
+            **kwargs: 传递给父类的关键字参数。
+        """
         super().__init__(*args, **kwargs)
-        self.chars = [None, None, None]
-        self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
-        self.key_config = self.get_global_config('Game Hotkey Config')
-        self.mouse_pos = None
-        self.combat_start = 0
+        self.chars = [None, None, None]  # 角色列表
+        self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']  # 角色文本标识符列表
+        self.key_config = self.get_global_config('Game Hotkey Config')  # 游戏热键配置
+        self.mouse_pos = None  # 当前鼠标位置
+        self.combat_start = 0  # 战斗开始时间戳
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.add_text_fix({'Ｅ': 'e'})
 
     def add_freeze_duration(self, start, duration=-1.0, freeze_time=0.1):
+        """添加冻结持续时间。用于精确计算技能冷却等。
+
+        Args:
+            start (float): 冻结开始时间。
+            duration (float, optional): 冻结持续时间。如果为-1.0, 则根据当前时间计算。默认为 -1.0。
+            freeze_time (float, optional): 认为发生冻结的最小持续时间。默认为 0.1。
+        """
         if duration < 0:
             duration = time.time() - start
         if start > 0 and duration > freeze_time:
@@ -60,6 +76,15 @@ class BaseCombatTask(CombatCheck):
             self.freeze_durations.append((start, duration, freeze_time))
 
     def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+        """计算扣除冻结时间后经过的时间。
+
+        Args:
+            start (float): 开始时间戳。
+            intro_motion_freeze (bool, optional): 是否考虑角色入场动画的特殊冻结。默认为 False。
+
+        Returns:
+            float: 扣除冻结后实际经过的时间 (秒)。
+        """
         to_minus = 0
         for freeze_start, duration, freeze_time in self.freeze_durations:
             if start < freeze_start:
@@ -74,6 +99,14 @@ class BaseCombatTask(CombatCheck):
         return time.time() - start - to_minus
 
     def send_key_and_wait_animation(self, key, check_function, total_wait=7, enter_animation_wait=0.6):
+        """发送按键并等待动画完成。
+
+        Args:
+            key (str): 要发送的按键。
+            check_function (callable): 检查动画是否结束的函数，返回 True 表示动画已结束。
+            total_wait (int, optional): 总等待超时时间 (秒)。默认为 7。
+            enter_animation_wait (float, optional): 进入动画的等待时间 (秒)。默认为 0.6。
+        """
         start = time.time()
         animation_start = 0
         while time.time() - start < total_wait:
@@ -97,6 +130,7 @@ class BaseCombatTask(CombatCheck):
         logger.info(f'send_key_and_wait_animation timed out {key}')
 
     def teleport_to_heal(self):
+        """传送回城治疗。"""
         self.sleep(1)
         self.info['Death Count'] = self.info.get('Death Count', 0) + 1
         self.send_key('esc', after_sleep=2)
@@ -121,6 +155,12 @@ class BaseCombatTask(CombatCheck):
         self.sleep(2)
 
     def raise_not_in_combat(self, message, exception_type=None):
+        """抛出未在战斗状态的异常。
+
+        Args:
+            message (str): 异常信息。
+            exception_type (Exception, optional): 要抛出的异常类型。默认为 NotInCombatException。
+        """
         logger.error(message)
         if self.reset_to_false(reason=message):
             logger.error(f'reset to false failed: {message}')
@@ -129,12 +169,26 @@ class BaseCombatTask(CombatCheck):
         raise exception_type(message)
 
     def available(self, name):
+        """检查指定名称的技能或动作是否可用 (通过颜色百分比和冷却时间判断)。
+
+        Args:
+            name (str): 技能或动作的名称 (例如 'resonance', 'echo')。
+
+        Returns:
+            bool: 如果可用则返回 True, 否则 False。
+        """
         current = self.calculate_color_percentage(text_white_color,
                                                   self.get_box_by_name(f'box_{name}'))
         if current > 0 and not self.has_cd(name):
             return True
 
     def combat_once(self, wait_combat_time=200, raise_if_not_found=True):
+        """执行一次完整的战斗流程。
+
+        Args:
+            wait_combat_time (int, optional): 等待进入战斗状态的超时时间 (秒)。默认为 200。
+            raise_if_not_found (bool, optional): 如果未找到战斗状态是否抛出异常。默认为 True。
+        """
         self.wait_until(self.in_combat, time_out=wait_combat_time, raise_if_not_found=raise_if_not_found)
         self.load_chars()
         self.info['Combat Count'] = self.info.get('Combat Count', 0) + 1
@@ -151,6 +205,14 @@ class BaseCombatTask(CombatCheck):
         self.wait_in_team_and_world(time_out=10, raise_if_not_found=False)
 
     def run_in_circle_to_find_echo(self, circle_count=3):
+        """通过绕圈移动来尝试拾取声骸。
+
+        Args:
+            circle_count (int, optional): 绕圈的次数。默认为 3。
+
+        Returns:
+            bool: 如果成功拾取到声骸则返回 True, 否则 False。
+        """
         directions = ['w', 'a', 's', 'd']
         step = 1.2
         duration = 0.8
@@ -168,6 +230,14 @@ class BaseCombatTask(CombatCheck):
                 total_index += 1
 
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
+        """切换到下一个最优角色。
+
+        Args:
+            current_char (BaseChar): 当前角色对象。
+            post_action (callable, optional): 切换后执行的动作 (回调函数)。默认为 None。
+            free_intro (bool, optional): 是否强制认为拥有入场技 (通常在协奏值满时)。默认为 False。
+            target_low_con (bool, optional): 是否优先切换到协奏值较低的角色。默认为 False。
+        """
         max_priority = Priority.MIN
         switch_to = current_char
         has_intro = free_intro
@@ -255,18 +325,46 @@ class BaseCombatTask(CombatCheck):
         logger.info(f'switch_next_char end {(current_char.last_switch_time - start):.3f}s')
 
     def get_liberation_key(self):
+        """获取共鸣解放技能的按键。
+
+        Returns:
+            str: 共鸣解放技能的按键字符串。
+        """
         return self.key_config['Liberation Key']
 
     def get_echo_key(self):
+        """获取声骸技能的按键。
+
+        Returns:
+            str: 声骸技能的按键字符串。
+        """
         return self.key_config['Echo Key']
 
     def get_resonance_key(self):
+        """获取共鸣技能的按键。
+
+        Returns:
+            str: 共鸣技能的按键字符串。
+        """
         return self.key_config['Resonance Key']
 
     def has_resonance_cd(self):
+        """检查共鸣技能是否在冷却中。
+
+        Returns:
+            bool: 如果在冷却中则返回 True, 否则 False。
+        """
         return self.has_cd('resonance')
 
     def has_cd(self, box_name):
+        """检查指定UI区域是否处于冷却状态 (通过检测特定颜色的点和数字)。
+
+        Args:
+            box_name (str): UI区域的名称 (例如 'resonance', 'echo', 'liberation')。
+
+        Returns:
+            bool: 如果在冷却中则返回 True, 否则 False。
+        """
         box = self.get_box_by_name(f'box_{box_name}')
         cropped = box.crop_frame(self.frame)
         lower_bound, upper_bound = color_range_to_bound(dot_color)
@@ -306,6 +404,14 @@ class BaseCombatTask(CombatCheck):
         return has_cd
 
     def get_current_char(self, raise_exception=True) -> BaseChar:
+        """获取当前操作的角色对象。
+
+        Args:
+            raise_exception (bool, optional): 如果找不到当前角色是否抛出异常。默认为 True。
+
+        Returns:
+            BaseChar: 当前角色对象 (`BaseChar`) 或 None。
+        """
         for char in self.chars:
             if char and char.is_current_char:
                 return char
@@ -315,23 +421,36 @@ class BaseCombatTask(CombatCheck):
         return None
 
     def combat_end(self):
+        """战斗结束时调用的清理方法。"""
         current_char = self.get_current_char(raise_exception=False)
         if current_char:
             self.get_current_char().on_combat_end(self.chars)
 
     def sleep_check_combat(self, timeout, check_combat=True):
+        """休眠指定时间, 并在休眠前后检查战斗状态。
+
+        Args:
+            timeout (float): 休眠的秒数。
+            check_combat (bool, optional): 是否在休眠前检查战斗状态。默认为 True。
+        """
         start = time.time()
         if check_combat and not self.in_combat():
             self.raise_not_in_combat('sleep check not in combat')
         self.sleep(timeout - (time.time() - start))
 
     def check_combat(self):
+        """检查当前是否处于战斗状态, 如果不是则抛出异常。"""
         if not self.in_combat():
             # if self.debug:
             #     self.screenshot('not_in_combat_calling_check_combat')
             self.raise_not_in_combat('combat check not in combat')
 
     def load_hotkey(self, force=False):
+        """加载或自动设置游戏内技能热键。
+
+        Args:
+            force (bool, optional): 是否强制重新加载热键。默认为 False。
+        """
         if (self.key_config['Auto Set HotKey'] and not self.hot_key_verified) or force:
             self.hot_key_verified = True
 
@@ -359,6 +478,7 @@ class BaseCombatTask(CombatCheck):
             self.info['Skill HotKeys'] = keys_str
 
     def load_chars(self):
+        """加载队伍中的角色信息。"""
         self.load_hotkey()
         in_team, current_index, count = self.in_team()
         if not in_team:
@@ -394,22 +514,56 @@ class BaseCombatTask(CombatCheck):
 
     @staticmethod
     def should_update(the_char, old_char):
+        """判断是否应该更新角色对象 (例如, 识别到新角色或角色类型变化)。
+
+        Args:
+            the_char (BaseChar): 新的角色对象。
+            old_char (BaseChar): 旧的角色对象。
+
+        Returns:
+            bool: 如果需要更新则返回 True, 否则 False。
+        """
         return (type(the_char) is BaseChar and old_char is None) or (
                 type(the_char) is not BaseChar and old_char != the_char)
 
     def box_resonance(self):
+        """获取共鸣技能冷却UI区域的盒子对象。
+
+        Returns:
+            Box: 盒子对象。
+        """
         return self.get_box_by_name('box_resonance_cd')
 
     def get_resonance_cd_percentage(self):
+        """获取共鸣技能冷却UI区域白色像素百分比。
+
+        Returns:
+            float: 白色像素百分比。
+        """
         return self.calculate_color_percentage(white_color, self.get_box_by_name('box_resonance_cd'))
 
     def get_resonance_percentage(self):
+        """获取共鸣技能UI区域可用状态的白色像素百分比。
+
+        Returns:
+            float: 白色像素百分比。
+        """
         return self.calculate_color_percentage(white_color, self.get_box_by_name('box_resonance'))
 
     def is_con_full(self):
+        """检查当前角色的协奏值是否已满。
+
+        Returns:
+            bool: 如果协奏值已满则返回 True, 否则 False。
+        """
         return self.get_current_con() == 1
 
     def _ensure_ring_index(self):
+        """确保当前角色协奏值环的颜色索引已识别。
+
+        Returns:
+            int: 协奏值环的颜色索引。
+        """
         if self.get_current_char().ring_index < 0:
             best = self.find_best_match_in_box(self.get_con_box(),
                                                con_templates, 0.1)
@@ -420,10 +574,20 @@ class BaseCombatTask(CombatCheck):
         return self.get_current_char().ring_index
 
     def get_con_box(self):
+        """获取协奏值能量环的UI区域盒子对象。
+
+        Returns:
+            Box: 盒子对象。
+        """
         return self.box_of_screen_scaled(3840, 2160, 1431, 1942, 1557, 2068, name='con_full',
                                          hcenter=True)
 
     def get_current_con(self):
+        """获取当前角色的协奏值百分比。
+
+        Returns:
+            float: 协奏值百分比 (0.0 到 1.0)。
+        """
         box = self.get_con_box()
         box.confidence = 0
 
@@ -465,6 +629,16 @@ class BaseCombatTask(CombatCheck):
         return percent
 
     def count_rings(self, image, color_range, min_area):
+        """在指定图像区域内计算特定颜色范围的能量环数量和状态。
+
+        Args:
+            image (numpy.ndarray): 要分析的图像 (通常是协奏值UI区域的截图)。
+            color_range (dict): 目标颜色范围。
+            min_area (float): 认为是有效能量环的最小面积。
+
+        Returns:
+            tuple: (检测到的区域面积 (int), 是否为完整环 (bool))。
+        """
         # Define the color range
         lower_bound, upper_bound = color_range_to_bound(color_range)
         masked_image = image.copy()
@@ -543,13 +717,13 @@ class BaseCombatTask(CombatCheck):
         return the_area, is_full
 
 
-white_color = {
+white_color = {  # 用于检测UI元素可用状态的白色颜色范围。
     'r': (253, 255),  # Red range
     'g': (253, 255),  # Green range
     'b': (253, 255)  # Blue range
 }
 
-con_colors = [
+con_colors = [  # 不同角色属性的协奏值能量环的颜色范围列表。
     {
         'r': (205, 235),
         'g': (190, 222),  # for yellow spectro
@@ -582,7 +756,7 @@ con_colors = [
     }
 ]
 
-con_templates = [
+con_templates = [  # 协奏值能量环的模板名称列表 (对应 `con_colors`)。
     'con_spectro',
     'con_electric',
     'con_fire',
