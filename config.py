@@ -134,7 +134,7 @@ config = {
         'default': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
-            'sponsor': 'https://patreon.com/ok_oldking?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink',
+            'sponsor': 'https://www.paypal.com/ncp/payment/JWQBH7JZKNGCQ',
             'share': 'Download OK-WW from https://github.com/ok-oldking/ok-wuthering-waves/releases/latest',
             'faq': 'https://github.com/ok-oldking/ok-wuthering-waves/blob/master/README.md'
         },
