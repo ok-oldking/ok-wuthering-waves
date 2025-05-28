@@ -71,7 +71,7 @@ python main_debug.py # run the debug version
 ```
 
 ```
-#GPU版本, 使用onnxruntime-directml加速, 推荐大显存显卡使用, 可以大约降低一般CPU和内存消耗
+#GPU版本, 使用onnxruntime-directml加速, 推荐大显存显卡使用, 可以大约降低50%的CPU和内存消耗
 pip install -r requirements-direct-ml.txt --upgrade #install python dependencies, 更新代码后可能需要重新运行
 python main_direct_ml.py # run the release version
 python main_direct_ml_debug.py # run the debug version
