@@ -75,6 +75,9 @@ class Roccia(BaseChar):
             return True
 
     def plunge(self):
+        if self.need_fast_perform():
+            self.normal_attack_until_can_switch()
+            return
         start = time.time()
         starting_count = 0
         self.task.send_key_down('w')
