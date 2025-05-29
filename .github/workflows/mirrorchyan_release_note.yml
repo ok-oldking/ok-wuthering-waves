@@ -3,7 +3,7 @@ name: mirrorchyan_release_note
 on:
   workflow_dispatch:
   release:
-    types: [edited, released]
+    types: [edited]
 
 jobs:
   mirrorchyan_release_note:
