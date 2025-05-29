@@ -63,7 +63,7 @@ char_dict = {
     'char_brant': {'cls': Brant, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 24, 'ring_index': Elements.FIRE},
     'char_cantarella': {'cls': Cantarella, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd': 25,
                         'ring_index': Elements.HAVOC},
-    'char_zani': {'cls': Zani, 'res_cd': 14, 'echo_cd': 25, 'ring_index': Elements.SPECTRO},
+    'char_zani': {'cls': Zani, 'res_cd': 5, 'echo_cd': 25, 'ring_index': Elements.SPECTRO},
     'char_ciaccona': {'cls': Ciaccona, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd': 20, 'ring_index': Elements.WIND},
     'char_cartethyia': {'cls': Cartethyia, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd': 20,
                         'ring_index': Elements.WIND},
