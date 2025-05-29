@@ -30,7 +30,7 @@
 一经查证，我们将视违规情况和次数，采取包括但不限于扣除违规收益、冻结或永久封禁游戏账号等措施。
 ```
 
-### 下载绿色解压包, 解压后双击ok-ww.exe
+### 使用方法:下载绿色版7z压缩包(250M左右), 解压后双击ok-ww.exe
 
 * [GitHub下载](https://github.com/ok-oldking/ok-wuthering-waves/releases), 免费网页直链, 不要点击下载Source Code,
   点击下载7z压缩包
