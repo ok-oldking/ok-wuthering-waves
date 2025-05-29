@@ -759,6 +759,7 @@ class BaseWWTask(BaseTask):
     def click_traval_button(self):
         for feature_name in ['fast_travel_custom', 'gray_teleport', 'remove_custom']:
             if feature := self.find_one(feature_name, threshold=0.7):
+                self.sleep(0.5)
                 self.click(feature, after_sleep=1)
                 if feature.name == 'fast_travel_custom':
                     if self.wait_click_feature(['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
@@ -773,8 +774,7 @@ class BaseWWTask(BaseTask):
                 return True
 
     def wait_click_travel(self):
-        self.wait_until(self.click_traval_button, raise_if_not_found=True, time_out=10,
-                        settle_time=1)
+        self.wait_until(self.click_traval_button, raise_if_not_found=True, time_out=10)
 
     def wait_book(self, feature="gray_book_all_monsters"):
         gray_book_boss = self.wait_until(
