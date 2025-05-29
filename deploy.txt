@@ -5,7 +5,7 @@ main.py
 ok-ww.exe
 readme
 README.md
-README_cn.md
+README_en.md
 assets
 icon.png
 requirements.txt
