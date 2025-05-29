@@ -30,13 +30,14 @@
 一经查证，我们将视违规情况和次数，采取包括但不限于扣除违规收益、冻结或永久封禁游戏账号等措施。
 ```
 
-### 使用说明
+### 下载绿色解压包, 解压后双击ok-ww.exe
 
-* 下载7z压缩包(200M左右的), 解压缩双击运行.exe
-* [GitHub下载](https://github.com/ok-oldking/ok-wuthering-waves/releases), 免费网页直链
+* [GitHub下载](https://github.com/ok-oldking/ok-wuthering-waves/releases), 免费网页直链, 不要点击下载Source Code,
+  点击下载7z压缩包
 * [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okww), 国内网页直链, 下载需要购买CD-KEY,
   已有Mirror酱CD-KEY可免费下载
 * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
+* 加入QQ频道后, 讨论组下载 [https://pd.qq.com/s/djmm6l44y](https://pd.qq.com/s/djmm6l44y)
 
 ### 有多强?
 
@@ -59,7 +60,7 @@
 7. **游戏断线** 如果经常发现断开服务器链接的问题, 可以先打开游戏5分钟再开始玩, 或者断开后不要退出游戏, 重新登陆
 8. **进一步帮助:** 如果问题仍然存在，请提交错误报告。
 
-### Usage (Python Source Code)
+### Python 源码运行
 
 仅支持Python 3.12
 
