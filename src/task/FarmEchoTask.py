@@ -18,10 +18,13 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.default_config.update({
             'Repeat Farm Count': 10000,
             'Combat Wait Time': 0,
+            'Echo Pickup Method': 'Yolo',
         })
         self.config_description.update({
             'Combat Wait Time': 'Wait time before each combat(seconds), set 5 if farming Sentry Construct',
         })
+        self.find_echo_method = ['Yolo', 'Walk']
+        self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
         self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
         self.add_exit_after_config()
@@ -84,12 +87,16 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.sleep(self.config.get("Combat Wait Time", 0))
 
             self.combat_once(wait_combat_time=0, raise_if_not_found=False)
-            logger.info(f'farm echo move {self.config.get("Boss")} yolo_find_echo')
-            if self.find_f_with_text():
-                dropped = self.pick_echo()
-            else:
+            if self.pick_echo():
+                logger.info(f'farm echo on the face')
+                dropped = True
+            elif self.config.get('Echo Pickup Method', "Yolo") == "Yolo":
                 dropped = \
-                self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=time_out, threshold=threshold)[0]
+                    self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=time_out, threshold=threshold)[0]
+                logger.info(f'farm echo yolo find {dropped}')
+            else:
+                dropped = self.walk_find_echo()
+                logger.info(f'farm echo walk_find_echo {dropped}')
             self.incr_drop(dropped)
             if dropped and not self._has_treasure:
                 self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
