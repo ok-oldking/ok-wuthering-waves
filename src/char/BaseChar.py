@@ -766,6 +766,25 @@ class BaseChar:
                     return True
         return False
 
+    def check_outro(self):
+        """协奏入场时判断延奏来源
+
+        Returns:
+            string:非协奏入场返回'null'，否则范围角色名如'char_sanhua'
+        """
+        if not self.has_intro:
+            return 'null'
+        time = 0
+        outro = 'null'
+        for i, char in enumerate(self.task.chars):
+            if char == self:
+                pass
+            elif char.last_switch_time > time:
+                time = char.last_switch_time
+                outro = char.char_name
+        self.logger.info(f'erned outro from {outro}')
+        return outro 
+        
     # def count_rectangle_forte(self, left=0.42, right=0.57):
     # """计算矩形共鸣回路充能格数 (已注释)。"""
     #     # Perform image cropping once, as it's independent of saturation ranges

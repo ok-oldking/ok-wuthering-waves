@@ -16,27 +16,24 @@ class Brant(BaseChar):
 
     def do_perform(self):
         if self.has_intro:
-            self.continues_normal_attack(1)
+            self.continues_normal_attack(1.1)
         if self.is_forte_full() and self.resonance_available():
             self.resonance_forte_full()
             self.in_liberaction = 0
             self.perform_anchor = time.time()
             return self.switch_next_char()
-        if not self.need_fast_perform() and self.click_liberation():
+        if not self.need_fast_perform() and not self.is_forte_full() and self.click_liberation():
             self.liberaction_time = time.time()
             self.in_liberaction = 1
             self.continues_normal_attack(0.8)
-        if self.still_in_liberation():
-            self.click_jump_with_click(1.3)
-            if self.is_forte_full() and self.resonance_available():
-                self.resonance_forte_full()
-                self.perform_anchor = time.time()
-                self.in_liberaction = 0
-            return self.switch_next_char()
-        if self.echo_available():
+        if not self.still_in_liberation() and self.echo_available():
             self.click_echo()
-            return self.switch_next_char()
+            return self.switch_next_char()  
         self.click_jump_with_click(1.3)
+        if self.is_forte_full() and self.resonance_available():
+            self.resonance_forte_full()
+            self.perform_anchor = time.time()
+            self.in_liberaction = 0
         self.switch_next_char()
 
     def still_in_liberation(self):
