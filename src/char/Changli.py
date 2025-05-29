@@ -8,10 +8,12 @@ class Changli(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.enhanced_normal = False
+        self.first_resonance = True
 
     def reset_state(self):
         super().reset_state()
         self.enhanced_normal = False
+        self.first_resonance = True
         
     def do_perform(self):
         if self.has_intro:
@@ -23,6 +25,9 @@ class Changli(BaseChar):
             self.continues_normal_attack(0.4)
             forte += 1
         self.enhanced_normal = False
+        if self.check_outro() in {'char_brant'}:
+            self.do_perform_outro(forte)
+            return self.switch_next_char()
         if forte >= 4 or self.is_forte_full():
             self.heavy_attack()
         #如果处于空中需要重击两次
@@ -33,8 +38,7 @@ class Changli(BaseChar):
         if not(forte >= 3 and self.resonance_available()) and self.liberation_available():   
             if self.liberation_and_heavy():               
                 return self.switch_next_char()
-        if self.current_resonance() > 0 and self.resonance_available():
-            self.send_resonance_key()
+        if self.click_resonance()[0]:
             self.enhanced_normal = True
             return self.switch_next_char()        
         if self.click_echo():
@@ -42,6 +46,46 @@ class Changli(BaseChar):
         self.continues_normal_attack(0.1)
         self.switch_next_char()
 
+    def do_perform_outro(self, forte):
+        if forte == 3:
+            start = time.time()
+            forte_time = start
+            while time.time() - start < 5:
+                self.click(interval=0.1)
+                if self.is_forte_full():
+                    if time.time() - forte_time > 0.2:
+                        break
+                else:
+                    forte_time = time.time()
+                self.check_combat()
+                self.task.next_frame()
+            if self.is_forte_full():
+                self.heavy_attack(1.4)
+        elif forte >= 4 or self.is_forte_full():
+            self.heavy_attack()
+            if self.is_forte_full():
+                self.heavy_attack()
+            self.sleep(0.8)
+        if self.liberation_available() and self.liberation_and_heavy():   
+            self.sleep(0.6)
+            forte = 0
+        if forte < 3 and self.click_resonance()[0]:
+            self.enhanced_normal = True
+            return        
+        self.click_echo()
+
+    def click_resonance(self, post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0,
+                        check_cd=False):
+        if self.first_resonance:
+            if self.current_resonance() > 0 and self.resonance_available():
+                self.continues_click(self.get_resonance_key(), 0.3)
+                self.first_resonance = False
+                self._resonance_available = False
+                return True, 0.3, False
+            return False, 0, False
+        return super().click_resonance(post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0,
+                                       check_cd=False)
+        
     def judge_forte(self):
         if self.is_forte_full():
             return 4
