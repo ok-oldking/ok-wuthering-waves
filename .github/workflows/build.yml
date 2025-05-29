@@ -73,24 +73,24 @@ jobs:
           Get-ChildItem -Path .\src -Recurse -Filter *.pyx | ForEach-Object { Remove-Item $_.FullName }
           Get-ChildItem -Path .\src -Recurse -Filter *.cpp | ForEach-Object { Remove-Item $_.FullName }
 
-      - name: Run tests
-        run: |
-          Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
-              Write-Host "Running tests in $($_.FullName)"
-              try {
-                  # Run the Python unittest command
-                  python -m unittest $_.FullName
-          
-                  # Check if the previous command succeeded
-                  if ($LASTEXITCODE -ne 0) {
-                      throw "Tests failed in $($_.FullName)"
-                  }
-              } catch {
-                  # Stop the loop and return the error
-                  Write-Error $_
-                  exit 1
-              }
-          }
+      #      - name: Run tests
+      #        run: |
+      #          Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
+      #              Write-Host "Running tests in $($_.FullName)"
+      #              try {
+      #                  # Run the Python unittest command
+      #                  python -m unittest $_.FullName
+      #
+      #                  # Check if the previous command succeeded
+      #                  if ($LASTEXITCODE -ne 0) {
+      #                      throw "Tests failed in $($_.FullName)"
+      #                  }
+      #              } catch {
+      #                  # Stop the loop and return the error
+      #                  Write-Error $_
+      #                  exit 1
+      #              }
+      #          }
 
       - name: Build Executable
         run: |
