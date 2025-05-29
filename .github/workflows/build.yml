@@ -30,6 +30,8 @@ jobs:
           echo "${{ env.action_state }}"
 
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
