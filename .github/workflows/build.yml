@@ -134,6 +134,7 @@ jobs:
           python -m ok.update.push_repos --repos https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-wuthering-waves.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
 
       - name: Trigger MirrorChyanUploading
+        if: startsWith(github.ref, 'refs/tags/')
         shell: bash
         run: |
           gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_uploading
