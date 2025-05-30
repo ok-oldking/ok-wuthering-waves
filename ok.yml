@@ -1,20 +1,12 @@
 requires_python:
   "3.12"
 profiles:
-  default:
-    main_script:
-      "main.py"
-    admin:
-      true
-    requirements:
-      "requirements.txt"
-  direct-ml:
-    main_script:
-      "main_direct_ml.py"
-    requirements:
-      "requirements-direct-ml.txt"
-  debug:
-    main_script:
-      "main_debug.py"
-
-
+  - name: "default"
+    main_script: "main.py"
+    admin: true
+    requirements: "requirements.txt"
+  - name: "direct-ml"
+    main_script: "main_direct_ml.py"
+    requirements: "requirements-direct-ml.txt"
+  - name: "debug"
+    main_script: "main_debug.py"
