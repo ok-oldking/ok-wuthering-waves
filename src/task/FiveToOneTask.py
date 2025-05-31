@@ -54,18 +54,29 @@ class FiveToOneTask(BaseCombatTask):
     def loop_merge(self):
         name_box = self.box_of_screen(0.11, 0.19, 0.87, 0.75)
         for set_name in self.sets:
-            self.click_relative(0.03, 0.91, after_sleep=0.3)
-            self.click_relative(0.62, 0.82, after_sleep=0.01)  # 重置
-            self.click_relative(0.20, 0.71, after_sleep=0.01)  # 1c
-            self.click_relative(0.47, 0.71, after_sleep=0.01)  # 3c
-            self.click_relative(0.71, 0.71, after_sleep=0.01)  # 4c
+            self.merge_set(name_box, set_name, 1)
+            self.merge_set(name_box, set_name, 2)
 
+    def merge_set(self, name_box, set_name, step):
+        keeps = self.config.get(set_name, [])
+        if step == 2 and "攻击力百分比" not in keeps:  # 4C攻击力
+            self.log_info("没有选择攻击力百分比, 跳过第二步")
+            return
+        self.click_relative(0.03, 0.91, after_sleep=0.3)
+        if step == 1:
+            self.click_relative(0.62, 0.82, after_sleep=0.01)  # 重置
+
+        self.click_relative(0.20, 0.71, after_sleep=0.01)  # 1c
+        self.click_relative(0.47, 0.71, after_sleep=0.01)  # 3c
+        if step == 1:
+            self.click_relative(0.71, 0.71, after_sleep=0.01)  # 4c
+        if step == 1:
             self.click_relative(0.895, 0.57, after_sleep=0.2)  # 滚动
             self.wait_click_ocr(box=name_box, match=re.compile(set_name), raise_if_not_found=True)
 
-            self.click_relative(0.895, 0.74, after_sleep=0.2)  # 滚动
-            choices = self.ocr(box=name_box)
-            keeps = self.config.get(set_name, [])
+        self.click_relative(0.895, 0.74, after_sleep=0.2)  # 滚动
+        choices = self.ocr(box=name_box)
+        if step == 1:
             for choice in choices:
                 in_keep = False
                 if choice.name in self.black_list:
@@ -77,19 +88,24 @@ class FiveToOneTask(BaseCombatTask):
                 if not in_keep:
                     self.click_box(choice, after_sleep=0.01)
                     self.log_info(f"不在配置 {set_name} {choice.name} 选择合成!")
-            self.click_relative(0.81, 0.84, after_sleep=0.5)
-            while True:
-                self.click_relative(0.26, 0.91, after_sleep=0.5)  # 全选
-                self.click_relative(0.78, 0.9, after_sleep=1)
-                if not self.claim_handled:
-                    if confirm := self.ocr(match="确认", box="bottom_right"):
-                        self.click_relative(0.49, 0.55, after_sleep=0.1)
-                        self.click_box(confirm, after_sleep=0.5)
-                        self.claim_handled = True
-                if self.ocr(match="批量融合", box="bottom_right"):
-                    self.click_relative(0.26, 0.91, after_sleep=0.5)
-                    self.log_info(f"{set_name} 不够5个")
-                    break  # 没有更多
-                self.wait_ocr(match="获得声骸", box="top", raise_if_not_found=True, settle_time=1)
-                self.click_relative(0.53, 0.05, after_sleep=0.5)
-                self.click_relative(0.68, 0.91, after_sleep=0.5)  # 批量融合
+        else:
+            for choice in choices:
+                if "攻击力百分比" in choice.name:
+                    self.click_box(choice, after_sleep=0.01)
+                    break
+        self.click_relative(0.81, 0.84, after_sleep=0.5)
+        while True:
+            self.click_relative(0.26, 0.91, after_sleep=0.5)  # 全选
+            self.click_relative(0.78, 0.9, after_sleep=1)
+            if not self.claim_handled:
+                if confirm := self.ocr(match="确认", box="bottom_right"):
+                    self.click_relative(0.49, 0.55, after_sleep=0.1)
+                    self.click_box(confirm, after_sleep=0.5)
+                    self.claim_handled = True
+            if self.ocr(match="批量融合", box="bottom_right"):
+                self.click_relative(0.26, 0.91, after_sleep=0.5)
+                self.log_info(f"{set_name} 不够5个")
+                break  # 没有更多
+            self.wait_ocr(match="获得声骸", box="top", raise_if_not_found=True, settle_time=1)
+            self.click_relative(0.53, 0.05, after_sleep=0.5)
+            self.click_relative(0.68, 0.91, after_sleep=0.5)  # 批量融合
