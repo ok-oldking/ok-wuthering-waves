@@ -13,7 +13,7 @@ class FiveToOneTask(BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.description = "游戏语言必须为简体中文,必须16:9分辨率,勾选需要的, 没勾的都会自动合成"
+        self.description = "游戏语言必须为简体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
         self.name = "数据坞五合一"
         self.default_config = {
         }
@@ -31,8 +31,9 @@ class FiveToOneTask(BaseCombatTask):
         self.all_stats = []
         self.black_list = ["主属性生命值", "主属性攻击力", "主属性防御力"]
         for main_stat in self.main_stats:
-            self.all_stats.append("主属性" + main_stat)
-        self.all_stats += self.black_list
+            self.all_stats.append(re.compile("主属性" + main_stat))
+        for black in self.black_list:
+            self.all_stats.append(re.compile(black))
 
         self.add_text_fix(
             {'凝夜自霜': '凝夜白霜', '主属性灭伤害加成': '主属性湮灭伤害加成', "灭伤害加成": "主属性湮灭伤害加成",
@@ -82,15 +83,20 @@ class FiveToOneTask(BaseCombatTask):
             self.wait_click_ocr(box=name_box, match=re.compile(set_name), raise_if_not_found=True,
                                 after_sleep=0.2)
             self.wait_feature("merge_echo_check", box=name_box, raise_if_not_found=True)
-
         self.click_relative(0.895, 0.74, after_sleep=0.5)  # 滚动
-        choices = self.ocr(box=name_box, match=chinese_regex)
+        choices = self.ocr(box=name_box, match=self.all_stats)
         if step == 1:
+            if len(choices) != 16:
+                raise Exception(f"属性列表识别失败! {choices}")
             for choice in choices:
-                if choice.name not in self.all_stats:
-                    raise Exception(f"无法识别的属性: {choice.name}")
                 in_keep = False
-                if choice.name in self.black_list:
+                in_black_list = False
+                for black in self.black_list:
+                    if black in choice.name and "百分比" not in choice.name:
+                        in_black_list = True
+                        break
+                if in_black_list:
+                    self.log_debug(f'跳过黑名单 {choice.name}')
                     continue
                 for keep in keeps:
                     if keep in choice.name:
