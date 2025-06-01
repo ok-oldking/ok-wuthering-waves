@@ -71,12 +71,12 @@ class FiveToOneTask(BaseCombatTask):
         if step == 1:
             self.click_relative(0.71, 0.71, after_sleep=0.01)  # 4c
         if step == 1:
-            self.click_relative(0.895, 0.57, after_sleep=0.2)  # 滚动
+            self.click_relative(0.895, 0.57, after_sleep=0.5)  # 滚动
             self.wait_click_ocr(box=name_box, match=re.compile(set_name), raise_if_not_found=True,
                                 after_sleep=0.2)
             self.wait_feature("merge_echo_check", box=name_box, raise_if_not_found=True)
 
-        self.click_relative(0.895, 0.74, after_sleep=0.2)  # 滚动
+        self.click_relative(0.895, 0.74, after_sleep=0.5)  # 滚动
         choices = self.ocr(box=name_box)
         if step == 1:
             for choice in choices:
