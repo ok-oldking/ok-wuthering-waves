@@ -6,6 +6,7 @@ from ok import find_boxes_by_name, find_boxes_within_boundary, Logger
 from src.task.BaseCombatTask import BaseCombatTask
 
 logger = Logger.get_logger(__name__)
+chinese_regex = re.compile(r'[\u4e00-\u9fff]{5,12}')
 
 
 class FiveToOneTask(BaseCombatTask):
@@ -27,7 +28,12 @@ class FiveToOneTask(BaseCombatTask):
                            "热熔伤害加成",
                            "导电伤害加成",
                            "气动伤害加成", "衍射伤害加成", "湮灭伤害加成", "治疗效果加成"]
+        self.all_stats = []
         self.black_list = ["主属性生命值", "主属性攻击力", "主属性防御力"]
+        for main_stat in self.main_stats:
+            self.all_stats.append("主属性" + main_stat)
+        self.all_stats += self.black_list
+
         self.add_text_fix(
             {'凝夜自霜': '凝夜白霜', '主属性灭伤害加成': '主属性湮灭伤害加成', "灭伤害加成": "主属性湮灭伤害加成",
              '主属性行射伤害加成': '主属性衍射伤害加成'})
@@ -40,6 +46,7 @@ class FiveToOneTask(BaseCombatTask):
             self.config_type[key] = {'type': "multi_selection", 'options': self.main_stats}
 
     def run(self):
+        self.log_debug(f"all_stats: {self.all_stats}")
         self.log_info("开始任务")
         self.ensure_main()
         self.log_info("在主页")
@@ -77,9 +84,11 @@ class FiveToOneTask(BaseCombatTask):
             self.wait_feature("merge_echo_check", box=name_box, raise_if_not_found=True)
 
         self.click_relative(0.895, 0.74, after_sleep=0.5)  # 滚动
-        choices = self.ocr(box=name_box)
+        choices = self.ocr(box=name_box, match=chinese_regex)
         if step == 1:
             for choice in choices:
+                if choice.name not in self.all_stats:
+                    raise Exception(f"无法识别的属性: {choice.name}")
                 in_keep = False
                 if choice.name in self.black_list:
                     continue
