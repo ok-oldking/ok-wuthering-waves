@@ -3,7 +3,7 @@ if __name__ == '__main__':
     from ok import OK
 
     config = config
-    config["ocr"]["params"]["Global.with_openvino"] = False
+    del config["ocr"]["params"]["Global.with_openvino"]
     config["profile_name"] = "direct-ml"
 
     ok = OK(config)
