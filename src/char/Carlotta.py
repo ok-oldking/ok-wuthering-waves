@@ -8,11 +8,13 @@ class Carlotta(BaseChar):
         super().__init__(*args, **kwargs)
         self.last_echo = 0
         self.press_w = -1
+        self.check_teammate = -1
 
     def reset_state(self):
         super().reset_state()
         self.last_echo = 0
         self.press_w = -1
+        self.check_teammate = -1
 
     def do_perform(self):
         self.bullet = 0
@@ -24,10 +26,13 @@ class Carlotta(BaseChar):
             self.logger.debug('has_intro wait click 1.2 sec')
             self.bullet = 1
             self.continues_normal_attack(1.2)
-        if self.is_forte_full():
+            if self.check_outro() in {'char_zhezhi','char_taoqi'}:
+                self.do_perform_outro()
+                return self.switch_next_char()
+        if self.is_forte_full() and not self.waiting_outro():
             self.heavy_attack()
             return self.switch_next_char()
-        if not self.need_fast_perform() and self.liberation_available():
+        if self.liberation_available() and not self.need_fast_perform() and not self.waiting_outro():
             if self.press_w == 1:
                 self.task.send_key_down(key='w')
                 while self.liberation_available():                
@@ -52,12 +57,60 @@ class Carlotta(BaseChar):
             self.click_echo()
             return self.switch_next_char()
         self.continues_normal_attack(0.31)
-        self.switch_next_char()
+        self.switch_next_char()       
 
+    def do_perform_outro(self):
+        clicked = True
+        while clicked:
+            clicked = False
+            if self.is_forte_full():
+                self.heavy_attack(1.5)
+                clicked = True
+            if self.liberation_available():
+                if self.press_w == 1:
+                    self.task.send_key_down(key='w')
+                    while self.liberation_available():                
+                        self.click_liberation()
+                        self.task.send_key_up(key='w')
+                        self.check_combat()
+                        self.task.send_key_down(key='w')
+                        self.task.send_key_up(key='w')
+                else:
+                    while self.liberation_available():                
+                        self.click_liberation()
+                        self.check_combat()
+                clicked = True
+            if self.click_resonance()[0]:
+                self.continues_normal_attack(1.4)
+                clicked = True
+        if self.click_echo():
+            self.last_echo = time.time()
+            clicked = True
+        self.continues_normal_attack(0.1)
+        
+    def waiting_outro(self):
+        if self.check_teammate == -1:
+            self.check_teammate = 0
+            for i, char in enumerate(self.task.chars):
+                self.logger.info(f'find char: {char}')
+                if char.char_name in {'char_zhezhi','char_taoqi'}:
+                    self.logger.info(f'find supporter: {char}')
+                    self.buffer = char
+                    self.check_teammate = 1
+        if self.check_teammate == 1:
+            self.logger.info(f'{self.buffer} has con {self.buffer.current_con}')
+            if self.buffer == 'char_zhezhi' and self.buffer.current_con > 0.65:
+                return True
+            if self.buffer == 'char_taoqi' and self.buffer.current_con > 0.8:
+                return True
+        return False
+          
     def has_long_actionbar(self):
         return True
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
+        if has_intro and current_char.char_name in {'char_zhezhi','char_taoqi'}:
+            return Priority.MAX
         if self.time_elapsed_accounting_for_freeze(self.last_echo, True) < 3:
             return Priority.MIN
         else:
