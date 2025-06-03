@@ -513,7 +513,7 @@ class BaseCombatTask(CombatCheck):
                     char.is_current_char = False
         self.combat_start = time.time()
 
-        # self.log_info(f'load chars success {self.chars}')
+        # self.log_info(f'load chars success {self.chars} {[obj.confidence for obj in self.chars]}')
 
     @staticmethod
     def should_update(the_char, old_char):
