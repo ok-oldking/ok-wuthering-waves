@@ -39,7 +39,7 @@ char_lib_check_marks = ['char_1_lib_check_mark', 'char_2_lib_check_mark',
 class BaseChar:
     """角色基类，定义了游戏角色的通用属性和行为。"""
 
-    def __init__(self, task, index, res_cd=20, echo_cd=20, liberation_cd=25, char_name=None):
+    def __init__(self, task, index, res_cd=20, echo_cd=20, liberation_cd=25, char_name=None, confidence=1):
         """初始化角色基础属性。
 
         Args:
@@ -68,13 +68,14 @@ class BaseChar:
         self._liberation_available = False
         self._resonance_available = False
         self._echo_available = False
-        self.logger = Logger.get_logger(self.name)
         self.full_ring_area = 0
         self.last_perform = 0
         self.current_con = 0
         self.has_tool_box = False
         self.intro_motion_freeze_duration = 0.9
         self.last_outro_time = -1
+        self.confidence = confidence
+        self.logger = Logger.get_logger(self.name)
 
     def skip_combat_check(self):
         """是否在某些操作中跳过战斗状态检查。
@@ -97,7 +98,7 @@ class BaseChar:
         Returns:
             str: 角色类名字符串。
         """
-        return self.__class__.__name__
+        return f"{self.__class__.__name__}"
 
     def __eq__(self, other):
         """比较两个角色对象是否相同 (基于名称和索引)。"""
@@ -783,9 +784,9 @@ class BaseChar:
                 time = char.last_switch_time
                 outro = char.char_name
         self.logger.info(f'erned outro from {outro}')
-        return outro 
-        
-    # def count_rectangle_forte(self, left=0.42, right=0.57):
+        return outro
+
+        # def count_rectangle_forte(self, left=0.42, right=0.57):
     # """计算矩形共鸣回路充能格数 (已注释)。"""
     #     # Perform image cropping once, as it's independent of saturation ranges
     #     cropped_image_base = self.task.box_of_screen(left, 0.927, right, 0.931).crop_frame(self.task.frame)
