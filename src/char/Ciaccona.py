@@ -67,9 +67,11 @@ class Ciaccona(BaseChar):
         return forte
 
     def decide_teammate(self):
+        from src.char.Phoebe import Phoebe
+        from src.char.Zani import Zani
         for i, char in enumerate(self.task.chars):
             self.logger.debug(f'ciaccona teammate char: {char.char_name}')
-            if char.char_name == 'char_phoebe':
+            if isinstance(char, (Phoebe, Zani)):
                 self.logger.debug('ciaccona set attribute: light dot')
                 self.attribute = 2
                 return
