@@ -21,37 +21,64 @@ class Ciaccona(BaseChar):
 
     def do_perform(self):
         self.in_liberation = False
+        #e接r，重击接r要等0.3秒等伤害出来
+        wait = False
+        #进场直接重击，a4接重击要跳取消动作
+        #闪避相比跳很容易被吞
+        jump = True
         if self.attribute == 0:
             self.decide_teammate()
         if self.has_intro:
             self.continues_normal_attack(0.8)
             forte = self.judge_forte()
             if forte < 3:
-                self.continues_normal_attack(0.6)
-                # a4抬手时获得量表，但后摇很长选择切人
-                return self.switch_next_char()
+                self.continues_normal_attack(0.7)
+                forte += 1
+            else:
+                jump = False
+        else:
+            forte = self.judge_forte()
         self.click_echo()
-        if self.is_forte_full():
-            # 夏空进场自动a1，这时长按重击会先放一个超长后摇的a2，不得已只能重击1.5秒了
-            self.heavy_attack(1.5)
-            return self.switch_next_char()
-        self.click_resonance()
-        if self.click_liberation():
-            self.in_liberation = True
-            if self.attribute == 2:
-                self.continues_click_a(0.6)
+        if not self.has_intro and not self.need_fast_perform() and forte < 3:
+            self.click_jump_with_click(1)
+            self.continues_normal_attack(0.6)
+            forte += 1
+        if self.click_resonance()[0]:
+            jump = False
+            wait = True     
+        if self.is_forte_full() or forte == 3:
+            if jump:
+                self.task.send_key(key='space')
+            self.heavy_attack(0.8)
+            wait = True
+        if self.liberation_available(): 
+            if wait:
+                self.sleep(0.3)
+            if self.click_liberation():
+                self.in_liberation = True
+                if self.attribute == 2:
+                    self.continues_click_a(0.6)
         self.switch_next_char()
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        # 队友菲比时开大唱满20秒。可能导致菲比满协奏时夏空和奶妈双锁切人
-        # 其他队友时，夏空会在主c满协奏时打断大招切出
-        if self.in_liberation and self.time_elapsed_accounting_for_freeze(self.last_liberation) < 20:
-            if self.attribute == 2 or (self.attribute == 1 and not has_intro):
-                return Priority.MIN
-            else:
-                return -100
+        if self.attribute == 2 and self.in_liberation and self.time_elapsed_accounting_for_freeze(self.last_liberation) < 20:
+            return Priority.MIN
         return super().do_get_switch_priority(current_char, has_intro)
 
+    def click_jump_with_click(self, delay=0.1):
+        start = time.time()
+        click = 1
+        while True:
+            if time.time() - start > delay:
+                break
+            if click == 0:
+                self.task.send_key('SPACE')
+            else:
+                self.click()
+            click = 1 - click
+            self.check_combat()
+            self.task.next_frame()
+            
     def continues_click_a(self, duration=0.6):
         start = time.time()
         while time.time() - start < duration:
