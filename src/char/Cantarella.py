@@ -20,7 +20,7 @@ class Cantarella(BaseChar):
             heavy_ready = True
         if self.click_liberation():
             heavy_ready = True
-        if self.is_forte_full() and self.forte_ready() and heavy_ready:
+        if not self.need_fast_perform() and self.is_forte_full() and self.forte_ready() and heavy_ready:
             self.heavy_attack_combo()
             return self.switch_next_char()
         if self.echo_available():
