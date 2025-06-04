@@ -26,7 +26,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         }
         self.default_config = default_config
         self.door_walk_method = {  # starts with 0
-            0:[],
+            0: [],
             1: [["a", 0.3]],
             2: [["d", 0.6]],
             3: [["a", 1.5], ["w", 3], ["a", 2.5]],
@@ -70,7 +70,8 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.info_set('used stamina', total_used)
             if not used:
                 return self.not_enough_stamina()
-            self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'], raise_if_not_found=True, log=True)
+            self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'], raise_if_not_found=True,
+                                log=True)
             self.sleep(4)
             self.click(0.51, 0.84, after_sleep=2)
             if remaining_total < 60:
@@ -79,7 +80,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                 return self.not_enough_stamina(back=True)
 
     def not_enough_stamina(self, back=True):
-        self.log_info(f"used all stamina", notify=True)
+        self.log_info(f"used all stamina")
         if back:
             self.back(after_sleep=1)
 
@@ -88,9 +89,9 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         if index >= self.total_number:
             raise IndexError(f'Index out of range, max is {self.total_number}')
         if index >= self.row_per_page:
-            if index >= self.row_per_page * 2: # page 3
+            if index >= self.row_per_page * 2:  # page 3
                 self.click_relative(0.98, 0.86)
-                index -= self.row_per_page + 1 # only 1 in last page
+                index -= self.row_per_page + 1  # only 1 in last page
             else:
                 index -= self.row_per_page
                 self.click_relative(0.98, 0.8)
@@ -100,6 +101,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         y = 0.275
         y += height * index
         self.click_relative(x, y, after_sleep=2)
+
 
 echo_color = {
     'r': (200, 255),  # Red range
