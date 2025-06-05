@@ -295,6 +295,7 @@ class BaseCombatTask(CombatCheck):
                     switch_to.has_intro = current_char.is_con_full()
 
             if now - last_click > 0.1:
+                switch_to.handle_pause_switch(current_char)
                 self.send_key(switch_to.index + 1)
                 last_click = now
                 self.sleep(0.01)
