@@ -749,7 +749,7 @@ con_colors = [  # 不同角色属性的协奏值能量环的颜色范围列表�
     },
     {
         'r': (70, 110),  # Red range
-        'g': (215, 250),  # Green range    for green wind
+        'g': (215, 255),  # Green range    for green wind
         'b': (155, 190)  # Blue range
     },
     {
