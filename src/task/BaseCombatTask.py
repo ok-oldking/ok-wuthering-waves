@@ -568,12 +568,18 @@ class BaseCombatTask(CombatCheck):
             int: 协奏值环的颜色索引。
         """
         if self.get_current_char().ring_index < 0:
-            best = self.find_best_match_in_box(self.get_con_box(),
-                                               con_templates, 0.1)
-            if best:
-                self.get_current_char().ring_index = con_templates.index(best.name)
-                self.log_debug(
-                    f'_ensure_ring_index {self.get_current_char()} to {self.get_current_char().ring_index} {best.name}')
+            box = self.get_con_box()
+
+            best_index = 0
+            best_percentage = 0
+            for i in range(len(con_colors)):
+                percent = self.calculate_color_percentage(con_colors[i], box)
+                if percent > best_percentage:
+                    best_percentage = percent
+                    best_index = i
+            self.get_current_char().ring_index = best_index
+            self.log_debug(
+                f'_ensure_ring_index {self.get_current_char()} to {self.get_current_char().ring_index} {con_templates[best_index]}')
         return self.get_current_char().ring_index
 
     def get_con_box(self):

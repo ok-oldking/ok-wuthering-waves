@@ -30,6 +30,15 @@ class Role(StrEnum):
     HEALER = 'Healer'  # 治疗者
 
 
+class Elements(IntEnum):
+    SPECTRO = 0
+    ELECTRIC = 1
+    FIRE = 2
+    ICE = 3
+    WIND = 4
+    HAVOC = 5
+
+
 role_values = [role for role in Role]  # 角色定位枚举值的列表
 
 char_lib_check_marks = ['char_1_lib_check_mark', 'char_2_lib_check_mark',
@@ -39,7 +48,8 @@ char_lib_check_marks = ['char_1_lib_check_mark', 'char_2_lib_check_mark',
 class BaseChar:
     """角色基类，定义了游戏角色的通用属性和行为。"""
 
-    def __init__(self, task, index, res_cd=20, echo_cd=20, liberation_cd=25, char_name=None, confidence=1):
+    def __init__(self, task, index, res_cd=20, echo_cd=20, liberation_cd=25, char_name=None, confidence=1,
+                 ring_index=-1):
         """初始化角色基础属性。
 
         Args:
@@ -57,7 +67,7 @@ class BaseChar:
         self.sleep_adjust = 0
         self.char_name = char_name
         self.index = index
-        self.ring_index = -1  # for con check
+        self.ring_index = ring_index  # for con check
         self.last_switch_time = -1
         self.last_res = -1
         self.last_echo = -1
