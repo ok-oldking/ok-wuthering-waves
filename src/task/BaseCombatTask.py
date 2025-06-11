@@ -290,7 +290,7 @@ class BaseCombatTask(CombatCheck):
 
             _, current_index, _ = self.in_team()
             if current_index == current_char.index:
-                self.update_con_lib_from_portrait_icon()
+                self.update_lib_portrait_icon()
                 if not switch_to.has_intro:
                     switch_to.has_intro = current_char.is_con_full()
 
@@ -732,27 +732,19 @@ class BaseCombatTask(CombatCheck):
 
         return the_area, is_full
 
-    def update_con_lib_from_portrait_icon(self):
+
+    def update_lib_portrait_icon(self):
         self.ensure_con_lib_boxes()
-        current_char = self.get_current_char()
         for i in range(len(self.chars)):
             char_index = i + 1
             char = self.chars[i]
-            if not char.is_current_char and char.ring_index >= 0:
-                if current_char.current_con != 1:
-                    box = self.get_box_by_name("con_mark_char_{}".format(char_index))
-                    match = self.find_one(con_full_templates[char.ring_index], box=box, threshold=0.8)
-                    if match:
-                        current_char.current_con = 1
-                        self.log_debug('checking con_available by template {} {}'.format(char, match))
-                        # self.screenshot('con_available_{}_{}'.format(char, match.name))
-                if not char._liberation_available:
-                    box = self.get_box_by_name("lib_mark_char_{}".format(char_index))
-                    match = self.find_one(lib_ready_templates[char.ring_index], box=box, threshold=0.45)
-                    if match:
-                        char._liberation_available = True
-                        self.log_debug('checking liberation_available by template {} {}'.format(char, match))
-                        # self.screenshot('liberation_available_{}_{}'.format(char, match.name))
+            if not char.is_current_char and char.ring_index >= 0 and not char._liberation_available:
+                box = self.get_box_by_name("lib_mark_char_{}".format(char_index))
+                match = self.find_one(lib_ready_templates[char.ring_index], box=box, threshold=0.45)
+                if match:
+                    char._liberation_available = True
+                    self.log_debug('checking liberation_available by template {} {}'.format(char, match))
+                    # self.screenshot('liberation_available_{}_{}'.format(char, match.name))
 
     def ensure_con_lib_boxes(self):
         scale_rate = 2.0
