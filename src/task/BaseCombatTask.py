@@ -266,7 +266,9 @@ class BaseCombatTask(CombatCheck):
             logger.debug(f'running first circle_count{circle_count} circle {total_index} duration:{duration}')
             for direction in directions:
                 if total_index > 2 and (total_index + 1) % 2 == 0:
-                    duration += step
+                    if not (count == circle_count - 1 and direction == directions[-1]):
+                        duration += step
+                    
                 picked = self.send_key_and_wait_f(direction, False, time_out=duration, running=True,
                                                   target_text=self.absorb_echo_text())
                 if picked:

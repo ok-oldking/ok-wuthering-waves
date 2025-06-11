@@ -23,7 +23,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.config_description.update({
             'Combat Wait Time': 'Wait time before each combat(seconds), set 5 if farming Sentry Construct',
         })
-        self.find_echo_method = ['Yolo', 'Walk']
+        self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
         self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
@@ -94,6 +94,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 dropped = \
                     self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=time_out, threshold=threshold)[0]
                 logger.info(f'farm echo yolo find {dropped}')
+            elif self.config.get('Echo Pickup Method', "Yolo") == "Run in Circle":
+                dropped = self.run_in_circle_to_find_echo(circle_count=2)
+                logger.info(f'farm echo walk_circle_find_echo {dropped}')
             else:
                 dropped = self.walk_find_echo()
                 logger.info(f'farm echo walk_find_echo {dropped}')
