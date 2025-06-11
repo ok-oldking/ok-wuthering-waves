@@ -450,7 +450,6 @@ class BaseChar:
                 self.send_liberation_key()
                 if not clicked:
                     clicked = True
-                    self.update_liberation_cd()
                 last_click = now
             if time.time() - start > timeout:
                 self.task.raise_not_in_combat('too long clicking a liberation')
@@ -468,7 +467,6 @@ class BaseChar:
             self.task.in_liberation = True
             if not clicked:
                 clicked = True
-                self.update_liberation_cd()
             if send_click:
                 self.click(interval=0.1)
             if time.time() - start > 7:
@@ -477,6 +475,7 @@ class BaseChar:
             self.task.next_frame()
         duration = time.time() - start
         self.add_freeze_duration(start, duration)
+        self.update_liberation_cd()
         self.task.in_liberation = False
         self._liberation_available = False
         if clicked:
@@ -605,16 +604,16 @@ class BaseChar:
             return time.time() - self.last_res > self.res_cd
         return self._resonance_available
 
-    def liberation_cd_ready(self, offset=1):
+    def liberation_cd_ready(self, offset=0):
         """判断共鸣解放冷却是否完成。
 
         Args:
-            offset (int, optional): 冷却时间偏移量。默认为 1。
+            offset (int, optional): 冷却时间偏移量。默认为 0。
 
         Returns:
             bool: 如果冷却完成则返回 True。
         """
-        return self.time_elapsed_accounting_for_freeze(self.last_liberation + 1) >= self.liberation_cd
+        return self.time_elapsed_accounting_for_freeze(self.last_liberation + offset) >= self.liberation_cd
 
     def echo_available(self, current=None):
         """判断声骸技能是否可用。
@@ -797,9 +796,16 @@ class BaseChar:
                 time = char.last_switch_time
                 outro = char.char_name
         self.logger.info(f'erned outro from {outro}')
-        return outro
-
-        # def count_rectangle_forte(self, left=0.42, right=0.57):
+        return outro 
+        
+    def is_first_engage(self):
+        """判断角色是否为触发战斗时的登场角色。"""
+        result = (0 <= self.last_perform - self.task.combat_start < 0.1)
+        if result:
+            self.logger.info(f'first engage')
+        return result
+    
+    # def count_rectangle_forte(self, left=0.42, right=0.57):
     # """计算矩形共鸣回路充能格数 (已注释)。"""
     #     # Perform image cropping once, as it's independent of saturation ranges
     #     cropped_image_base = self.task.box_of_screen(left, 0.927, right, 0.931).crop_frame(self.task.frame)
