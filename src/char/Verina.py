@@ -11,7 +11,8 @@ class Verina(Healer):
 
     def do_perform(self):
         if self.has_intro:
-            self.wait_intro(click=False, time_out=1.1)
+            self.sleep(1.3)
+            return self.switch_next_char()
         else:
             self.sleep(0.01)
         if self.flying():
@@ -53,8 +54,11 @@ class Verina(Healer):
         self.switch_next_char()
 
     def do_get_switch_priority(self, current_char: Healer, has_intro=False, target_low_con=False):
-        if self.time_elapsed_accounting_for_freeze(self.last_outro_time) < 15:
+        result = self.time_elapsed_accounting_for_freeze(self.last_outro_time)
+        if result < 15:
             return Priority.NORMAL
+        elif result > 35 and self.resonance_available():
+            return Priority.SKILL_AVAILABLE + 15
         return super().do_get_switch_priority(current_char, has_intro)
     
     def expectation_con(self, forte_num=None, extra=0):
@@ -72,7 +76,8 @@ class Verina(Healer):
 
     def do_fast_perform(self):
         if self.has_intro:
-            self.wait_intro(click=False, time_out=1.1)
+            self.sleep(1.3)
+            return self.switch_next_char()
         else:
             self.sleep(0.01)
         if self.flying():
