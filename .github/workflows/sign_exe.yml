@@ -1,10 +1,7 @@
-name: Test SignPath
+name: build exe
 
-on:
-  push:
-    # Sequence of patterns matched against refs/tags
-    branches:
-      - 'build_exe'
+on: workflow_dispatch
+
 jobs:
   build:
     name: Build exe with launcher
@@ -36,7 +33,7 @@ jobs:
           path: |
             ok-ww.exe
 
-      - name : sign OK-EXE
+      - name: sign OK-EXE
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
