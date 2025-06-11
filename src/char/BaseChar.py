@@ -41,9 +41,6 @@ class Elements(IntEnum):
 
 role_values = [role for role in Role]  # 角色定位枚举值的列表
 
-char_lib_check_marks = ['char_1_lib_check_mark', 'char_2_lib_check_mark',
-                        'char_3_lib_check_mark']  # 角色共鸣解放技能是否可用的UI检查标记模板名称
-
 
 class BaseChar:
     """角色基类，定义了游戏角色的通用属性和行为。"""
@@ -415,6 +412,7 @@ class BaseChar:
     def reset_state(self):
         """重置角色的战斗相关状态 (如入场技标记)。"""
         self.has_intro = False
+        self.current_con = 0
         self.has_tool_box = False
         self._liberation_available = False
         self._echo_available = False
@@ -480,6 +478,7 @@ class BaseChar:
         duration = time.time() - start
         self.add_freeze_duration(start, duration)
         self.task.in_liberation = False
+        self._liberation_available = False
         if clicked:
             self.logger.info(f'click_liberation end {duration}')
         return clicked
@@ -636,10 +635,14 @@ class BaseChar:
             return time.time() - self.last_echo > self.echo_cd
 
     def is_con_full(self):
+        if self.current_con == 1:
+            return True
         """判断当前协奏值是否已满 (代理到 task.is_con_full)。"""
         return self.task.is_con_full()
 
     def get_current_con(self):
+        if self.current_con == 1:
+            return 1
         """获取当前协奏值百分比 (代理到 task.get_current_con)。"""
         self.current_con = self.task.get_current_con()
         return self.current_con

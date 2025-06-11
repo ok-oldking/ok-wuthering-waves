@@ -59,6 +59,8 @@ class BaseCombatTask(CombatCheck):
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.add_text_fix({'Ｅ': 'e'})
+        self.con_full_boxes = None
+        self.lib_ready_boxes = None
 
     def add_freeze_duration(self, start, duration=-1.0, freeze_time=0.1):
         """添加冻结持续时间。用于精确计算技能冷却等。
@@ -284,9 +286,13 @@ class BaseCombatTask(CombatCheck):
         start = time.time()
         while True:
             now = time.time()
-            if not switch_to.has_intro:
-                _, current_index, _ = self.in_team()
-                switch_to.has_intro = current_index == current_char.index and current_char.is_con_full()
+
+            _, current_index, _ = self.in_team()
+            if current_index == current_char.index:
+                self.update_lib_portrait_icon()
+                if not switch_to.has_intro:
+                    switch_to.has_intro = current_char.is_con_full()
+
             if now - last_click > 0.1:
                 self.send_key(switch_to.index + 1)
                 last_click = now
@@ -725,6 +731,34 @@ class BaseCombatTask(CombatCheck):
 
         return the_area, is_full
 
+    def update_lib_portrait_icon(self):
+        self.ensure_con_lib_boxes()
+        for i in range(len(self.chars)):
+            char_index = i + 1
+            char = self.chars[i]
+            if not char.is_current_char and char.ring_index >= 0 and not char._liberation_available:
+                box = self.get_box_by_name("lib_mark_char_{}".format(char_index))
+                match = self.find_one(lib_ready_templates[char.ring_index], box=box, threshold=0.45)
+                if match:
+                    char._liberation_available = True
+                    self.log_debug('checking liberation_available by template {} {}'.format(char, match))
+                    # self.screenshot('liberation_available_{}_{}'.format(char, match.name))
+
+    def ensure_con_lib_boxes(self):
+        scale_rate = 2.0
+        if not self.con_full_boxes:
+            self.con_full_boxes = {
+                1: self.get_box_by_name('con_full_wind').scale(scale_rate, scale_rate),
+                2: self.get_box_by_name('con_full_ice').scale(scale_rate, scale_rate),
+                3: self.get_box_by_name('con_full_spectro').scale(scale_rate, scale_rate),
+            }
+        if not self.lib_ready_boxes:
+            self.lib_ready_boxes = {
+                1: self.get_box_by_name('lib_ready_wind').scale(scale_rate, scale_rate),
+                2: self.get_box_by_name('lib_ready_ice').scale(scale_rate, scale_rate),
+                3: self.get_box_by_name('lib_ready_spectro').scale(scale_rate, scale_rate),
+            }
+
 
 white_color = {  # 用于检测UI元素可用状态的白色颜色范围。
     'r': (253, 255),  # Red range
@@ -772,4 +806,22 @@ con_templates = [  # 协奏值能量环的模板名称列表 (对应 `con_colors
     'con_ice',
     'con_wind',
     'con_havoc',
+]
+
+lib_ready_templates = [  # 头像右边大招可用对号
+    'lib_ready_spectro',  # 3
+    'lib_ready_electric',  # 3
+    'lib_ready_fire',  # 2
+    'lib_ready_ice',  # 2
+    'lib_ready_wind',  # 1
+    'lib_ready_havoc',  # 3
+]
+
+con_full_templates = [  # 头像右边表示当前角色 协奏满
+    'con_full_spectro',  # 3
+    'con_full_electric',  # 3
+    'con_full_fire',  # 2
+    'con_full_ice',  # 2
+    'con_full_wind',  # 1
+    'con_full_havoc',  # 3
 ]
