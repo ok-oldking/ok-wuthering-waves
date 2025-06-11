@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 import numpy as np
+from rapidocr import EngineType, OCRVersion
 
 from ok import ConfigOption, get_path_relative_to_exe
 
@@ -78,9 +79,15 @@ config = {
         'lib': 'rapidocr',
         'target_height': 1080,
         'params': {
-            'Global.with_openvino': True,
+            # 'Global.with_openvino': True,
             'EngineConfig.openvino.inference_num_threads': 1,
-            'Rec.rec_keys_path': get_path_relative_to_exe(os.path.join('assets', 'ppocr_keys_v1.txt')),
+            'Global.use_cls': False,
+            "Det.engine_type": EngineType.OPENVINO,
+            "Det.ocr_version": OCRVersion.PPOCRV5,
+            "Cls.engine_type": EngineType.OPENVINO,
+            "Rec.engine_type": EngineType.OPENVINO,
+            "Rec.ocr_version": OCRVersion.PPOCRV5,
+            # 'Rec.rec_keys_path': get_path_relative_to_exe(os.path.join('assets', 'ppocr_keys_v1.txt')),
         }
     },
     'my_app': ['src.globals', 'Globals'],

@@ -31,7 +31,7 @@ class FiveToOneTask(BaseCombatTask):
         self.all_stats = []
         self.black_list = ["主属性生命值", "主属性攻击力", "主属性防御力"]
         for main_stat in self.main_stats:
-            self.all_stats.append(re.compile("主属性" + main_stat))
+            self.all_stats.append("主属性" + main_stat)
         for black in self.black_list:
             self.all_stats.append(re.compile(black))
 
@@ -64,6 +64,10 @@ class FiveToOneTask(BaseCombatTask):
         for set_name in self.sets:
             self.merge_set(name_box, set_name, 1)
             self.merge_set(name_box, set_name, 2)
+
+    def ocr_main_stats(self):
+        name_box = self.box_of_screen(0.11, 0.19, 0.87, 0.75)
+        return self.ocr(box=name_box, threshold=0.1)
 
     def merge_set(self, name_box, set_name, step):
         keeps = self.config.get(set_name, [])
