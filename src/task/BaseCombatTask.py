@@ -244,7 +244,7 @@ class BaseCombatTask(CombatCheck):
         switch_to = current_char
         has_intro = free_intro
         current_con = 0
-        self.update_con_lib_from_portrait_icon()
+        self.update_lib_portrait_icon()
         if not has_intro:
             current_con = current_char.get_current_con()
             if current_con > 0.8 and current_con != 1:
@@ -731,7 +731,6 @@ class BaseCombatTask(CombatCheck):
             self.logger.warning(f'is_con_full found multiple rings {ring_count}')
 
         return the_area, is_full
-
 
     def update_lib_portrait_icon(self):
         self.ensure_con_lib_boxes()
