@@ -699,12 +699,14 @@ class BaseWWTask(BaseTask):
         # self.log_debug(f'turn_east max_conf: {max_conf} {max_angle}')
         return max_angle, max_target
 
-    def get_mini_map_turn_angle(self, feature, threshold=0.5, x_offset=0, y_offset=0):
+    def get_mini_map_turn_angle(self, feature, threshold=0.72, x_offset=0, y_offset=0):
         box = self.get_box_by_name('box_minimap')
         target = self.find_one(feature, box=box, threshold=threshold)
         if not target:
             self.log_info(f'Can not find {feature} on minimap')
             return None
+        else:
+            self.log_debug(f'found {box} on minimap')
         target.x += target.width * x_offset
         target.y += target.height * y_offset
         direction_angle = calculate_angle_clockwise(box, target)
