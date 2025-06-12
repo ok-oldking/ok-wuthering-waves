@@ -82,7 +82,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             if not self.wait_until(self.in_combat, raise_if_not_found=False,
                                    time_out=12) and not self._in_realm and not self._has_treasure:
                 self.teleport_to_nearest_boss()
-                self.run_until(self.in_combat, 'w', time_out=5, running=True)
+                self.sleep(0.5)
+                self.run_until(self.in_combat, 'w', time_out=10, running=True)
 
             self.sleep(self.config.get("Combat Wait Time", 0))
 
@@ -105,7 +106,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
     def teleport_to_nearest_boss(self):
         self.zoom_map(esc=False)
-        boxes = self.find_feature(['boss_no_check_mark', 'boss_check_mark'], box=self.box_of_screen(0.1, 0.1, 0.9, 0.9),
+        boxes = self.find_feature(['boss_no_check_mark', 'boss_check_mark'], box=self.box_of_screen(0.3, 0.3, 0.7, 0.7),
                                   threshold=0.6)
         self.log_info(f'teleport_to_nearest_boss {boxes}')
         if len(boxes) > 0:
