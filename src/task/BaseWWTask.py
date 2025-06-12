@@ -1,3 +1,4 @@
+import math
 import re
 import time
 from datetime import datetime, timedelta
@@ -649,6 +650,134 @@ class BaseWWTask(BaseTask):
         return self.in_team()[
             0]  # and self.find_one(f'gray_book_button', threshold=0.7, canny_lower=50, canny_higher=150)
 
+    def get_angle_between(self, my_angle, angle):
+        if my_angle > angle:
+            to_turn = angle - my_angle
+        else:
+            to_turn = -(my_angle - angle)
+        if to_turn > 180:
+            to_turn -= 360
+        elif to_turn < -180:
+            to_turn += 360
+        return to_turn
+
+    def get_my_angle(self):
+        return self.rotate_arrow_and_find()[0]
+
+    def rotate_arrow_and_find(self):
+        arrow_template = self.get_feature_by_name('arrow')
+        original_mat = arrow_template.mat
+        max_conf = 0
+        max_angle = 0
+        max_target = None
+        max_mat = None
+        (h, w) = arrow_template.mat.shape[:2]
+        # self.log_debug(f'turn_east h:{h} w:{w}')
+        center = (w // 2, h // 2)
+        target_box = self.get_box_by_name('arrow')
+        # if self.debug:
+        #     self.screenshot('arrow_original', original_ mat)
+        for angle in range(0, 360):
+            # Rotate the template image
+            rotation_matrix = cv2.getRotationMatrix2D(center, -angle, 1.0)
+            template = cv2.warpAffine(original_mat, rotation_matrix, (w, h))
+            # mask = np.where(np.all(template == [0, 0, 0], axis=2), 0, 255).astype(np.uint8)
+
+            target = self.find_one(box=target_box,
+                                   template=template, threshold=0.01)
+            # if self.debug and angle % 90 == 0:
+            #     self.screenshot(f'arrow_rotated_{angle}', arrow_template.mat)
+            if target and target.confidence > max_conf:
+                max_conf = target.confidence
+                max_angle = angle
+                max_target = target
+                # max_mat = template
+        # arrow_template.mat = original_mat
+        # arrow_template.mask = None
+        # if self.debug and max_mat is not None:
+        #     self.screenshot('max_mat',frame=max_mat)
+        # self.log_debug(f'turn_east max_conf: {max_conf} {max_angle}')
+        return max_angle, max_target
+
+    def get_mini_map_turn_angle(self, feature, threshold=0.5, x_offset=0, y_offset=0):
+        box = self.get_box_by_name('box_minimap')
+        target = self.find_one(feature, box=box, threshold=threshold)
+        if not target:
+            self.log_info(f'Can not find {feature} on minimap')
+            return None
+        target.x += target.width * x_offset
+        target.y += target.height * y_offset
+        direction_angle = calculate_angle_clockwise(box, target)
+        my_angle = self.get_my_angle()
+        to_turn = self.get_angle_between(my_angle, direction_angle)
+        self.log_info(f'angle: {my_angle}, to_turn: {to_turn}')
+        return to_turn
+
+    def _stop_movement(self, current_direction):
+        """Releases keys and mouse to stop character movement."""
+        if current_direction is not None:
+            self.mouse_up(key='right')
+            self.send_key_up(current_direction)
+
+    def _navigate_based_on_angle(self, angle, current_direction, current_adjust):
+        """
+        Core navigation logic to adjust movement based on a target angle.
+        This contains the shared logic from the original functions.
+
+        Returns a tuple: (new_direction, new_adjust, should_continue)
+        - new_direction: The updated movement direction ('w', 'a', 's', 'd').
+        - new_adjust: The updated adjustment state.
+        - should_continue: A boolean indicating if the calling loop should `continue`.
+        """
+        # 1. Handle minor adjustments if already moving forward
+        if current_direction == 'w':
+            if 10 <= angle <= 80:
+                minor_adjust = 'd'
+            elif -80 <= angle <= -10:
+                minor_adjust = 'a'
+            else:
+                minor_adjust = None
+
+            if minor_adjust:
+                self.send_key_down(minor_adjust)
+                self.sleep(0.1)
+                self.middle_click(down_time=0.1)
+                self.send_key_up(minor_adjust)
+                self.sleep(0.01)
+                # Tell the caller to continue to the next loop iteration
+                return current_direction, current_adjust, True
+
+        # 2. Clean up any previous adjustments
+        if current_adjust:
+            self.send_key_up(current_adjust)
+            current_adjust = None
+
+        # 3. Determine the major new direction based on the angle
+        if -45 <= angle <= 45:
+            new_direction = 'w'
+        elif 45 < angle <= 135:
+            new_direction = 'd'
+        elif -135 < angle <= -45:
+            new_direction = 'a'
+        else:
+            new_direction = 's'
+
+        # 4. Change direction if needed
+        if current_direction != new_direction:
+            self.log_info(f'changed direction {angle} {current_direction} -> {new_direction}')
+            if current_direction:
+                self.mouse_up(key='right')
+                self.send_key_up(current_direction)
+                self.sleep(0.2)
+            self.turn_direction(new_direction)
+            self.send_key_down('w')
+            self.sleep(0.2)
+            self.mouse_down(key='right')
+            current_direction = 'w'  # After turning, we always move forward
+            self.sleep(1)
+
+        return current_direction, current_adjust, False
+
     def in_team(self):
         c1 = self.find_one('char_1_text',
                            threshold=0.75)
@@ -801,3 +930,21 @@ echo_color = {
     'g': (150, 220),  # Green range
     'b': (130, 170)  # Blue range
 }
+
+
+def calculate_angle_clockwise(box1, box2):
+    """
+    Calculates angle (radians) from horizontal right to line (x1,y1)->(x2,y2).
+    Positive clockwise, negative counter-clockwise.
+    """
+    x1, y1 = box1.center()
+    x2, y2 = box2.center()
+    dx = x2 - x1
+    dy = y2 - y1
+    # math.atan2(dy, dx) gives angle from positive x-axis, positive CCW.
+    # Negate for positive CW convention.
+
+    degree = math.degrees(math.atan2(dy, dx))
+    if degree < 0:
+        degree += 360
+    return degree
