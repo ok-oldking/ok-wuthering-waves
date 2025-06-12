@@ -79,11 +79,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
             count += 1
             self.log_info('start wait in combat')
-            if not self.wait_until(self.in_combat, raise_if_not_found=False,
-                                   time_out=12) and not self._in_realm and not self._has_treasure:
-                self.teleport_to_nearest_boss()
-                self.sleep(0.5)
-                self.run_until(self.in_combat, 'w', time_out=10, running=True)
+            if not self._in_realm and not self._has_treasure:
+                self.go_to_boss_minimap()
 
             self.sleep(self.config.get("Combat Wait Time", 0))
 
@@ -103,6 +100,28 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
             else:
                 self.sleep(1)
+
+    def go_to_boss_minimap(self, threshold=0.5, time_out=15):
+        start_time = time.time()
+        current_direction = None
+        current_adjust = None
+        self.center_camera()
+
+        while time.time() - start_time < time_out:
+            if self.in_combat():
+                break
+            angle = self.get_mini_map_turn_angle('boss_check_mark_minimap', threshold=threshold, x_offset=-1,
+                                                 y_offset=1)
+
+            current_direction, current_adjust, should_continue = self._navigate_based_on_angle(
+                angle, current_direction, current_adjust
+            )
+            if should_continue:
+                continue
+
+        self._stop_movement(current_direction)
+        if not self.in_combat():
+            raise Exception("Can't go to next combat!")
 
     def teleport_to_nearest_boss(self):
         self.zoom_map(esc=False)
