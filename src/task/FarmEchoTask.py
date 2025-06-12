@@ -108,11 +108,13 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.center_camera()
 
         while time.time() - start_time < time_out:
+            self.sleep(0.01)
             if self.in_combat():
                 break
             angle = self.get_mini_map_turn_angle('boss_check_mark_minimap', threshold=threshold, x_offset=-1,
                                                  y_offset=1)
-
+            if angle is None:
+                continue
             current_direction, current_adjust, should_continue = self._navigate_based_on_angle(
                 angle, current_direction, current_adjust
             )
