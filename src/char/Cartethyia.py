@@ -35,7 +35,9 @@ class Cartethyia(BaseChar):
         self.switch_next_char()
 
     def is_small(self):
-        self.is_cartethyia = self.task.find_one('forte_cartethyia_space')
+        self.is_cartethyia = False
+        if self.task.find_one('forte_cartethyia_space'):
+            self.is_cartethyia = True
         return self.is_cartethyia
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
@@ -47,6 +49,7 @@ class Cartethyia(BaseChar):
         if self.is_lib_big_available():
             if self.click_liberation():
                 self.manifest_time = -1
+                self.is_cartethyia = True
                 self.click_resonance()
                 return True
 
