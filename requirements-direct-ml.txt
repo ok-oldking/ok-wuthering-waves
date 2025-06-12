@@ -5,7 +5,7 @@
 #    pip-compile '.\requirements-dml.in'
 #
 
-ok-script==0.0.572
+ok-script==0.0.575
 
 antlr4-python3-runtime==4.9.3
     # via omegaconf
@@ -121,7 +121,7 @@ pyyaml==6.0.2
     # via
     #   omegaconf
     #   rapidocr
-rapidocr==2.1.0
+rapidocr==3.1.1
     # via -r .\requirements-dml.in
 requests==2.32.3
     # via
