@@ -4,7 +4,8 @@
 #
 #    pip-compile '.\requirements.in'
 #
---index-url https://mirrors.aliyun.com/pypi/simple
+
+ok-script==0.0.575
 
 antlr4-python3-runtime==4.9.3
     # via omegaconf
@@ -22,10 +23,7 @@ colorama==0.4.6
     # via
     #   build
     #   click
-    #   colorlog
     #   tqdm
-colorlog==6.9.0
-    # via rapidocr
 comtypes==1.4.10
     # via pycaw
 cryptography==43.0.3
@@ -39,7 +37,7 @@ gitdb==4.0.12
 gitpython==3.1.44
     # via ok-script
 idna==3.10
-    # via requests
+    # via requests`
 mouse==0.7.1
     # via -r .\requirements.in
 msgpack==1.1.0
@@ -51,8 +49,6 @@ numpy==2.2.4
     #   openvino
     #   rapidocr
     #   shapely
-ok-script==0.0.575
-    # via -r .\requirements.in
 omegaconf==2.3.0
     # via rapidocr
 opencv-python==4.11.0.86
@@ -107,11 +103,12 @@ pywin32==310
     # via
     #   ok-script
     #   pysidesix-frameless-window
+    #   wmi
 pyyaml==6.0.2
     # via
     #   omegaconf
     #   rapidocr
-rapidocr==3.1.1
+rapidocr==2.0.6
     # via -r .\requirements.in
 requests==2.32.3
     # via
