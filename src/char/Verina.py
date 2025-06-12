@@ -42,10 +42,10 @@ class Verina(Healer):
             result = self.expectation_con(extra=0.0625)
             self.logger.info(f'expectation_con {result}')
             if result >= 1:
-                self.task.send_key('SPACE')
-                self.sleep(0.15)
                 start = time.time()
                 while time.time() - start < 1.2:
+                    self.task.send_key('SPACE', interval=0.1)
+                    self.sleep(0.01)
                     self.task.click(interval=0.1)
                     if self.is_con_full():
                         break
