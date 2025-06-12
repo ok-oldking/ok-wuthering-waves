@@ -49,6 +49,7 @@ class Verina(Healer):
                     self.task.click(interval=0.1)
                     if self.is_con_full():
                         break
+                    self.sleep(0.01)
                 else:
                     self.sleep(0.1)
         self.switch_next_char()

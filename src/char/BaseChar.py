@@ -418,12 +418,13 @@ class BaseChar:
         self._echo_available = False
         self._resonance_available = False
 
-    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0, timeout=5):
+    def click_liberation(self, con_less_than=-1, pre_click=False, send_click=False, wait_if_cd_ready=0, timeout=5):
         """尝试点击并释放共鸣解放。
 
         Args:
             con_less_than (float, optional): 仅当协奏值小于此值时释放。默认为 -1 (不检查)。
-            send_click (bool, optional): 释放前是否发送普通点击。默认为 False。
+            pre_click (bool, optional): 进入动画前是否发送普通点击。默认为 False。
+            send_click (bool, optional): 进入动画后是否发送普通点击。默认为 False。
             wait_if_cd_ready (float, optional): 如果技能冷却即将完成, 等待多少秒。默认为 0。
             timeout (int, optional): 操作超时时间 (秒)。默认为 5。
 
@@ -440,11 +441,13 @@ class BaseChar:
         while time.time() - start < wait_if_cd_ready and not self.liberation_available() and not self.has_cd(
                 'liberation'):
             self.logger.debug(f'click_liberation wait ready {wait_if_cd_ready}')
-            if send_click:
+            if pre_click:
                 self.click(interval=0.1)
             self.task.next_frame()
         while self.liberation_available():  # clicked and still in team wait for animation
             self.logger.debug(f'click_liberation liberation_available click')
+            if pre_click:
+                self.click(interval=0.1)
             now = time.time()
             if now - last_click > 0.1:
                 self.send_liberation_key()
@@ -455,7 +458,13 @@ class BaseChar:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
         if clicked:
-            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4):
+            kwargs = {
+                'condition': lambda: not self.task.in_team()[0],
+                'time_out': 0.4
+            }
+            if pre_click:
+                kwargs['post_action'] = self.click_with_interval
+            if self.task.wait_until(**kwargs):
                 self.task.in_liberation = True
                 self.logger.debug(f'not in_team successfully casted liberation')
             else:
@@ -695,7 +704,7 @@ class BaseChar:
         while self.time_elapsed_accounting_for_freeze(self.last_perform) < 1.1:
             self.task.click(interval=0.1)
 
-    def continues_normal_attack(self, duration, interval=0.1, click_resonance_if_ready_and_return=False,
+    def continues_normal_attack(self, duration, interval=0.1, after_sleep=0, click_resonance_if_ready_and_return=False,
                                 until_con_full=False):
         """持续进行普通攻击一段时间。
 
@@ -711,7 +720,7 @@ class BaseChar:
                 return self.click_resonance()
             if until_con_full and self.is_con_full():
                 return
-            self.task.click(interval=interval)
+            self.task.click(interval=interval, after_sleep=after_sleep)
 
     def continues_click(self, key, duration, interval=0.1):
         """持续发送指定按键一段时间。
