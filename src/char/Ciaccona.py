@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from ok import color_range_to_bound
 from src.char.BaseChar import BaseChar, Priority
+from src.char.Cartethyia import Cartethyia
 
 
 class Ciaccona(BaseChar):
@@ -11,6 +12,7 @@ class Ciaccona(BaseChar):
         super().__init__(*args, **kwargs)
         self.attribute = 0
         self.in_liberation = False
+        self.cartethyia = None
 
     def skip_combat_check(self):
         return self.time_elapsed_accounting_for_freeze(self.last_liberation) < 2
@@ -18,6 +20,7 @@ class Ciaccona(BaseChar):
     def reset_state(self):
         super().reset_state()
         self.attribute = 0
+        self.cartethyia = None
 
     def do_perform(self):
         self.in_liberation = False
@@ -30,30 +33,23 @@ class Ciaccona(BaseChar):
             self.decide_teammate()
         if self.has_intro:
             self.continues_normal_attack(0.8)
-            forte = self.judge_forte()
-            if forte < 3:
+            if not self.need_fast_perform():
                 self.continues_normal_attack(0.7)
-                forte += 1
-            else:
-                jump = False
-        else:
-            forte = self.judge_forte()
         self.click_echo()
-        if not self.has_intro and not self.need_fast_perform() and forte < 3:
-            self.click_jump_with_click(0.2)
-            self.continues_normal_attack(1.4)
-            forte += 1
+        if not self.has_intro and not self.need_fast_perform() and not self.is_forte_full():
+            self.click_jump_with_click(0.4)
+            self.continues_normal_attack(1.2)
         if self.click_resonance()[0]:
             jump = False
             wait = True     
-        if self.is_forte_full() or forte == 3:
+        if self.judge_forte() >= 3:
             if jump:
-                self.task.send_key(key='SPACE')
-            self.heavy_attack(0.8)
+                self.continues_click(key='SPACE', duration=0.2)
+            self.heavy_attack(0.7)
             wait = True
         if self.liberation_available(): 
             if wait:
-                self.sleep(0.3)
+                self.sleep(0.4)
             if self.click_liberation():
                 self.in_liberation = True
                 if self.attribute == 2:
@@ -62,6 +58,10 @@ class Ciaccona(BaseChar):
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if self.attribute == 2 and self.in_liberation and self.time_elapsed_accounting_for_freeze(self.last_liberation) < 20:
+            return Priority.MIN
+        if self.attribute == 3:
+            self.logger.debug(f'ciaccona cond: {self.cartethyia.is_cartethyia}')
+        if self.attribute == 3 and self.in_liberation and (self.time_elapsed_accounting_for_freeze(self.last_liberation) < 8 or not self.cartethyia.is_cartethyia):
             return Priority.MIN
         return super().do_get_switch_priority(current_char, has_intro)
 
@@ -98,6 +98,11 @@ class Ciaccona(BaseChar):
         from src.char.Zani import Zani
         for i, char in enumerate(self.task.chars):
             self.logger.debug(f'ciaccona teammate char: {char.char_name}')
+            if isinstance(char, (Cartethyia)):
+                self.logger.debug('ciaccona set attribute: wind dot')
+                self.cartethyia = char
+                self.attribute = 3
+                return
             if isinstance(char, (Phoebe, Zani)):
                 self.logger.debug('ciaccona set attribute: light dot')
                 self.attribute = 2
