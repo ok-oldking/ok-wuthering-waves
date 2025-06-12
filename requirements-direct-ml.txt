@@ -121,7 +121,7 @@ pyyaml==6.0.2
     # via
     #   omegaconf
     #   rapidocr
-rapidocr==3.1.1
+rapidocr==2.1.0
     # via -r .\requirements-dml.in
 requests==2.32.3
     # via
