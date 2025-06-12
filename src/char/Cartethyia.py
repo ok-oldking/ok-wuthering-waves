@@ -16,12 +16,12 @@ class Cartethyia(BaseChar):
     def do_perform(self):
         if self.has_intro:
             self.continues_normal_attack(1.2)
+        else:
+            self.click_echo()
         if self.is_small():
             if self.click_liberation():
                 self.manifest_time = time.time() if self.manifest_time < 0 else self.manifest_time
         if self.click_resonance()[0]:
-            pass
-        elif self.is_small() and self.click_echo():
             pass
         else:
             start = time.time()
