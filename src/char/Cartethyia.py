@@ -1,3 +1,5 @@
+import time
+
 from src.char.BaseChar import BaseChar, Priority
 
 
@@ -9,12 +11,17 @@ class Cartethyia(BaseChar):
             self.click_liberation()
         if self.click_resonance()[0]:
             pass
-        elif self.click_echo():
+        elif self.is_small() and self.click_echo():
             pass
         else:
-            self.continues_normal_attack(1.6)
-        if self.try_lib_big():
-            self.click_resonance()
+            start = time.time()
+            time_out = 1.1 if self.is_small() else 1.6
+            while time.time() - start < time_out:
+                if self.try_lib_big():
+                    return self.switch_next_char()
+                self.click(interval=0.15)
+                self.sleep(0.05)
+        self.try_lib_big()
         self.switch_next_char()
 
     def is_small(self):
