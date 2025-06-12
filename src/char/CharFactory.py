@@ -5,6 +5,7 @@ from src.char.Calcharo import Calcharo
 from src.char.Camellya import Camellya
 from src.char.Cantarella import Cantarella
 from src.char.Carlotta import Carlotta
+from src.char.Cartethyia import Cartethyia
 from src.char.Changli import Changli
 from src.char.CharSkillButton import is_float
 from src.char.Chixia import Chixia
@@ -44,6 +45,7 @@ char_dict = {
     'char_jinhsi2': {'cls': Jinhsi, 'res_cd': 3, 'echo_cd': 25, 'ring_index': Elements.SPECTRO},
     'char_yuanwu': {'cls': Yuanwu, 'res_cd': 3, 'echo_cd': 25, 'ring_index': Elements.ELECTRIC},
     'chang_changli': {'cls': Changli, 'res_cd': 12, 'echo_cd': 25, 'ring_index': Elements.FIRE},
+    'char_changli2': {'cls': Changli, 'res_cd': 12, 'echo_cd': 25, 'ring_index': Elements.FIRE},
     'char_chixia': {'cls': Chixia, 'res_cd': 9, 'echo_cd': 25, 'ring_index': Elements.FIRE},
     'char_danjin': {'cls': Danjin, 'res_cd': 9999999, 'echo_cd': 25, 'ring_index': Elements.HAVOC},
     'char_baizhi': {'cls': Baizhi, 'res_cd': 16, 'echo_cd': 25, 'ring_index': Elements.ICE},
@@ -55,6 +57,7 @@ char_dict = {
     'char_camellya': {'cls': Camellya, 'res_cd': 4, 'echo_cd': 25, 'ring_index': Elements.HAVOC},
     'char_youhu': {'cls': Youhu, 'res_cd': 4, 'echo_cd': 25, 'ring_index': Elements.ICE},
     'char_carlotta': {'cls': Carlotta, 'res_cd': 10, 'echo_cd': 25, 'ring_index': Elements.ICE},
+    'char_carlotta2': {'cls': Carlotta, 'res_cd': 10, 'echo_cd': 25, 'ring_index': Elements.ICE},
     'char_roccia': {'cls': Roccia, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd': 20, 'ring_index': Elements.HAVOC},
     'char_phoebe': {'cls': Phoebe, 'res_cd': 12, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.SPECTRO},
     'char_brant': {'cls': Brant, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 24, 'ring_index': Elements.FIRE},
@@ -62,6 +65,8 @@ char_dict = {
                         'ring_index': Elements.HAVOC},
     'char_zani': {'cls': Zani, 'res_cd': 14, 'echo_cd': 25, 'ring_index': Elements.SPECTRO},
     'char_ciaccona': {'cls': Ciaccona, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd': 20, 'ring_index': Elements.WIND},
+    'char_cartethyia': {'cls': Cartethyia, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd': 20,
+                        'ring_index': Elements.WIND},
 }
 
 char_names = char_dict.keys()
