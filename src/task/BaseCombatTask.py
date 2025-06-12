@@ -87,6 +87,8 @@ class BaseCombatTask(CombatCheck):
         Returns:
             float: 扣除冻结后实际经过的时间 (秒)。
         """
+        if start < 0:
+            return 10000
         to_minus = 0
         for freeze_start, duration, freeze_time in self.freeze_durations:
             if start < freeze_start:

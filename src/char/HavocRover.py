@@ -120,3 +120,21 @@ class HavocRover(BaseChar):
         res = self.click_resonance(send_click=True)[0]
         if not (liber and res):
             self.continues_normal_attack(1)
+
+    def do_fast_perform(self):
+        if self.ring_index == Elements.WIND:
+            self.fast_perform_wind_routine()
+        else:
+            self.do_perform()
+            return
+        self.switch_next_char()
+
+    def fast_perform_wind_routine(self):
+        if self.has_intro:
+            self.continues_normal_attack(0.5, interval=0.15)
+            return
+        att_time = 1 - (time.time() - self.last_perform)
+        if att_time > 0:
+            self.continues_normal_attack(att_time)
+        if self.is_forte_full():
+            self.send_resonance_key()
