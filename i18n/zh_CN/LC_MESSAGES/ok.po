@@ -454,7 +454,7 @@ msgid "Dreamless"
 msgstr "无妄者"
 
 msgid "Farm selected Tacet Suppression until out of stamina, will use the backup stamina, you need to be able to teleport from the menu(F2)"
-msgstr "刷选定无音区知道没体力(包括后备体力), 需要可传送"
+msgstr "刷选定无音区直到没体力(包括后备体力), 需要可传送"
 
 msgid "Login, claim monthly card, farm echo, and claim daily reward"
 msgstr "启动游戏, 登录, 领月卡, 刷声骸, 领日常任务奖励, 领邮件"
