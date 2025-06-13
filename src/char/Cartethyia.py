@@ -20,6 +20,7 @@ class Cartethyia(BaseChar):
             self.click_echo()
         if self.is_small():
             if self.click_liberation():
+                self.is_cartethyia = False
                 self.manifest_time = time.time() if self.manifest_time < 0 else self.manifest_time
         if self.click_resonance()[0]:
             pass
