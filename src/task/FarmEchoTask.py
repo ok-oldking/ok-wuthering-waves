@@ -127,7 +127,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.run_until(self.in_combat, 'w', time_out=12, running=True)
 
     def teleport_to_nearest_boss(self):
+        self.map_zoomed = False
         self.zoom_map(esc=False)
+        self.wait_until(lambda: self.in_team_and_world, raise_if_not_found=False, time_out=5)
         boxes = self.find_feature(['boss_no_check_mark', 'boss_check_mark'], box=self.box_of_screen(0.3, 0.3, 0.7, 0.7),
                                   threshold=0.6)
         self.log_info(f'teleport_to_nearest_boss {boxes}')
