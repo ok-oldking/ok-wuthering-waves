@@ -18,7 +18,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             'Which Tacet Suppression to Farm': 1  # starts with 1
         }
         self.row_per_page = 5
-        self.total_number = 11
+        self.total_number = 12
         self.target_enemy_time_out = 8
         default_config.update(self.default_config)
         self.config_description = {
@@ -27,9 +27,10 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.default_config = default_config
         self.door_walk_method = {  # starts with 0
             0: [],
-            1: [["a", 0.3]],
-            2: [["d", 0.6]],
-            3: [["a", 1.5], ["w", 3], ["a", 2.5]],
+            1: [],
+            2: [["a", 0.3]],
+            3: [["d", 0.6]],
+            4: [["a", 1.5], ["w", 3], ["a", 2.5]],
         }
 
     def run(self):
@@ -91,10 +92,10 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         if index >= self.row_per_page:
             if index >= self.row_per_page * 2:  # page 3
                 self.click_relative(0.98, 0.86)
-                index -= self.row_per_page + 1  # only 1 in last page
+                index -= self.row_per_page + 2  # only 1 in last page
             else:
                 index -= self.row_per_page
-                self.click_relative(0.98, 0.8)
+                self.click_relative(0.98, 0.74)
             self.log_info(f'teleport_to_tacet scroll down a page new index: {index}')
         x = 0.88
         height = (0.85 - 0.28) / 4
