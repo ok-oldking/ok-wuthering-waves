@@ -630,11 +630,7 @@ class BaseWWTask(BaseTask):
 
     def wait_login(self):
         if not self._logged_in:
-            if login := self.ocr(0.3, 0.3, 0.7, 0.7, match="登录"):
-                self.click(login)
-                self.log_info('点击登录按钮!')
-                return False
-            if self.find_one('login_account', threshold=0.7):
+            if self.find_one('login_account', vertical_variance=0.1, threshold=0.7):
                 self.wait_until(lambda: self.find_one('login_account', threshold=0.7) is None,
                                 pre_action=lambda: self.click_relative(0.5, 0.9, after_sleep=3), time_out=30)
                 self.wait_until(lambda: self.find_one('monthly_card', threshold=0.7) or self.in_team_and_world(),
@@ -645,6 +641,10 @@ class BaseWWTask(BaseTask):
                 self._logged_in = True
                 self.sleep(3)
                 return True
+            if login := self.ocr(0.3, 0.3, 0.7, 0.7, match="登录"):
+                self.click(login)
+                self.log_info('点击登录按钮!')
+                return False
 
     def in_team_and_world(self):
         return self.in_team()[
