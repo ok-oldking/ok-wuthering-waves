@@ -423,7 +423,7 @@ class BaseChar:
 
         Args:
             con_less_than (float, optional): 仅当协奏值小于此值时释放。默认为 -1 (不检查)。
-            send_click (bool, optional): 释放前是否发送普通点击。默认为 False。
+            send_click (bool, optional): 进入动画后是否发送普通点击。默认为 False。
             wait_if_cd_ready (float, optional): 如果技能冷却即将完成, 等待多少秒。默认为 0。
             timeout (int, optional): 操作超时时间 (秒)。默认为 5。
 
@@ -445,6 +445,8 @@ class BaseChar:
             self.task.next_frame()
         while self.liberation_available():  # clicked and still in team wait for animation
             self.logger.debug(f'click_liberation liberation_available click')
+            if send_click:
+                self.click(interval=0.1)
             now = time.time()
             if now - last_click > 0.1:
                 self.send_liberation_key()
@@ -455,7 +457,8 @@ class BaseChar:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
         if clicked:
-            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4):
+            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4,
+                                    post_action=self.click_with_interval):
                 self.task.in_liberation = True
                 self.logger.debug(f'not in_team successfully casted liberation')
             else:
@@ -695,7 +698,7 @@ class BaseChar:
         while self.time_elapsed_accounting_for_freeze(self.last_perform) < 1.1:
             self.task.click(interval=0.1)
 
-    def continues_normal_attack(self, duration, interval=0.1, click_resonance_if_ready_and_return=False,
+    def continues_normal_attack(self, duration, interval=0.1, after_sleep=0, click_resonance_if_ready_and_return=False,
                                 until_con_full=False):
         """持续进行普通攻击一段时间。
 
@@ -711,7 +714,7 @@ class BaseChar:
                 return self.click_resonance()
             if until_con_full and self.is_con_full():
                 return
-            self.task.click(interval=interval)
+            self.task.click(interval=interval, after_sleep=after_sleep)
 
     def continues_click(self, key, duration, interval=0.1):
         """持续发送指定按键一段时间。
@@ -796,15 +799,15 @@ class BaseChar:
                 time = char.last_switch_time
                 outro = char.char_name
         self.logger.info(f'erned outro from {outro}')
-        return outro 
-        
+        return outro
+
     def is_first_engage(self):
         """判断角色是否为触发战斗时的登场角色。"""
         result = (0 <= self.last_perform - self.task.combat_start < 0.1)
         if result:
             self.logger.info(f'first engage')
         return result
-    
+
     # def count_rectangle_forte(self, left=0.42, right=0.57):
     # """计算矩形共鸣回路充能格数 (已注释)。"""
     #     # Perform image cropping once, as it's independent of saturation ranges
