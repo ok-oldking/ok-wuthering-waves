@@ -418,12 +418,11 @@ class BaseChar:
         self._echo_available = False
         self._resonance_available = False
 
-    def click_liberation(self, con_less_than=-1, pre_click=False, send_click=False, wait_if_cd_ready=0, timeout=5):
+    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0, timeout=5):
         """尝试点击并释放共鸣解放。
 
         Args:
             con_less_than (float, optional): 仅当协奏值小于此值时释放。默认为 -1 (不检查)。
-            pre_click (bool, optional): 进入动画前是否发送普通点击。默认为 False。
             send_click (bool, optional): 进入动画后是否发送普通点击。默认为 False。
             wait_if_cd_ready (float, optional): 如果技能冷却即将完成, 等待多少秒。默认为 0。
             timeout (int, optional): 操作超时时间 (秒)。默认为 5。
@@ -441,12 +440,12 @@ class BaseChar:
         while time.time() - start < wait_if_cd_ready and not self.liberation_available() and not self.has_cd(
                 'liberation'):
             self.logger.debug(f'click_liberation wait ready {wait_if_cd_ready}')
-            if pre_click:
+            if send_click:
                 self.click(interval=0.1)
             self.task.next_frame()
         while self.liberation_available():  # clicked and still in team wait for animation
             self.logger.debug(f'click_liberation liberation_available click')
-            if pre_click:
+            if send_click:
                 self.click(interval=0.1)
             now = time.time()
             if now - last_click > 0.1:
@@ -458,13 +457,8 @@ class BaseChar:
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
         if clicked:
-            kwargs = {
-                'condition': lambda: not self.task.in_team()[0],
-                'time_out': 0.4
-            }
-            if pre_click:
-                kwargs['post_action'] = self.click_with_interval
-            if self.task.wait_until(**kwargs):
+            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4,
+                                    post_action=self.click_with_interval):
                 self.task.in_liberation = True
                 self.logger.debug(f'not in_team successfully casted liberation')
             else:
@@ -805,15 +799,15 @@ class BaseChar:
                 time = char.last_switch_time
                 outro = char.char_name
         self.logger.info(f'erned outro from {outro}')
-        return outro 
-        
+        return outro
+
     def is_first_engage(self):
         """判断角色是否为触发战斗时的登场角色。"""
         result = (0 <= self.last_perform - self.task.combat_start < 0.1)
         if result:
             self.logger.info(f'first engage')
         return result
-    
+
     # def count_rectangle_forte(self, left=0.42, right=0.57):
     # """计算矩形共鸣回路充能格数 (已注释)。"""
     #     # Perform image cropping once, as it's independent of saturation ranges
