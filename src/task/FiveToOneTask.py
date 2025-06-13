@@ -20,8 +20,8 @@ class FiveToOneTask(BaseCombatTask):
         self.sets = [
             '凝夜白霜', '熔山裂谷', '彻空冥雷', '啸谷长风', '浮星祛暗', '沉日劫明', '隐世回光', '轻云出月', '不绝余音',
             '凌冽决断之心',
-            '此间永驻之光', '幽夜隐匿之帷', '高天共奏之曲', '无惧浪涛之勇', '流云逝尽之空']
-        # , '愿戴荣光之旅',   '奔狼燎原之焰',
+            '此间永驻之光', '幽夜隐匿之帷', '高天共奏之曲', '无惧浪涛之勇', '流云逝尽之空', '愿戴荣光之旅',
+            '奔狼燎原之焰', ]
 
         self.main_stats = ["攻击力百分比", "生命值百分比", "防御力百分比", "暴击率", "暴击伤害", "共鸣效率",
                            "冷凝伤害加成",
@@ -51,7 +51,8 @@ class FiveToOneTask(BaseCombatTask):
         self.log_info("开始任务")
         self.ensure_main()
         self.log_info("在主页")
-        self.back()
+        self.sleep(0.1)
+        self.open_esc_menu()
         self.wait_click_ocr(match="数据坞", box="right", raise_if_not_found=True, settle_time=0.2)
         self.wait_ocr(match="数据坞", box="top_left", raise_if_not_found=True, settle_time=0.2)
         self.click_relative(0.04, 0.56, after_sleep=0.5)
@@ -83,7 +84,9 @@ class FiveToOneTask(BaseCombatTask):
         if step == 1:
             self.click_relative(0.71, 0.71, after_sleep=0.01)  # 4c
         if step == 1:
-            self.click_relative(0.895, 0.57, after_sleep=0.5)  # 滚动
+            self.click_relative(0.895, 0.55, after_sleep=0.5)  # 滚动
+            # self.log_debug('wait click set {}'.format(set_name))
+            # self.ocr(box=name_box, threshold=0.1, log=True)
             self.wait_click_ocr(box=name_box, match=re.compile(set_name), raise_if_not_found=True,
                                 after_sleep=0.2)
             self.wait_feature("merge_echo_check", box=name_box, raise_if_not_found=True)

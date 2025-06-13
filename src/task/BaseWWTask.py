@@ -873,6 +873,13 @@ class BaseWWTask(BaseTask):
         self.wait_in_team_and_world(time_out=120)
         self.sleep(1)
 
+    def open_esc_menu(self):
+        self.send_key_down('alt')
+        self.sleep(0.05)
+        self.click_relative(0.95, 0.04)
+        self.send_key_up('alt')
+        self.sleep(0.5)
+
     def openF2Book(self, feature="gray_book_all_monsters"):
         self.sleep(1)
         self.log_info('click f2 to open the book')

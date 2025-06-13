@@ -106,7 +106,6 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         current_direction = None
         current_adjust = None
         self.center_camera()
-
         while time.time() - start_time < time_out:
             self.sleep(0.01)
             if self.in_combat():
@@ -114,7 +113,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             angle = self.get_mini_map_turn_angle('boss_check_mark_minimap', threshold=threshold, x_offset=-1,
                                                  y_offset=1)
             if angle is None:
-                continue
+                angle = 0
             current_direction, current_adjust, should_continue = self._navigate_based_on_angle(
                 angle, current_direction, current_adjust
             )
@@ -123,7 +122,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
         self._stop_movement(current_direction)
         if not self.in_combat():
-            raise Exception("Can't go to next combat!")
+            self.teleport_to_nearest_boss()
+            self.sleep(0.5)
+            self.run_until(self.in_combat, 'w', time_out=12, running=True)
 
     def teleport_to_nearest_boss(self):
         self.zoom_map(esc=False)
