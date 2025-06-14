@@ -18,7 +18,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.default_config.update({
             'Repeat Farm Count': 10000,
             'Combat Wait Time': 0,
-            'Echo Pickup Method': 'Yolo',
+            'Echo Pickup Method': 'Walk',
         })
         self.config_description.update({
             'Combat Wait Time': 'Wait time before each combat(seconds), set 5 if farming Sentry Construct',

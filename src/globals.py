@@ -20,14 +20,9 @@ class Globals(QObject):
     @property
     def yolo_model(self):
         if self._yolo_model is None:
-            if og.config.get("profile_name") == "direct-ml":
-                from src.OnnxYolo8Detect import OnnxYolo8Detect
-                self._yolo_model = OnnxYolo8Detect(
-                    weights=get_path_relative_to_exe(os.path.join("assets", "echo_model", "echo.onnx")))
-            else:
-                from src.OpenVinoYolo8Detect import OpenVinoYolo8Detect
-                self._yolo_model = OpenVinoYolo8Detect(
-                    weights=get_path_relative_to_exe(os.path.join("assets", "echo_model", "echo.onnx")))
+            from src.OnnxYolo8Detect import OnnxYolo8Detect
+            self._yolo_model = OnnxYolo8Detect(
+                weights=get_path_relative_to_exe(os.path.join("assets", "echo_model", "echo.onnx")))
         return self._yolo_model
 
     def yolo_detect(self, image, threshold=0.6, label=-1):

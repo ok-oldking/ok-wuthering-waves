@@ -11,6 +11,6 @@ requests==2.32.3
 pip-tools
 pydirectinput==1.0.4
 mouse==0.7.1
-rapidocr
-openvino
-
+ok-script==0.0.578
+onnxocr-ppocrv4
+onnxruntime-directml

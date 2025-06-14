@@ -70,7 +70,7 @@ class Roccia(BaseChar):
 
     def is_color_ok(self, box):
         purple_percent = self.task.calculate_color_percentage(forte_purple_color, self.task.get_box_by_name(box))
-        self.logger.debug(f'purple percent: {box} {purple_percent}')
+        # self.logger.debug(f'purple percent: {box} {purple_percent}')
         if purple_percent > 0.1:
             return True
 

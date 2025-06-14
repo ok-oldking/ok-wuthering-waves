@@ -75,13 +75,7 @@ config = {
     'gui_icon': 'icon.png',
     'global_configs': [key_config_option, pick_echo_config_option, monthly_card_config_option],
     'ocr': {
-        'lib': 'rapidocr',
-        'target_height': 1080,
-        'params': {
-            'Global.with_openvino': True,
-            'EngineConfig.openvino.inference_num_threads': 1,
-            'Rec.rec_keys_path': get_path_relative_to_exe(os.path.join('assets', 'ppocr_keys_v1.txt')),
-        }
+        'lib': 'onnxocr'
     },
     'my_app': ['src.globals', 'Globals'],
     'start_timeout': 120,  # default 60

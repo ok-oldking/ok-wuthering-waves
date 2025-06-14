@@ -5,10 +5,8 @@
 #    pip-compile '.\requirements.in'
 #
 
-ok-script==0.0.575
+ok-script==0.0.578
 
-antlr4-python3-runtime==4.9.3
-    # via omegaconf
 build==1.2.2.post1
     # via pip-tools
 certifi==2025.1.31
@@ -23,7 +21,8 @@ colorama==0.4.6
     # via
     #   build
     #   click
-    #   tqdm
+coloredlogs==15.0.1
+    # via onnxruntime-directml
 comtypes==1.4.10
     # via pycaw
 cryptography==43.0.3
@@ -32,41 +31,45 @@ darkdetect==0.8.0
     # via
     #   ok-script
     #   pyside6-fluent-widgets
+flatbuffers==25.2.10
+    # via onnxruntime-directml
 gitdb==4.0.12
     # via gitpython
 gitpython==3.1.44
     # via ok-script
+humanfriendly==10.0
+    # via coloredlogs
 idna==3.10
-    # via requests`
+    # via requests
 mouse==0.7.1
     # via -r .\requirements.in
+mpmath==1.3.0
+    # via sympy
 msgpack==1.1.0
     # via -r .\requirements.in
 numpy==2.2.4
     # via
     #   -r .\requirements.in
+    #   onnxruntime-directml
     #   opencv-python
-    #   openvino
-    #   rapidocr
     #   shapely
-omegaconf==2.3.0
-    # via rapidocr
-opencv-python==4.11.0.86
-    # via
-    #   -r .\requirements.in
-    #   rapidocr
-openvino==2025.1.0
     # via -r .\requirements.in
-openvino-telemetry==2025.1.0
-    # via openvino
+onnxocr-ppocrv4==0.0.2
+    # via -r .\requirements.in
+onnxruntime-directml==1.22.0
+    # via -r .\requirements.in
+opencv-python==4.11.0.86
+    # via -r .\requirements.in
 packaging==24.2
     # via
     #   build
-    #   openvino
+    #   onnxruntime-directml
 pillow==11.1.0
-    # via rapidocr
+    # via onnxocr-ppocrv4
 pip-tools==7.4.1
     # via -r .\requirements.in
+protobuf==6.31.1
+    # via onnxruntime-directml
 psutil==6.1.0
     # via
     #   -r .\requirements.in
@@ -75,7 +78,7 @@ psutil==6.1.0
 pycaw==20240210
     # via -r .\requirements.in
 pyclipper==1.3.0.post6
-    # via rapidocr
+    # via onnxocr-ppocrv4
 pycparser==2.22
     # via cffi
 pydirectinput==1.0.4
@@ -84,6 +87,8 @@ pyproject-hooks==1.2.0
     # via
     #   build
     #   pip-tools
+pyreadline3==3.5.4
+    # via humanfriendly
 pyside6==6.8.2.1
     # via pyside6-fluent-widgets
 pyside6-addons==6.8.2.1
@@ -103,31 +108,21 @@ pywin32==310
     # via
     #   ok-script
     #   pysidesix-frameless-window
-    #   wmi
-pyyaml==6.0.2
-    # via
-    #   omegaconf
-    #   rapidocr
-rapidocr==2.0.6
-    # via -r .\requirements.in
 requests==2.32.3
     # via
     #   -r .\requirements.in
     #   ok-script
-    #   rapidocr
 shapely==2.0.7
-    # via rapidocr
+    # via onnxocr-ppocrv4
 shiboken6==6.8.2.1
     # via
     #   pyside6
     #   pyside6-addons
     #   pyside6-essentials
-six==1.17.0
-    # via rapidocr
 smmap==5.0.2
     # via gitdb
-tqdm==4.67.1
-    # via rapidocr
+sympy==1.14.0
+    # via onnxruntime-directml
 typing-extensions==4.12.2
     # via
     #   -r .\requirements.in
