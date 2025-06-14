@@ -36,6 +36,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.incr_drop(self.pick_f(handle_claim=True))
         if not self._in_realm and time.time() - self._farm_start_time < 20:
             self._in_realm = self.in_realm()
+            self.log_info(f'in_realm: {self._in_realm}')
         return True
 
     def run(self):
@@ -54,6 +55,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
     def do_run(self):
         count = 0
         self._in_realm = self.in_realm()
+        self.log_info(f'in_realm: {self._in_realm}')
         self._farm_start_time = time.time()
         threshold = 0.25 if self._in_realm else 0.65
         time_out = 12 if self._in_realm else 4

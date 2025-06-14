@@ -329,8 +329,7 @@ class BaseWWTask(BaseTask):
         return 0
 
     def in_realm(self):
-        illusive_realm_exit = self.find_one('illusive_realm_exit', threshold=0.65)
-        return illusive_realm_exit is not None
+        return self.find_one('illusive_realm_exit', threshold=0.65)
 
     def in_illusive_realm(self):
         return self.find_one('new_realm_4') and self.in_realm() and self.find_one('illusive_realm_menu', threshold=0.6)
