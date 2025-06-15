@@ -74,8 +74,7 @@ class BaseWWTask(BaseTask):
             return True, None
 
     def absorb_echo_text(self, ignore_config=False):
-        if (self.pick_echo_config.get('Use OCR') or ignore_config) and (
-                self.game_lang == 'zh_CN' or self.game_lang == 'en_US'):
+        if self.game_lang == 'zh_CN' or self.game_lang == 'en_US':
             return re.compile(r'(吸收|Absorb)')
         else:
             return None

@@ -141,7 +141,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
     def scroll_and_click_buttons(self):
         self.sleep(0.2)
-        while self.find_f_with_text() and not self.in_combat():
+        start = time.time()
+        while self.find_f_with_text() and not self.in_combat() and time.time() - start < 5:
             self.log_info('scroll_and_click_buttons')
             self.scroll_relative(0.5, 0.5, 1)
             self.sleep(0.2)
