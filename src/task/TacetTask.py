@@ -41,6 +41,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
     def farm_tacet(self):
         total_used = 0
         while True:
+            self.sleep(1)
             gray_book_boss = self.openF2Book("gray_book_boss")
             self.click_box(gray_book_boss, after_sleep=1)
             current, back_up = self.get_stamina()
@@ -65,6 +66,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             else:
                 self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
             self.combat_once()
+            self.sleep(3)
             self.walk_to_treasure()
             used, remaining_total, remaining_current, used_back_up = self.ensure_stamina(60, 120)
             total_used += used
