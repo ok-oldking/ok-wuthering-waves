@@ -678,9 +678,9 @@ class BaseChar:
         Returns:
             bool: 如果可用则返回 True。
         """
-        if self._liberation_available:
-            return True
         if self.is_current_char:
+            if self._liberation_available and not self.has_cd('liberation'):
+                return True
             snap = self.current_liberation()
             if snap == 0:
                 return False
