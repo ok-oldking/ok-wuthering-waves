@@ -336,6 +336,8 @@ class BaseWWTask(BaseTask):
 
     def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0, target_text=None,
                      cancel=True):
+        #视角朝前
+        self.middle_click()
         logger.info(f'walk_until_f direction {direction} target_text: {target_text}')
         if not self.find_f_with_text(target_text=target_text):
             if backward_time > 0:
