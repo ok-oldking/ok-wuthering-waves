@@ -130,13 +130,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
     def teleport_to_nearest_boss(self):
         self.send_key('m', after_sleep=2)
-        boxes = self.find_feature(['boss_no_check_mark', 'boss_check_mark'], box=self.box_of_screen(0.3, 0.3, 0.7, 0.7),
-                                  threshold=0.6)
-        self.log_info(f'teleport_to_nearest_boss {boxes}')
-        if len(boxes) > 0:
-            center = self.box_of_screen(0.5, 0.5, 0.5, 0.5)
-            nearest_boss = center.find_closest_box('all', boxes)
-            self.click_box(nearest_boss)
+        box = self.find_best_match_in_box(self.box_of_screen(0.3, 0.3, 0.7, 0.7),
+                                          ['boss_no_check_mark', 'boss_check_mark'],
+                                          threshold=0.6)
+        self.log_info(f'teleport_to_nearest_boss {box}')
+        if box:
+            self.click_box(box)
             self.wait_click_travel()
             self.wait_in_team_and_world(time_out=30)
 
