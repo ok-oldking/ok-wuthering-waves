@@ -11,7 +11,7 @@ class Verina(Healer):
 
     def do_perform(self):
         if self.has_intro:
-            self.sleep(1.3)
+            self.heavy_attack(1.5)
             return self.switch_next_char()
         else:
             self.sleep(0.01)
@@ -24,7 +24,7 @@ class Verina(Healer):
         if do_con_full:
             self.logger.info('do con full')
             forte_num = self.judge_forte()
-            if self.expectation_con(forte_num) < 1 and not self.is_first_engage():
+            if forte_num < 4 and self.expectation_con(forte_num) < 1 and not self.is_first_engage():
                 start = time.time()
                 while time.time() - start < 1.4:
                     if self.expectation_con(forte_num) >= 1 or self.is_con_full():
@@ -55,11 +55,8 @@ class Verina(Healer):
         self.switch_next_char()
 
     def do_get_switch_priority(self, current_char: Healer, has_intro=False, target_low_con=False):
-        result = self.time_elapsed_accounting_for_freeze(self.last_outro_time)
-        if result < 15:
-            return Priority.NORMAL
-        elif result > 35 and self.resonance_available():
-            return Priority.SKILL_AVAILABLE + 15
+        if self.time_elapsed_accounting_for_freeze(self.last_outro_time) > 35:
+            return Priority.SKILL_AVAILABLE + 14
         return super().do_get_switch_priority(current_char, has_intro)
     
     def expectation_con(self, forte_num=None, extra=0):
@@ -101,17 +98,14 @@ class Verina(Healer):
             if height == 0 or width < 64 or not np.array_equal(np.unique(gray), [0, 255]):
                 return 0       
 
-            white_ratio = np.count_nonzero(gray == 255) / gray.size
             profile = np.sum(gray == 255, axis=0).astype(np.float32)
             profile -= np.mean(profile)
             n = np.abs(np.fft.fft(profile))
             amplitude = 0
-            frequncy = 0
             i = 1
             while i < width:
                 if n[i]> amplitude:
                     amplitude = n[i]
-                    frequncy = i
                 i+=1
             return (min_freq <= i <= max_freq) or amplitude >= min_amp
     
@@ -121,7 +115,7 @@ class Verina(Healer):
         image = cv2.inRange(cropped, lower_bound, upper_bound)
         
         forte = 0
-        height, width = image.shape
+        _, width = image.shape
         step = int(width / num)
         left = 0
         fail_count = 0
