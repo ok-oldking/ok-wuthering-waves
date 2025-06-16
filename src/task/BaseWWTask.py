@@ -337,6 +337,8 @@ class BaseWWTask(BaseTask):
                      cancel=True):
         logger.info(f'walk_until_f direction {direction} target_text: {target_text}')
         if not self.find_f_with_text(target_text=target_text):
+            #视角朝前
+            self.middle_click(after_sleep=0.2)
             if backward_time > 0:
                 if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, target_text=target_text):
                     logger.info('walk backward found f')
