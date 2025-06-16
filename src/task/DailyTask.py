@@ -62,7 +62,7 @@ class DailyTask(TacetTask):
                 self.click(0.87, 0.17, after_sleep=0.5)
             self.sleep(1)
 
-        total_points = int(self.ocr(0.19, 0.8, 0.26, 0.88, match=number_re)[0].name)
+        total_points = int(self.ocr(0.19, 0.8, 0.30, 0.93, match=number_re)[0].name)
         self.info_set('daily points', total_points)
         if total_points < 100:
             raise Exception("Can't complete daily task, may need to increase stamina manually!")
