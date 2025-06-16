@@ -340,11 +340,12 @@ class BaseWWTask(BaseTask):
             # 视角朝前
             self.middle_click(after_sleep=0.2)
             if backward_time > 0:
-                if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, target_text=target_text):
+                if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, target_text=target_text,
+                                            running=True):
                     logger.info('walk backward found f')
                     return True
             return self.send_key_and_wait_f(direction, raise_if_not_found, time_out,
-                                            target_text=target_text) and self.sleep(0.5)
+                                            target_text=target_text, running=True) and self.sleep(0.5)
         else:
             self.send_key('f')
             if cancel and self.handle_claim_button():
