@@ -335,11 +335,11 @@ class BaseWWTask(BaseTask):
         return self.find_one('new_realm_4') and self.in_realm() and self.find_one('illusive_realm_menu', threshold=0.6)
 
     def walk_until_f(self, direction='w', time_out=0, raise_if_not_found=True, backward_time=0, target_text=None,
-                     cancel=True):
-        #视角朝前
-        self.middle_click()
+                     cancel=True):        
         logger.info(f'walk_until_f direction {direction} target_text: {target_text}')
         if not self.find_f_with_text(target_text=target_text):
+            #视角朝前
+            self.middle_click(after_sleep=0.2)
             if backward_time > 0:
                 if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, target_text=target_text):
                     logger.info('walk backward found f')
