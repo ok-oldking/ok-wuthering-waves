@@ -34,6 +34,7 @@ class Cartethyia(BaseChar):
             if self.acquire_missing_buffs():
                 return self.switch_next_char()
             self.try_mid_air_attack()
+            self.check_combat()
             if self.click_liberation():
                 self.is_cartethyia = False
         else:
@@ -130,10 +131,7 @@ class Cartethyia(BaseChar):
         return self.is_cartethyia
     
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.is_cartethyia:
-            if self.liberation_available():
-                return Priority.SKILL_AVAILABLE + 14
-        else:
+        if not self.is_cartethyia:
             return Priority.MAX
         return super().do_get_switch_priority(current_char, has_intro)
 
@@ -168,7 +166,7 @@ class Cartethyia(BaseChar):
         if not self.buffs.get('sword2'):
             start = time.time()
             is_first_attempt = True
-            while time.time() - start < 2.4:
+            while time.time() - start < 2.5:
                 if self.task.find_one('forte_cartethyia_sword2', threshold=0.9):
                     break
                 if is_first_attempt and self.current_tool() < 0.1:
