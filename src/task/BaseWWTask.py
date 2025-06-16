@@ -337,7 +337,7 @@ class BaseWWTask(BaseTask):
                      cancel=True):
         logger.info(f'walk_until_f direction {direction} target_text: {target_text}')
         if not self.find_f_with_text(target_text=target_text):
-            #视角朝前
+            # 视角朝前
             self.middle_click(after_sleep=0.2)
             if backward_time > 0:
                 if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, target_text=target_text):
@@ -586,7 +586,7 @@ class BaseWWTask(BaseTask):
             self.send_key(direction, down_time=0.05, after_sleep=0.5)
         self.center_camera()
 
-    def walk_find_echo(self, backward_time=1, time_out=4):
+    def walk_find_echo(self, backward_time=1.2, time_out=3):
         if self.walk_until_f(time_out=time_out, backward_time=backward_time, target_text=self.absorb_echo_text(),
                              raise_if_not_found=False):  # find and pick echo
             logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
