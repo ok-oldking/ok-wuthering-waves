@@ -67,13 +67,19 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
     'Monthly Card Time': 'Your computer\'s local time when the monthly card will popup, hour in (1-24)'
 })
 
+cloud_config_option = ConfigOption('Cloud Config', {
+    'Color for Cloud Wuwa': False
+}, description='Setting for Cloud Wuwa', config_description={
+    'Color for Cloud Wuwa': 'Color in Cloud Wuwa may be unreal. Turn on for adjust the color setting'
+})
+
 config = {
     'debug': False,  # Optional, default: False
     'use_gui': True,
     'config_folder': 'configs',
     'screenshot_processor': make_bottom_right_black,
     'gui_icon': 'icon.png',
-    'global_configs': [key_config_option, pick_echo_config_option, monthly_card_config_option],
+    'global_configs': [key_config_option, pick_echo_config_option, monthly_card_config_option, cloud_config_option],
     'ocr': {
         'lib': 'onnxocr'
     },
