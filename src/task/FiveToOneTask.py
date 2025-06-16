@@ -72,7 +72,8 @@ class FiveToOneTask(BaseCombatTask):
 
     def merge_set(self, name_box, set_name, step):
         keeps = self.config.get(set_name, [])
-        if len(keeps) == 16:
+        self.log_info(f'keeps: {len(keeps)} set_name: {set_name} keep: {keeps}')
+        if len(keeps) == 13:
             self.log_info('保存所有, 跳过')
             return
         if step == 2 and "攻击力百分比" not in keeps:  # 4C攻击力
