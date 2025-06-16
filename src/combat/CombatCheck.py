@@ -30,6 +30,7 @@ class CombatCheck(BaseWWTask):
         self.target_enemy_time_out = 3
         self.combat_end_condition = None
         self._in_illusive = False
+        self.cload_config = self.get_global_config('Cloud Config')
 
     @property
     def in_liberation(self):
@@ -180,8 +181,11 @@ class CombatCheck(BaseWWTask):
         else:
             outer_box = 'box_target_enemy'
             inner_box = 'box_target_enemy_inner'
-        aim_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name(outer_box))
-        aim_inner_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name(inner_box))
+        color = aim_color
+        if self.cload_config.get('Cloud'):
+            color = cloud_aim_color
+        aim_percent = self.calculate_color_percentage(color, self.get_box_by_name(outer_box))
+        aim_inner_percent = self.calculate_color_percentage(color, self.get_box_by_name(inner_box))
         # logger.debug(f'box_target_enemy yellow percent {aim_percent} {aim_inner_percent}')
         if aim_percent - aim_inner_percent > 0.02:
             return True
