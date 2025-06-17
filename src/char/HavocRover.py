@@ -33,8 +33,7 @@ class HavocRover(BaseChar):
             self.continues_normal_attack(1)
         self.wait_down()
         self.aftertune_combo()
-        if self.echo_available():
-            self.click_echo(time_out=0.2)
+        self.click_echo(time_out=0.15)
         if self.is_forte_full():
             self.check_combat()
             if self.resonance_available() and self.click_resonance()[0]:
@@ -43,9 +42,7 @@ class HavocRover(BaseChar):
                 if not self.liberation_available():
                     return
         self.check_combat()
-        if self.liberation_available():
-            self.click_liberation()
-        else:
+        if not self.click_liberation(send_click=True):
             self.click_resonance()
 
     def aftertune_combo(self):
@@ -85,18 +82,16 @@ class HavocRover(BaseChar):
         self.continues_normal_attack(1)
         if self.click_resonance(send_click=True)[0]:
             return
-        if self.echo_available():
-            self.click_echo(time_out=0.1)
+        self.click_echo()
 
-    # TODO: 尚未支持其他效应转风蚀
     # TODO: 存在<逆势回击>导致轴长改变打不满两次<抃风儛润>的问题，应当可以用一链提供的buff使用find_one进行优化
     def perform_wind_routine(self):
         if self.has_intro:
-            self.continues_normal_attack(2, after_sleep=0.01)
+            self.continues_normal_attack(2, after_sleep=0.05)
             if self.liberation_available():
                 self.click_liberation(send_click=True)
             else:
-                self.continues_normal_attack(0.3, after_sleep=0.01)
+                self.wind_routine_wait_down()
             return
         if self.current_resonance() > 0.25:
             self.task.wait_until(lambda: self.current_resonance() < 0.23, post_action=self.click_with_interval,
@@ -104,16 +99,29 @@ class HavocRover(BaseChar):
             self.sleep(0.01)
         liber = False
         if self.resonance_available() and not self.is_forte_full():
-            if self.echo_available():
-                self.click_echo(time_out=0.1)
-            self.send_resonance_key()
-            self.continues_normal_attack(1.9, after_sleep=0.01)
+            self.click_echo()
+            start = time.time()
+            while time.time() - start < 0.5:
+                if self.current_resonance() > 0.25:
+                    break
+                self.send_resonance_key()
+                self.task.next_frame()
+            self.continues_normal_attack(1.74, after_sleep=0.05)
             liber = self.liberation_available()
             if not liber:
-                self.continues_normal_attack(0.3, after_sleep=0.01)
+                self.wind_routine_wait_down()
                 return
         if liber or self.liberation_available():
-            self.click_liberation(send_click=True)
+            if self.click_liberation(send_click=True):
+                self.sleep(0.03)
+        if self.is_forte_full():
+            self.send_resonance_key()
+
+    def wind_routine_wait_down(self):
+        self.continues_normal_attack(0.3, after_sleep=0.05)
+        self.task.wait_until(lambda: self.current_resonance() < 0.23, post_action=self.click_with_interval,
+                            time_out=0.7)
+        self.sleep(0.03)
         if self.is_forte_full():
             self.send_resonance_key()
 
@@ -121,8 +129,7 @@ class HavocRover(BaseChar):
         if self.has_intro:
             self.continues_normal_attack(self.intro_motion_freeze_duration + 0.2)
             self.wait_down()
-        if self.echo_available():
-            self.click_echo(time_out=0.2)
+        self.click_echo()
         liber = self.click_liberation(send_click=True)
         res = self.click_resonance(send_click=True)[0]
         if not (liber and res):
@@ -142,12 +149,15 @@ class HavocRover(BaseChar):
 
     def fast_perform_wind_routine(self):
         if self.has_intro:
-            self.continues_normal_attack(0.5, after_sleep=0.01)
+            self.continues_normal_attack(0.5, after_sleep=0.05)
             return
+        self.click_echo()
         if self.resonance_available() and self.current_resonance() < 0.23:
             self.send_resonance_key()
         att_time = 1 - (time.time() - self.last_perform)
         if att_time > 0:
             self.continues_normal_attack(att_time)
+        if self.click_liberation(send_click=True):
+            self.sleep(0.03)
         if self.is_forte_full():
             self.send_resonance_key()

@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 from ok import color_range_to_bound
 from src.char.BaseChar import BaseChar, Priority
-from src.char.Cartethyia import Cartethyia
 
 
 class Ciaccona(BaseChar):
@@ -96,6 +95,7 @@ class Ciaccona(BaseChar):
     def decide_teammate(self):
         from src.char.Phoebe import Phoebe
         from src.char.Zani import Zani
+        from src.char.Cartethyia import Cartethyia
         for i, char in enumerate(self.task.chars):
             self.logger.debug(f'ciaccona teammate char: {char.char_name}')
             if isinstance(char, (Cartethyia)):
