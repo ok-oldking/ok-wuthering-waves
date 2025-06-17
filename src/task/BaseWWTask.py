@@ -341,11 +341,11 @@ class BaseWWTask(BaseTask):
             self.middle_click(after_sleep=0.2)
             if backward_time > 0:
                 if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, target_text=target_text,
-                                            running=True):
+                                            running=False):
                     logger.info('walk backward found f')
                     return True
             return self.send_key_and_wait_f(direction, raise_if_not_found, time_out,
-                                            target_text=target_text, running=True) and self.sleep(0.5)
+                                            target_text=target_text, running=False) and self.sleep(0.5)
         else:
             self.send_key('f')
             if cancel and self.handle_claim_button():
@@ -587,7 +587,7 @@ class BaseWWTask(BaseTask):
             self.send_key(direction, down_time=0.05, after_sleep=0.5)
         self.center_camera()
 
-    def walk_find_echo(self, backward_time=1.2, time_out=3):
+    def walk_find_echo(self, backward_time=1, time_out=3):
         if self.walk_until_f(time_out=time_out, backward_time=backward_time, target_text=self.absorb_echo_text(),
                              raise_if_not_found=False):  # find and pick echo
             logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
