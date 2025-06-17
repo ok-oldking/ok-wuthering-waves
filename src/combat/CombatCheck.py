@@ -1,9 +1,12 @@
 import re
 import time
 
+import win32api
+
 from ok import find_boxes_by_name, Logger
 from ok import find_color_rectangles, get_mask_in_color_range, is_pure_black
 from src import text_white_color
+from src.char.Roccia import Roccia
 from src.task.BaseWWTask import BaseWWTask
 
 logger = Logger.get_logger(__name__)
@@ -147,7 +150,35 @@ class CombatCheck(BaseWWTask):
                 logger.info(
                     f'enter combat cost {(time.time() - start):2f} boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
                 self._in_combat = True
+                self.ensure_leviator()
                 return True
+
+    def ensure_leviator(self):
+        if self.find_one('edge_levitator', threshold=0.6):
+            return True
+        if self.has_char(Roccia):
+            if self.find_one('levitator_roccia', threshold=0.6):
+                return True
+        self.send_key_down('tab')
+        self.sleep(0.2)
+        levitator = self.wait_feature('wheel_levitator', threshold=0.6, box=self.box_of_screen(0.27, 0.16, 0.68, 0.76))
+        self.sleep(0.1)
+        if not levitator:
+            raise Exception('no levitator tool in the tab wheel!')
+        old = win32api.GetCursorPos()
+        self.move(levitator.x, levitator.y)
+        abs_pos = self.executor.interaction.capture.get_abs_cords(levitator.x, levitator.y)
+        win32api.SetCursorPos(abs_pos)
+        self.sleep(0.1)
+        self.send_key_up('tab')
+        self.sleep(0.1)
+        win32api.SetCursorPos(old)
+        if not self.wait_feature('edge_levitator', threshold=0.6, time_out=1):
+            if self.has_char(Roccia):
+                if self.find_one('levitator_roccia', threshold=0.6):
+                    return True
+            raise Exception('Can not switch to levitator please ensure you have equipped echos!')
+        self.log_debug(f'ensuring leviator succees {levitator}')
 
     def log_time(self, start, name):
         logger.debug(f'check cost {name} {time.time() - start}')

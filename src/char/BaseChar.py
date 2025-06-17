@@ -768,8 +768,9 @@ class BaseChar:
         return self.task.calculate_color_percentage(text_white_color, self.task.get_box_by_name('box_liberation'))
 
     def flying(self):
-        """判断角色是否处于空中/无法行动状态 (通过共鸣技能UI是否为0判断)。"""
-        return self.current_resonance() == 0
+        percent = self.task.calculate_color_percentage(text_white_color, self.get_box_by_name('edge_levitator'))
+        self.logger.debug(f'is_flying {percent:.2f}%')
+        return percent > 0.1
 
     def need_fast_perform(self):
         """判断是否需要执行快速行动序列 (通常为了快速切换给高优先级队友)。
