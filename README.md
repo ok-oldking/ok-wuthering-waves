@@ -92,7 +92,7 @@ ok-ww.exe -t 1 -e
 * 由于基于[ok-script](https://github.com/ok-oldking/ok-script)开发，项目代码仅有3000行（Python），简单易维护
 * 鸣潮水群 970523295 进群答案:老王同学OK
 * 群都满了 加QQ频道 [https://pd.qq.com/s/djmm6l44y](https://pd.qq.com/s/djmm6l44y)
-* 有兴趣开发的请加开发者群926858895
+* 有兴趣开发的请加开发者群926858895, 至少要能看文档, 使用源码运行, 问使用问题和提需求都会被踢
 
 ### 相关项目
 
@@ -105,7 +105,6 @@ ok-ww.exe -t 1 -e
 
 - EXE签名: Free code signing provided by [SignPath.io](https://signpath.io/), certificate
   by [SignPath Foundation](https://signpath.org/)
-
 
 ### 致谢
 
