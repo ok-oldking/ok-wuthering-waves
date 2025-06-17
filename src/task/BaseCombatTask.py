@@ -489,6 +489,11 @@ class BaseCombatTask(CombatCheck):
 
             self.info['Skill HotKeys'] = keys_str
 
+    def has_char(self, char_cls):
+        for char in self.chars:
+            if isinstance(char, char_cls):
+                return True
+
     def load_chars(self):
         """加载队伍中的角色信息。"""
         self.load_hotkey()

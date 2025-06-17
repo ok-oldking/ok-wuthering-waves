@@ -12,6 +12,12 @@ msgstr ""
 msgid "Fleurdelys"
 msgstr "芙露德莉斯"
 
+msgid "no levitator tool in the tab wheel!"
+msgstr "需要在轮盘中开启控物品"
+
+msgid "Can not switch to levitator please ensure you have equipped echos!"
+msgstr "无法切换工具栏到控物, 请确保已经装备主声骸!"
+
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
 msgstr "(1-6) 重要, 选择你对应世界等级可以产出声骸的难度, 从上到下为1-6"
 
