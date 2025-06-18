@@ -44,13 +44,6 @@ python main.py # run the release version
 python main_debug.py # run the debug version
 ```
 
-```
-#GPU version, use onnxruntime-directml, can reduce CPU and Memory usage by 50%, but requires a GPU with big memory
-pip install -r requirements-direct-ml.txt --upgrade #install python dependencies, 更新代码后可能需要重新运行
-python main_direct_ml.py # run the release version
-python main_direct_ml_debug.py # run the debug version
-```
-
 ### Command Line Arguments
 
 ```
