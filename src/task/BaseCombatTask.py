@@ -59,8 +59,6 @@ class BaseCombatTask(CombatCheck):
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.add_text_fix({'Ｅ': 'e'})
-        self.con_full_boxes = None
-        self.lib_ready_boxes = None
 
     def add_freeze_duration(self, start, duration=-1.0, freeze_time=0.1):
         """添加冻结持续时间。用于精确计算技能冷却等。
@@ -740,32 +738,17 @@ class BaseCombatTask(CombatCheck):
         return the_area, is_full
 
     def update_lib_portrait_icon(self):
-        self.ensure_con_lib_boxes()
+        # self.ensure_con_lib_boxes()
         for i in range(len(self.chars)):
             char_index = i + 1
             char = self.chars[i]
             if not char.is_current_char and char.ring_index >= 0 and not char._liberation_available:
                 box = self.get_box_by_name("lib_mark_char_{}".format(char_index))
-                match = self.find_one(lib_ready_templates[char.ring_index], box=box, threshold=0.45)
+                match = self.find_one(lib_ready_templates[char.ring_index], box=box, threshold=0.8)
                 if match:
                     char._liberation_available = True
                     self.log_debug('checking liberation_available by template {} {}'.format(char, match))
-                    # self.screenshot('liberation_available_{}_{}'.format(char, match.name))
-
-    def ensure_con_lib_boxes(self):
-        scale_rate = 2.0
-        if not self.con_full_boxes:
-            self.con_full_boxes = {
-                1: self.get_box_by_name('con_full_wind').scale(scale_rate, scale_rate),
-                2: self.get_box_by_name('con_full_ice').scale(scale_rate, scale_rate),
-                3: self.get_box_by_name('con_full_spectro').scale(scale_rate, scale_rate),
-            }
-        if not self.lib_ready_boxes:
-            self.lib_ready_boxes = {
-                1: self.get_box_by_name('lib_ready_wind').scale(scale_rate, scale_rate),
-                2: self.get_box_by_name('lib_ready_ice').scale(scale_rate, scale_rate),
-                3: self.get_box_by_name('lib_ready_spectro').scale(scale_rate, scale_rate),
-            }
+                    self.screenshot('liberation_available_{}_{}_{}'.format(char, match.name, match.confidence))
 
 
 white_color = {  # 用于检测UI元素可用状态的白色颜色范围。
