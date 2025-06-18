@@ -361,8 +361,11 @@ class BaseWWTask(BaseTask):
             return -1, -1
         current_box = find_boxes_by_name(boxes, stamina_re)[0]
         current = int(current_box.name.split('/')[0])
-        back_up_box = find_boxes_by_name(boxes, number_re)[0]
-        back_up = int(back_up_box.name)
+        back_up_box = find_boxes_by_name(boxes, number_re)
+        if back_up_box:
+            back_up = int(back_up_box[0].name)
+        else:
+            back_up = 0
         self.info_set('current_stamina', current)
         self.info_set('back_up_stamina', back_up)
         return current, back_up
