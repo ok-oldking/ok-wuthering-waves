@@ -66,39 +66,25 @@ class HavocRover(BaseChar):
     def perform_wind_routine(self):
         if self.has_intro:
             self.continues_normal_attack(2, after_sleep=0.05)
-            if self.liberation_available():
-                self.click_liberation(send_click=True)
-            else:
-                self.wind_routine_wait_down()
+            self.click_liberation(send_click=True)
+            self.wind_routine_wait_down()
             return
-        if self.current_resonance() > 0.25:
-            self.task.wait_until(lambda: self.current_resonance() < 0.23, post_action=self.click_with_interval,
-                                 time_out=0.7)
-            self.sleep(0.01)
-        liber = False
+        self.wait_down()
+        self.sleep(0.01)
         if self.resonance_available() and not self.is_forte_full():
             self.click_echo()
             start = time.time()
             while time.time() - start < 0.5:
-                if self.current_resonance() > 0.25:
+                if self.flying():
                     break
                 self.send_resonance_key()
                 self.task.next_frame()
             self.continues_normal_attack(1.74, after_sleep=0.05)
-            liber = self.liberation_available()
-            if not liber:
-                self.wind_routine_wait_down()
-                return
-        if liber or self.liberation_available():
-            if self.click_liberation(send_click=True):
-                self.sleep(0.03)
-        if self.is_forte_full():
-            self.send_resonance_key()
+        self.click_liberation(send_click=True)
+        self.wind_routine_wait_down()
 
     def wind_routine_wait_down(self):
-        self.continues_normal_attack(0.3, after_sleep=0.05)
-        self.task.wait_until(lambda: self.current_resonance() < 0.23, post_action=self.click_with_interval,
-                             time_out=0.7)
+        self.wait_down()
         self.sleep(0.03)
         if self.is_forte_full():
             self.send_resonance_key()
@@ -106,7 +92,7 @@ class HavocRover(BaseChar):
     def perform_basic_routine(self):
         if self.has_intro:
             self.continues_normal_attack(self.intro_motion_freeze_duration + 0.2)
-            self.wait_down()
+        self.wait_down()
         self.click_echo()
         liber = self.click_liberation(send_click=True)
         res = self.click_resonance(send_click=True)[0]
@@ -130,7 +116,7 @@ class HavocRover(BaseChar):
             self.continues_normal_attack(0.5, after_sleep=0.05)
             return
         self.click_echo()
-        if self.resonance_available() and self.current_resonance() < 0.23:
+        if self.resonance_available() and not self.flying():
             self.send_resonance_key()
         att_time = 1 - (time.time() - self.last_perform)
         if att_time > 0:

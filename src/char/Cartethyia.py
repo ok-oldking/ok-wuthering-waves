@@ -29,8 +29,11 @@ class Cartethyia(BaseChar):
     def do_perform(self):
         if self.has_intro:
             self.continues_normal_attack(1.4)   
+        else:
+            self.click_echo()
         if self.is_small():
             self.logger.info(f'is cartethyia')
+            self.wait_down()
             if self.acquire_missing_buffs():
                 return self.switch_next_char()
             self.try_mid_air_attack()
@@ -101,7 +104,7 @@ class Cartethyia(BaseChar):
             self.logger.debug(f'cartethyia_space mean {mean_val} contrast {contrast_val}')
             return mean_val > 190 and contrast_val > 60
     
-    def try_mid_air_attack(self, timeout=1):
+    def try_mid_air_attack(self, timeout=2):
         self.get_sword_buffs()
         if self.liberation_available() or all(self.buffs.values()):
             pass
@@ -109,7 +112,6 @@ class Cartethyia(BaseChar):
             return
         if self.is_mid_air_attack_available():
             self.logger.info('perform mid-air attack')
-            is_first_attempt = True
             start = time.time()
             while True:
                 self.task.send_key('SPACE', interval=0.1)
@@ -119,10 +121,6 @@ class Cartethyia(BaseChar):
                 if not self.is_mid_air_attack_available():
                     self.sleep(0.5)
                     break
-                if is_first_attempt and self.current_tool() < 0.1:
-                    is_first_attempt = False
-                    self.task.wait_until(lambda: self.current_tool() > 0.1, time_out=0.6)
-                    start = time.time()
                 if time.time() - start > timeout:
                     break
     
@@ -190,8 +188,6 @@ class Cartethyia(BaseChar):
             start = time.time()
             while time.time() - start < 1.5:
                 if self.task.find_one('forte_cartethyia_sword1', threshold=0.9):
-                    break
-                if time.time() - start > 0.5 and self.current_tool() < 0.1:
                     break
                 self.task.next_frame()
             self.task.mouse_up()
