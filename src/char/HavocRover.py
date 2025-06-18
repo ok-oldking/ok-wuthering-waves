@@ -69,13 +69,20 @@ class HavocRover(BaseChar):
             self.click_liberation(send_click=True)
             self.wind_routine_wait_down()
             return
-        self.wait_down()
+        if self.task.has_lavitator:
+            self.wait_down()
+        else:
+            self.task.wait_until(lambda: self.current_resonance() < 0.23, post_action=self.click_with_interval,
+                             time_out=1)
         self.sleep(0.01)
         if self.resonance_available() and not self.is_forte_full():
             self.click_echo()
             start = time.time()
             while time.time() - start < 0.5:
-                if self.flying():
+                if self.task.has_lavitator:
+                    if self.flying():
+                        break
+                elif self.current_resonance() > 0.25:
                     break
                 self.send_resonance_key()
                 self.task.next_frame()
@@ -84,7 +91,11 @@ class HavocRover(BaseChar):
         self.wind_routine_wait_down()
 
     def wind_routine_wait_down(self):
-        self.wait_down()
+        if self.task.has_lavitator:
+            self.wait_down()
+        else:
+            self.task.wait_until(lambda: self.current_resonance() < 0.23, post_action=self.click_with_interval,
+                             time_out=1)
         self.sleep(0.03)
         if self.is_forte_full():
             self.send_resonance_key()
