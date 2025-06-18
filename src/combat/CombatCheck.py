@@ -154,10 +154,11 @@ class CombatCheck(BaseWWTask):
                 return True
 
     def ensure_leviator(self):
-        if self.find_one('edge_levitator', threshold=0.75):
+        if levi := self.find_one('edge_levitator', threshold=0.6):
+            self.log_debug('edge levitator found {}'.format(levi))
             return True
         if self.has_char(Roccia):
-            if self.find_one('levitator_roccia', threshold=0.75):
+            if self.find_one('levitator_roccia', threshold=0.6):
                 return True
         start = time.time()
         while time.time() - start < 1:
