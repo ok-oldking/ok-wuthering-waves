@@ -159,8 +159,17 @@ class CombatCheck(BaseWWTask):
         if self.has_char(Roccia):
             if self.find_one('levitator_roccia', threshold=0.6):
                 return True
-        self.send_key_down('tab')
-        self.sleep(0.2)
+        start = time.time()
+        while time.time() - start < 1:
+            self.send_key_down('tab')
+            self.sleep(0.2)
+            if self.in_team()[0]:
+                self.send_key_up('tab')
+                self.sleep(0.1)
+            else:
+                break
+        else:
+            self.send_key_down('tab')
         levitator = self.wait_feature('wheel_levitator', threshold=0.6, box=self.box_of_screen(0.27, 0.16, 0.68, 0.76))
         self.sleep(0.1)
         if not levitator:
