@@ -149,15 +149,15 @@ class CombatCheck(BaseWWTask):
                     return False
                 logger.info(
                     f'enter combat cost {(time.time() - start):2f} boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
-                self._in_combat = True
                 self.ensure_leviator()
+                self._in_combat = True
                 return True
 
     def ensure_leviator(self):
-        if self.find_one('edge_levitator', threshold=0.6):
+        if self.find_one('edge_levitator', threshold=0.75):
             return True
         if self.has_char(Roccia):
-            if self.find_one('levitator_roccia', threshold=0.6):
+            if self.find_one('levitator_roccia', threshold=0.75):
                 return True
         start = time.time()
         while time.time() - start < 1:
