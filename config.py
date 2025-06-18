@@ -164,7 +164,6 @@ config = {
         ["src.task.FarmEchoTask", "FarmEchoTask"],
         ["src.task.FiveToOneTask", "FiveToOneTask"],
         ["src.task.TacetTask", "TacetTask"],
-        ["src.task.FarmMapTask", "FarmMapTask"],
         ["ok", "DiagnosisTask"],
     ], 'trigger_tasks': [
         ["src.task.AutoCombatTask", "AutoCombatTask"],
