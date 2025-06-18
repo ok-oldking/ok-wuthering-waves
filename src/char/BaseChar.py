@@ -126,6 +126,8 @@ class BaseChar:
         """等待角色从空中落下到地面。"""
         while self.flying():
             self.task.click(interval=0.2)
+            self.task.next_frame()
+            # self.logger.debug('wait_down')
 
     def wait_intro(self, time_out=1.2, click=True):
         """等待角色入场动画结束。

@@ -51,38 +51,16 @@ class HavocRover(BaseChar):
         self.continues_normal_attack(0.7)
 
     def perform_havoc_routine(self):
-        liber = False
         if self.has_intro:
-            start = time.time()
-            self.continues_normal_attack(self.intro_motion_freeze_duration + 0.2)
-            if not self.liberation_available():
-                att_time = 1.35 - (time.time() - start)
-                if att_time > 0:
-                    self.continues_normal_attack(att_time)
-            else:
-                liber = True
-        else:
-            self.wait_down()
-        if liber or self.liberation_available():
             if self.is_forte_full():
-                self.check_combat()
-                self.task.mouse_down()
-                start = time.time()
-                while True:
-                    current = time.time()
-                    if (current - start > 0.5 and not self.is_forte_full()) or current - start > 2:
-                        break
-                    self.task.next_frame()
-                self.task.mouse_up()
-            elif self.has_intro:
-                self.task.wait_until(lambda: self.current_liberation() > 0, post_action=self.click_with_interval,
-                                     time_out=0.8)
-            if self.click_liberation(send_click=True):
-                self.liber_available = False
-        self.continues_normal_attack(1)
+                self.heavy_attack(0.8)
+        self.wait_down()
+        self.click_liberation(send_click=True)
         if self.click_resonance(send_click=True)[0]:
             return
-        self.click_echo()
+        if not self.click_echo():
+            self.click()
+        self.continues_normal_attack(1.1 - self.time_elapsed_accounting_for_freeze(self.last_switch_time))
 
     # TODO: 存在<逆势回击>导致轴长改变打不满两次<抃风儛润>的问题，应当可以用一链提供的buff使用find_one进行优化
     def perform_wind_routine(self):
@@ -120,7 +98,7 @@ class HavocRover(BaseChar):
     def wind_routine_wait_down(self):
         self.continues_normal_attack(0.3, after_sleep=0.05)
         self.task.wait_until(lambda: self.current_resonance() < 0.23, post_action=self.click_with_interval,
-                            time_out=0.7)
+                             time_out=0.7)
         self.sleep(0.03)
         if self.is_forte_full():
             self.send_resonance_key()

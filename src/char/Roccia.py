@@ -48,25 +48,10 @@ class Roccia(BaseChar):
     def get_plunge_count(self):
         if not self.is_forte_full():
             return 0
-        count = 0
-        boxes = []
-        if self.is_color_ok('box_forte_1'):
-            count = 1
-            boxes.append(0)
-        if self.is_color_ok('box_forte_2'):
-            count = 2
-            boxes.append(1)
-        if self.is_color_ok('box_forte_3'):
-            count = 3
-            boxes.append(2)
-        # self.logger.debug(f'get plunge count: {count}, {boxes}')
-        # if self.task.debug:
-        #     self.task.screenshot(f"plunge_{count}_{len(boxes)}_")
-
-        if count == len(boxes):
-            return count
+        if self.flying():
+            return 1
         else:
-            return -1
+            return 0
 
     def is_color_ok(self, box):
         purple_percent = self.task.calculate_color_percentage(forte_purple_color, self.task.get_box_by_name(box))

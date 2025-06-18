@@ -24,14 +24,12 @@ class Encore(BaseChar):
             self.logger.debug(f'encore wait intro {elapsed}')
             if 6 < elapsed < 10 and self.is_forte_full():
                 self.logger.debug('encore heavy attack after intro')
-                self.task.mouse_down()
-                self.wait_intro(time_out=1.4, click=False)
-                self.task.mouse_up()
+                self.heavy_attack(1.2)
                 self.sleep(0.1)
                 self.last_heavy = time.time()
                 return self.switch_next_char()
             else:
-                self.wait_intro(time_out=1.4, click=True)
+                self.wait_down()
         if self.still_in_liberation():
             self.n4()
             return self.switch_next_char()

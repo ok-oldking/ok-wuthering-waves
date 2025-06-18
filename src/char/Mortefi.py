@@ -3,6 +3,7 @@ from src.char.BaseChar import BaseChar
 
 class Mortefi(BaseChar):
     def do_perform(self):
+        self.wait_down()
         liberated = self.click_liberation()
         self.click_resonance()
         self.click_echo()

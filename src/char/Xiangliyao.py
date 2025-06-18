@@ -10,6 +10,7 @@ class Xiangliyao(BaseChar):
         self.liberation_time = 0
 
     def do_perform(self):
+        self.wait_down()
         if self.click_liberation():
             self.liberation_time = time.time()
         if self.still_in_liberation():
