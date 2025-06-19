@@ -168,6 +168,7 @@ class CombatCheck(BaseWWTask):
             self.sleep(0.3)
         if self.in_team()[0]:
             self.log_info('can not open wheel')
+            self.send_key_up('tab')
             return False
         levitator = self.wait_feature('wheel_levitator', threshold=0.65, box=self.box_of_screen(0.27, 0.16, 0.68, 0.76))
         self.sleep(0.1)
