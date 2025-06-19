@@ -770,8 +770,9 @@ class BaseChar:
 
     def flying(self):
         """通过控物判断是否在空中"""
+        if not self.task.has_lavitator:
+            return False
         percent = self.task.calculate_color_percentage(text_white_color, self.task.get_box_by_name('edge_levitator'))
-        # self.logger.debug(f'is_flying {percent:.2f}%')
         return percent < 0.1
 
     def need_fast_perform(self):
