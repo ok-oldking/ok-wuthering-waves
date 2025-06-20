@@ -49,8 +49,12 @@ class Brant(BaseChar):
             self.task.next_frame()
 
     def click_jump_with_click(self, delay=0.1):
+        click = 0
+        if self.task.has_lavitator and not self.flying():
+            self.send_resonance_key()
+            self.sleep(0.2)
+            click = 1
         start = time.time()
-        click = 1
         while True:
             if time.time() - start > delay:
                 break
