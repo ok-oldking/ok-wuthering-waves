@@ -8,31 +8,27 @@ class Changli(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.enhanced_normal = False
-        self.first_resonance = True
 
     def reset_state(self):
         super().reset_state()
         self.enhanced_normal = False
-        self.first_resonance = True
         
     def do_perform(self):
         if self.has_intro:
-            self.continues_normal_attack(0.4)
+            self.continues_normal_attack(0.3)
             self.enhanced_normal = True
-        forte = self.judge_forte()
         if self.enhanced_normal:
             self.logger.debug('Changli has enhanced')
-            self.continues_normal_attack(0.4)
-            forte += 1
+            self.continues_normal_attack(0.5)
         self.enhanced_normal = False
         if self.check_outro() in {'char_brant'}:
-            self.do_perform_outro(forte)
+            self.do_perform_outro(self.judge_forte())
             return self.switch_next_char()
-        if forte >= 4 or self.is_forte_full():
-            self.heavy_attack()
-        #如果处于空中需要重击两次
-            if self.is_forte_full():
+        forte = self.judge_forte()
+        if forte >= 4 :
+            if self.flying():
                 self.heavy_attack()
+            self.heavy_attack()
             self.check_combat()
             return self.switch_next_char()
         if not(forte >= 3 and self.resonance_available()) and self.liberation_available():   
@@ -62,9 +58,9 @@ class Changli(BaseChar):
             if self.is_forte_full():
                 self.heavy_attack(1.4)
         elif forte >= 4 or self.is_forte_full():
-            self.heavy_attack()
-            if self.is_forte_full():
+            if self.flying():
                 self.heavy_attack()
+            self.heavy_attack()
             self.sleep(0.8)
         if self.liberation_available() and self.liberation_and_heavy():   
             self.sleep(0.6)
@@ -76,21 +72,17 @@ class Changli(BaseChar):
 
     def click_resonance(self, post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0,
                         check_cd=False):
-        if self.first_resonance:
-            if self.current_resonance() > 0 and self.resonance_available():
-                self.continues_click(self.get_resonance_key(), 0.3)
-                self.first_resonance = False
-                self._resonance_available = False
-                return True, 0.3, False
-            return False, 0, False
-        return super().click_resonance(post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0,
-                                       check_cd=False)
+        if self.current_resonance() > 0 and self.resonance_available():
+            self.task.wait_until(lambda: not self.resonance_available(), post_action=self.send_resonance_key , time_out=0.2)
+            return True, 0.2, False
+        return False, 0, False
+
         
     def judge_forte(self):
         if self.is_forte_full():
             return 4
         box = self.task.box_of_screen_scaled(3840, 2160, 1633, 2004, 2160, 2016, name='changli_forte', hcenter=True)
-        forte = self.calculate_forte_num(changli_red_color,box,4,9,11,25)
+        forte = self.calculate_forte_num(changli_red_color,box,4,9,11,100)
         return forte
         
     def liberation_and_heavy(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0, timeout=5):
@@ -180,25 +172,16 @@ class Changli(BaseChar):
         forte = 0
         height, width = image.shape
         step = int(width / num)
-        left = 0
-        fail_count = 0
-        warning = False
-        while left+step < width:
-            gray = image[:,left:left+step] 
+        
+        forte = num
+        left = step * (forte-1)
+        while forte > 0:
+            gray = image[:,left:left+step]
             score = self.judge_frequncy_and_amplitude(gray,min_freq,max_freq,min_amp)
-            if fail_count == 0:
-                if score:
-                    forte += 1
-                else:
-                    fail_count+=1
-            else:
-                if score:
-                    warning = True
-                else:
-                    fail_count+=1
-            left+=step
-        if warning:
-            self.logger.info('Frequncy analysis error, return the forte before mistake.')
+            if score:
+                break
+            left -= step
+            forte -= 1
         self.logger.info(f'Frequncy analysis with forte {forte}')    
         return forte
         
