@@ -10,8 +10,9 @@ class ShoreKeeper(Healer):
             self.logger.debug('ShoreKeeper wait intro animation')
             # self.task.wait_in_team_and_world(time_out=4, raise_if_not_found=False)
             # self.check_combat()
+        self.click_resonance(send_click=False)        
+        self.liberation_available() and self.wait_down()
         self.click_liberation()
-        self.click_resonance(send_click=False)
         self.click_echo()
         if self.is_forte_full():
             self.heavy_attack()
