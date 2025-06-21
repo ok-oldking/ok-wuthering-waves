@@ -359,8 +359,11 @@ class BaseWWTask(BaseTask):
         if len(boxes) == 0:
             self.screenshot('stamina_error')
             return -1, -1
-        current_box = find_boxes_by_name(boxes, stamina_re)[0]
-        current = int(current_box.name.split('/')[0])
+        current_box = find_boxes_by_name(boxes, stamina_re)
+        if current_box:
+            current = int(current_box[0].name.split('/')[0])
+        else:
+            current = 0
         back_up_box = find_boxes_by_name(boxes, number_re)
         if back_up_box:
             back_up = int(back_up_box[0].name)
