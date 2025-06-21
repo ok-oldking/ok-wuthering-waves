@@ -2,7 +2,9 @@ from src.char.Healer import Healer
 
 
 class ShoreKeeper(Healer):
-
+    def count_liberation_priority(self):
+        return 2
+    
     def do_perform(self):
         if self.has_intro:
             self.logger.debug('ShoreKeeper wait intro animation')
