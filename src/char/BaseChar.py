@@ -124,7 +124,8 @@ class BaseChar:
 
     def wait_down(self):
         """等待角色从空中落下到地面。"""
-        while self.flying():
+        start = time.time()
+        while self.flying() and time.time() - start < 2.5:
             self.task.click(interval=0.2)
             self.task.next_frame()
             # self.logger.debug('wait_down')
