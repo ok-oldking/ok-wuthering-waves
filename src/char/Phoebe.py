@@ -320,16 +320,13 @@ class Phoebe(BaseChar):
         
     def decide_teammate(self):
         from src.char.Zani import Zani
-        for _, char in enumerate(self.task.chars):
-            self.logger.debug(f'teammate char: {char.char_name}')
-            if isinstance(char, Zani):
-                self.logger.debug(f'set attribute: support')
-                self.char_zani = char
-                self.attribute = 2
-                return
-        self.logger.debug(f'set attribute: attacker')
-        self.attribute = 1
-        return 
+        if char := self.task.has_char(Zani):
+            self.logger.debug(f'set attribute: support')
+            self.char_zani = char
+            self.attribute = 2
+        else:
+            self.logger.debug(f'set attribute: attacker')
+            self.attribute = 1
     
     def judge_frequncy_and_amplitude(self, gray, min_freq, max_freq, min_amp):
         height, width = gray.shape[:]

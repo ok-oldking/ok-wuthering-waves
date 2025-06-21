@@ -428,14 +428,11 @@ class Zani(BaseChar):
 
     def decide_teammate(self):
         from src.char.Phoebe import Phoebe
-        for _, char in enumerate(self.task.chars):
-            self.logger.debug(f'teammate char: {char.char_name}')
-            if isinstance(char, Phoebe):
-                self.char_phoebe = char
-                self.blazes_threshold = 0.9
-                return
-        self.blazes_threshold = 0.4
-        return 
+        if char := self.task.has_char(Phoebe):
+            self.char_phoebe = char
+            self.blazes_threshold = 0.9
+        else:
+            self.blazes_threshold = 0.4
     
     def update_blazes(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 1627, 2014, 2176, 2017, name='zani_blazes', hcenter=True)
@@ -476,13 +473,12 @@ class Zani(BaseChar):
         else:
             return super().do_get_switch_priority(current_char, has_intro)
     
-    def handle_pause_switch(self, current_char: BaseChar):
+    def wait_switch(self):
         if self.has_intro and self.nightfall_time_left() > 0:
-            self.logger.info(f'has_intro {self.has_intro}, wait nightfall end')
-            while self.nightfall_time_left() > 0 and self.liberation_time_left() >= 2:
-                current_char.click()
-                self.task.next_frame()
-        return
+            self.logger.debug(f'has_intro {self.has_intro}, wait nightfall end')
+            if self.nightfall_time_left() > 0 and self.liberation_time_left() >= 2:
+                return True
+        return False
     
     def has_long_actionbar(self):
         if self.check_liber():

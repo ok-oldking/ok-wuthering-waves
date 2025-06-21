@@ -835,9 +835,9 @@ class BaseChar:
             self.logger.info(f'first engage')
         return result
     
-    def handle_pause_switch(self, current_char):
+    def wait_switch(self):
         """检查是否要暂缓切人。"""
-        return
+        return False
     
     # def count_rectangle_forte(self, left=0.42, right=0.57):
     # """计算矩形共鸣回路充能格数 (已注释)。"""

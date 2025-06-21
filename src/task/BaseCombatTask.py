@@ -294,8 +294,7 @@ class BaseCombatTask(CombatCheck):
                 if not switch_to.has_intro:
                     switch_to.has_intro = current_char.is_con_full()
 
-            if now - last_click > 0.1:
-                switch_to.handle_pause_switch(current_char)
+            if now - last_click > 0.1 and not switch_to.wait_switch():
                 self.send_key(switch_to.index + 1)
                 last_click = now
                 self.sleep(0.01)
@@ -491,7 +490,7 @@ class BaseCombatTask(CombatCheck):
     def has_char(self, char_cls):
         for char in self.chars:
             if isinstance(char, char_cls):
-                return True
+                return char
 
     def load_chars(self):
         """加载队伍中的角色信息。"""
