@@ -12,6 +12,7 @@ class Ciaccona(BaseChar):
         self.attribute = 0
         self.in_liberation = False
         self.cartethyia = None
+        self.outrotime = -1
 
     def skip_combat_check(self):
         return self.time_elapsed_accounting_for_freeze(self.last_liberation) < 2
@@ -37,14 +38,20 @@ class Ciaccona(BaseChar):
         self.click_echo()
         if not self.has_intro and not self.need_fast_perform() and not self.is_forte_full():
             self.click_jump_with_click(0.4)
-            self.continues_normal_attack(1.2)
+            self.task.wait_until(lambda: not self.flying(), post_action=self.click_with_interval, time_out=1.2)
+            self.continues_normal_attack(0.2)
         if self.click_resonance()[0]:
             jump = False
             wait = True     
         if self.judge_forte() >= 3:
             if jump:
-                self.continues_click(key='SPACE', duration=0.2)
-            self.heavy_attack(0.7)
+                start = time.time()
+                while not self.flying():
+                    self.task.send_key('SPACE')
+                    if time.time()-start > 0.3:
+                        break
+                    self.task.next_frame() 
+            self.heavy_attack()
             wait = True
         if self.liberation_available(): 
             if wait:
@@ -87,9 +94,7 @@ class Ciaccona(BaseChar):
         if self.is_forte_full():
             return 3
         box = self.task.box_of_screen_scaled(3840, 2160, 1612, 1987, 2188, 2008, name='ciaccona_forte', hcenter=True)
-        forte = self.calculate_forte_num(ciaccona_forte_color, box, 3, 12, 14, 37)
-        if forte == 0:
-            forte = self.calculate_forte_num(ciaccona_forte_color1, box, 3, 12, 14, 37)
+        forte = self.calculate_forte_num(ciaccona_forte_color, box, 3, 12, 14, 100)
         return forte
 
     def decide_teammate(self):
@@ -129,48 +134,37 @@ class Ciaccona(BaseChar):
         self.logger.debug(f'forte with freq {frequncy} & amp {amplitude}')
         return (min_freq <= frequncy <= max_freq) or amplitude >= min_amp
 
-    def calculate_forte_num(self, forte_color, box, num=1, min_freq=39, max_freq=41, min_amp=50):
+    def calculate_forte_num(self, forte_color, box, num = 1, min_freq = 39, max_freq = 41, min_amp = 50):
         cropped = box.crop_frame(self.task.frame)
         lower_bound, upper_bound = color_range_to_bound(forte_color)
         image = cv2.inRange(cropped, lower_bound, upper_bound)
-
+        
         forte = 0
         height, width = image.shape
         step = int(width / num)
-        left = 0
-        fail_count = 0
-        warning = False
-        while left + step < width:
-            gray = image[:, left:left + step]
-            score = self.judge_frequncy_and_amplitude(gray, min_freq, max_freq, min_amp)
-            if fail_count == 0:
-                if score:
-                    forte += 1
-                else:
-                    fail_count += 1
-            else:
-                if score:
-                    warning = True
-                else:
-                    fail_count += 1
-            left += step
-        if warning:
-            self.logger.info('Frequncy analysis error, return the forte before mistake.')
-        self.logger.info(f'Frequncy analysis with forte {forte}')
+        
+        forte = num
+        left = step * (forte-1)
+        while forte > 0:
+            gray = image[:,left:left+step]
+            score = self.judge_frequncy_and_amplitude(gray,min_freq,max_freq,min_amp)
+            if score:
+                break
+            left -= step
+            forte -= 1
+        self.logger.info(f'Frequncy analysis with forte {forte}')    
         return forte
-
-    # 回路条不满时的颜色
-
+        
+    def switch_next_char(self, *args):
+        if self.is_con_full():
+            self.outrotime = time.time()
+        return super().switch_next_char(*args)
+        
+    def in_outro(self):
+        return self.time_elapsed_accounting_for_freeze(self.outrotime) < 30
 
 ciaccona_forte_color = {
     'r': (70, 100),  # Red range
     'g': (240, 255),  # Green range
     'b': (180, 210)  # Blue range
-}
-
-# 回路条满时的颜色
-ciaccona_forte_color1 = {
-    'r': (120, 220),  # Red range
-    'g': (240, 255),  # Green range
-    'b': (240, 255)  # Blue range
 }
