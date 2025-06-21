@@ -211,7 +211,7 @@ class Carlotta(BaseChar):
         res = True
         self.char_zhezhi.forte = 0
         self.get_forte()
-        if not self.liberation_ready:
+        if not self.liberation_ready and self.time_elapsed_accounting_for_freeze(self.last_perform) < 5:
             while not self.is_forte_full():
                 if self.click_resonance()[0]:
                     self.continues_normal_attack(1)

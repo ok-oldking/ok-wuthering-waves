@@ -80,12 +80,11 @@ class Zhezhi(BaseChar):
             self.continues_normal_attack(1.4)
             if not self.char_carlotta.get_ready():
                 return self.switch_next_char()            
-        if not self.resonance_blue() and self.resonance_available() and self.judge_forte() > 0 and not (self.is_con_full() and self.char_carlotta.get_ready()):
+        if not self.resonance_blue() and self.resonance_available() and self.judge_forte() > 1 and not (self.is_con_full() and self.char_carlotta.get_ready()):
             if self.con_lock() and self.click_liberation():
                 self.sleep(0.2)        
             self.click_resonance()
-            if self.forte == 3:
-                self.continues_normal_attack(0.8)           
+            self.continues_normal_attack(0.8)           
         if self.con_lock():
             if self.resonance_blue() and self.resonance_available():
                 self.resonance_until_not_blue()    
