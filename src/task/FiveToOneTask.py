@@ -56,7 +56,8 @@ class FiveToOneTask(BaseCombatTask):
         self.wait_click_ocr(match="数据坞", box="right", raise_if_not_found=True, settle_time=0.2)
         self.wait_ocr(match="数据坞", box="top_left", raise_if_not_found=True, settle_time=0.2)
         self.click_relative(0.04, 0.56, after_sleep=0.5)
-        self.wait_click_ocr(match="批量融合", box="bottom_right", raise_if_not_found=True, settle_time=0.2)
+        self.wait_click_ocr(match="批量融合", box="bottom_right", raise_if_not_found=True, settle_time=0.2,
+                            after_sleep=1)
         self.loop_merge()
         self.log_info("五合一完成!")
 
@@ -79,7 +80,7 @@ class FiveToOneTask(BaseCombatTask):
         if step == 2 and "攻击力百分比" not in keeps:  # 4C攻击力
             self.log_info("没有选择攻击力百分比, 跳过第二步")
             return
-        self.click_relative(0.03, 0.91, after_sleep=0.3)
+        self.click_relative(0.04, 0.91, after_sleep=0.3)
         if step == 1:
             self.click_relative(0.62, 0.82, after_sleep=0.01)  # 重置
 
