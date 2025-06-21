@@ -24,10 +24,7 @@ class Ciaccona(BaseChar):
 
     def do_perform(self):
         self.in_liberation = False
-        #e接r，重击接r要等0.3秒等伤害出来
         wait = False
-        #进场直接重击，a4接重击要跳取消动作
-        #闪避相比跳很容易被吞
         jump = True
         if self.attribute == 0:
             self.decide_teammate()
@@ -35,7 +32,8 @@ class Ciaccona(BaseChar):
             self.continues_normal_attack(0.8)
             if not self.need_fast_perform():
                 self.continues_normal_attack(0.7)
-        self.click_echo()
+        if self.current_echo() < 0.22:
+            self.click_echo()
         if not self.has_intro and not self.need_fast_perform() and not self.is_forte_full():
             self.click_jump_with_click(0.4)
             self.task.wait_until(lambda: not self.flying(), post_action=self.click_with_interval, time_out=1.2)
@@ -60,6 +58,8 @@ class Ciaccona(BaseChar):
                 self.in_liberation = True
                 if self.attribute == 2:
                     self.continues_click_a(0.6)
+        if not self.in_liberation and self.current_echo() > 0.25:
+            self.click_echo()
         self.switch_next_char()
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
