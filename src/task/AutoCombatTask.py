@@ -2,7 +2,7 @@ from qfluentwidgets import FluentIcon
 
 from ok import TriggerTask, Logger
 from src.scene.WWScene import WWScene
-from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharDeadException
+from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharDeadException, CharMismatchException
 
 logger = Logger.get_logger(__name__)
 
@@ -43,6 +43,9 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
             except NotInCombatException as e:
                 logger.info(f'auto_combat_task_out_of_combat {e}')
                 break
+            except CharMismatchException as e:
+                logger.info(f'auto_combat_task {e}')
+                continue
         if ret:
             self.combat_end()
         return ret

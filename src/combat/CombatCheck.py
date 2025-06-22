@@ -245,7 +245,7 @@ class CombatCheck(BaseWWTask):
             else:
                 logger.info(f'target lost try retarget')
                 return self.wait_until(self.has_target, time_out=self.target_enemy_time_out,
-                                       pre_action=lambda: self.middle_click(interval=0.2))
+                                       pre_action=lambda: self.middle_click(interval=0.2), post_action=self.check_current_char)
 
     def has_health_bar(self):
         if self._in_combat:

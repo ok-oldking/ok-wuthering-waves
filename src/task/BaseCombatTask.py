@@ -27,6 +27,10 @@ class CharDeadException(NotInCombatException):
     """角色死亡异常。"""
     pass
 
+class CharMismatchException(Exception):
+    """角色不匹配异常。"""
+    pass
+
 
 class BaseCombatTask(CombatCheck):
     """基础战斗任务类，封装了游戏"鸣潮"中角色自动化操作的通用逻辑。"""
@@ -168,6 +172,18 @@ class BaseCombatTask(CombatCheck):
             logger.error(f'reset to false failed: {message}')
         if exception_type is None:
             exception_type = NotInCombatException
+        raise exception_type(message)
+    
+    def raise_char_mismatch(self, message, exception_type=None):
+        """抛出角色不匹配异常。
+
+        Args:
+            message (str): 异常信息。
+            exception_type (Exception, optional): 要抛出的异常类型。默认为 CharMismatchException。
+        """
+        logger.error(message)
+        if exception_type is None:
+            exception_type = CharMismatchException
         raise exception_type(message)
 
     def available(self, name):
@@ -429,6 +445,15 @@ class BaseCombatTask(CombatCheck):
             self.raise_not_in_combat('can find current char!!')
         # self.load_chars()
         return None
+    
+    def check_current_char(self):
+        """检查当前角色是否为预期角色。"""
+        in_team, current, _ = self.in_team()
+        if in_team and not self.chars[current].is_current_char:
+            current_char = self.get_current_char(raise_exception=False)
+            current_char.switch_out()
+            self.chars[current].is_current_char = True
+            self.raise_char_mismatch('char mismatch!')
 
     def combat_end(self):
         """战斗结束时调用的清理方法。"""
