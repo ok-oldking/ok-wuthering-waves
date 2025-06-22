@@ -57,6 +57,17 @@ class BaseWWTask(BaseTask):
             'Nightmare: Lampylumen Myriad': [3, 5, False],
         }
 
+    def is_open_world_auto_combat(self):
+        from src.task.AutoCombatTask import AutoCombatTask
+        from src.task.TacetTask import TacetTask
+        from src.task.DailyTask import DailyTask
+        if isinstance(self, AutoCombatTask):
+            if not self.in_realm():
+                return True
+        elif isinstance(self, (TacetTask, DailyTask)):
+            return True
+        return False
+
     def zoom_map(self, esc=True):
         if not self.map_zoomed:
             self.log_info('zoom map to max')

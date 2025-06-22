@@ -374,6 +374,9 @@ class BaseChar:
         Returns:
             bool: 如果成功点击则返回 True。
         """
+        if self.task.is_open_world_auto_combat() and self.ring_index == Elements.FIRE:
+            self.logger.debug(f'open world do not use motorcycle echo')
+            return False
         self.logger.debug(f'click_echo start duration: {duration}')
         if self.has_cd('echo'):
             self.logger.debug('click_echo has cd return ')
@@ -835,11 +838,11 @@ class BaseChar:
         if result:
             self.logger.info(f'first engage')
         return result
-    
+
     def wait_switch(self):
         """检查是否要暂缓切人。"""
         return False
-    
+
     # def count_rectangle_forte(self, left=0.42, right=0.57):
     # """计算矩形共鸣回路充能格数 (已注释)。"""
     #     # Perform image cropping once, as it's independent of saturation ranges

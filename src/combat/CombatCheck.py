@@ -162,13 +162,7 @@ class CombatCheck(BaseWWTask):
         if self.has_char(Roccia):
             if self.find_one('levitator_roccia', threshold=0.6):
                 return True
-        from src.task.AutoCombatTask import AutoCombatTask
-        from src.task.TacetTask import TacetTask
-        from src.task.DailyTask import DailyTask
-        if isinstance(self, AutoCombatTask):
-            if not self.in_realm():
-                return False
-        elif isinstance(self, (TacetTask, DailyTask)):
+        if self.is_open_world_auto_combat():
             return False
         start = time.time()
         while time.time() - start < 1 and self.in_team()[0]:
