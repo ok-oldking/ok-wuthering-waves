@@ -35,12 +35,17 @@ class SkipBaseTask(BaseWWTask):
         if self.in_team_and_world():
             return True
 
-    def check_skip(self):
-        skip = self.ocr(0.03, 0.03, 0.11, 0.10, target_height=540, match=re.compile(r'SKIP|跳过', re.IGNORECASE),
-                        threshold=0.7)
-        if skip:
+    def try_click_skip(self):
+        skipped = False
+        while skip := self.ocr(0.03, 0.03, 0.11, 0.10, target_height=540, match=re.compile(r'SKIP|跳过', re.IGNORECASE),
+                               threshold=0.7):
             logger.info('Click Skip Dialog')
-            self.click_box(skip, move_back=True)
+            self.click_box(skip, after_sleep=0.4)
+            skipped = True
+        return skipped
+
+    def check_skip(self):
+        if self.try_click_skip():
             return self.wait_until(self.skip_confirm, time_out=3, raise_if_not_found=False)
         if time.time() - self.has_eye_time < 2:
             btn_dialog_close = self.find_one('btn_dialog_close', threshold=0.8)
@@ -63,9 +68,11 @@ class SkipBaseTask(BaseWWTask):
             elif dots := self.find_feature('btn_dialog_3dots', x=0.59, y=0.33, to_x=0.75, to_y=0.75,
                                            threshold=0.7):
                 if dots:
-                    self.click(dots[-1])
-                    logger.info('choose dot')
                     self.sleep(0.2)
+                    if not self.try_click_skip():
+                        self.click(dots[0])
+                        logger.info('choose dot')
+                        self.sleep(0.2)
             return True
 
 
