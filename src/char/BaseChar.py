@@ -410,6 +410,9 @@ class BaseChar:
         self.logger.debug(f'click_echo end {clicked}')
         return clicked
 
+    def is_open_world_auto_combat(self):
+        return self.task.is_open_world_auto_combat()
+
     def check_combat(self):
         """检查战斗状态 (代理到 task.check_combat)。"""
         self.task.check_combat()
