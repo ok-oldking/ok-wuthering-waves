@@ -178,7 +178,7 @@ class Phoebe(BaseChar):
                     return False
                 self.task.mouse_down()
                 mouse_hold_start = time.time()
-                while time.time() - mouse_hold_start < 0.6:
+                while time.time() - mouse_hold_start < 0.5:
                     if not self.heavy_attack_ready():
                         self.task.mouse_up()
                         return True
@@ -191,7 +191,6 @@ class Phoebe(BaseChar):
                     self.task.wait_until(lambda: not self.flying(),
                                         post_action=lambda: self.click(interval=0.1, after_sleep=0.1), time_out=2)
                     outer_start = time.time()
-                    flying = False
                 self.check_combat()
                 self.task.next_frame()
             return True
@@ -270,7 +269,7 @@ class Phoebe(BaseChar):
                 key_down()
                 key_hold_start = time.time()
                 while condition() or time.time() - key_hold_start < 0.5:
-                    if time.time() - key_hold_start > 1 or self.flying():
+                    if time.time() - key_hold_start > 1:
                         break
                     self.task.next_frame()
                 key_up()
