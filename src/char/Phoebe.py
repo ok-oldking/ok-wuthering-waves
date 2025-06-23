@@ -2,10 +2,16 @@ import time
 import cv2
 import numpy as np
 import math
+from enum import Enum
 
 from src.char.BaseChar import BaseChar, Priority, forte_white_color
 from src.char.Healer import Healer
 from ok import color_range_to_bound
+
+class State(Enum):
+    SUCCESS = 1
+    UNAVAILABLE = 2
+    TIMEOUT = 3
 
 class Phoebe(BaseChar):
     def __init__(self, *args, **kwargs):
@@ -28,9 +34,6 @@ class Phoebe(BaseChar):
         self.attribute = 0
         self.star_available = False
         self.char_zani = None
-
-    def flying(self):
-        return self.current_tool() != 0 and (self.current_resonance() == 0 or self.current_echo() == 0)
 
     def do_perform(self):
         self.last_outro_time = -1
@@ -62,13 +65,13 @@ class Phoebe(BaseChar):
 
         status_entered = self.absolution_or_confession()
         self.check_combat()
-        if ((not attribute_mismatch or status_entered) and
+        if ((not attribute_mismatch or status_entered == State.SUCCESS) and
             self.star_available and
             self.click_liberation(send_click=True)
         ):
             self.state["liberation"] += 1
             self.check_combat()
-        if status_entered or self.judge_forte() > 0:
+        if status_entered == State.SUCCESS or self.judge_forte() > 0:
             self.starflash_combo()  
         if self.resonance_available():
             if self.attribute == 2:
@@ -166,24 +169,28 @@ class Phoebe(BaseChar):
             self.state["starflash_combo"] += 1
                 
     def perform_heavy_attack(self):   
-        if not self.absolution_or_confession():
+        if self.absolution_or_confession() == State.UNAVAILABLE:
             self.logger.info('perform heavy_attack')
             flying = False
+            outer_start = time.time()
             while self.heavy_attack_ready():
+                if time.time() - outer_start > 2:
+                    return False
                 self.task.mouse_down()
-                start = time.time()
-                while time.time() - start < 0.5:
+                mouse_hold_start = time.time()
+                while time.time() - mouse_hold_start < 0.6:
                     if not self.heavy_attack_ready():
                         self.task.mouse_up()
                         return True
-                    if self.flying():
-                        flying = True
+                    if flying := self.flying():
                         break
                     self.task.next_frame()
                 self.task.mouse_up()
                 if flying:
                     self.logger.info('flying')
-                    self.task.wait_until(lambda: not self.flying(), post_action=self.click_with_interval, time_out=1)
+                    self.task.wait_until(lambda: not self.flying(),
+                                        post_action=lambda: self.click(interval=0.1, after_sleep=0.1), time_out=2)
+                    outer_start = time.time()
                     flying = False
                 self.check_combat()
                 self.task.next_frame()
@@ -256,14 +263,22 @@ class Phoebe(BaseChar):
         else:
             key_down, key_up = self.task.mouse_down, self.task.mouse_up
         if condition():
+            outer_start = time.time()
             while condition():
+                if time.time() - outer_start > 2:
+                    return State.TIMEOUT
                 key_down()
-                start = time.time()
-                while condition() or time.time() - start < 0.5:
-                    if time.time() - start > 1:
+                key_hold_start = time.time()
+                while condition() or time.time() - key_hold_start < 0.5:
+                    if time.time() - key_hold_start > 1 or self.flying():
                         break
                     self.task.next_frame()
                 key_up()
+                if self.flying():
+                    self.logger.info('flying')
+                    self.task.wait_until(lambda: not self.flying(),
+                                        post_action=lambda: self.click(interval=0.1, after_sleep=0.1), time_out=2)
+                    outer_start = time.time()
                 self.task.next_frame()
             if self.attribute == 2:
                 self.logger.info(f'Enters confession status')
@@ -273,8 +288,8 @@ class Phoebe(BaseChar):
             self.star_available = True
             self.reset_action()
             self.state["enter_status"] += 1
-            return True
-        return False
+            return State.SUCCESS
+        return State.UNAVAILABLE
                     
     def has_long_actionbar(self):
         return True
