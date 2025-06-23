@@ -244,8 +244,12 @@ class CombatCheck(BaseWWTask):
                 return True
             else:
                 logger.info(f'target lost try retarget')
-                return self.wait_until(self.has_target, time_out=self.target_enemy_time_out,
-                                       pre_action=lambda: self.middle_click(interval=0.2), post_action=self.check_current_char)
+                from src.task.AutoCombatTask import AutoCombatTask
+                kwargs = {'condition': self.has_target, 'time_out': self.target_enemy_time_out,
+                           'pre_action': lambda: self.middle_click(interval=0.2)}
+                if isinstance(self, AutoCombatTask):
+                    kwargs['post_action'] = self.check_current_char
+                return self.wait_until(**kwargs)
 
     def has_health_bar(self):
         if self._in_combat:
