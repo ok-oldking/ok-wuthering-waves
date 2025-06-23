@@ -168,7 +168,7 @@ class Zani(BaseChar):
         self.task.in_liberation = True
         send_key = True
         inner_box = 'box_target_enemy_inner'
-        while not self.task.find_one(inner_box, box=self.task.get_box_by_name(inner_box), threshold=0.85):
+        while not self.task.find_one(inner_box, box=self.task.get_box_by_name(inner_box)):
             if self.current_resonance() == 0:
                 start = time.time()
             elif time.time() - start > 1.5:
@@ -490,9 +490,9 @@ class Zani(BaseChar):
             return self.in_liberation
         inner_box = 'box_target_enemy_inner'
         long_inner_box = 'box_target_enemy_long_inner'
-        if self.task.find_one(inner_box, box=self.task.get_box_by_name(inner_box), threshold=0.85):
+        if self.task.find_one(inner_box, box=self.task.get_box_by_name(inner_box)):
             self.in_liberation = False
-        elif self.task.find_one(long_inner_box, box=self.task.get_box_by_name(long_inner_box), threshold=0.85):
+        elif self.task.find_one(long_inner_box, box=self.task.get_box_by_name(long_inner_box)):
             self.in_liberation = True
         return self.in_liberation   
     
