@@ -6,10 +6,13 @@ class Cartethyia(BaseChar):
     def __init__(self, *args, **kwargs):
         self.is_cartethyia = True
         self.buffs = {'sword1': None, 'sword2': None, 'sword3': None}
+        self.template_shape = None
+        self.try_mid_air_attack_once = False
         super().__init__(*args, **kwargs)
         self.init_template()
 
     def init_template(self):
+        self.template_shape = self.task.frame.shape[:2]
         template = self.task.get_feature_by_name('forte_cartethyia_sword3')
         original_mat = template.mat
         h = original_mat.shape[0]
@@ -50,6 +53,9 @@ class Cartethyia(BaseChar):
             self.check_combat()
             if self.click_liberation():
                 self.is_cartethyia = False
+                self.last_res = -1
+            else:
+                self.is_small()
         else:
             self.logger.info(f'is fleurdelys')
         if self.click_resonance_with_lib_big():
@@ -66,6 +72,8 @@ class Cartethyia(BaseChar):
         self.switch_next_char()
 
     def click_resonance_with_lib_big(self):
+        if self.time_elapsed_accounting_for_freeze(self.last_res) < self.res_cd:
+            return False
         send_click=True
         clicked = False
         self.logger.debug(f'click_resonance start')
@@ -95,13 +103,14 @@ class Cartethyia(BaseChar):
                     if resonance_click_time == 0:
                         clicked = True
                         resonance_click_time = now
-                        self.update_res_cd()
                     last_op = 'resonance'
                     self.send_resonance_key()
                 last_click = now
             if self.try_lib_big():
                 break
             self.task.next_frame()
+        if clicked:
+            self.update_res_cd()
         return clicked
 
     def is_mid_air_attack_available(self):
@@ -116,7 +125,7 @@ class Cartethyia(BaseChar):
     
     def try_mid_air_attack(self, timeout=2):
         self.get_sword_buffs()
-        if self.liberation_available() or all(self.buffs.values()):
+        if self.liberation_available() or all(self.buffs.values()) or self.try_mid_air_attack_once:
             pass
         else:
             return
@@ -133,8 +142,18 @@ class Cartethyia(BaseChar):
                     break
                 if time.time() - start > timeout:
                     break
+        elif self.try_mid_air_attack_once:
+            start = time.time()
+            while time.time() - start < 0.5:
+                self.task.send_key('SPACE', interval=0.1)
+                self.sleep(0.01)
+                self.task.click(interval=0.1)
+                self.sleep(0.01)
+        self.try_mid_air_attack_once = False
     
     def is_small(self):
+        if self.template_shape != self.task.frame.shape[:2]:
+            self.init_template()
         self.is_cartethyia = bool(self.task.find_one(template=self.sword3_half_mat,
                                                      box=self.sword3_half_box, threshold=0.5))
         return self.is_cartethyia
@@ -206,4 +225,6 @@ class Cartethyia(BaseChar):
             self.task.mouse_up()
             self.check_combat()
             self.logger.debug(f'sword1: heavy_att duration {time.time() - start}')
+        if not any(self.buffs.values()):
+            self.try_mid_air_attack_once = True
         return not self.liberation_available()
