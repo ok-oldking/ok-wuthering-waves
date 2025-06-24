@@ -614,7 +614,7 @@ class BaseChar:
                 return False
             self._resonance_available = self.is_available(snap, 'resonance')
         elif self.res_cd > 0:
-            return time.time() - self.last_res > self.res_cd
+            return self.time_elapsed_accounting_for_freeze(self.last_res) > self.res_cd
         return self._resonance_available
 
     def liberation_cd_ready(self, offset=0):
@@ -644,7 +644,7 @@ class BaseChar:
             self._echo_available = self.is_available(snap, 'echo')
             return self._echo_available
         elif self.echo_cd > 0:
-            return time.time() - self.last_echo > self.echo_cd
+            return self.time_elapsed_accounting_for_freeze(self.last_echo) > self.echo_cd
 
     def is_con_full(self):
         if self.current_con == 1:
