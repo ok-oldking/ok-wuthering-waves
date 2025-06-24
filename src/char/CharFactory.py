@@ -7,7 +7,6 @@ from src.char.Cantarella import Cantarella
 from src.char.Carlotta import Carlotta
 from src.char.Cartethyia import Cartethyia
 from src.char.Changli import Changli
-from src.char.CharSkillButton import is_float
 from src.char.Chixia import Chixia
 from src.char.Ciaccona import Ciaccona
 from src.char.Danjin import Danjin
@@ -101,3 +100,11 @@ def get_char_by_pos(task, box, index, old_char):
     if task.debug:
         task.screenshot(f'could not find char {index}')
     return BaseChar(task, index, char_name=name)
+
+
+def is_float(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False

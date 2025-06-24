@@ -1,8 +1,8 @@
 name: AI Code Review
 
-on:
-  pull_request:
-    types: [ opened, synchronize ]
+#on:
+#  pull_request:
+#    types: [ opened, synchronize ]
 permissions: write-all
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
           AI_TEMPERATURE: 0 # 0 to 1 - higher values = more creativity and variance
 
           # Optional configurations
-          APPROVE_REVIEWS: true
+          APPROVE_REVIEWS: false
           MAX_COMMENTS: 10 # 0 to disable
           PROJECT_CONTEXT: "This is a Node.js TypeScript project"
           CONTEXT_FILES: "README.md"
