@@ -709,7 +709,7 @@ class BaseChar:
             self.task.click(interval=0.1)
 
     def continues_normal_attack(self, duration, interval=0.1, after_sleep=0, click_resonance_if_ready_and_return=False,
-                                until_con_full=False, check_combat=False):
+                                until_con_full=False):
         """持续进行普通攻击一段时间。
 
         Args:
@@ -724,10 +724,9 @@ class BaseChar:
                 return self.click_resonance()
             if until_con_full and self.is_con_full():
                 return
-            self.task.click(interval=interval, after_sleep=after_sleep)
-            if check_combat:
-                self.check_combat()
-                self.task.next_frame()
+            self.task.click()
+            self.sleep(interval)
+        self.sleep(after_sleep)
 
     def continues_click(self, key, duration, interval=0.1):
         """持续发送指定按键一段时间。

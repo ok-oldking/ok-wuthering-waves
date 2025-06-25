@@ -63,7 +63,7 @@ class HavocRover(BaseChar):
     # TODO: 存在<逆势回击>导致轴长改变打不满两次<抃风儛润>的问题，应当可以用一链提供的buff使用find_one进行优化
     def perform_wind_routine(self):
         if self.has_intro:
-            self.continues_normal_attack(2, after_sleep=0.05, check_combat=True)
+            self.continues_normal_attack(2, after_sleep=0.05)
             self.click_liberation(send_click=True)
             self.wind_routine_wait_down()
             return
@@ -95,7 +95,7 @@ class HavocRover(BaseChar):
             self.wait_down()
         else:
             self.task.wait_until(lambda: self.current_resonance() < 0.23, post_action=self.click_with_interval,
-                             time_out=1)
+                                 time_out=1)
         if check_forte_full:
             self.sleep(0.03)
             if self.is_forte_full():
