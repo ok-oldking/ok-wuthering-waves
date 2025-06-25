@@ -158,20 +158,6 @@ class Carlotta(BaseChar):
         self.logger.debug(f'carlotta_state :{self.forte},{self.resonance_available(check_cd=True)}')
         return (self.forte > 2) or (self.resonance_available(check_cd=True) and self.forte > 0) or self.liberation_ready
 
-    def resonance_available(self, current=None, check_ready=False, check_cd=False):
-        if check_cd and self.time_elapsed_accounting_for_freeze(self.last_res) < self.res_cd:
-            return False
-        if self._resonance_available:
-            return True
-        if self.is_current_char:
-            snap = self.current_resonance() if current is None else current
-            if check_ready and snap == 0:
-                return False
-            self._resonance_available = self.is_available(snap, 'resonance')
-        elif self.res_cd > 0:
-            return time.time() - self.last_res > self.res_cd
-        return self._resonance_available
-
     def do_perform_interlock(self):
         self.bullet = 0
         if self.has_intro:

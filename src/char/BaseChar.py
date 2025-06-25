@@ -596,8 +596,8 @@ class BaseChar:
         Returns:
             bool: 如果可用则返回 True。
         """
-        if check_cd and time.time() - self.last_res > self.res_cd:
-            return True
+        if check_cd and self.time_elapsed_accounting_for_freeze(self.last_res) < self.res_cd:
+            return False
         if self._resonance_available:
             return True
         if self.is_current_char:
