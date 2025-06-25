@@ -7,13 +7,15 @@ import numpy as np
 from src.char.BaseChar import BaseChar, Priority, text_white_color, forte_white_color
 from src.combat.CombatCheck import aim_color
 
+
 class State(Enum):
     FORTE_FULL = 1
     CON_FULL = 2
     DONE = 3
     FAILED = 4
     INTERRUPTED = 5
-    
+
+
 class Zani(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -30,7 +32,7 @@ class Zani(BaseChar):
         self.last_liber2 = -1
         self.dodge_time = -1
         self.attack_breakthrough_time = -1
-        
+
     def reset_state(self):
         self.char_phoebe = None
         self.blazes_threshold = -1
@@ -39,17 +41,17 @@ class Zani(BaseChar):
 
     def count_forte_priority(self):
         return 1
-    
+
     def current_attack(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 2709, 1894, 2827, 1972, name='box_attack', hcenter=True)
         self.task.draw_boxes(box.name, box)
         return self.task.calculate_color_percentage(text_white_color, box)
-    
+
     def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
         if start <= 0:
             return 10000
         return self.task.time_elapsed_accounting_for_freeze(start, intro_motion_freeze)
-    
+
     def do_perform(self):
         if self.blazes_threshold == -1:
             self.decide_teammate()
@@ -88,8 +90,8 @@ class Zani(BaseChar):
         if not cast_liberation:
             self.chair_time = -1
             if (not self.has_intro and
-                not self.is_first_engage() and
-                self.time_elapsed_accounting_for_freeze(self.last_liber2, intro_motion_freeze=True) >= 2.6
+                    not self.is_first_engage() and
+                    self.time_elapsed_accounting_for_freeze(self.last_liber2, intro_motion_freeze=True) >= 2.6
             ):
                 if self.time_elapsed_accounting_for_freeze(self.attack_breakthrough_time, intro_motion_freeze=True) < 4:
                     self.continues_right_click(0.05)
@@ -112,7 +114,7 @@ class Zani(BaseChar):
                             self.continues_right_click(0.05)
                             self.dodge_time = time.time()
                     if breakthrough_result == State.INTERRUPTED or result == State.INTERRUPTED:
-                        self.wait_until(lambda: self.is_interrupted()==False, time_out=0.6)
+                        self.wait_until(lambda: self.is_interrupted() == False, time_out=0.6)
                     if self.crisis_response_protocol_combo():
                         cast_liberation = self.liberation_available()
                 else:
@@ -137,15 +139,15 @@ class Zani(BaseChar):
                 self.check_liber()
                 self.continues_right_click(0.05)
                 self.continues_normal_attack(0.15)
-                self.nightfall_combo(cancel_last_smash = True)
+                self.nightfall_combo(cancel_last_smash=True)
                 self.sleep(0.1)
                 if self.is_forte_full():
                     self.nightfall_combo()
             return self.switch_next_char()
-        
+
         if self.is_forte_full():
             self.crisis_response_protocol_combo()
-        self.switch_next_char()          
+        self.switch_next_char()
 
     def basic_attack_breakthrough_combo(self):
         if self.is_forte_full():
@@ -162,7 +164,7 @@ class Zani(BaseChar):
             self.continues_normal_attack(0.1)
         self.attack_breakthrough_time = time.time()
         return State.DONE
-        
+
     def click_liber2(self):
         start = time.time()
         self.task.in_liberation = True
@@ -186,13 +188,13 @@ class Zani(BaseChar):
         duration = 2.25
         if current - start >= duration:
             self.last_liber2 = current
-            self.add_freeze_duration(current-duration, duration, 0)
+            self.add_freeze_duration(current - duration, duration, 0)
             self.logger.info(f'clicked liber2')
         self.in_liberation = False
         self.blazes = -1
         self.liberation_time = -1
         self.state = 0
-        
+
     def should_end_liberation(self, time_only=False):
         if self.liberation_time_left() < 1.7:
             self.logger.info(f'Liberation is about to end, perform liberation2')
@@ -206,15 +208,15 @@ class Zani(BaseChar):
             self.logger.info(f'Cannot perform another nightfall, perform liberation2')
             return True
         return False
-    
+
     def liberation_time_left(self):
         if not self.in_liberation or self.liberation_time <= 0:
             return 0
         result = 20 - self.time_elapsed_accounting_for_freeze(self.liberation_time)
         self.logger.debug(f'liberation_lasted: {result}')
         return result
-    
-    def nightfall_combo(self, cancel_last_smash = False):
+
+    def nightfall_combo(self, cancel_last_smash=False):
         self.logger.info(f'perform nightfall_combo')
         start = time.time()
         if not self.is_nightfall_ready():
@@ -230,7 +232,7 @@ class Zani(BaseChar):
         if cancel_last_smash:
             self.logger.info(f'cancel nightfall last smash')
             start = time.time()
-            while self.is_nightfall_ready(threshold = 0.035):
+            while self.is_nightfall_ready(threshold=0.035):
                 if time.time() - start > 2.5:
                     break
                 self.click()
@@ -240,14 +242,14 @@ class Zani(BaseChar):
         else:
             self.nightfall_time = time.time()
 
-    def is_nightfall_ready(self, threshold = 0.05):
+    def is_nightfall_ready(self, threshold=0.05):
         box = self.task.box_of_screen_scaled(3840, 2160, 2680, 1845, 2862, 2025, name='zani_attack', hcenter=True)
         light_percent = self.task.calculate_color_percentage(zani_light_color, box)
         self.logger.debug(f'nightfall_percent {light_percent}')
         if light_percent > threshold:
             return True
         return False
-    
+
     def nightfall_time_left(self):
         if self.nightfall_time <= 0:
             return 0
@@ -257,7 +259,7 @@ class Zani(BaseChar):
             return 0
         self.logger.debug(f'nightfall_time_left: {result}')
         return result
-    
+
     def standard_defense_protocol_combo(self):
         if self.is_forte_full():
             return State.FORTE_FULL
@@ -269,7 +271,7 @@ class Zani(BaseChar):
             self.continues_normal_attack(0.1)
             return State.DONE
         return State.FAILED
-    
+
     def basic_attack_breakthrough(self):
         result = self.standard_defense_protocol_combo()
         wait_chair = 1.25
@@ -322,7 +324,7 @@ class Zani(BaseChar):
         forte_percent = Decimal(str(forte_percent)).quantize(Decimal('0.001'), rounding=ROUND_HALF_UP)
         self.logger.debug(f'forte_percent {forte_percent}')
         return forte_percent
-    
+
     def check_forte_action(self):
         last_check_time = [0]
         last_value = [-1]
@@ -373,9 +375,9 @@ class Zani(BaseChar):
         else:
             result = State.DONE
         return result
-    
+
     def wait_until(self, condition: callable, condition2: callable = lambda: None,
-                   post_action: callable = lambda: None, time_out: float=0, settle_time: float=0):
+                   post_action: callable = lambda: None, time_out: float = 0, settle_time: float = 0):
         if time_out <= 0:
             return False
         start = time.time()
@@ -399,14 +401,14 @@ class Zani(BaseChar):
             post_action()
             self.task.next_frame()
         return False
-    
+
     def is_interrupted(self):
         return (
-            self.current_tool() < 0.15 and
-            self.current_echo() < 0.15 and
-            self.current_resonance() < 0.15
+                self.current_tool() < 0.15 and
+                self.current_echo() < 0.15 and
+                self.current_resonance() < 0.15
         )
-    
+
     def is_forte_full(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 2284, 1992, 2311, 2019, name='forte_full', hcenter=True)
         self.task.draw_boxes(box.name, box)
@@ -425,7 +427,7 @@ class Zani(BaseChar):
         result = 1.6 - self.time_elapsed_accounting_for_freeze(self.crisis_time, intro_motion_freeze=True)
         self.logger.debug(f'crisis_time_left: {result}')
         return result
-    
+
     def wait_crisis_protocol_end(self):
         if self.crisis_time_left() <= 0:
             return State.DONE
@@ -441,22 +443,22 @@ class Zani(BaseChar):
             self.blazes_threshold = 0.9
         else:
             self.blazes_threshold = 0.4
-    
+
     def update_blazes(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 1627, 2014, 2176, 2017, name='zani_blazes', hcenter=True)
         blazes_percent = self.task.calculate_color_percentage(zani_blazes_color, box)
         blazes_percent = Decimal(str(blazes_percent)).quantize(Decimal('0.01'), rounding=ROUND_UP)
         self.blazes = blazes_percent
         self.logger.debug(f'blazes_percent {blazes_percent}')
-    
+
     def is_prepared(self):
         if self.is_current_char:
             self.update_blazes()
         if self.blazes >= self.blazes_threshold:
             return True
-        if (self.char_phoebe is not None and 
-            self.char_phoebe.state["outro"] >= 1 and 
-            self.blazes >= 0.4
+        if (self.char_phoebe is not None and
+                self.char_phoebe.state["outro"] >= 1 and
+                self.blazes >= 0.4
         ):
             return True
         return False
@@ -480,18 +482,13 @@ class Zani(BaseChar):
             return -10000
         else:
             return super().do_get_switch_priority(current_char, has_intro)
-    
+
     def wait_switch(self):
         if self.has_intro and self.nightfall_time_left() > 0:
             self.logger.debug(f'has_intro {self.has_intro}, wait nightfall end')
             if self.nightfall_time_left() > 0 and self.liberation_time_left() >= 2:
                 return True
         return False
-    
-    def has_long_actionbar(self):
-        if self.check_liber():
-            return True
-        return False    
 
     def check_liber(self):
         if not self.task.in_team_and_world():
@@ -502,14 +499,15 @@ class Zani(BaseChar):
             self.in_liberation = False
         elif self.task.find_one(long_inner_box, box=self.task.get_box_by_name(long_inner_box), threshold=0.75):
             self.in_liberation = True
-        return self.in_liberation   
-    
+        return self.in_liberation
+
     def get_state(self):
         if self.state == 1 and self.liberation_time_left() <= 0:
             self.blazes = -1
             self.state = 0
         return self.state
-    
+
+
 zani_light_color = {
     'r': (245, 255),  # Red range
     'g': (245, 255),  # Green range
@@ -519,11 +517,11 @@ zani_light_color = {
 zani_blazes_color = {
     'r': (231, 257),  # Red range
     'g': (239, 255),  # Green range
-    'b': (171, 201)   # Blue range
+    'b': (171, 201)  # Blue range
 }
 
 zani_forte_color = {
     'r': (239, 255),  # Red range
     'g': (222, 255),  # Green range
-    'b': (156, 196)   # Blue range
-} 
+    'b': (156, 196)  # Blue range
+}

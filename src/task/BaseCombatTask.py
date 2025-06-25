@@ -455,37 +455,26 @@ class BaseCombatTask(CombatCheck):
             #     self.screenshot('not_in_combat_calling_check_combat')
             self.raise_not_in_combat('combat check not in combat')
 
+    def set_key(self, key, box):
+        best = self.find_best_match_in_box(box, ['t', 'f', 'e', 'r', 'q'], threshold=0.8)
+        logger.debug(f'key best match {key}: {best}')
+        if best and best.name != self.key_config[key]:
+            self.key_config[key] = best.name
+            self.log_info(f'set {key} to {best.name}')
+
     def load_hotkey(self, force=False):
         """加载或自动设置游戏内技能热键。
 
         Args:
             force (bool, optional): 是否强制重新加载热键。默认为 False。
         """
-        if (self.key_config['Auto Set HotKey'] and not self.hot_key_verified) or force:
+        if not self.hot_key_verified or force:
             self.hot_key_verified = True
 
-            keys = self.ocr(0.82, 0.92, 0.96, 0.96, match=re.compile(r'^[a-zA-Z]$'), threshold=0.7,
-                            name='keys')
-            resonance_key = self.find_boxes(keys, boundary=self.box_of_screen(0.82, 0.92, 0.85, 0.96))
-
-            echo_key = self.find_boxes(keys, boundary=self.box_of_screen(0.88, 0.92, 0.90, 0.96))
-
-            liberation_key = self.find_boxes(keys, boundary=self.box_of_screen(0.93, 0.92, 0.96, 0.96))
-            keys_str = str(resonance_key) + str(echo_key) + str(liberation_key)
-
-            self.log_info(f'hotkeys {keys_str}')
-
-            if echo_key and self.key_config['Echo Key'] != echo_key[0].name.lower():
-                self.key_config['Echo Key'] = echo_key[0].name.lower()
-                self.log_info(f'Set Echo Key {echo_key[0].name.lower()}', notify=True)
-            if liberation_key and self.key_config['Liberation Key'] != liberation_key[0].name.lower():
-                self.key_config['Liberation Key'] = liberation_key[0].name.lower()
-                self.log_info(f'Set Liberation Key {liberation_key[0].name.lower()}', notify=True)
-            if resonance_key and self.key_config['Resonance Key'] != resonance_key[0].name.lower():
-                self.key_config['Resonance Key'] = resonance_key[0].name.lower()
-                self.log_info(f'Set Resonance Key {resonance_key[0].name.lower()}', notify=True)
-
-            self.info['Skill HotKeys'] = keys_str
+            self.set_key('Resonance Key', self.box_of_screen(0.82, 0.92, 0.85, 0.96))
+            self.set_key('Echo Key', self.box_of_screen(0.88, 0.92, 0.90, 0.96))
+            self.set_key('Liberation Key', self.box_of_screen(0.93, 0.92, 0.96, 0.96))
+            self.set_key('Tool Key', self.box_of_screen(0.76, 0.92, 0.78, 0.96))
 
     def has_char(self, char_cls):
         for char in self.chars:

@@ -8,10 +8,12 @@ from src.char.BaseChar import BaseChar, Priority, forte_white_color
 from src.char.Healer import Healer
 from ok import color_range_to_bound
 
+
 class State(Enum):
     SUCCESS = 1
     UNAVAILABLE = 2
     TIMEOUT = 3
+
 
 class Phoebe(BaseChar):
     def __init__(self, *args, **kwargs):
@@ -27,7 +29,7 @@ class Phoebe(BaseChar):
             "liberation": 0,
             "outro": 0
         }
-        
+
     def reset_state(self):
         super().reset_state()
         self.perform_intro = 0
@@ -51,13 +53,13 @@ class Phoebe(BaseChar):
             self.logger.info('flying')
             self.continues_normal_attack(0.1)
             return self.switch_next_char()
-        
+
         attribute_mismatch = self.check_attribute_mismatch()
 
         if self.attribute == 2 and self.char_zani is not None:
             if self.zani_linkage():
                 return self.switch_next_char()
-        
+
         wait_ui_time = 0.35 - (time.time() - start)
         if wait_ui_time > 0 and self.star_available and self.judge_forte() == 0:
             self.logger.info('wait for UI')
@@ -66,13 +68,13 @@ class Phoebe(BaseChar):
         status_entered = self.absolution_or_confession()
         self.check_combat()
         if ((not attribute_mismatch or status_entered == State.SUCCESS) and
-            self.star_available and
-            self.click_liberation(send_click=True)
+                self.star_available and
+                self.click_liberation(send_click=True)
         ):
             self.state["liberation"] += 1
             self.check_combat()
         if status_entered == State.SUCCESS or self.judge_forte() > 0:
-            self.starflash_combo()  
+            self.starflash_combo()
         if self.resonance_available():
             if self.attribute == 2:
                 self.click_resonance_once()
@@ -99,7 +101,8 @@ class Phoebe(BaseChar):
 
     def check_attribute_mismatch(self):
         self.logger.debug('check attribute mismatch')
-        box = self.task.box_of_screen_scaled(3840, 2160, 1890, 2010, 1915, 2030, name='phoebe_middle_star', hcenter=True)
+        box = self.task.box_of_screen_scaled(3840, 2160, 1890, 2010, 1915, 2030, name='phoebe_middle_star',
+                                             hcenter=True)
         self.task.draw_boxes(box.name, box)
         star_light_percent = self.task.calculate_color_percentage(phiebe_star_light_color, box)
         self.logger.debug(f'middle_star_light_percent {star_light_percent}')
@@ -121,7 +124,7 @@ class Phoebe(BaseChar):
             self.attribute = old_attribute
             return True
         return False
-         
+
     def cast_remaining_skills(self, liber=True):
         start = -1
         if self.attribute == 1:
@@ -143,11 +146,11 @@ class Phoebe(BaseChar):
     def judge_forte(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 1633, 2004, 2160, 2014, name='phoebe_forte1', hcenter=True)
         if self.attribute == 1:
-            forte = self.calculate_forte_num(phoebe_forte_light_color,box,4,9,11,25)
+            forte = self.calculate_forte_num(phoebe_forte_light_color, box, 4, 9, 11, 25)
         else:
-            forte = self.calculate_forte_num(phoebe_forte_blue_color,box,2,18,20,50)
+            forte = self.calculate_forte_num(phoebe_forte_blue_color, box, 2, 18, 20, 50)
         return forte
-            
+
     def starflash_combo(self):
         self.logger.info('perform starflash_combo')
         start = time.time()
@@ -167,8 +170,8 @@ class Phoebe(BaseChar):
                 self.task.next_frame()
         if self.perform_heavy_attack():
             self.state["starflash_combo"] += 1
-                
-    def perform_heavy_attack(self):   
+
+    def perform_heavy_attack(self):
         if self.absolution_or_confession() == State.UNAVAILABLE:
             self.logger.info('perform heavy_attack')
             flying = False
@@ -189,7 +192,7 @@ class Phoebe(BaseChar):
                 if flying:
                     self.logger.info('flying')
                     self.task.wait_until(lambda: not self.flying(),
-                                        post_action=lambda: self.click(interval=0.1, after_sleep=0.1), time_out=2)
+                                         post_action=lambda: self.click(interval=0.1, after_sleep=0.1), time_out=2)
                     outer_start = time.time()
                 self.check_combat()
                 self.task.next_frame()
@@ -205,17 +208,17 @@ class Phoebe(BaseChar):
             self.send_resonance_key()
             self.task.next_frame()
         return False
-    
+
     def confession_ready(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 3103, 1844, 3285, 2026, name='phoebe_resonance', hcenter=False)
         self.task.draw_boxes(box.name, box)
         blue_percent = self.calculate_color_percentage_in_masked(phoebe_blue_color, box, 0.425, 0.490)
         self.logger.debug(f'blue_percent {blue_percent}')
-        return blue_percent > 0.15        
+        return blue_percent > 0.15
 
     def heavy_attack_ready(self):
         return self.is_forte_full()
-    
+
     def calculate_color_percentage_in_masked(self, target_color, box, mask_r1_ratio=0.0, mask_r2_ratio=0.0):
         cropped = box.crop_frame(self.task.frame)
         if cropped is None or cropped.size == 0:
@@ -234,7 +237,7 @@ class Phoebe(BaseChar):
             cv2.circle(ring_mask, center, r1, 0, -1)
 
         lower_bound, upper_bound = color_range_to_bound(target_color)
-        
+
         color_mask = cv2.inRange(cropped, lower_bound, upper_bound)
 
         combined_mask = cv2.bitwise_and(color_mask, ring_mask)
@@ -244,7 +247,7 @@ class Phoebe(BaseChar):
         if total_mask_area == 0:
             return 0.0
         return match_count / total_mask_area
-    
+
     def get_prayer_condition(self):
         if not self.check_middle_star():
             return self.is_forte_full
@@ -276,7 +279,7 @@ class Phoebe(BaseChar):
                 if self.flying():
                     self.logger.info('flying')
                     self.task.wait_until(lambda: not self.flying(),
-                                        post_action=lambda: self.click(interval=0.1, after_sleep=0.1), time_out=2)
+                                         post_action=lambda: self.click(interval=0.1, after_sleep=0.1), time_out=2)
                     outer_start = time.time()
                 self.task.next_frame()
             if self.attribute == 2:
@@ -289,17 +292,14 @@ class Phoebe(BaseChar):
             self.state["enter_status"] += 1
             return State.SUCCESS
         return State.UNAVAILABLE
-                    
-    def has_long_actionbar(self):
-        return True
-        
+
     def switch_next_char(self, *args):
         if self.is_con_full():
             if self.attribute == 2:
                 self.click_echo()
                 self.state["outro"] += 1
         return super().switch_next_char(*args)
-        
+
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if self.attribute == 0:
             self.decide_teammate()
@@ -308,16 +308,18 @@ class Phoebe(BaseChar):
                 return 10000
             if has_intro and self.get_zani_state() != 1 and isinstance(current_char, Healer):
                 return 10000
-        if not has_intro and self.last_outro_time > 0 and self.time_elapsed_accounting_for_freeze(self.last_outro_time, intro_motion_freeze=True) < 4.5:
+        if not has_intro and self.last_outro_time > 0 and self.time_elapsed_accounting_for_freeze(self.last_outro_time,
+                                                                                                  intro_motion_freeze=True) < 4.5:
             self.logger.info(f'performing outro, Priority {Priority.MIN}')
             return Priority.MIN
         else:
             return super().do_get_switch_priority(current_char, has_intro)
-            
+
     def check_middle_star(self):
         if self.star_available:
             return True
-        box = self.task.box_of_screen_scaled(3840, 2160, 1890, 2010, 1915, 2030, name='phoebe_middle_star', hcenter=True)
+        box = self.task.box_of_screen_scaled(3840, 2160, 1890, 2010, 1915, 2030, name='phoebe_middle_star',
+                                             hcenter=True)
         if self.attribute == 1:
             forte_percent = self.task.calculate_color_percentage(phiebe_star_light_color, box)
             self.logger.debug(f'middle_star_light_percent {forte_percent}')
@@ -329,9 +331,9 @@ class Phoebe(BaseChar):
             self.logger.debug(f'middle_star_blue_percent {forte_percent}')
             if forte_percent > 0.25:
                 self.star_available = True
-                return True    
+                return True
         return False
-        
+
     def decide_teammate(self):
         from src.char.Zani import Zani
         if char := self.task.has_char(Zani):
@@ -341,11 +343,11 @@ class Phoebe(BaseChar):
         else:
             self.logger.debug(f'set attribute: attacker')
             self.attribute = 1
-    
+
     def judge_frequncy_and_amplitude(self, gray, min_freq, max_freq, min_amp):
         height, width = gray.shape[:]
         if height == 0 or width < 64 or not np.array_equal(np.unique(gray), [0, 255]):
-            return 0       
+            return 0
 
         white_ratio = np.count_nonzero(gray == 255) / gray.size
         profile = np.sum(gray == 255, axis=0).astype(np.float32)
@@ -355,54 +357,55 @@ class Phoebe(BaseChar):
         frequncy = 0
         i = 1
         while i < width:
-            if n[i]> amplitude:
+            if n[i] > amplitude:
                 amplitude = n[i]
                 frequncy = i
-            i+=1
+            i += 1
         return (min_freq <= i <= max_freq) or amplitude >= min_amp
-        
-    def calculate_forte_num(self, forte_color, box, num = 1, min_freq = 39, max_freq = 41, min_amp = 50):
+
+    def calculate_forte_num(self, forte_color, box, num=1, min_freq=39, max_freq=41, min_amp=50):
         cropped = box.crop_frame(self.task.frame)
         lower_bound, upper_bound = color_range_to_bound(forte_color)
         image = cv2.inRange(cropped, lower_bound, upper_bound)
-        
+
         forte = 0
         height, width = image.shape
         step = int(width / num)
         left = 0
         fail_count = 0
         warning = False
-        while left+step < width:
-            gray = image[:,left:left+step] 
-            score = self.judge_frequncy_and_amplitude(gray,min_freq,max_freq,min_amp)
+        while left + step < width:
+            gray = image[:, left:left + step]
+            score = self.judge_frequncy_and_amplitude(gray, min_freq, max_freq, min_amp)
             if fail_count == 0:
                 if score:
                     forte += 1
                 else:
-                    fail_count+=1
+                    fail_count += 1
             else:
                 if score:
                     warning = True
                 else:
-                    fail_count+=1
-            left+=step
+                    fail_count += 1
+            left += step
         if warning:
             self.logger.debug('Frequncy analysis error, return the forte before mistake.')
-        self.logger.debug(f'Frequncy analysis with forte {forte}')    
+        self.logger.debug(f'Frequncy analysis with forte {forte}')
         return forte
-  
+
     def get_zani_state(self):
         if self.attribute == 2 and self.char_zani is not None:
             return self.char_zani.get_state()
-    
+
     def is_action_complete(self):
         if self.attribute != 2:
             return False
-        self.logger.debug(f'state_liberation {self.state["liberation"]} state_starflash_combo {self.state["starflash_combo"]}')
+        self.logger.debug(
+            f'state_liberation {self.state["liberation"]} state_starflash_combo {self.state["starflash_combo"]}')
         if self.state["liberation"] >= 1 and self.state["starflash_combo"] >= 2:
             return True
         return False
-    
+
     def reset_action(self):
         if self.attribute == 2:
             self.logger.info(f'reset action')
@@ -430,38 +433,39 @@ class Phoebe(BaseChar):
             self.logger.debug(f'is_forte_full mean {mean_val} contrast {contrast_val}')
         return mean_val > 190 and contrast_val > 40
 
+
 phoebe_blue_color = {
     'r': (124, 134),  # Red range
     'g': (176, 186),  # Green range
-    'b': (250, 255)   # Blue range
+    'b': (250, 255)  # Blue range
 }
 
 phoebe_light_color = {
     'r': (250, 255),  # Red range
     'g': (250, 255),  # Green range
-    'b': (175, 185)   # Blue range
+    'b': (175, 185)  # Blue range
 }
 
 phoebe_forte_light_color = {
     'r': (240, 255),  # Red range
     'g': (240, 255),  # Green range
-    'b': (165, 195)   # Blue range
-}  
+    'b': (165, 195)  # Blue range
+}
 
 phoebe_forte_blue_color = {
     'r': (225, 255),  # Red range
     'g': (225, 255),  # Green range
-    'b': (190, 225)   # Blue range
-}  
+    'b': (190, 225)  # Blue range
+}
 
 phiebe_star_light_color = {
     'r': (235, 255),  # Red range
     'g': (220, 250),  # Green range
-    'b': (160, 190)   # Blue range
-}  
+    'b': (160, 190)  # Blue range
+}
 
 phiebe_star_blue_color = {
     'r': (240, 255),  # Red range
     'g': (240, 255),  # Green range
-    'b': (240, 255)   # Blue range
-}  
+    'b': (240, 255)  # Blue range
+}

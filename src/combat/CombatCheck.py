@@ -142,17 +142,18 @@ class CombatCheck(BaseWWTask):
         else:
             start = time.time()
             from src.task.AutoCombatTask import AutoCombatTask
-            in_combat = self.has_target() or ((self.config.get('Auto Target') or not isinstance(self,
-                                                                                                AutoCombatTask)) and self.check_health_bar())
-            in_combat = in_combat and self.check_target_enemy_btn()
+            has_target = self.has_target()
+            in_combat = has_target or ((self.config.get('Auto Target') or not isinstance(self,
+                                                                                         AutoCombatTask)) and self.check_health_bar())
             if in_combat:
                 self._in_illusive = self.in_illusive_realm()
-                if not self.target_enemy(wait=True):
+                if not has_target and not self.target_enemy(wait=True):
                     return False
                 logger.info(
                     f'enter combat cost {(time.time() - start):2f} boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
                 self.has_lavitator = self.ensure_leviator()
                 self._in_combat = True
+                self.load_chars()
                 return True
 
     def ensure_leviator(self):
@@ -201,40 +202,13 @@ class CombatCheck(BaseWWTask):
                        target_height=540, name='lv_text', log=True)
         return lvs
 
-    def check_target_enemy_btn(self):
-        if self.calculate_color_percentage(text_white_color,
-                                           self.get_box_by_name(
-                                               'box_target_mouse')) == 0:
-            logger.info(f'check target_enemy failed, wait 3 seconds')
-            if self.wait_until(lambda: self.calculate_color_percentage(text_white_color,
-                                                                       self.get_box_by_name('box_target_mouse')) != 0,
-                               time_out=5):
-                return True
-            self.log_error(
-                "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
-            )
-        return True
-
     def has_target(self):
-        if self.has_long_actionbar_chars():
-            outer_box = 'box_target_enemy_long'
-            inner_box = 'box_target_enemy_long_inner'
-        else:
-            outer_box = 'box_target_enemy'
-            inner_box = 'box_target_enemy_inner'
-        aim_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name(outer_box))
-        aim_inner_percent = self.calculate_color_percentage(aim_color, self.get_box_by_name(inner_box))
-        # logger.debug(f'box_target_enemy yellow percent {aim_percent} {aim_inner_percent}')
-        if aim_percent - aim_inner_percent > 0.02:
-            return True
-
-    def has_long_actionbar_chars(self):
-        if not self._in_combat:
-            self.load_chars()
-        current_char = self.get_current_char(raise_exception=False)
-        if current_char and current_char.has_long_actionbar():
-            return True
-        return False
+        best = self.find_best_match_in_box(self.get_box_by_name('has_target').scale(1.1), ['has_target', 'no_target'],
+                                           threshold=0.6)
+        if not best:
+            best = self.find_best_match_in_box(self.get_box_by_name('target_box_long'), ['has_target', 'no_target'],
+                                               threshold=0.6)
+        return best and best.name == 'has_target'
 
     def target_enemy(self, wait=True):
         if not wait:

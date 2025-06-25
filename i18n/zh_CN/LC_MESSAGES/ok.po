@@ -13,7 +13,10 @@ msgid "Fleurdelys"
 msgstr "芙露德莉斯"
 
 msgid "no levitator tool in the tab wheel!"
-msgstr "需要在轮盘中开启控物品"
+msgstr "需要在TAB键轮盘中添加控物"
+
+msgid "Check hotkey error! Please check if hotkey settings are correct!"
+msgstr "自动游戏快捷键与软件设置中不一致! 请检查是否正确设置快捷键!"
 
 msgid "Can not switch to levitator please ensure you have equipped echos!"
 msgstr "无法切换工具栏到控物, 请确保已经装备主声骸, 并工具栏切换为控物!"
@@ -240,8 +243,11 @@ msgstr "是"
 msgid "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}"
 msgstr "检测技能快捷键失败{},请确认已装备声骸,并且使用A-Z字母为游戏快捷键,如果确认无误依然报错,配置关闭快捷键检测."
 
-msgid "Auto Set HotKey"
-msgstr "自动设置快捷键"
+msgid "Tool Key"
+msgstr "探索工具快捷键"
+
+msgid "Can't auto combat, Please equip echos!"
+msgstr "无法自动战斗, 请装备声骸!"
 
 msgid "Turn on to avoid interruption by monthly card when executing tasks"
 msgstr "开启避免挂任务的时候被月卡中断"

@@ -95,7 +95,7 @@ class BaseChar:
     def use_tool_box(self):
         """如果角色装备了探索工具箱, 则使用它。"""
         if self.has_tool_box:
-            self.task.send_key('t')
+            self.task.send_key(self.task.key_config['Tool Key'])
             self.has_tool_box = False
 
     @property
@@ -514,14 +514,6 @@ class BaseChar:
     def get_liberation_key(self):
         """获取共鸣解放按键 (代理到 task.get_liberation_key)。"""
         return self.task.get_liberation_key()
-
-    def has_long_actionbar(self):
-        """判断角色是否有扩展的行动条 (如某些角色变身后)。
-
-        Returns:
-            bool: 如果有则返回 True。
-        """
-        return False
 
     def get_echo_key(self):
         """获取声骸技能按键 (代理到 task.get_echo_key)。"""

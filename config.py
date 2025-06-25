@@ -48,10 +48,10 @@ def make_bottom_right_black(frame):
 
 
 key_config_option = ConfigOption('Game Hotkey Config', {
-    'Auto Set HotKey': False,
     'Echo Key': 'q',
     'Liberation Key': 'r',
     'Resonance Key': 'e',
+    'Tool Key': 't',
 }, description='In Game Hotkey for Skills')
 
 pick_echo_config_option = ConfigOption('Pick Echo Config', {
