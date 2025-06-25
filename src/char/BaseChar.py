@@ -716,7 +716,9 @@ class BaseChar:
                 return self.click_resonance()
             if until_con_full and self.is_con_full():
                 return
-            self.task.click(interval=interval, after_sleep=after_sleep)
+            self.task.click()
+            self.sleep(interval)
+        self.sleep(after_sleep)
 
     def continues_click(self, key, duration, interval=0.1):
         """持续发送指定按键一段时间。
