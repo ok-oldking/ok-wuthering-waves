@@ -71,13 +71,14 @@ class HavocRover(BaseChar):
         if self.resonance_available() and not self.is_forte_full():
             self.click_echo()
             start = time.time()
+            flying = False
             while time.time() - start < 1:
                 if flying := self.wind_routine_flying():
                     break
-                self.send_resonance_key()
+                self.send_resonance_key(interval=0.1)
                 self.task.next_frame()
             if flying:
-                self.continues_normal_attack(1.74, after_sleep=0.05, check_combat=True)
+                self.continues_normal_attack(1.74, after_sleep=0.05)
         self.click_liberation(send_click=True)
         self.wind_routine_wait_down()
 
