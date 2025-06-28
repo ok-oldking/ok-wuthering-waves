@@ -11,8 +11,7 @@ class HavocRover(BaseChar):
         super().reset_state()
 
     def do_perform(self):
-        if self.ring_index == -1:
-            self.task._ensure_ring_index()
+        self.init()
         if not self.has_intro:
             self.sleep(0.01)
         if self.ring_index == Elements.HAVOC:
@@ -27,6 +26,12 @@ class HavocRover(BaseChar):
         else:
             self.perform_basic_routine()
         self.switch_next_char()
+
+    def init(self):
+        if self.ring_index == -1:
+            self.task._ensure_ring_index()
+            if self.ring_index == Elements.WIND:
+                self.init_wind()
 
     def perform_spectro_routine(self):
         if self.has_intro:
@@ -60,7 +65,13 @@ class HavocRover(BaseChar):
             self.click()
         self.continues_normal_attack(1.1 - self.time_elapsed_accounting_for_freeze(self.last_switch_time))
 
-    # TODO: 存在<逆势回击>导致轴长改变打不满两次<抃风儛润>的问题，应当可以用一链提供的buff使用find_one进行优化
+    def init_wind(self):
+        from src.char.Cartethyia import Cartethyia
+        from src.char.Phoebe import Phoebe
+        self.use_skyfall_severance = False
+        if self.task.has_char(Cartethyia) and self.task.has_char(Phoebe):
+            self.use_skyfall_severance = True
+            
     def perform_wind_routine(self):
         if self.has_intro:
             self.continues_normal_attack(2, after_sleep=0.05)
@@ -77,8 +88,14 @@ class HavocRover(BaseChar):
                     break
                 self.send_resonance_key(interval=0.1)
                 self.task.next_frame()
-            if flying:
-                self.continues_normal_attack(1.74, after_sleep=0.05)
+            if not self.use_skyfall_severance:
+                if flying:
+                    self.continues_normal_attack(1.74, after_sleep=0.05)
+            else:
+                if flying:
+                    self.continues_normal_attack(1.6, after_sleep=0.05)
+                if self.click_resonance(send_click=False)[0]:
+                    self.continues_normal_attack(1)
         self.click_liberation(send_click=True)
         self.wind_routine_wait_down()
 
@@ -95,8 +112,8 @@ class HavocRover(BaseChar):
         if self.task.has_lavitator:
             self.wait_down()
         else:
-            self.task.wait_until(lambda: self.current_resonance() < 0.23, post_action=self.click_with_interval,
-                                 time_out=1)
+            self.task.wait_until(lambda: self.current_resonance() < 0.23,
+                                 post_action=lambda: self.click(interval=0.1, after_sleep=0.01), time_out=2.5)
         if check_forte_full:
             self.sleep(0.03)
             if self.is_forte_full():
@@ -116,8 +133,7 @@ class HavocRover(BaseChar):
             self.continues_normal_attack(1)
 
     def do_fast_perform(self):
-        if self.ring_index == -1:
-            self.task._ensure_ring_index()
+        self.init()
         if not self.has_intro:
             self.sleep(0.01)
         if self.ring_index == Elements.WIND:
@@ -143,6 +159,8 @@ class HavocRover(BaseChar):
         att_time = 1 - (time.time() - self.last_perform)
         if att_time > 0 and self.wind_routine_flying():
             self.continues_normal_attack(att_time)
+        if self.use_skyfall_severance:
+            self.click_resonance(send_click=False)
         if self.click_liberation(send_click=True):
             self.sleep(0.03)
         if self.is_forte_full():

@@ -562,7 +562,7 @@ class BaseChar:
             priority += self.count_echo_priority()
         if priority > 0:
             priority += Priority.SKILL_AVAILABLE
-        priority += self.count_liberation_priority()
+        priority += self.count_base_priority()
         return priority
 
     def count_base_priority(self):
