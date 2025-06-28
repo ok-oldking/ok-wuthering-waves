@@ -62,7 +62,7 @@ class Cartethyia(BaseChar):
             pass
         else:
             start = time.time()
-            time_out = 1.1 if self.is_small() else 2.1
+            time_out = 1.1 if self.is_small() else 2.2
             while time.time() - start < time_out:
                 if self.try_lib_big():
                     return self.switch_next_char()
@@ -144,7 +144,7 @@ class Cartethyia(BaseChar):
                     break
         elif self.try_mid_air_attack_once:
             start = time.time()
-            while time.time() - start < 0.5:
+            while time.time() - start < 0.8:
                 self.task.send_key('SPACE', interval=0.1)
                 self.sleep(0.01)
                 self.task.click(interval=0.1)
@@ -192,14 +192,19 @@ class Cartethyia(BaseChar):
         if has_perform_action := not all(self.buffs[k] for k in ['sword2', 'sword3']):
             self.logger.info('acquire missing buffs')
         if not self.buffs.get('sword2'):
+            template = self.task.get_feature_by_name('forte_cartethyia_sword2')
+            h = template.mat.shape[0]
+            half_mat = template.mat[:int(h * 0.5)]
+            half_box = self.task.get_box_by_name('forte_cartethyia_sword2')
+            half_box.height = (half_box.height + 1) // 2
             start = time.time()
             is_first_attempt = True
             while time.time() - start < 2.5:
-                if self.task.find_one('forte_cartethyia_sword2', threshold=0.9):
+                if self.task.find_one(template=half_mat, box=half_box, threshold=0.9):
                     break
                 if is_first_attempt and self.current_tool() < 0.1:
                     is_first_attempt = False
-                    self.task.wait_until(lambda: self.current_tool() > 0.1, time_out=0.6)
+                    self.task.wait_until(lambda: self.current_tool() > 0.1, time_out=2)
                     start = time.time()
                 self.click(interval=0.1, after_sleep=0.01)
                 self.check_combat()
