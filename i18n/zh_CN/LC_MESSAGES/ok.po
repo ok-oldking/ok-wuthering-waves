@@ -246,6 +246,9 @@ msgstr "检测技能快捷键失败{},请确认已装备声骸,并且使用A-Z�
 msgid "Tool Key"
 msgstr "探索工具快捷键"
 
+msgid "Echo per Hour"
+msgstr "每小时声骸数量"
+
 msgid "Can't auto combat, Please equip echos!"
 msgstr "无法自动战斗, 请装备声骸!"
 

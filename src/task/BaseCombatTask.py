@@ -476,6 +476,11 @@ class BaseCombatTask(CombatCheck):
             self.set_key('Liberation Key', self.box_of_screen(0.93, 0.92, 0.96, 0.96))
             self.set_key('Tool Key', self.box_of_screen(0.76, 0.92, 0.78, 0.96))
 
+        self.info_set('Liberation Key', self.get_liberation_key())
+        self.info_set('Resonance Key', self.get_resonance_key())
+        self.info_set('Echo Key', self.get_echo_key())
+        self.info_set('Tool Key', self.key_config['Tool Key'])
+
     def has_char(self, char_cls):
         for char in self.chars:
             if isinstance(char, char_cls):
