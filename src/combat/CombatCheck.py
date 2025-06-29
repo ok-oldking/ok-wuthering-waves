@@ -208,6 +208,13 @@ class CombatCheck(BaseWWTask):
         if not best:
             best = self.find_best_match_in_box(self.get_box_by_name('target_box_long'), ['has_target', 'no_target'],
                                                threshold=0.6)
+        if not best:
+            best = self.find_best_match_in_box(self.get_box_by_name('has_target').scale(2), ['has_target', 'no_target'],
+                                               threshold=0.6)
+            if best:
+                self.send_key('esc', after_sleep=1.5)
+                self.send_key('esc', after_sleep=1.5)
+                return False
         return best and best.name == 'has_target'
 
     def target_enemy(self, wait=True):
