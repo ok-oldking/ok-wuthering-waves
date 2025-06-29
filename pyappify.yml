@@ -1,0 +1,26 @@
+name: "ok-ww"
+uac: true
+profiles:
+  - name: "CPU-China"
+    git_url: "https://cnb.cool/ok-oldking/ok-wuthering-waves.git"
+    admin: true
+    main_script: "main.py"
+    requires_python: "3.12"
+    requirements: "requirements.txt"
+    # PYTHONPATH: "your/default/path" # Optional, will be "" if missing
+
+  - name: "GPU-China"
+    main_script: "main_direct_ml.py"
+    requirements: "requirements-dml.txt"
+
+  - name: "CPU-Global"
+    git_url: "https://github.com/ok-oldking/ok-ww-update.git"
+    main_script: "main_direct_ml.py"
+    requirements: "requirements.txt"
+
+  - name: "GPU-Global"
+    git_url: "https://github.com/ok-oldking/ok-ww-update.git"
+    main_script: "main_direct_ml.py"
+    requirements: "requirements-dml.txt"
+
+

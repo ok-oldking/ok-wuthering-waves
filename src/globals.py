@@ -20,9 +20,17 @@ class Globals(QObject):
     @property
     def yolo_model(self):
         if self._yolo_model is None:
-            from src.OnnxYolo8Detect import OnnxYolo8Detect
-            self._yolo_model = OnnxYolo8Detect(
-                weights=get_path_relative_to_exe(os.path.join("assets", "echo_model", "echo.onnx")))
+            weights = get_path_relative_to_exe(os.path.join("assets", "echo_model", "echo.onnx"))
+            if og.config.get("ocr").get("params").get("use_openvino"):
+                logger.info("yolo_model Using OpenVinoYolo8Detect")
+                from src.OpenVinoYolo8Detect import OpenVinoYolo8Detect
+                self._yolo_model = OpenVinoYolo8Detect(
+                    weights=weights)
+            else:
+                logger.info("yolo_model Using OnnxYolo8Detect")
+                from src.OnnxYolo8Detect import OnnxYolo8Detect
+                self._yolo_model = OnnxYolo8Detect(
+                    weights=weights)
         return self._yolo_model
 
     def yolo_detect(self, image, threshold=0.6, label=-1):

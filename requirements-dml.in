@@ -13,4 +13,4 @@ pydirectinput==1.0.4
 mouse==0.7.1
 ok-script
 onnxocr-ppocrv4==0.0.5
-openvino
+onnxruntime-directml
