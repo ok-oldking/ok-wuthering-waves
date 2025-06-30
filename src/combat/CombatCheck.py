@@ -34,6 +34,9 @@ class CombatCheck(BaseWWTask):
         self.combat_end_condition = None
         self._in_illusive = False
         self.has_lavitator = False
+        self.cds = {
+        }
+        self.cd_refreshed = False
 
     @property
     def in_liberation(self):
@@ -65,6 +68,8 @@ class CombatCheck(BaseWWTask):
         return False
 
     def do_reset_to_false(self):
+        self.cds = {}
+        self.cd_refreshed = False
         self._in_combat = False
         self.boss_lv_mask = None
         self.boss_lv_template = None

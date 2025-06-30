@@ -40,7 +40,7 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
         start = time.time()
         while time.time() - start < 1:
             f = self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box,
-                               threshold=0.8)
+                              threshold=0.8)
             if not f:
                 return
             percent = self.calculate_color_percentage(f_white_color, f)
@@ -60,18 +60,17 @@ class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
 
             if dialog_3_dots:
                 if self.config.get('Pick Up White List'):
-                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up White List'), log=True)
+                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up White List'))
                     if texts:
                         logger.info(f'found Pick Up White List {texts}')
                         self.send_fs()
                         return True
             else:
                 if self.config.get('Pick Up Black List'):
-                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up Black List'), log=True)
+                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up Black List'))
                     if texts:
                         logger.info(f'found Pick Up Black List: {texts}')
                         return False
                 self.send_fs()
                 return True
             self.next_frame()
-

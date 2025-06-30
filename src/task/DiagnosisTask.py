@@ -21,10 +21,10 @@ class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
             self.log_error('must be in game world and in teams, please check you game resolution is 16:9', notify=True)
             return
         self.load_hotkey(force=True)
-        self.load_chars()
 
         self.start = time.time()
         while True:
+            self.load_chars()
             char = self.get_current_char()
             if not char:
                 self.info.clear()
@@ -37,12 +37,9 @@ class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
                     2)
                 self.info['Game Resolution'] = f'{self.frame.shape[1]}x{self.frame.shape[0]}'
                 self.info['Current Character'] = str(char)
-                self.info['Resonance in CD'] = char.has_cd('resonance')
-                self.info['Resonance Available'] = char.current_resonance() > 0
-                self.info['Echo in CD'] = char.has_cd('echo')
-                self.info['Echo Available'] = char.current_echo() > 0
-                self.info['Liberation in CD'] = char.has_cd('liberation')
-                self.info['Liberation Available'] = char.current_liberation() > 0
+                self.info['Resonance CD'] = self.get_cd('resonance')
+                self.info['Echo CD'] = self.get_cd('echo')
+                self.info['Liberation CD'] = self.get_cd('liberation')
                 self.info['Concerto'] = char.get_current_con()
                 self.next_frame()
 
@@ -60,7 +57,7 @@ class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
         self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False,
                                 time_out=3, click_after_delay=0.5, threshold=0.8)
         self.wait_click_feature('gray_start_battle', relative_x=-1, raise_if_not_found=True,
-                               click_after_delay=0.5, threshold=0.8)
+                                click_after_delay=0.5, threshold=0.8)
 
 
 echo_color = {

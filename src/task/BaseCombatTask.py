@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 from ok import Logger, Config
-from ok import get_connected_area_by_color, color_range_to_bound
+from ok import color_range_to_bound
 from ok import safe_get
 from src import text_white_color
 from src.char import BaseChar
@@ -16,6 +16,7 @@ from src.char.Healer import Healer
 from src.combat.CombatCheck import CombatCheck
 
 logger = Logger.get_logger(__name__)
+cd_regex = re.compile(r'\d{1,2}\.\d')
 
 
 class NotInCombatException(Exception):
@@ -130,6 +131,48 @@ class BaseCombatTask(CombatCheck):
                 self._in_liberation = True
             self.next_frame()
         logger.info(f'send_key_and_wait_animation timed out {key}')
+
+    def refresh_cd(self):
+        if self.cd_refreshed:
+            return
+        index = self.get_current_char().index
+        cds = self.cds.get(index)
+        if cds is None:
+            cds = {}
+            self.cds[index] = cds
+        cds['time'] = time.time()
+        cds['resonance'] = 0
+        cds['liberation'] = 0
+        cds['echo'] = 0
+        texts = self.ocr(0.81, 0.86, 0.97, 0.93, frame_processor=convert_text_bw, match=cd_regex)
+        for text in texts:
+            cd = convert_cd(text)
+            if text.x < self.width_of_screen(0.86):
+                cds['resonance'] = cd
+            elif text.x > self.width_of_screen(0.91):
+                cds['liberation'] = cd
+            else:
+                cds['echo'] = cd
+        self.cd_refreshed = True
+        self.log_debug(f'cd refreshed: {cds} {time.time() - cds["time"]}')
+
+    def get_cd(self, box_name, char_index=None):
+        self.refresh_cd()
+        if char_index is None:
+            char_index = self.get_current_char().index
+        if cds := self.cds.get(char_index):
+            time_elapsed = self.time_elapsed_accounting_for_freeze(cds['time'])
+            return cds[box_name] - time_elapsed
+        else:
+            return 0
+
+    def next_frame(self):
+        self.cd_refreshed = False
+        super().next_frame()
+
+    def sleep(self, *args, **kwargs):
+        self.cd_refreshed = False
+        super().sleep(*args, **kwargs)
 
     def teleport_to_heal(self):
         """传送回城治疗。"""
@@ -366,7 +409,7 @@ class BaseCombatTask(CombatCheck):
         """
         return self.has_cd('resonance')
 
-    def has_cd(self, box_name):
+    def has_cd(self, box_name, char_index=None):
         """检查指定UI区域是否处于冷却状态 (通过检测特定颜色的点和数字)。
 
         Args:
@@ -375,43 +418,7 @@ class BaseCombatTask(CombatCheck):
         Returns:
             bool: 如果在冷却中则返回 True, 否则 False。
         """
-        box = self.get_box_by_name(f'box_{box_name}')
-        cropped = box.crop_frame(self.frame)
-        lower_bound, upper_bound = color_range_to_bound(dot_color)
-        mask = cv2.inRange(cropped, lower_bound, upper_bound)
-        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
-        big_area_count = 0
-        has_dot = False
-        number_count = 0
-        invalid_count = 0
-        # dot = None
-        # output_image = cropped.copy()
-        for i in range(1, num_labels):
-            # Check if the connected co  mponent touches the border
-            left, top, width, height, area = stats[i]
-            if area / self.frame.shape[0] / self.frame.shape[
-                1] > 20 / 3840 / 2160:
-                big_area_count += 1
-            if left > 0 and top > 0 and left + width < box.width and top + height < box.height:
-                # self.logger.debug(f"{box_name} Area of connected component {i}: {area} pixels {width}x{height} ")
-                if 16 / 3840 / 2160 <= area / self.frame.shape[0] / self.frame.shape[
-                    1] <= 90 / 3840 / 2160 and abs(width - height) / (
-                        width + height) < 0.3 and top / cropped.shape[0] > 0.6:
-                    # if  top < (
-                    #     box.height / 2) and left > box.width * 0.2 and left + width < box.width * 0.8:
-                    has_dot = True
-                    #     self.logger.debug(f"{box_name} multiple dots return False")
-                    #     return False
-                    # dot = stats[i]
-                elif 25 / 2160 <= height / self.screen_height <= 45 / 2160 and 5 / 2160 <= width / self.screen_height <= 35 / 2160:
-                    number_count += 1
-            else:
-                # self.logger.debug(f"{box_name} has invalid return False")
-                invalid_count += 1
-                return False
-
-        has_cd = (has_dot and 2 <= number_count <= 3)
-        return has_cd
+        return self.get_cd(box_name, char_index) > 0
 
     def get_current_char(self, raise_exception=True) -> BaseChar:
         """获取当前操作的角色对象。
@@ -476,10 +483,10 @@ class BaseCombatTask(CombatCheck):
             self.set_key('Liberation Key', self.box_of_screen(0.93, 0.92, 0.96, 0.96))
             self.set_key('Tool Key', self.box_of_screen(0.76, 0.92, 0.78, 0.96))
 
-        self.info_set('Liberation Key', self.get_liberation_key())
-        self.info_set('Resonance Key', self.get_resonance_key())
-        self.info_set('Echo Key', self.get_echo_key())
-        self.info_set('Tool Key', self.key_config['Tool Key'])
+            self.info_set('Liberation Key', self.get_liberation_key())
+            self.info_set('Resonance Key', self.get_resonance_key())
+            self.info_set('Echo Key', self.get_echo_key())
+            self.info_set('Tool Key', self.key_config['Tool Key'])
 
     def has_char(self, char_cls):
         for char in self.chars:
@@ -742,7 +749,7 @@ class BaseCombatTask(CombatCheck):
                 if match:
                     char._liberation_available = True
                     self.log_debug('checking liberation_available by template {} {}'.format(char, match))
-                    self.screenshot('liberation_available_{}_{}_{}'.format(char, match.name, match.confidence))
+                    # self.screenshot('liberation_available_{}_{}_{}'.format(char, match.name, match.confidence))
 
 
 white_color = {  # 用于检测UI元素可用状态的白色颜色范围。
@@ -810,3 +817,44 @@ con_full_templates = [  # 头像右边表示当前角色 协奏满
     'con_full_wind',  # 1
     'con_full_havoc',  # 3
 ]
+
+
+def convert_cd(text):
+    """
+    Strips a string to only keep the first part that matches the regex pattern.
+    Args:
+      text: The input string.
+      pattern: The regex pattern to match.
+    Returns:
+      The first matching substring, or None if no match is found.
+    """
+    try:
+        return float(text.name)
+    except ValueError:
+        match = re.search(cd_regex, text.name)
+        if match:
+            return float(match.group(0))
+        else:
+            return 1
+
+
+lower_white = np.array([244, 244, 244], dtype=np.uint8)
+upper_white = np.array([255, 255, 255], dtype=np.uint8)
+
+
+def convert_text_bw(cv_image):
+    """
+    Converts pixels in the near-white range (244-255) to black,
+    and all others to white.
+    Args:
+        cv_image: Input image (NumPy array, BGR).
+    Returns:
+        Black and white image (NumPy array), where matches are black.
+    """
+
+    match_mask = cv2.inRange(cv_image, lower_white, upper_white)
+
+    output_image = np.full(cv_image.shape, 255, dtype=np.uint8)
+    output_image[match_mask == 255] = [0, 0, 0]
+
+    return output_image

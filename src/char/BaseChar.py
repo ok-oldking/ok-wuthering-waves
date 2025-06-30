@@ -391,7 +391,7 @@ class BaseChar:
                 return False
             self.check_combat()
             current = self.current_echo()
-            if not self.echo_available(current) and (duration == 0 or not clicked):
+            if not self.echo_available() and (duration == 0 or not clicked):
                 break
             now = time.time()
             if duration > 0 and start != 0:
@@ -596,31 +596,15 @@ class BaseChar:
         Returns:
             bool: 如果可用则返回 True。
         """
-        if check_cd and self.time_elapsed_accounting_for_freeze(self.last_res) < self.res_cd:
-            return False
-        if self._resonance_available:
-            return True
+        return self.available('resonance')
+
+    def available(self, box):
         if self.is_current_char:
-            snap = self.current_resonance() if current is None else current
-            if check_ready and snap == 0:
-                return False
-            self._resonance_available = self.is_available(snap, 'resonance')
-        elif self.res_cd > 0:
-            return self.time_elapsed_accounting_for_freeze(self.last_res) > self.res_cd
-        return self._resonance_available
+            return self.task.available(box)
+        else:
+            return self.task.has_cd(box, self.index)
 
-    def liberation_cd_ready(self, offset=0):
-        """判断共鸣解放冷却是否完成。
-
-        Args:
-            offset (int, optional): 冷却时间偏移量。默认为 0。
-
-        Returns:
-            bool: 如果冷却完成则返回 True。
-        """
-        return self.time_elapsed_accounting_for_freeze(self.last_liberation + offset) >= self.liberation_cd
-
-    def echo_available(self, current=None):
+    def echo_available(self):
         """判断声骸技能是否可用。
 
         Args:
@@ -629,14 +613,7 @@ class BaseChar:
         Returns:
             bool: 如果可用则返回 True。
         """
-        if self.is_current_char:
-            if self._echo_available:
-                return True
-            snap = self.current_echo() if current is None else current
-            self._echo_available = self.is_available(snap, 'echo')
-            return self._echo_available
-        elif self.echo_cd > 0:
-            return self.time_elapsed_accounting_for_freeze(self.last_echo) > self.echo_cd
+        return self.available('echo')
 
     def is_con_full(self):
         if self.current_con == 1:
@@ -680,15 +657,7 @@ class BaseChar:
         Returns:
             bool: 如果可用则返回 True。
         """
-        if self.is_current_char:
-            if self._liberation_available and not self.has_cd('liberation'):
-                return True
-            snap = self.current_liberation()
-            if snap == 0:
-                return False
-            else:
-                self._liberation_available = self.is_available(snap, 'liberation')
-        return self._liberation_available
+        return self.available('liberation')
 
     def __str__(self):
         """返回角色类名作为其字符串表示。"""
