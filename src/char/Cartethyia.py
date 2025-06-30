@@ -1,16 +1,26 @@
 import time, cv2
 import numpy as np
-from src.char.BaseChar import BaseChar, Priority
+from src.char.BaseChar import BaseChar, Priority, forte_white_color
 
 class Cartethyia(BaseChar):
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.is_cartethyia = True
         self.buffs = {'sword1': None, 'sword2': None, 'sword3': None}
         self.template_shape = None
         self.try_mid_air_attack_once = False
-        self.res_backswing = -1
-        super().__init__(*args, **kwargs)
+        self.transform = False
+        self.res_time = -1
+        self.n4_time = -1
         self.init_template()
+
+    @property
+    def intro_motion_freeze_duration(self):
+        return 0.6 if self.is_cartethyia else 0.78
+    
+    @intro_motion_freeze_duration.setter
+    def intro_motion_freeze_duration(self, _):
+        pass
 
     def init_template(self):
         self.template_shape = self.task.frame.shape[:2]
@@ -42,7 +52,7 @@ class Cartethyia(BaseChar):
     
     def do_perform(self):
         if self.has_intro:
-            self.continues_normal_attack(1.4)   
+            self.continues_normal_attack(1.2)   
         else:
             self.click_echo(time_out=0.2)
         if self.is_small():
@@ -50,26 +60,21 @@ class Cartethyia(BaseChar):
             self.wait_down()
             if self.acquire_missing_buffs():
                 return self.switch_next_char()
+            self.check_combat()
             self.try_mid_air_attack()
             self.check_combat()
             if self.click_liberation():
                 self.is_cartethyia = False
                 self.last_res = -1
-            else:
-                self.is_small()
+                self.transform = True
+            elif not self.is_small():
+                self.transform = True
         else:
             self.logger.info(f'is fleurdelys')
         if self.click_resonance_with_lib_big():
             pass
         else:
-            time_out = 1.1 if self.is_small() else 1.9
-            if self.res_backswing > 0 and not self.is_cartethyia:
-                wait_backswing = 1.8 - self.time_elapsed_accounting_for_freeze(self.res_backswing, intro_motion_freeze=True)
-                if wait_backswing > 0:
-                    self.continues_normal_attack(wait_backswing)
-                    self.res_backswing = -1
-                elif wait_backswing + 0.7 > 0:
-                    time_out += 0.1
+            time_out = 1.1 if self.is_small() else self.fleurdelys_n4_duration()
             start = time.time()
             while time.time() - start < time_out:
                 if self.try_lib_big():
@@ -77,18 +82,32 @@ class Cartethyia(BaseChar):
                 self.click_with_interval()
                 self.check_combat()
                 self.task.next_frame()
+            self.n4_time = time.time()
         self.try_lib_big()
+        self.transform = False
         self.switch_next_char()
+
+    def fleurdelys_n4_duration(self):
+        if not self.transform and self.has_intro:
+            duration = 3.9 - (time.time() - self.last_perform)
+        elif self.transform or self.is_first_engage() or\
+             self.time_elapsed_accounting_for_freeze(self.n4_time, intro_motion_freeze=True) < 1.5:
+            duration = 3.25
+        elif (backswing := self.time_elapsed_accounting_for_freeze(self.res_time, intro_motion_freeze=True)) < 2.5:
+            duration = 2 + max(0, 1.65 - backswing)
+        else:
+            duration = 1.9 - (time.time() - self.last_perform)
+        self.n4_time = -1
+        self.res_time = -1
+        self.logger.debug(f'fleurdelys_n4_duration {duration}')
+        return duration
 
     def click_resonance_with_lib_big(self):
         if self.time_elapsed_accounting_for_freeze(self.last_res) < self.res_cd:
             return False
-        send_click=True
         clicked = False
         self.logger.debug(f'click_resonance start')
-        click_count = 0
         last_click = 0
-        last_op = 'click'
         resonance_click_time = 0
         while True:
             if resonance_click_time != 0 and time.time() - resonance_click_time > 8:
@@ -99,27 +118,19 @@ class Cartethyia(BaseChar):
             self.check_combat()
             now = time.time()
             current_resonance = self.current_resonance()
-            if not self.resonance_available(current_resonance):
+            if not self.resonance_available():
                 self.logger.debug(f'click_resonance not available break')
                 break
             self.logger.debug(f'click_resonance resonance_available click {current_resonance}')
 
             if now - last_click > 0.1:
-                if send_click and (current_resonance == 0 or last_op == 'resonance'):
-                    if not (resonance_click_time != 0 and time.time() - resonance_click_time > 2.5):
-                        self.task.click()
-                        click_count += 1
-                        if click_count > 2:
-                            last_op = 'click'
-                            click_count = 0
-                        continue
-                    else:
-                        last_op = 'click'
                 if current_resonance > 0 and self.resonance_available(current_resonance):
+                    if current_resonance < 0.17 and time.time() - resonance_click_time < 2.5:
+                        self.click()
+                        continue
                     if resonance_click_time == 0:
                         clicked = True
                         resonance_click_time = now
-                    last_op = 'resonance'
                     self.send_resonance_key()
                 last_click = now
             if self.try_lib_big():
@@ -127,18 +138,20 @@ class Cartethyia(BaseChar):
             self.task.next_frame()
         if clicked:
             self.update_res_cd()
-            self.res_backswing = time.time()
+            self.res_time = time.time()
         return clicked
 
     def is_mid_air_attack_available(self):
         if self.is_cartethyia:
             box = self.task.box_of_screen_scaled(3840, 2160, 2298, 1997, 2361, 2022, name='inner_cartethyia_space', hcenter=True)
-            cropped = box.crop_frame(self.task.frame)
-            gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
-            mean_val = np.mean(gray)
-            contrast_val = np.std(gray)
-            self.logger.debug(f'cartethyia_space mean {mean_val} contrast {contrast_val}')
-            return mean_val > 190 and contrast_val > 60
+            self.task.draw_boxes(box.name, box)
+            if self.task.calculate_color_percentage(forte_white_color, box) > 0.15:
+                cropped = box.crop_frame(self.task.frame)
+                gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
+                mean_val = np.mean(gray)
+                contrast_val = np.std(gray)
+                self.logger.debug(f'cartethyia_space mean {mean_val} contrast {contrast_val}')
+                return mean_val > 190 and contrast_val > 60
     
     def try_mid_air_attack(self, timeout=2):
         self.get_sword_buffs()
@@ -214,13 +227,17 @@ class Cartethyia(BaseChar):
             half_mat = template.mat[:int(h * 0.5)]
             half_box = self.task.get_box_by_name('forte_cartethyia_sword2')
             half_box.height = int(h * 0.6)
+            time_out = 3.5
+            if try_once := bool(self.task.find_one(template=half_mat, box=half_box, threshold=0.85)):
+                time_out = 2 if not self.is_first_engage() else 2.5
             start = time.time()
-            is_first_attempt = True
-            while time.time() - start < 2.5:
-                if self.task.find_one(template=half_mat, box=half_box, threshold=0.85):
+            interrupt_handled = False
+            while time.time() - start < time_out:
+                if not try_once and self.task.find_one(template=half_mat, box=half_box, threshold=0.85):
                     break
-                if is_first_attempt and self.current_tool() < 0.1:
-                    is_first_attempt = False
+                if not interrupt_handled and self.current_tool() < 0.1:
+                    time_out = 2.5 if time_out == 2 else time_out
+                    interrupt_handled = True
                     self.task.wait_until(lambda: self.current_tool() > 0.1, time_out=3)
                     start = time.time()
                 self.click(interval=0.1, after_sleep=0.01)
