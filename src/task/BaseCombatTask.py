@@ -168,7 +168,7 @@ class BaseCombatTask(CombatCheck):
 
     def next_frame(self):
         self.cd_refreshed = False
-        super().next_frame()
+        return super().next_frame()
 
     def sleep(self, *args, **kwargs):
         self.cd_refreshed = False
