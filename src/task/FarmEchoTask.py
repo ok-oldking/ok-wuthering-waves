@@ -33,7 +33,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self._farm_start_time = time.time()
 
     def on_combat_check(self):
-        self.incr_drop(self.pick_f(handle_claim=True))
+        if not self._in_realm:
+            self.incr_drop(self.pick_f(handle_claim=True))
         if not self._in_realm and time.time() - self._farm_start_time < 20:
             self._in_realm = self.in_realm()
             self.log_info(f'in_realm: {self._in_realm}')
@@ -57,6 +58,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self._in_realm = self.in_realm()
         self.log_info(f'in_realm: {self._in_realm}')
         self._farm_start_time = time.time()
+        self.target_enemy_time_out = 3  if self._in_realm else 1.2
+        self.switch_char_time_out = 5  if self._in_realm else 3
         threshold = 0.25 if self._in_realm else 0.65
         time_out = 12 if self._in_realm else 4
         self._has_treasure = False
@@ -81,7 +84,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
             count += 1
             self.log_info('start wait in combat')
-            if not self._in_realm and not self._has_treasure:
+            if not self._in_realm and not self._has_treasure and not self.in_combat():
                 self.go_to_boss_minimap()
 
             self.sleep(self.config.get("Combat Wait Time", 0))
@@ -104,7 +107,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             if dropped and not self._has_treasure:
                 self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
             else:
-                self.sleep(1)
+                self.wait_until(self.in_combat, raise_if_not_found=False, time_out=1)
 
     def go_to_boss_minimap(self, threshold=0.5, time_out=15):
         start_time = time.time()

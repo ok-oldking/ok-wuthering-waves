@@ -352,7 +352,7 @@ class BaseCombatTask(CombatCheck):
                 if confirm:
                     self.log_info(f'char dead')
                     self.raise_not_in_combat(f'char dead', exception_type=CharDeadException)
-                if now - start > 5:
+                if now - start > self.switch_char_time_out:
                     self.raise_not_in_combat(
                         f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
                 self.next_frame()
