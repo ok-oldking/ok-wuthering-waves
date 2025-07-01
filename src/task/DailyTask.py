@@ -16,18 +16,44 @@ class DailyTask(TacetTask):
         super().__init__(*args, **kwargs)
         self.description = "Login, claim monthly card, farm echo, and claim daily reward"
         self.name = "Daily Task"
-        self.add_exit_after_config()
         self.show_create_shortcut = True
         self.icon = FluentIcon.CAR
+        #
+        if (not self.default_config):
+            self.default_config = dict()
+        self.default_config.update({
+            "mail task": True,
+            "activity task": True,
+            "stop if daily task fail": False,
+            "enable millage task": True,
+            "wait second(s) before start": 0
+        })
+        if (not self.config_description):
+            self.config_description = dict()
+        self.config_description.update({
+            "mail task": "enable mail task",
+            "activity task": "enable activity task",
+            "stop if daily task fail": "If checked, stop if fail to execute daily task (generally caused by not enough stamina).",
+            "enable millage task": "enable millage task",
+            "wait second(s) before start": "wait second(s) before start to prevent disconnect problem",
+        })
+        #
+        self.add_exit_after_config()
 
     def run(self):
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=180)
+        self.sleep(self.config.get("wait second(s) before start", 0))
+        if (self.config.get("mail task", True)):
+            self.claim_mail()
+        #
         self.farm_tacet()
         self.sleep(4)
-        self.claim_daily()
-        self.claim_mail()
-        self.claim_millage()
+        #
+        if (self.config.get("activity task", True)):
+            self.claim_daily()
+        if (self.config.get("millage task", True)):
+            self.claim_millage()
         self.log_info('Task completed', notify=True)
 
     def claim_millage(self):
@@ -39,6 +65,8 @@ class DailyTask(TacetTask):
         self.wait_ocr(0.2, 0.13, 0.32, 0.22, match=re.compile(r'\d+'), settle_time=1, raise_if_not_found=True, log=True)
         self.click(0.04, 0.3, after_sleep=1)
         self.click(0.68, 0.91, after_sleep=1)
+        self.click(0.04, 0.16, after_sleep=1)
+        self.click(0.68, 0.91, after_sleep=1)
         self.ensure_main()
 
     def claim_daily(self):
@@ -47,6 +75,14 @@ class DailyTask(TacetTask):
         self.openF2Book()
         gray_book_quest = self.openF2Book("gray_book_quest")
         self.click_box(gray_book_quest, after_sleep=1.5)
+        #
+        total_points = int(self.ocr(0.19, 0.8, 0.30, 0.93, match=number_re)[0].name)
+        self.info_set('daily points', total_points)
+        if total_points >= 100:
+            self.click(0.89, 0.85, after_sleep=1)
+            self.ensure_main(time_out=5)
+            return
+        #
         while True:
             boxes = self.ocr(0.23, 0.16, 0.31, 0.69, match=re.compile(r"^[1-9]\d*/\d+$"))
             count = 0
@@ -65,9 +101,12 @@ class DailyTask(TacetTask):
         total_points = int(self.ocr(0.19, 0.8, 0.30, 0.93, match=number_re)[0].name)
         self.info_set('daily points', total_points)
         if total_points < 100:
-            raise Exception("Can't complete daily task, may need to increase stamina manually!")
-
-        self.click(0.89, 0.85, after_sleep=1)
+            if (self.config.get("stop if daily task fail", False)):
+                raise Exception("Can't complete daily task, may need to increase stamina manually!")
+            else:
+                self.log_info("Can't complete daily task, may need to increase stamina manually!", notify=True)
+        else:
+            self.click(0.89, 0.85, after_sleep=1)
         self.ensure_main(time_out=5)
 
     def claim_mail(self):

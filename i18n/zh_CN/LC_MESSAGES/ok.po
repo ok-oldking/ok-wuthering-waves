@@ -472,7 +472,7 @@ msgid "Farm selected Tacet Suppression until out of stamina, will use the backup
 msgstr "刷选定无音区直到没体力(包括后备体力), 需要可传送"
 
 msgid "Login, claim monthly card, farm echo, and claim daily reward"
-msgstr "启动游戏, 登录, 领月卡, 刷声骸, 领日常任务奖励, 领邮件"
+msgstr "启动游戏, 登录, 领月卡, 领邮件, 刷声骸, 领活跃度奖励, 领先约电台奖励"
 
 msgid "Tacet Suppression (Must explore first to be able to teleport)"
 msgstr "无音区(必须先探索, 保证可以传送)"
@@ -536,3 +536,33 @@ msgstr "战斗开始前等待时间(秒)"
 
 msgid "Wait time before each combat(seconds), set 5 if farming Sentry Construct"
 msgstr "如果刷异构武装设置为5秒"
+
+msgid "mail task"
+msgstr "领取「邮件」"
+
+msgid "enable mail task"
+msgstr "领取「邮件」"
+
+msgid "activity task"
+msgstr "启用「活跃度」任务"
+
+msgid "enable activity task"
+msgstr "启用「活跃度」任务"
+
+msgid "stop if daily task fail"
+msgstr "在无法完成「活跃度」任务时停止运行"
+
+msgid "If checked, stop if fail to execute daily task (generally caused by not enough stamina)."
+msgstr "如果勾选，将在无法完成「活跃度」任务时停止运行。（通常由于「结晶波片」不足。）"
+
+msgid "millage task"
+msgstr "启用「先约电台」任务"
+
+msgid "enable millage task"
+msgstr "启用「先约电台」任务"
+
+msgid "wait second(s) before start"
+msgstr "等待数秒后执行一条龙"
+
+msgid "wait second(s) before start to prevent disconnect problem"
+msgstr "在进入「鸣潮」后等待若干秒后执行一条龙，旨在解决偶发的掉线问题。"

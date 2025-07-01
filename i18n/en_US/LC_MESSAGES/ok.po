@@ -746,3 +746,33 @@ msgstr ""
 
 msgid "wait main"
 msgstr ""
+
+msgid "mail task"
+msgstr ""
+
+msgid "enable mail task"
+msgstr ""
+
+msgid "activity task"
+msgstr ""
+
+msgid "enable activity task"
+msgstr ""
+
+msgid "stop if daily task fail"
+msgstr ""
+
+msgid "If checked, stop if fail to execute daily task (generally caused by not enough stamina)."
+msgstr ""
+
+msgid "millage task"
+msgstr ""
+
+msgid "enable millage task"
+msgstr ""
+
+msgid "wait second(s) before start"
+msgstr ""
+
+msgid "wait second(s) before start to prevent disconnect problem"
+msgstr ""
