@@ -217,12 +217,12 @@ class CombatCheck(BaseWWTask):
             best = self.find_best_match_in_box(self.get_box_by_name('target_box_long'), ['has_target', 'no_target'],
                                                threshold=0.6)
         if not best:
-            best = self.find_best_match_in_box(self.get_box_by_name('has_target').scale(1.1, 2),
+            best = self.find_best_match_in_box(self.get_box_by_name('has_target').scale(1.1, 2.0),
                                                ['has_target', 'no_target'],
                                                threshold=0.6)
             if best and self.esc_count == 0:
                 logger.error(f'try fix bear echo')
-                self.send_key('esc', after_sleep=1.5)
+                self.send_key('esc', after_sleep=2)
                 self.send_key('esc', after_sleep=1.5)
                 self.esc_count = 1
                 return False
