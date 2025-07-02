@@ -266,7 +266,9 @@ class BaseCombatTask(CombatCheck):
             logger.debug(f'running first circle_count{circle_count} circle {total_index} duration:{duration}')
             for direction in directions:
                 if total_index > 2 and (total_index + 1) % 2 == 0:
-                    duration += step
+                    if not (count == circle_count - 1 and direction == directions[-1]):
+                        duration += step
+                    
                 picked = self.send_key_and_wait_f(direction, False, time_out=duration, running=True,
                                                   target_text=self.absorb_echo_text())
                 if picked:
@@ -350,7 +352,7 @@ class BaseCombatTask(CombatCheck):
                 if confirm:
                     self.log_info(f'char dead')
                     self.raise_not_in_combat(f'char dead', exception_type=CharDeadException)
-                if now - start > 5:
+                if now - start > self.switch_char_time_out:
                     self.raise_not_in_combat(
                         f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
                 self.next_frame()

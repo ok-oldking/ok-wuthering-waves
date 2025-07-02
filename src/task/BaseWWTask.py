@@ -597,7 +597,8 @@ class BaseWWTask(BaseTask):
         return False, max_echo_count > 1
 
     def center_camera(self):
-        self.click(0.5, 0.5, down_time=0.2, after_sleep=1, key='middle')
+        self.click(0.5, 0.5, down_time=0.2, key='middle')
+        self.wait_until(self.in_combat, time_out=1)
 
     def turn_direction(self, direction):
         if direction != 'w':
@@ -788,13 +789,13 @@ class BaseWWTask(BaseTask):
             if current_direction:
                 self.mouse_up(key='right')
                 self.send_key_up(current_direction)
-                self.sleep(0.2)
+                self.wait_until(self.in_combat, time_out=0.2)
             self.turn_direction(new_direction)
             self.send_key_down('w')
-            self.sleep(0.2)
+            self.wait_until(self.in_combat, time_out=0.2)
             self.mouse_down(key='right')
             current_direction = 'w'  # After turning, we always move forward
-            self.sleep(1)
+            self.wait_until(self.in_combat, time_out=1)
 
         return current_direction, current_adjust, False
 
