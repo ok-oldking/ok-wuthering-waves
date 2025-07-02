@@ -31,6 +31,7 @@ class CombatCheck(BaseWWTask):
         self.last_in_realm_not_combat = 0
         self._last_liberation = 0
         self.target_enemy_time_out = 3
+        self.switch_char_time_out = 5
         self.combat_end_condition = None
         self._in_illusive = False
         self.has_lavitator = False
