@@ -47,11 +47,6 @@ class Zani(BaseChar):
         self.task.draw_boxes(box.name, box)
         return self.task.calculate_color_percentage(text_white_color, box)
 
-    def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
-        if start <= 0:
-            return 10000
-        return self.task.time_elapsed_accounting_for_freeze(start, intro_motion_freeze)
-
     def do_perform(self):
         if self.blazes_threshold == -1:
             self.decide_teammate()

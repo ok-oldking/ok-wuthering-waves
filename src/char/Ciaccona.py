@@ -9,6 +9,7 @@ class Ciaccona(BaseChar):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.intro_motion_freeze_duration = 0.73
         self.attribute = 0
         self.in_liberation = False
         self.cartethyia = None
