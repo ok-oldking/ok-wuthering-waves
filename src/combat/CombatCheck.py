@@ -37,6 +37,7 @@ class CombatCheck(BaseWWTask):
         self.cds = {
         }
         self.cd_refreshed = False
+        self.esc_count = 0
 
     @property
     def in_liberation(self):
@@ -72,6 +73,7 @@ class CombatCheck(BaseWWTask):
         self.cd_refreshed = False
         self._in_combat = False
         self.boss_lv_mask = None
+        self.esc_count = 0
         self.boss_lv_template = None
         self.in_liberation = False  # return True
         self.has_count_down = False
@@ -214,11 +216,14 @@ class CombatCheck(BaseWWTask):
             best = self.find_best_match_in_box(self.get_box_by_name('target_box_long'), ['has_target', 'no_target'],
                                                threshold=0.6)
         if not best:
-            best = self.find_best_match_in_box(self.get_box_by_name('has_target').scale(2), ['has_target', 'no_target'],
+            best = self.find_best_match_in_box(self.get_box_by_name('has_target').scale(1.1, 2),
+                                               ['has_target', 'no_target'],
                                                threshold=0.6)
-            if best:
+            if best and self.esc_count == 0:
+                logger.error(f'try fix bear echo')
                 self.send_key('esc', after_sleep=1.5)
                 self.send_key('esc', after_sleep=1.5)
+                self.esc_count = 1
                 return False
         return best and best.name == 'has_target'
 
