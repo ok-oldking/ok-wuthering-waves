@@ -150,6 +150,14 @@ class BaseWWTask(BaseTask):
             text = self.ocr(box=search_text_box, match=target_text, target_height=540)
             logger.debug(f'found f with text {text}, target_text {target_text}')
             if not text:
+                if getattr(self, '_in_realm', False):
+                    search_text_box = f.copy(x_offset=f.width * 5, width_offset=f.width * 7, height_offset=1.5 * f.height,
+                                     y_offset=2.5 * f.height, name='search_second_text_box')
+                    text = self.ocr(box=search_text_box, match=target_text, target_height=540)
+                    logger.debug(f'found f with text {text}, target_text {target_text}')
+                    if text:
+                        self.scroll_relative(0.5, 0.5, 1)
+                        self.sleep(0.02)
                 return None
         return f
 
@@ -355,8 +363,12 @@ class BaseWWTask(BaseTask):
                                             running=False):
                     logger.info('walk backward found f')
                     return True
-            return self.send_key_and_wait_f(direction, raise_if_not_found, time_out,
-                                            target_text=target_text, running=False) and self.sleep(0.5)
+                if self.send_key_and_wait_f(direction, raise_if_not_found, time_out,target_text=target_text,
+                                            running=False):
+                    logger.info('walk forward found f')
+                    self.sleep(0.5)
+                    return True
+            return False
         else:
             self.send_key('f')
             if cancel and self.handle_claim_button():
