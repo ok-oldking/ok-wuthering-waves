@@ -15,6 +15,7 @@ from src.char.HavocRover import HavocRover
 from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
 from src.char.Jiyan import Jiyan
+from src.char.Lupa import Lupa
 from src.char.Mortefi import Mortefi
 from src.char.Phoebe import Phoebe
 from src.char.Roccia import Roccia
@@ -66,7 +67,7 @@ char_dict = {
     'char_ciaccona': {'cls': Ciaccona, 'res_cd': 10, 'echo_cd': 25, 'liberation_cd': 20, 'ring_index': Elements.WIND},
     'char_cartethyia': {'cls': Cartethyia, 'res_cd': 14, 'echo_cd': 25, 'liberation_cd': 20,
                         'ring_index': Elements.WIND},
-    'char_lupa': {'cls': Cartethyia, 'res_cd': 14, 'echo_cd': 25, 'liberation_cd': 20,
+    'char_lupa': {'cls': Lupa, 'res_cd': 14, 'echo_cd': 25, 'liberation_cd': 20,
                   'ring_index': Elements.FIRE},
 }
 
