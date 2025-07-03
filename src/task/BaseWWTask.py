@@ -801,13 +801,13 @@ class BaseWWTask(BaseTask):
 
     def in_team(self):
         c1 = self.find_one('char_1_text',
-                           threshold=0.75)
+                           threshold=0.8)
         c2 = self.find_one('char_2_text',
-                           threshold=0.75)
+                           threshold=0.8)
         c3 = self.find_one('char_3_text',
-                           threshold=0.75)
+                           threshold=0.8)
         arr = [c1, c2, c3]
-        # logger.debug(f'in_team check {arr} time: {(time.time() - start):.3f}s')
+        # logger.debug(f'in_team check {arr}')
         current = -1
         exist_count = 0
         for i in range(len(arr)):
