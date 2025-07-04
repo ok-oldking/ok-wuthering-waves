@@ -13,7 +13,7 @@ jobs:
 
     env:
       PYTHONIOENCODING: 'UTF-8'
-      SIGN_BUILD: 'true'
+      SIGN_BUILD: 'false'
 
     strategy:
       matrix:
@@ -106,8 +106,8 @@ jobs:
       - name: Build with PyAppify Action
         id: build-app
         uses: ok-oldking/pyappify-action@master
-      #        with:
-      #          use_release: https://api.github.com/repos/ok-oldking/pyappify-action/releases/tags/v1.0.6
+        with:
+          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.4.43
 
       - name: Extract EXE for signing
         if: env.SIGN_BUILD == 'true'
