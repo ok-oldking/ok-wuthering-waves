@@ -770,3 +770,33 @@ msgstr ""
 
 msgid "farm Tacet Suppression N time(s), 60 stamina per time, set a large number to use all stamina"
 msgstr ""
+
+msgid "⭐ Daily Task"
+msgstr ""
+
+msgid "open game, login, monthly card, mail, farm, activity, radio"
+msgstr ""
+
+msgid "mail task"
+msgstr ""
+
+msgid "enable mail task"
+msgstr ""
+
+msgid "activity task"
+msgstr ""
+
+msgid "enable activity task"
+msgstr ""
+
+msgid "millage task"
+msgstr ""
+
+msgid "enable millage task"
+msgstr ""
+
+msgid "wait second(s) before start"
+msgstr ""
+
+msgid "wait second(s) before start to prevent disconnect problem"
+msgstr ""
