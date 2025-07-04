@@ -602,7 +602,7 @@ class BaseChar:
         if self.is_current_char:
             return self.task.available(box)
         else:
-            return self.task.has_cd(box, self.index)
+            return not self.task.has_cd(box, self.index)
 
     def echo_available(self):
         """判断声骸技能是否可用。
