@@ -536,3 +536,27 @@ msgstr "战斗开始前等待时间(秒)"
 
 msgid "Wait time before each combat(seconds), set 5 if farming Sentry Construct"
 msgstr "如果刷异构武装设置为5秒"
+
+msgid "⭐ Tacet Suppression"
+msgstr "⭐ 无音区"
+
+msgid "Farm selected Tacet Suppression, you need to be able to teleport"
+msgstr "刷选定无音区, 需要可传送"
+
+msgid "Teleport Timeout"
+msgstr "传送超时"
+
+msgid "the timeout of second for teleport"
+msgstr "传送超时, 单位为秒, 低配置或机械硬盘用户建议调大"
+
+msgid "Tacet Suppression Serial Number"
+msgstr "无音区编号"
+
+msgid "the Nth number in the list of Tacet Suppression list (in F2 menu)"
+msgstr "选择F2列表中的第几个无音区"
+
+msgid "Tacet Suppression Count"
+msgstr "无音区刷取次数"
+
+msgid "farm Tacet Suppression N time(s), 60 stamina per time, set a large number to use all stamina"
+msgstr "无音区刷取次数, 每次60体力, 如需用光所有体力可以设置一个大数"
