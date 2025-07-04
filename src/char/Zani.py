@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 
 from src.char.BaseChar import BaseChar, Priority, text_white_color, forte_white_color
-from src.combat.CombatCheck import aim_color
 
 
 class State(Enum):
@@ -258,10 +257,9 @@ class Zani(BaseChar):
     def standard_defense_protocol_combo(self):
         if self.is_forte_full():
             return State.FORTE_FULL
-        if self.time_elapsed_accounting_for_freeze(self.last_res) >= self.res_cd and self.resonance_available():
+        if self.resonance_available():
             self.logger.info(f'perform standard_defense_protocol')
-            self.send_resonance_key()
-            self.update_res_cd()
+            self.click_resonance(send_click=False)
             self.sleep(0.1)
             self.continues_normal_attack(0.1)
             return State.DONE
@@ -269,7 +267,7 @@ class Zani(BaseChar):
 
     def basic_attack_breakthrough(self):
         result = self.standard_defense_protocol_combo()
-        wait_chair = 1.25
+        wait_chair = 1.05
         if result == State.FAILED:
             sleep = 0.3 - (time.time() - self.dodge_time)
             if (result := self.wait_forte_full(sleep)) != State.DONE:

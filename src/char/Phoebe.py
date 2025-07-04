@@ -91,7 +91,7 @@ class Phoebe(BaseChar):
             self.logger.info('stop applying spectro frazzle')
             if not self.resonance_available():
                 if result == 0 or self.char_zani.liberation_time_left() > 3:
-                    self.continues_normal_attack(1)
+                    self.continues_normal_attack(1, interval=0.15)
             else:
                 self.click_resonance(send_click=False)
             return True
@@ -104,9 +104,9 @@ class Phoebe(BaseChar):
         box = self.task.box_of_screen_scaled(3840, 2160, 1890, 2010, 1915, 2030, name='phoebe_middle_star',
                                              hcenter=True)
         self.task.draw_boxes(box.name, box)
-        star_light_percent = self.task.calculate_color_percentage(phiebe_star_light_color, box)
+        star_light_percent = self.task.calculate_color_percentage(phoebe_star_light_color, box)
         self.logger.debug(f'middle_star_light_percent {star_light_percent}')
-        star_blue_percent = self.task.calculate_color_percentage(phiebe_star_blue_color, box)
+        star_blue_percent = self.task.calculate_color_percentage(phoebe_star_blue_color, box)
         self.logger.debug(f'middle_star_blue_percent {star_blue_percent}')
         if star_light_percent > 0.25 or star_blue_percent > 0.25:
             if star_light_percent > star_blue_percent:
@@ -140,6 +140,7 @@ class Phoebe(BaseChar):
                     self.state["liberation"] += 1
             if self.judge_forte() > 0:
                 self.starflash_combo()
+                self.task.next_frame()
                 start = time.time()
         return start
 
@@ -271,7 +272,7 @@ class Phoebe(BaseChar):
                     return State.TIMEOUT
                 key_down()
                 key_hold_start = time.time()
-                while condition() or time.time() - key_hold_start < 0.5:
+                while condition() or time.time() - key_hold_start < 0.4:
                     if time.time() - key_hold_start > 1:
                         break
                     self.task.next_frame()
@@ -321,13 +322,13 @@ class Phoebe(BaseChar):
         box = self.task.box_of_screen_scaled(3840, 2160, 1890, 2010, 1915, 2030, name='phoebe_middle_star',
                                              hcenter=True)
         if self.attribute == 1:
-            forte_percent = self.task.calculate_color_percentage(phiebe_star_light_color, box)
+            forte_percent = self.task.calculate_color_percentage(phoebe_star_light_color, box)
             self.logger.debug(f'middle_star_light_percent {forte_percent}')
             if forte_percent > 0.25:
                 self.star_available = True
                 return True
         elif self.attribute == 2:
-            forte_percent = self.task.calculate_color_percentage(phiebe_star_blue_color, box)
+            forte_percent = self.task.calculate_color_percentage(phoebe_star_blue_color, box)
             self.logger.debug(f'middle_star_blue_percent {forte_percent}')
             if forte_percent > 0.25:
                 self.star_available = True
@@ -341,7 +342,7 @@ class Phoebe(BaseChar):
         if char := self.task.has_char(Zani):
             self.char_zani = char
             self.attribute = 2
-        elif self.task.has_char((Cartethyia, HavocRover)):
+        elif self.task.has_char(Cartethyia) and self.task.has_char(HavocRover):
             self.attribute = 2
         else:
             self.attribute = 1
@@ -423,9 +424,9 @@ class Phoebe(BaseChar):
         if not self.star_available:
             return super().is_forte_full()
         elif self.attribute == 1:
-            box = self.task.box_of_screen_scaled(3840, 2160, 2283, 1993, 2302, 2017, name='forte_full', hcenter=True)
+            box = self.task.box_of_screen_scaled(3840, 2160, 2286, 1992, 2306, 2018, name='forte_full', hcenter=True)
         else:
-            box = self.task.box_of_screen_scaled(3840, 2160, 2253, 1993, 2272, 2017, name='forte_full', hcenter=True)
+            box = self.task.box_of_screen_scaled(3840, 2160, 2256, 1992, 2276, 2018, name='forte_full', hcenter=True)
         self.task.draw_boxes(box.name, box)
         mean_val = contrast_val = 0
         if self.task.calculate_color_percentage(forte_white_color, box) > 0.08:
@@ -461,13 +462,13 @@ phoebe_forte_blue_color = {
     'b': (190, 225)  # Blue range
 }
 
-phiebe_star_light_color = {
+phoebe_star_light_color = {
     'r': (235, 255),  # Red range
     'g': (220, 250),  # Green range
     'b': (160, 190)  # Blue range
 }
 
-phiebe_star_blue_color = {
+phoebe_star_blue_color = {
     'r': (240, 255),  # Red range
     'g': (240, 255),  # Green range
     'b': (240, 255)  # Blue range
