@@ -11,8 +11,7 @@ jobs:
       - uses: MirrorChyan/uploading-action@v1
         with:
           filetype: latest-release
-          filename: "ok-ww-*.7z"
-          p7zip: true
+          filename: "ok-ww-win32-China.zip"
           mirrorchyan_rid: okww
 
           github_token: ${{ secrets.GITHUB_TOKEN }}

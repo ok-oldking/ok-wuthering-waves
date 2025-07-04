@@ -13,6 +13,7 @@ jobs:
 
     env:
       PYTHONIOENCODING: 'UTF-8'
+      SIGN_BUILD: 'true'
 
     strategy:
       matrix:
@@ -94,17 +95,72 @@ jobs:
               }
           }
 
-      - name: Build Executable
+      - name: push to ok-ww-update
         run: |
-          echo "tag: ${{ steps.changes.outputs.tag }}"
-          echo "changes: ${{ steps.changes.outputs.changes }}"
-          
-          python -m ok.update.package_launcher ${{ steps.tagName.outputs.tag }} deploy.txt
-          Copy-Item -Path "dist" -Destination "ok-ww" -Recurse
-          7z a -t7z -r "ok-ww-${{ steps.tagName.outputs.tag }}.7z" "ok-ww"     
-          Remove-Item -Path "ok-ww" -Recurse -Force
+          python -m ok.update.push_repos --repos https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
 
+      - name: push to cnb
+        run: |
+          python -m ok.update.push_repos --repos https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-wuthering-waves.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
+
+      - name: Build with PyAppify Action
+        id: build-app
+        uses: ok-oldking/pyappify-action@master
+      #        with:
+      #          use_release: https://api.github.com/repos/ok-oldking/pyappify-action/releases/tags/v1.0.6
+
+      - name: Extract EXE for signing
+        if: env.SIGN_BUILD == 'true'
+        id: extract-exe
         shell: pwsh
+        run: |
+          $zipFile = Get-ChildItem -Path pyappify_dist -Filter *.zip | Select-Object -First 1
+          Expand-Archive -Path $zipFile.FullName -DestinationPath "temp_extract" -Force
+          $exeFile = Get-ChildItem -Path "temp_extract" -Filter *.exe -Recurse | Select-Object -First 1
+          Move-Item -Path $exeFile.FullName -Destination "pyappify_dist/"
+          echo "EXE_NAME=$($exeFile.Name)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Remove-Item "temp_extract" -Recurse
+
+      - name: Upload unsigned EXE artifact
+        if: env.SIGN_BUILD == 'true'
+        id: upload-unsigned-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: to-sign
+          path: pyappify_dist/${{ steps.extract-exe.outputs.EXE_NAME }}
+
+      - name: Sign EXE
+        if: env.SIGN_BUILD == 'true'
+        uses: signpath/github-action-submit-signing-request@v1.1
+        with:
+          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
+          organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
+          project-slug: 'ok-wuthering-waves'
+          signing-policy-slug: 'release-signing'
+          artifact-configuration-slug: "single-exe"
+          github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
+          wait-for-completion: true
+          output-artifact-directory: 'pyappify_dist'
+
+      - name: Update archives with signed EXE
+        if: env.SIGN_BUILD == 'true'
+        shell: pwsh
+        run: |
+          $signedExePath = "pyappify_dist/${{ steps.extract-exe.outputs.EXE_NAME }}"
+          $zipFiles = Get-ChildItem -Path pyappify_dist -Filter *.zip
+          foreach ($zipFile in $zipFiles) {
+            $extractPath = ".\temp_update"
+            if (Test-Path $extractPath) { Remove-Item $extractPath -Recurse -Force }
+            Expand-Archive -Path $zipFile.FullName -DestinationPath $extractPath -Force
+            $originalExe = Get-ChildItem -Path $extractPath -Filter *.exe -Recurse | Select-Object -First 1
+            Copy-Item -Path $signedExePath -Destination $originalExe.FullName -Force
+            Push-Location $extractPath
+            $topLevelFolder = Get-ChildItem . | Select-Object -First 1
+            Compress-Archive -Path $topLevelFolder.Name -DestinationPath $zipFile.FullName -Force
+            Pop-Location
+            Remove-Item $extractPath -Recurse -Force
+          }
+          Remove-Item $signedExePath
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -113,26 +169,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           body: |
-            * 下载 ok-ww.7z, Download ok-ww.7z
-            * 不要下载SourceCode Do Not Download the SourceCode
+            * ok-ww-win32-China.zip 完整包, 更新源使用阿里云+腾讯CNB, 
+            * ok-ww-win32-Global.zip full package with dependencies, using GitHub and PyPi as update source 
+            * 不要下载SourceCode, Do Not Download the SourceCode
             * 如果下载过慢可以使用加速或者使用下面渠道下载
             * [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okww&source=ok-ww-release), 国内网页直链, 下载需要购买CD-KEY, 已有Mirror酱CD-KEY可免费下载
             * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
-            * 400M的版本为包含依赖的完整版, 3M的zip包为不带依赖的版本, 需要下载依赖, CPU版本支持低版本Windows10, GPU版本需要最新版Win10(非企业版)或11
 
           draft: false
-          prerelease: false
-          files: |
-            ok-ww-${{ steps.tagName.outputs.tag }}.7z
-
-      - name: push to ok-ww-update
-        run: |
-          python -m ok.update.push_repos --repos https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
-
-
-      - name: push to cnb
-        run: |
-          python -m ok.update.push_repos --repos https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-wuthering-waves.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
+          prerelease: true
+          files: pyappify_dist/*
 
       - name: Trigger MirrorChyanUploading
         if: startsWith(github.ref, 'refs/tags/')

@@ -4,11 +4,11 @@
 #
 #    pip-compile '.\requirements-dml.in'
 #
-ok-script==0.0.590
+ok-script==0.0.593
     # via -r .\requirements.in
 onnxocr-ppocrv4==0.0.5
 
-pyappify==0.0.5
+pyappify==1.0.1
 
 build==1.2.2.post1
     # via pip-tools
