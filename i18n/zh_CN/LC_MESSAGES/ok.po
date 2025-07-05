@@ -569,3 +569,21 @@ msgstr "模拟领域刷取次数"
 
 msgid "farm Simulation Challenge N time(s), 40 stamina per time, set a large number to use all stamina"
 msgstr "模拟领域刷取次数, 每次40体力, 如需用光所有体力可以设置一个大数"
+
+msgid "⭐ Forgery Challenge"
+msgstr "凝素领域"
+
+msgid "Farm selected Forgery Challenge, you need to be able to teleport"
+msgstr "刷选定凝素领域, 需要可传送"
+
+msgid "Forgery Suppression Serial Number"
+msgstr "凝素领域编号"
+
+msgid "the Nth number in the list of Forgery Suppression list (in F2 menu)"
+msgstr "选择F2列表中的第几个凝素领域"
+
+msgid "Forgery Challenge Count"
+msgstr "凝素领域刷取次数"
+
+msgid "farm Forgery Challenge N time(s), 40 stamina per time, set a large number to use all stamina"
+msgstr "凝素领域刷取次数, 每次40体力, 如需用光所有体力可以设置一个大数"
