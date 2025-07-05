@@ -17,6 +17,7 @@ f_white_color = {
     'g': (235, 255),  # Green range
     'b': (235, 255)  # Blue range
 }
+processed_feature = False
 
 
 class BaseWWTask(BaseTask):
@@ -67,6 +68,14 @@ class BaseWWTask(BaseTask):
         elif isinstance(self, (TacetTask, DailyTask)):
             return True
         return False
+
+    def process_feature(self):
+        global processed_feature
+        if not processed_feature:
+            logger.info('Processing feature')
+            processed_feature = True
+            feature = self.get_feature_by_name('illusive_realm_exit')
+            feature.mat = convert_bw(feature.mat)
 
     def zoom_map(self, esc=True):
         if not self.map_zoomed:
@@ -349,7 +358,8 @@ class BaseWWTask(BaseTask):
         return 0
 
     def in_realm(self):
-        return self.find_one('illusive_realm_exit', threshold=0.65, frame_processor=filter_white_regions)
+        self.process_feature();
+        return self.find_one('illusive_realm_exit', threshold=0.65, frame_processor=convert_bw, screenshot=True)
 
     def in_illusive_realm(self):
         return self.find_one('new_realm_4') and self.in_realm() and self.find_one('illusive_realm_menu', threshold=0.6)
@@ -364,7 +374,7 @@ class BaseWWTask(BaseTask):
                 if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, target_text=target_text,
                                             running=False):
                     logger.info('walk backward found f')
-                    return True            
+                    return True
             if self.send_key_and_wait_f(direction, raise_if_not_found, time_out, target_text=target_text,
                                         running=False):
                 logger.info('walk forward found f')
@@ -996,17 +1006,37 @@ lower_white = np.array([244, 244, 244], dtype=np.uint8)
 upper_white = np.array([255, 255, 255], dtype=np.uint8)
 
 
-def filter_white_regions(cv_image):
+def convert_text_bw(cv_image):
     """
-    Converts pixels in the near-white range (244-255) to white,
-    and all others to black.
+    Converts pixels in the near-white range (244-255) to black,
+    and all others to white.
     Args:
         cv_image: Input image (NumPy array, BGR).
     Returns:
-        Black and white image (NumPy array), where matches are white.
+        Black and white image (NumPy array), where matches are black.
     """
 
     match_mask = cv2.inRange(cv_image, lower_white, upper_white)
+
+    output_image = np.full(cv_image.shape, 255, dtype=np.uint8)
+    output_image[match_mask == 255] = [0, 0, 0]
+
+    return output_image
+
+
+def convert_bw(cv_image):
+    """
+    Converts pixels in the near-white range (244-255) to black,
+    and all others to white.
+    Args:
+        cv_image: Input image (NumPy array, BGR).
+    Returns:
+        Black and white image (NumPy array), where matches are black.
+    """
+
+    match_mask = cv2.inRange(cv_image, lower_white, upper_white)
+
     output_image = np.full(cv_image.shape, 0, dtype=np.uint8)
     output_image[match_mask == 255] = [255, 255, 255]
+
     return output_image
