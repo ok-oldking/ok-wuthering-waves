@@ -17,7 +17,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         self.stamina_once = 0
 
     def make_sure_in_world(self):
-        exit_icon = self.find_one('illusive_realm_exit', vertical_variance=0.8, horizontal_variance=0.05, threshold=0.88),
+        exit_icon = self.in_realm()
         if (exit_icon and exit_icon[0]):
             # exit icon at the top left, means currently in domain/mission, not in world
             self.send_key_down('alt')
