@@ -49,7 +49,6 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         remaining_total = 0
         total_used = 0
         while True: 
-            self.sleep(max(5, self.teleport_timeout / 5))
             self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
             self.combat_once()
             self.sleep(3)
@@ -58,7 +57,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             total_used += used
             # self.click(0.75, 0.32, after_sleep=2) # click fork of dialog (for debug)
             self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'], raise_if_not_found=True, log=True) # click use stamina of dialog
-            self.sleep(4)
+            self.sleep(5)
             counter -= 1
             if counter <= 0:
                 self.log_info(f'{total_counter} time(s) farmed, {total_used} stamina used')
@@ -67,6 +66,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
                 self.log_info(f'not enough stamina, {total_used} stamina used')
                 break
             self.click(0.68, 0.84, after_sleep=2) # farm again
+            self.sleep(max(5, self.teleport_timeout / 5))
         #
         self.click(0.42, 0.84, after_sleep=2) # back to world
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
