@@ -43,6 +43,8 @@ class ForgeryTask(DomainTask):
             return
         self.sleep(1)
         current, back_up = self.open_F2_book_and_get_stamina()
+        if (current + back_up < self.stamina_once):
+            self.back()
         self.teleport_into_domain(self.config.get('Forgery Suppression Serial Number', 0))
         self.farm_in_domain(total_counter=total_counter, current=current, back_up=back_up)
 

@@ -39,10 +39,12 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         # total counter
         if total_counter <= 0:
             self.log_info(f'0 time(s) farmed, 0 stamina used')
+            self.make_sure_in_world()
             return
         # stamina
         if current + back_up < self.stamina_once:
             self.log_info(f'not enough stamina, 0 stamina used')
+            self.make_sure_in_world()
             return
         # farm
         counter = total_counter
