@@ -5,12 +5,13 @@ from qfluentwidgets import FluentIcon
 from ok import Logger
 from src.task.BaseWWTask import number_re
 from src.task.TacetTask2 import TacetTask2
+from src.task.SimulationTask import SimulationTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
 
 
-class DailyTask2(TacetTask2):
+class DailyTask2(TacetTask2, SimulationTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -21,6 +22,8 @@ class DailyTask2(TacetTask2):
             'Teleport Timeout': 10,
             'Tacet Suppression Serial Number': 1, # starts with 1
             'Tacet Suppression Count': 0, # starts with 0
+            'Material Selection': 'Shell Credit',
+            'Simulation Challenge Count': 0, # starts with 0
             'mail task': True,
             'activity task': True,
             'enable millage task': True,
@@ -30,6 +33,8 @@ class DailyTask2(TacetTask2):
             'Teleport Timeout': 'the timeout of second for teleport',
             'Tacet Suppression Serial Number': 'the Nth number in the list of Tacet Suppression list (in F2 menu)',
             'Tacet Suppression Count': 'farm Tacet Suppression N time(s), 60 stamina per time, set a large number to use all stamina',
+            'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit, on current screen of F2',
+            'Simulation Challenge Count': 'farm Simulation Challenge N time(s), 40 stamina per time, set a large number to use all stamina',
             'mail task': 'enable mail task',
             'activity task': 'enable activity task',
             'enable millage task': 'enable millage task',
@@ -46,7 +51,7 @@ class DailyTask2(TacetTask2):
             self.claim_mail()
         #
         self.farm_tacet()
-        self.sleep(4)
+        self.farm_simulation()
         #
         if (self.config.get('activity task', True)):
             self.claim_daily()
