@@ -349,7 +349,7 @@ class BaseWWTask(BaseTask):
         return 0
 
     def in_realm(self):
-        return self.find_one('illusive_realm_exit', threshold=0.65)
+        return self.find_one('illusive_realm_exit', threshold=0.65, frame_processor=filter_white_regions)
 
     def in_illusive_realm(self):
         return self.find_one('new_realm_4') and self.in_realm() and self.find_one('illusive_realm_menu', threshold=0.6)
@@ -990,3 +990,23 @@ def calculate_angle_clockwise(box1, box2):
     if degree < 0:
         degree += 360
     return degree
+
+
+lower_white = np.array([244, 244, 244], dtype=np.uint8)
+upper_white = np.array([255, 255, 255], dtype=np.uint8)
+
+
+def filter_white_regions(cv_image):
+    """
+    Converts pixels in the near-white range (244-255) to white,
+    and all others to black.
+    Args:
+        cv_image: Input image (NumPy array, BGR).
+    Returns:
+        Black and white image (NumPy array), where matches are white.
+    """
+
+    match_mask = cv2.inRange(cv_image, lower_white, upper_white)
+    output_image = np.full(cv_image.shape, 0, dtype=np.uint8)
+    output_image[match_mask == 255] = [255, 255, 255]
+    return output_image
