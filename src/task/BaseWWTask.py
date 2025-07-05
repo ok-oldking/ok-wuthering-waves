@@ -364,12 +364,12 @@ class BaseWWTask(BaseTask):
                 if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, target_text=target_text,
                                             running=False):
                     logger.info('walk backward found f')
-                    return True
-                if self.send_key_and_wait_f(direction, raise_if_not_found, time_out, target_text=target_text,
-                                            running=False):
-                    logger.info('walk forward found f')
-                    self.sleep(0.5)
-                    return True
+                    return True            
+            if self.send_key_and_wait_f(direction, raise_if_not_found, time_out, target_text=target_text,
+                                        running=False):
+                logger.info('walk forward found f')
+                self.sleep(0.5)
+                return True
             return False
         else:
             self.send_key('f')
