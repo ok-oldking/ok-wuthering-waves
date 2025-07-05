@@ -7,6 +7,7 @@ profiles:
     main_script: "main.py"
     requires_python: "3.12"
     requirements: "requirements.txt"
+    use_pythonw: true
     # PYTHONPATH: "your/default/path" # Optional, will be "" if missing
 
   - name: "Global"
