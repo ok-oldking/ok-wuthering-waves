@@ -18,7 +18,7 @@ class SimulationTask(DomainTask):
         self.default_config = {
             'Teleport Timeout': 10,
             'Material Selection': 'Shell Credit',
-            'Simulation Challenge Count': 0, # starts with 0
+            'Simulation Challenge Count': 10,  # starts with 0
         }
         material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type['Material Selection'] = {'type': 'drop_down', 'options': material_option_list}
@@ -29,7 +29,7 @@ class SimulationTask(DomainTask):
         }
         self.teleport_timeout = 60
         self.stamina_once = 40
-    
+
     def run(self):
         super().run()
         self.teleport_timeout = self.config.get('Teleport Timeout', 10)
@@ -65,14 +65,14 @@ class SimulationTask(DomainTask):
             index = 0
         elif selection == 'Weapon EXP':
             index = 1
-        else: # selection == 'Shell Credit'
+        else:  # selection == 'Shell Credit'
             index = 2
         self.click_relative(0.22, 0.17 + index * 0.08, after_sleep=1)
         self.click_relative(0.93, 0.90, after_sleep=1)
         self.click_relative(0.93, 0.90, after_sleep=1)
-        self.wait_in_team_and_world(time_out = self.teleport_timeout)
+        self.wait_in_team_and_world(time_out=self.teleport_timeout)
 
-            
+
 echo_color = {
     'r': (200, 255),  # Red range
     'g': (150, 220),  # Green range
