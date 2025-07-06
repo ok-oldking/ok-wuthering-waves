@@ -44,6 +44,7 @@ class SimulationTask(DomainTask):
         current, back_up = self.open_F2_book_and_get_stamina()
         if (current + back_up < self.stamina_once):
             self.back()
+            return
         self.teleport_into_domain(self.config.get('Material Selection', 'Shell Credit'))
         self.farm_in_domain(total_counter=total_counter, current=current, back_up=back_up)
 
