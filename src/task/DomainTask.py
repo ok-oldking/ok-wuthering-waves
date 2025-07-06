@@ -17,8 +17,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         self.stamina_once = 0
 
     def make_sure_in_world(self):
-        exit_icon = self.in_realm()
-        if (exit_icon and exit_icon[0]):
+        if (self.in_realm()):
             # exit icon at the top left, means currently in domain/mission, not in world
             self.send_key_down('alt')
             self.sleep(0.05)
@@ -76,7 +75,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             self.sleep(max(5, self.teleport_timeout / 5))
         #
         self.click(0.42, 0.84, after_sleep=2) # back to world
-        self.wait_in_team_and_world(time_out=self.teleport_timeout)
+        self.make_sure_in_world()
 
             
 echo_color = {
