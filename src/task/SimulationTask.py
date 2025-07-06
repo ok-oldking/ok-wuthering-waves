@@ -41,7 +41,6 @@ class SimulationTask(DomainTask):
         if total_counter <= 0:
             self.log_info(f'0 time(s) farmed, 0 stamina used')
             return
-        self.sleep(1)
         current, back_up = self.open_F2_book_and_get_stamina()
         if (current + back_up < self.stamina_once):
             self.back()
