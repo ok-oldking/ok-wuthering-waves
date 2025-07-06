@@ -199,6 +199,7 @@ class CombatCheck(BaseWWTask):
                 if self.find_one('levitator_roccia', threshold=0.6):
                     return True
         self.log_debug(f'ensuring leviator succees {levitator}')
+        return self.target_enemy()
 
     def log_time(self, start, name):
         logger.debug(f'check cost {name} {time.time() - start}')
