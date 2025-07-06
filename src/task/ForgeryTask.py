@@ -39,7 +39,7 @@ class ForgeryTask(DomainTask):
     def farm_forgery(self):
         total_counter = self.config.get('Forgery Challenge Count', 0)
         if total_counter <= 0:
-            self.log_info(f'0 time(s) farmed, 0 stamina used')
+            self.log_info('0 time(s) farmed, 0 stamina used')
             return
         current, back_up = self.open_F2_book_and_get_stamina()
         if (current + back_up < self.stamina_once):
@@ -58,12 +58,8 @@ class ForgeryTask(DomainTask):
         if index >= total_forgery_number:
             raise IndexError(f'Index out of range, max is {total_forgery_number}')
         if index >= forgery_count_per_page:
-            if index >= forgery_count_per_page * 2:  # page 3
-                self.click_relative(0.98, 0.86)
-                index -= forgery_count_per_page + 2  # only 1 in last page
-            else:
-                index -= forgery_count_per_page
-                self.click_relative(0.98, 0.74)
+            index -= forgery_count_per_page
+            self.click_relative(0.98, 0.74)
             self.log_info(f'teleport_to_forgery scroll down a page new index: {index}')
         x = 0.88
         height = (0.85 - 0.28) / 4

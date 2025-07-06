@@ -34,15 +34,15 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
 
     def farm_in_domain(self, total_counter = 0, current = 0, back_up = 0):
         if (self.stamina_once <= 0):
-            raise Exception('"self.stamina_once" must be override')
+            raise RuntimeError('"self.stamina_once" must be override')
         # total counter
         if total_counter <= 0:
-            self.log_info(f'0 time(s) farmed, 0 stamina used')
+            self.log_info('0 time(s) farmed, 0 stamina used')
             self.make_sure_in_world()
             return
         # stamina
         if current + back_up < self.stamina_once:
-            self.log_info(f'not enough stamina, 0 stamina used')
+            self.log_info('not enough stamina, 0 stamina used')
             self.make_sure_in_world()
             return
         # farm
@@ -56,10 +56,10 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             self.walk_to_treasure()
             double_drop = self.ocr(0.2, 0.56, 0.75, 0.69, match=['双倍', 'Double'])
             if counter <= 1 or (double_drop and len(double_drop) >= 1):
-                used, remaining_total, remaining_current, used_back_up = self.ensure_stamina(self.stamina_once, self.stamina_once)
+                used, remaining_total, _, _ = self.ensure_stamina(self.stamina_once, self.stamina_once)
                 counter -= 1
             else:
-                used, remaining_total, remaining_current, used_back_up = self.ensure_stamina(self.stamina_once, 2 * self.stamina_once)
+                used, remaining_total, _, _ = self.ensure_stamina(self.stamina_once, 2 * self.stamina_once)
                 counter -= int(used / self.stamina_once)
             total_used += used
             # self.click(0.75, 0.32, after_sleep=2) # click fork of dialog (for debug)
