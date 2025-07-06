@@ -55,7 +55,8 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             self.combat_once()
             self.sleep(3)
             self.walk_to_treasure()
-            if counter <= 1:
+            double_drop = self.ocr(0.2, 0.56, 0.75, 0.69, match=['双倍', 'Double'])
+            if counter <= 1 or (double_drop and len(double_drop) >= 1):
                 used, remaining_total, remaining_current, used_back_up = self.ensure_stamina(self.stamina_once, self.stamina_once)
                 counter -= 1
             else:
