@@ -52,6 +52,8 @@ class DailyTask2(TacetTask2, ForgeryTask, SimulationTask):
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=180)
         self.sleep(self.config.get('wait second(s) before start', 0))
+        #
+        self.make_sure_in_world()
         if (self.config.get('mail task', True)):
             self.claim_mail()
         #
