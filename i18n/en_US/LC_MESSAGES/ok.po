@@ -753,6 +753,54 @@ msgstr ""
 msgid "the timeout of second for teleport"
 msgstr "the timeout of second for teleport, set larger number for low performance computer or HDD computer"
 
+msgid "⭐ Daily Task"
+msgstr ""
+
+msgid "open game, login, monthly card, mail, farm, activity, radio"
+msgstr ""
+
+msgid "mail task"
+msgstr ""
+
+msgid "enable mail task"
+msgstr ""
+
+msgid "activity task"
+msgstr ""
+
+msgid "enable activity task"
+msgstr ""
+
+msgid "millage task"
+msgstr ""
+
+msgid "enable millage task"
+msgstr ""
+
+msgid "wait second(s) before start"
+msgstr ""
+
+msgid "wait second(s) before start to prevent disconnect problem"
+msgstr ""
+
+msgid "⭐ Tacet Suppression"
+msgstr ""
+
+msgid "Farm selected Tacet Suppression, you need to be able to teleport"
+msgstr ""
+
+msgid "Tacet Suppression Serial Number"
+msgstr ""
+
+msgid "the Nth number in the list of Tacet Suppression list (in F2 menu)"
+msgstr ""
+
+msgid "Tacet Suppression Count"
+msgstr ""
+
+msgid "farm Tacet Suppression N time(s), 60 stamina per time, set a large number to use all stamina"
+msgstr ""
+
 msgid "⭐ Simulation Challenge"
 msgstr "Simulation Challenge"
 
