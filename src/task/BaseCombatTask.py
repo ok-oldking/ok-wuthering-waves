@@ -14,6 +14,7 @@ from src.char.BaseChar import Priority, dot_color  # noqa
 from src.char.CharFactory import get_char_by_pos
 from src.char.Healer import Healer
 from src.combat.CombatCheck import CombatCheck
+from src.task.BaseWWTask import convert_text_bw
 
 logger = Logger.get_logger(__name__)
 cd_regex = re.compile(r'\d{1,2}\.\d')
@@ -268,7 +269,7 @@ class BaseCombatTask(CombatCheck):
                 if total_index > 2 and (total_index + 1) % 2 == 0:
                     if not (count == circle_count - 1 and direction == directions[-1]):
                         duration += step
-                    
+
                 picked = self.send_key_and_wait_f(direction, False, time_out=duration, running=True,
                                                   target_text=self.absorb_echo_text())
                 if picked:
@@ -838,25 +839,3 @@ def convert_cd(text):
             return float(match.group(0))
         else:
             return 1
-
-
-lower_white = np.array([244, 244, 244], dtype=np.uint8)
-upper_white = np.array([255, 255, 255], dtype=np.uint8)
-
-
-def convert_text_bw(cv_image):
-    """
-    Converts pixels in the near-white range (244-255) to black,
-    and all others to white.
-    Args:
-        cv_image: Input image (NumPy array, BGR).
-    Returns:
-        Black and white image (NumPy array), where matches are black.
-    """
-
-    match_mask = cv2.inRange(cv_image, lower_white, upper_white)
-
-    output_image = np.full(cv_image.shape, 255, dtype=np.uint8)
-    output_image[match_mask == 255] = [0, 0, 0]
-
-    return output_image

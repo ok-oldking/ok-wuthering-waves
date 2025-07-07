@@ -537,56 +537,53 @@ msgstr "战斗开始前等待时间(秒)"
 msgid "Wait time before each combat(seconds), set 5 if farming Sentry Construct"
 msgstr "如果刷异构武装设置为5秒"
 
-msgid "⭐ Tacet Suppression"
-msgstr "⭐ 无音区"
-
-msgid "Farm selected Tacet Suppression, you need to be able to teleport"
-msgstr "刷选定无音区, 需要可传送"
-
 msgid "Teleport Timeout"
 msgstr "传送超时"
 
 msgid "the timeout of second for teleport"
 msgstr "传送超时, 单位为秒, 低配置或机械硬盘用户建议调大"
 
-msgid "Tacet Suppression Serial Number"
-msgstr "无音区编号"
+msgid "⭐ Simulation Challenge"
+msgstr "模拟领域"
 
-msgid "the Nth number in the list of Tacet Suppression list (in F2 menu)"
-msgstr "选择F2列表中的第几个无音区"
+msgid "Farm selected Simulation Challenge, you need to be able to teleport"
+msgstr "需要「黎那汐塔-角斗士的肖像」可传送"
 
-msgid "Tacet Suppression Count"
-msgstr "无音区刷取次数"
+msgid "Material Selection"
+msgstr "模拟领域材料选择"
 
-msgid "farm Tacet Suppression N time(s), 60 stamina per time, set a large number to use all stamina"
-msgstr "无音区刷取次数, 每次60体力, 如需用光所有体力可以设置一个大数"
+msgid "Resonator EXP / Weapon EXP / Shell Credit, on current screen of F2"
+msgstr "共鸣者经验 / 武器经验 / 贝币"
 
-msgid "⭐ Daily Task"
-msgstr "⭐ 日常一条龙"
+msgid "Resonator EXP"
+msgstr "共鸣者经验"
 
-msgid "open game, login, monthly card, mail, farm, activity, radio"
-msgstr "启动游戏, 登录, 月卡, 邮件, 刷取声骸/材料, 活跃度奖励, 先约电台奖励"
+msgid "Weapon EXP"
+msgstr "武器经验"
 
-msgid "mail task"
-msgstr "领取「邮件」"
+msgid "Shell Credit"
+msgstr "贝币"
 
-msgid "enable mail task"
-msgstr "领取「邮件」"
+msgid "Simulation Challenge Count"
+msgstr "模拟领域刷取次数"
 
-msgid "activity task"
-msgstr "启用「活跃度」任务"
+msgid "farm Simulation Challenge N time(s), 40 stamina per time, set a large number to use all stamina"
+msgstr "模拟领域刷取次数, 每次40体力, 如需用光所有体力可以设置一个大数"
 
-msgid "enable activity task"
-msgstr "启用「活跃度」任务, 领取奖励需要【刷取1+次无音区】且【消耗180+体力】, 无法完成不会报错"
+msgid "⭐ Forgery Challenge"
+msgstr "凝素领域"
 
-msgid "millage task"
-msgstr "启用「先约电台」任务"
+msgid "Farm selected Forgery Challenge, you need to be able to teleport"
+msgstr "刷选定凝素领域, 需要可传送"
 
-msgid "enable millage task"
-msgstr "启用「先约电台」任务"
+msgid "Forgery Suppression Serial Number"
+msgstr "凝素领域编号"
 
-msgid "wait second(s) before start"
-msgstr "等待数秒后执行一条龙"
+msgid "the Nth number in the list of Forgery Suppression list (in F2 menu)"
+msgstr "选择F2列表中的第几个凝素领域"
 
-msgid "wait second(s) before start to prevent disconnect problem"
-msgstr "登录后等待若干秒后执行一条龙, 旨在解决偶发的掉线问题"
+msgid "Forgery Challenge Count"
+msgstr "凝素领域刷取次数"
+
+msgid "farm Forgery Challenge N time(s), 40 stamina per time, set a large number to use all stamina"
+msgstr "凝素领域刷取次数, 每次40体力, 如需用光所有体力可以设置一个大数"
