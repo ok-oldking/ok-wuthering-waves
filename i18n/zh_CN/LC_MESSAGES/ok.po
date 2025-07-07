@@ -587,3 +587,6 @@ msgstr "凝素领域刷取次数"
 
 msgid "farm Forgery Challenge N time(s), 40 stamina per time, set a large number to use all stamina"
 msgstr "凝素领域刷取次数, 每次40体力, 如需用光所有体力可以设置一个大数"
+
+msgid "Click skill failed, check if the keybinding is correct in ok-ww settings!"
+msgstr "释放技能失败, 请检查ok-ww按键设置是正确!"

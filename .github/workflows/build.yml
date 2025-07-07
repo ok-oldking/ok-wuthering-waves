@@ -13,7 +13,8 @@ jobs:
 
     env:
       PYTHONIOENCODING: 'UTF-8'
-      SIGN_BUILD: 'true'
+      #      SIGN_BUILD: 'true'
+      SIGN_BUILD: 'false'
 
     strategy:
       matrix:
@@ -66,16 +67,6 @@ jobs:
         run: |
           python -m ok.update.copy_ok_folder
 
-      - name: Rename .py files to .pyx
-        run: |
-          Get-ChildItem -Path .\src -Recurse -Filter *.py -Exclude '__init__.py' | ForEach-Object { Rename-Item $_.FullName -NewName ($_.FullName -replace '\.py$', '.pyx') }
-
-      - name: build cython
-        run: |
-          python setup.py build_ext --inplace
-          Get-ChildItem -Path .\src -Recurse -Filter *.pyx | ForEach-Object { Remove-Item $_.FullName }
-          Get-ChildItem -Path .\src -Recurse -Filter *.cpp | ForEach-Object { Remove-Item $_.FullName }
-
       - name: Run tests
         run: |
           Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
@@ -106,8 +97,8 @@ jobs:
       - name: Build with PyAppify Action
         id: build-app
         uses: ok-oldking/pyappify-action@master
-      #        with:
-      #          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.4.43
+        with:
+          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.4.47
 
       - name: Extract EXE for signing
         if: env.SIGN_BUILD == 'true'
@@ -177,7 +168,7 @@ jobs:
             * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
 
           draft: false
-          prerelease: true
+          prerelease: false
           files: pyappify_dist/*
 
       - name: Trigger MirrorChyanUploading

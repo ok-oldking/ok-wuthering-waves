@@ -1004,9 +1004,19 @@ def calculate_angle_clockwise(box1, box2):
 
 lower_white = np.array([244, 244, 244], dtype=np.uint8)
 upper_white = np.array([255, 255, 255], dtype=np.uint8)
+lower_black = np.array([0, 0, 0], dtype=np.uint8)
+upper_black = np.array([180, 180, 180], dtype=np.uint8)
 
 
-def convert_text_bw(cv_image):
+def isolate_black_text(cv_image):
+    match_mask = cv2.inRange(cv_image, lower_black, upper_black)
+
+    output_image = np.full(cv_image.shape, 255, dtype=np.uint8)
+    output_image[match_mask == 255] = [0, 0, 0]
+    return output_image
+
+
+def isolate_white_text(cv_image):
     """
     Converts pixels in the near-white range (244-255) to black,
     and all others to white.
