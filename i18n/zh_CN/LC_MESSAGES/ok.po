@@ -553,7 +553,7 @@ msgid "⭐ Simulation Challenge"
 msgstr "模拟领域"
 
 msgid "Farm selected Simulation Challenge, you need to be able to teleport"
-msgstr "需要「黎那汐塔-角斗士的肖像」可传送"
+msgstr "需要「黎那汐塔-角斗士的肖像」可传送, 会使用后备体力"
 
 msgid "Material Selection"
 msgstr "模拟领域材料选择"
@@ -580,7 +580,7 @@ msgid "⭐ Forgery Challenge"
 msgstr "凝素领域"
 
 msgid "Farm selected Forgery Challenge, you need to be able to teleport"
-msgstr "刷选定凝素领域, 需要可传送"
+msgstr "刷选定凝素领域, 需要可传送, 会使用后备体力"
 
 msgid "Forgery Suppression Serial Number"
 msgstr "凝素领域编号"
