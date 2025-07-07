@@ -976,6 +976,22 @@ class BaseWWTask(BaseTask):
                 raise Exception('must be in game world and in teams')
         return True
 
+    def make_sure_in_world(self):
+        if (self.in_realm()):
+            # exit icon at the top left, means currently in domain/mission, not in world
+            self.send_key_down('alt')
+            self.sleep(0.05)
+            self.click_relative(0.01, 0.04)
+            self.send_key_up('alt')
+            self.sleep(0.05)
+            self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=['确认', 'Confirm'], raise_if_not_found=True, log=True)
+        self.wait_in_team_and_world(time_out = self.teleport_timeout)
+    
+    def open_F2_book_and_get_stamina(self):
+        gray_book_boss = self.openF2Book('gray_book_boss')
+        self.click_box(gray_book_boss, after_sleep=1)
+        return self.get_stamina()
+
 
 echo_color = {
     'r': (200, 255),  # Red range

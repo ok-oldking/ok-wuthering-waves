@@ -16,22 +16,6 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         self.teleport_timeout = 60
         self.stamina_once = 0
 
-    def make_sure_in_world(self):
-        if (self.in_realm()):
-            # exit icon at the top left, means currently in domain/mission, not in world
-            self.send_key_down('alt')
-            self.sleep(0.05)
-            self.click_relative(0.01, 0.04)
-            self.send_key_up('alt')
-            self.sleep(0.05)
-            self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=['确认', 'Confirm'], raise_if_not_found=True, log=True)
-        self.wait_in_team_and_world(time_out = self.teleport_timeout)
-    
-    def open_F2_book_and_get_stamina(self):
-        gray_book_boss = self.openF2Book('gray_book_boss')
-        self.click_box(gray_book_boss, after_sleep=1)
-        return self.get_stamina()
-
     def farm_in_domain(self, total_counter = 0, current = 0, back_up = 0):
         if (self.stamina_once <= 0):
             raise RuntimeError('"self.stamina_once" must be override')
