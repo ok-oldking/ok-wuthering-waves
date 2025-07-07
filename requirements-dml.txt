@@ -4,7 +4,7 @@
 #
 #    pip-compile '.\requirements-dml.in'
 #
-ok-script==0.0.595
+ok-script==0.0.596
     # via -r .\requirements.in
 onnxocr-ppocrv4==0.0.5
 
