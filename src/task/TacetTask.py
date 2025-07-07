@@ -17,14 +17,18 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.description = "Farm selected Tacet Suppression until out of stamina, will use the backup stamina, you need to be able to teleport from the menu(F2)"
         self.name = "Tacet Suppression (Must explore first to be able to teleport)"
         default_config = {
-            'Which Tacet Suppression to Farm': 1  # starts with 1
+            'Teleport Timeout': 10,
+            'Which Tacet Suppression to Farm': 1,  # starts with 1
+            'Tacet Suppression Count': 10,
         }
         self.row_per_page = 5
         self.total_number = 12
         self.target_enemy_time_out = 8
         default_config.update(self.default_config)
         self.config_description = {
+            'Teleport Timeout': 'the timeout of second for teleport',
             'Which Tacet Suppression to Farm': 'the Nth number in the Tacet Suppression list (F2)',
+            'Tacet Suppression Count': 'farm Tacet Suppression N time(s), 60 stamina per time, set a large number to use all stamina',
         }
         self.default_config = default_config
         self.door_walk_method = {  # starts with 0
@@ -34,30 +38,40 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             3: [["d", 0.6]],
             4: [["a", 1.5], ["w", 3], ["a", 2.5]],
         }
+        self.stamina_once = 60
 
     def run(self):
         super().run()
-        self.wait_in_team_and_world(esc=True)
+        timeout_second = self.config.get('Teleport Timeout', 10)
+        self.wait_in_team_and_world(esc=True, time_out=timeout_second)
         self.farm_tacet()
 
     def farm_tacet(self):
+        timeout_second = self.config.get('Teleport Timeout', 10)
+        serial_number = self.config.get('Which Tacet Suppression to Farm', 0)
+        total_counter = self.config.get('Tacet Suppression Count', 0)
+        # total counter
+        if total_counter <= 0:
+            self.log_info('0 time(s) farmed, 0 stamina used')
+            return
+        # stamina
+        current, back_up = self.open_F2_book_and_get_stamina()
+        if current + back_up < self.stamina_once:
+            self.log_info('not enough stamina, 0 stamina used')
+            self.back()
+            return
+        #
+        counter = total_counter
         total_used = 0
-        while True:
-            self.sleep(1)
+        while counter > 0:
             gray_book_boss = self.openF2Book("gray_book_boss")
             self.click_box(gray_book_boss, after_sleep=1)
-            current, back_up = self.get_stamina()
-            if current == -1:
-                self.click_relative(0.04, 0.4, after_sleep=1)
-                current, back_up = self.get_stamina()
-            if current + back_up < 60:
-                return self.not_enough_stamina()
             self.click_relative(0.18, 0.48, after_sleep=1)
-            index = self.config.get('Which Tacet Suppression to Farm', 1) - 1
+            index = serial_number - 1
             self.teleport_to_tacet(index)
             self.wait_click_travel()
-            self.wait_in_team_and_world()
-            self.sleep(1)
+            self.wait_in_team_and_world(time_out=timeout_second)
+            self.sleep(max(2, timeout_second / 10)) # wait for treasure/door/enemy appear
             if self.door_walk_method.get(index) is not None:
                 for method in self.door_walk_method.get(index):
                     self.send_key_down(method[0])
@@ -70,24 +84,24 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.combat_once()
             self.sleep(3)
             self.walk_to_treasure()
-            used, remaining_total, remaining_current, used_back_up = self.ensure_stamina(60, 120)
+            double_drop = self.ocr(0.2, 0.56, 0.75, 0.69, match=['双倍', 'Double'])
+            if counter <= 1 or (double_drop and len(double_drop) >= 1):
+                used, remaining_total, _, _ = self.ensure_stamina(self.stamina_once, self.stamina_once)
+                counter -= 1
+            else:
+                used, remaining_total, _, _ = self.ensure_stamina(self.stamina_once, 2 * self.stamina_once)
+                counter -= int(used / self.stamina_once)
             total_used += used
-            self.info_set('used stamina', total_used)
-            if not used:
-                return self.not_enough_stamina()
             self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'], raise_if_not_found=True,
                                 log=True)
             self.sleep(4)
             self.click(0.51, 0.84, after_sleep=2)
-            if remaining_total < 60:
-                return self.not_enough_stamina(back=False)
-            if total_used >= 180 and remaining_current == 0:
-                return self.not_enough_stamina(back=True)
-
-    def not_enough_stamina(self, back=True):
-        self.log_info(f"used all stamina")
-        if back:
-            self.back(after_sleep=1)
+            if counter <= 0:
+                self.log_info(f'{total_counter} time(s) farmed, {total_used} stamina used')
+                break
+            if remaining_total < self.stamina_once:
+                self.log_info(f'not enough stamina, {total_used} stamina used')
+                break
 
     def teleport_to_tacet(self, index):
         self.info_set('Teleport to Tacet Suppression', index)

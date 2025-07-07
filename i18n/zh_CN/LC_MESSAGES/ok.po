@@ -468,20 +468,29 @@ msgstr "日常一条龙"
 msgid "Dreamless"
 msgstr "无妄者"
 
-msgid "Farm selected Tacet Suppression until out of stamina, will use the backup stamina, you need to be able to teleport from the menu(F2)"
-msgstr "刷选定无音区直到没体力(包括后备体力), 需要可传送"
-
 msgid "Login, claim monthly card, farm echo, and claim daily reward"
 msgstr "启动游戏, 登录, 领月卡, 刷声骸, 领日常任务奖励, 领邮件"
-
-msgid "Tacet Suppression (Must explore first to be able to teleport)"
-msgstr "无音区(必须先探索, 保证可以传送)"
 
 msgid "Task completed"
 msgstr "任务完成"
 
+msgid "Tacet Suppression (Must explore first to be able to teleport)"
+msgstr "无音区"
+
+msgid "Farm selected Tacet Suppression until out of stamina, will use the backup stamina, you need to be able to teleport from the menu(F2)"
+msgstr "刷选定无音区, 需要可传送, 可指定次数, 会使用后备体力"
+
 msgid "Which Tacet Suppression to Farm"
-msgstr "刷哪个无音区"
+msgstr "无音区编号"
+
+msgid "the Nth number in the Tacet Suppression list (F2)"
+msgstr "选择F2列表中的第几个无音区"
+
+msgid "Tacet Suppression Count"
+msgstr "无音区刷取次数"
+
+msgid "farm Tacet Suppression N time(s), 60 stamina per time, set a large number to use all stamina"
+msgstr "无音区刷取次数, 每次60体力, 如需用光所有体力可以设置一个大数"
 
 msgid "back_up_stamina"
 msgstr "备用体力"
@@ -491,9 +500,6 @@ msgstr "当前体力"
 
 msgid "used all stamina"
 msgstr "体力已用尽"
-
-msgid "the Nth number in the Tacet Suppression list (F2)"
-msgstr "F2列表中是第几个无音区"
 
 msgid "Please start in game world and in team!"
 msgstr "请在大世界并在队伍中开始!"
