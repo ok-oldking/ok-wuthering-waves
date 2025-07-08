@@ -590,3 +590,9 @@ msgstr "凝素领域刷取次数, 每次40体力, 如需用光所有体力可以
 
 msgid "Click skill failed, check if the keybinding is correct in ok-ww settings!"
 msgstr "释放技能失败, 请检查ok-ww按键设置是正确!"
+
+msgid "Change Time to Night"
+msgstr "自动切换时间到晚上"
+
+msgid "Yes if Farming Lorelei"
+msgstr "罗蕾莱选是"

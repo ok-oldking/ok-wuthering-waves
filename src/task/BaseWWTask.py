@@ -975,7 +975,7 @@ class BaseWWTask(BaseTask):
             if not self.in_team()[0]:
                 raise Exception('must be in game world and in teams')
         return True
-    
+
     def click_on_book_target(self, serial_number: int, total_number: int):
         double_bar_top = 333 / 1440
         bar_top = 268 / 1440
@@ -993,7 +993,7 @@ class BaseWWTask(BaseTask):
             min_width = self.width_of_screen(475 / 2560)
             min_height = self.height_of_screen(40 / 1440)
             double = find_color_rectangles(self.frame, double_drop_color, min_width, min_height,
-                                        box=self.box_of_screen(1990 / 2560, 180 / 1440, 2480 / 2560, 240 / 1440))
+                                           box=self.box_of_screen(1990 / 2560, 180 / 1440, 2480 / 2560, 240 / 1440))
             if double:
                 logger.info(f'double drop!')
                 bar_top = double_bar_top
@@ -1015,8 +1015,30 @@ class BaseWWTask(BaseTask):
         min_width = self.width_of_screen(320 / 2560)
         min_height = self.height_of_screen(40 / 1440)
         double = find_color_rectangles(self.frame, double_drop_color, min_width, min_height,
-                                    box=self.box_of_screen(1550 / 2560, 760 / 1440, 1925 / 2560, 825 / 1440))
+                                       box=self.box_of_screen(1550 / 2560, 760 / 1440, 1925 / 2560, 825 / 1440))
         return bool(double)
+
+    def change_time_to_night(self):
+        logger.info('change time to night')
+        self.send_key("esc")
+        self.sleep(1)
+        self.click_relative(0.71, 0.96)
+        self.sleep(2)
+        self.click_relative(0.19, 0.14)
+        self.sleep(1)
+
+        # 调整时间到晚上
+        for i in range(4):
+            self.click_relative(0.82, 0.53)
+            self.sleep(1)
+
+        self.click_relative(0.52, 0.90)
+        self.sleep(6)
+        self.send_key("esc")
+        self.sleep(1)
+        self.send_key("esc")
+        self.sleep(1)
+
 
 double_drop_color = {
     'r': (140, 180),  # Red range
