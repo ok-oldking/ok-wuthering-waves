@@ -90,6 +90,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.log_info('start wait in combat')
             if not self._in_realm and not self._has_treasure and not self.in_combat():
                 self.go_to_boss_minimap()
+                if not self.in_combat() and self.find_treasure_icon() and self.walk_to_treasure_and_restart():
+                    self._has_treasure = True
+                    self.log_info('_has_treasure = True')
+                    self.scroll_and_click_buttons()                  
 
             self.sleep(self.config.get("Combat Wait Time", 0))
 
@@ -136,7 +140,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         if not self.in_combat():
             self.teleport_to_nearest_boss()
             self.sleep(0.5)
-            self.run_until(self.in_combat, 'w', time_out=12, running=True)
+            self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w', time_out=12, running=True)
 
     def teleport_to_nearest_boss(self):
         self.send_key('m', after_sleep=2)
@@ -152,6 +156,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
     def scroll_and_click_buttons(self):
         self.sleep(0.2)
         start = time.time()
+        if self._has_treasure and not self.find_f_with_text():
+            self.scroll_relative(0.5, 0.5, 1)
+            self.sleep(0.2)
         while self.find_f_with_text() and not self.in_combat() and time.time() - start < 5:
             self.log_info('scroll_and_click_buttons')
             self.scroll_relative(0.5, 0.5, 1)
