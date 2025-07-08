@@ -112,6 +112,7 @@ class Lupa(BaseChar):
             self.last_liberation = -1
             self.wolf = False
             self.task.wait_until(lambda: self.get_current_con() >= 1, post_action=self.click_with_interval, time_out=1)
+            self.sleep(0.2)
         return click
         
    
