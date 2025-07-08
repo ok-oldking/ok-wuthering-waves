@@ -85,14 +85,17 @@ jobs:
                   exit 1
               }
           }
-
-      - name: push to ok-ww-update
-        run: |
-          python -m ok.update.push_repos --repos https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
-
-      - name: push to cnb
-        run: |
-          python -m ok.update.push_repos --repos https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-wuthering-waves.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
+      - name: Sync Repositories
+        id: sync   # Give the step an ID to access its outputs
+        uses: ok-oldking/partial-sync-repo@master # Replace with your action path
+        with:
+          repos: |
+            https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update
+            https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-wuthering-waves.git
+          sync_list: 'deploy.txt'
+          tag: ${{ github.ref_name }}
+          gitignore_file: '.update_repo_gitignore'
+          show_author: true
 
       - name: Build with PyAppify Action
         id: build-app
@@ -166,7 +169,9 @@ jobs:
             * 如果下载过慢可以使用加速或者使用下面渠道下载
             * [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okww&source=ok-ww-release), 国内网页直链, 下载需要购买CD-KEY, 已有Mirror酱CD-KEY可免费下载
             * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
-
+            更新日志 ${{ steps.sync.outputs.start_tag }} -> ${{ steps.sync.outputs.end_tag }}:
+            ${{ steps.sync.outputs.changes }}          
+          
           draft: false
           prerelease: false
           files: pyappify_dist/*
