@@ -64,9 +64,9 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
-      - name: Copy ok-script lib
+      - name: inline_ok_requirements
         run: |
-          python -m ok.update.copy_ok_folder
+          python -m ok.update.inline_ok_requirements --tag ${{ steps.tagName.outputs.tag }}
 
       - name: Run tests
         run: |
@@ -86,10 +86,6 @@ jobs:
                   exit 1
               }
           }
-
-      - name: remove_ok_requirements
-        run: |
-          python -m ok.update.remove_ok_requirements --tag ${{ steps.tagName.outputs.tag }}
 
       - name: Sync Repositories
         id: sync   # Give the step an ID to access its outputs
