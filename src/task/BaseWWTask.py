@@ -976,7 +976,7 @@ class BaseWWTask(BaseTask):
                 raise Exception('must be in game world and in teams')
         return True
     
-    def click_on_book_target(self, serial_number: int, total_forgery_number: int):
+    def click_on_book_target(self, serial_number: int, total_number: int):
         double_bar_top = 333 / 1440
         bar_top = 268 / 1440
         bar_bottom = 1259 / 1440
@@ -998,7 +998,7 @@ class BaseWWTask(BaseTask):
                 logger.info(f'double drop!')
                 bar_top = double_bar_top
                 self.draw_boxes('double_drop', double, color='blue')
-            gap_per_index = (bar_bottom - bar_top) / total_forgery_number
+            gap_per_index = (bar_bottom - bar_top) / total_number
             y = gap_per_index * (serial_number - container_max_rows + default_container_display) + bar_top
             self.click_relative(0.98, y)
             logger.info(f'scroll to target')
