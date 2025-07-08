@@ -17,7 +17,7 @@ class Verina(Healer):
         self.wait_down()
         liberated = self.click_liberation()
         self.click_resonance(send_click=False)
-        self.click_echo()
+        self.click_echo(time_out=0.1)
         if self.is_forte_full():
             self.heavy_attack()
         elif not liberated:

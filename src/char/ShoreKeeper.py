@@ -13,7 +13,7 @@ class ShoreKeeper(Healer):
         self.click_resonance(send_click=False)        
         self.liberation_available() and self.wait_down()
         self.click_liberation()
-        self.click_echo()
+        self.click_echo(time_out=0.1)
         if self.is_forte_full():
             self.heavy_attack()
         self.switch_next_char()
