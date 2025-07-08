@@ -85,6 +85,11 @@ jobs:
                   exit 1
               }
           }
+
+      - name: remove_ok_requirements
+        run: |
+          python -m ok.update.remove_ok_requirements --tag ${{ steps.tagName.outputs.tag }}
+
       - name: Sync Repositories
         id: sync   # Give the step an ID to access its outputs
         uses: ok-oldking/partial-sync-repo@master # Replace with your action path
