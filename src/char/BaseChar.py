@@ -375,11 +375,16 @@ class BaseChar:
         Args:
             duration (float, optional): 技能期望的持续按键时间 (用于持续型声骸)。默认为 0。
             sleep_time (float, optional): 释放后的休眠时间 (似乎未使用)。默认为 0。
-            time_out (float, optional): 操作超时时间。默认为 1。
+            time_out (float, optional): 操作超时时间，召唤型声骸可设为 0。默认为 1。
 
         Returns:
             bool: 如果成功点击则返回 True。
         """
+        if time_out == 0 and self.echo_available():
+            self.send_echo_key()
+            self.update_echo_cd()
+            self.logger.debug('flick echo')
+            return True
         if self.task.is_open_world_auto_combat() and self.ring_index == Elements.FIRE:
             self.logger.debug(f'open world do not use motorcycle echo')
             return False
