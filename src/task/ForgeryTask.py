@@ -29,6 +29,7 @@ class ForgeryTask(DomainTask):
         }
         self.teleport_timeout = 60
         self.stamina_once = 40
+        self.total_number = 10
 
     def run(self):
         super().run()
@@ -49,27 +50,11 @@ class ForgeryTask(DomainTask):
         self.farm_in_domain(total_counter=total_counter, current=current, back_up=back_up)
 
     def teleport_into_domain(self, serial_number):
-        forgery_count_per_page = 5
-        total_forgery_number = 10
-        #
         self.click_relative(0.18, 0.16, after_sleep=1)
-        index = serial_number - 1
-        self.info_set('Teleport to Forgery Suppression', index)
-        if index >= total_forgery_number:
-            raise IndexError(f'Index out of range, max is {total_forgery_number}')
-        if index >= forgery_count_per_page:
-            index -= forgery_count_per_page
-            self.click_relative(0.98, 0.74)
-            self.log_info(f'teleport_to_forgery scroll down a page new index: {index}')
-        x = 0.88
-        height = (0.85 - 0.28) / 4
-        if self.ocr(0.3, 0.4, 0.36, 0.47, match=[re.compile("UP", re.IGNORECASE)]):
-            logger.info("forgery double up")
-            y = 0.28
-        else:
-            y = 0.275
-        y += height * index
-        self.click_relative(x, y, after_sleep=2)
+        self.info_set('Teleport to Forgery Suppression', serial_number - 1)
+        if serial_number > self.total_number:
+            raise IndexError(f'Index out of range, max is {self.total_number}')
+        self.click_on_book_target(serial_number, self.total_number)
         #
         self.wait_click_travel()
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
