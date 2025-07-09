@@ -14,7 +14,7 @@ from src.char.BaseChar import Priority, dot_color  # noqa
 from src.char.CharFactory import get_char_by_pos
 from src.char.Healer import Healer
 from src.combat.CombatCheck import CombatCheck
-from src.task.BaseWWTask import convert_text_bw
+from src.task.BaseWWTask import isolate_white_text, isolate_black_text
 
 logger = Logger.get_logger(__name__)
 cd_regex = re.compile(r'\d{1,2}\.\d')
@@ -145,7 +145,7 @@ class BaseCombatTask(CombatCheck):
         cds['resonance'] = 0
         cds['liberation'] = 0
         cds['echo'] = 0
-        texts = self.ocr(0.81, 0.86, 0.97, 0.93, frame_processor=convert_text_bw, match=cd_regex)
+        texts = self.ocr(0.81, 0.86, 0.97, 0.93, frame_processor=isolate_white_text, match=cd_regex)
         for text in texts:
             cd = convert_cd(text)
             if text.x < self.width_of_screen(0.86):
@@ -466,11 +466,11 @@ class BaseCombatTask(CombatCheck):
             self.raise_not_in_combat('combat check not in combat')
 
     def set_key(self, key, box):
-        best = self.find_best_match_in_box(box, ['t', 'e', 'r', 'q'], threshold=0.9)
-        logger.debug(f'key best match {key}: {best}')
+        best = self.find_best_match_in_box(box, ['t', 'e', 'r', 'q'], threshold=0.78)
+        logger.debug(f'set_key best match {key}: {best}')
         if best and best.name != self.key_config[key]:
             self.key_config[key] = best.name
-            self.log_info(f'set {key} to {best.name}')
+            self.log_info(f'set_key {key} to {best.name}')
 
     def load_hotkey(self, force=False):
         """加载或自动设置游戏内技能热键。
@@ -480,16 +480,17 @@ class BaseCombatTask(CombatCheck):
         """
         if not self.hot_key_verified or force:
             self.hot_key_verified = True
-
-            self.set_key('Resonance Key', self.box_of_screen(0.82, 0.92, 0.85, 0.96))
-            self.set_key('Echo Key', self.box_of_screen(0.88, 0.92, 0.90, 0.96))
-            self.set_key('Liberation Key', self.box_of_screen(0.93, 0.92, 0.96, 0.96))
-            self.set_key('Tool Key', self.box_of_screen(0.76, 0.92, 0.78, 0.96))
+            scale = 1.2
+            # self.set_key('Resonance Key', self.get_box_by_name('e').scale(scale))
+            self.set_key('Echo Key', self.get_box_by_name('r').scale(scale))
+            self.set_key('Liberation Key', self.get_box_by_name('q').scale(scale))
+            # self.set_key('Tool Key', self.get_box_by_name('t').scale(scale))
 
             self.info_set('Liberation Key', self.get_liberation_key())
-            self.info_set('Resonance Key', self.get_resonance_key())
+            # self.info_set('Resonance Key', self.get_resonance_key())
             self.info_set('Echo Key', self.get_echo_key())
-            self.info_set('Tool Key', self.key_config['Tool Key'])
+            # self.info_set('Tool Key', self.key_config['Tool Key'])
+        return self.key_config
 
     def has_char(self, char_cls):
         for char in self.chars:

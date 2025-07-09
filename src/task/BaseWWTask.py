@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
-from ok import BaseTask, Logger, find_boxes_by_name, og, Box
+from ok import BaseTask, Logger, find_boxes_by_name, og, find_color_rectangles
 from ok import CannotFindException
 import cv2
 
@@ -976,6 +976,75 @@ class BaseWWTask(BaseTask):
                 raise Exception('must be in game world and in teams')
         return True
 
+    def click_on_book_target(self, serial_number: int, total_number: int):
+        double_bar_top = 333 / 1440
+        bar_top = 268 / 1440
+        bar_bottom = 1259 / 1440
+        container_max_rows = 5
+        default_container_display = 398 / 992 * 12
+        index = serial_number - 1
+        if serial_number <= container_max_rows:
+            x = 0.88
+            y = 0.28
+            height = (0.85 - 0.28) / 4
+            y += height * index
+            self.click_relative(x, y, after_sleep=2)
+        else:
+            min_width = self.width_of_screen(475 / 2560)
+            min_height = self.height_of_screen(40 / 1440)
+            double = find_color_rectangles(self.frame, double_drop_color, min_width, min_height,
+                                           box=self.box_of_screen(1990 / 2560, 180 / 1440, 2480 / 2560, 240 / 1440))
+            if double:
+                logger.info(f'double drop!')
+                bar_top = double_bar_top
+                self.draw_boxes('double_drop', double, color='blue')
+            gap_per_index = (bar_bottom - bar_top) / total_number
+            y = gap_per_index * (serial_number - container_max_rows + default_container_display) + bar_top
+            self.click_relative(0.98, y)
+            logger.info(f'scroll to target')
+            btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.94, 0.6, 0.97, 0.88), threshold=0.8)
+            if btns is None:
+                raise Exception("can't find boss_proceed")
+            bottom_btn = None
+            for btn in btns:
+                if bottom_btn is None or btn.y > bottom_btn.y:
+                    bottom_btn = btn
+            self.click_box(bottom_btn, after_sleep=2)
+
+    def check_double_drop_in_claim(self):
+        min_width = self.width_of_screen(320 / 2560)
+        min_height = self.height_of_screen(40 / 1440)
+        double = find_color_rectangles(self.frame, double_drop_color, min_width, min_height,
+                                       box=self.box_of_screen(1550 / 2560, 760 / 1440, 1925 / 2560, 825 / 1440))
+        return bool(double)
+
+    def change_time_to_night(self):
+        logger.info('change time to night')
+        self.send_key("esc")
+        self.sleep(1)
+        self.click_relative(0.71, 0.96)
+        self.sleep(2)
+        self.click_relative(0.19, 0.14)
+        self.sleep(1)
+
+        # 调整时间到晚上
+        for _ in range(3):
+            self.click_relative(0.82, 0.53)
+            self.sleep(1)
+
+        self.click_relative(0.52, 0.90)
+        self.sleep(6)
+        self.send_key("esc")
+        self.sleep(1)
+        self.send_key("esc")
+        self.sleep(1)
+
+
+double_drop_color = {
+    'r': (140, 180),  # Red range
+    'g': (120, 160),  # Green range
+    'b': (70, 110)  # Blue range
+}
 
 echo_color = {
     'r': (200, 255),  # Red range
@@ -1004,9 +1073,19 @@ def calculate_angle_clockwise(box1, box2):
 
 lower_white = np.array([244, 244, 244], dtype=np.uint8)
 upper_white = np.array([255, 255, 255], dtype=np.uint8)
+lower_black = np.array([0, 0, 0], dtype=np.uint8)
+upper_black = np.array([180, 180, 180], dtype=np.uint8)
 
 
-def convert_text_bw(cv_image):
+def isolate_black_text(cv_image):
+    match_mask = cv2.inRange(cv_image, lower_black, upper_black)
+
+    output_image = np.full(cv_image.shape, 255, dtype=np.uint8)
+    output_image[match_mask == 255] = [0, 0, 0]
+    return output_image
+
+
+def isolate_white_text(cv_image):
     """
     Converts pixels in the near-white range (244-255) to black,
     and all others to white.
