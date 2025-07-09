@@ -16,14 +16,14 @@ class SimulationTask(DomainTask):
         self.name = '⭐ Simulation Challenge'
         self.description = 'Farm selected Simulation Challenge, you need to be able to teleport'
         self.default_config = {
-            'Teleport Timeout': 10,
+            # 'Teleport Timeout': 10,
             'Material Selection': 'Shell Credit',
             'Simulation Challenge Count': 10,  # starts with 0
         }
         material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type['Material Selection'] = {'type': 'drop_down', 'options': material_option_list}
         self.config_description = {
-            'Teleport Timeout': 'the timeout of second for teleport',
+            # 'Teleport Timeout': 'the timeout of second for teleport',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit, on current screen of F2',
             'Simulation Challenge Count': 'farm Simulation Challenge N time(s), 40 stamina per time, set a large number to use all stamina',
         }
@@ -32,7 +32,8 @@ class SimulationTask(DomainTask):
 
     def run(self):
         super().run()
-        self.teleport_timeout = self.config.get('Teleport Timeout', 10)
+        # self.teleport_timeout = self.config.get('Teleport Timeout', 10)
+        self.teleport_timeout = 60
         self.make_sure_in_world()
         self.farm_simulation()
 

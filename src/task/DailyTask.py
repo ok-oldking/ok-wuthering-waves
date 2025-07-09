@@ -20,7 +20,7 @@ class DailyTask(TacetTask, ForgeryTask, SimulationTask):
         self.name = "Daily Task"
         self.add_exit_after_config()
         self.default_config = {
-            'Teleport Timeout': 10,
+            # 'Teleport Timeout': 10,
             'Which Tacet Suppression to Farm': 1, # starts with 1
             'Tacet Suppression Count': 0, # starts with 0
             'Forgery Suppression Serial Number': 1, # starts with 1
@@ -29,7 +29,7 @@ class DailyTask(TacetTask, ForgeryTask, SimulationTask):
             'Simulation Challenge Count': 0, # starts with 0
         }
         self.config_description = {
-            'Teleport Timeout': 'the timeout of second for teleport',
+            # 'Teleport Timeout': 'the timeout of second for teleport',
             'Which Tacet Suppression to Farm': 'the Nth number in the Tacet Suppression list (F2)',
             'Tacet Suppression Count': 'farm Tacet Suppression N time(s), 60 stamina per time, set a large number to use all stamina',
             'Forgery Suppression Serial Number': 'the Nth number in the list of Forgery Suppression list (in F2 menu)',

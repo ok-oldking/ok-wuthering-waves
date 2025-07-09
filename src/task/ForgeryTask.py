@@ -16,14 +16,14 @@ class ForgeryTask(DomainTask):
         self.name = '⭐ Forgery Challenge'
         self.description = 'Farm selected Forgery Challenge, you need to be able to teleport'
         self.default_config = {
-            'Teleport Timeout': 10,
+            # 'Teleport Timeout': 10,
             'Forgery Suppression Serial Number': 1,  # starts with 1
             'Forgery Challenge Count': 10,  # starts with 0
         }
         material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type['Material Selection'] = {'type': 'drop_down', 'options': material_option_list}
         self.config_description = {
-            'Teleport Timeout': 'the timeout of second for teleport',
+            # 'Teleport Timeout': 'the timeout of second for teleport',
             'Forgery Suppression Serial Number': 'the Nth number in the list of Forgery Suppression list (in F2 menu)',
             'Forgery Challenge Count': 'farm Forgery Challenge N time(s), 40 stamina per time, set a large number to use all stamina',
         }
@@ -32,7 +32,8 @@ class ForgeryTask(DomainTask):
 
     def run(self):
         super().run()
-        self.teleport_timeout = self.config.get('Teleport Timeout', 10)
+        # self.teleport_timeout = self.config.get('Teleport Timeout', 10)
+        self.teleport_timeout = 60
         self.make_sure_in_world()
         self.farm_forgery()
 
