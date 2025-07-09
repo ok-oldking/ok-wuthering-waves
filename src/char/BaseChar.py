@@ -8,6 +8,8 @@ import numpy as np  # noqa
 from ok import Config, Logger  # noqa
 from src import text_white_color  # noqa
 
+SKILL_TIME_OUT = 10
+
 
 class Priority(IntEnum):
     """定义切换角色的优先级枚举。"""
@@ -239,6 +241,11 @@ class BaseChar:
         if sec > 0:
             self.task.sleep_check_combat(sec + self.sleep_adjust, check_combat=check_combat)
 
+    def alert_skill_failed(self):
+        self.task.log_error(f'Click skill failed, check if the keybinding is correct in ok-ww settings!',
+                            notify=True)
+        self.task.screenshot('click_resonance too long, breaking')
+
     def click_resonance(self, post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0,
                         check_cd=False):
         """尝试点击并释放共鸣技能。
@@ -261,10 +268,9 @@ class BaseChar:
         animated = False
         start = time.time()
         while True:
-            if resonance_click_time != 0 and time.time() - resonance_click_time > 8:
+            if time.time() - start > SKILL_TIME_OUT:
                 self.task.in_liberation = False
-                self.logger.error(f'click_resonance too long, breaking {time.time() - resonance_click_time}')
-                self.task.screenshot('click_resonance too long, breaking')
+                self.alert_skill_failed()
                 break
             if has_animation:
                 if not self.task.in_team()[0]:
@@ -387,10 +393,9 @@ class BaseChar:
         time_out += duration
         while True:
             if time.time() - start > time_out:
-                self.logger.info('click_echo time out')
+                self.logger.info("click_echo time out")
                 return False
             self.check_combat()
-            current = self.current_echo()
             if not self.echo_available() and (duration == 0 or not clicked):
                 break
             now = time.time()
@@ -403,8 +408,9 @@ class BaseChar:
                     clicked = True
                 self.send_echo_key()
                 last_click = now
-            if now - start > 5:
+            if now - start > SKILL_TIME_OUT:
                 self.logger.error(f'click_echo too long {clicked}')
+                self.alert_skill_failed()
                 break
             self.task.next_frame()
         self.logger.debug(f'click_echo end {clicked}')
@@ -426,7 +432,7 @@ class BaseChar:
         self._echo_available = False
         self._resonance_available = False
 
-    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0, timeout=5):
+    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0):
         """尝试点击并释放共鸣解放。
 
         Args:
@@ -461,7 +467,8 @@ class BaseChar:
                 if not clicked:
                     clicked = True
                 last_click = now
-            if time.time() - start > timeout:
+            if time.time() - start > SKILL_TIME_OUT:
+                self.alert_skill_failed()
                 self.task.raise_not_in_combat('too long clicking a liberation')
             self.task.next_frame()
         if clicked:

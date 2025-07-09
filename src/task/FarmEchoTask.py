@@ -19,9 +19,11 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Repeat Farm Count': 10000,
             'Combat Wait Time': 0,
             'Echo Pickup Method': 'Walk',
+            'Change Time to Night': False,
         })
         self.config_description.update({
             'Combat Wait Time': 'Wait time before each combat(seconds), set 5 if farming Sentry Construct',
+            'Change Time to Night': "Yes if Farming Lorelei",
         })
         self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
@@ -58,12 +60,14 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self._in_realm = self.in_realm()
         self.log_info(f'in_realm: {self._in_realm}')
         self._farm_start_time = time.time()
-        self.target_enemy_time_out = 3  if self._in_realm else 1.2
-        self.switch_char_time_out = 5  if self._in_realm else 3
+        self.target_enemy_time_out = 3 if self._in_realm else 1.2
+        self.switch_char_time_out = 5 if self._in_realm else 3
         threshold = 0.25 if self._in_realm else 0.65
         time_out = 12 if self._in_realm else 4
         self._has_treasure = False
         while count < self.config.get("Repeat Farm Count", 0):
+            if count % 5 == 0 and self.config.get('Change Time to Night'):
+                self.change_time_to_night()
             if self._in_realm:
                 self.send_key('esc', after_sleep=0.5)
                 self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,

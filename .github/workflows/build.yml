@@ -14,6 +14,7 @@ jobs:
     env:
       PYTHONIOENCODING: 'UTF-8'
       SIGN_BUILD: 'true'
+    #      SIGN_BUILD: 'false'
 
     strategy:
       matrix:
@@ -33,6 +34,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
+          fetch-depth: 0
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -62,19 +64,9 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
-      - name: Copy ok-script lib
+      - name: inline_ok_requirements
         run: |
-          python -m ok.update.copy_ok_folder
-
-      - name: Rename .py files to .pyx
-        run: |
-          Get-ChildItem -Path .\src -Recurse -Filter *.py -Exclude '__init__.py' | ForEach-Object { Rename-Item $_.FullName -NewName ($_.FullName -replace '\.py$', '.pyx') }
-
-      - name: build cython
-        run: |
-          python setup.py build_ext --inplace
-          Get-ChildItem -Path .\src -Recurse -Filter *.pyx | ForEach-Object { Remove-Item $_.FullName }
-          Get-ChildItem -Path .\src -Recurse -Filter *.cpp | ForEach-Object { Remove-Item $_.FullName }
+          python -m ok.update.inline_ok_requirements --tag ${{ steps.tagName.outputs.tag }}
 
       - name: Run tests
         run: |
@@ -95,19 +87,23 @@ jobs:
               }
           }
 
-      - name: push to ok-ww-update
-        run: |
-          python -m ok.update.push_repos --repos https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
-
-      - name: push to cnb
-        run: |
-          python -m ok.update.push_repos --repos https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-wuthering-waves.git --files deploy.txt --tag ${{ steps.tagName.outputs.tag }}
+      - name: Sync Repositories
+        id: sync   # Give the step an ID to access its outputs
+        uses: ok-oldking/partial-sync-repo@master # Replace with your action path
+        with:
+          repos: |
+            https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update
+            https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-wuthering-waves.git
+          sync_list: 'deploy.txt'
+          tag: ${{ github.ref_name }}
+          gitignore_file: '.update_repo_gitignore'
+          show_author: true
 
       - name: Build with PyAppify Action
         id: build-app
         uses: ok-oldking/pyappify-action@master
       #        with:
-      #          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.4.43
+      #          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.4.47
 
       - name: Extract EXE for signing
         if: env.SIGN_BUILD == 'true'
@@ -169,15 +165,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           body: |
-            * ok-ww-win32-China.zip 完整包, 更新源使用阿里云+腾讯CNB, 
-            * ok-ww-win32-Global.zip full package with dependencies, using GitHub and PyPi as update source 
-            * 不要下载SourceCode, Do Not Download the SourceCode
-            * 如果下载过慢可以使用加速或者使用下面渠道下载
-            * [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okww&source=ok-ww-release), 国内网页直链, 下载需要购买CD-KEY, 已有Mirror酱CD-KEY可免费下载
-            * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
-
+            ### 下载包说明
+              * ok-ww-win32.zip 在线安装包, 解压后在线安装. 
+              * ok-ww-win32-China.zip 完整包, 更新源使用阿里云+腾讯CNB. 
+              * ok-ww-win32-Global.zip full package with dependencies, using GitHub and PyPi as update source 
+              * 不要下载SourceCode, Do Not Download the SourceCode
+            ### 如果无法下载可以使用, 其他下载源
+              * 如果下载过慢可以使用加速或者使用下面渠道下载
+              * [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okww&source=ok-ww-release), 国内网页直链, 下载需要购买CD-KEY, 已有Mirror酱CD-KEY可免费下载
+              * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
+            ###  更新日志 ${{ steps.sync.outputs.start_tag }} -> ${{ steps.sync.outputs.end_tag }}:
+              ${{ steps.sync.outputs.changes_with_asterisk }}          
+          
           draft: false
-          prerelease: true
+          prerelease: false
           files: pyappify_dist/*
 
       - name: Trigger MirrorChyanUploading
