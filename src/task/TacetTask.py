@@ -17,7 +17,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.description = "Farm selected Tacet Suppression until out of stamina, will use the backup stamina, you need to be able to teleport from the menu(F2)"
         self.name = "Tacet Suppression (Must explore first to be able to teleport)"
         default_config = {
-            'Teleport Timeout': 10,
+            # 'Teleport Timeout': 10,
             'Which Tacet Suppression to Farm': 1,  # starts with 1
             'Tacet Suppression Count': 10,
         }
@@ -26,7 +26,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.target_enemy_time_out = 8
         default_config.update(self.default_config)
         self.config_description = {
-            'Teleport Timeout': 'the timeout of second for teleport',
+            # 'Teleport Timeout': 'the timeout of second for teleport',
             'Which Tacet Suppression to Farm': 'the Nth number in the Tacet Suppression list (F2)',
             'Tacet Suppression Count': 'farm Tacet Suppression N time(s), 60 stamina per time, set a large number to use all stamina',
         }
@@ -39,15 +39,18 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             4: [["a", 1.5], ["w", 3], ["a", 2.5]],
         }
         self.stamina_once = 60
+        self.double_bonus = False
 
     def run(self):
         super().run()
-        timeout_second = self.config.get('Teleport Timeout', 10)
+        # timeout_second = self.config.get('Teleport Timeout', 10)
+        timeout_second = 60
         self.wait_in_team_and_world(esc=True, time_out=timeout_second)
         self.farm_tacet()
 
     def farm_tacet(self):
-        timeout_second = self.config.get('Teleport Timeout', 10)
+        # timeout_second = self.config.get('Teleport Timeout', 10)
+        timeout_second = 60
         serial_number = self.config.get('Which Tacet Suppression to Farm', 0)
         total_counter = self.config.get('Tacet Suppression Count', 0)
         # total counter
@@ -84,8 +87,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.combat_once()
             self.sleep(3)
             self.walk_to_treasure()
-            double_drop = self.ocr(0.2, 0.56, 0.75, 0.69, match=['双倍', 'Double'])
-            if counter <= 1 or (double_drop and len(double_drop) >= 1):
+            if counter <= 1 or self.double_bonus:
                 used, remaining_total, _, _ = self.ensure_stamina(self.stamina_once, self.stamina_once)
                 counter -= 1
             else:
@@ -119,6 +121,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         height = (0.85 - 0.28) / 4
         if self.ocr(0.3, 0.4, 0.36, 0.47, match=[re.compile("UP", re.IGNORECASE)]):
             logger.info("tacet double up")
+            self.double_bonus = True
             y = 0.28
         else:
             y = 0.275
