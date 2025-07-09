@@ -43,11 +43,6 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
-          pip install -r requirements-dev.txt
-
-      - name: inline_ok_requirements
-        run: |
-          python -m ok.update.inline_ok_requirements --tag ${{ steps.tagName.outputs.tag }}
 
       - name: Run tests
         run: |
