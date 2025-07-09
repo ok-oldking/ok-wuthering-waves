@@ -595,7 +595,7 @@ msgid "Hecate"
 msgstr ""
 
 msgid "Login, claim monthly card, farm echo twice, and claim daily reward"
-msgstr ""
+msgstr "start, monthly card, mail, farm, activity (need 1+ tacet AND 180+ stamina, no error for unfinished), radio"
 
 msgid "Lorelei"
 msgstr ""

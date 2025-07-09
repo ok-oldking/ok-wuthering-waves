@@ -469,7 +469,7 @@ msgid "Dreamless"
 msgstr "无妄者"
 
 msgid "Login, claim monthly card, farm echo, and claim daily reward"
-msgstr "启动游戏, 登录, 领月卡, 刷声骸, 领日常任务奖励, 领邮件"
+msgstr "启动, 月卡, 邮件, 刷体力, 活跃度 (完成需【刷1+无音区】且【用180+体力】未完成不报错), 先约电台"
 
 msgid "Task completed"
 msgstr "任务完成"

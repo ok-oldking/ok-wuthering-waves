@@ -5,17 +5,38 @@ from qfluentwidgets import FluentIcon
 from ok import Logger
 from src.task.BaseWWTask import number_re
 from src.task.TacetTask import TacetTask
+from src.task.ForgeryTask import ForgeryTask
+from src.task.SimulationTask import SimulationTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
 
 
-class DailyTask(TacetTask):
+class DailyTask(TacetTask, ForgeryTask, SimulationTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.description = "Login, claim monthly card, farm echo, and claim daily reward"
         self.name = "Daily Task"
+        self.add_exit_after_config()
+        self.default_config = {
+            'Teleport Timeout': 10,
+            'Which Tacet Suppression to Farm': 1, # starts with 1
+            'Tacet Suppression Count': 0, # starts with 0
+            'Forgery Suppression Serial Number': 1, # starts with 1
+            'Forgery Challenge Count': 0, # starts with 0
+            'Material Selection': 'Shell Credit',
+            'Simulation Challenge Count': 0, # starts with 0
+        }
+        self.config_description = {
+            'Teleport Timeout': 'the timeout of second for teleport',
+            'Which Tacet Suppression to Farm': 'the Nth number in the Tacet Suppression list (F2)',
+            'Tacet Suppression Count': 'farm Tacet Suppression N time(s), 60 stamina per time, set a large number to use all stamina',
+            'Forgery Suppression Serial Number': 'the Nth number in the list of Forgery Suppression list (in F2 menu)',
+            'Forgery Challenge Count': 'farm Forgery Challenge N time(s), 40 stamina per time, set a large number to use all stamina',
+            'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit, on current screen of F2',
+            'Simulation Challenge Count': 'farm Simulation Challenge N time(s), 40 stamina per time, set a large number to use all stamina',
+        }
         self.add_exit_after_config()
         self.show_create_shortcut = True
         self.icon = FluentIcon.CAR
@@ -23,10 +44,22 @@ class DailyTask(TacetTask):
     def run(self):
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=180)
-        self.farm_tacet()
-        self.sleep(4)
-        self.claim_daily()
+        #
+        self.make_sure_in_world()
         self.claim_mail()
+        #
+        self.stamina_once = 60
+        self.farm_tacet()
+        #
+        self.stamina_once = 40 
+        self.farm_forgery()
+        self.make_sure_in_world()
+        #
+        self.stamina_once = 40 
+        self.farm_simulation()
+        self.make_sure_in_world()
+        #
+        self.claim_daily()
         self.claim_millage()
         self.log_info('Task completed', notify=True)
 
@@ -39,6 +72,8 @@ class DailyTask(TacetTask):
         self.wait_ocr(0.2, 0.13, 0.32, 0.22, match=re.compile(r'\d+'), settle_time=1, raise_if_not_found=True, log=True)
         self.click(0.04, 0.3, after_sleep=1)
         self.click(0.68, 0.91, after_sleep=1)
+        self.click(0.04, 0.16, after_sleep=1)
+        self.click(0.68, 0.91, after_sleep=1)
         self.ensure_main()
 
     def claim_daily(self):
@@ -47,6 +82,17 @@ class DailyTask(TacetTask):
         self.openF2Book()
         gray_book_quest = self.openF2Book("gray_book_quest")
         self.click_box(gray_book_quest, after_sleep=1.5)
+        #
+        try:
+            total_points = int(self.ocr(0.19, 0.8, 0.30, 0.93, match=number_re)[0].name) # throw exception with activity 0
+        except:
+            total_points = 0
+        self.info_set('daily points', total_points)
+        if total_points >= 100:
+            self.click(0.89, 0.85, after_sleep=1)
+            self.ensure_main(time_out=5)
+            return
+        #
         while True:
             boxes = self.ocr(0.23, 0.16, 0.31, 0.69, match=re.compile(r"^[1-9]\d*/\d+$"))
             count = 0
@@ -65,9 +111,9 @@ class DailyTask(TacetTask):
         total_points = int(self.ocr(0.19, 0.8, 0.30, 0.93, match=number_re)[0].name)
         self.info_set('daily points', total_points)
         if total_points < 100:
-            raise Exception("Can't complete daily task, may need to increase stamina manually!")
-
-        self.click(0.89, 0.85, after_sleep=1)
+            self.log_error("Can't complete daily task, may need to increase stamina manually!", notify=True)
+        else:
+            self.click(0.89, 0.85, after_sleep=1)
         self.ensure_main(time_out=5)
 
     def claim_mail(self):
