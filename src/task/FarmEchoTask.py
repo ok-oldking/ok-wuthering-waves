@@ -33,6 +33,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self._has_treasure = False
         self._in_realm = False
         self._farm_start_time = time.time()
+        self.last_night_change = 0
 
     def on_combat_check(self):
         if not self._in_realm:
@@ -66,8 +67,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         time_out = 12 if self._in_realm else 4
         self._has_treasure = False
         while count < self.config.get("Repeat Farm Count", 0):
-            if count % 5 == 0 and self.config.get('Change Time to Night'):
-                self.change_time_to_night()
+            if self.config.get('Change Time to Night') and not self.in_combat():
+                night_elapsed = time.time() - self.last_night_change
+                self.log_info(f"Night elapsed: {night_elapsed:.1f}s")
+                if night_elapsed > 660:
+                    self.change_time_to_night()
+                    self.last_night_change = time.time()
             if self._in_realm:
                 self.send_key('esc', after_sleep=0.5)
                 self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
@@ -90,6 +95,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.log_info('start wait in combat')
             if not self._in_realm and not self._has_treasure and not self.in_combat():
                 self.go_to_boss_minimap()
+                if not self.in_combat() and self.find_treasure_icon() and self.walk_to_treasure_and_restart():
+                    self._has_treasure = True
+                    self.log_info('_has_treasure = True')
+                    self.scroll_and_click_buttons()                  
 
             self.sleep(self.config.get("Combat Wait Time", 0))
 
@@ -136,7 +145,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         if not self.in_combat():
             self.teleport_to_nearest_boss()
             self.sleep(0.5)
-            self.run_until(self.in_combat, 'w', time_out=12, running=True)
+            self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w', time_out=12, running=True)
 
     def teleport_to_nearest_boss(self):
         self.send_key('m', after_sleep=2)
@@ -152,6 +161,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
     def scroll_and_click_buttons(self):
         self.sleep(0.2)
         start = time.time()
+        if self._has_treasure and not self.find_f_with_text():
+            self.scroll_relative(0.5, 0.5, 1)
+            self.sleep(0.2)
         while self.find_f_with_text() and not self.in_combat() and time.time() - start < 5:
             self.log_info('scroll_and_click_buttons')
             self.scroll_relative(0.5, 0.5, 1)
