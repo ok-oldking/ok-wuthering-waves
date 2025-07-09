@@ -48,7 +48,7 @@ class Phoebe(BaseChar):
             self.sleep(0.01)
 
         if self.attribute == 1:
-            self.click_echo(time_out=0.2)
+            self.click_echo(time_out=0)
         if self.flying():
             self.logger.info('flying')
             self.continues_normal_attack(0.1)

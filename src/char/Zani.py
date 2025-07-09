@@ -68,7 +68,7 @@ class Zani(BaseChar):
             self.state = 0
 
         if self.echo_available():
-            self.click_echo(time_out=0.1)
+            self.click_echo(time_out=0)
 
         cast_liberation = False
         if self.crisis_time > 0:

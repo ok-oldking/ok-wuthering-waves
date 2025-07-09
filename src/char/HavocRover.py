@@ -38,7 +38,7 @@ class HavocRover(BaseChar):
             self.continues_normal_attack(1)
         self.wait_down()
         self.spectro_routine_aftertune_combo()
-        self.click_echo(time_out=0.15)
+        self.click_echo(time_out=0)
         if self.is_forte_full():
             self.check_combat()
             if self.resonance_available() and self.click_resonance()[0]:
@@ -80,7 +80,7 @@ class HavocRover(BaseChar):
                 return
         self.wind_routine_wait_down(check_forte_full=False)
         if self.resonance_available() and not self.is_forte_full():
-            self.click_echo(time_out=0.2)
+            self.click_echo(time_out=0)
             start = time.time()
             flying = False
             while time.time() - start < 1:
@@ -162,7 +162,7 @@ class HavocRover(BaseChar):
         if self.is_forte_full():
             self.send_resonance_key()
             return
-        self.click_echo(time_out=0.2)
+        self.click_echo(time_out=0)
         if self.resonance_available() and not self.wind_routine_flying():
             self.send_resonance_key()
             self.sleep(0.1)
