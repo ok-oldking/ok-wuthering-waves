@@ -1,0 +1,73 @@
+name: Build Windows Executable
+
+on:
+  pull_request:
+    types: [ opened, synchronize ]
+
+jobs:
+  build:
+    name: Build exe with launcher
+    runs-on: windows-latest
+
+    env:
+      PYTHONIOENCODING: 'UTF-8'
+      SIGN_BUILD: 'true'
+    #      SIGN_BUILD: 'false'
+
+    strategy:
+      matrix:
+        python-version: [ 3.12 ]
+
+    steps:
+      - name: Configure git
+        run: |
+          [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+          git config --global user.email "ok-oldking@users.noreply.github.com"
+          git config --global user.name "ok-oldking"
+          echo "action_state=yellow" >> $env:GITHUB_ENV
+          echo "${{ env.action_state }}"
+
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set UTF-8 encoding
+        run: |
+          set PYTHONIOENCODING=utf-8
+          set PYTHONLEGACYWINDOWSSTDIO=utf-8
+          echo PYTHONIOENCODING=utf-8 >> $GITHUB_ENV
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: inline_ok_requirements
+        run: |
+          python -m ok.update.inline_ok_requirements --tag ${{ steps.tagName.outputs.tag }}
+
+      - name: Run tests
+        run: |
+          Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
+              Write-Host "Running tests in $($_.FullName)"
+              try {
+                  # Run the Python unittest command
+                  python -m unittest $_.FullName
+
+                  # Check if the previous command succeeded
+                  if ($LASTEXITCODE -ne 0) {
+                      throw "Tests failed in $($_.FullName)"
+                  }
+              } catch {
+                  # Stop the loop and return the error
+                  Write-Error $_
+                  exit 1
+              }
+          }
+
+  
