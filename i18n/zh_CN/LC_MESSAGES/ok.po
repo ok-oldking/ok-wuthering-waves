@@ -547,31 +547,7 @@ msgid "⭐ Daily Task"
 msgstr "⭐ 日常一条龙"
 
 msgid "open game, login, monthly card, mail, farm, activity, radio"
-msgstr "启动游戏, 登录, 月卡, 邮件, 刷取声骸/材料, 活跃度奖励, 先约电台奖励"
-
-msgid "mail task"
-msgstr "领取「邮件」"
-
-msgid "enable mail task"
-msgstr "领取「邮件」"
-
-msgid "activity task"
-msgstr "启用「活跃度」任务"
-
-msgid "enable activity task"
-msgstr "启用「活跃度」任务, 领取奖励需要【刷取1+次无音区】且【消耗180+体力】, 无法完成不会报错"
-
-msgid "millage task"
-msgstr "启用「先约电台」任务"
-
-msgid "enable millage task"
-msgstr "启用「先约电台」任务"
-
-msgid "wait second(s) before start"
-msgstr "等待数秒后执行一条龙"
-
-msgid "wait second(s) before start to prevent disconnect problem"
-msgstr "登录后等待若干秒后执行一条龙, 旨在解决偶发的掉线问题"
+msgstr "启动, 月卡, 邮件, 刷体力, 活跃度 (完成需【刷1+无音区】且【用180+体力】未完成不报错), 先约电台"
 
 msgid "⭐ Tacet Suppression"
 msgstr "⭐ 无音区"

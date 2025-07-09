@@ -757,31 +757,7 @@ msgid "⭐ Daily Task"
 msgstr ""
 
 msgid "open game, login, monthly card, mail, farm, activity, radio"
-msgstr ""
-
-msgid "mail task"
-msgstr ""
-
-msgid "enable mail task"
-msgstr ""
-
-msgid "activity task"
-msgstr ""
-
-msgid "enable activity task"
-msgstr ""
-
-msgid "millage task"
-msgstr ""
-
-msgid "enable millage task"
-msgstr ""
-
-msgid "wait second(s) before start"
-msgstr ""
-
-msgid "wait second(s) before start to prevent disconnect problem"
-msgstr ""
+msgstr "start, monthly card, mail, farm, activity (need 1+ tacet AND 180+ stamina, no error for unfinished), radio"
 
 msgid "⭐ Tacet Suppression"
 msgstr ""

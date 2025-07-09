@@ -27,10 +27,6 @@ class DailyTask2(TacetTask2, ForgeryTask, SimulationTask):
             'Forgery Challenge Count': 0, # starts with 0
             'Material Selection': 'Shell Credit',
             'Simulation Challenge Count': 0, # starts with 0
-            'mail task': True,
-            'activity task': True,
-            'enable millage task': True,
-            'wait second(s) before start': 0
         }
         self.config_description = {
             'Teleport Timeout': 'the timeout of second for teleport',
@@ -40,10 +36,6 @@ class DailyTask2(TacetTask2, ForgeryTask, SimulationTask):
             'Forgery Challenge Count': 'farm Forgery Challenge N time(s), 40 stamina per time, set a large number to use all stamina',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit, on current screen of F2',
             'Simulation Challenge Count': 'farm Simulation Challenge N time(s), 40 stamina per time, set a large number to use all stamina',
-            'mail task': 'enable mail task',
-            'activity task': 'enable activity task',
-            'enable millage task': 'enable millage task',
-            'wait second(s) before start': 'wait second(s) before start to prevent disconnect problem',
         }
         self.show_create_shortcut = True
         self.add_exit_after_config()
@@ -51,21 +43,20 @@ class DailyTask2(TacetTask2, ForgeryTask, SimulationTask):
     def run(self):
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=180)
-        self.sleep(self.config.get('wait second(s) before start', 0))
         #
         self.make_sure_in_world()
-        if (self.config.get('mail task', True)):
-            self.claim_mail()
+        self.claim_mail()
         #
+        self.stamina_once = 60
         self.farm_tacet()
+        self.stamina_once = 40
         self.farm_forgery()
+        self.stamina_once = 40
         self.farm_simulation()
         #
         self.make_sure_in_world()
-        if (self.config.get('activity task', True)):
-            self.claim_daily()
-        if (self.config.get('millage task', True)):
-            self.claim_millage()
+        self.claim_daily()
+        self.claim_millage()
         self.log_info('Task completed', notify=True)
 
     def claim_millage(self):
