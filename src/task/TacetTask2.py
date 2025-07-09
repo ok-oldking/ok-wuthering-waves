@@ -22,36 +22,43 @@ class TacetTask2(TacetTask):
             'Tacet Suppression Serial Number': 'the Nth number in the list of Tacet Suppression list (in F2 menu)',
             'Tacet Suppression Count': 'farm Tacet Suppression N time(s), 60 stamina per time, set a large number to use all stamina',
         }
+        self.stamina_once = 60
 
     def run(self):
         super(BaseCombatTask,self).run()
         super(WWOneTimeTask,self).run()
-        timeout_second = self.config.get('Teleport Timeout', 10) # ⭐
+        timeout_second = self.config.get('Teleport Timeout', 10)
         self.wait_in_team_and_world(esc=True, time_out=timeout_second)
         self.farm_tacet()
 
     def farm_tacet(self):
-        timeout_second = self.config.get('Teleport Timeout', 10) # ⭐
-        serial_number = self.config.get('Tacet Suppression Serial Number', 0) # ⭐
-        counter = self.config.get('Tacet Suppression Count', 0) # ⭐
-        remaining_total = 0 # ⭐
+        # ⭐ {
+        timeout_second = self.config.get('Teleport Timeout', 10)
+        serial_number = self.config.get('Tacet Suppression Serial Number', 0)
+        total_counter = self.config.get('Tacet Suppression Count', 0)
+        # total counter
+        if total_counter <= 0:
+            self.log_info('0 time(s) farmed, 0 stamina used')
+            return
+        # stamina
+        current, back_up = self.open_F2_book_and_get_stamina()
+        if current + back_up < self.stamina_once:
+            self.log_info('not enough stamina, 0 stamina used')
+            self.back()
+            return
+        
+        counter = total_counter
         total_used = 0
-        while counter > 0: # ⭐
-            self.sleep(1)
+        while counter > 0:
             gray_book_boss = self.openF2Book("gray_book_boss")
             self.click_box(gray_book_boss, after_sleep=1)
-            current, back_up = self.get_stamina()
-            if current == -1:
-                self.click_relative(0.04, 0.4, after_sleep=1)
-                current, back_up = self.get_stamina()
-            if current + back_up < 60:
-                return self.not_enough_stamina()
             self.click_relative(0.18, 0.48, after_sleep=1)
-            index = serial_number - 1 # ⭐
+            index = serial_number - 1
             self.teleport_to_tacet(index)
             self.wait_click_travel()
-            self.wait_in_team_and_world(time_out=timeout_second) # ⭐
-            self.sleep(max(2, timeout_second / 10)) # wait for treasure/door/enemy appear ⭐
+            self.wait_in_team_and_world(time_out=timeout_second)
+            self.sleep(max(2, timeout_second / 10)) # wait for treasure/door/enemy appear
+            # } ⭐
             if self.door_walk_method.get(index) is not None:
                 for method in self.door_walk_method.get(index):
                     self.send_key_down(method[0])
@@ -64,21 +71,28 @@ class TacetTask2(TacetTask):
             self.combat_once()
             self.sleep(3)
             self.walk_to_treasure()
-            used, remaining_total, remaining_current, used_back_up = self.ensure_stamina(60, 60) # ⭐
+            # ⭐ {
+            double_drop = self.ocr(0.2, 0.56, 0.75, 0.69, match=['双倍', 'Double'])
+            if counter <= 1 or (double_drop and len(double_drop) >= 1):
+                used, remaining_total, _, _ = self.ensure_stamina(self.stamina_once, self.stamina_once)
+                counter -= 1
+            else:
+                used, remaining_total, _, _ = self.ensure_stamina(self.stamina_once, 2 * self.stamina_once)
+                counter -= int(used / self.stamina_once)
             total_used += used
-            self.info_set('used stamina', total_used)
-            if not used:
-                return self.not_enough_stamina()
-            # self.click(0.75, 0.32, after_sleep=2) # uncomment current line and comment next 2 lines for debug (not use stamina) ⭐
+            # } ⭐
             self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'], raise_if_not_found=True,
                                 log=True)
             self.sleep(4)
             self.click(0.51, 0.84, after_sleep=2)
-            if remaining_total < 60:
-                return self.not_enough_stamina(back=False)
-            if total_used >= 180 and remaining_current == 0:
-                return self.not_enough_stamina(back=True)
-            counter -= 1 # ⭐
+            # ⭐ {
+            if counter <= 0:
+                self.log_info(f'{total_counter} time(s) farmed, {total_used} stamina used')
+                break
+            if remaining_total < self.stamina_once:
+                self.log_info(f'not enough stamina, {total_used} stamina used')
+                break
+            # } ⭐
 
 
 echo_color = {
