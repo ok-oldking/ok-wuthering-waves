@@ -33,6 +33,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self._has_treasure = False
         self._in_realm = False
         self._farm_start_time = time.time()
+        self.last_night_change = 0
 
     def on_combat_check(self):
         if not self._in_realm:
@@ -66,8 +67,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         time_out = 12 if self._in_realm else 4
         self._has_treasure = False
         while count < self.config.get("Repeat Farm Count", 0):
-            if count % 5 == 0 and self.config.get('Change Time to Night'):
-                self.change_time_to_night()
+            if self.config.get('Change Time to Night') and not self.in_combat():
+                night_elapsed = time.time() - self.last_night_change
+                self.log_info(f"Night elapsed: {night_elapsed:.1f}s")
+                if night_elapsed > 660:
+                    self.change_time_to_night()
+                    self.last_night_change = time.time()
             if self._in_realm:
                 self.send_key('esc', after_sleep=0.5)
                 self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,

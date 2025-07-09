@@ -1028,7 +1028,7 @@ class BaseWWTask(BaseTask):
         self.sleep(1)
 
         # 调整时间到晚上
-        for i in range(4):
+        for _ in range(3):
             self.click_relative(0.82, 0.53)
             self.sleep(1)
 
