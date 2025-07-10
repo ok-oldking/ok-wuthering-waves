@@ -993,7 +993,7 @@ class BaseWWTask(BaseTask):
             min_width = self.width_of_screen(475 / 2560)
             min_height = self.height_of_screen(40 / 1440)
             double = find_color_rectangles(self.frame, double_drop_color, min_width, min_height,
-                                           box=self.box_of_screen(1990 / 2560, 180 / 1440, 2480 / 2560, 240 / 1440))
+                                           box=self.box_of_screen(1990 / 2560, 170 / 1440, 2500 / 2560, 245 / 1440))
             if double:
                 logger.info(f'double drop!')
                 bar_top = double_bar_top
@@ -1010,13 +1010,6 @@ class BaseWWTask(BaseTask):
                 if bottom_btn is None or btn.y > bottom_btn.y:
                     bottom_btn = btn
             self.click_box(bottom_btn, after_sleep=2)
-
-    def check_double_drop_in_claim(self):
-        min_width = self.width_of_screen(320 / 2560)
-        min_height = self.height_of_screen(40 / 1440)
-        double = find_color_rectangles(self.frame, double_drop_color, min_width, min_height,
-                                       box=self.box_of_screen(1550 / 2560, 760 / 1440, 1925 / 2560, 825 / 1440))
-        return bool(double)
 
     def change_time_to_night(self):
         logger.info('change time to night')

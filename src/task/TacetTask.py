@@ -71,12 +71,14 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.sleep(3)
             self.walk_to_treasure()
             used, remaining_total, remaining_current, used_back_up = self.ensure_stamina(60, 120)
-            total_used += used
-            self.info_set('used stamina', total_used)
             if not used:
                 return self.not_enough_stamina()
-            self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'], raise_if_not_found=True,
+            ocr_result = self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'], raise_if_not_found=True,
                                 log=True)
+            if ocr_result[0].name != str(used):
+                used = 60
+            total_used += used
+            self.info_set('used stamina', total_used)
             self.sleep(4)
             self.click(0.51, 0.84, after_sleep=2)
             if remaining_total < 60:
@@ -93,23 +95,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.info_set('Teleport to Tacet Suppression', index)
         if index >= self.total_number:
             raise IndexError(f'Index out of range, max is {self.total_number}')
-        if index >= self.row_per_page:
-            if index >= self.row_per_page * 2:  # page 3
-                self.click_relative(0.98, 0.86)
-                index -= self.row_per_page + 2  # only 1 in last page
-            else:
-                index -= self.row_per_page
-                self.click_relative(0.98, 0.74)
-            self.log_info(f'teleport_to_tacet scroll down a page new index: {index}')
-        x = 0.88
-        height = (0.85 - 0.28) / 4
-        if self.ocr(0.3, 0.4, 0.36, 0.47, match=[re.compile("UP", re.IGNORECASE)]):
-            logger.info("tacet double up")
-            y = 0.28
-        else:
-            y = 0.275
-        y += height * index
-        self.click_relative(x, y, after_sleep=2)
+        self.click_on_book_target(index + 1, self.total_number)
 
 
 echo_color = {
