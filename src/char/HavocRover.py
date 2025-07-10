@@ -55,8 +55,11 @@ class HavocRover(BaseChar):
 
     def perform_havoc_routine(self):
         if self.has_intro:
+            self.continues_normal_attack(self.intro_motion_freeze_duration + 0.2)
             if self.is_forte_full():
-                self.heavy_attack(0.8)
+                self.task.mouse_down()
+                self.task.wait_until(lambda: not self.is_forte_full(), post_action=None, time_out=2)
+                self.task.mouse_up()
         self.wait_down()
         self.click_liberation(send_click=True)
         if self.click_resonance(send_click=True)[0]:
