@@ -98,7 +98,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 if not self.in_combat() and self.find_treasure_icon() and self.walk_to_treasure_and_restart():
                     self._has_treasure = True
                     self.log_info('_has_treasure = True')
-                    self.scroll_and_click_buttons()                  
+                    self.scroll_and_click_buttons()
 
             self.sleep(self.config.get("Combat Wait Time", 0))
 
@@ -192,10 +192,3 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                 time_out=3, click_after_delay=0.5, threshold=0.8)
         self.wait_click_feature('gray_start_battle', relative_x=-1, raise_if_not_found=True,
                                 click_after_delay=0.5, threshold=0.8)
-
-
-echo_color = {
-    'r': (200, 255),  # Red range
-    'g': (150, 220),  # Green range
-    'b': (130, 170)  # Blue range
-}

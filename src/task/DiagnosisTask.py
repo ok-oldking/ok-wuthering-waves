@@ -58,10 +58,3 @@ class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
                                 time_out=3, click_after_delay=0.5, threshold=0.8)
         self.wait_click_feature('gray_start_battle', relative_x=-1, raise_if_not_found=True,
                                 click_after_delay=0.5, threshold=0.8)
-
-
-echo_color = {
-    'r': (200, 255),  # Red range
-    'g': (150, 220),  # Green range
-    'b': (130, 170)  # Blue range
-}

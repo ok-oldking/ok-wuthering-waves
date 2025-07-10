@@ -73,8 +73,9 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             used, remaining_total, remaining_current, used_back_up = self.ensure_stamina(60, 120)
             if not used:
                 return self.not_enough_stamina()
-            ocr_result = self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'], raise_if_not_found=True,
-                                log=True)
+            ocr_result = self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'],
+                                             raise_if_not_found=True,
+                                             log=True)
             if ocr_result[0].name != str(used):
                 used = 60
             total_used += used
@@ -96,10 +97,3 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         if index >= self.total_number:
             raise IndexError(f'Index out of range, max is {self.total_number}')
         self.click_on_book_target(index + 1, self.total_number)
-
-
-echo_color = {
-    'r': (200, 255),  # Red range
-    'g': (150, 220),  # Green range
-    'b': (130, 170)  # Blue range
-}
