@@ -67,6 +67,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         time_out = 12 if self._in_realm else 4
         self._has_treasure = False
         while count < self.config.get("Repeat Farm Count", 0):
+            if not self._in_realm and time.time() - self._farm_start_time < 60:
+                self._in_realm = self.in_realm()
             if self.config.get('Change Time to Night') and not self.in_combat():
                 night_elapsed = time.time() - self.last_night_change
                 self.log_info(f"Night elapsed: {night_elapsed:.1f}s")
