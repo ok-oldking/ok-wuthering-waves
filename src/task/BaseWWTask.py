@@ -154,7 +154,7 @@ class BaseWWTask(BaseTask):
             return None
 
         if target_text:
-            search_text_box = f.copy(x_offset=f.width * 5, width_offset=f.width * 7, height_offset=3.5 * f.height,
+            search_text_box = f.copy(x_offset=f.width * 5, width_offset=f.width * 7, height_offset=4.5 * f.height,
                                      y_offset=-0.8 * f.height, name='search_text_box')
             text = self.ocr(box=search_text_box, match=target_text)
             logger.debug(f'found f with text {text}, target_text {target_text}')
