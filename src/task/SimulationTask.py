@@ -71,10 +71,3 @@ class SimulationTask(DomainTask):
         self.click_relative(0.93, 0.90, after_sleep=1)
         self.click_relative(0.93, 0.90, after_sleep=1)
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
-
-
-echo_color = {
-    'r': (200, 255),  # Red range
-    'g': (150, 220),  # Green range
-    'b': (130, 170)  # Blue range
-}

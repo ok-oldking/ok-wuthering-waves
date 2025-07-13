@@ -94,7 +94,7 @@ class BaseWWTask(BaseTask):
             return True, None
 
     def absorb_echo_text(self, ignore_config=False):
-        if self.game_lang == 'zh_CN' or self.game_lang == 'en_US':
+        if self.game_lang == 'zh_CN' or self.game_lang == 'en_US' or self.game_lang == 'zh_TW':
             return re.compile(r'(吸收|Absorb)')
         else:
             return None
@@ -154,23 +154,18 @@ class BaseWWTask(BaseTask):
             return None
 
         if target_text:
-            search_text_box = f.copy(x_offset=f.width * 5, width_offset=f.width * 7, height_offset=1.5 * f.height,
+            search_text_box = f.copy(x_offset=f.width * 5, width_offset=f.width * 7, height_offset=4.5 * f.height,
                                      y_offset=-0.8 * f.height, name='search_text_box')
-            text = self.ocr(box=search_text_box, match=target_text, target_height=540)
+            text = self.ocr(box=search_text_box, match=target_text)
             logger.debug(f'found f with text {text}, target_text {target_text}')
-            if not text:
-                if getattr(self, '_in_realm', False):
-                    search_text_box = f.copy(x_offset=f.width * 5, width_offset=f.width * 7,
-                                             height_offset=1.5 * f.height,
-                                             y_offset=2.5 * f.height, name='search_second_text_box')
-                    text = self.ocr(box=search_text_box, match=target_text, target_height=540)
-                    logger.debug(f'found f with text {text}, target_text {target_text}')
-                    if text:
-                        self.scroll_relative(0.5, 0.5, 1)
-                        self.sleep(0.02)
-                        return f
-                return None
-        return f
+            if text:
+                if text[0].y > search_text_box.y + f.height * 1:
+                    logger.debug(f'found f with text {text} below, target_text {target_text}')
+                    self.scroll_relative(0.5, 0.5, 1)
+                    self.sleep(0.02)
+                return f
+        else:
+            return f
 
     def has_target(self):
         return False
@@ -871,6 +866,8 @@ class BaseWWTask(BaseTask):
             return 'zh_CN'
         elif 'Wuthering' in self.hwnd_title:
             return 'en_US'
+        elif '鳴潮' in self.hwnd_title:
+            return 'zh_TW'
         return 'unknown_lang'
 
     def teleport_to_boss(self, boss_name):
@@ -993,7 +990,7 @@ class BaseWWTask(BaseTask):
             min_width = self.width_of_screen(475 / 2560)
             min_height = self.height_of_screen(40 / 1440)
             double = find_color_rectangles(self.frame, double_drop_color, min_width, min_height,
-                                           box=self.box_of_screen(1990 / 2560, 180 / 1440, 2480 / 2560, 240 / 1440))
+                                           box=self.box_of_screen(1990 / 2560, 170 / 1440, 2500 / 2560, 245 / 1440))
             if double:
                 logger.info(f'double drop!')
                 bar_top = double_bar_top
@@ -1010,13 +1007,6 @@ class BaseWWTask(BaseTask):
                 if bottom_btn is None or btn.y > bottom_btn.y:
                     bottom_btn = btn
             self.click_box(bottom_btn, after_sleep=2)
-
-    def check_double_drop_in_claim(self):
-        min_width = self.width_of_screen(320 / 2560)
-        min_height = self.height_of_screen(40 / 1440)
-        double = find_color_rectangles(self.frame, double_drop_color, min_width, min_height,
-                                       box=self.box_of_screen(1550 / 2560, 760 / 1440, 1925 / 2560, 825 / 1440))
-        return bool(double)
 
     def change_time_to_night(self):
         logger.info('change time to night')

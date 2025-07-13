@@ -1,10 +1,11 @@
 name: AI Code Review
 
 on:
-  pull_request:
+  pull_request_target:
     types: [ opened, synchronize ]
-permissions: write-all
-
+permissions:
+  contents: read
+  pull-requests: write
 jobs:
   review:
     runs-on: ubuntu-latest
@@ -23,8 +24,8 @@ jobs:
           AI_TEMPERATURE: 0 # 0 to 1 - higher values = more creativity and variance
 
           # Optional configurations
-          APPROVE_REVIEWS: true
+          APPROVE_REVIEWS: false
           MAX_COMMENTS: 10 # 0 to disable
-          PROJECT_CONTEXT: "This is a Node.js TypeScript project"
+          PROJECT_CONTEXT: "This is a windows python game automation project, for the game Wuthering Waves, it automates game task and combat etc."
           CONTEXT_FILES: "README.md"
           EXCLUDE_PATTERNS: "**/*.lock,**/*.json,**/*.md,**/*.ico,**/*.png"

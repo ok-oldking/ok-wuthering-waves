@@ -51,10 +51,11 @@ class Cartethyia(BaseChar):
         return 10
     
     def do_perform(self):
+        self.transform = False
         if self.has_intro:
             self.continues_normal_attack(1.2)   
         else:
-            self.click_echo(time_out=0.2)
+            self.click_echo(time_out=0)
         if self.is_small():
             self.logger.info(f'is cartethyia')
             self.wait_down()
@@ -84,7 +85,6 @@ class Cartethyia(BaseChar):
                 self.task.next_frame()
             self.n4_time = time.time()
         self.try_lib_big()
-        self.transform = False
         self.switch_next_char()
 
     def fleurdelys_n4_duration(self):
@@ -94,7 +94,7 @@ class Cartethyia(BaseChar):
              self.time_elapsed_accounting_for_freeze(self.n4_time, intro_motion_freeze=True) < 1.5:
             duration = 3.25
         elif (backswing := self.time_elapsed_accounting_for_freeze(self.res_time, intro_motion_freeze=True)) < 2.5:
-            duration = 2 + max(0, 1.65 - backswing)
+            duration = 2 + max(0, 1.6 - backswing)
         else:
             duration = 1.9 - (time.time() - self.last_perform)
         self.n4_time = -1

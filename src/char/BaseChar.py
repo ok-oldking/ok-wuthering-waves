@@ -126,11 +126,14 @@ class BaseChar:
 
     def wait_down(self):
         """等待角色从空中落下到地面。"""
-        start = time.time()
-        while self.flying() and time.time() - start < 2.5:
-            self.task.click(interval=0.2)
-            self.task.next_frame()
-            # self.logger.debug('wait_down')
+        if not self.task.has_lavitator and self.has_intro:
+            self.continues_normal_attack(self.intro_motion_freeze_duration)
+        else:
+            start = time.time()
+            while self.flying() and time.time() - start < 2.5:
+                self.task.click(interval=0.2)
+                self.task.next_frame()
+                # self.logger.debug('wait_down')
 
     def wait_intro(self, time_out=1.2, click=True):
         """等待角色入场动画结束。
@@ -340,6 +343,16 @@ class BaseChar:
         self._echo_available = False
         self.task.send_key(self.get_echo_key(), interval=interval, down_time=down_time, after_sleep=after_sleep)
 
+    def heavy_click_forte(self):
+        """ 如果回路可用, 重击点击回路直到不可用
+        """
+        if self.is_forte_full():
+            self.task.mouse_down()
+            success = self.task.wait_until(lambda: not self.is_forte_full(), time_out=2)
+            self.task.mouse_up()
+            self.sleep(0.05)
+            return success
+
     def send_liberation_key(self, after_sleep=0, interval=-1, down_time=0.01):
         """发送共鸣解放按键。
 
@@ -375,11 +388,16 @@ class BaseChar:
         Args:
             duration (float, optional): 技能期望的持续按键时间 (用于持续型声骸)。默认为 0。
             sleep_time (float, optional): 释放后的休眠时间 (似乎未使用)。默认为 0。
-            time_out (float, optional): 操作超时时间。默认为 1。
+            time_out (float, optional): 操作超时时间，召唤型声骸可设为 0。默认为 1。
 
         Returns:
             bool: 如果成功点击则返回 True。
         """
+        if time_out == 0 and self.echo_available():
+            self.send_echo_key()
+            self.update_echo_cd()
+            self.logger.debug('flick echo')
+            return True
         if self.task.is_open_world_auto_combat() and self.ring_index == Elements.FIRE:
             self.logger.debug(f'open world do not use motorcycle echo')
             return False

@@ -34,7 +34,7 @@ class Ciaccona(BaseChar):
             if not self.need_fast_perform():
                 self.continues_normal_attack(0.7)
         if self.current_echo() < 0.22:
-            self.click_echo()
+            self.click_echo(time_out=0)
         if not self.has_intro and not self.need_fast_perform() and not self.is_forte_full():
             self.click_jump_with_click(0.4)
             self.task.wait_until(lambda: not self.flying(), post_action=self.click_with_interval, time_out=1.2)

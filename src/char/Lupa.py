@@ -21,7 +21,7 @@ class Lupa(BaseChar):
             self.continues_normal_attack(1)
             if self.check_outro() in {'chang_changli', 'char_changli2'}:
                 in_outro = True            
-        self.echo_available() and self.send_echo_key()
+        self.click_echo(time_out=0)
         if self.res_wolf() and not in_outro:
             return self.switch_next_char()
         if self.judge_forte() == 2 and not self.task.find_one('lupa_wolf_icon2', threshold=0.85):
