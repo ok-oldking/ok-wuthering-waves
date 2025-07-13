@@ -13,21 +13,18 @@ class ForgeryTask(DomainTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.icon = FluentIcon.FLAG
-        self.name = '⭐ Forgery Challenge'
-        self.description = 'Farm selected Forgery Challenge, you need to be able to teleport'
+        self.name = 'Forgery Challenge'
+        self.description = 'Farms the selected Forgery Challenge. Must be able to teleport (F2).'
         self.default_config = {
+            'Which Forgery Challenge to Farm': 1,  # starts with 1
+            'Forgery Challenge Count': 20,  # starts with 20
             'Teleport Timeout': 10,
-            'Forgery Suppression Serial Number': 1,  # starts with 1
-            'Forgery Challenge Count': 10,  # starts with 0
         }
-        material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
-        self.config_type['Material Selection'] = {'type': 'drop_down', 'options': material_option_list}
         self.config_description = {
-            'Teleport Timeout': 'the timeout of second for teleport',
-            'Forgery Suppression Serial Number': 'the Nth number in the list of Forgery Suppression list (in F2 menu)',
-            'Forgery Challenge Count': 'farm Forgery Challenge N time(s), 40 stamina per time, set a large number to use all stamina',
+            'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
+            'Forgery Challenge Count': 'Number of times to farm the Forgery Challenge (40 stamina per run). Set a large number to use all stamina.',
+            'Teleport Timeout': 'The timeout in seconds for teleportation. Set a larger value for low-performance or HDD-based computers.',
         }
-        self.teleport_timeout = 60
         self.stamina_once = 40
         self.total_number = 10
 
@@ -38,7 +35,7 @@ class ForgeryTask(DomainTask):
         self.farm_forgery()
 
     def farm_forgery(self):
-        total_counter = self.config.get('Forgery Challenge Count', 0)
+        total_counter = self.config.get('Forgery Challenge Count', 20)
         if total_counter <= 0:
             self.log_info('0 time(s) farmed, 0 stamina used')
             return
@@ -46,21 +43,23 @@ class ForgeryTask(DomainTask):
         if current + back_up < self.stamina_once:
             self.back()
             return
-        self.teleport_into_domain(self.config.get('Forgery Suppression Serial Number', 0))
+        self.teleport_into_domain(self.config.get('Which Forgery Challenge to Farm', 1))
+        self.sleep(1)
         self.farm_in_domain(total_counter=total_counter, current=current, back_up=back_up)
 
     def teleport_into_domain(self, serial_number):
         self.click_relative(0.18, 0.16, after_sleep=1)
-        self.info_set('Teleport to Forgery Suppression', serial_number - 1)
+        self.info_set('Teleport to Forgery Challenge', serial_number - 1)
         if serial_number > self.total_number:
             raise IndexError(f'Index out of range, max is {self.total_number}')
         self.click_on_book_target(serial_number, self.total_number)
         #
         self.wait_click_travel()
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
-        self.sleep(max(5, self.teleport_timeout / 10))
+        self.sleep(1)
         self.walk_until_f(time_out=1)
-        self.sleep(10)
-        self.click_relative(0.93, 0.90, after_sleep=1)
+        self.sleep(1)
+        self.wait_click_feature('gray_button_challenge', relative_x=4, raise_if_not_found=True,
+                                click_after_delay=1, threshold=0.6, after_sleep=1, time_out=10)
         self.click_relative(0.93, 0.90, after_sleep=1)
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
