@@ -44,7 +44,6 @@ class DailyTask2(TacetTask2, ForgeryTask, SimulationTask):
         self.add_exit_after_config()
 
     def run(self):
-        exit_with_error = True
         try:
             #
             current_task = 'login'
@@ -56,14 +55,15 @@ class DailyTask2(TacetTask2, ForgeryTask, SimulationTask):
             self.claim_mail()
             #
             current_task = 'farm_tacet'
+            self.tacet_serial_number = self.config.get('Tacet Suppression Serial Number', 1)
             self.stamina_once = 60
             try:
                 self.farm_tacet()
             except:
                 # retry next tacet
-                index = self.serial_number - 1
+                index = self.tacet_serial_number - 1
                 index = (index + 1) % self.total_number
-                self.serial_number = index + 1
+                self.tacet_serial_number = index + 1
                 self.farm_tacet()
             #
             current_task = 'farm_forgery'

@@ -28,13 +28,13 @@ class TacetTask2(TacetTask):
         super(BaseCombatTask,self).run()
         super(WWOneTimeTask,self).run()
         timeout_second = self.config.get('Teleport Timeout', 10)
+        self.tacet_serial_number = self.config.get('Tacet Suppression Serial Number', 1)
         self.wait_in_team_and_world(esc=True, time_out=timeout_second)
         self.farm_tacet()
 
     def farm_tacet(self):
         # ⭐ {
         timeout_second = self.config.get('Teleport Timeout', 10)
-        serial_number = self.config.get('Tacet Suppression Serial Number', 0)
         total_counter = self.config.get('Tacet Suppression Count', 0)
         # total counter
         if total_counter <= 0:
@@ -53,7 +53,7 @@ class TacetTask2(TacetTask):
             gray_book_boss = self.openF2Book("gray_book_boss")
             self.click_box(gray_book_boss, after_sleep=1)
             self.click_relative(0.18, 0.48, after_sleep=1)
-            index = serial_number - 1
+            index = self.tacet_serial_number - 1
             self.teleport_to_tacet(index)
             self.wait_click_travel()
             self.wait_in_team_and_world(time_out=timeout_second)
