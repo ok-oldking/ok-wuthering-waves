@@ -61,9 +61,9 @@ class DailyTask2(TacetTask2, ForgeryTask, SimulationTask):
                 self.farm_tacet()
             except:
                 # retry next tacet
-                index = self.tacet_serial_number - 1
-                index = (index + 1) % self.total_number
-                self.tacet_serial_number = index + 1
+                tacet_index = self.tacet_serial_number - 1
+                tacet_index = (tacet_index + 1) % self.total_number
+                self.tacet_serial_number = tacet_index + 1
                 self.farm_tacet()
             #
             current_task = 'farm_forgery'
@@ -79,6 +79,9 @@ class DailyTask2(TacetTask2, ForgeryTask, SimulationTask):
                 self.farm_simulation()
             except:
                 self.farm_simulation()
+            #
+            current_task = 'teleport_to_safe_place'
+            self.teleport_to_tacet(index=tacet_index) # teleport to safe place (of tacet entry)
             #
             current_task = 'claim_daily'
             self.make_sure_in_world()
