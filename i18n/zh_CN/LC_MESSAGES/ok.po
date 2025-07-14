@@ -549,6 +549,12 @@ msgstr "⭐ 日常一条龙"
 msgid "open game, login, monthly card, mail, farm, activity, radio"
 msgstr "启动, 月卡, 邮件, 刷体力, 活跃度 (完成需【刷1+无音区】且【用180+体力】未完成不报错), 先约电台"
 
+msgid "Exit with Error"
+msgstr "报错后退出"
+
+msgid "exit game and app with exception raised when option [Exit After Task] checked"
+msgstr "勾选这个选项：如果「完成后退出」被选定，那么抛出异常也会退出游戏和App。"
+
 msgid "⭐ Tacet Suppression"
 msgstr "⭐ 无音区"
 

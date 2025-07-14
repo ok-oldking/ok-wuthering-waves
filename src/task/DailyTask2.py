@@ -1,4 +1,5 @@
 import re
+import subprocess
 
 from qfluentwidgets import FluentIcon
 
@@ -27,6 +28,7 @@ class DailyTask2(TacetTask2, ForgeryTask, SimulationTask):
             'Forgery Challenge Count': 0, # starts with 0
             'Material Selection': 'Shell Credit',
             'Simulation Challenge Count': 0, # starts with 0
+            'Exit with Error': True,
         }
         self.config_description = {
             'Teleport Timeout': 'the timeout of second for teleport',
@@ -36,28 +38,61 @@ class DailyTask2(TacetTask2, ForgeryTask, SimulationTask):
             'Forgery Challenge Count': 'farm Forgery Challenge N time(s), 40 stamina per time, set a large number to use all stamina',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit, on current screen of F2',
             'Simulation Challenge Count': 'farm Simulation Challenge N time(s), 40 stamina per time, set a large number to use all stamina',
+            'Exit with Error': 'exit game and app with exception raised when option [Exit After Task] checked'
         }
         self.show_create_shortcut = True
         self.add_exit_after_config()
 
     def run(self):
-        WWOneTimeTask.run(self)
-        self.ensure_main(time_out=180)
-        #
-        self.make_sure_in_world()
-        self.claim_mail()
-        #
-        self.stamina_once = 60
-        self.farm_tacet()
-        self.stamina_once = 40
-        self.farm_forgery()
-        self.stamina_once = 40
-        self.farm_simulation()
-        #
-        self.make_sure_in_world()
-        self.claim_daily()
-        self.claim_millage()
-        self.log_info('Task completed', notify=True)
+        exit_with_error = True
+        try:
+            #
+            current_task = 'login'
+            WWOneTimeTask.run(self)
+            self.ensure_main(time_out=180)
+            #
+            current_task = 'claim_mail'
+            self.make_sure_in_world()
+            self.claim_mail()
+            #
+            current_task = 'farm_tacet'
+            self.stamina_once = 60
+            try:
+                self.farm_tacet()
+            except:
+                # retry next tacet
+                index = self.serial_number - 1
+                index = (index + 1) % self.total_number
+                self.serial_number = index + 1
+                self.farm_tacet()
+            #
+            current_task = 'farm_forgery'
+            self.stamina_once = 40
+            try:
+                self.farm_forgery()
+            except:
+                self.farm_forgery()
+            #
+            current_task = 'farm_simulation'
+            self.stamina_once = 40
+            try:
+                self.farm_simulation()
+            except:
+                self.farm_simulation()
+            #
+            current_task = 'claim_daily'
+            self.make_sure_in_world()
+            self.claim_daily()
+            current_task = 'claim_millage'
+            self.claim_millage()
+            self.log_info('Task completed', notify=True)
+        except Exception as e:
+            self.log_error(f'一条龙错误 | {current_task} | {str(e)}')
+            if self.config.get('Exit with Error', True) and self.config.get('Exit After Task', False):
+                subprocess.run(['pwsh', '-c', 'Stop-Process -Force -Name Client-Win64-Shipping'])
+                exit()
+            else:
+                raise e
 
     def claim_millage(self):
         self.log_info('open_millage')

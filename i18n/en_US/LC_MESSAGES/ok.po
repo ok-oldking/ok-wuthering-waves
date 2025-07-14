@@ -759,6 +759,12 @@ msgstr ""
 msgid "open game, login, monthly card, mail, farm, activity, radio"
 msgstr "start, monthly card, mail, farm, activity (need 1+ tacet AND 180+ stamina, no error for unfinished), radio"
 
+msgid "Exit with Error"
+msgstr ""
+
+msgid "exit game and app with exception raised when option [Exit After Task] checked"
+msgstr ""
+
 msgid "⭐ Tacet Suppression"
 msgstr ""
 
