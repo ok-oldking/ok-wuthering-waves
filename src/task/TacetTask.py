@@ -14,17 +14,18 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.icon = FluentIcon.FLAG
-        self.description = "Farm selected Tacet Suppression until out of stamina, will use the backup stamina, you need to be able to teleport from the menu(F2)"
-        self.name = "Tacet Suppression (Must explore first to be able to teleport)"
+        self.description = "Farms the selected Tacet Suppression. Must be able to teleport (F2)."
+        self.name = "Tacet Suppression"
         default_config = {
-            'Which Tacet Suppression to Farm': 1  # starts with 1
+            'Which Tacet Suppression to Farm': 1,  # starts with 1
+            'Tacet Suppression Count': 20,  # starts with 20
         }
-        self.row_per_page = 5
         self.total_number = 12
         self.target_enemy_time_out = 8
         default_config.update(self.default_config)
         self.config_description = {
-            'Which Tacet Suppression to Farm': 'the Nth number in the Tacet Suppression list (F2)',
+            'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
+            'Tacet Suppression Count': 'Number of times to farm the Tacet Suppression (60 stamina per run). Set a large number to use all stamina.',
         }
         self.default_config = default_config
         self.door_walk_method = {  # starts with 0
@@ -41,6 +42,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.farm_tacet()
 
     def farm_tacet(self):
+        total_counter = counter = self.config.get('Tacet Suppression Count', 20)
         total_used = 0
         while True:
             self.sleep(1)
@@ -76,12 +78,17 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             ocr_result = self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'],
                                              raise_if_not_found=True,
                                              log=True)
-            if ocr_result[0].name != str(used):
+            if ocr_result[0].name != str(used) and used != 60:
                 used = 60
+                remaining_total += 60
             total_used += used
+            counter -= int(used / 60)
             self.info_set('used stamina', total_used)
             self.sleep(4)
             self.click(0.51, 0.84, after_sleep=2)
+            if counter <= 0:
+                self.log_info(f'{total_counter} time(s) farmed, {total_used} stamina used')
+                break
             if remaining_total < 60:
                 return self.not_enough_stamina(back=False)
             if total_used >= 180 and remaining_current == 0:

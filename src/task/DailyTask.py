@@ -14,6 +14,8 @@ class DailyTask(TacetTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        excluded_config_keys = {'Tacet Suppression Count'}
+        self.default_config = {k: v for k, v in self.default_config.items() if k not in excluded_config_keys}
         self.description = "Login, claim monthly card, farm echo, and claim daily reward"
         self.name = "Daily Task"
         self.add_exit_after_config()
@@ -44,7 +46,6 @@ class DailyTask(TacetTask):
     def claim_daily(self):
         self.info_set('current task', 'claim daily')
         self.ensure_main(time_out=5)
-        self.openF2Book()
         gray_book_quest = self.openF2Book("gray_book_quest")
         self.click_box(gray_book_quest, after_sleep=1.5)
         while True:

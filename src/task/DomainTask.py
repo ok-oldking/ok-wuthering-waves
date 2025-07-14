@@ -1,7 +1,3 @@
-import re
-
-from qfluentwidgets import FluentIcon
-
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.WWOneTimeTask import WWOneTimeTask
@@ -13,19 +9,17 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.teleport_timeout = 60
+        self.teleport_timeout = 10
         self.stamina_once = 0
 
     def make_sure_in_world(self):
         if (self.in_realm()):
-            # exit icon at the top left, means currently in domain/mission, not in world
-            self.send_key_down('alt')
-            self.sleep(0.05)
-            self.click_relative(0.01, 0.04)
-            self.send_key_up('alt')
-            self.sleep(0.05)
-            self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=['确认', 'Confirm'], raise_if_not_found=True, log=True)
-        self.wait_in_team_and_world(time_out=self.teleport_timeout)
+            self.send_key('esc', after_sleep=1)
+            self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False,
+                                time_out=3, click_after_delay=0.5, threshold=0.7)
+            self.wait_in_team_and_world(time_out=self.teleport_timeout)
+        else:
+            self.ensure_main()
 
     def open_F2_book_and_get_stamina(self):
         gray_book_boss = self.openF2Book('gray_book_boss')
@@ -59,11 +53,12 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             ocr_result = self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'],
                                              raise_if_not_found=True,
                                              log=True)
-            if ocr_result[0].name != str(used):
+            if ocr_result[0].name != str(used) and used != self.stamina_once:
                 used = self.stamina_once
-            counter -= int(used / self.stamina_once)
+                remaining_total += self.stamina_once
             total_used += used
-            self.sleep(5)
+            counter -= int(used / self.stamina_once)
+            self.sleep(4)
             if counter <= 0:
                 self.log_info(f'{total_counter} time(s) farmed, {total_used} stamina used')
                 break
@@ -71,7 +66,8 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
                 self.log_info(f'not enough stamina, {total_used} stamina used')
                 break
             self.click(0.68, 0.84, after_sleep=2)  # farm again
-            self.sleep(max(5, self.teleport_timeout / 5))
+            self.wait_in_team_and_world(time_out=self.teleport_timeout)
+            self.sleep(1)
         #
         self.click(0.42, 0.84, after_sleep=2)  # back to world
         self.make_sure_in_world()

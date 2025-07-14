@@ -468,20 +468,23 @@ msgstr "日常一条龙"
 msgid "Dreamless"
 msgstr "无妄者"
 
-msgid "Farm selected Tacet Suppression until out of stamina, will use the backup stamina, you need to be able to teleport from the menu(F2)"
-msgstr "刷选定无音区直到没体力(包括后备体力), 需要可传送"
+msgid "Farms the selected Tacet Suppression. Must be able to teleport (F2)."
+msgstr "刷选定的无音区, 需要可传送"
 
 msgid "Login, claim monthly card, farm echo, and claim daily reward"
 msgstr "启动游戏, 登录, 领月卡, 刷声骸, 领日常任务奖励, 领邮件"
 
-msgid "Tacet Suppression (Must explore first to be able to teleport)"
-msgstr "无音区(必须先探索, 保证可以传送)"
+msgid "Tacet Suppression"
+msgstr "无音区"
 
 msgid "Task completed"
 msgstr "任务完成"
 
 msgid "Which Tacet Suppression to Farm"
 msgstr "刷哪个无音区"
+
+msgid "Tacet Suppression Count"
+msgstr "刷取次数"
 
 msgid "back_up_stamina"
 msgstr "备用体力"
@@ -492,8 +495,11 @@ msgstr "当前体力"
 msgid "used all stamina"
 msgstr "体力已用尽"
 
-msgid "the Nth number in the Tacet Suppression list (F2)"
-msgstr "F2列表中是第几个无音区"
+msgid "The Tacet Suppression number in the F2 list."
+msgstr "F2列表中第几个无音区"
+
+msgid "Number of times to farm the Tacet Suppression (60 stamina per run). Set a large number to use all stamina."
+msgstr "无音区刷取次数（每次消耗60体力），设置较大的数值以使用所有体力"
 
 msgid "Please start in game world and in team!"
 msgstr "请在大世界并在队伍中开始!"
@@ -540,19 +546,19 @@ msgstr "如果刷异构武装设置为5秒"
 msgid "Teleport Timeout"
 msgstr "传送超时"
 
-msgid "the timeout of second for teleport"
-msgstr "传送超时, 单位为秒, 低配置或机械硬盘用户建议调大"
+msgid "The timeout in seconds for teleportation. Set a larger value for low-performance or HDD-based computers."
+msgstr "传送的超时时间（单位：秒），性能较低或使用机械硬盘的电脑请设置更大的数值"
 
-msgid "⭐ Simulation Challenge"
+msgid "Simulation Challenge"
 msgstr "模拟领域"
 
-msgid "Farm selected Simulation Challenge, you need to be able to teleport"
+msgid "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
 msgstr "需要「黎那汐塔-角斗士的肖像」可传送"
 
 msgid "Material Selection"
-msgstr "模拟领域材料选择"
+msgstr "材料选择"
 
-msgid "Resonator EXP / Weapon EXP / Shell Credit, on current screen of F2"
+msgid "Resonator EXP / Weapon EXP / Shell Credit"
 msgstr "共鸣者经验 / 武器经验 / 贝币"
 
 msgid "Resonator EXP"
@@ -565,28 +571,28 @@ msgid "Shell Credit"
 msgstr "贝币"
 
 msgid "Simulation Challenge Count"
-msgstr "模拟领域刷取次数"
+msgstr "刷取次数"
 
-msgid "farm Simulation Challenge N time(s), 40 stamina per time, set a large number to use all stamina"
-msgstr "模拟领域刷取次数, 每次40体力, 如需用光所有体力可以设置一个大数"
+msgid "Number of times to farm the Simulation Challenge (40 stamina per run). Set a large number to use all stamina."
+msgstr "模拟领域刷取次数（每次消耗40体力），设置较大的数值以使用所有体力"
 
-msgid "⭐ Forgery Challenge"
+msgid "Forgery Challenge"
 msgstr "凝素领域"
 
-msgid "Farm selected Forgery Challenge, you need to be able to teleport"
-msgstr "刷选定凝素领域, 需要可传送"
+msgid "Farms the selected Forgery Challenge. Must be able to teleport (F2)."
+msgstr "刷选定的凝素领域, 需要可传送"
 
-msgid "Forgery Suppression Serial Number"
-msgstr "凝素领域编号"
+msgid "Which Forgery Challenge to Farm"
+msgstr "刷哪个凝素领域"
 
-msgid "the Nth number in the list of Forgery Suppression list (in F2 menu)"
-msgstr "选择F2列表中的第几个凝素领域"
+msgid "The Forgery Challenge number in the F2 list."
+msgstr "F2列表中第几个凝素领域"
 
 msgid "Forgery Challenge Count"
-msgstr "凝素领域刷取次数"
+msgstr "刷取次数"
 
-msgid "farm Forgery Challenge N time(s), 40 stamina per time, set a large number to use all stamina"
-msgstr "凝素领域刷取次数, 每次40体力, 如需用光所有体力可以设置一个大数"
+msgid "Number of times to farm the Forgery Challenge (40 stamina per run). Set a large number to use all stamina."
+msgstr "凝素领域刷取次数（每次消耗40体力），设置较大的数值以使用所有体力"
 
 msgid "Click skill failed, check if the keybinding is correct in ok-ww settings!"
 msgstr "释放技能失败, 请检查ok-ww按键设置是正确!"
