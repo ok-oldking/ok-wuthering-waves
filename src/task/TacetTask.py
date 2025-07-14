@@ -58,7 +58,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             index = self.config.get('Which Tacet Suppression to Farm', 1) - 1
             self.teleport_to_tacet(index)
             self.wait_click_travel()
-            self.wait_in_team_and_world()
+            self.wait_in_team_and_world(time_out=120)
             self.sleep(1)
             if self.door_walk_method.get(index) is not None:
                 for method in self.door_walk_method.get(index):

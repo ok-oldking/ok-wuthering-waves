@@ -18,20 +18,17 @@ class SimulationTask(DomainTask):
         self.default_config = {
             'Material Selection': 'Shell Credit',
             'Simulation Challenge Count': 20,  # starts with 20
-            'Teleport Timeout': 10,
         }
         material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type['Material Selection'] = {'type': 'drop_down', 'options': material_option_list}
         self.config_description = {
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
             'Simulation Challenge Count': 'Number of times to farm the Simulation Challenge (40 stamina per run). Set a large number to use all stamina.',
-            'Teleport Timeout': 'The timeout in seconds for teleportation. Set a larger value for low-performance or HDD-based computers.',
         }
         self.stamina_once = 40
 
     def run(self):
         super().run()
-        self.teleport_timeout = self.config.get('Teleport Timeout', 10)
         self.make_sure_in_world()
         self.farm_simulation()
 
