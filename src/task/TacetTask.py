@@ -35,6 +35,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             3: [["d", 0.6]],
             4: [["a", 1.5], ["w", 3], ["a", 2.5]],
         }
+        self.stamina_once = 60
 
     def run(self):
         super().run()
@@ -52,7 +53,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             if current == -1:
                 self.click_relative(0.04, 0.4, after_sleep=1)
                 current, back_up = self.get_stamina()
-            if current + back_up < 60:
+            if current + back_up < self.stamina_once:
                 return self.not_enough_stamina()
             self.click_relative(0.18, 0.48, after_sleep=1)
             index = self.config.get('Which Tacet Suppression to Farm', 1) - 1
@@ -72,24 +73,23 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.combat_once()
             self.sleep(3)
             self.walk_to_treasure()
-            used, remaining_total, remaining_current, used_back_up = self.ensure_stamina(60, 120)
+            double = self.wait_ocr(0.2, 0.56, 0.75, 0.69, match=[str(self.stamina_once), '确认', 'Confirm'],
+                                   raise_if_not_found=True, log=True)[0].name != str(self.stamina_once)
+            max_stamina = self.stamina_once if double else self.stamina_once * 2
+            used, remaining_total, remaining_current, _ = self.ensure_stamina(self.stamina_once, max_stamina)
             if not used:
                 return self.not_enough_stamina()
-            ocr_result = self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'],
-                                             raise_if_not_found=True,
-                                             log=True)
-            if ocr_result[0].name != str(used) and used != 60:
-                used = 60
-                remaining_total += 60
+            self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'],
+                                raise_if_not_found=True, log=True)
             total_used += used
-            counter -= int(used / 60)
+            counter -= int(used / self.stamina_once)
             self.info_set('used stamina', total_used)
             self.sleep(4)
             self.click(0.51, 0.84, after_sleep=2)
             if counter <= 0:
                 self.log_info(f'{total_counter} time(s) farmed, {total_used} stamina used')
                 break
-            if remaining_total < 60:
+            if remaining_total < self.stamina_once:
                 return self.not_enough_stamina(back=False)
             if total_used >= 180 and remaining_current == 0:
                 return self.not_enough_stamina(back=True)
