@@ -48,14 +48,12 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             self.combat_once()
             self.sleep(3)
             self.walk_to_treasure()
-            used, remaining_total, _, _ = self.ensure_stamina(self.stamina_once, 2 * self.stamina_once)
-            # self.click(0.75, 0.32, after_sleep=2) # click fork of dialog (for debug)
-            ocr_result = self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'],
-                                             raise_if_not_found=True,
-                                             log=True)
-            if ocr_result[0].name != str(used) and used != self.stamina_once:
-                used = self.stamina_once
-                remaining_total += self.stamina_once
+            double = self.wait_ocr(0.2, 0.56, 0.75, 0.69, match=[str(self.stamina_once), '确认', 'Confirm'],
+                                      raise_if_not_found=True, log=True)[0].name != str(self.stamina_once)
+            max_stamina = self.stamina_once if double else self.stamina_once * 2
+            used, remaining_total, remaining_current, _ = self.ensure_stamina(self.stamina_once, max_stamina)
+            self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'],
+                                raise_if_not_found=True, log=True)
             total_used += used
             counter -= int(used / self.stamina_once)
             self.sleep(4)

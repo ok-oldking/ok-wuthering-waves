@@ -1002,10 +1002,7 @@ class BaseWWTask(BaseTask):
             btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.94, 0.6, 0.97, 0.88), threshold=0.8)
             if btns is None:
                 raise Exception("can't find boss_proceed")
-            bottom_btn = None
-            for btn in btns:
-                if bottom_btn is None or btn.y > bottom_btn.y:
-                    bottom_btn = btn
+            bottom_btn = max(btns, key=lambda box: box.y)
             self.click_box(bottom_btn, after_sleep=2)
 
     def change_time_to_night(self):
