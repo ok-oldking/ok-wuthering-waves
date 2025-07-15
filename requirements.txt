@@ -4,7 +4,7 @@
 #
 #    pip-compile '.\requirements.in'
 #
-ok-script==0.0.599
+ok-script==0.0.601
     # via -r .\requirements.in
 onnxocr-ppocrv4==0.0.5
 
