@@ -86,6 +86,7 @@ ok-ww.exe -t 1 -e
 * 鸣潮水群 970523295 进群答案:老王同学OK
 * 群都满了 加QQ频道 [https://pd.qq.com/s/djmm6l44y](https://pd.qq.com/s/djmm6l44y)
 * 有兴趣开发的请加开发者群926858895, 至少要能看文档, 使用源码运行, 问使用问题和提需求都会被踢
+* 开发指南和文档[https://github.com/ok-oldking/ok-script-boilerplate](https://github.com/ok-oldking/ok-script-boilerplate)
 
 ### 相关项目
 
@@ -101,5 +102,7 @@ ok-ww.exe -t 1 -e
 
 ### 致谢
 
-[https://github.com/lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss) 后台点击代码
-  
+* [https://github.com/lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss)
+* [https://github.com/ok-oldking/OnnxOCR](https://github.com/ok-oldking/OnnxOCR)
+* [https://github.com/zhiyiYo/PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
+* [https://github.com/Toufool/AutoSplit](https://github.com/Toufool/AutoSplit)

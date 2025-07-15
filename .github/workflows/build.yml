@@ -13,8 +13,8 @@ jobs:
 
     env:
       PYTHONIOENCODING: 'UTF-8'
-      #      SIGN_BUILD: 'true'
-      SIGN_BUILD: 'false'
+      SIGN_BUILD: 'true'
+    #      SIGN_BUILD: 'false'
 
     strategy:
       matrix:
@@ -47,18 +47,6 @@ jobs:
           set PYTHONLEGACYWINDOWSSTDIO=utf-8
           echo PYTHONIOENCODING=utf-8 >> $GITHUB_ENV
 
-      - name: Get Changes between Tags
-        id: changes
-        uses: simbo/changes-between-tags-action@v1
-        with:
-          include-hashes: false
-          validate-tag: false
-
-      - name: Get tag name
-        id: tagName
-        uses: olegtarasov/get-tag@v2.1.3
-
-
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
@@ -66,7 +54,7 @@ jobs:
 
       - name: inline_ok_requirements
         run: |
-          python -m ok.update.inline_ok_requirements --tag ${{ steps.tagName.outputs.tag }}
+          python -m ok.update.inline_ok_requirements --tag ${{ github.ref_name }}
 
       - name: Run tests
         run: |
@@ -102,8 +90,8 @@ jobs:
       - name: Build with PyAppify Action
         id: build-app
         uses: ok-oldking/pyappify-action@master
-        with:
-          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.4.55
+      #        with:
+      #          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.4.55
 
       - name: Extract EXE for signing
         if: env.SIGN_BUILD == 'true'
