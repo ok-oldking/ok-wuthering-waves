@@ -211,7 +211,7 @@ class CombatCheck(BaseWWTask):
                        target_height=540, name='lv_text', log=True)
         return lvs
 
-    def has_target(self):
+    def has_target(self, double_check=False):
         best = self.find_best_match_in_box(self.get_box_by_name('has_target').scale(1.1), ['has_target', 'no_target'],
                                            threshold=0.6)
         if not best:
@@ -222,11 +222,15 @@ class CombatCheck(BaseWWTask):
                                                ['has_target', 'no_target'],
                                                threshold=0.6)
             if best and self.esc_count == 0:
-                logger.error(f'try fix bear echo')
-                self.send_key('esc', after_sleep=2)
-                self.send_key('esc', after_sleep=1.5)
-                self.esc_count = 1
-                return False
+                if double_check:
+                    logger.error(f'try fix bear echo')
+                    self.send_key('esc', after_sleep=2)
+                    self.send_key('esc', after_sleep=1.5)
+                    self.esc_count = 1
+                    return False
+                else:
+                    self.sleep(1)
+                    return self.has_target(double_check=True)
         return best and best.name == 'has_target'
 
     def target_enemy(self, wait=True):
