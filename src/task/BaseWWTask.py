@@ -379,13 +379,6 @@ class BaseWWTask(BaseTask):
         else:
             return True
 
-    def send_until_no_f(self, cancel=False):
-        while self.find_f_with_text():
-            self.send_key('f', after_sleep=0.1)
-            if cancel and self.handle_claim_button():
-                return False
-        return True
-
     def get_stamina(self):
         boxes = self.wait_ocr(0.49, 0.0, 0.92, 0.10, log=True, raise_if_not_found=False,
                               match=[number_re, stamina_re])
@@ -578,7 +571,7 @@ class BaseWWTask(BaseTask):
         if self.find_treasure_icon():
             self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text)
         if send_f:
-            self.walk_until_f(time_out=2, backward_time=0, raise_if_not_found=raise_if_not_found, cancel=False)
+            self.walk_until_f(time_out=2, backward_time=0, raise_if_not_found=raise_if_not_found)
         self.sleep(1)
         if self.find_treasure_icon():
             self.log_info('retry walk_to_treasure')
