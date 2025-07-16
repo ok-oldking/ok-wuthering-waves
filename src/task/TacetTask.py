@@ -70,17 +70,14 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                 self.run_until(self.in_combat, 'w', time_out=10, running=True)
             else:
                 self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
+                self.pick_f(handle_claim=False)
             self.combat_once()
             self.sleep(3)
             self.walk_to_treasure()
-            double = self.wait_ocr(0.2, 0.56, 0.75, 0.69, match=[str(self.stamina_once), '确认', 'Confirm'],
-                                   raise_if_not_found=True, log=True)[0].name != str(self.stamina_once)
-            max_stamina = self.stamina_once if double else self.stamina_once * 2
-            used, remaining_total, remaining_current, _ = self.ensure_stamina(self.stamina_once, max_stamina)
+            self.pick_f(handle_claim=False)
+            used, remaining_total, remaining_current, _ = self.use_stamina(self.stamina_once)
             if not used:
                 return self.not_enough_stamina()
-            self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'],
-                                raise_if_not_found=True, log=True)
             total_used += used
             counter -= int(used / self.stamina_once)
             self.info_set('used stamina', total_used)

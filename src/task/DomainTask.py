@@ -1,3 +1,5 @@
+import re
+
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.WWOneTimeTask import WWOneTimeTask
@@ -41,19 +43,15 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             return
         # farm
         counter = total_counter
-        remaining_total = 0
         total_used = 0
         while True:
             self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
+            self.pick_f()
             self.combat_once()
             self.sleep(3)
             self.walk_to_treasure()
-            double = self.wait_ocr(0.2, 0.56, 0.75, 0.69, match=[str(self.stamina_once), '确认', 'Confirm'],
-                                      raise_if_not_found=True, log=True)[0].name != str(self.stamina_once)
-            max_stamina = self.stamina_once if double else self.stamina_once * 2
-            used, remaining_total, remaining_current, _ = self.ensure_stamina(self.stamina_once, max_stamina)
-            self.wait_click_ocr(0.2, 0.56, 0.75, 0.69, match=[str(used), '确认', 'Confirm'],
-                                raise_if_not_found=True, log=True)
+            self.pick_f(handle_claim=False)
+            used, remaining_total, remaining_current, _ = self.use_stamina(self.stamina_once)
             total_used += used
             counter -= int(used / self.stamina_once)
             self.sleep(4)

@@ -53,6 +53,7 @@ class SimulationTask(DomainTask):
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
         self.sleep(1)
         self.walk_until_f(time_out=1)
+        self.pick_f()
         if selection == 'Resonator EXP':
             index = 0
         elif selection == 'Weapon EXP':
