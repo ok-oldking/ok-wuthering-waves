@@ -750,23 +750,17 @@ msgstr ""
 msgid "wait main"
 msgstr ""
 
-msgid "Teleport Timeout"
+msgid "Simulation Challenge"
 msgstr ""
-
-msgid "the timeout of second for teleport"
-msgstr "the timeout of second for teleport, set larger number for low performance computer or HDD computer"
-
-msgid "⭐ Simulation Challenge"
-msgstr "Simulation Challenge"
 
 msgid "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
 msgstr "Must be able to teleport to Gladiator's Portrait in Rinascita."
 
 msgid "Material Selection"
-msgstr "Simulation Challenge Material Selection"
+msgstr ""
 
-msgid "Resonator EXP / Weapon EXP / Shell Credit, on current screen of F2"
-msgstr "Resonator EXP / Weapon EXP / Shell Credit"
+msgid "Resonator EXP / Weapon EXP / Shell Credit"
+msgstr ""
 
 msgid "Resonator EXP"
 msgstr ""
@@ -778,25 +772,25 @@ msgid "Shell Credit"
 msgstr ""
 
 msgid "Simulation Challenge Count"
-msgstr "Number of runs"
-
-msgid "farm Simulation Challenge N time(s), 40 stamina per time, set a large number to use all stamina"
 msgstr ""
 
-msgid "⭐ Forgery Challenge"
-msgstr "Forgery Challenge"
-
-msgid "Farm selected Forgery Challenge, you need to be able to teleport"
+msgid "Number of times to farm the Simulation Challenge (40 stamina per run). Set a large number to use all stamina."
 msgstr ""
 
-msgid "Forgery Suppression Serial Number"
+msgid "Forgery Challenge"
 msgstr ""
 
-msgid "the Nth number in the list of Forgery Suppression list (in F2 menu)"
+msgid "Farms the selected Forgery Challenge. Must be able to teleport (F2)."
+msgstr ""
+
+msgid "Which Forgery Challenge to Farm"
+msgstr ""
+
+msgid "The Forgery Challenge number in the F2 list."
 msgstr ""
 
 msgid "Forgery Challenge Count"
-msgstr "Number of runs"
+msgstr ""
 
-msgid "farm Forgery Challenge N time(s), 40 stamina per time, set a large number to use all stamina"
+msgid "Number of times to farm the Forgery Challenge (40 stamina per run). Set a large number to use all stamina."
 msgstr ""

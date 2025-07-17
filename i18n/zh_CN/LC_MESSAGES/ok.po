@@ -543,12 +543,6 @@ msgstr "战斗开始前等待时间(秒)"
 msgid "Wait time before each combat(seconds), set 5 if farming Sentry Construct"
 msgstr "如果刷异构武装设置为5秒"
 
-msgid "Teleport Timeout"
-msgstr "传送超时"
-
-msgid "The timeout in seconds for teleportation. Set a larger value for low-performance or HDD-based computers."
-msgstr "传送的超时时间（单位：秒），性能较低或使用机械硬盘的电脑请设置更大的数值"
-
 msgid "Simulation Challenge"
 msgstr "模拟领域"
 
