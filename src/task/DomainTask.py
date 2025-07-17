@@ -13,6 +13,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.teleport_timeout = 100
         self.stamina_once = 0
+        self._daily_task = False
 
     def make_sure_in_world(self):
         if (self.in_realm()):
@@ -52,14 +53,22 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             self.walk_to_treasure()
             self.pick_f(handle_claim=False)
             used, remaining_total, remaining_current, _ = self.use_stamina(self.stamina_once)
+            if used == 0:
+                self.log_info(f'not enough stamina')
+                self.back()
+                break
             total_used += used
             counter -= int(used / self.stamina_once)
+            self.info_set('used stamina', total_used)
             self.sleep(4)
             if counter <= 0:
-                self.log_info(f'{total_counter} time(s) farmed, {total_used} stamina used')
+                self.log_info(f'{total_counter} time(s) farmed')
+                break
+            if self._daily_task and total_used >= 180 and remaining_current < self.stamina_once:
+                self.log_info('daily stamina goal reached')
                 break
             if remaining_total < self.stamina_once:
-                self.log_info(f'not enough stamina, {total_used} stamina used')
+                self.log_info('used all stamina')
                 break
             self.click(0.68, 0.84, after_sleep=2)  # farm again
             self.wait_in_team_and_world(time_out=self.teleport_timeout)

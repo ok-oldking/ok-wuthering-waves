@@ -1,5 +1,3 @@
-import re
-
 from qfluentwidgets import FluentIcon
 
 from ok import Logger
@@ -36,6 +34,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             4: [["a", 1.5], ["w", 3], ["a", 2.5]],
         }
         self.stamina_once = 60
+        self._daily_task = False
 
     def run(self):
         super().run()
@@ -76,7 +75,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.walk_to_treasure()
             self.pick_f(handle_claim=False)
             used, remaining_total, remaining_current, _ = self.use_stamina(self.stamina_once)
-            if not used:
+            if used == 0:
                 return self.not_enough_stamina()
             total_used += used
             counter -= int(used / self.stamina_once)
@@ -84,12 +83,12 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.sleep(4)
             self.click(0.51, 0.84, after_sleep=2)
             if counter <= 0:
-                self.log_info(f'{total_counter} time(s) farmed, {total_used} stamina used')
-                break
+                self.log_info(f'{total_counter} time(s) farmed')
+                return
+            if self._daily_task and total_used >= 180 and remaining_current < self.stamina_once:
+                return self.not_enough_stamina(back=True)
             if remaining_total < self.stamina_once:
                 return self.not_enough_stamina(back=False)
-            if total_used >= 180 and remaining_current == 0:
-                return self.not_enough_stamina(back=True)
 
     def not_enough_stamina(self, back=True):
         self.log_info(f"used all stamina")
