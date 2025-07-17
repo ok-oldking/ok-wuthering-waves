@@ -438,11 +438,11 @@ class BaseWWTask(BaseTask):
             self.wait_ocr(0.6, 0.53, 0.66, 0.62, match=number_re, raise_if_not_found=True)[0].name)
         to_minus = back_up - to_add
         self.log_info(f'add_stamina, to_minus:{to_minus}, to_add:{to_add}, back_up:{back_up}')
-        if to_minus > 0:
-            for _ in range(to_minus):
+        
+        for _ in range(abs(to_minus)):
+            if to_minus > 0:
                 self.click(0.24, 0.58, after_sleep=0.01) # -
-        elif to_minus < 0:
-            for _ in range(-to_minus):
+            else:           
                 self.click(0.69, 0.58, after_sleep=0.01) # +
         self.click_relative(0.69, 0.71, after_sleep=2)
         self.info_set('add_stamina', to_add)
