@@ -127,9 +127,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: setup-to-sign
-          path: pyappify_dist/*.exe
+          path: pyappify_dist/ok-ww-win32-online.exe
 
-      - name: Sign EXE
+      - name: Sign setup EXE
         if: env.SIGN_BUILD == 'true'
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
