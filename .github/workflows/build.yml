@@ -126,7 +126,7 @@ jobs:
         id: upload-unsigned-setup-artifact
         uses: actions/upload-artifact@v4
         with:
-          name: to-sign
+          name: setup-to-sign
           path: pyappify_dist/*.exe
 
       - name: Sign EXE
