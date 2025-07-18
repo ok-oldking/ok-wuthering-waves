@@ -27,6 +27,7 @@ class BaseWWTask(BaseTask):
         super().__init__(*args, **kwargs)
         self.pick_echo_config = self.get_global_config('Pick Echo Config')
         self.monthly_card_config = self.get_global_config('Monthly Card Config')
+        self.farm_task_config = self.get_global_config('Farm Task Config')
         self.next_monthly_card_start = 0
         self._logged_in = False
         self.bosses_pos = {
@@ -413,6 +414,8 @@ class BaseWWTask(BaseTask):
             max_stamina = once
 
         current, back_up = self.get_stamina()
+        if not self.farm_task_config.get('Use Waveplate Crystal'):
+            back_up = 0
         if current >= max_stamina:
             self.click(max_stamina_box, after_sleep=1)
             return max_stamina, current + back_up - max_stamina, current - max_stamina, False

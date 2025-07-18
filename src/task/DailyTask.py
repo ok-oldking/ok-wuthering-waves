@@ -5,17 +5,33 @@ from qfluentwidgets import FluentIcon
 from ok import Logger
 from src.task.BaseWWTask import number_re
 from src.task.TacetTask import TacetTask
+from src.task.ForgeryTask import ForgeryTask
 from src.task.WWOneTimeTask import WWOneTimeTask
+from src.task.BaseCombatTask import BaseCombatTask
 
 logger = Logger.get_logger(__name__)
 
 
-class DailyTask(TacetTask):
+class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        excluded_config_keys = {'Tacet Suppression Count'}
+        self.tacet = TacetTask(*args, **kwargs)
+        self.forgery = ForgeryTask(*args, **kwargs)
+        self.support_task = [self.tacet.name, self.forgery.name]
+        self.default_config = {
+            'Which Task to run': self.support_task[0],
+        }
+        self.default_config.update(self.tacet.default_config)
+        self.default_config.update(self.forgery.default_config)
+        excluded_config_keys = {'Forgery Challenge Count', 'Tacet Suppression Count'}
         self.default_config = {k: v for k, v in self.default_config.items() if k not in excluded_config_keys}
+        self.config_description = {
+            'Which Task to run': 'Must be able to teleport (F2)',
+        }
+        self.config_description.update(self.tacet.config_description)
+        self.config_description.update(self.forgery.config_description)
+        self.config_type['Which Task to run'] = {'type': "drop_down", 'options': self.support_task}
         self.description = "Login, claim monthly card, farm echo, and claim daily reward"
         self.name = "Daily Task"
         self.add_exit_after_config()
@@ -25,12 +41,25 @@ class DailyTask(TacetTask):
     def run(self):
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=180)
-        self.farm_tacet()
+        if self.config.get('Which Task to run', self.support_task[0]) == self.support_task[0]:
+            self.setup_task(self.tacet)
+            self.tacet.farm_tacet()
+        else:
+            self.setup_task(self.forgery)
+            self.forgery.farm_forgery()
+            self.sleep(2)
+            self.forgery.purification_material()
         self.sleep(4)
-        self.claim_daily()
         self.claim_mail()
+        self.claim_daily()
         self.claim_millage()
         self.log_info('Task completed', notify=True)
+
+    def setup_task(self, task):
+        task.config = task.default_config
+        task.config.update(self.config)
+        task.info_set = self.info_set
+        task._daily_task = True
 
     def claim_millage(self):
         self.log_info('open_millage')
