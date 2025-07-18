@@ -87,23 +87,13 @@ jobs:
           gitignore_file: '.update_repo_gitignore'
           show_author: true
 
-      - name: Build with PyAppify Action
-        id: build-app
+      - name: pyappify build-exe-only
+        id: build-exe-only
         uses: ok-oldking/pyappify-action@master
+        with:
+          build_exe_only: true
       #        with:
       #          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.4.63
-
-      - name: Extract EXE for signing
-        if: env.SIGN_BUILD == 'true'
-        id: extract-exe
-        shell: pwsh
-        run: |
-          $zipFile = Get-ChildItem -Path pyappify_dist -Filter *.zip | Select-Object -First 1
-          Expand-Archive -Path $zipFile.FullName -DestinationPath "temp_extract" -Force
-          $exeFile = Get-ChildItem -Path "temp_extract" -Filter *.exe -Recurse | Select-Object -First 1
-          Move-Item -Path $exeFile.FullName -Destination "pyappify_dist/"
-          echo "EXE_NAME=$($exeFile.Name)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Remove-Item "temp_extract" -Recurse
 
       - name: Upload unsigned EXE artifact
         if: env.SIGN_BUILD == 'true'
@@ -111,7 +101,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: to-sign
-          path: pyappify_dist/${{ steps.extract-exe.outputs.EXE_NAME }}
+          path: ${{ steps.build-exe-only.outputs.exe-path }}
 
       - name: Sign EXE
         if: env.SIGN_BUILD == 'true'
@@ -124,27 +114,34 @@ jobs:
           artifact-configuration-slug: "single-exe"
           github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
           wait-for-completion: true
-          output-artifact-directory: 'pyappify_dist'
+          wait-for-completion-timeout-in-seconds: 60000
+          output-artifact-directory: ${{ steps.build-exe-only.outputs.exe-folder }}
 
-      - name: Update archives with signed EXE
+      - name: pyappify build-setup-exe
+        id: build-setup-exe
+        uses: ok-oldking/pyappify-action@master
+
+      - name: Upload unsigned setup EXE artifact
         if: env.SIGN_BUILD == 'true'
-        shell: pwsh
-        run: |
-          $signedExePath = "pyappify_dist/${{ steps.extract-exe.outputs.EXE_NAME }}"
-          $zipFiles = Get-ChildItem -Path pyappify_dist -Filter *.zip
-          foreach ($zipFile in $zipFiles) {
-            $extractPath = ".\temp_update"
-            if (Test-Path $extractPath) { Remove-Item $extractPath -Recurse -Force }
-            Expand-Archive -Path $zipFile.FullName -DestinationPath $extractPath -Force
-            $originalExe = Get-ChildItem -Path $extractPath -Filter *.exe -Recurse | Select-Object -First 1
-            Copy-Item -Path $signedExePath -Destination $originalExe.FullName -Force
-            Push-Location $extractPath
-            $topLevelFolder = Get-ChildItem . | Select-Object -First 1
-            Compress-Archive -Path $topLevelFolder.Name -DestinationPath $zipFile.FullName -Force
-            Pop-Location
-            Remove-Item $extractPath -Recurse -Force
-          }
-          Remove-Item $signedExePath
+        id: upload-unsigned-setup-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: to-sign
+          path: pyappify_dist/*.exe
+
+      - name: Sign EXE
+        if: env.SIGN_BUILD == 'true'
+        uses: signpath/github-action-submit-signing-request@v1.1
+        with:
+          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
+          organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
+          project-slug: 'ok-wuthering-waves'
+          signing-policy-slug: 'release-signing'
+          artifact-configuration-slug: "single-exe"
+          github-artifact-id: '${{ steps.upload-unsigned-setup-artifact.outputs.artifact-id }}'
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 60000
+          output-artifact-directory: 'pyappify_dist'
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -154,12 +151,11 @@ jobs:
         with:
           body: |
             ### 下载包说明
-              * ok-ww-win32.zip 在线安装包, 解压后在线安装. 
-              * ok-ww-win32-China.zip 完整包, 更新源使用阿里云+腾讯CNB. 
-              * ok-ww-win32-Global.zip full package with dependencies, using GitHub and PyPi as update source 
+              * ok-ww-win32-China-setup.exe 完整安装包, 更新源使用阿里云+腾讯CNB. 
+              * ok-ww-win32-online-setup.exe 在线安装包. 
+              * ok-ww-win32-Global-setup.exe full package with dependencies, using GitHub and PyPi as update source 
               * 不要下载SourceCode, Do Not Download the SourceCode
-            ### 如果无法下载可以使用, 其他下载源
-              * 如果下载过慢可以使用加速或者使用下面渠道下载
+            ### 如果无法下载或下载慢, 可以使用其他下载源
               * [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okww&source=ok-ww-release), 国内网页直链, 下载需要购买CD-KEY, 已有Mirror酱CD-KEY可免费下载
               * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
             ###  更新日志 ${{ steps.sync.outputs.start_tag }} -> ${{ steps.sync.outputs.end_tag }}:

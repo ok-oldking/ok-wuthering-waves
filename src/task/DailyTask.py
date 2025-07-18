@@ -69,7 +69,7 @@ class DailyTask(TacetTask):
             raise Exception("Can't complete daily task, may need to increase stamina manually!")
 
         self.click(0.89, 0.85, after_sleep=1)
-        self.ensure_main(time_out=5)
+        self.ensure_main(time_out=10)
 
     def claim_mail(self):
         self.info_set('current task', 'claim mail')
