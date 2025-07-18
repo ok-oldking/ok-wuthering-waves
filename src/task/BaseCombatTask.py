@@ -238,15 +238,14 @@ class BaseCombatTask(CombatCheck):
         self.wait_until(self.in_combat, time_out=wait_combat_time, raise_if_not_found=raise_if_not_found)
         self.load_chars()
         self.info['Combat Count'] = self.info.get('Combat Count', 0) + 1
-        while self.in_combat():
-            try:
+        try:
+            while self.in_combat():
                 logger.debug(f'combat_once loop {self.chars}')
                 self.get_current_char().perform()
-            except CharDeadException as e:
-                raise e
-            except NotInCombatException as e:
-                logger.info(f'combat_once out of combat break {e}')
-                break
+        except CharDeadException as e:
+            raise e
+        except NotInCombatException as e:
+            logger.info(f'combat_once out of combat break {e}')
         self.combat_end()
         self.wait_in_team_and_world(time_out=10, raise_if_not_found=False)
 
@@ -423,7 +422,7 @@ class BaseCombatTask(CombatCheck):
         """
         return self.get_cd(box_name, char_index) > 0
 
-    def get_current_char(self, raise_exception=True) -> BaseChar:
+    def get_current_char(self, raise_exception=False) -> BaseChar:
         """获取当前操作的角色对象。
 
         Args:
