@@ -52,7 +52,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             self.sleep(3)
             self.walk_to_treasure()
             self.pick_f(handle_claim=False)
-            used, remaining_total, remaining_current, _ = self.use_stamina(self.stamina_once)
+            used, remaining_total, remaining_current, _ = self.use_stamina(once=self.stamina_once, force_once=(counter <= 1))
             if used == 0:
                 self.log_info(f'not enough stamina')
                 self.back()

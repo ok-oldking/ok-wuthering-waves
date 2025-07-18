@@ -400,14 +400,14 @@ class BaseWWTask(BaseTask):
         self.info_set('back_up_stamina', back_up)
         return current, back_up
 
-    def use_stamina(self, once):
+    def use_stamina(self, once, force_once = False):
         self.sleep(1)
         texts = self.ocr(0.2, 0.56, 0.75, 0.69, match=[number_re])
         min_stamina_box = self.find_boxes(texts, match=[re.compile(str(once))])
         if not min_stamina_box:
             min_stamina_box = self.box_of_screen(0.65, 0.61, 0.66, 0.62)  # 有双倍
         min_stamina = once
-        if max_stamina_box := self.find_boxes(texts, match=[re.compile(str(once * 2))]):
+        if max_stamina_box := self.find_boxes(texts, match=[re.compile(str(once * 2))]) and not force_once:
             max_stamina = once * 2
         else:
             max_stamina_box = min_stamina_box
