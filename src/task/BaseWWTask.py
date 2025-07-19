@@ -400,7 +400,7 @@ class BaseWWTask(BaseTask):
         self.info_set('back_up_stamina', back_up)
         return current, back_up
 
-    def use_stamina(self, once):
+    def use_stamina(self, once, max_count=100):
         self.sleep(1)
         texts = self.ocr(0.2, 0.56, 0.75, 0.69, match=[number_re])
         min_stamina_box = self.find_boxes(texts, match=[re.compile(str(once))])
@@ -412,6 +412,8 @@ class BaseWWTask(BaseTask):
         else:
             max_stamina_box = min_stamina_box
             max_stamina = once
+
+        max_stamina = min(max_stamina, max_count * once)
 
         current, back_up = self.get_stamina()
         if not self.farm_task_config.get('Use Waveplate Crystal'):
