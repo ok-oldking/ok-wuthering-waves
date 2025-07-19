@@ -71,22 +71,14 @@ python main.py # run the release version
 python main_debug.py # run the debug version
 ```
 
-### 命令行参数
-
-```
-ok-ww.exe -t 1 -e
-```
-
-- -t 或 --task 代表启动后自动执行第几个任务, 1就是第一个, 一条龙任务
-- -e 或 --exit 加上代表如果执行完任务之后自动退出
-
 ### 加入我们
 
-* 由于基于[ok-script](https://github.com/ok-oldking/ok-script)开发，项目代码仅有3000行（Python），简单易维护
-* 鸣潮水群 970523295 进群答案:老王同学OK
-* 群都满了 加QQ频道 [https://pd.qq.com/s/djmm6l44y](https://pd.qq.com/s/djmm6l44y)
-* 有兴趣开发的请加开发者群926858895, 至少要能看文档, 使用源码运行, 问使用问题和提需求都会被踢
+* 鸣潮水群 462079653 进群答案:老王同学OK
+* 群满加QQ频道 [https://pd.qq.com/s/djmm6l44y](https://pd.qq.com/s/djmm6l44y)
+* 基于[ok-script](https://github.com/ok-oldking/ok-script)开发，项目代码仅有3000行（Python），简单易维护
 * 开发指南和文档[https://github.com/ok-oldking/ok-script-boilerplate](https://github.com/ok-oldking/ok-script-boilerplate)
+* 有兴趣开发的请加开发者群926858895, 至少要能看文档, 使用源码运行, 问使用问题和提需求都会被踢
+
 
 ### 相关项目
 
