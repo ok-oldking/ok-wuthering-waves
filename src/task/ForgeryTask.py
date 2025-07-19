@@ -87,9 +87,11 @@ class ForgeryTask(DomainTask):
         material_boxes = find_color_rectangles(self.frame, material_box_color, min_width, min_height,
                                                box=box, threshold=0.6)
         if material_boxes:
+            box_start = self.width_of_screen(20 / 2560)
+            box_len = self.width_of_screen(90 / 2560)
             target = min(material_boxes, key=lambda box: box.y)
             logger.info(f"Found {len(material_boxes)} material boxes, selected target at y={target.y}")
-            mat_box = target.copy(20, 20, 90-target.width, 90-target.height, 'material_mat')
+            mat_box = target.copy(box_start, box_start, box_len-target.width, box_len-target.height, 'material_mat')
             self.draw_boxes(mat_box.name, mat_box)
             self.material_mat = cv2.resize(mat_box.crop_frame(self.frame),None,
                                            fx=1.1, fy=1.1, interpolation=cv2.INTER_LINEAR)
