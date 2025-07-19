@@ -441,12 +441,12 @@ class BaseWWTask(BaseTask):
             self.wait_ocr(0.6, 0.53, 0.66, 0.62, match=number_re, raise_if_not_found=True)[0].name)
         to_minus = back_up - to_add
         self.log_info(f'add_stamina, to_minus:{to_minus}, to_add:{to_add}, back_up:{back_up}')
-        
+
         for _ in range(abs(to_minus)):
             if to_minus > 0:
-                self.click(0.24, 0.58, after_sleep=0.01) # -
-            else:           
-                self.click(0.69, 0.58, after_sleep=0.01) # +
+                self.click(0.24, 0.58, after_sleep=0.01)  # -
+            else:
+                self.click(0.69, 0.58, after_sleep=0.01)  # +
         self.click_relative(0.69, 0.71, after_sleep=2)
         self.info_set('add_stamina', to_add)
         self.back(after_sleep=1)
@@ -565,7 +565,7 @@ class BaseWWTask(BaseTask):
 
     def pick_f(self, handle_claim=True):
         if self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box, threshold=0.8):
-            self.send_key('f')
+            self.send_key('f', after_sleep=0.8)
             if not handle_claim:
                 return True
             if not self.handle_claim_button():
@@ -992,7 +992,7 @@ class BaseWWTask(BaseTask):
             y = 0.28
             height = (0.85 - 0.28) / 4
             y += height * index
-            self.click_relative(x, y, after_sleep=2)
+            self.click_relative(x, y, after_sleep=1)
         else:
             min_width = self.width_of_screen(475 / 2560)
             min_height = self.height_of_screen(40 / 1440)
@@ -1010,7 +1010,8 @@ class BaseWWTask(BaseTask):
             if btns is None:
                 raise Exception("can't find boss_proceed")
             bottom_btn = max(btns, key=lambda box: box.y)
-            self.click_box(bottom_btn, after_sleep=2)
+            self.click_box(bottom_btn, after_sleep=1)
+        self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom'], time_out=10, settle_time=0.5)
 
     def change_time_to_night(self):
         logger.info('change time to night')
