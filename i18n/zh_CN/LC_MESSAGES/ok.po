@@ -614,3 +614,30 @@ msgstr "刷哪个任务"
 
 msgid "Must be able to teleport (F2)"
 msgstr "需要可传送"
+
+msgid "Half-Auto Rougue"
+msgstr "半自动肉鸽(周常)"
+
+msgid "Enable half-auto combat in weekly rougue, language needs Chinese"
+msgstr "在周常门口或者任务内开始，卡墙时会提示人工接管"
+
+
+msgid "Auto Pick Echo Treasure"
+msgstr "自动获取声骸奖励"
+
+
+msgid "Pick echo treasure if stamina is enough"
+msgstr "体力充足时获取声骸奖励"
+
+
+msgid "Half-Auto Rougue Task Finish"
+msgstr "半自动肉鸽任务完成"
+
+
+msgid "Not in realm and cant find the entrance"
+msgstr "需要在周常门口或者任务内开始"
+
+
+msgid "Need mankind help"
+msgstr "需要人工协助"
+
