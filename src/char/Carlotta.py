@@ -35,8 +35,7 @@ class Carlotta(BaseChar):
             self.logger.debug('has_intro wait click 1.3 sec')
             self.bullet = 1
             self.continues_normal_attack(1.3)
-        if self.is_forte_full():
-            self.heavy_attack()
+        if self.heavy_click_forte():
             return self.switch_next_char()
         if self.liberation_available() and not self.need_fast_perform():
             if self.press_w == 1:
@@ -52,15 +51,14 @@ class Carlotta(BaseChar):
                     self.click_liberation()
                     self.check_combat()
             self.click_echo()
-            self.last_echo = time.time()
+            self.switch_lock = time.time()
             return self.switch_next_char()
         if self.resonance_available():
             if self.bullet == 0:
                 self.heavy_attack()
             if self.click_resonance()[0]:
                 return self.switch_next_char()
-        if self.echo_available():
-            self.click_echo()
+        if self.click_echo():
             return self.switch_next_char()
         self.continues_normal_attack(0.31)
         self.switch_next_char()
@@ -138,6 +136,59 @@ class Carlotta(BaseChar):
             self.logger.info(f'click_liberation end {duration}')
         return clicked
 
+    def click_resonance(self, post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0,
+                        check_cd=False):
+        clicked = False
+        self.logger.debug(f'click_resonance start')
+        last_click = 0
+        last_op = 'click'
+        resonance_click_time = 0
+        animated = False
+        start = time.time()
+        last = start
+        while True:
+            if time.time() - start > 10:
+                self.task.in_liberation = False
+                self.alert_skill_failed()
+                break
+            self.check_combat()
+            now = time.time()
+            current_resonance = self.current_resonance()
+            self.logger.debug(f'click_resonance break percent {current_resonance}')
+            if self.has_cd('resonance'):
+                self.logger.debug(f'click_resonance not available break')
+                break
+            self.logger.debug(f'click_resonance resonance_available click {current_resonance}')
+
+            if now - last_click > 0.1:
+                if send_click and (current_resonance == 0 or last_op == 'resonance'):
+                    self.task.click()
+                    last_op = 'click'
+                    continue
+                if current_resonance > 0 and self.resonance_available(current_resonance):
+                    if resonance_click_time == 0:
+                        clicked = True
+                        resonance_click_time = now
+                        self.update_res_cd()
+                    last_op = 'resonance'
+                    self.send_resonance_key()
+                    if has_animation:  # sleep if there will be an animation like Jinhsi
+                        self.sleep(0.2, check_combat=False)
+                last_click = now
+            self.task.next_frame()
+        self.task.in_liberation = False
+        if clicked:
+            self.sleep(post_sleep)
+        duration = time.time() - resonance_click_time if resonance_click_time != 0 else 0
+        self.logger.debug(f'click_resonance end clicked {clicked} duration {duration} animated {animated}')
+        return clicked, duration, animated
+    
+    def echo_available(self):
+        if self.is_current_char:
+            return not self.has_cd('echo')
+        else:
+            return not self.task.has_cd('echo', self.index)        
+     
     def decide_teammate(self):
         from src.char.Zhezhi import Zhezhi
         self.press_w = 0
@@ -175,8 +226,7 @@ class Carlotta(BaseChar):
                 return self.switch_next_char()
         if self.get_ready():
             self.continue_liberation = False
-        if self.is_forte_full():
-            self.heavy_attack()
+        if self.heavy_click_forte():
             self.liberation_ready = True
             return self.switch_next_char()
         if self.liberation_available() and self.continue_liberation:
@@ -194,22 +244,18 @@ class Carlotta(BaseChar):
         res = True
         self.char_zhezhi.forte = 0
         self.get_forte()
-        if not self.liberation_ready and self.time_elapsed_accounting_for_freeze(self.last_perform) < 5:
+        if not self.liberation_ready:
             while not self.is_forte_full():
-                if self.click_resonance()[0]:
-                    self.continues_normal_attack(1)
+                if self.resonance_available():
+                    self.click_resonance()
                 else:
                     self.click_with_interval()
+                if self.time_elapsed_accounting_for_freeze(self.last_perform) > 6:
+                    break
                 self.check_combat()
-        self.task.mouse_down()
-        start = time.time()
-        while time.time() - start < 1.5:
-            if not self.is_forte_full():
-                break
+        if self.heavy_click_forte():
             self.liberation_ready = True
             self.forte = 0
-            self.task.next_frame()
-        self.task.mouse_up()
         self.check_combat()
         self._liberation_available == False
         self._resonance_available == False

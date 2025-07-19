@@ -37,7 +37,7 @@ class Changli(BaseChar):
         if forte == 4 or self.is_forte_full():
             if self.current_tool() < 0.1:
                 self.heavy_attack()
-            self.heavy_attack()
+            self.heavy_click_forte()
             forte = 0
             self.check_combat()
             return self.switch_next_char()
@@ -70,11 +70,12 @@ class Changli(BaseChar):
                 self.check_combat()
                 self.task.next_frame()
             if self.is_forte_full():
-                self.heavy_attack(1.4)
+                self.heavy_click_forte()
+                self.sleep(1)
         elif forte >= 4 or self.is_forte_full():
             if self.current_tool() < 0.1:
                 self.heavy_attack()
-            self.heavy_attack()
+            self.heavy_click_forte()
             forte = 0
             self.sleep(1)
         if self.liberation_available() and self.liberation_and_heavy():   
@@ -147,7 +148,7 @@ class Changli(BaseChar):
         self.task.in_liberation = False
         if clicked:
             self.logger.info(f'click_liberation end {duration}')
-            self.sleep(0.6)
+            self.task.wait_until(lambda: self.task.in_team()[0] and not self.is_forte_full(), time_out=0.6)
         self.task.mouse_up()
         self.check_combat()
         return clicked   
@@ -156,9 +157,10 @@ class Changli(BaseChar):
         box = self.task.box_of_screen_scaled(5120, 2880, 3034, 2652, 3060, 2686, name='forte_full', hcenter=True)
         white_percent = self.task.calculate_color_percentage(forte_white_color, box)
         box.confidence = white_percent
-        self.logger.info(f'changli forte {white_percent}')
+        if white_percent > 0:
+            self.logger.info(f'changli forte {white_percent}')
         self.task.draw_boxes('forte_full', box)
-        return white_percent > 0.1
+        return white_percent > 0.05
         
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if has_intro and current_char.char_name in {'char_brant'}:
