@@ -74,7 +74,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.sleep(3)
             self.walk_to_treasure()
             self.pick_f(handle_claim=False)
-            used, remaining_total, remaining_current, _ = self.use_stamina(once=self.stamina_once, force_once=(counter <= 1))
+            used, remaining_total, remaining_current, _ = self.use_stamina(once=self.stamina_once, max_count=counter)
             if used == 0:
                 return self.not_enough_stamina()
             total_used += used

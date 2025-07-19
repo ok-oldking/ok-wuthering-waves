@@ -400,18 +400,20 @@ class BaseWWTask(BaseTask):
         self.info_set('back_up_stamina', back_up)
         return current, back_up
 
-    def use_stamina(self, once, force_once = False):
+    def use_stamina(self, once, max_count=100):
         self.sleep(1)
         texts = self.ocr(0.2, 0.56, 0.75, 0.69, match=[number_re])
         min_stamina_box = self.find_boxes(texts, match=[re.compile(str(once))])
         if not min_stamina_box:
             min_stamina_box = self.box_of_screen(0.65, 0.61, 0.66, 0.62)  # 有双倍
         min_stamina = once
-        if max_stamina_box := self.find_boxes(texts, match=[re.compile(str(once * 2))]) and not force_once:
+        if max_stamina_box := self.find_boxes(texts, match=[re.compile(str(once * 2))]):
             max_stamina = once * 2
         else:
             max_stamina_box = min_stamina_box
             max_stamina = once
+
+        max_stamina = min(max_stamina, max_count * once)
 
         current, back_up = self.get_stamina()
         if not self.farm_task_config.get('Use Waveplate Crystal'):
@@ -441,12 +443,12 @@ class BaseWWTask(BaseTask):
             self.wait_ocr(0.6, 0.53, 0.66, 0.62, match=number_re, raise_if_not_found=True)[0].name)
         to_minus = back_up - to_add
         self.log_info(f'add_stamina, to_minus:{to_minus}, to_add:{to_add}, back_up:{back_up}')
-        
+
         for _ in range(abs(to_minus)):
             if to_minus > 0:
-                self.click(0.24, 0.58, after_sleep=0.01) # -
-            else:           
-                self.click(0.69, 0.58, after_sleep=0.01) # +
+                self.click(0.24, 0.58, after_sleep=0.01)  # -
+            else:
+                self.click(0.69, 0.58, after_sleep=0.01)  # +
         self.click_relative(0.69, 0.71, after_sleep=2)
         self.info_set('add_stamina', to_add)
         self.back(after_sleep=1)
