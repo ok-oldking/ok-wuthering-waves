@@ -13,8 +13,8 @@ jobs:
 
     env:
       PYTHONIOENCODING: 'UTF-8'
-      SIGN_BUILD: 'true'
-    #      SIGN_BUILD: 'false'
+      #      SIGN_BUILD: 'true'
+      SIGN_BUILD: 'false'
 
     strategy:
       matrix:
@@ -91,9 +91,8 @@ jobs:
         id: build-exe-only
         uses: ok-oldking/pyappify-action@master
         with:
-          build_exe_only: true
-      #        with:
-      #          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.4.63
+          #          build_exe_only: true
+          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.4.72
 
       - name: Upload unsigned EXE artifact
         if: env.SIGN_BUILD == 'true'
@@ -118,6 +117,7 @@ jobs:
           output-artifact-directory: ${{ steps.build-exe-only.outputs.exe-folder }}
 
       - name: pyappify build-setup-exe
+        if: env.SIGN_BUILD == 'true'
         id: build-setup-exe
         uses: ok-oldking/pyappify-action@master
 
@@ -151,8 +151,8 @@ jobs:
         with:
           body: |
             ### 下载包说明
-              * ok-ww-win32-China-setup.exe 完整安装包, 更新源使用阿里云+腾讯CNB. 
-              * ok-ww-win32-online-setup.exe 在线安装包. 
+              * ok-ww-win32-China-setup.exe 完整安装包, 更新使用阿里云+腾讯CNB. 
+              * ok-ww-win32-online-setup.exe 在线安装包, 在线白嫖的服务器不一定稳定, 建议优先使用完整包. 
               * ok-ww-win32-Global-setup.exe full package with dependencies, using GitHub and PyPi as update source 
               * 不要下载SourceCode, Do Not Download the SourceCode
             ### 如果无法下载或下载慢, 可以使用其他下载源
