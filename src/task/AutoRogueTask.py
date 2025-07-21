@@ -246,7 +246,7 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
     def find_purple_icon(self):
         self.process_feature()
         icons = self.find_feature('purple_target_distance_icon', box=self.box_of_screen(0.18, 0.1, 0.82, 0.81),
-                                  threshold=0.6, frame_processor=binarize_for_matching)
+                                  threshold=0.65, frame_processor=binarize_for_matching)
         target = None
         if icons:
             target = icons[0]
