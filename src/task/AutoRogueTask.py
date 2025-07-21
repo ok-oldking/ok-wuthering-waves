@@ -233,19 +233,19 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
 
     def find_gate(self):
         texts = self.ocr(box=self.box_of_screen(0.01, 0.01, 0.99, 0.99, hcenter=True),
-                         target_height=540, name='boss_lv_text')
-        fps_text = find_boxes_by_name(texts,
-                                      re.compile(r'的记忆', re.IGNORECASE))
-        if fps_text:
-            return fps_text[0]
-        fps_text = find_boxes_by_name(texts,
-                                      re.compile(r'梦乡的', re.IGNORECASE))
-        if fps_text:
-            return fps_text[0]
+                         target_height=540, name='door_text', frame_processor=isolate_gold_text)
+        door_text = find_boxes_by_name(texts,
+                                       re.compile(r'的记忆', re.IGNORECASE))
+        if door_text:
+            return door_text[0]
+        door_text = find_boxes_by_name(texts,
+                                       re.compile(r'梦乡的', re.IGNORECASE))
+        if door_text:
+            return door_text[0]
 
     def find_purple_icon(self):
         self.process_feature()
-        icons = self.find_feature('purple_target_distance_icon', box=self.box_of_screen(0.05, 0.05, 0.95, 0.95),
+        icons = self.find_feature('purple_target_distance_icon', box=self.box_of_screen(0.18, 0.1, 0.82, 0.81),
                                   threshold=0.6, frame_processor=binarize_for_matching)
         target = None
         if icons:
@@ -364,6 +364,14 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
         color_percent = colored_pixels / free_space
         return color_percent
 
+
+def isolate_gold_text(cv_image):
+    match_mask = cv2.inRange(cv_image, lower_gold_text, upper_gold_text)
+    return cv2.cvtColor(cv2.bitwise_not(match_mask), cv2.COLOR_GRAY2BGR)
+
+
+lower_gold_text = np.array([100, 170, 185], dtype=np.uint8)  # BGR
+upper_gold_text = np.array([125, 195, 210], dtype=np.uint8)  # BGR
 
 ring_purple_color = {
     'r': (135, 165),  # Red range
