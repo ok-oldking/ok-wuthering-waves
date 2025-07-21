@@ -600,18 +600,6 @@ msgstr "自动切换时间到晚上"
 msgid "Yes if Farming Lorelei"
 msgstr "罗蕾莱选是"
 
-msgid "Farm Task Config"
-msgstr "刷取任务设置"
-
-msgid "Daily, Simulation, Forgery, Tacet"
-msgstr "日常, 模拟领域, 凝素领域, 无音区"
-
-msgid "Use Waveplate Crystal"
-msgstr "使用结晶单质"
-
-msgid "Use Waveplate Crystal if insufficient"
-msgstr "如果结晶波片不足则使用结晶单质"
-
 msgid "Which Task to run"
 msgstr "刷哪个任务"
 
