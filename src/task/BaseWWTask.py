@@ -400,61 +400,44 @@ class BaseWWTask(BaseTask):
             back_up = 0
         self.info_set('current_stamina', current)
         self.info_set('back_up_stamina', back_up)
-        return current, back_up
+        return current, back_up, current + back_up
 
-    def use_stamina(self, once, max_count=100):
+    def use_stamina(self, once, must_use=0):
         self.sleep(1)
-        texts = self.ocr(0.2, 0.56, 0.75, 0.69, match=[number_re])
-        min_stamina_box = self.find_boxes(texts, match=[re.compile(str(once))])
-        if not min_stamina_box:
-            min_stamina_box = self.box_of_screen(0.65, 0.61, 0.66, 0.62)  # 有双倍
-        min_stamina = once
-        if max_stamina_box := self.find_boxes(texts, match=[re.compile(str(once * 2))]):
-            max_stamina = once * 2
+        double = self.ocr(0.55, 0.56, 0.75, 0.69, match=[re.compile(str(once * 2))])
+        current, back_up, total = self.get_stamina()
+        y = 0.62
+        if not double:  # 找不到双倍数字, 说明有UP, 点击右边
+            x = 0.67
+            used = once
         else:
-            max_stamina_box = min_stamina_box
-            max_stamina = once
-
-        max_stamina = min(max_stamina, max_count * once)
-
-        current, back_up = self.get_stamina()
-        if not self.farm_task_config.get('Use Waveplate Crystal'):
-            back_up = 0
-        if current >= max_stamina:
-            self.click(max_stamina_box, after_sleep=1)
-            return max_stamina, current + back_up - max_stamina, current - max_stamina, False
-        elif current + back_up >= max_stamina:
-            self.add_stamina(max_stamina - current)
-            self.click(max_stamina_box, after_sleep=1)
-            return max_stamina, current + back_up - max_stamina, 0, True
-        elif current >= min_stamina:
-            self.click(min_stamina_box, after_sleep=1)
-            return min_stamina, current + back_up - min_stamina, current - min_stamina, False
-        elif current + back_up >= min_stamina:
-            self.add_stamina(min_stamina - current)
-            self.click(min_stamina_box, after_sleep=1)
-            return min_stamina, current + back_up - min_stamina, 0, True
-        else:
-            return 0, 0, 0, True
-
-    def add_stamina(self, to_add):
-        self.click(0.83, 0.05, after_sleep=1)
-        self.wait_ocr(0.41, 0.47, 0.45, 0.54, match=number_re, raise_if_not_found=True)
-        self.click(0.7, 0.7, after_sleep=1)
-        back_up = int(
-            self.wait_ocr(0.6, 0.53, 0.66, 0.62, match=number_re, raise_if_not_found=True)[0].name)
-        to_minus = back_up - to_add
-        self.log_info(f'add_stamina, to_minus:{to_minus}, to_add:{to_add}, back_up:{back_up}')
-
-        for _ in range(abs(to_minus)):
-            if to_minus > 0:
-                self.click(0.24, 0.58, after_sleep=0.01)  # -
+            if current >= once * 2 or (must_use > once and total >= once * 2):
+                used = once * 2
+                x = 0.67
             else:
-                self.click(0.69, 0.58, after_sleep=0.01)  # +
-        self.click_relative(0.69, 0.71, after_sleep=2)
-        self.info_set('add_stamina', to_add)
-        self.back(after_sleep=1)
-        self.back(after_sleep=1)
+                used = once
+                x = 0.32
+        self.click(x, y)
+        if self.wait_feature('gem_add_stamina', horizontal_variance=0.4, vertical_variance=0.05,
+                             time_out=1):  # 看是否需要使用备用体力
+            self.click(0.70, 0.71, after_sleep=0.5)  # 点击确认
+            self.click(0.70, 0.71, after_sleep=1)
+            self.back(after_sleep=0.5)
+            self.back(after_sleep=0.5)
+            self.click(x, y)
+
+        current -= used
+        must_use -= used
+        total -= used
+        if total < once:
+            logger.info(f"current stamina: {current} not enough to continue")
+            can_continue = False
+        elif must_use <= 0 and current < once:
+            can_continue = False
+            logger.info(f"current stamina: {current} must_use completed, no need to use back_up")
+        else:
+            can_continue = True
+        return can_continue, used
 
     def send_key_and_wait_f(self, direction, raise_if_not_found, time_out, running=False, target_text=None,
                             check_combat=False):
@@ -931,14 +914,13 @@ class BaseWWTask(BaseTask):
         self.send_key_up('alt')
         self.sleep(0.5)
 
-    def openF2Book(self, feature="gray_book_all_monsters"):
-        self.sleep(1)
-        self.log_info('click f2 to open the book')
-        self.send_key_down('alt')
-        self.sleep(0.05)
-        self.click_relative(0.77, 0.05)
-        self.send_key_up('alt')
-        # self.send_key('f2')
+    def openF2Book(self, feature="gray_book_all_monsters", opened=False):
+        if not opened:
+            self.log_info('click f2 to open the book')
+            self.send_key_down('alt')
+            self.sleep(0.05)
+            self.click_relative(0.77, 0.05)
+            self.send_key_up('alt')
         gray_book_boss = self.wait_book(feature)
         if not gray_book_boss:
             self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
@@ -965,11 +947,11 @@ class BaseWWTask(BaseTask):
     def wait_click_travel(self):
         self.wait_until(self.click_traval_button, raise_if_not_found=True, time_out=10)
 
-    def wait_book(self, feature="gray_book_all_monsters"):
+    def wait_book(self, feature="gray_book_all_monsters", time_out=3):
         gray_book_boss = self.wait_until(
             lambda: self.find_one(feature, vertical_variance=0.8, horizontal_variance=0.05,
                                   threshold=0.3),
-            time_out=3, settle_time=2)
+            time_out=time_out, settle_time=1)
         logger.info(f'found gray_book_boss {gray_book_boss}')
         # if self.debug:
         #     self.screenshot(feature)

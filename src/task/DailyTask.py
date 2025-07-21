@@ -3,9 +3,8 @@ import re
 from qfluentwidgets import FluentIcon
 
 from ok import Logger
-from src.task.BaseWWTask import number_re
+from src.task.BaseWWTask import number_re, stamina_re
 from src.task.TacetTask import TacetTask
-from src.task.ForgeryTask import ForgeryTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
 
@@ -16,50 +15,41 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.tacet = TacetTask(*args, **kwargs)
-        self.forgery = ForgeryTask(*args, **kwargs)
-        self.support_task = [self.tacet.name, self.forgery.name]
-        self.default_config = {
-            'Which Task to run': self.support_task[0],
-        }
-        self.default_config.update(self.tacet.default_config)
-        self.default_config.update(self.forgery.default_config)
-        excluded_config_keys = {'Forgery Challenge Count', 'Tacet Suppression Count'}
-        self.default_config = {k: v for k, v in self.default_config.items() if k not in excluded_config_keys}
-        self.config_description = {
-            'Which Task to run': 'Must be able to teleport (F2)',
-        }
-        self.config_description.update(self.tacet.config_description)
-        self.config_description.update(self.forgery.config_description)
-        self.config_type['Which Task to run'] = {'type': "drop_down", 'options': self.support_task}
-        self.description = "Login, claim monthly card, farm echo, and claim daily reward"
         self.name = "Daily Task"
-        self.add_exit_after_config()
-        self.show_create_shortcut = True
+        # self.add_exit_after_config()
         self.icon = FluentIcon.CAR
+        self.support_tasks = ["Tacet Suppression", "Forgery Challenge"]
+        self.default_config = {
+            'Which Task to run': self.support_tasks[0],
+            'Which Tacet Suppression to Farm': 1,  # starts with 1
+            'Which Forgery Challenge to Farm': 1,  # starts with 1
+        }
+        self.config_description = {
+            'Which Task to run': 'Config Which in Tacet Task or Forgery Challenge',
+            'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
+            'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
+        }
+        self.config_type['Which Task to run'] = {'type': "drop_down", 'options': self.support_tasks}
+        self.description = "Login, claim monthly card, farm echo, and claim daily reward"
 
     def run(self):
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=180)
-        if self.config.get('Which Task to run', self.support_task[0]) == self.support_task[0]:
-            self.setup_task(self.tacet)
-            self.tacet.farm_tacet()
-        else:
-            self.setup_task(self.forgery)
-            self.forgery.farm_forgery()
-            self.sleep(2)
-            self.forgery.purification_material()
-        self.sleep(4)
+        used_stamina, completed = self.open_daily()
+        self.send_key('esc', after_sleep=1)
+        if not completed:
+            if self.config.get('Which Task to run', self.support_tasks[0]) == self.support_tasks[0]:
+                self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina, config=self.config)
+            else:
+                self.get_task_by_class(TacetTask).farm_forgery(daily=True, used_stamina=used_stamina,
+                                                               config=self.config)
+                self.sleep(2)
+                self.forgery.purification_material()
+            self.sleep(4)
+            self.claim_daily()
         self.claim_mail()
-        self.claim_daily()
         self.claim_millage()
         self.log_info('Task completed', notify=True)
-
-    def setup_task(self, task):
-        task.config = task.default_config
-        task.config.update(self.config)
-        task.info_set = self.info_set
-        task._daily_task = True
 
     def claim_millage(self):
         self.log_info('open_millage')
@@ -72,11 +62,27 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.click(0.68, 0.91, after_sleep=1)
         self.ensure_main()
 
+    def open_daily(self):
+        self.log_info('open_daily')
+        gray_book_quest = self.openF2Book("gray_book_quest")
+        self.click_box(gray_book_quest, after_sleep=1.5)
+        progress = self.ocr(0.1, 0.1, 0.5, 0.75, match=re.compile(r'^(\d+)/180$'))
+        if progress:
+            current = int(progress[0].name.split('/')[0])
+        else:
+            current = 0
+        self.info_set('current daily progress', current)
+        return current, self.get_total_daily_points() >= 100
+
+    def get_total_daily_points(self):
+        total_points = int(self.ocr(0.19, 0.8, 0.30, 0.93, match=number_re)[0].name)
+        self.info_set('total daily points', total_points)
+        return total_points
+
     def claim_daily(self):
         self.info_set('current task', 'claim daily')
         self.ensure_main(time_out=5)
-        gray_book_quest = self.openF2Book("gray_book_quest")
-        self.click_box(gray_book_quest, after_sleep=1.5)
+        self.open_daily()
         while True:
             boxes = self.ocr(0.23, 0.16, 0.31, 0.69, match=re.compile(r"^[1-9]\d*/\d+$"))
             count = 0
@@ -92,7 +98,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 self.click(0.87, 0.17, after_sleep=0.5)
             self.sleep(1)
 
-        total_points = int(self.ocr(0.19, 0.8, 0.30, 0.93, match=number_re)[0].name)
+        total_points = self.get_total_daily_points()
         self.info_set('daily points', total_points)
         if total_points < 100:
             raise Exception("Can't complete daily task, may need to increase stamina manually!")
