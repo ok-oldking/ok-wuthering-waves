@@ -1071,20 +1071,12 @@ def calculate_angle_clockwise(box1, box2):
 
 
 lower_white = np.array([244, 244, 244], dtype=np.uint8)
+lower_white_none_inclusive = np.array([243, 243, 243], dtype=np.uint8)
 upper_white = np.array([255, 255, 255], dtype=np.uint8)
-lower_black = np.array([0, 0, 0], dtype=np.uint8)
-upper_black = np.array([180, 180, 180], dtype=np.uint8)
+black = np.array([0, 0, 0], dtype=np.uint8)
 
 
-def isolate_black_text(cv_image):
-    match_mask = cv2.inRange(cv_image, lower_black, upper_black)
-
-    output_image = np.full(cv_image.shape, 255, dtype=np.uint8)
-    output_image[match_mask == 255] = [0, 0, 0]
-    return output_image
-
-
-def isolate_white_text(cv_image):
+def isolate_white_text_to_black(cv_image):
     """
     Converts pixels in the near-white range (244-255) to black,
     and all others to white.
@@ -1093,30 +1085,15 @@ def isolate_white_text(cv_image):
     Returns:
         Black and white image (NumPy array), where matches are black.
     """
-
-    match_mask = cv2.inRange(cv_image, lower_white, upper_white)
-
-    output_image = np.full(cv_image.shape, 255, dtype=np.uint8)
-    output_image[match_mask == 255] = [0, 0, 0]
+    match_mask = cv2.inRange(cv_image, black, lower_white_none_inclusive)
+    output_image = cv2.cvtColor(match_mask, cv2.COLOR_GRAY2BGR)
 
     return output_image
 
 
 def convert_bw(cv_image):
-    """
-    Converts pixels in the near-white range (244-255) to black,
-    and all others to white.
-    Args:
-        cv_image: Input image (NumPy array, BGR).
-    Returns:
-        Black and white image (NumPy array), where matches are black.
-    """
-
     match_mask = cv2.inRange(cv_image, lower_white, upper_white)
-
-    output_image = np.full(cv_image.shape, 0, dtype=np.uint8)
-    output_image[match_mask == 255] = [255, 255, 255]
-
+    output_image = cv2.cvtColor(match_mask, cv2.COLOR_GRAY2BGR)
     return output_image
 
 
@@ -1135,6 +1112,7 @@ def binarize_for_matching(image):
     """
     # Convert the image to grayscale for a single brightness value per pixel.
     # This is more robust than checking individual R, G, B channels.
+
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Apply the binary threshold.
@@ -1142,5 +1120,4 @@ def binarize_for_matching(image):
     # Pixels <= 239 will be set to 0 (black).
     # cv2.THRESH_BINARY is the type of thresholding we want.
     _, binary_image = cv2.threshold(gray_image, 244, 255, cv2.THRESH_BINARY)
-
     return binary_image
