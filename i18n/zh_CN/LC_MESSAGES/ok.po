@@ -603,8 +603,8 @@ msgstr "在周常门口或者任务内开始，卡墙时会提示人工接管"
 msgid "Auto Pick Echo Treasure"
 msgstr "自动获取声骸奖励"
 
-msgid "Pick echo treasure if stamina is enough"
-msgstr "体力充足时获取声骸奖励"
+msgid "If set to False, treasure will be claimed if stamina is sufficient"
+msgstr "如果选择否，将在体力足够时领取声骸奖励"
 
 msgid "Half-Auto Rougue Task Finish"
 msgstr "半自动肉鸽任务完成"
@@ -624,3 +624,5 @@ msgstr ""
 msgid "wait main"
 msgstr ""
 
+msgid "Stop When Treasure Found"
+msgstr "出现声骸奖励时停止运行"
