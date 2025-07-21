@@ -17,11 +17,9 @@ class ForgeryTask(DomainTask):
         self.description = 'Farms the selected Forgery Challenge. Must be able to teleport (F2).'
         self.default_config = {
             'Which Forgery Challenge to Farm': 1,  # starts with 1
-            'Forgery Challenge Count': 20,  # starts with 20
         }
         self.config_description = {
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
-            'Forgery Challenge Count': 'Number of times to farm the Forgery Challenge (40 stamina per run). Set a large number to use all stamina.',
         }
         self.stamina_once = 40
         self.total_number = 10
@@ -32,18 +30,21 @@ class ForgeryTask(DomainTask):
         self.make_sure_in_world()
         self.farm_forgery()
 
-    def farm_forgery(self):
-        total_counter = self.config.get('Forgery Challenge Count', 20)
-        if total_counter <= 0:
-            self.log_info('0 time(s) farmed, 0 stamina used')
-            return
-        current, back_up = self.open_F2_book_and_get_stamina()
-        if current + back_up < self.stamina_once:
+    def farm_forgery(self, daily=False, used_stamina=0, config=None):
+        if daily:
+            must_use = 180 - used_stamina
+        else:
+            must_use = 0
+        if config is None:
+            config = self.config
+        current, back_up, total = self.open_F2_book_and_get_stamina()
+        if total < self.stamina_once or total < must_use or (must_use == 0 and current < self.stamina_once):
+            self.log_info(f'not enough stamina', notify=True)
             self.back()
             return
-        self.teleport_into_domain(self.config.get('Which Forgery Challenge to Farm', 1))
+        self.teleport_into_domain(config.get('Which Forgery Challenge to Farm', 1))
         self.sleep(1)
-        self.farm_in_domain(total_counter=total_counter, current=current, back_up=back_up)
+        self.farm_in_domain(must_use=must_use)
 
     def purification_material(self):
         if self.material_mat is None:
@@ -91,12 +92,13 @@ class ForgeryTask(DomainTask):
             box_len = self.width_of_screen(90 / 2560)
             target = min(material_boxes, key=lambda box: box.y)
             logger.info(f"Found {len(material_boxes)} material boxes, selected target at y={target.y}")
-            mat_box = target.copy(box_start, box_start, box_len-target.width, box_len-target.height, 'material_mat')
+            mat_box = target.copy(box_start, box_start, box_len - target.width, box_len - target.height, 'material_mat')
             self.draw_boxes(mat_box.name, mat_box)
-            self.material_mat = cv2.resize(mat_box.crop_frame(self.frame),None,
+            self.material_mat = cv2.resize(mat_box.crop_frame(self.frame), None,
                                            fx=1.1, fy=1.1, interpolation=cv2.INTER_LINEAR)
         else:
             raise RuntimeError('can not find material_box')
+
 
 material_box_color = {
     'r': (45, 75),  # Red range

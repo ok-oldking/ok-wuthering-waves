@@ -794,3 +794,141 @@ msgstr ""
 
 msgid "Number of times to farm the Forgery Challenge (40 stamina per run). Set a large number to use all stamina."
 msgstr ""
+
+msgid "10"
+msgstr ""
+
+msgid "Auto Pick Echo Treasure"
+msgstr ""
+
+msgid "Change Time to Night"
+msgstr ""
+
+msgid "Combat Wait Time"
+msgstr ""
+
+msgid "Config Which in Tacet Task or Forgery Challenge"
+msgstr ""
+
+msgid "Daily, Simulation, Forgery, Tacet"
+msgstr ""
+
+msgid "Echo Pickup Method"
+msgstr ""
+
+msgid "Enable half-auto combat in weekly rougue, language needs Chinese"
+msgstr ""
+
+msgid "Farm Task Config"
+msgstr ""
+
+msgid "Farms the selected Tacet Suppression. Must be able to teleport (F2)."
+msgstr ""
+
+msgid "Half-Auto Rougue"
+msgstr ""
+
+msgid "Pick echo treasure if stamina is enough"
+msgstr ""
+
+msgid "Tacet Suppression"
+msgstr ""
+
+msgid "The Tacet Suppression number in the F2 list."
+msgstr ""
+
+msgid "Tool Key"
+msgstr ""
+
+msgid "Use Waveplate Crystal"
+msgstr ""
+
+msgid "Use Waveplate Crystal if insufficient"
+msgstr ""
+
+msgid "Wait time before each combat(seconds), set 5 if farming Sentry Construct"
+msgstr ""
+
+msgid "Which Task to run"
+msgstr ""
+
+msgid "Yes if Farming Lorelei"
+msgstr ""
+
+msgid "Yolo"
+msgstr ""
+
+msgid "not enough stamina"
+msgstr ""
+
+msgid "共鸣效率"
+msgstr ""
+
+msgid "冷凝伤害加成"
+msgstr ""
+
+msgid "凌冽决断之心"
+msgstr ""
+
+msgid "启动成功"
+msgstr ""
+
+msgid "奔狼燎原之焰"
+msgstr ""
+
+msgid "导电伤害加成"
+msgstr ""
+
+msgid "幽夜隐匿之帷"
+msgstr ""
+
+msgid "愿戴荣光之旅"
+msgstr ""
+
+msgid "攻击力百分比"
+msgstr ""
+
+msgid "数据坞五合一"
+msgstr ""
+
+msgid "无惧浪涛之勇"
+msgstr ""
+
+msgid "暴击伤害"
+msgstr ""
+
+msgid "暴击率"
+msgstr ""
+
+msgid "此间永驻之光"
+msgstr ""
+
+msgid "气动伤害加成"
+msgstr ""
+
+msgid "治疗效果加成"
+msgstr ""
+
+msgid "流云逝尽之空"
+msgstr ""
+
+msgid "游戏语言必须为简体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
+msgstr ""
+
+msgid "湮灭伤害加成"
+msgstr ""
+
+msgid "热熔伤害加成"
+msgstr ""
+
+msgid "生命值百分比"
+msgstr ""
+
+msgid "衍射伤害加成"
+msgstr ""
+
+msgid "防御力百分比"
+msgstr ""
+
+msgid "高天共奏之曲"
+msgstr ""

@@ -52,7 +52,11 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
         start = time.time()
         while True:
             # 非战斗处理
-            if not self.in_team()[0]:
+            in_team = self.in_team()[0]
+            if in_team and not self.in_realm():
+                self.log_info('自动肉鸽结束!', notify=True)
+                return
+            if not in_team:
                 self.status = -1
                 # 交易：直接退出
                 if self.check_text(0.02, 0.04, 0.12, 0.09, r'交易', 'trade_text'):
