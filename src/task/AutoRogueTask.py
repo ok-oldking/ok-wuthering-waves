@@ -236,11 +236,11 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
         texts = self.ocr(box=self.box_of_screen(0.01, 0.01, 0.99, 0.99, hcenter=True),
                          target_height=540, name='door_text', frame_processor=isolate_gold_text)
         door_text = find_boxes_by_name(texts,
-                                      re.compile(r'的记忆', re.IGNORECASE))
+                                       re.compile(r'的记忆', re.IGNORECASE))
         if door_text:
             return door_text[0]
         door_text = find_boxes_by_name(texts,
-                                      re.compile(r'梦乡的', re.IGNORECASE))
+                                       re.compile(r'梦乡的', re.IGNORECASE))
         if door_text:
             return door_text[0]
 
@@ -365,17 +365,14 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
         color_percent = colored_pixels / free_space
         return color_percent
 
+
 def isolate_gold_text(cv_image):
-
     match_mask = cv2.inRange(cv_image, lower_gold_text, upper_gold_text)
+    return cv2.cvtColor(cv2.bitwise_not(match_mask), cv2.COLOR_GRAY2BGR)
 
-    output_image = np.full(cv_image.shape, 255, dtype=np.uint8)
-    output_image[match_mask == 255] = [0, 0, 0]
 
-    return output_image
-
-lower_gold_text = np.array([100, 170, 185], dtype=np.uint8) #BGR
-upper_gold_text = np.array([125, 195, 210], dtype=np.uint8) #BGR
+lower_gold_text = np.array([100, 170, 185], dtype=np.uint8)  # BGR
+upper_gold_text = np.array([125, 195, 210], dtype=np.uint8)  # BGR
 
 ring_purple_color = {
     'r': (135, 165),  # Red range
