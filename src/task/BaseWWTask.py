@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 
-from ok import BaseTask, Logger, find_boxes_by_name, og, find_color_rectangles
+from ok import BaseTask, Logger, find_boxes_by_name, og, find_color_rectangles, mask_white
 from ok import CannotFindException
 import cv2
 
@@ -77,6 +77,8 @@ class BaseWWTask(BaseTask):
             processed_feature = True
             feature = self.get_feature_by_name('illusive_realm_exit')
             feature.mat = convert_bw(feature.mat)
+            feature = self.get_feature_by_name('purple_target_distance_icon')
+            feature.mat = binarize_for_matching(feature.mat)
 
     def zoom_map(self, esc=True):
         if not self.map_zoomed:
@@ -225,7 +227,7 @@ class BaseWWTask(BaseTask):
             self.sleep(0.01)
         return None
 
-    def walk_to_box(self, find_function, time_out=30, end_condition=None, y_offset=0.05):
+    def walk_to_box(self, find_function, time_out=30, end_condition=None, y_offset=0.05, x_threshold=0.07):
         if not find_function:
             self.log_info('find_function not found, break')
             return False
@@ -255,7 +257,7 @@ class BaseWWTask(BaseTask):
                 x, y = last_target.center()
                 y = max(0, y - self.height_of_screen(y_offset))
                 x_abs = abs(x - self.width_of_screen(0.5))
-                threshold = 0.04 if not last_direction else 0.07
+                threshold = 0.04 if not last_direction else x_threshold
                 centered = centered or x_abs <= self.width_of_screen(threshold)
                 if not centered:
                     if x > self.width_of_screen(0.5):
@@ -270,13 +272,13 @@ class BaseWWTask(BaseTask):
             if next_direction != last_direction:
                 if last_direction:
                     self.send_key_up(last_direction)
-                    self.sleep(0.01)
+                    self.sleep(0.001)
                 last_direction = next_direction
                 if next_direction:
                     self.send_key_down(next_direction)
         if last_direction:
             self.send_key_up(last_direction)
-            self.sleep(0.01)
+            self.sleep(0.001)
         if not end_condition:
             return last_direction is not None
         else:
@@ -1116,3 +1118,29 @@ def convert_bw(cv_image):
     output_image[match_mask == 255] = [255, 255, 255]
 
     return output_image
+
+
+def binarize_for_matching(image):
+    """
+    Converts a colored image to a binary image based on a brightness threshold.
+
+    The rule is: pixels with a value of 240-255 become pure white (255),
+    and all other pixels become pure black (0).
+
+    Args:
+        image (np.array): The input BGR image from OpenCV.
+
+    Returns:
+        np.array: The resulting binary image (single channel, 8-bit).
+    """
+    # Convert the image to grayscale for a single brightness value per pixel.
+    # This is more robust than checking individual R, G, B channels.
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Apply the binary threshold.
+    # Pixels > 239 will be set to 255 (white).
+    # Pixels <= 239 will be set to 0 (black).
+    # cv2.THRESH_BINARY is the type of thresholding we want.
+    _, binary_image = cv2.threshold(gray_image, 244, 255, cv2.THRESH_BINARY)
+
+    return binary_image
