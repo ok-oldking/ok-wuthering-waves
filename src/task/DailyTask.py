@@ -20,16 +20,15 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.icon = FluentIcon.CAR
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge"]
         self.default_config = {
-            'Which Task to run': self.support_tasks[0],
+            'Which to Farm': self.support_tasks[0],
             'Which Tacet Suppression to Farm': 1,  # starts with 1
             'Which Forgery Challenge to Farm': 1,  # starts with 1
         }
         self.config_description = {
-            'Which Task to run': 'Config Which in Tacet Task or Forgery Challenge',
             'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
         }
-        self.config_type['Which Task to run'] = {'type': "drop_down", 'options': self.support_tasks}
+        self.config_type['Which to Farm'] = {'type': "drop_down", 'options': self.support_tasks}
         self.description = "Login, claim monthly card, farm echo, and claim daily reward"
 
     def run(self):
@@ -75,9 +74,13 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         return current, self.get_total_daily_points() >= 100
 
     def get_total_daily_points(self):
-        total_points = int(self.ocr(0.19, 0.8, 0.30, 0.93, match=number_re)[0].name)
-        self.info_set('total daily points', total_points)
-        return total_points
+        points_boxes = self.ocr(0.19, 0.8, 0.30, 0.93, match=number_re)
+        if points_boxes:
+            points = int(points_boxes[0].name)
+        else:
+            points = 0
+        self.info_set('total daily points', points)
+        return points
 
     def claim_daily(self):
         self.info_set('current task', 'claim daily')

@@ -408,12 +408,19 @@ class BaseWWTask(BaseTask):
         y = 0.62
         if not double:  # 找不到双倍数字, 说明有UP, 点击右边
             x = 0.67
+            logger.info("找不到双倍数字, 说明有UP, 点击右边")
             used = once
         else:
-            if current >= once * 2 or (must_use > once and total >= once * 2):
+            if current >= once * 2:
                 used = once * 2
                 x = 0.67
+                logger.info(f"当前体力大于等于双倍, {current} >= {once * 2}")
+            elif must_use > once and total >= once * 2:
+                used = once * 2
+                x = 0.67
+                logger.info(f"当前加备用大于日常剩余所需, 使用双倍, {must_use} >= {once} and {total} >= {once * 2}")
             else:
+                logger.info(f"使用单倍体力")
                 used = once
                 x = 0.32
         self.click(x, y)

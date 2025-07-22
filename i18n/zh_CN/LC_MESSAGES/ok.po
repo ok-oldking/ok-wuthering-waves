@@ -474,6 +474,9 @@ msgstr "刷选定的无音区, 直到没有体力, 需要可传送"
 msgid "Login, claim monthly card, farm echo, and claim daily reward"
 msgstr "启动游戏, 登录, 领月卡, 刷声骸, 领日常任务奖励, 领邮件"
 
+msgid "Which to Farm"
+msgstr "刷什么"
+
 msgid "Tacet Suppression"
 msgstr "无音区"
 
@@ -481,7 +484,7 @@ msgid "Task completed"
 msgstr "任务完成"
 
 msgid "Which Tacet Suppression to Farm"
-msgstr "刷哪个无音区"
+msgstr "刷第几个无音区(F2列表)"
 
 msgid "Tacet Suppression Count"
 msgstr "刷取次数"
@@ -497,9 +500,6 @@ msgstr "体力已用尽"
 
 msgid "The Tacet Suppression number in the F2 list."
 msgstr "F2列表中第几个无音区"
-
-msgid "Number of times to farm the Tacet Suppression (60 stamina per run). Set a large number to use all stamina."
-msgstr "无音区刷取次数（每次消耗60体力），设置较大的数值以使用所有体力"
 
 msgid "Please start in game world and in team!"
 msgstr "请在大世界并在队伍中开始!"
@@ -577,7 +577,7 @@ msgid "Farms the selected Forgery Challenge. Must be able to teleport (F2)."
 msgstr "刷选定的凝素领域, 需要可传送"
 
 msgid "Which Forgery Challenge to Farm"
-msgstr "刷哪个凝素领域"
+msgstr "刷第几个凝素领域(F2列表)"
 
 msgid "The Forgery Challenge number in the F2 list."
 msgstr "F2列表中第几个凝素领域"
@@ -599,9 +599,6 @@ msgstr "自动切换时间到晚上"
 
 msgid "Yes if Farming Lorelei"
 msgstr "罗蕾莱选是"
-
-msgid "Which Task to run"
-msgstr "刷哪个任务"
 
 msgid "Must be able to teleport (F2)"
 msgstr "需要可传送"
@@ -625,19 +622,7 @@ msgid "Not in realm and cant find the entrance"
 msgstr "需要在周常门口或者任务内开始"
 
 msgid "Need mankind help"
-msgstr "需要人工协助"
-
-msgid "10"
-msgstr ""
-
-msgid "86"
-msgstr ""
-
-msgid "Config Which in Tacet Task or Forgery Challenge"
-msgstr ""
-
-msgid "Farms the selected Tacet Suppression. Must be able to teleport (F2)."
-msgstr ""
+msgstr "自动肉鸽失败, 需要手动操作到下一节点!"
 
 msgid "current task"
 msgstr ""
@@ -648,101 +633,3 @@ msgstr ""
 msgid "wait main"
 msgstr ""
 
-msgid "不绝余音"
-msgstr ""
-
-msgid "共鸣效率"
-msgstr ""
-
-msgid "冷凝伤害加成"
-msgstr ""
-
-msgid "凌冽决断之心"
-msgstr ""
-
-msgid "凝夜白霜"
-msgstr ""
-
-msgid "启动成功"
-msgstr ""
-
-msgid "啸谷长风"
-msgstr ""
-
-msgid "奔狼燎原之焰"
-msgstr ""
-
-msgid "导电伤害加成"
-msgstr ""
-
-msgid "幽夜隐匿之帷"
-msgstr ""
-
-msgid "彻空冥雷"
-msgstr ""
-
-msgid "愿戴荣光之旅"
-msgstr ""
-
-msgid "攻击力百分比"
-msgstr ""
-
-msgid "数据坞五合一"
-msgstr ""
-
-msgid "无惧浪涛之勇"
-msgstr ""
-
-msgid "暴击伤害"
-msgstr ""
-
-msgid "暴击率"
-msgstr ""
-
-msgid "此间永驻之光"
-msgstr ""
-
-msgid "气动伤害加成"
-msgstr ""
-
-msgid "沉日劫明"
-msgstr ""
-
-msgid "治疗效果加成"
-msgstr ""
-
-msgid "流云逝尽之空"
-msgstr ""
-
-msgid "浮星祛暗"
-msgstr ""
-
-msgid "游戏语言必须为简体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
-msgstr ""
-
-msgid "湮灭伤害加成"
-msgstr ""
-
-msgid "热熔伤害加成"
-msgstr ""
-
-msgid "熔山裂谷"
-msgstr ""
-
-msgid "生命值百分比"
-msgstr ""
-
-msgid "衍射伤害加成"
-msgstr ""
-
-msgid "轻云出月"
-msgstr ""
-
-msgid "防御力百分比"
-msgstr ""
-
-msgid "隐世回光"
-msgstr ""
-
-msgid "高天共奏之曲"
-msgstr ""

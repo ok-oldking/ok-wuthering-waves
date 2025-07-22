@@ -12,7 +12,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.icon = FluentIcon.FLAG
-        self.description = "Farms the selected Tacet Suppression. Must be able to teleport (F2)."
+        self.description = "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
         self.name = "Tacet Suppression"
         default_config = {
             'Which Tacet Suppression to Farm': 1,  # starts with 1
@@ -77,7 +77,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.sleep(3)
             self.walk_to_treasure()
             self.pick_f(handle_claim=False)
-            can_continue, used = self.use_stamina(once=self.stamina_once)
+            can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
             self.info_incr('used stamina', used)
             self.sleep(4)
             self.click(0.51, 0.84, after_sleep=2)
