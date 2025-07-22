@@ -4,6 +4,7 @@ from qfluentwidgets import FluentIcon
 
 from ok import Logger
 from src.task.BaseWWTask import number_re, stamina_re
+from src.task.ForgeryTask import ForgeryTask
 from src.task.TacetTask import TacetTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
@@ -40,10 +41,10 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             if self.config.get('Which Task to run', self.support_tasks[0]) == self.support_tasks[0]:
                 self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina, config=self.config)
             else:
-                self.get_task_by_class(TacetTask).farm_forgery(daily=True, used_stamina=used_stamina,
-                                                               config=self.config)
+                self.get_task_by_class(ForgeryTask).farm_forgery(daily=True, used_stamina=used_stamina,
+                                                                 config=self.config)
                 self.sleep(2)
-                self.forgery.purification_material()
+                self.get_task_by_class(ForgeryTask).purification_material()
             self.sleep(4)
             self.claim_daily()
         self.claim_mail()
