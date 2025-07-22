@@ -47,15 +47,15 @@ class ForgeryTask(DomainTask):
         self.farm_in_domain(must_use=must_use)
 
     def purification_material(self):
-        if self.material_mat is None:
-            raise RuntimeError('material_mat is not set')
         self.send_key("esc")
         self.sleep(1)
         self.click_relative(0.62, 0.7)
-        self.sleep(2)
+        self.sleep(1)
         box = self.box_of_screen(243 / 2560, 162 / 1440, 928 / 2560, 559 / 1440, name='ascension_materials')
         self.draw_boxes(box.name, box)
-        if self.wait_until(lambda: self.find_one(template=self.material_mat, box=box, threshold=0.7), time_out=4):
+        self.wait_book()
+        if self.material_mat is not None and \
+            (target := self.wait_until(lambda: self.find_one(template=self.material_mat, box=box, threshold=0.7), time_out=1)):
             self.click_box(target, after_sleep=1)
         self.click_relative(0.75, 0.90, after_sleep=1)
         self.ensure_main()
@@ -95,8 +95,6 @@ class ForgeryTask(DomainTask):
             self.draw_boxes(mat_box.name, mat_box)
             self.material_mat = cv2.resize(mat_box.crop_frame(self.frame), None,
                                            fx=1.1, fy=1.1, interpolation=cv2.INTER_LINEAR)
-        else:
-            raise RuntimeError('can not find material_box')
 
 
 material_box_color = {
