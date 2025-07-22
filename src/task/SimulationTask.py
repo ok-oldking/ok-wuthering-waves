@@ -31,10 +31,6 @@ class SimulationTask(DomainTask):
         self.farm_simulation()
 
     def farm_simulation(self):
-        total_counter = self.config.get('Simulation Challenge Count', 20)
-        if total_counter <= 0:
-            self.log_info('0 time(s) farmed, 0 stamina used')
-            return
         current, back_up, total = self.open_F2_book_and_get_stamina()
         if current < self.stamina_once:
             self.back()

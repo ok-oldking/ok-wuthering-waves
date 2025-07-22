@@ -486,9 +486,6 @@ msgstr "任务完成"
 msgid "Which Tacet Suppression to Farm"
 msgstr "刷第几个无音区(F2列表)"
 
-msgid "Tacet Suppression Count"
-msgstr "刷取次数"
-
 msgid "back_up_stamina"
 msgstr "备用体力"
 
@@ -564,9 +561,6 @@ msgstr "武器经验"
 msgid "Shell Credit"
 msgstr "贝币"
 
-msgid "Simulation Challenge Count"
-msgstr "刷取次数"
-
 msgid "Number of times to farm the Simulation Challenge (40 stamina per run). Set a large number to use all stamina."
 msgstr "模拟领域刷取次数（每次消耗40体力），设置较大的数值以使用所有体力"
 
@@ -581,9 +575,6 @@ msgstr "刷第几个凝素领域(F2列表)"
 
 msgid "The Forgery Challenge number in the F2 list."
 msgstr "F2列表中第几个凝素领域"
-
-msgid "Forgery Challenge Count"
-msgstr "刷取次数"
 
 msgid "Number of times to farm the Forgery Challenge (40 stamina per run). Set a large number to use all stamina."
 msgstr "凝素领域刷取次数（每次消耗40体力），设置较大的数值以使用所有体力"
