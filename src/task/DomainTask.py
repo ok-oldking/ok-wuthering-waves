@@ -13,7 +13,6 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.teleport_timeout = 100
         self.stamina_once = 0
-        self._daily_task = False
 
     def make_sure_in_world(self):
         if (self.in_realm()):

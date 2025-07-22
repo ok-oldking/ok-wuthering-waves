@@ -42,7 +42,7 @@ class ForgeryTask(DomainTask):
             self.log_info(f'not enough stamina', notify=True)
             self.back()
             return
-        self.teleport_into_domain(config.get('Which Forgery Challenge to Farm', 1))
+        self.teleport_into_domain(config.get('Which Forgery Challenge to Farm', 1), daily)
         self.sleep(1)
         self.farm_in_domain(must_use=must_use)
 
@@ -55,19 +55,18 @@ class ForgeryTask(DomainTask):
         self.sleep(2)
         box = self.box_of_screen(243 / 2560, 162 / 1440, 928 / 2560, 559 / 1440, name='ascension_materials')
         self.draw_boxes(box.name, box)
-        target = self.wait_until(lambda: self.find_one(template=self.material_mat, box=box, threshold=0.7),
-                                 raise_if_not_found=True, time_out=4)
-        self.click_box(target, after_sleep=1)
+        if self.wait_until(lambda: self.find_one(template=self.material_mat, box=box, threshold=0.7), time_out=4):
+            self.click_box(target, after_sleep=1)
         self.click_relative(0.75, 0.90, after_sleep=1)
         self.ensure_main()
 
-    def teleport_into_domain(self, serial_number):
+    def teleport_into_domain(self, serial_number, daily=False):
         self.click_relative(0.18, 0.16, after_sleep=1)
         self.info_set('Teleport to Forgery Challenge', serial_number - 1)
         if serial_number > self.total_number:
             raise IndexError(f'Index out of range, max is {self.total_number}')
         self.click_on_book_target(serial_number, self.total_number)
-        if self._daily_task:
+        if daily:
             self.get_material_mat()
         self.wait_click_travel()
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
