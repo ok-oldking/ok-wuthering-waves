@@ -31,10 +31,10 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
         self.stamina = 2
         self.last_purple_icon = None
         self.default_config.update({
-            'Auto Pick Echo Treasure': False,
+            'Stop When Treasure Found': False,
         })
         self.config_description = {
-            'Auto Pick Echo Treasure': 'Pick echo treasure if stamina is enough'
+            'Stop When Treasure Found': 'If set to False, treasure will be claimed if stamina is sufficient'
         }
 
     def run(self):
@@ -50,12 +50,21 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
     def do_run(self):
         self.log_info('start')
         start = time.time()
+        exit_countdown = -1
         while True:
             # 非战斗处理
             in_team = self.in_team()[0]
-            if in_team and not self.in_realm():
-                self.log_info('自动肉鸽结束!', notify=True)
-                return
+            if in_team:
+                now = time.time()
+                if exit_countdown < 0:
+                    if not self.in_realm():
+                        exit_countdown = now
+                else:
+                    if now - exit_countdown > 2: #0.8
+                        self.log_info('自动肉鸽结束!', notify=True)
+                        return
+                    if self.in_realm():
+                        exit_countdown = -1
             if not in_team:
                 self.status = -1
                 # 交易：直接退出
@@ -114,7 +123,7 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
             # 领声骸：开关开时按序领声骸，否则返回
             if self.check_text(0.23, 0.3, 0.30, 0.35, r'领取奖励', 'treasure_text'):
                 self.log_info('collect treasure')
-                if self.config.get('Auto Pick Echo Treasure') and self.stamina > 0:
+                if self.stamina > 0:
                     self.stamina_enough = False
                     if self.stamina == 2:
                         self.click_relative(0.68, 0.63)
@@ -135,8 +144,12 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
             if self.find_next_hint(r'前往下一') or self.find_next_hint(r'个记忆区'):
                 self.log_info('find the gate')
                 self.walk_to_gate()
+            if self.config.get('Stop When Treasure Found') and self.find_treasure_icon():
+                self.info_set('Treasure Found', True)
+                self.log_info('自动肉鸽结束!', notify=True)
+                return
             # 走向treasure
-            if self.config.get('Auto Pick Echo Treasure') and self.find_treasure_icon() and self.stamina > 0:
+            if self.find_treasure_icon() and self.stamina > 0:
                 self.log_info('walk to treasure')
                 self.walk_to_box(self.find_treasure_icon, time_out=10, end_condition=self.find_f_with_text,
                                  y_offset=0.1)
