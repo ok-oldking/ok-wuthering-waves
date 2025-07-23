@@ -1,5 +1,6 @@
 # .github/workflows/auto-close-issue.yml
 name: Auto Close Issue
+
 on:
   issues:
     types:
@@ -7,34 +8,55 @@ on:
       - edited
   schedule:
     - cron: '30 1 * * *'
+  workflow_dispatch: { }
+
 jobs:
   check-issue-template:
     runs-on: ubuntu-latest
-    if: github.event_name == 'issues'
     steps:
       - uses: actions/github-script@v6
         with:
           script: |
-            const issueBody = context.payload.issue.body || '';
             const required = ["复现步骤", "的版本", "必现"];
-            if (required.every(str => issueBody.includes(str))) {
-              return;
+
+            async function processIssue(issue) {
+              const issueBody = issue.body || '';
+              if (issue.state === 'closed' || required.every(str => issueBody.includes(str))) {
+                return;
+              }
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: "This issue is automatically closed because it does not contain all the required sections: '复现步骤', '的版本', '必现'. Please edit the issue to include them and reopen it."
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed'
+              });
             }
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: "This issue is automatically closed because it does not contain all the required sections. Please edit the issue to include them and reopen it."
-            });
-            await github.rest.issues.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              state: 'closed'
-            });
+
+            if (context.eventName === 'issues') {
+              await processIssue(context.payload.issue);
+            } else {
+              for await (const { data: issues } of github.paginate.iterator(github.rest.issues.listForRepo, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+              })) {
+                for (const issue of issues) {
+                  if (!issue.pull_request) {
+                    await processIssue(issue);
+                  }
+                }
+              }
+            }
+
   close-inactive:
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/stale@v8
         with:
@@ -42,3 +64,4 @@ jobs:
           days-before-close: 0
           stale-issue-message: 'This issue was closed because it has been inactive for 60 days.'
           close-issue-reason: not_planned
+
