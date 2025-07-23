@@ -48,14 +48,9 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.info_incr('used stamina', 0)
         while True:
             self.sleep(1)
-            gray_book_boss = self.openF2Book("gray_book_boss")
-            self.click_box(gray_book_boss, after_sleep=1)
-            current, back_up, total = self.get_stamina()
-            if current == -1:
-                self.click_relative(0.04, 0.4, after_sleep=1)
-                current, back_up, total = self.get_stamina()
+            current, back_up, total = self.open_F2_book_and_get_stamina()
             if total < self.stamina_once:
-                return self.not_enough_stamina()
+                return self.not_enough_stamina(back=True)
 
             self.click_relative(0.18, 0.48, after_sleep=1)
             index = config.get('Which Tacet Suppression to Farm', 1) - 1

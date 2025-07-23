@@ -23,11 +23,6 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         else:
             self.ensure_main()
 
-    def open_F2_book_and_get_stamina(self):
-        gray_book_boss = self.openF2Book('gray_book_boss')
-        self.click_box(gray_book_boss, after_sleep=1)
-        return self.get_stamina()
-
     def farm_in_domain(self, must_use=0):
         if self.stamina_once <= 0:
             raise RuntimeError('"self.stamina_once" must be override')
