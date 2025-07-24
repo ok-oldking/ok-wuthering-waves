@@ -78,6 +78,10 @@ class BaseWWTask(BaseTask):
             feature.mat = convert_bw(feature.mat)
             feature = self.get_feature_by_name('purple_target_distance_icon')
             feature.mat = binarize_for_matching(feature.mat)
+            feature = self.get_feature_by_name('world_earth_icon')
+            feature.mat = convert_bw(feature.mat)
+            feature = self.get_feature_by_name('skip_dialog')
+            feature.mat = convert_dialog_icon(feature.mat)
 
     def zoom_map(self, esc=True):
         if not self.map_zoomed:
@@ -356,7 +360,11 @@ class BaseWWTask(BaseTask):
 
     def in_realm(self):
         self.process_feature()
-        return self.find_one('illusive_realm_exit', threshold=0.65, frame_processor=convert_bw)
+        return self.find_one('illusive_realm_exit', threshold=0.8, frame_processor=convert_bw)
+
+    def in_world(self):
+        self.process_feature()
+        return self.find_one('world_earth_icon', threshold=0.8, frame_processor=convert_bw)
 
     def in_illusive_realm(self):
         return self.find_one('new_realm_4') and self.in_realm() and self.find_one('illusive_realm_menu', threshold=0.6)
@@ -1081,6 +1089,16 @@ def isolate_white_text_to_black(cv_image):
 
 def convert_bw(cv_image):
     match_mask = cv2.inRange(cv_image, lower_white, upper_white)
+    output_image = cv2.cvtColor(match_mask, cv2.COLOR_GRAY2BGR)
+    return output_image
+
+
+lower_icon_white = np.array([210, 210, 210], dtype=np.uint8)
+upper_icon_white = np.array([240, 240, 240], dtype=np.uint8)
+
+
+def convert_dialog_icon(cv_image):
+    match_mask = cv2.inRange(cv_image, lower_icon_white, upper_icon_white)
     output_image = cv2.cvtColor(match_mask, cv2.COLOR_GRAY2BGR)
     return output_image
 

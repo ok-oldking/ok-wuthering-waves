@@ -3,7 +3,7 @@ import time
 
 from ok import Logger
 
-from src.task.BaseWWTask import BaseWWTask
+from src.task.BaseWWTask import BaseWWTask, convert_bw, convert_dialog_icon
 
 logger = Logger.get_logger(__name__)
 
@@ -35,10 +35,14 @@ class SkipBaseTask(BaseWWTask):
         if self.in_team_and_world():
             return True
 
+    def find_skip(self):
+        self.process_feature()
+        return self.find_one('skip_dialog', horizontal_variance=0.02, threshold=0.8,
+                             frame_processor=convert_dialog_icon)
+
     def try_click_skip(self):
         skipped = False
-        while skip := self.ocr(0.03, 0.03, 0.11, 0.10, target_height=540, match=re.compile(r'SKIP|跳过', re.IGNORECASE),
-                               threshold=0.7):
+        while skip := self.find_skip():
             logger.info('Click Skip Dialog')
             self.click_box(skip, after_sleep=0.4)
             skipped = True
