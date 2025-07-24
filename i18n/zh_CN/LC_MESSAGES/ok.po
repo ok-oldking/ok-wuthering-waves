@@ -547,7 +547,7 @@ msgid "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
 msgstr "需要「黎那汐塔-角斗士的肖像」可传送"
 
 msgid "Material Selection"
-msgstr "材料选择"
+msgstr "模拟领域材料选择"
 
 msgid "Resonator EXP / Weapon EXP / Shell Credit"
 msgstr "共鸣者经验 / 武器经验 / 贝币"

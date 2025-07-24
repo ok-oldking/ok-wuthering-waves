@@ -754,7 +754,7 @@ msgid "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
 msgstr "Must be able to teleport to Gladiator's Portrait in Rinascita."
 
 msgid "Material Selection"
-msgstr ""
+msgstr "Simulation Challenge Material Selection"
 
 msgid "Resonator EXP / Weapon EXP / Shell Credit"
 msgstr ""
