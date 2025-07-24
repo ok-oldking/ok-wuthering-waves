@@ -67,6 +67,9 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         gray_book_quest = self.openF2Book("gray_book_quest")
         self.click_box(gray_book_quest, after_sleep=1.5)
         progress = self.ocr(0.1, 0.1, 0.5, 0.75, match=re.compile(r'^(\d+)/180$'))
+        if not progress:
+            self.click(0.96, 0.56, after_sleep=1)
+            progress = self.ocr(0.1, 0.1, 0.5, 0.75, match=re.compile(r'^(\d+)/180$'))
         if progress:
             current = int(progress[0].name.split('/')[0])
         else:
