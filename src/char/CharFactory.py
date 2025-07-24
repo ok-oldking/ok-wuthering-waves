@@ -18,6 +18,7 @@ from src.char.Jiyan import Jiyan
 from src.char.Lupa import Lupa
 from src.char.Mortefi import Mortefi
 from src.char.Phoebe import Phoebe
+from src.char.Phrolova import Phrolova
 from src.char.Roccia import Roccia
 from src.char.Sanhua import Sanhua
 from src.char.ShoreKeeper import ShoreKeeper
@@ -69,6 +70,8 @@ char_dict = {
                         'ring_index': Elements.WIND},
     'char_lupa': {'cls': Lupa, 'res_cd': 14, 'echo_cd': 25, 'liberation_cd': 20,
                   'ring_index': Elements.FIRE},
+    'char_phrolova': {'cls': Phrolova, 'res_cd': 12, 'echo_cd': 25, 'liberation_cd': 20,
+                      'ring_index': Elements.HAVOC},
 }
 
 char_names = char_dict.keys()
