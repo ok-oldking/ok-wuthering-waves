@@ -620,3 +620,9 @@ msgstr ""
 
 msgid "Stop When Treasure Found"
 msgstr "出现声骸奖励时停止运行"
+
+msgid "Don't restart in Realm"
+msgstr "副本Boss不点击重开"
+
+msgid "Yes if Farming Nightmare: Hecate"
+msgstr "刷梦魇·赫卡忒选是"

@@ -29,34 +29,6 @@ class BaseWWTask(BaseTask):
         self.monthly_card_config = self.get_global_config('Monthly Card Config')
         self.next_monthly_card_start = 0
         self._logged_in = False
-        self.bosses_pos = {
-            'Bell-Borne Geochelone': [0, 0, False],
-            'Dreamless': [0, 2, True],
-            'Jue': [0, 3, True],
-            'Hecate': [0, 4, True],
-            'Fleurdelys': [0, 5, True],
-            'Tempest Mephis': [0, 6, False],
-            'Inferno Rider': [1, 0, False],
-            'Impermanence Heron': [1, 1, False],
-            'Lampylumen Myriad': [1, 2, False],
-            'Feilian Beringal': [1, 3, False],
-            'Mourning Aix': [1, 4, False],
-            'Crownless': [1, 5, False],
-            'Mech Abomination': [1, 6, False],
-            'Thundering Mephis': [2, 0, False],
-            'Fallacy of No Return': [2, 1, False],
-            'Lorelei': [2, 2, False],
-            'Sentry Construct': [2, 3, False],
-            'Dragon of Dirge': [2, 4, False],
-            'Nightmare: Feilian Beringal': [2, 5, False],
-            'Nightmare: Impermanence Heron': [2, 6, False],
-            'Nightmare: Thundering Mephis': [3, 0, False],
-            'Nightmare: Tempest Mephis': [3, 1, False],
-            'Nightmare: Crownless': [3, 2, False],
-            'Nightmare: Inferno Rider': [3, 3, False],
-            'Nightmare: Mourning Aix': [3, 4, False],
-            'Nightmare: Lampylumen Myriad': [3, 5, False],
-        }
 
     def is_open_world_auto_combat(self):
         from src.task.AutoCombatTask import AutoCombatTask
@@ -360,7 +332,8 @@ class BaseWWTask(BaseTask):
 
     def in_realm(self):
         self.process_feature()
-        return self.find_one('illusive_realm_exit', threshold=0.8, frame_processor=convert_bw)
+        return not self.config.get("Don't restart in Realm") and self.find_one('illusive_realm_exit', threshold=0.8,
+                                                                               frame_processor=convert_bw)
 
     def in_world(self):
         self.process_feature()
@@ -877,49 +850,6 @@ class BaseWWTask(BaseTask):
         elif '鳴潮' in self.hwnd_title:
             return 'zh_TW'
         return 'unknown_lang'
-
-    def teleport_to_boss(self, boss_name):
-        self.zoom_map()
-        pos = self.bosses_pos.get(boss_name)
-        page = pos[0]
-        index = pos[1]
-        in_dungeon = pos[2]
-        self.log_info(f'teleport to {boss_name} index {index} in_dungeon {in_dungeon}')
-        self.sleep(1)
-        self.openF2Book()
-
-        gray_book_boss = self.wait_book()
-
-        self.log_info(f'click {gray_book_boss}')
-        self.click_box(gray_book_boss)
-        self.sleep(2)
-
-        if page == 1:  # weekly turtle
-            logger.info('scroll down page 1')
-            self.click_relative(1136 / 2560, 455 / 2160)
-            self.sleep(1)
-        elif page == 2:
-            logger.info('scroll down page 2')
-            self.click_relative(1136 / 2560, 550 / 2160)
-            self.sleep(1)
-        elif page == 3:
-            logger.info('scroll down page 3')
-            self.click_relative(1136 / 2560, 640 / 2160)
-            self.sleep(1)
-
-        x = 0.24
-        y = 0.17
-        step = (0.75 - y) / 6
-
-        self.click_relative(x, y + step * index)
-        self.sleep(1)
-        self.log_info(f'index after scrolling down {index}')
-        self.click_relative(0.89, 0.91)
-        self.sleep(1)
-
-        self.wait_click_travel()
-        self.wait_in_team_and_world(time_out=120)
-        self.sleep(1)
 
     def open_esc_menu(self):
         self.send_key_down('alt')

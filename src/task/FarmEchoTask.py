@@ -20,10 +20,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Combat Wait Time': 0,
             'Echo Pickup Method': 'Walk',
             'Change Time to Night': False,
+            "Don't restart in Realm": False,
         })
         self.config_description.update({
             'Combat Wait Time': 'Wait time before each combat(seconds), set 5 if farming Sentry Construct',
             'Change Time to Night': "Yes if Farming Lorelei",
+            "Don't restart in Realm": 'Yes if Farming Nightmare: Hecate',
         })
         self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
