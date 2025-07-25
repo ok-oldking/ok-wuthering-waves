@@ -54,6 +54,8 @@ class BaseWWTask(BaseTask):
             feature.mat = convert_bw(feature.mat)
             feature = self.get_feature_by_name('skip_dialog')
             feature.mat = convert_dialog_icon(feature.mat)
+            feature = self.get_feature_by_name('mouse_forte')
+            feature.mat = binarize_for_matching(feature.mat)
 
     def zoom_map(self, esc=True):
         if not self.map_zoomed:

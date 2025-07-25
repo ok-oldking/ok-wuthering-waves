@@ -343,12 +343,14 @@ class BaseChar:
         self._echo_available = False
         self.task.send_key(self.get_echo_key(), interval=interval, down_time=down_time, after_sleep=after_sleep)
 
-    def heavy_click_forte(self):
+    def heavy_click_forte(self, check_fun=None):
         """ 如果回路可用, 重击点击回路直到不可用
         """
-        if self.is_forte_full():
+        if check_fun is None:
+            check_fun = self.is_forte_full
+        if check_fun():
             self.task.mouse_down()
-            success = self.task.wait_until(lambda: not self.is_forte_full(), time_out=2)
+            success = self.task.wait_until(lambda: not check_fun(), time_out=2)
             self.task.mouse_up()
             self.sleep(0.05)
             return success
@@ -652,6 +654,13 @@ class BaseChar:
         """获取当前协奏值百分比 (代理到 task.get_current_con)。"""
         self.current_con = self.task.get_current_con()
         return self.current_con
+
+    def is_mouse_forte_full(self):
+        """判断使用重击角色的forte是否满, 使用找图更加精确
+            Returns:
+                bool: 如果充满/可用则返回 True。
+        """
+        return self.task.find_mouse_forte()
 
     def is_forte_full(self):
         """判断共鸣回路是否已充满/可用。

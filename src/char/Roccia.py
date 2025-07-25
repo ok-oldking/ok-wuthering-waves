@@ -46,7 +46,7 @@ class Roccia(BaseChar):
         return Priority.MAX - 1
 
     def get_plunge_count(self):
-        if not self.is_forte_full():
+        if not self.is_mouse_forte_full():
             return 0
         if self.flying():
             return 1
@@ -66,13 +66,14 @@ class Roccia(BaseChar):
         start = time.time()
         starting_count = 0
         self.task.send_key_down('w')
-        while (self.is_forte_full() and time.time() - start < 1.1) or (starting_count > 0 and time.time() - start < 4):
+        while (self.is_mouse_forte_full() and time.time() - start < 1.1) or (
+                starting_count > 0 and time.time() - start < 4):
             self.click(interval=0.1)
             if starting_count == 0:
                 starting_count = self.get_plunge_count()
                 # if starting_count > 0:
                 #     self.task.screenshot(f"can_plunge_{starting_count}")
-            if starting_count > 0 and not self.is_forte_full():
+            if starting_count > 0 and not self.is_mouse_forte_full():
                 self.can_plunge = False
                 break
         self.task.send_key_up('w')
@@ -81,7 +82,7 @@ class Roccia(BaseChar):
 
     def c6_continues_plunge(self):
         start = time.time()
-        # has_charge = self.is_forte_full()
+        # has_charge = self.is_mouse_forte_full()
         while time.time() - start < 11:
             self.click(interval=0.1)
         return True
