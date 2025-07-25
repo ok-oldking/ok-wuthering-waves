@@ -90,8 +90,8 @@ jobs:
       - name: pyappify build-exe-only
         id: build-exe-only
         uses: ok-oldking/pyappify-action@master
-      #        with:
-      #          #          build_exe_only: true
+        with:
+          build_exe_only: true
       #          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.4.72
 
       - name: Upload unsigned EXE artifact
