@@ -22,6 +22,7 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
         self.default_config = {'_enabled': True}
         self.trigger_interval = 0.1
         self.name = "Half-Auto Rougue"
+        self.supported_languages = ["zh_CN"]
         self.description = "Enable half-auto combat in weekly rougue, language needs Chinese"
         self.icon = FluentIcon.CALORIES
         self.last_is_click = False
@@ -37,7 +38,8 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
             'Stop When Treasure Found': 'If set to False, treasure will be claimed if stamina is sufficient'
         }
         self.black_list_buff = ["雷暴", "旋风", "矛盾晶体"]
-        self.white_list_buff = ["心流", "悲鸣纪", "余音贝", "齿轮之心", "全知之眼", "指南针", "医疗箱", "妄语的残谱", "激越的残谱"]
+        self.white_list_buff = ["心流", "悲鸣纪", "余音贝", "齿轮之心", "全知之眼", "指南针", "医疗箱", "妄语的残谱",
+                                "激越的残谱"]
 
     def run(self):
         WWOneTimeTask.run(self)
@@ -62,7 +64,7 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
                     if not self.in_realm():
                         exit_countdown = now
                 else:
-                    if now - exit_countdown > 2: #0.8
+                    if now - exit_countdown > 2:  # 0.8
                         self.log_info('自动肉鸽结束!', notify=True)
                         return
                     if self.in_realm():
@@ -291,7 +293,7 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
                                       re.compile(r'隐喻获得', re.IGNORECASE))
         if fps_text:
             return True
-        
+
     def buff_selector(self):
         texts = self.ocr(box=self.box_of_screen(0.19, 0.55, 0.81, 0.59, hcenter=True), name='buffs_text')
         buffs = find_boxes_by_name(texts, re.compile(r'[\u4e00-\u9fffA-Za-z]+'))

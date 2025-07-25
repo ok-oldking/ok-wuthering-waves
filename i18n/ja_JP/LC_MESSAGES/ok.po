@@ -1,0 +1,629 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: you@example.com\n"
+"Last-Translator: you@example.com\n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Fleurdelys"
+msgstr "フルールドリス"
+
+msgid "no levitator tool in the tab wheel!"
+msgstr "TABホイールにレビテートツールを追加してください！"
+
+msgid "Check hotkey error! Please check if hotkey settings are correct!"
+msgstr "ホットキーエラー！ホットキーの設定が正しいか確認してください！"
+
+msgid "Can not switch to levitator please ensure you have equipped echos!"
+msgstr "レビテートツールに切り替えられません。音骸を装備していることを確認してください！"
+
+msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
+msgstr "(1-6) 重要、周回するレベルを選択してください。低レベルでは音骸がドロップしない場合があります。"
+
+msgid "Boss1"
+msgstr "ボス1"
+
+msgid "Boss2"
+msgstr "ボス2"
+
+msgid "Boss3"
+msgstr "ボス3"
+
+msgid "Click Start in Game World"
+msgstr "ゲーム内のワールドで開始をクリック"
+
+msgid "Echo Key"
+msgstr "音骸キー (デフォルトq)"
+
+msgid "Entrance Direction"
+msgstr "入口の方向"
+
+msgid "Farm Echo in Dungeon"
+msgstr "ダンジョンでボス音骸を周回"
+
+msgid "Farm World Boss(May need to drop waypoint on Boss)"
+msgstr "フィールドボス周回 (ボスにピンを立てる必要がある場合があります)"
+
+msgid "Game Hotkey Config"
+msgstr "ゲームのホットキー設定"
+
+msgid "In Game Hotkey for Skills"
+msgstr "音骸、共鳴スキル、共鳴解放"
+
+msgid "Level"
+msgstr "レベル"
+
+msgid "Liberation Key"
+msgstr "共鳴解放キー (デフォルトr)"
+
+msgid "Auto Target"
+msgstr "自動ターゲット"
+
+msgid "Turn off to enable auto combat only when manually target enemy using middle click"
+msgstr "オフにすると、マウスの中ボタンで手動で敵をターゲットした時のみ自動戦闘が有効になります"
+
+msgid "Repeat Farm Count"
+msgstr "周回数"
+
+msgid "Resonance Key"
+msgstr "共鳴スキルキー (デフォルトe)"
+
+msgid "Auto Combat"
+msgstr "自動戦闘"
+
+msgid "Backward"
+msgstr "後退"
+
+msgid "Bell-Borne Geochelone"
+msgstr "鐘を背負う亀"
+
+msgid "Crownless"
+msgstr "無冠者"
+
+msgid "Jue"
+msgstr "角"
+
+msgid "Hecate"
+msgstr "ヘカテ"
+
+msgid "Sentry Construct"
+msgstr "異構艤装"
+
+msgid "Dragon of Dirge"
+msgstr "嘆きの古龍"
+
+msgid "Nightmare: Feilian Beringal"
+msgstr "悪夢：燎原の焚き火"
+
+msgid "Nightmare: Impermanence Heron"
+msgstr "悪夢：無常のサギ"
+
+msgid "Nightmare: Thundering Mephis"
+msgstr "悪夢：雲閃のウロコ"
+
+msgid "Nightmare: Tempest Mephis"
+msgstr "悪夢：朔雷のウロコ"
+
+msgid "Nightmare: Inferno Rider"
+msgstr "悪夢：燎火の騎兵"
+
+msgid "Nightmare: Crownless"
+msgstr "悪夢：無冠者"
+
+msgid "Nightmare: Mourning Aix"
+msgstr "悪夢：哀声のシシ"
+
+msgid "Nightmare: Lampylumen Myriad"
+msgstr "悪夢：輝螢軍勢"
+
+msgid "Enable auto combat in Abyss, Game World etc"
+msgstr "フィールド、深淵、無音区などで自動戦闘を有効にする"
+
+msgid "Feilian Beringal"
+msgstr "燎原の焚き火"
+
+msgid "Forward"
+msgstr "前進"
+
+msgid "Impermanence Heron"
+msgstr "無常のサギ"
+
+msgid "Inferno Rider"
+msgstr "燎火の騎兵"
+
+msgid "Lampylumen Myriad"
+msgstr "輝螢軍勢"
+
+msgid "Mech Abomination"
+msgstr "巡回蟷螂"
+
+msgid "Mourning Aix"
+msgstr "哀声のシシ"
+
+msgid "N/A"
+msgstr "周回しない"
+
+msgid "Skip Dialog during Quests"
+msgstr "任務中の会話をスキップ"
+
+msgid "Tempest Mephis"
+msgstr "朔雷のウロコ"
+
+msgid "Thundering Mephis"
+msgstr "雲閃のウロコ"
+
+msgid "Combat Count"
+msgstr "戦闘回数"
+
+msgid "Echo Count"
+msgstr "音骸獲得数"
+
+msgid "Log"
+msgstr "ログ"
+
+msgid "Auto Pick"
+msgstr "自動収集"
+
+msgid "Auto Pick Flowers in Game World"
+msgstr "フィールドで自動収集"
+
+msgid "Pick Echo Config"
+msgstr "音骸収集設定"
+
+msgid "Turn on if your CPU is Powerful for more accuracy"
+msgstr "CPU性能が高い場合はオンにすると、音骸収集の精度が向上します。性能が不十分で音骸を拾えない場合はオフにしてください。"
+
+msgid "Use OCR"
+msgstr "OCRを使用"
+
+msgid "Check Monthly Card"
+msgstr "月パスを確認"
+
+msgid "Check for monthly card to avoid interruption of tasks"
+msgstr "月パスのポップアップによるタスク中断を回避"
+
+msgid "Monthly Card Config"
+msgstr "月パス設定"
+
+msgid "Monthly Card Time"
+msgstr "月パス時間"
+
+msgid "Your computer's local time when the monthly card will popup, hour in (1-24)"
+msgstr "月パスのポップアップが表示されるPCのローカル時間 (1-24時)"
+
+msgid "must be in game world and in teams, please check you game resolution is 16:9"
+msgstr "フィールドのチーム内にいる必要があります。ゲーム解像度が16:9であることを確認してください。"
+
+msgid "Capture Frame Count"
+msgstr "キャプチャ回数"
+
+msgid "Capture Frame Rate"
+msgstr "キャプチャFPS"
+
+msgid "Current Character"
+msgstr "現在のキャラクター"
+
+msgid "Diagnosis"
+msgstr "問題診断"
+
+msgid "Diagnosis Problem, Performance Test, Run in Game World"
+msgstr "問題診断、パフォーマンス・テスト、フィールドで実行してください。スキル状態がゲーム内と一致しない場合、FAQを確認してください。"
+
+msgid "Echo Available"
+msgstr "音骸使用可能"
+
+msgid "Echo in CD"
+msgstr "音骸クールダウン中"
+
+msgid "Game Resolution"
+msgstr "ゲーム解像度"
+
+msgid "Liberation Available"
+msgstr "共鳴解放使用可能"
+
+msgid "Liberation in CD"
+msgstr "共鳴解放クールダウン中"
+
+msgid "Resonance Available"
+msgstr "共鳴スキル使用可能"
+
+msgid "Resonance in CD"
+msgstr "共鳴スキルクールダウン中"
+
+msgid "False"
+msgstr "いいえ"
+
+msgid "True"
+msgstr "はい"
+
+msgid "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}"
+msgstr "ゲームのホットキーを読み込めません。全キャラクターに音骸を装備し、スキルにA-Zのキーを割り当ててください。検出されたキー：{}"
+
+msgid "Tool Key"
+msgstr "探索ツールキー"
+
+msgid "Echo per Hour"
+msgstr "1時間あたりの音骸獲得数"
+
+msgid "Can't auto combat, Please equip echos!"
+msgstr "自動戦闘できません。音骸を装備してください！"
+
+msgid "Turn on to avoid interruption by monthly card when executing tasks"
+msgstr "オンにすると、タスク実行中に月パスで中断されるのを防ぎます"
+
+msgid "Turn on to enable auto pick echo"
+msgstr "オンにすると、音骸の自動収集が有効になります"
+
+msgid "can't find gray_book_boss, make sure f2 is the hotkey for book"
+msgstr "ボスリストが見つかりません。F2キーでガイドブックが開けることを確認してください。"
+
+msgid "Echo Pickup Method"
+msgstr "音骸探索方法"
+
+msgid "Run in Circle"
+msgstr "円を描いて走る"
+
+msgid "Turn Around and Search"
+msgstr "4方向を探索"
+
+msgid "Walk"
+msgstr "後退して前進"
+
+msgid "Yolo"
+msgstr "Yoloモデル"
+
+msgid "Death Count"
+msgstr "死亡回数"
+
+msgid "Game Sound"
+msgstr "ゲーム音声"
+
+msgid "Mute Game while in Background"
+msgstr "バックグラウンド時にゲームをミュート"
+
+msgid "Pick Up Black List"
+msgstr "収集ブラックリスト"
+
+msgid "Pick Up White List"
+msgstr "収集ホワイトリスト"
+
+msgid "Auto Combat in Illusive Realm"
+msgstr "幻境で自動戦闘"
+
+msgid "Auto Combat in Multiplayer Mode"
+msgstr "マルチプレイで自動戦闘"
+
+msgid "Enable auto combat in Multiplayer Mode"
+msgstr "マルチプレイで自動戦闘を有効にする。ハイライトされたキャラを編成してください。"
+
+msgid "Illusive Realm"
+msgstr "半自動ローグライク (深墜異想奇境)"
+
+msgid "Fallacy of No Return"
+msgstr "無戻りの迷路"
+
+msgid "Lorelei"
+msgstr "ローレライ"
+
+msgid "click f2 to open the book"
+msgstr "F2でガイドブックを開く"
+
+msgid "Check configs to keep, click start in game world, must be in a 16:9 screen ratio"
+msgstr "保持する設定にチェックを入れ、フィールドで開始してください。16:9の画面比率である必要があります。"
+
+msgid "Boss"
+msgstr "ボス"
+
+msgid "Celestial Light"
+msgstr "浮星祛暗"
+
+msgid "Discard Echo"
+msgstr "音骸を破棄"
+
+msgid "Discarded"
+msgstr "破棄済み"
+
+msgid "Freezing Frost"
+msgstr "凝夜の白霜"
+
+msgid "Keep 1C ATK"
+msgstr "1C 攻撃を保持"
+
+msgid "Keep 1C DEF"
+msgstr "1C 防御を保持"
+
+msgid "Keep 1C HP"
+msgstr "1C HPを保持"
+
+msgid "Keep 3C ATK"
+msgstr "3C 攻撃を保持"
+
+msgid "Keep 3C Aero DMG"
+msgstr "3C 回折ダメージを保持"
+
+msgid "Keep 3C DEF"
+msgstr "3C 防御を保持"
+
+msgid "Keep 3C Electro DMG"
+msgstr "3C 電導ダメージを保持"
+
+msgid "Keep 3C Energy Regen"
+msgstr "3C 協奏エネルギー効率を保持"
+
+msgid "Keep 3C Fusion DMG"
+msgstr "3C 熔融ダメージを保持"
+
+msgid "Keep 3C Glacio DMG"
+msgstr "3C 凝縮ダメージを保持"
+
+msgid "Keep 3C HP"
+msgstr "3C HPを保持"
+
+msgid "Keep 3C Havoc DMG"
+msgstr "3C 湮滅ダメージを保持"
+
+msgid "Keep 3C Spectro DMG"
+msgstr "3C 衍射ダメージを保持"
+
+msgid "Keep 4C ATK"
+msgstr "4C 攻撃を保持"
+
+msgid "Keep 4C Crit"
+msgstr "4C 会心率を保持"
+
+msgid "Keep 4C Crit DMG"
+msgstr "4C 会心ダメージを保持"
+
+msgid "Keep 4C DEF"
+msgstr "4C 防御を保持"
+
+msgid "Keep 4C HP"
+msgstr "4C HPを保持"
+
+msgid "Keep 4C Healing"
+msgstr "4C 治療効果を保持"
+
+msgid "Lingering Tunes"
+msgstr "鳴り止まない残響"
+
+msgid "Molten Rift"
+msgstr "溶山の裂け目"
+
+msgid "Moonlit Clouds"
+msgstr "月を見せる雲"
+
+msgid "Rejuvenating Glow"
+msgstr "隠世の残光"
+
+msgid "Sierra Gale"
+msgstr "谷を गरजる長風"
+
+msgid "Sun-sinking Eclipse"
+msgstr "沈日劫"
+
+msgid "Void Thunder"
+msgstr "天空の雷"
+
+msgid "Frosty Resolve"
+msgstr "凛冽な決意"
+
+msgid "Eternal Radiance"
+msgstr "永遠に此処に在る光"
+
+msgid "Midnight Veil"
+msgstr "夜闇に隠す帳"
+
+msgid "Empyrean Anthem"
+msgstr "天空の合奏"
+
+msgid "Tidebreaking Courage"
+msgstr "荒波を乗り越える勇気"
+
+msgid "Prevent Wuthering Waves from moving the mouse"
+msgstr "鳴潮によるマウス移動を防止"
+
+msgid "Turn on if you mouse jumps around"
+msgstr "鳴潮起動時にマウスポインターが飛ぶ場合にオンにしてください"
+
+msgid "Auto Echo Data Merge"
+msgstr "音骸データドック自動合成"
+
+msgid "Data Merge Completed!"
+msgstr "データドック合成完了！"
+
+msgid "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
+msgstr "自動戦闘エラー：音骸を装備し、モーションブラーをオフ、ゲームをデフォルトの明るさ設定にし、ゲームの色を変更する設定（ナイトモード、グラフィックカードのフィルター等）を全てオフにしてください。"
+
+msgid "Auto combat error: Make sure to turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter/HDR)"
+msgstr "自動戦闘エラー：ゲームをデフォルトの明るさ設定にし、ゲームの色を変更する設定（ナイトモード、グラフィックカードのフィルター、HDR等）を全てオフにしてください。"
+
+msgid "Auto Login"
+msgstr "自動ログイン"
+
+msgid "Auto Login After Game Starts"
+msgstr "ゲーム起動後に自動ログイン"
+
+msgid "Auto Start Game"
+msgstr "ゲームを自動起動"
+
+msgid "Auto Start Game When App Starts"
+msgstr "アプリ起動時にゲームを自動起動"
+
+msgid "Auto Login Success"
+msgstr "自動ログイン成功"
+
+msgid "Must choose at least 2 Boss to Farm"
+msgstr "最低2体のボスを選択する必要があります"
+
+msgid "Can not auto combat because team can only have one healer at most"
+msgstr "自動戦闘できません。チームにはヒーラーを1人しか編成できません。"
+
+msgid "Daily Task"
+msgstr "デイリータスク"
+
+msgid "Dreamless"
+msgstr "無妄者"
+
+msgid "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
+msgstr "選択した無音区を結晶波長板がなくなるまで周回します。テレポート(F2)可能である必要があります。"
+
+msgid "Login, claim monthly card, farm echo, and claim daily reward"
+msgstr "ログイン、月パス受取、音骸周回、デイリー報酬受取"
+
+msgid "Which to Farm"
+msgstr "周回対象"
+
+msgid "Tacet Suppression"
+msgstr "無音区"
+
+msgid "Task completed"
+msgstr "タスク完了"
+
+msgid "Which Tacet Suppression to Farm"
+msgstr "周回する無音区 (F2リスト)"
+
+msgid "back_up_stamina"
+msgstr "予備の結晶波長板"
+
+msgid "current_stamina"
+msgstr "現在の結晶波長板"
+
+msgid "used all stamina"
+msgstr "結晶波長板を使い果たしました"
+
+msgid "The Tacet Suppression number in the F2 list."
+msgstr "F2リスト内の無音区の番号"
+
+msgid "Please start in game world and in team!"
+msgstr "フィールドのチーム内で開始してください！"
+
+msgid "Can't complete daily task, may need to increase stamina manually!"
+msgstr "デイリータスクを完了できません。手動で結晶波長板を補充する必要があるかもしれません！"
+
+msgid "Auto Enhance Echo"
+msgstr "音骸自動強化"
+
+msgid "Auto Enhance and Tune Echo after you add EXP Material"
+msgstr "経験値素材を追加した後、自動で音骸を強化・チューニングします"
+
+msgid "Auto Pick Echo After Combat"
+msgstr "戦闘後に音骸を自動収集"
+
+msgid "Farm Map with Star Path"
+msgstr "スターパスでマップを周回"
+
+msgid "Farm world map with a marked path of stars (diamond as the starting point), start in the map screen"
+msgstr "星マークでマークされたルートを周回します（菱形が開始地点）。マップ画面から開始してください。"
+
+msgid "Stars"
+msgstr "星マーク"
+
+msgid "Need be in the map screen and have a diamond as the starting point!"
+msgstr "マップ画面で、菱形を開始地点としてマークする必要があります！"
+
+msgid "Need be in the map screen and have a path of at least 3 stars!"
+msgstr "マップ画面で、少なくとも3つの星マークでルートをマークする必要があります！"
+
+msgid "Click Start after Entering Dungeon or Teleporting to The Boss"
+msgstr "ダンジョンに入るかボスにテレポートした後、開始をクリック"
+
+msgid "Farm 4C Echo in Dungeon/World"
+msgstr "4C音骸を周回 (フィールド/ダンジョン)"
+
+msgid "Combat Wait Time"
+msgstr "戦闘待機時間(秒)"
+
+msgid "Wait time before each combat(seconds), set 5 if farming Sentry Construct"
+msgstr "各戦闘前の待機時間(秒)。異構艤装を周回する場合は5秒に設定してください。"
+
+msgid "Simulation Challenge"
+msgstr "シミュレーション挑戦"
+
+msgid "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
+msgstr "選択したシミュレーション挑戦を周回します。「黎明の塔-剣闘士の肖像」にテレポート可能である必要があります。"
+
+msgid "Material Selection"
+msgstr "素材選択"
+
+msgid "Resonator EXP / Weapon EXP / Shell Credit"
+msgstr "共鳴者経験値 / 武器経験値 / シェルコイン"
+
+msgid "Resonator EXP"
+msgstr "共鳴者経験値"
+
+msgid "Weapon EXP"
+msgstr "武器経験値"
+
+msgid "Shell Credit"
+msgstr "シェルコイン"
+
+msgid "Forgery Challenge"
+msgstr "凝素領域"
+
+msgid "Farms the selected Forgery Challenge. Must be able to teleport (F2)."
+msgstr "選択した凝素領域を周回します。テレポート(F2)可能である必要があります。"
+
+msgid "Which Forgery Challenge to Farm"
+msgstr "周回する凝素領域 (F2リスト)"
+
+msgid "The Forgery Challenge number in the F2 list."
+msgstr "F2リスト内の凝素領域の番号"
+
+msgid "not enough stamina"
+msgstr "結晶波長板が不足しています"
+
+msgid "Click skill failed, check if the keybinding is correct in ok-ww settings!"
+msgstr "スキル発動に失敗しました。ok-wwの設定でキー割り当てが正しいか確認してください！"
+
+msgid "Change Time to Night"
+msgstr "時間を夜に変更"
+
+msgid "Yes if Farming Lorelei"
+msgstr "ローレライを周回する場合は「はい」を選択"
+
+msgid "Must be able to teleport (F2)"
+msgstr "テレポート(F2)可能である必要があります"
+
+msgid "Half-Auto Rougue"
+msgstr "半自動ローグライク (ウィークリー)"
+
+msgid "Enable half-auto combat in weekly rougue, language needs Chinese"
+msgstr "ウィークリーローグライクで半自動戦闘を有効にします。壁にスタックした場合は手動操作のプロンプトが表示されます。"
+
+msgid "Auto Pick Echo Treasure"
+msgstr "音骸報酬を自動で受け取る"
+
+msgid "If set to False, treasure will be claimed if stamina is sufficient"
+msgstr "「いいえ」に設定した場合、結晶波長板が十分な場合に報酬を受け取ります"
+
+msgid "Half-Auto Rougue Task Finish"
+msgstr "半自動ローグライクのタスク完了"
+
+msgid "Not in realm and cant find the entrance"
+msgstr "領域内にいないか、入口が見つかりません。ウィークリーコンテンツの入口または内部で開始してください。"
+
+msgid "Need mankind help"
+msgstr "自動ローグライク失敗、次のノードまで手動操作が必要です！"
+
+msgid "current task"
+msgstr "現在のタスク"
+
+msgid "in main"
+msgstr "メイン画面"
+
+msgid "wait main"
+msgstr "メイン画面待機"
+
+msgid "Stop When Treasure Found"
+msgstr "音骸報酬が出現したら停止"
+
+msgid "Don't restart in Realm"
+msgstr "ダンジョンボス戦後、再挑戦しない"
+
+msgid "Yes if Farming Nightmare: Hecate"
+msgstr "悪夢・ヘカテを周回する場合は「はい」を選択"
+

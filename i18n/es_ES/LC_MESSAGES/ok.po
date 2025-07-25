@@ -1,0 +1,628 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: you@example.com\n"
+"Last-Translator: you@example.com\n"
+"Language-Team: Spanish\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Fleurdelys"
+msgstr "Fleurdelys"
+
+msgid "no levitator tool in the tab wheel!"
+msgstr "¡No hay herramienta levitadora en la rueda de pestañas!"
+
+msgid "Check hotkey error! Please check if hotkey settings are correct!"
+msgstr "¡Error de tecla de acceso rápido! ¡Por favor, comprueba si la configuración de las teclas de acceso rápido es correcta!"
+
+msgid "Can not switch to levitator please ensure you have equipped echos!"
+msgstr "¡No se puede cambiar al levitador, por favor asegúrate de haber equipado ecos!"
+
+msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
+msgstr "(1-6) Importante, elige qué nivel farmear, los niveles más bajos podrían no producir un eco"
+
+msgid "Boss1"
+msgstr "Jefe 1"
+
+msgid "Boss2"
+msgstr "Jefe 2"
+
+msgid "Boss3"
+msgstr "Jefe 3"
+
+msgid "Click Start in Game World"
+msgstr "Haz clic en Iniciar en el mundo del juego"
+
+msgid "Echo Key"
+msgstr "Tecla de Eco"
+
+msgid "Entrance Direction"
+msgstr "Dirección de Entrada"
+
+msgid "Farm Echo in Dungeon"
+msgstr "Farmear Ecos en Mazmorra"
+
+msgid "Farm World Boss(May need to drop waypoint on Boss)"
+msgstr "Farmear Jefe del Mundo (Puede ser necesario poner un punto de ruta en el Jefe)"
+
+msgid "Game Hotkey Config"
+msgstr "Configuración de Teclas Rápidas del Juego"
+
+msgid "In Game Hotkey for Skills"
+msgstr "Teclas Rápidas en el Juego para Habilidades"
+
+msgid "Level"
+msgstr "Nivel"
+
+msgid "Liberation Key"
+msgstr "Tecla de Liberación"
+
+msgid "Auto Target"
+msgstr "Apuntar Automáticamente"
+
+msgid "Turn off to enable auto combat only when manually target enemy using middle click"
+msgstr "Desactiva para habilitar el combate automático solo al apuntar manualmente a un enemigo con el clic central"
+
+msgid "Repeat Farm Count"
+msgstr "Número de Repeticiones"
+
+msgid "Resonance Key"
+msgstr "Tecla de Resonancia"
+
+msgid "Auto Combat"
+msgstr "Combate Automático"
+
+msgid "Backward"
+msgstr "Atrás"
+
+msgid "Bell-Borne Geochelone"
+msgstr "Geochelone Portacampana"
+
+msgid "Crownless"
+msgstr "Sin Corona"
+
+msgid "Jue"
+msgstr "Jue"
+
+msgid "Hecate"
+msgstr "Hécate"
+
+msgid "Sentry Construct"
+msgstr "Constructo Centinela"
+
+msgid "Dragon of Dirge"
+msgstr "Dragón de la Endecha"
+
+msgid "Nightmare: Feilian Beringal"
+msgstr "Pesadilla: Feilian Beringal"
+
+msgid "Nightmare: Impermanence Heron"
+msgstr "Pesadilla: Garza de la Impermanencia"
+
+msgid "Nightmare: Thundering Mephis"
+msgstr "Pesadilla: Mephis Atronador"
+
+msgid "Nightmare: Tempest Mephis"
+msgstr "Pesadilla: Mephis de la Tempestad"
+
+msgid "Nightmare: Inferno Rider"
+msgstr "Pesadilla: Jinete Infernal"
+
+msgid "Nightmare: Crownless"
+msgstr "Pesadilla: Sin Corona"
+
+msgid "Nightmare: Mourning Aix"
+msgstr "Pesadilla: Aix Afligido"
+
+msgid "Nightmare: Lampylumen Myriad"
+msgstr "Pesadilla: Miríada Lampylumen"
+
+msgid "Enable auto combat in Abyss, Game World etc"
+msgstr "Habilitar combate automático en Abismo, Mundo del Juego, etc."
+
+msgid "Feilian Beringal"
+msgstr "Feilian Beringal"
+
+msgid "Forward"
+msgstr "Adelante"
+
+msgid "Impermanence Heron"
+msgstr "Garza de la Impermanencia"
+
+msgid "Inferno Rider"
+msgstr "Jinete Infernal"
+
+msgid "Lampylumen Myriad"
+msgstr "Miríada Lampylumen"
+
+msgid "Mech Abomination"
+msgstr "Abominación Mecánica"
+
+msgid "Mourning Aix"
+msgstr "Aix Afligido"
+
+msgid "N/A"
+msgstr "N/A"
+
+msgid "Skip Dialog during Quests"
+msgstr "Omitir Diálogos durante Misiones"
+
+msgid "Tempest Mephis"
+msgstr "Mephis de la Tempestad"
+
+msgid "Thundering Mephis"
+msgstr "Mephis Atronador"
+
+msgid "Combat Count"
+msgstr "Número de Combates"
+
+msgid "Echo Count"
+msgstr "Número de Ecos"
+
+msgid "Log"
+msgstr "Registro"
+
+msgid "Auto Pick"
+msgstr "Recogida Automática"
+
+msgid "Auto Pick Flowers in Game World"
+msgstr "Recoger Flores Automáticamente en el Mundo del Juego"
+
+msgid "Pick Echo Config"
+msgstr "Configuración de Recogida de Ecos"
+
+msgid "Turn on if your CPU is Powerful for more accuracy"
+msgstr "Activa si tu CPU es potente para mayor precisión"
+
+msgid "Use OCR"
+msgstr "Usar OCR"
+
+msgid "Check Monthly Card"
+msgstr "Comprobar Tarjeta Mensual"
+
+msgid "Check for monthly card to avoid interruption of tasks"
+msgstr "Comprobar la tarjeta mensual para evitar la interrupción de tareas"
+
+msgid "Monthly Card Config"
+msgstr "Configuración de Tarjeta Mensual"
+
+msgid "Monthly Card Time"
+msgstr "Hora de la Tarjeta Mensual"
+
+msgid "Your computer's local time when the monthly card will popup, hour in (1-24)"
+msgstr "La hora local de tu ordenador en la que aparecerá la tarjeta mensual, hora en (1-24)"
+
+msgid "must be in game world and in teams, please check you game resolution is 16:9"
+msgstr "Debes estar en el mundo del juego y en equipo, por favor comprueba que la resolución de tu juego es 16:9"
+
+msgid "Capture Frame Count"
+msgstr "Número de Capturas de Fotogramas"
+
+msgid "Capture Frame Rate"
+msgstr "Tasa de Fotogramas de Captura"
+
+msgid "Current Character"
+msgstr "Personaje Actual"
+
+msgid "Diagnosis"
+msgstr "Diagnóstico"
+
+msgid "Diagnosis Problem, Performance Test, Run in Game World"
+msgstr "Diagnóstico de Problema, Prueba de Rendimiento, Ejecutar en el Mundo del Juego"
+
+msgid "Echo Available"
+msgstr "Eco Disponible"
+
+msgid "Echo in CD"
+msgstr "Eco en Recarga"
+
+msgid "Game Resolution"
+msgstr "Resolución del Juego"
+
+msgid "Liberation Available"
+msgstr "Liberación Disponible"
+
+msgid "Liberation in CD"
+msgstr "Liberación en Recarga"
+
+msgid "Resonance Available"
+msgstr "Resonancia Disponible"
+
+msgid "Resonance in CD"
+msgstr "Resonancia en Recarga"
+
+msgid "False"
+msgstr "Falso"
+
+msgid "True"
+msgstr "Verdadero"
+
+msgid "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}"
+msgstr "No se pueden cargar las teclas rápidas del juego, por favor equipa ecos a todos los personajes y usa A-Z como teclas rápidas para las habilidades, tecla detectada:{}"
+
+msgid "Tool Key"
+msgstr "Tecla de Herramienta"
+
+msgid "Echo per Hour"
+msgstr "Ecos por Hora"
+
+msgid "Can't auto combat, Please equip echos!"
+msgstr "¡No se puede combatir automáticamente, por favor equipa ecos!"
+
+msgid "Turn on to avoid interruption by monthly card when executing tasks"
+msgstr "Activa para evitar interrupciones por la tarjeta mensual al ejecutar tareas"
+
+msgid "Turn on to enable auto pick echo"
+msgstr "Activa para habilitar la recogida automática de ecos"
+
+msgid "can't find gray_book_boss, make sure f2 is the hotkey for book"
+msgstr "no se puede encontrar el jefe del libro gris, asegúrate de que F2 sea la tecla rápida para el libro"
+
+msgid "Echo Pickup Method"
+msgstr "Método de Recogida de Ecos"
+
+msgid "Run in Circle"
+msgstr "Correr en Círculo"
+
+msgid "Turn Around and Search"
+msgstr "Girar y Buscar"
+
+msgid "Walk"
+msgstr "Caminar"
+
+msgid "Yolo"
+msgstr "Yolo"
+
+msgid "Death Count"
+msgstr "Número de Muertes"
+
+msgid "Game Sound"
+msgstr "Sonido del Juego"
+
+msgid "Mute Game while in Background"
+msgstr "Silenciar Juego en Segundo Plano"
+
+msgid "Pick Up Black List"
+msgstr "Lista Negra de Recogida"
+
+msgid "Pick Up White List"
+msgstr "Lista Blanca de Recogida"
+
+msgid "Auto Combat in Illusive Realm"
+msgstr "Combate Automático en Reino Ilusorio"
+
+msgid "Auto Combat in Multiplayer Mode"
+msgstr "Combate Automático en Modo Multijugador"
+
+msgid "Enable auto combat in Multiplayer Mode"
+msgstr "Habilitar combate automático en Modo Multijugador"
+
+msgid "Illusive Realm"
+msgstr "Reino Ilusorio"
+
+msgid "Fallacy of No Return"
+msgstr "Falacia sin Retorno"
+
+msgid "Lorelei"
+msgstr "Lorelei"
+
+msgid "click f2 to open the book"
+msgstr "haz clic en F2 para abrir el libro"
+
+msgid "Check configs to keep, click start in game world, must be in a 16:9 screen ratio"
+msgstr "Comprueba las configuraciones a mantener, haz clic en iniciar en el mundo del juego, debe estar en una relación de pantalla de 16:9"
+
+msgid "Boss"
+msgstr "Jefe"
+
+msgid "Celestial Light"
+msgstr "Luz Celestial"
+
+msgid "Discard Echo"
+msgstr "Descartar Eco"
+
+msgid "Discarded"
+msgstr "Descartado"
+
+msgid "Freezing Frost"
+msgstr "Escarcha Congelante"
+
+msgid "Keep 1C ATK"
+msgstr "Mantener 1C ATK"
+
+msgid "Keep 1C DEF"
+msgstr "Mantener 1C DEF"
+
+msgid "Keep 1C HP"
+msgstr "Mantener 1C HP"
+
+msgid "Keep 3C ATK"
+msgstr "Mantener 3C ATK"
+
+msgid "Keep 3C Aero DMG"
+msgstr "Mantener 3C Daño Aero"
+
+msgid "Keep 3C DEF"
+msgstr "Mantener 3C DEF"
+
+msgid "Keep 3C Electro DMG"
+msgstr "Mantener 3C Daño Electro"
+
+msgid "Keep 3C Energy Regen"
+msgstr "Mantener 3C Recarga de Energía"
+
+msgid "Keep 3C Fusion DMG"
+msgstr "Mantener 3C Daño Fusión"
+
+msgid "Keep 3C Glacio DMG"
+msgstr "Mantener 3C Daño Glacio"
+
+msgid "Keep 3C HP"
+msgstr "Mantener 3C HP"
+
+msgid "Keep 3C Havoc DMG"
+msgstr "Mantener 3C Daño Havoc"
+
+msgid "Keep 3C Spectro DMG"
+msgstr "Mantener 3C Daño Espectro"
+
+msgid "Keep 4C ATK"
+msgstr "Mantener 4C ATK"
+
+msgid "Keep 4C Crit"
+msgstr "Mantener 4C Crítico"
+
+msgid "Keep 4C Crit DMG"
+msgstr "Mantener 4C Daño Crítico"
+
+msgid "Keep 4C DEF"
+msgstr "Mantener 4C DEF"
+
+msgid "Keep 4C HP"
+msgstr "Mantener 4C HP"
+
+msgid "Keep 4C Healing"
+msgstr "Mantener 4C Curación"
+
+msgid "Lingering Tunes"
+msgstr "Melodías Persistentes"
+
+msgid "Molten Rift"
+msgstr "Grieta Fundida"
+
+msgid "Moonlit Clouds"
+msgstr "Nubes Iluminadas por la Luna"
+
+msgid "Rejuvenating Glow"
+msgstr "Brillo Rejuvenecedor"
+
+msgid "Sierra Gale"
+msgstr "Viento de la Sierra"
+
+msgid "Sun-sinking Eclipse"
+msgstr "Eclipse del Sol Poniente"
+
+msgid "Void Thunder"
+msgstr "Trueno del Vacío"
+
+msgid "Frosty Resolve"
+msgstr "Resolución Helada"
+
+msgid "Eternal Radiance"
+msgstr "Resplandor Eterno"
+
+msgid "Midnight Veil"
+msgstr "Velo de Medianoche"
+
+msgid "Empyrean Anthem"
+msgstr "Himno Empíreo"
+
+msgid "Tidebreaking Courage"
+msgstr "Coraje Rompemareas"
+
+msgid "Prevent Wuthering Waves from moving the mouse"
+msgstr "Evitar que Wuthering Waves mueva el ratón"
+
+msgid "Turn on if you mouse jumps around"
+msgstr "Activa si tu ratón salta"
+
+msgid "Auto Echo Data Merge"
+msgstr "Fusión Automática de Datos de Eco"
+
+msgid "Data Merge Completed!"
+msgstr "¡Fusión de Datos Completada!"
+
+msgid "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
+msgstr "Error de combate automático: Asegúrate de equipar ecos y desactivar efectos que cambien el color del juego (Gamma del juego/Filtro de juego de Nvidia/AMD), desactiva el desenfoque de movimiento en las opciones de video del juego"
+
+msgid "Auto combat error: Make sure to turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter/HDR)"
+msgstr "Error de combate automático: Asegúrate de desactivar efectos que cambien el color del juego (Gamma del juego/Filtro de juego de Nvidia/AMD/HDR)"
+
+msgid "Auto Login"
+msgstr "Inicio de Sesión Automático"
+
+msgid "Auto Login After Game Starts"
+msgstr "Inicio de Sesión Automático Después de Iniciar el Juego"
+
+msgid "Auto Start Game"
+msgstr "Inicio Automático del Juego"
+
+msgid "Auto Start Game When App Starts"
+msgstr "Iniciar Juego Automáticamente al Iniciar la App"
+
+msgid "Auto Login Success"
+msgstr "Inicio de Sesión Automático Exitoso"
+
+msgid "Must choose at least 2 Boss to Farm"
+msgstr "Debes elegir al menos 2 Jefes para farmear"
+
+msgid "Can not auto combat because team can only have one healer at most"
+msgstr "No se puede combatir automáticamente porque el equipo solo puede tener un sanador como máximo"
+
+msgid "Daily Task"
+msgstr "Tarea Diaria"
+
+msgid "Dreamless"
+msgstr "Sin Sueños"
+
+msgid "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
+msgstr "Farmea la Supresión Tácita seleccionada, hasta agotar el vigor. Debes poder teletransportarte (F2)."
+
+msgid "Login, claim monthly card, farm echo, and claim daily reward"
+msgstr "Iniciar sesión, reclamar tarjeta mensual, farmear ecos y reclamar recompensa diaria"
+
+msgid "Which to Farm"
+msgstr "Qué farmear"
+
+msgid "Tacet Suppression"
+msgstr "Supresión Tácita"
+
+msgid "Task completed"
+msgstr "Tarea completada"
+
+msgid "Which Tacet Suppression to Farm"
+msgstr "Qué Supresión Tácita farmear (lista F2)"
+
+msgid "back_up_stamina"
+msgstr "vigor_de_reserva"
+
+msgid "current_stamina"
+msgstr "vigor_actual"
+
+msgid "used all stamina"
+msgstr "todo el vigor ha sido utilizado"
+
+msgid "The Tacet Suppression number in the F2 list."
+msgstr "El número de la Supresión Tácita en la lista F2."
+
+msgid "Please start in game world and in team!"
+msgstr "¡Por favor, inicia en el mundo del juego y en equipo!"
+
+msgid "Can't complete daily task, may need to increase stamina manually!"
+msgstr "¡No se puede completar la tarea diaria, puede que necesites aumentar el vigor manualmente!"
+
+msgid "Auto Enhance Echo"
+msgstr "Mejorar Eco Automáticamente"
+
+msgid "Auto Enhance and Tune Echo after you add EXP Material"
+msgstr "Mejorar y Sintonizar Eco automáticamente después de añadir material de EXP"
+
+msgid "Auto Pick Echo After Combat"
+msgstr "Recoger Eco Automáticamente Después del Combate"
+
+msgid "Farm Map with Star Path"
+msgstr "Farmear Mapa con Ruta de Estrellas"
+
+msgid "Farm world map with a marked path of stars (diamond as the starting point), start in the map screen"
+msgstr "Farmear mapa del mundo con una ruta marcada con estrellas (diamante como punto de partida), inicia en la pantalla del mapa"
+
+msgid "Stars"
+msgstr "Estrellas"
+
+msgid "Need be in the map screen and have a diamond as the starting point!"
+msgstr "¡Necesitas estar en la pantalla del mapa y tener un diamante como punto de partida!"
+
+msgid "Need be in the map screen and have a path of at least 3 stars!"
+msgstr "¡Necesitas estar en la pantalla del mapa y tener una ruta de al menos 3 estrellas!"
+
+msgid "Click Start after Entering Dungeon or Teleporting to The Boss"
+msgstr "Haz clic en Iniciar después de Entrar a la Mazmorra o Teletransportarte al Jefe"
+
+msgid "Farm 4C Echo in Dungeon/World"
+msgstr "Farmear Eco 4C en Mazmorra/Mundo"
+
+msgid "Combat Wait Time"
+msgstr "Tiempo de Espera de Combate (seg)"
+
+msgid "Wait time before each combat(seconds), set 5 if farming Sentry Construct"
+msgstr "Tiempo de espera antes de cada combate (segundos), establece 5 si farmeas Constructo Centinela"
+
+msgid "Simulation Challenge"
+msgstr "Desafío de Simulación"
+
+msgid "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
+msgstr "Farmea el Desafío de Simulación seleccionado. Debes poder teletransportarte (F2)."
+
+msgid "Material Selection"
+msgstr "Selección de Material"
+
+msgid "Resonator EXP / Weapon EXP / Shell Credit"
+msgstr "EXP de Resonador / EXP de Arma / Crédito de Concha"
+
+msgid "Resonator EXP"
+msgstr "EXP de Resonador"
+
+msgid "Weapon EXP"
+msgstr "EXP de Arma"
+
+msgid "Shell Credit"
+msgstr "Crédito de Concha"
+
+msgid "Forgery Challenge"
+msgstr "Desafío de Forja"
+
+msgid "Farms the selected Forgery Challenge. Must be able to teleport (F2)."
+msgstr "Farmea el Desafío de Forja seleccionado. Debes poder teletransportarte (F2)."
+
+msgid "Which Forgery Challenge to Farm"
+msgstr "Qué Desafío de Forja farmear (lista F2)"
+
+msgid "The Forgery Challenge number in the F2 list."
+msgstr "El número del Desafío de Forja en la lista F2."
+
+msgid "not enough stamina"
+msgstr "vigor insuficiente"
+
+msgid "Click skill failed, check if the keybinding is correct in ok-ww settings!"
+msgstr "¡Fallo al hacer clic en la habilidad, comprueba si la asignación de teclas es correcta en la configuración de ok-ww!"
+
+msgid "Change Time to Night"
+msgstr "Cambiar Hora a Noche"
+
+msgid "Yes if Farming Lorelei"
+msgstr "Sí si farmeas Lorelei"
+
+msgid "Must be able to teleport (F2)"
+msgstr "Debes poder teletransportarte (F2)"
+
+msgid "Half-Auto Rougue"
+msgstr "Rogue Semiautomático (Semanal)"
+
+msgid "Enable half-auto combat in weekly rougue, language needs Chinese"
+msgstr "Habilita el combate semiautomático en el rogue semanal, se requiere intervención manual si te atascas"
+
+msgid "Auto Pick Echo Treasure"
+msgstr "Recoger Tesoro de Eco Automáticamente"
+
+msgid "If set to False, treasure will be claimed if stamina is sufficient"
+msgstr "Si se establece en Falso, el tesoro se reclamará si el vigor es suficiente"
+
+msgid "Half-Auto Rougue Task Finish"
+msgstr "Tarea de Rogue Semiautomático Finalizada"
+
+msgid "Not in realm and cant find the entrance"
+msgstr "No estás en el reino y no se puede encontrar la entrada"
+
+msgid "Need mankind help"
+msgstr "¡Se necesita ayuda humana para continuar!"
+
+msgid "current task"
+msgstr "tarea actual"
+
+msgid "in main"
+msgstr "en principal"
+
+msgid "wait main"
+msgstr "esperar principal"
+
+msgid "Stop When Treasure Found"
+msgstr "Detener al Encontrar Tesoro"
+
+msgid "Don't restart in Realm"
+msgstr "No reiniciar en el Reino"
+
+msgid "Yes if Farming Nightmare: Hecate"
+msgstr "Sí si farmeas Pesadilla: Hécate"

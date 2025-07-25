@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: you@example.com\n"
 "Last-Translator: you@example.com\n"
-"Language-Team: English\n"
+"Language-Team: Traditional Chinese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -13,76 +13,76 @@ msgid "Fleurdelys"
 msgstr "芙露德莉斯"
 
 msgid "no levitator tool in the tab wheel!"
-msgstr "需要在TAB键轮盘中添加控物"
+msgstr "需要在TAB鍵輪盤中新增控物"
 
 msgid "Check hotkey error! Please check if hotkey settings are correct!"
-msgstr "自动游戏快捷键与软件设置中不一致! 请检查是否正确设置快捷键!"
+msgstr "自動遊戲快捷鍵與軟體設定不一致！請檢查快捷鍵設定是否正確！"
 
 msgid "Can not switch to levitator please ensure you have equipped echos!"
-msgstr "无法切换工具栏到控物, 请确保已经装备主声骸, 并工具栏切换为控物!"
+msgstr "無法切換工具欄至控物，請確保已裝備主聲骸，並將工具欄切換為控物！"
 
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
-msgstr "(1-6) 重要, 选择你对应世界等级可以产出声骸的难度, 从上到下为1-6"
+msgstr "(1-6) 重要，選擇您對應世界等級可產出聲骸的難度，由上到下為1-6"
 
 msgid "Boss1"
-msgstr "第1个Boss"
+msgstr "第1個Boss"
 
 msgid "Boss2"
-msgstr "第2个Boss"
+msgstr "第2個Boss"
 
 msgid "Boss3"
-msgstr "第3个Boss"
+msgstr "第3個Boss"
 
 msgid "Click Start in Game World"
-msgstr "在游戏世界点击开始"
+msgstr "在遊戲世界中點擊開始"
 
 msgid "Echo Key"
-msgstr "声骸按键(默认q)"
+msgstr "聲骸按鍵(預設q)"
 
 msgid "Entrance Direction"
 msgstr "入口方向"
 
 msgid "Farm Echo in Dungeon"
-msgstr "刷副本Boss声骸"
+msgstr "刷副本Boss聲骸"
 
 msgid "Farm World Boss(May need to drop waypoint on Boss)"
-msgstr "刷大世界4C Boss声骸(有些boss需要在boss上放信标)"
+msgstr "刷大世界4C Boss聲骸(有些Boss需要在其上方放置信標)"
 
 msgid "Game Hotkey Config"
-msgstr "游戏快捷键设置"
+msgstr "遊戲快捷鍵設定"
 
 msgid "In Game Hotkey for Skills"
-msgstr "声骸, 共鸣技能, 共鸣解放"
+msgstr "聲骸、共鳴技能、共鳴解放"
 
 msgid "Level"
-msgstr "等级"
+msgstr "等級"
 
 msgid "Liberation Key"
-msgstr "共鸣解放快捷键(默认r)"
+msgstr "共鳴解放快捷鍵(預設r)"
 
 msgid "Auto Target"
-msgstr "自动选取敌人"
+msgstr "自動選取敵人"
 
 msgid "Turn off to enable auto combat only when manually target enemy using middle click"
-msgstr "关闭时仅在手动鼠标中键选取敌人后才会自动战斗"
+msgstr "關閉時，僅在手動使用滑鼠中鍵選取敵人後才會自動戰鬥"
 
 msgid "Repeat Farm Count"
-msgstr "刷多少次"
+msgstr "重複刷取次數"
 
 msgid "Resonance Key"
-msgstr "共鸣技能快捷键(默认e)"
+msgstr "共鳴技能快捷鍵(預設e)"
 
 msgid "Auto Combat"
-msgstr "自动战斗"
+msgstr "自動戰鬥"
 
 msgid "Backward"
-msgstr "后退"
+msgstr "後退"
 
 msgid "Bell-Borne Geochelone"
-msgstr "乌龟"
+msgstr "磐石鎮守"
 
 msgid "Crownless"
-msgstr "无冠者"
+msgstr "無冠者"
 
 msgid "Jue"
 msgstr "角"
@@ -91,148 +91,148 @@ msgid "Hecate"
 msgstr "赫卡忒"
 
 msgid "Sentry Construct"
-msgstr "异构武装"
+msgstr "異構武裝"
 
 msgid "Dragon of Dirge"
-msgstr "叹息古龙"
+msgstr "悲悼古龍"
 
 msgid "Nightmare: Feilian Beringal"
-msgstr "梦魇:猴子"
+msgstr "夢魘：飛廉之猩"
 
 msgid "Nightmare: Impermanence Heron"
-msgstr "梦魇:黑鸟"
+msgstr "夢魘：無常凶鷺"
 
 msgid "Nightmare: Thundering Mephis"
-msgstr "梦魇:云闪之鳞"
+msgstr "夢魘：雲閃之鱗"
 
 msgid "Nightmare: Tempest Mephis"
-msgstr "梦魇:朔雷之鳞"
+msgstr "夢魘：朔雷之鱗"
 
 msgid "Nightmare: Inferno Rider"
-msgstr "梦魇:摩托车"
+msgstr "夢魘：燎照之騎"
 
 msgid "Nightmare: Crownless"
-msgstr "梦魇:无冠者"
+msgstr "夢魘：無冠者"
 
 msgid "Nightmare: Mourning Aix"
-msgstr "梦魇:哀声鸷"
+msgstr "夢魘：哀聲鷙"
 
 msgid "Nightmare: Lampylumen Myriad"
-msgstr "梦魇:辉萤军势"
+msgstr "夢魘：輝螢軍勢"
 
 msgid "Enable auto combat in Abyss, Game World etc"
-msgstr "在大世界,深渊,无音区等开启自动战斗"
+msgstr "在大世界、深淵、無音區等場景啟用自動戰鬥"
 
 msgid "Feilian Beringal"
-msgstr "猴子"
+msgstr "飛廉之猩"
 
 msgid "Forward"
-msgstr "前进"
+msgstr "前進"
 
 msgid "Impermanence Heron"
-msgstr "黑鸟"
+msgstr "無常凶鷺"
 
 msgid "Inferno Rider"
-msgstr "摩托车"
+msgstr "燎照之騎"
 
 msgid "Lampylumen Myriad"
-msgstr "辉萤军势"
+msgstr "輝螢軍勢"
 
 msgid "Mech Abomination"
-msgstr "机器人"
+msgstr "殘星門徒"
 
 msgid "Mourning Aix"
-msgstr "哀声鸷"
+msgstr "哀聲鷙"
 
 msgid "N/A"
 msgstr "不刷"
 
 msgid "Skip Dialog during Quests"
-msgstr "任务跳过对话"
+msgstr "任務跳過對話"
 
 msgid "Tempest Mephis"
-msgstr "朔雷之鳞"
+msgstr "朔雷之鱗"
 
 msgid "Thundering Mephis"
-msgstr "云闪之鳞"
+msgstr "雲閃之鱗"
 
 msgid "Combat Count"
-msgstr "战斗次数"
+msgstr "戰鬥次數"
 
 msgid "Echo Count"
-msgstr "获得声骸个数"
+msgstr "獲得聲骸個數"
 
 msgid "Log"
-msgstr "日志"
+msgstr "日誌"
 
 msgid "Auto Pick"
-msgstr "自动拾取"
+msgstr "自動拾取"
 
 msgid "Auto Pick Flowers in Game World"
-msgstr "大世界自动拾取"
+msgstr "大世界自動拾取"
 
 msgid "Pick Echo Config"
-msgstr "拾取声骸"
+msgstr "拾取聲骸"
 
 msgid "Turn on if your CPU is Powerful for more accuracy"
-msgstr "高配置CPU请打开,增加拾取声骸准确度,如果配置不够导致路过不捡声骸,请关闭"
+msgstr "若CPU效能強大請開啟此項，以提高拾取聲骸的準確度。若配置不足導致路過未拾取聲骸，請關閉。"
 
 msgid "Use OCR"
-msgstr "使用文字识别(中英文客户端适用)"
+msgstr "使用文字辨識(中英文客戶端適用)"
 
 msgid "Check Monthly Card"
-msgstr "是否检查月卡"
+msgstr "是否檢查月卡"
 
 msgid "Check for monthly card to avoid interruption of tasks"
-msgstr "设置避免小月卡弹窗打断任务"
+msgstr "設定以避免小月卡彈窗中斷任務"
 
 msgid "Monthly Card Config"
-msgstr "小月卡设置"
+msgstr "小月卡設定"
 
 msgid "Monthly Card Time"
-msgstr "月卡时间"
+msgstr "月卡時間"
 
 msgid "Your computer's local time when the monthly card will popup, hour in (1-24)"
-msgstr "几点会弹出月卡提示, 本地计算机时间(1-24)"
+msgstr "月卡提示彈出的時間，本地電腦時間(1-24小時制)"
 
 msgid "must be in game world and in teams, please check you game resolution is 16:9"
-msgstr "必须在大世界队伍中, 请点击截图测试,检查游戏分辨率是否是16:9"
+msgstr "必須在遊戲世界隊伍中，請點擊截圖測試，檢查遊戲解析度是否為16:9"
 
 msgid "Capture Frame Count"
-msgstr "截图次数"
+msgstr "截圖次數"
 
 msgid "Capture Frame Rate"
-msgstr "截图FPS"
+msgstr "截圖FPS"
 
 msgid "Current Character"
-msgstr "当前角色"
+msgstr "目前角色"
 
 msgid "Diagnosis"
-msgstr "诊断问题"
+msgstr "診斷問題"
 
 msgid "Diagnosis Problem, Performance Test, Run in Game World"
-msgstr "诊断问题,截图性能测试,在大世界启动.如果技能状态与游戏内不一致,查看常见问题4"
+msgstr "診斷問題、截圖性能測試，請在遊戲世界中啟動。若技能狀態與遊戲內不符，請查看常見問題。"
 
 msgid "Echo Available"
-msgstr "声骸可用"
+msgstr "聲骸可用"
 
 msgid "Echo in CD"
-msgstr "声骸CD中"
+msgstr "聲骸冷卻中"
 
 msgid "Game Resolution"
-msgstr "游戏分辨率"
+msgstr "遊戲解析度"
 
 msgid "Liberation Available"
-msgstr "大招可用"
+msgstr "共鳴解放可用"
 
 msgid "Liberation in CD"
-msgstr "大招CD中"
+msgstr "共鳴解放冷卻中"
 
 msgid "Resonance Available"
-msgstr "共鸣技能可用"
+msgstr "共鳴技能可用"
 
 msgid "Resonance in CD"
-msgstr "共鸣技能CD中"
+msgstr "共鳴技能冷卻中"
 
 msgid "False"
 msgstr "否"
@@ -241,373 +241,373 @@ msgid "True"
 msgstr "是"
 
 msgid "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}"
-msgstr "检测技能快捷键失败{},请确认已装备声骸,并且使用A-Z字母为游戏快捷键,如果确认无误依然报错,配置关闭快捷键检测."
+msgstr "偵測技能快捷鍵失敗{}，請確認已裝備聲骸，並使用A-Z字母作為遊戲快捷鍵。若確認無誤仍舊報錯，請在設定中關閉快捷鍵偵測。"
 
 msgid "Tool Key"
-msgstr "探索工具快捷键"
+msgstr "探索工具快捷鍵"
 
 msgid "Echo per Hour"
-msgstr "每小时声骸数量"
+msgstr "每小時聲骸數量"
 
 msgid "Can't auto combat, Please equip echos!"
-msgstr "无法自动战斗, 请装备声骸!"
+msgstr "無法自動戰鬥，請裝備聲骸！"
 
 msgid "Turn on to avoid interruption by monthly card when executing tasks"
-msgstr "开启避免挂任务的时候被月卡中断"
+msgstr "開啟以避免執行任務時被月卡中斷"
 
 msgid "Turn on to enable auto pick echo"
-msgstr "打开以启用自动拾取声骸"
+msgstr "開啟以啟用自動拾取聲骸"
 
 msgid "can't find gray_book_boss, make sure f2 is the hotkey for book"
-msgstr "找不到boss列表, 请确认快捷键f2可以打开书"
+msgstr "找不到Boss列表，請確認快捷鍵F2可以開啟指南"
 
 msgid "Echo Pickup Method"
-msgstr "搜索声骸方法"
+msgstr "搜尋聲骸方法"
 
 msgid "Run in Circle"
-msgstr "转圈奔跑"
+msgstr "轉圈奔跑"
 
 msgid "Turn Around and Search"
-msgstr "4方向搜索"
+msgstr "四方向搜尋"
 
 msgid "Walk"
-msgstr "后退再前进"
+msgstr "後退再前進"
 
 msgid "Yolo"
 msgstr "Yolo模型"
 
 msgid "Death Count"
-msgstr "死亡次数"
+msgstr "死亡次數"
 
 msgid "Game Sound"
-msgstr "游戏声音"
+msgstr "遊戲聲音"
 
 msgid "Mute Game while in Background"
-msgstr "游戏后台时静音"
+msgstr "遊戲在背景時靜音"
 
 msgid "Pick Up Black List"
-msgstr "拾取黑名单"
+msgstr "拾取黑名單"
 
 msgid "Pick Up White List"
-msgstr "拾取白名单"
+msgstr "拾取白名單"
 
 msgid "Auto Combat in Illusive Realm"
-msgstr "需要上哪里亮了点哪里的角色"
+msgstr "需要搭配「哪裡亮了點哪裡」的角色"
 
 msgid "Auto Combat in Multiplayer Mode"
-msgstr "多人联机自动战斗"
+msgstr "多人連線自動戰鬥"
 
 msgid "Enable auto combat in Multiplayer Mode"
-msgstr "多人联机开启自动战斗, 需要上哪里亮了点哪里的角色"
+msgstr "啟用多人連線自動戰鬥，需要搭配「哪裡亮了點哪裡」的角色"
 
 msgid "Illusive Realm"
-msgstr "半自动肉鸽(深坠异想奇境)"
+msgstr "半自動肉鴿(深墜異想奇境)"
 
 msgid "Fallacy of No Return"
-msgstr "无归的谬误"
+msgstr "無歸的謬誤"
 
 msgid "Lorelei"
-msgstr "罗莱蕾"
+msgstr "羅萊蕾"
 
 msgid "click f2 to open the book"
-msgstr "点击F2打开书"
+msgstr "點擊F2開啟指南"
 
 msgid "Check configs to keep, click start in game world, must be in a 16:9 screen ratio"
-msgstr "必须16:9分辨率, 没有勾选的都会标记为弃置, 大世界启动"
+msgstr "必須為16:9解析度，未勾選的項目將被標記為棄置，請在遊戲世界中啟動"
 
 msgid "Boss"
-msgstr ""
+msgstr "Boss"
 
 msgid "Celestial Light"
 msgstr "浮星祛暗"
 
 msgid "Discard Echo"
-msgstr "弃置声骸"
+msgstr "棄置聲骸"
 
 msgid "Discarded"
-msgstr "已弃置"
+msgstr "已棄置"
 
 msgid "Freezing Frost"
 msgstr "凝夜白霜"
 
 msgid "Keep 1C ATK"
-msgstr "保留 1C 攻击"
+msgstr "保留 1C 攻擊"
 
 msgid "Keep 1C DEF"
-msgstr "保留 1C 防御"
+msgstr "保留 1C 防禦"
 
 msgid "Keep 1C HP"
 msgstr "保留 1C 生命"
 
 msgid "Keep 3C ATK"
-msgstr "保留 3C 攻击"
+msgstr "保留 3C 攻擊"
 
 msgid "Keep 3C Aero DMG"
-msgstr "保留 3C 风伤"
+msgstr "保留 3C 氣動傷害"
 
 msgid "Keep 3C DEF"
-msgstr "保留 3C 防御"
+msgstr "保留 3C 防禦"
 
 msgid "Keep 3C Electro DMG"
-msgstr "保留 3C 雷伤"
+msgstr "保留 3C 導電傷害"
 
 msgid "Keep 3C Energy Regen"
-msgstr "保留 3C 充能"
+msgstr "保留 3C 共鳴效率"
 
 msgid "Keep 3C Fusion DMG"
-msgstr "保留 3C 火伤"
+msgstr "保留 3C 熱熔傷害"
 
 msgid "Keep 3C Glacio DMG"
-msgstr "保留 3C 冰伤"
+msgstr "保留 3C 冷凝傷害"
 
 msgid "Keep 3C HP"
 msgstr "保留 3C 生命"
 
 msgid "Keep 3C Havoc DMG"
-msgstr "保留 3C 暗伤"
+msgstr "保留 3C 湮滅傷害"
 
 msgid "Keep 3C Spectro DMG"
-msgstr "保留 3C 光伤"
+msgstr "保留 3C 衍射傷害"
 
 msgid "Keep 4C ATK"
-msgstr "保留 4C 攻击"
+msgstr "保留 4C 攻擊"
 
 msgid "Keep 4C Crit"
-msgstr "保留 4C 暴击"
+msgstr "保留 4C 暴擊率"
 
 msgid "Keep 4C Crit DMG"
-msgstr "保留 4C 爆伤"
+msgstr "保留 4C 暴擊傷害"
 
 msgid "Keep 4C DEF"
-msgstr "保留 4C 防御"
+msgstr "保留 4C 防禦"
 
 msgid "Keep 4C HP"
 msgstr "保留 4C 生命"
 
 msgid "Keep 4C Healing"
-msgstr "保留 4C 治疗"
+msgstr "保留 4C 治療加成"
 
 msgid "Lingering Tunes"
-msgstr "不绝余音"
+msgstr "不絕餘音"
 
 msgid "Molten Rift"
 msgstr "熔山裂谷"
 
 msgid "Moonlit Clouds"
-msgstr "轻云出月"
+msgstr "輕雲出月"
 
 msgid "Rejuvenating Glow"
-msgstr "隐世回光"
+msgstr "隱世回光"
 
 msgid "Sierra Gale"
-msgstr "啸谷长风"
+msgstr "嘯谷長風"
 
 msgid "Sun-sinking Eclipse"
 msgstr "沉日劫明"
 
 msgid "Void Thunder"
-msgstr "彻空冥雷"
+msgstr "徹空冥雷"
 
 msgid "Frosty Resolve"
-msgstr "凌冽决断之心"
+msgstr "凌冽決斷之心"
 
 msgid "Eternal Radiance"
-msgstr "此间永驻之光"
+msgstr "此間永駐之光"
 
 msgid "Midnight Veil"
-msgstr "幽夜隐匿之帷"
+msgstr "幽夜隱匿之帷"
 
 msgid "Empyrean Anthem"
 msgstr "高天共奏之曲"
 
 msgid "Tidebreaking Courage"
-msgstr "无惧浪涛之勇"
+msgstr "無懼浪濤之勇"
 
 msgid "Prevent Wuthering Waves from moving the mouse"
-msgstr "防止鸣潮游戏移动鼠标"
+msgstr "防止鳴潮遊戲移動滑鼠"
 
 msgid "Turn on if you mouse jumps around"
-msgstr "如果打开鸣潮的时候鼠标会跳动(游戏问题,窗口后台的时候可能移动鼠标)"
+msgstr "若開啟鳴潮時滑鼠會跳動（遊戲問題，視窗在背景時可能移動滑鼠），請開啟此項"
 
 msgid "Auto Echo Data Merge"
-msgstr "自动合成声骸"
+msgstr "自動合成聲骸"
 
 msgid "Data Merge Completed!"
-msgstr "自动合成声骸完成!"
+msgstr "自動合成聲骸完成！"
 
 msgid "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
-msgstr "自动战斗错误:请确认已装备声骸,关闭运动模糊,游戏为默认亮度,并关闭夜灯模式/显示器高级色彩/显卡滤镜等一切改变游戏颜色的配置."
+msgstr "自動戰鬥錯誤：請確認已裝備聲骸，關閉動態模糊，遊戲為預設亮度，並關閉夜間模式/顯示器進階色彩/顯卡濾鏡等所有會改變遊戲顏色的設定。"
 
 msgid "Auto combat error: Make sure to turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter/HDR)"
-msgstr "自动战斗错误:请设置游戏为默认亮度,并关闭夜灯模式/显示器高级色彩/显卡滤镜/HDR等一切改变游戏颜色的配置."
+msgstr "自動戰鬥錯誤：請將遊戲設定為預設亮度，並關閉夜間模式/顯示器進階色彩/顯卡濾鏡/HDR等所有會改變遊戲顏色的設定。"
 
 msgid "Auto Login"
-msgstr "自动登录游戏"
+msgstr "自動登入遊戲"
 
 msgid "Auto Login After Game Starts"
-msgstr "游戏启动后自动登录游戏"
+msgstr "遊戲啟動後自動登入"
 
 msgid "Auto Start Game"
-msgstr "自动启动游戏"
+msgstr "自動啟動遊戲"
 
 msgid "Auto Start Game When App Starts"
-msgstr "APP启动后自动启动游戏"
+msgstr "應用程式啟動後自動啟動遊戲"
 
 msgid "Auto Login Success"
-msgstr "自动登录成功"
+msgstr "自動登入成功"
 
 msgid "Must choose at least 2 Boss to Farm"
-msgstr "必须至少选择2个Boss"
+msgstr "必須至少選擇2個Boss"
 
 msgid "Can not auto combat because team can only have one healer at most"
-msgstr "无法自动战斗, 队伍最多只能有一个治疗角色"
+msgstr "無法自動戰鬥，隊伍中最多只能有一名治療角色"
 
 msgid "Daily Task"
-msgstr "日常一条龙"
+msgstr "每日一條龍"
 
 msgid "Dreamless"
-msgstr "无妄者"
+msgstr "無妄者"
 
 msgid "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
-msgstr "刷选定的无音区, 直到没有体力, 需要可传送"
+msgstr "刷指定的無音區，直到沒有體力，需要可傳送(F2)"
 
 msgid "Login, claim monthly card, farm echo, and claim daily reward"
-msgstr "启动游戏, 登录, 领月卡, 刷声骸, 领日常任务奖励, 领邮件"
+msgstr "啟動遊戲、登入、領取月卡、刷聲骸、領取每日任務獎勵、領取郵件"
 
 msgid "Which to Farm"
-msgstr "刷什么"
+msgstr "刷取目標"
 
 msgid "Tacet Suppression"
-msgstr "无音区"
+msgstr "無音區"
 
 msgid "Task completed"
-msgstr "任务完成"
+msgstr "任務完成"
 
 msgid "Which Tacet Suppression to Farm"
-msgstr "刷第几个无音区(F2列表)"
+msgstr "刷第幾個無音區(F2列表)"
 
 msgid "back_up_stamina"
-msgstr "备用体力"
+msgstr "備用體力"
 
 msgid "current_stamina"
-msgstr "当前体力"
+msgstr "目前體力"
 
 msgid "used all stamina"
-msgstr "体力已用尽"
+msgstr "體力已用盡"
 
 msgid "The Tacet Suppression number in the F2 list."
-msgstr "F2列表中第几个无音区"
+msgstr "F2列表中的第幾個無音區"
 
 msgid "Please start in game world and in team!"
-msgstr "请在大世界并在队伍中开始!"
+msgstr "請在遊戲世界並在隊伍中開始！"
 
 msgid "Can't complete daily task, may need to increase stamina manually!"
-msgstr "无法完成日常任务, 可能需要手动吃体力药!"
+msgstr "無法完成每日任務，可能需要手動使用體力藥劑！"
 
 msgid "Auto Enhance Echo"
-msgstr "自动强化声骸"
+msgstr "自動強化聲骸"
 
 msgid "Auto Enhance and Tune Echo after you add EXP Material"
-msgstr "在添加经验素材后自动强化声骸和调谐"
+msgstr "在新增經驗素材後自動強化及調諧聲骸"
 
 msgid "Auto Pick Echo After Combat"
-msgstr "战斗后自动拾取声骸"
+msgstr "戰鬥後自動拾取聲骸"
 
 msgid "Farm Map with Star Path"
-msgstr "标记寻路刷大地图"
+msgstr "標記尋路刷大世界地圖"
 
 msgid "Farm world map with a marked path of stars (diamond as the starting point), start in the map screen"
-msgstr "刷用星星标记的路径, 钻石作为起点, 在大地图界面开始, 工具使用钩锁."
+msgstr "使用星形標記的路徑刷世界地圖（鑽石為起點），請在地圖畫面開始，工具使用鉤鎖。"
 
 msgid "Stars"
-msgstr "星星标记"
+msgstr "星星標記"
 
 msgid "Need be in the map screen and have a diamond as the starting point!"
-msgstr "需要在大地图界面并且标记一个钻石为起点!"
+msgstr "需要在地圖畫面，並標記一個鑽石作為起點！"
 
 msgid "Need be in the map screen and have a path of at least 3 stars!"
-msgstr "需要在大地图界面并且至少有3个星星标记为路径!"
+msgstr "需要在地圖畫面，並且至少標記3個星星作為路徑！"
 
 msgid "Click Start after Entering Dungeon or Teleporting to The Boss"
-msgstr "在进入BOSS战斗后点击开始"
+msgstr "進入副本或傳送至Boss後點擊開始"
 
 msgid "Farm 4C Echo in Dungeon/World"
 msgstr "刷4C(大世界/副本)"
 
 msgid "Combat Wait Time"
-msgstr "战斗开始前等待时间(秒)"
+msgstr "戰鬥開始前等待時間(秒)"
 
 msgid "Wait time before each combat(seconds), set 5 if farming Sentry Construct"
-msgstr "如果刷异构武装设置为5秒"
+msgstr "若刷取異構武裝請設定為5秒"
 
 msgid "Simulation Challenge"
-msgstr "模拟领域"
+msgstr "模擬領域"
 
 msgid "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
-msgstr "需要「黎那汐塔-角斗士的肖像」可传送"
+msgstr "刷指定的模擬領域，需要「前往-角鬥士的肖像」可傳送"
 
 msgid "Material Selection"
-msgstr "材料选择"
+msgstr "材料選擇"
 
 msgid "Resonator EXP / Weapon EXP / Shell Credit"
-msgstr "共鸣者经验 / 武器经验 / 贝币"
+msgstr "共鳴者經驗 / 武器經驗 / 貝幣"
 
 msgid "Resonator EXP"
-msgstr "共鸣者经验"
+msgstr "共鳴者經驗"
 
 msgid "Weapon EXP"
-msgstr "武器经验"
+msgstr "武器經驗"
 
 msgid "Shell Credit"
-msgstr "贝币"
+msgstr "貝幣"
 
 msgid "Forgery Challenge"
-msgstr "凝素领域"
+msgstr "凝素領域"
 
 msgid "Farms the selected Forgery Challenge. Must be able to teleport (F2)."
-msgstr "刷选定的凝素领域, 需要可传送"
+msgstr "刷指定的凝素領域，需要可傳送"
 
 msgid "Which Forgery Challenge to Farm"
-msgstr "刷第几个凝素领域(F2列表)"
+msgstr "刷第幾個凝素領域(F2列表)"
 
 msgid "The Forgery Challenge number in the F2 list."
-msgstr "F2列表中第几个凝素领域"
+msgstr "F2列表中的第幾個凝素領域"
 
 msgid "not enough stamina"
-msgstr "体力不足"
+msgstr "體力不足"
 
 msgid "Click skill failed, check if the keybinding is correct in ok-ww settings!"
-msgstr "释放技能失败, 请检查ok-ww按键设置是正确!"
+msgstr "釋放技能失敗，請檢查ok-ww的按鍵設定是否正確！"
 
 msgid "Change Time to Night"
-msgstr "自动切换时间到晚上"
+msgstr "自動切換時間至夜晚"
 
 msgid "Yes if Farming Lorelei"
-msgstr "罗蕾莱选是"
+msgstr "若要刷取羅萊蕾請選是"
 
 msgid "Must be able to teleport (F2)"
-msgstr "需要可传送"
+msgstr "需要可傳送"
 
 msgid "Half-Auto Rougue"
-msgstr "半自动肉鸽(周常)"
+msgstr "半自動肉鴿(周常)"
 
 msgid "Enable half-auto combat in weekly rougue, language needs Chinese"
-msgstr "在周常门口或者任务内开始，卡墙时会提示人工接管"
+msgstr "在周常門口或任務內開始，卡牆時會提示手動接管"
 
 msgid "Auto Pick Echo Treasure"
-msgstr "自动获取声骸奖励"
+msgstr "自動獲取聲骸獎勵"
 
 msgid "If set to False, treasure will be claimed if stamina is sufficient"
-msgstr "如果选择否，将在体力足够时领取声骸奖励"
+msgstr "若選擇否，將在體力足夠時領取聲骸獎勵"
 
 msgid "Half-Auto Rougue Task Finish"
-msgstr "半自动肉鸽任务完成"
+msgstr "半自動肉鴿任務完成"
 
 msgid "Not in realm and cant find the entrance"
-msgstr "需要在周常门口或者任务内开始"
+msgstr "需要在周常門口或任務內開始"
 
 msgid "Need mankind help"
-msgstr "自动肉鸽失败, 需要手动操作到下一节点!"
+msgstr "自動肉鴿失敗，需要手動操作至下一節點！"
 
 msgid "current task"
 msgstr ""
@@ -619,10 +619,10 @@ msgid "wait main"
 msgstr ""
 
 msgid "Stop When Treasure Found"
-msgstr "出现声骸奖励时停止运行"
+msgstr "出現聲骸獎勵時停止運行"
 
 msgid "Don't restart in Realm"
-msgstr "副本Boss不点击重开"
+msgstr "副本Boss不點擊重開"
 
 msgid "Yes if Farming Nightmare: Hecate"
-msgstr "刷梦魇·赫卡忒选是"
+msgstr "刷夢魘·赫卡忒請選是"

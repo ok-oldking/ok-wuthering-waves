@@ -30,6 +30,7 @@ ok/
 .Python
 tests/configs/
 tests/logs/
+i18n/en_US/
 logs/
 build/
 develop-eggs/

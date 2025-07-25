@@ -1,0 +1,628 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: you@example.com\n"
+"Last-Translator: you@example.com\n"
+"Language-Team: Korean\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Fleurdelys"
+msgstr "플뢰르 드 리스"
+
+msgid "no levitator tool in the tab wheel!"
+msgstr "TAB 키 휠에 레비테이터 도구를 추가해야 합니다!"
+
+msgid "Check hotkey error! Please check if hotkey settings are correct!"
+msgstr "단축키 오류! 단축키 설정이 올바른지 확인해주세요!"
+
+msgid "Can not switch to levitator please ensure you have equipped echos!"
+msgstr "레비테이터로 전환할 수 없습니다. 에코를 장착했는지 확인해주세요!"
+
+msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
+msgstr "(1-6) 중요, 파밍할 레벨을 선택하세요. 낮은 레벨에서는 에코가 나오지 않을 수 있습니다."
+
+msgid "Boss1"
+msgstr "보스 1"
+
+msgid "Boss2"
+msgstr "보스 2"
+
+msgid "Boss3"
+msgstr "보스 3"
+
+msgid "Click Start in Game World"
+msgstr "게임 월드에서 시작을 클릭하세요"
+
+msgid "Echo Key"
+msgstr "에코 키 (기본 q)"
+
+msgid "Entrance Direction"
+msgstr "입구 방향"
+
+msgid "Farm Echo in Dungeon"
+msgstr "던전에서 에코 파밍"
+
+msgid "Farm World Boss(May need to drop waypoint on Boss)"
+msgstr "월드 보스 파밍 (보스에 웨이포인트 필요할 수 있음)"
+
+msgid "Game Hotkey Config"
+msgstr "게임 단축키 설정"
+
+msgid "In Game Hotkey for Skills"
+msgstr "인게임 스킬 단축키"
+
+msgid "Level"
+msgstr "레벨"
+
+msgid "Liberation Key"
+msgstr "공명 해방 키 (기본 r)"
+
+msgid "Auto Target"
+msgstr "자동 타겟팅"
+
+msgid "Turn off to enable auto combat only when manually target enemy using middle click"
+msgstr "끄면 마우스 휠 클릭으로 수동 타겟팅 시에만 자동 전투"
+
+msgid "Repeat Farm Count"
+msgstr "반복 파밍 횟수"
+
+msgid "Resonance Key"
+msgstr "공명 스킬 키 (기본 e)"
+
+msgid "Auto Combat"
+msgstr "자동 전투"
+
+msgid "Backward"
+msgstr "뒤로"
+
+msgid "Bell-Borne Geochelone"
+msgstr "큰바위 거북"
+
+msgid "Crownless"
+msgstr "무관의 연무"
+
+msgid "Jue"
+msgstr "뿔"
+
+msgid "Hecate"
+msgstr "헤카테"
+
+msgid "Sentry Construct"
+msgstr "이형의 무사"
+
+msgid "Dragon of Dirge"
+msgstr "비탄의 고룡"
+
+msgid "Nightmare: Feilian Beringal"
+msgstr "악몽: 페리지트"
+
+msgid "Nightmare: Impermanence Heron"
+msgstr "악몽: 무상귀"
+
+msgid "Nightmare: Thundering Mephis"
+msgstr "악몽: 번개 프리즘"
+
+msgid "Nightmare: Tempest Mephis"
+msgstr "악몽: 바람 프리즘"
+
+msgid "Nightmare: Inferno Rider"
+msgstr "악몽: 인페르노 라이더"
+
+msgid "Nightmare: Crownless"
+msgstr "악몽: 무관의 연무"
+
+msgid "Nightmare: Mourning Aix"
+msgstr "악몽: 애곡하는 흑조"
+
+msgid "Nightmare: Lampylumen Myriad"
+msgstr "악몽: 빛나는 반딧불의 무리"
+
+msgid "Enable auto combat in Abyss, Game World etc"
+msgstr "월드, 심연, 무음구역 등에서 자동 전투 활성화"
+
+msgid "Feilian Beringal"
+msgstr "페리지트"
+
+msgid "Forward"
+msgstr "앞으로"
+
+msgid "Impermanence Heron"
+msgstr "무상귀"
+
+msgid "Inferno Rider"
+msgstr "인페르노 라이더"
+
+msgid "Lampylumen Myriad"
+msgstr "빛나는 반딧불의 무리"
+
+msgid "Mech Abomination"
+msgstr "기계 융합체"
+
+msgid "Mourning Aix"
+msgstr "애곡하는 흑조"
+
+msgid "N/A"
+msgstr "해당 없음"
+
+msgid "Skip Dialog during Quests"
+msgstr "퀘스트 중 대화 스킵"
+
+msgid "Tempest Mephis"
+msgstr "바람 프리즘"
+
+msgid "Thundering Mephis"
+msgstr "번개 프리즘"
+
+msgid "Combat Count"
+msgstr "전투 횟수"
+
+msgid "Echo Count"
+msgstr "획득한 에코 수"
+
+msgid "Log"
+msgstr "로그"
+
+msgid "Auto Pick"
+msgstr "자동 줍기"
+
+msgid "Auto Pick Flowers in Game World"
+msgstr "월드에서 자동 아이템 줍기"
+
+msgid "Pick Echo Config"
+msgstr "에코 줍기 설정"
+
+msgid "Turn on if your CPU is Powerful for more accuracy"
+msgstr "CPU 성능이 좋으면 정확도 향상을 위해 켜세요"
+
+msgid "Use OCR"
+msgstr "OCR 사용"
+
+msgid "Check Monthly Card"
+msgstr "월정액 카드 확인"
+
+msgid "Check for monthly card to avoid interruption of tasks"
+msgstr "월정액 팝업으로 인한 작업 중단을 방지하기 위해 확인"
+
+msgid "Monthly Card Config"
+msgstr "월정액 카드 설정"
+
+msgid "Monthly Card Time"
+msgstr "월정액 시간"
+
+msgid "Your computer's local time when the monthly card will popup, hour in (1-24)"
+msgstr "월정액 팝업이 표시될 현지 시간 (1-24시)"
+
+msgid "must be in game world and in teams, please check you game resolution is 16:9"
+msgstr "게임 월드 내 팀 상태여야 합니다. 게임 해상도가 16:9인지 확인하세요"
+
+msgid "Capture Frame Count"
+msgstr "프레임 캡처 횟수"
+
+msgid "Capture Frame Rate"
+msgstr "프레임 캡처 속도"
+
+msgid "Current Character"
+msgstr "현재 캐릭터"
+
+msgid "Diagnosis"
+msgstr "문제 진단"
+
+msgid "Diagnosis Problem, Performance Test, Run in Game World"
+msgstr "문제 진단, 성능 테스트, 게임 월드에서 실행"
+
+msgid "Echo Available"
+msgstr "에코 사용 가능"
+
+msgid "Echo in CD"
+msgstr "에코 재사용 대기 중"
+
+msgid "Game Resolution"
+msgstr "게임 해상도"
+
+msgid "Liberation Available"
+msgstr "공명 해방 사용 가능"
+
+msgid "Liberation in CD"
+msgstr "공명 해방 재사용 대기 중"
+
+msgid "Resonance Available"
+msgstr "공명 스킬 사용 가능"
+
+msgid "Resonance in CD"
+msgstr "공명 스킬 재사용 대기 중"
+
+msgid "False"
+msgstr "아니요"
+
+msgid "True"
+msgstr "예"
+
+msgid "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}"
+msgstr "게임 단축키를 불러올 수 없습니다. 모든 캐릭터에 에코를 장착하고 A-Z를 스킬 단축키로 사용하세요. 감지된 키: {}"
+
+msgid "Tool Key"
+msgstr "탐색 도구 단축키"
+
+msgid "Echo per Hour"
+msgstr "시간당 에코 수"
+
+msgid "Can't auto combat, Please equip echos!"
+msgstr "자동 전투 불가, 에코를 장착해주세요!"
+
+msgid "Turn on to avoid interruption by monthly card when executing tasks"
+msgstr "작업 실행 중 월정액 카드로 인한 중단을 방지하려면 켜세요"
+
+msgid "Turn on to enable auto pick echo"
+msgstr "자동 에코 줍기를 활성화하려면 켜세요"
+
+msgid "can't find gray_book_boss, make sure f2 is the hotkey for book"
+msgstr "보스 목록을 찾을 수 없습니다. F2가 도감 단축키인지 확인하세요"
+
+msgid "Echo Pickup Method"
+msgstr "에코 탐색 방법"
+
+msgid "Run in Circle"
+msgstr "원형으로 달리기"
+
+msgid "Turn Around and Search"
+msgstr "4방향 탐색"
+
+msgid "Walk"
+msgstr "후진 후 전진"
+
+msgid "Yolo"
+msgstr "Yolo 모델"
+
+msgid "Death Count"
+msgstr "사망 횟수"
+
+msgid "Game Sound"
+msgstr "게임 사운드"
+
+msgid "Mute Game while in Background"
+msgstr "백그라운드에서 게임 음소거"
+
+msgid "Pick Up Black List"
+msgstr "줍기 블랙리스트"
+
+msgid "Pick Up White List"
+msgstr "줍기 화이트리스트"
+
+msgid "Auto Combat in Illusive Realm"
+msgstr "환상 비경에서 자동 전투"
+
+msgid "Auto Combat in Multiplayer Mode"
+msgstr "멀티플레이 모드에서 자동 전투"
+
+msgid "Enable auto combat in Multiplayer Mode"
+msgstr "멀티플레이 모드에서 자동 전투 활성화"
+
+msgid "Illusive Realm"
+msgstr "환상 비경 (로그라이크)"
+
+msgid "Fallacy of No Return"
+msgstr "돌아오지 않는 오류"
+
+msgid "Lorelei"
+msgstr "로렐라이"
+
+msgid "click f2 to open the book"
+msgstr "F2를 눌러 도감을 여세요"
+
+msgid "Check configs to keep, click start in game world, must be in a 16:9 screen ratio"
+msgstr "유지할 설정을 확인하고, 게임 월드에서 시작을 클릭하세요. 16:9 화면 비율이어야 합니다"
+
+msgid "Boss"
+msgstr "보스"
+
+msgid "Celestial Light"
+msgstr "부유하는 별"
+
+msgid "Discard Echo"
+msgstr "에코 폐기"
+
+msgid "Discarded"
+msgstr "폐기됨"
+
+msgid "Freezing Frost"
+msgstr "차가운 서리"
+
+msgid "Keep 1C ATK"
+msgstr "1코스트 공격력 유지"
+
+msgid "Keep 1C DEF"
+msgstr "1코스트 방어력 유지"
+
+msgid "Keep 1C HP"
+msgstr "1코스트 HP 유지"
+
+msgid "Keep 3C ATK"
+msgstr "3코스트 공격력 유지"
+
+msgid "Keep 3C Aero DMG"
+msgstr "3코스트 에어로 피해 유지"
+
+msgid "Keep 3C DEF"
+msgstr "3코스트 방어력 유지"
+
+msgid "Keep 3C Electro DMG"
+msgstr "3코스트 전도 피해 유지"
+
+msgid "Keep 3C Energy Regen"
+msgstr "3코스트 공명 효율 유지"
+
+msgid "Keep 3C Fusion DMG"
+msgstr "3코스트 융합 피해 유지"
+
+msgid "Keep 3C Glacio DMG"
+msgstr "3코스트 냉각 피해 유지"
+
+msgid "Keep 3C HP"
+msgstr "3코스트 HP 유지"
+
+msgid "Keep 3C Havoc DMG"
+msgstr "3코스트 파멸 피해 유지"
+
+msgid "Keep 3C Spectro DMG"
+msgstr "3코스트 회절 피해 유지"
+
+msgid "Keep 4C ATK"
+msgstr "4코스트 공격력 유지"
+
+msgid "Keep 4C Crit"
+msgstr "4코스트 치명타 확률 유지"
+
+msgid "Keep 4C Crit DMG"
+msgstr "4코스트 치명타 피해 유지"
+
+msgid "Keep 4C DEF"
+msgstr "4코스트 방어력 유지"
+
+msgid "Keep 4C HP"
+msgstr "4코스트 HP 유지"
+
+msgid "Keep 4C Healing"
+msgstr "4코스트 치유 보너스 유지"
+
+msgid "Lingering Tunes"
+msgstr "울려퍼지는 선율"
+
+msgid "Molten Rift"
+msgstr "용암의 틈"
+
+msgid "Moonlit Clouds"
+msgstr "빛나는 구름"
+
+msgid "Rejuvenating Glow"
+msgstr "되살아나는 빛"
+
+msgid "Sierra Gale"
+msgstr "끝없는 바람"
+
+msgid "Sun-sinking Eclipse"
+msgstr "황혼의 서곡"
+
+msgid "Void Thunder"
+msgstr "천둥의 비"
+
+msgid "Frosty Resolve"
+msgstr "서리 같은 결의"
+
+msgid "Eternal Radiance"
+msgstr "영원한 광휘"
+
+msgid "Midnight Veil"
+msgstr "자정의 장막"
+
+msgid "Empyrean Anthem"
+msgstr "창공의 찬가"
+
+msgid "Tidebreaking Courage"
+msgstr "파도를 가르는 용기"
+
+msgid "Prevent Wuthering Waves from moving the mouse"
+msgstr "명조 게임이 마우스를 움직이는 것을 방지"
+
+msgid "Turn on if you mouse jumps around"
+msgstr "마우스가 튈 경우 켜세요"
+
+msgid "Auto Echo Data Merge"
+msgstr "자동 에코 데이터 합성"
+
+msgid "Data Merge Completed!"
+msgstr "데이터 합성 완료!"
+
+msgid "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
+msgstr "자동 전투 오류: 에코를 장착하고 게임 색상을 변경하는 효과(게임 감마/Nvidia AMD 게임 필터)를 끄고, 게임 비디오 옵션에서 모션 블러를 끄세요."
+
+msgid "Auto combat error: Make sure to turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter/HDR)"
+msgstr "자동 전투 오류: 게임 색상을 변경하는 효과(게임 감마/Nvidia AMD 게임 필터/HDR)를 끄세요."
+
+msgid "Auto Login"
+msgstr "자동 로그인"
+
+msgid "Auto Login After Game Starts"
+msgstr "게임 시작 후 자동 로그인"
+
+msgid "Auto Start Game"
+msgstr "자동 게임 시작"
+
+msgid "Auto Start Game When App Starts"
+msgstr "앱 시작 시 자동 게임 시작"
+
+msgid "Auto Login Success"
+msgstr "자동 로그인 성공"
+
+msgid "Must choose at least 2 Boss to Farm"
+msgstr "최소 2개 이상의 보스를 선택해야 합니다"
+
+msgid "Can not auto combat because team can only have one healer at most"
+msgstr "자동 전투 불가, 팀에 힐러는 최대 1명만 가능합니다"
+
+msgid "Daily Task"
+msgstr "일일 임무"
+
+msgid "Dreamless"
+msgstr "무망자"
+
+msgid "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
+msgstr "선택한 무음 구역을 스태미나가 소진될 때까지 파밍합니다. 텔레포트(F2)가 가능해야 합니다."
+
+msgid "Login, claim monthly card, farm echo, and claim daily reward"
+msgstr "로그인, 월정액 수령, 에코 파밍, 일일 보상 수령"
+
+msgid "Which to Farm"
+msgstr "파밍 대상"
+
+msgid "Tacet Suppression"
+msgstr "무음 구역"
+
+msgid "Task completed"
+msgstr "임무 완료"
+
+msgid "Which Tacet Suppression to Farm"
+msgstr "파밍할 무음 구역 (F2 목록)"
+
+msgid "back_up_stamina"
+msgstr "예비 스태미나"
+
+msgid "current_stamina"
+msgstr "현재 스태미나"
+
+msgid "used all stamina"
+msgstr "스태미나 모두 소진"
+
+msgid "The Tacet Suppression number in the F2 list."
+msgstr "F2 목록에서 몇 번째 무음 구역인지."
+
+msgid "Please start in game world and in team!"
+msgstr "게임 월드 내 팀 상태에서 시작해주세요!"
+
+msgid "Can't complete daily task, may need to increase stamina manually!"
+msgstr "일일 임무를 완료할 수 없습니다. 수동으로 스태미나를 보충해야 할 수 있습니다!"
+
+msgid "Auto Enhance Echo"
+msgstr "자동 에코 강화"
+
+msgid "Auto Enhance and Tune Echo after you add EXP Material"
+msgstr "경험치 재료 추가 후 자동 강화 및 튜닝"
+
+msgid "Auto Pick Echo After Combat"
+msgstr "전투 후 자동 에코 줍기"
+
+msgid "Farm Map with Star Path"
+msgstr "별 경로로 맵 파밍"
+
+msgid "Farm world map with a marked path of stars (diamond as the starting point), start in the map screen"
+msgstr "별로 표시된 경로로 월드 맵을 파밍합니다 (다이아몬드가 시작점). 지도 화면에서 시작하세요."
+
+msgid "Stars"
+msgstr "별 표시"
+
+msgid "Need be in the map screen and have a diamond as the starting point!"
+msgstr "지도 화면에 있어야 하며 다이아몬드를 시작점으로 지정해야 합니다!"
+
+msgid "Need be in the map screen and have a path of at least 3 stars!"
+msgstr "지도 화면에 있어야 하며 최소 3개의 별로 경로를 지정해야 합니다!"
+
+msgid "Click Start after Entering Dungeon or Teleporting to The Boss"
+msgstr "던전 입장 또는 보스에게 텔레포트 후 시작 클릭"
+
+msgid "Farm 4C Echo in Dungeon/World"
+msgstr "던전/월드에서 4코스트 에코 파밍"
+
+msgid "Combat Wait Time"
+msgstr "전투 대기 시간 (초)"
+
+msgid "Wait time before each combat(seconds), set 5 if farming Sentry Construct"
+msgstr "각 전투 전 대기 시간(초), 이형의 무사 파밍 시 5로 설정"
+
+msgid "Simulation Challenge"
+msgstr "시뮬레이션 필드"
+
+msgid "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
+msgstr "선택한 시뮬레이션 필드를 파밍합니다. 텔레포트(F2)가 가능해야 합니다."
+
+msgid "Material Selection"
+msgstr "재료 선택"
+
+msgid "Resonator EXP / Weapon EXP / Shell Credit"
+msgstr "공명자 경험치 / 무기 경험치 / 조개 코인"
+
+msgid "Resonator EXP"
+msgstr "공명자 경험치"
+
+msgid "Weapon EXP"
+msgstr "무기 경험치"
+
+msgid "Shell Credit"
+msgstr "조개 코인"
+
+msgid "Forgery Challenge"
+msgstr "위조 도전"
+
+msgid "Farms the selected Forgery Challenge. Must be able to teleport (F2)."
+msgstr "선택한 위조 도전을 파밍합니다. 텔레포트(F2)가 가능해야 합니다."
+
+msgid "Which Forgery Challenge to Farm"
+msgstr "파밍할 위조 도전 (F2 목록)"
+
+msgid "The Forgery Challenge number in the F2 list."
+msgstr "F2 목록에서 몇 번째 위조 도전인지."
+
+msgid "not enough stamina"
+msgstr "스태미나 부족"
+
+msgid "Click skill failed, check if the keybinding is correct in ok-ww settings!"
+msgstr "스킬 사용 실패, ok-ww 설정에서 키 바인딩이 올바른지 확인하세요!"
+
+msgid "Change Time to Night"
+msgstr "시간을 밤으로 변경"
+
+msgid "Yes if Farming Lorelei"
+msgstr "로렐라이 파밍 시 '예'"
+
+msgid "Must be able to teleport (F2)"
+msgstr "텔레포트(F2)가 가능해야 합니다"
+
+msgid "Half-Auto Rougue"
+msgstr "반자동 로그라이크 (주간)"
+
+msgid "Enable half-auto combat in weekly rougue, language needs Chinese"
+msgstr "주간 로그라이크에서 반자동 전투 활성화"
+
+msgid "Auto Pick Echo Treasure"
+msgstr "자동 에코 보상 획득"
+
+msgid "If set to False, treasure will be claimed if stamina is sufficient"
+msgstr "아니요'로 설정하면 스태미나가 충분할 때 보상을 수령합니다"
+
+msgid "Half-Auto Rougue Task Finish"
+msgstr "반자동 로그라이크 임무 완료"
+
+msgid "Not in realm and cant find the entrance"
+msgstr "영역 내에 없거나 입구를 찾을 수 없습니다"
+
+msgid "Need mankind help"
+msgstr "수동 조작 필요!"
+
+msgid "current task"
+msgstr "현재 임무"
+
+msgid "in main"
+msgstr "메인 진행 중"
+
+msgid "wait main"
+msgstr "메인 대기"
+
+msgid "Stop When Treasure Found"
+msgstr "에코 보상 발견 시 중지"
+
+msgid "Don't restart in Realm"
+msgstr "던전에서 재시작 안 함"
+
+msgid "Yes if Farming Nightmare: Hecate"
+msgstr "악몽: 헤카테 파밍 시 '예'"
