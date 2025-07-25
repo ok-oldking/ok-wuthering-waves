@@ -73,9 +73,8 @@ class ForgeryTask(DomainTask):
         self.sleep(1)
         self.walk_until_f(time_out=1)
         self.pick_f()
-        self.sleep(1)
         self.wait_click_feature('gray_button_challenge', relative_x=4, raise_if_not_found=True,
-                                click_after_delay=1, threshold=0.6, after_sleep=1, time_out=10)
+                                click_after_delay=1, threshold=0.6, after_sleep=1, time_out=20)
         self.click_relative(0.93, 0.90, after_sleep=1)
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
 
