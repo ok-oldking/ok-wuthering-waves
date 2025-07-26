@@ -42,12 +42,10 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
             self.info_incr('used stamina', used)
             must_use -= used
-            if not can_continue:
-                self.log_info(f'not enough stamina', notify=True)
-                self.back()
-                break
-            must_use -= used
             self.sleep(4)
+            if not can_continue:
+                self.log_info("used all stamina")
+                break
             self.click(0.68, 0.84, after_sleep=2)  # farm again
             self.wait_in_team_and_world(time_out=self.teleport_timeout)
             self.sleep(1)
