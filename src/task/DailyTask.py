@@ -38,14 +38,15 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         used_stamina, completed = self.open_daily()
         self.send_key('esc', after_sleep=1)
         if not completed:
-            if self.config.get('Which to Farm', self.support_tasks[0]) == self.support_tasks[0]:
-                self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina, config=self.config)
-            else:
-                self.get_task_by_class(ForgeryTask).farm_forgery(daily=True, used_stamina=used_stamina,
-                                                                 config=self.config)
-                self.sleep(2)
-                self.get_task_by_class(ForgeryTask).purification_material()
-            self.sleep(4)
+            if used_stamina < 180:
+                if self.config.get('Which to Farm', self.support_tasks[0]) == self.support_tasks[0]:
+                    self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina, config=self.config)
+                else:
+                    self.get_task_by_class(ForgeryTask).farm_forgery(daily=True, used_stamina=used_stamina,
+                                                                    config=self.config)
+                    self.sleep(2)
+                    self.get_task_by_class(ForgeryTask).purification_material()
+                self.sleep(4)
             self.claim_daily()
         self.claim_mail()
         self.claim_millage()
@@ -59,6 +60,8 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.send_key_up('alt')
         self.wait_ocr(0.2, 0.13, 0.32, 0.22, match=re.compile(r'\d+'), settle_time=1, raise_if_not_found=True, log=True)
         self.click(0.04, 0.3, after_sleep=1)
+        self.click(0.68, 0.91, after_sleep=1)
+        self.click(0.04, 0.17, after_sleep=1)
         self.click(0.68, 0.91, after_sleep=1)
         self.ensure_main()
 
