@@ -129,19 +129,19 @@ jobs:
           name: setup-to-sign
           path: pyappify_dist/ok-ww-win32-online-setup.exe
 
-      - name: Sign setup EXE
-        if: env.SIGN_BUILD == 'true'
-        uses: signpath/github-action-submit-signing-request@v1.1
-        with:
-          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
-          organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
-          project-slug: 'ok-wuthering-waves'
-          signing-policy-slug: 'release-signing'
-          artifact-configuration-slug: "single-exe"
-          github-artifact-id: '${{ steps.upload-unsigned-setup-artifact.outputs.artifact-id }}'
-          wait-for-completion: true
-          wait-for-completion-timeout-in-seconds: 60000
-          output-artifact-directory: 'pyappify_dist'
+      #      - name: Sign setup EXE
+      #        if: env.SIGN_BUILD == 'true'
+      #        uses: signpath/github-action-submit-signing-request@v1.1
+      #        with:
+      #          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
+      #          organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
+      #          project-slug: 'ok-wuthering-waves'
+      #          signing-policy-slug: 'release-signing'
+      #          artifact-configuration-slug: "single-exe"
+      #          github-artifact-id: '${{ steps.upload-unsigned-setup-artifact.outputs.artifact-id }}'
+      #          wait-for-completion: true
+      #          wait-for-completion-timeout-in-seconds: 60000
+      #          output-artifact-directory: 'pyappify_dist'
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -154,7 +154,7 @@ jobs:
               * ok-ww-win32-China-setup.exe 完整安装包, 更新使用阿里云+腾讯CNB. 
               * ok-ww-win32-online-setup.exe 在线安装包, 在线白嫖的服务器不一定稳定, 建议优先使用完整包. 
               * ok-ww-win32-Global-setup.exe full package with dependencies, using GitHub and PyPi as update source 
-              * 不要下载SourceCode, Do Not Download the SourceCode
+              * 不要下载ok-ww-win32.zip,和SourceCode.zip, Do Not Download the SourceCode, ok-ww-win32.zip
             ### 如果无法下载或下载慢, 可以使用其他下载源
               * [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okww&source=ok-ww-release), 国内网页直链, 下载需要购买CD-KEY, 已有Mirror酱CD-KEY可免费下载
               * [夸克网盘](https://pan.quark.cn/s/a1052cec4d13), 免费, 但需要注册并下载夸克网盘客户端
