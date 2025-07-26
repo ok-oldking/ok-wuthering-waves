@@ -22,7 +22,7 @@ class Encore(BaseChar):
         if self.has_intro:
             elapsed = self.time_elapsed_accounting_for_freeze(self.liberation_time)
             self.logger.debug(f'encore wait intro {elapsed}')
-            if 6 < elapsed < 10 and self.is_forte_full():
+            if 6 < elapsed < 10 and self.is_mouse_forte_full():
                 self.logger.debug('encore heavy attack after intro')
                 self.heavy_attack(1.2)
                 self.sleep(0.1)
@@ -79,7 +79,7 @@ class Encore(BaseChar):
         if self.time_elapsed_accounting_for_freeze(self.liberation_time) < 6:
             self.logger.debug('encore liberation n4')
             self.continues_normal_attack(duration=duration)
-        elif self.is_forte_full():
+        elif self.is_mouse_forte_full():
             self.heavy_attack()
             self.logger.debug('encore liberation heavy')
             self.last_heavy = time.time()

@@ -14,7 +14,7 @@ class Changli(BaseChar):
     def reset_state(self):
         super().reset_state()
         self.enhanced_normal = False
-        
+
     def do_perform(self):
         outro = False
         forte = -1
@@ -24,29 +24,29 @@ class Changli(BaseChar):
         forte = self.judge_forte()
         if self.enhanced_normal:
             self.logger.debug('Changli has enhanced')
-            self.continues_normal_attack(0.2) 
+            self.continues_normal_attack(0.2)
             self.sleep(0.15)
             if self.check_outro() in {'char_brant'}:
                 self.sleep(0.15)
                 self.do_perform_outro(self.judge_forte())
-                return self.switch_next_char()  
+                return self.switch_next_char()
             if forte == 3:
                 self.sleep(0.15)
-                forte = self.judge_forte()                     
+                forte = self.judge_forte()
         self.enhanced_normal = False
-        if forte == 4 or self.is_forte_full():
+        if forte == 4 or self.is_mouse_forte_full():
             if self.current_tool() < 0.1:
                 self.heavy_attack()
             self.heavy_click_forte()
             forte = 0
             self.check_combat()
             return self.switch_next_char()
-        if not(forte >= 3 and self.resonance_available()) and self.liberation_available():   
-            if self.liberation_and_heavy(): 
+        if not (forte >= 3 and self.resonance_available()) and self.liberation_available():
+            if self.liberation_and_heavy():
                 return self.switch_next_char()
-        if self.flick_resonance(send_click = False):
+        if self.flick_resonance(send_click=False):
             self.enhanced_normal = True
-            return self.switch_next_char()        
+            return self.switch_next_char()
         if self.click_echo():
             return self.switch_next_char()
         self.continues_normal_attack(0.1)
@@ -58,41 +58,41 @@ class Changli(BaseChar):
             forte_time = start
             res = True
             while time.time() - start < 5:
-                if res and self.flick_resonance(send_click = False):
+                if res and self.flick_resonance(send_click=False):
                     res = False
                     continue
                 self.click(interval=0.1)
-                if self.is_forte_full():
+                if self.is_mouse_forte_full():
                     if time.time() - forte_time > 0.2:
                         break
                 else:
                     forte_time = time.time()
                 self.check_combat()
                 self.task.next_frame()
-            if self.is_forte_full():
+            if self.is_mouse_forte_full():
                 self.heavy_click_forte()
                 self.sleep(1)
-        elif forte >= 4 or self.is_forte_full():
+        elif forte >= 4 or self.is_mouse_forte_full():
             if self.current_tool() < 0.1:
                 self.heavy_attack()
             self.heavy_click_forte()
             forte = 0
             self.sleep(1)
-        if self.liberation_available() and self.liberation_and_heavy():   
+        if self.liberation_available() and self.liberation_and_heavy():
             self.sleep(0.6)
             forte = 0
-        if forte < 3 and self.flick_resonance(send_click = False):
+        if forte < 3 and self.flick_resonance(send_click=False):
             self.enhanced_normal = True
-            return        
-        self.click_echo()     
-                                    
+            return
+        self.click_echo()
+
     def judge_forte(self):
-        if self.is_forte_full():
+        if self.is_mouse_forte_full():
             return 4
         box = self.task.box_of_screen_scaled(3840, 2160, 1633, 2004, 2160, 2016, name='changli_forte', hcenter=True)
-        forte = self.calculate_forte_num(changli_red_color,box,4,9,11,400)
+        forte = self.calculate_forte_num(changli_red_color, box, 4, 9, 11, 400)
         return forte
-        
+
     def liberation_and_heavy(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0, timeout=5):
         if con_less_than > 0:
             if self.get_current_con() > con_less_than:
@@ -148,37 +148,30 @@ class Changli(BaseChar):
         self.task.in_liberation = False
         if clicked:
             self.logger.info(f'click_liberation end {duration}')
-            self.task.wait_until(lambda: self.task.in_team()[0] and not self.is_forte_full(), time_out=0.6)
+            self.task.wait_until(lambda: self.task.in_team()[0] and not self.is_mouse_forte_full(), time_out=0.6)
         self.task.mouse_up()
         self.check_combat()
-        return clicked   
-                
-    def is_forte_full(self):
-        box = self.task.box_of_screen_scaled(5120, 2880, 3034, 2652, 3060, 2686, name='forte_full', hcenter=True)
-        white_percent = self.task.calculate_color_percentage(forte_white_color, box)
-        box.confidence = white_percent
-        if white_percent > 0:
-            self.logger.info(f'changli forte {white_percent}')
-        self.task.draw_boxes('forte_full', box)
-        return white_percent > 0.05
-        
+        return clicked
+
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if has_intro and current_char.char_name in {'char_brant'}:
             return Priority.MAX
         return super().do_get_switch_priority(current_char, has_intro)
-        
+
     def flick_resonance(self, time_out=0.2, send_click=True):
         if send_click and self.resonance_available():
-            self.task.wait_until(lambda: self.current_resonance() > 0, post_action=self.click_with_interval, time_out=0.2)
+            self.task.wait_until(lambda: self.current_resonance() > 0, post_action=self.click_with_interval,
+                                 time_out=0.2)
         if self.current_resonance() > 0 and self.resonance_available():
-            self.task.wait_until(lambda: not self.resonance_available(), post_action=self.send_resonance_key , time_out=time_out)
+            self.task.wait_until(lambda: not self.resonance_available(), post_action=self.send_resonance_key,
+                                 time_out=time_out)
             return True
         return False
 
     def judge_frequncy_and_amplitude(self, gray, min_freq, max_freq, min_amp):
         height, width = gray.shape[:]
         if height == 0 or width < 64 or not np.array_equal(np.unique(gray), [0, 255]):
-            return 0       
+            return 0
 
         profile = np.sum(gray == 255, axis=0).astype(np.float32)
         profile -= np.mean(profile)
@@ -187,36 +180,37 @@ class Changli(BaseChar):
         frequncy = 0
         i = 1
         while i < width:
-            if n[i]> amplitude:
+            if n[i] > amplitude:
                 amplitude = n[i]
                 frequncy = i
-            i+=1
+            i += 1
         self.logger.debug(f'forte with freq {frequncy} & amp {amplitude}')
         return (min_freq <= frequncy <= max_freq) or amplitude >= min_amp
-        
-    def calculate_forte_num(self, forte_color, box, num = 1, min_freq = 39, max_freq = 41, min_amp = 50):
+
+    def calculate_forte_num(self, forte_color, box, num=1, min_freq=39, max_freq=41, min_amp=50):
         cropped = box.crop_frame(self.task.frame)
         lower_bound, upper_bound = color_range_to_bound(forte_color)
         image = cv2.inRange(cropped, lower_bound, upper_bound)
-        
+
         forte = 0
         height, width = image.shape
         step = int(width / num)
-        
+
         forte = num
-        left = step * (forte-1)
+        left = step * (forte - 1)
         while forte > 0:
-            gray = image[:,left:left+step]
-            score = self.judge_frequncy_and_amplitude(gray,min_freq,max_freq,min_amp)
+            gray = image[:, left:left + step]
+            score = self.judge_frequncy_and_amplitude(gray, min_freq, max_freq, min_amp)
             if score:
                 break
             left -= step
             forte -= 1
-        self.logger.info(f'Frequncy analysis with forte {forte}')    
+        self.logger.info(f'Frequncy analysis with forte {forte}')
         return forte
-        
+
+
 changli_red_color = {
     'r': (240, 255),  # Red range
     'g': (85, 105),  # Green range
     'b': (95, 115)  # Blue range
-}  
+}

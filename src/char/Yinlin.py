@@ -6,7 +6,7 @@ class Yinlin(BaseChar):
         if self.has_intro:
             self.sleep(0.4)
         liberation = self.click_liberation()
-        if self.is_forte_full():
+        if self.is_mouse_forte_full():
             if not self.has_intro and not liberation:
                 self.normal_attack()
             self.heavy_attack()
@@ -30,4 +30,3 @@ class Yinlin(BaseChar):
 
     def count_echo_priority(self):
         return 1
-

@@ -39,7 +39,7 @@ class HavocRover(BaseChar):
         self.wait_down()
         self.spectro_routine_aftertune_combo()
         self.click_echo(time_out=0)
-        if self.is_forte_full():
+        if self.is_mouse_forte_full():
             self.check_combat()
             if self.resonance_available() and self.click_resonance()[0]:
                 self.continues_normal_attack(1.4)
@@ -77,7 +77,7 @@ class HavocRover(BaseChar):
                 self.wind_routine_wait_down()
                 return
         self.wind_routine_wait_down(check_forte_full=False)
-        if self.resonance_available() and not self.is_forte_full():
+        if self.resonance_available() and not self.is_mouse_forte_full():
             self.click_echo(time_out=0)
             start = time.time()
             flying = False
@@ -122,7 +122,7 @@ class HavocRover(BaseChar):
                                      post_action=lambda: self.click(interval=0.1, after_sleep=0.01), time_out=2.5)
         if check_forte_full:
             self.sleep(0.03)
-            if self.is_forte_full():
+            if self.is_mouse_forte_full():
                 self.send_resonance_key()
         else:
             self.sleep(0.01)
@@ -157,7 +157,7 @@ class HavocRover(BaseChar):
             self.click_liberation(send_click=True)
             self.wind_routine_wait_down(check_forte_full=False)
             self.sleep(0.03)
-        if self.is_forte_full():
+        if self.is_mouse_forte_full():
             self.send_resonance_key()
             return
         self.click_echo(time_out=0)
@@ -171,5 +171,5 @@ class HavocRover(BaseChar):
             self.click_resonance(send_click=False)
         if self.click_liberation(send_click=True):
             self.sleep(0.03)
-        if self.is_forte_full():
+        if self.is_mouse_forte_full():
             self.send_resonance_key()
