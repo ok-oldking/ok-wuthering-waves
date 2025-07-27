@@ -35,7 +35,7 @@ class Ciaccona(BaseChar):
                 self.continues_normal_attack(0.7)
         if self.current_echo() < 0.22:
             self.click_echo(time_out=0)
-        if not self.has_intro and not self.need_fast_perform() and not self.is_forte_full():
+        if not self.has_intro and not self.need_fast_perform() and not self.is_mouse_forte_full():
             self.click_jump_with_click(0.4)
             self.task.wait_until(lambda: not self.flying(), post_action=self.click_with_interval, time_out=1.2)
             self.continues_normal_attack(0.2)
@@ -50,7 +50,7 @@ class Ciaccona(BaseChar):
                     if time.time()-start > 0.3:
                         break
                     self.task.next_frame() 
-            self.heavy_attack()
+            self.heavy_click_forte(check_fun = self.is_mouse_forte_full)
             wait = True
         if self.liberation_available(): 
             if wait:
@@ -92,7 +92,7 @@ class Ciaccona(BaseChar):
             self.task.send_key(key='a')
 
     def judge_forte(self):
-        if self.is_forte_full():
+        if self.is_mouse_forte_full():
             return 3
         box = self.task.box_of_screen_scaled(3840, 2160, 1612, 1987, 2188, 2008, name='ciaccona_forte', hcenter=True)
         forte = self.calculate_forte_num(ciaccona_forte_color, box, 3, 12, 14, 100)

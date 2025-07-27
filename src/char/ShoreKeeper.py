@@ -1,7 +1,14 @@
+import time
+
 from src.char.Healer import Healer
 
 
 class ShoreKeeper(Healer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.outrotime = -1
+        self.dodge_count = 0
+
     def count_liberation_priority(self):
         return 2
     
@@ -14,5 +21,27 @@ class ShoreKeeper(Healer):
         self.liberation_available() and self.wait_down()
         self.click_liberation()
         self.click_echo(time_out=0)
-        self.heavy_click_forte()
+        self.heavy_click_forte(check_fun = self.is_mouse_forte_full)
         self.switch_next_char()
+
+    def switch_next_char(self, *args):
+        if self.is_con_full():
+            self.outrotime = time.time()
+            self.dodge_count = 5
+        return super().switch_next_char(*args)
+
+    def auto_dodge(self, condition):
+        clicked = False
+        if self.time_elapsed_accounting_for_freeze(self.outrotime) < 30 and self.dodge_count > 0:
+            start = time.time()
+            while time.time() - start < 1.5:
+                if not condition():
+                    break
+                self.continues_right_click(0.05)
+                self.sleep(0.05)
+                clicked = True
+                self.task.next_frame()
+        if clicked:
+            self.dodge_count -= 1
+            self.logger.info('ShoreKeepers auto dodge success!')
+        return clicked
