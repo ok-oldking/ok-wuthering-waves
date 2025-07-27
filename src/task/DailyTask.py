@@ -61,7 +61,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.wait_ocr(0.2, 0.13, 0.32, 0.22, match=re.compile(r'\d+'), settle_time=1, raise_if_not_found=True, log=True)
         self.click(0.04, 0.3, after_sleep=1)
         self.click(0.68, 0.91, after_sleep=2)
-        self.back(after_sleep=2)
+        self.click(0.04, 0.17, after_sleep=2)
         self.click(0.04, 0.17, after_sleep=1)
         self.click(0.68, 0.91, after_sleep=1)
         self.ensure_main()
