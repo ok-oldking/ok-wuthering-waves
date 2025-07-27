@@ -124,14 +124,20 @@ class BaseChar:
             self.do_perform()
         self.logger.debug(f'set current char false {self.index}')
 
-    def wait_down(self):
+    def wait_down(self, click=True):
         """等待角色从空中落下到地面。"""
         if not self.task.has_lavitator and self.has_intro:
-            self.continues_normal_attack(self.intro_motion_freeze_duration)
+            if click:
+                self.continues_normal_attack(self.intro_motion_freeze_duration)
+            else:
+                self.sleep(self.intro_motion_freeze_duration)
         else:
             start = time.time()
             while self.flying() and time.time() - start < 2.5:
-                self.task.click(interval=0.2)
+                if click:
+                    self.task.click(interval=0.2)
+                else:
+                    self.sleep(0.2)
                 self.task.next_frame()
                 # self.logger.debug('wait_down')
 
