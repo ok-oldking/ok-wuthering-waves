@@ -380,7 +380,7 @@ class BaseCombatTask(CombatCheck):
         logger.info(f'switch_next_char end {(current_char.last_switch_time - start):.3f}s')
 
     def find_mouse_forte(self):
-        return self.find_one('mouse_forte', horizontal_variance=0.025, threshold=0.65,
+        return self.find_one('mouse_forte', horizontal_variance=0.025, threshold=0.6,
                              frame_processor=binarize_for_matching)
 
     def get_liberation_key(self):
