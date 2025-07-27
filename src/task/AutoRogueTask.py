@@ -4,12 +4,12 @@ import cv2
 import numpy as np
 
 from qfluentwidgets import FluentIcon
-from decimal import Decimal, ROUND_HALF_UP, ROUND_DOWN, ROUND_UP
+from decimal import Decimal, ROUND_DOWN, ROUND_UP
 from ok import color_range_to_bound
 from ok import Logger, TaskDisabledException
 from ok import find_boxes_by_name
 from src.task.BaseCombatTask import BaseCombatTask
-from src.task.BaseWWTask import convert_bw, binarize_for_matching
+from src.task.BaseWWTask import binarize_for_matching
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
@@ -265,7 +265,6 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
             return door_text[0]
 
     def find_purple_icon(self):
-        self.process_feature()
         icons = self.find_feature('purple_target_distance_icon', box=self.box_of_screen(0.18, 0.1, 0.82, 0.81),
                                   threshold=0.65, frame_processor=binarize_for_matching)
         target = None

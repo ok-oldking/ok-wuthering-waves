@@ -14,7 +14,7 @@ from src.char.BaseChar import Priority, dot_color  # noqa
 from src.char.CharFactory import get_char_by_pos
 from src.char.Healer import Healer
 from src.combat.CombatCheck import CombatCheck
-from src.task.BaseWWTask import isolate_white_text_to_black, convert_bw, binarize_for_matching
+from src.task.BaseWWTask import isolate_white_text_to_black, binarize_for_matching
 
 logger = Logger.get_logger(__name__)
 cd_regex = re.compile(r'\d{1,2}\.\d')
@@ -380,7 +380,6 @@ class BaseCombatTask(CombatCheck):
         logger.info(f'switch_next_char end {(current_char.last_switch_time - start):.3f}s')
 
     def find_mouse_forte(self):
-        self.process_feature()
         return self.find_one('mouse_forte', horizontal_variance=0.025, threshold=0.65,
                              frame_processor=binarize_for_matching)
 

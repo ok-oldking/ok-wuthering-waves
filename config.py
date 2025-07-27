@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 
 from ok import ConfigOption
+from src.task.process_feature import process_feature
 
 version = "dev"
 
@@ -89,6 +90,7 @@ config = {
         'default_horizontal_variance': 0.002,
         'default_vertical_variance': 0.002,
         'default_threshold': 0.8,
+        'feature_processor': process_feature,
     },
     'windows': {  # required  when supporting windows game
         'exe': 'Client-Win64-Shipping.exe',

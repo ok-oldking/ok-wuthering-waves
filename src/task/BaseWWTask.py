@@ -41,22 +41,6 @@ class BaseWWTask(BaseTask):
             return True
         return False
 
-    def process_feature(self):
-        global processed_feature
-        if not processed_feature:
-            logger.info('Processing feature')
-            processed_feature = True
-            feature = self.get_feature_by_name('illusive_realm_exit')
-            feature.mat = convert_bw(feature.mat)
-            feature = self.get_feature_by_name('purple_target_distance_icon')
-            feature.mat = binarize_for_matching(feature.mat)
-            feature = self.get_feature_by_name('world_earth_icon')
-            feature.mat = convert_bw(feature.mat)
-            feature = self.get_feature_by_name('skip_dialog')
-            feature.mat = convert_dialog_icon(feature.mat)
-            feature = self.get_feature_by_name('mouse_forte')
-            feature.mat = binarize_for_matching(feature.mat)
-
     def zoom_map(self, esc=True):
         if not self.map_zoomed:
             self.log_info('zoom map to max')
@@ -333,12 +317,10 @@ class BaseWWTask(BaseTask):
         return 0
 
     def in_realm(self):
-        self.process_feature()
         return not self.config.get("Don't restart in Realm") and self.find_one('illusive_realm_exit', threshold=0.8,
                                                                                frame_processor=convert_bw)
 
     def in_world(self):
-        self.process_feature()
         return self.find_one('world_earth_icon', threshold=0.8, frame_processor=convert_bw)
 
     def in_illusive_realm(self):

@@ -36,7 +36,6 @@ class SkipBaseTask(BaseWWTask):
             return True
 
     def find_skip(self):
-        self.process_feature()
         return self.find_one('skip_dialog', horizontal_variance=0.02, threshold=0.8,
                              frame_processor=convert_dialog_icon)
 
