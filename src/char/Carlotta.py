@@ -245,7 +245,7 @@ class Carlotta(BaseChar):
         self.char_zhezhi.forte = 0
         self.get_forte()
         if not self.liberation_ready:
-            while not self.is_mouse_forte_full()():
+            while not self.is_mouse_forte_full():
                 if self.resonance_available():
                     self.click_resonance()
                 else:

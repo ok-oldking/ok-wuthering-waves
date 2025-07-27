@@ -30,7 +30,7 @@ class Cantarella(BaseChar):
         count = -0.1
         while self.time_elapsed_accounting_for_freeze(self.last_heavy) < 8 and not self.is_mouse_forte_full():
             now = time.time()
-            if self.resonance_available and self.click_resonance(send_click=False):
+            if self.resonance_available() and self.click_resonance(send_click=False):
                 if not perform_under_outro:
                     self.task.mouse_up()
                     return self.switch_next_char() 
@@ -58,7 +58,7 @@ class Cantarella(BaseChar):
         
     def on_combat_end(self, chars):
         next_char = str((self.index + 1) % len(chars) + 1)
-        self.logger.debug(f'Camellya on_combat_end {self.index} switch next char: {next_char}')
+        self.logger.debug(f'Cantarella on_combat_end {self.index} switch next char: {next_char}')
         self.task.send_key(next_char)
 
     def is_forte_full(self):
