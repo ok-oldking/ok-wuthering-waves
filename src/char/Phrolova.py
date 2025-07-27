@@ -19,8 +19,7 @@ class Phrolova(BaseChar):
             self.wait_down()
         if self.click_liberation():
             return self.switch_next_char()
-        elif self.heavy_click_forte(check_fun=self.is_mouse_forte_full):
-            self.logger.debug('Phrolova heavy_click_forte')
+        elif self.heavy_and_liber():           
             return self.switch_next_char()
         self.continues_normal_attack(3, click_resonance_if_ready_and_return=True)
         self.click_echo()
@@ -30,7 +29,12 @@ class Phrolova(BaseChar):
         if self.time_elapsed_accounting_for_freeze(self.last_liberation) < 24:
             return Priority.MIN
         return Priority.FAST_SWITCH
-        # return super().do_get_switch_priority(current_char, has_intro)
 
     def resonance_available(self, current=None, check_ready=False, check_cd=False):
         return not (self.flying() or self.has_cd('resonance'))
+
+    def heavy_and_liber(self):
+        if self.heavy_click_forte(check_fun=self.is_mouse_forte_full):
+            self.logger.debug('Phrolova heavy_click_forte')
+            self.task.wait_until(self.click_liberation, time_out=3)
+            return True
