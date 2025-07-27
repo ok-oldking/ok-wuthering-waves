@@ -35,7 +35,7 @@ class Carlotta(BaseChar):
             self.logger.debug('has_intro wait click 1.3 sec')
             self.bullet = 1
             self.continues_normal_attack(1.3)
-        if self.heavy_click_forte():
+        if self.heavy_click_forte(check_fun = self.is_mouse_forte_full):
             return self.switch_next_char()
         if self.liberation_available() and not self.need_fast_perform():
             if self.press_w == 1:
@@ -199,7 +199,7 @@ class Carlotta(BaseChar):
             self.char_zhezhi.char_carlotta = self
 
     def get_forte(self):
-        if self.is_forte_full():
+        if self.is_mouse_forte_full():
             return 4
         box = self.task.box_of_screen_scaled(5120, 2880, 2164, 2670, 2900, 2680, name='carlotta_forte', hcenter=True)
         self.forte = self.calculate_forte_num(carlotta_forte_color, box, 4, 9, 11, 100)
@@ -226,7 +226,7 @@ class Carlotta(BaseChar):
                 return self.switch_next_char()
         if self.get_ready():
             self.continue_liberation = False
-        if self.heavy_click_forte():
+        if self.heavy_click_forte(check_fun = self.is_mouse_forte_full):
             self.liberation_ready = True
             return self.switch_next_char()
         if self.liberation_available() and self.continue_liberation:
@@ -245,7 +245,7 @@ class Carlotta(BaseChar):
         self.char_zhezhi.forte = 0
         self.get_forte()
         if not self.liberation_ready:
-            while not self.is_forte_full():
+            while not self.is_mouse_forte_full()():
                 if self.resonance_available():
                     self.click_resonance()
                 else:
@@ -253,7 +253,7 @@ class Carlotta(BaseChar):
                 if self.time_elapsed_accounting_for_freeze(self.last_perform) > 6:
                     break
                 self.check_combat()
-        if self.heavy_click_forte():
+        if self.heavy_click_forte(check_fun = self.is_mouse_forte_full):
             self.liberation_ready = True
             self.forte = 0
         self.check_combat()

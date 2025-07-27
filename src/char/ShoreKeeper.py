@@ -14,5 +14,5 @@ class ShoreKeeper(Healer):
         self.liberation_available() and self.wait_down()
         self.click_liberation()
         self.click_echo(time_out=0)
-        self.heavy_click_forte()
+        self.heavy_click_forte(check_fun = self.is_mouse_forte_full)
         self.switch_next_char()
