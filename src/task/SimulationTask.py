@@ -54,7 +54,8 @@ class SimulationTask(DomainTask):
             index = 1
         else:  # selection == 'Shell Credit'
             index = 2
-        self.click_relative(0.22, 0.17 + index * 0.08, after_sleep=1)
-        self.click_relative(0.93, 0.90, after_sleep=1)
-        self.click_relative(0.93, 0.90, after_sleep=1)
+        self.click_relative(0.22, 0.17 + index * 0.08, after_sleep=1) # choose material
+        self.wait_click_feature('gray_button_challenge', relative_x=4, raise_if_not_found=True, click_after_delay=1, threshold=0.6, after_sleep=1, time_out=20) # solo challenge
+        self.click_relative(0.62, 0.62, after_sleep=1) # click confirm of not enough stamina dialog (may appear)
+        self.click_relative(0.93, 0.90, after_sleep=1) # start challenge
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
