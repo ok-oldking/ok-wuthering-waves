@@ -269,11 +269,10 @@ class BaseCombatTask(CombatCheck):
                     if not (count == circle_count - 1 and direction == directions[-1]):
                         duration += step
 
-                picked = self.send_key_and_wait_f(direction, False, time_out=duration, running=True,
-                                                  target_text=self.absorb_echo_text())
-                if picked:
-                    self.mouse_up(key="right")
-                    return True
+                if self.send_key_and_wait_f(direction, False, time_out=duration, running=True,
+                                                  target_text=self.absorb_echo_text()):
+                    if self.pick_f():
+                        return True
                 total_index += 1
 
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
