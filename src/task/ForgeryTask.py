@@ -70,7 +70,7 @@ class ForgeryTask(DomainTask):
             self.get_material_mat()
         self.wait_click_travel()
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
-        self.sleep(1)
+        self.sleep(max(5, self.teleport_timeout / 10))
         self.walk_until_f(time_out=2)
         self.pick_f()
         self.wait_click_feature('gray_button_challenge', relative_x=4, raise_if_not_found=True,
