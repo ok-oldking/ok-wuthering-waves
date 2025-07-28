@@ -64,7 +64,7 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
                     if not self.in_realm():
                         exit_countdown = now
                 else:
-                    if now - exit_countdown > 2:  # 0.8
+                    if now - exit_countdown > 2 and self.in_world():  # 0.8
                         self.log_info('自动肉鸽结束!', notify=True)
                         return
                     if self.in_realm():
@@ -117,6 +117,7 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
             # 战斗处理
             if self.in_combat():
                 self.log_info('wait combat')
+                start = time.time()
                 self.combat_once(wait_combat_time=0, raise_if_not_found=False)
                 start = time.time()
             # 领声骸奖励时体力不够：按Esc

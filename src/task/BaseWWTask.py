@@ -321,7 +321,7 @@ class BaseWWTask(BaseTask):
                                                                                frame_processor=convert_bw)
 
     def in_world(self):
-        return self.find_one('world_earth_icon', threshold=0.8, frame_processor=convert_bw)
+        return self.find_one('world_earth_icon', threshold=0.8, frame_processor=binarize_for_matching)
 
     def in_illusive_realm(self):
         return self.find_one('new_realm_4') and self.in_realm() and self.find_one('illusive_realm_menu', threshold=0.6)
