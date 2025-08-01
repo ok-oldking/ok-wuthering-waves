@@ -17,16 +17,15 @@ class Phrolova(BaseChar):
         if self.has_intro:
             if self.check_outro() in {'char_cantarella'}:
                 perform_under_outro = True
-            else:
-                self.continues_normal_attack(0.8)
+            self.continues_normal_attack(3)
         if self.flying():
             self.wait_down() 
         start = time.time()
         timeout = lambda: time.time() - start < 4
         if perform_under_outro:
-            self.continues_normal_attack(0.5)
             self.click_echo()
             timeout = lambda: self.time_elapsed_accounting_for_freeze(self.last_perform) < 16
+        delay = False
         while timeout():
             if self.click_liberation():
                 return self.switch_next_char()
@@ -35,9 +34,14 @@ class Phrolova(BaseChar):
             if self.heavy_and_liber():
                 return self.switch_next_char()
             if self.resonance_available():
+                if delay:
+                    self.continues_normal_attack(0.3)
+                    if self.flying():
+                        self.shorekeeper_auto_dodge()
                 self.click_resonance()
                 if not perform_under_outro:
                     break
+            delay = True
             self.task.click()
             self.check_combat()
             self.task.next_frame()

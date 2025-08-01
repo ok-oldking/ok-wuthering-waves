@@ -37,19 +37,14 @@ class Carlotta(BaseChar):
             self.continues_normal_attack(1.3)
         if self.heavy_click_forte(check_fun = self.is_mouse_forte_full):
             return self.switch_next_char()
-        if self.liberation_available() and not self.need_fast_perform():
-            if self.press_w == 1:
-                self.task.send_key_down(key='w')
-                while self.liberation_available():
-                    self.click_liberation()
-                    self.task.send_key_up(key='w')
-                    self.check_combat()
-                    self.task.send_key_down(key='w')
-                self.task.send_key_up(key='w')
-            else:
-                while self.liberation_available():
-                    self.click_liberation()
-                    self.check_combat()
+        if self.liberation_available() and not self.need_fast_perform():  
+            auto_dodge = -1
+            while self.liberation_available(): 
+                if auto_dodge != -1 and time.time() - auto_dodge > 0.5 and self.flying():
+                    self.shorekeeper_auto_dodge()
+                if self.click_liberation_1():
+                    auto_dodge = time.time()
+                self.check_combat()
             self.click_echo()
             self.switch_lock = time.time()
             return self.switch_next_char()
@@ -73,20 +68,20 @@ class Carlotta(BaseChar):
         else:
             return super().do_get_switch_priority(current_char, has_intro)
 
-    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0, timeout=5):
-        if con_less_than > 0:
-            if self.get_current_con() > con_less_than:
-                return False
+    def click_liberation_1(self):
+        if self.press_w == 1:
+            self.task.send_key_down(key='w')
+            click = self.click_liberation()
+            self.task.send_key_up(key='w')
+            return click
+        else:
+            return self.click_liberation()
+
+    def click_liberation(self):
         self.logger.debug('click_liberation start')
         start = time.time()
         last_click = 0
         clicked = False
-        while time.time() - start < wait_if_cd_ready and not self.liberation_available() and not self.has_cd(
-                'liberation'):
-            self.logger.debug(f'click_liberation wait ready {wait_if_cd_ready}')
-            if send_click:
-                self.click(interval=0.1)
-            self.task.next_frame()
         while self.liberation_available():  # clicked and still in team wait for animation
             self.logger.debug('click_liberation liberation_available click')
             now = time.time()
@@ -94,44 +89,35 @@ class Carlotta(BaseChar):
                 self.send_liberation_key()
                 if not clicked:
                     clicked = True
-                    self.update_liberation_cd()
                 last_click = now
-            if time.time() - start > timeout:
-                self.task.raise_not_in_combat('too long clicking a liberation')
-            # new
-            if self.task.in_team()[0]:
-                if self.press_w == 1:
-                    self.task.send_key_up(key='w')
-                    self.check_combat()
-                    self.task.send_key_down(key='w')
-                else:
-                    self.check_combat()
-            else:
-                break
+            if time.time() - start > 0.4:
+                return False
             self.task.next_frame()
         if clicked:
-            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4):
+            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4,
+                                    post_action=self.click_with_interval):
                 self.task.in_liberation = True
                 self.logger.debug('not in_team successfully casted liberation')
             else:
                 self.task.in_liberation = False
                 self.logger.error('clicked liberation but no effect')
                 return False
+        else:
+            return clicked
         start = time.time()
         while not self.task.in_team()[0]:
             self.task.in_liberation = True
             if not clicked:
                 clicked = True
-                self.update_liberation_cd()
-            if send_click:
-                self.click(interval=0.1)
             if time.time() - start > 7:
                 self.task.in_liberation = False
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
             self.task.next_frame()
         duration = time.time() - start
         self.add_freeze_duration(start, duration)
+        self.update_liberation_cd()
         self.task.in_liberation = False
+        self._liberation_available = False
         if clicked:
             self.logger.info(f'click_liberation end {duration}')
         return clicked
@@ -230,8 +216,12 @@ class Carlotta(BaseChar):
             self.liberation_ready = True
             return self.switch_next_char()
         if self.liberation_available() and self.continue_liberation:
+            auto_dodge = -1
             while self.liberation_available():
+                if auto_dodge != -1 and time.time() - auto_dodge > 0.5 and self.flying():
+                    self.shorekeeper_auto_dodge()
                 if self.click_liberation():
+                    auto_dodge = time.time()
                     self.continue_liberation = False
                     self.liberation_ready = False
                 self.check_combat()
@@ -264,11 +254,15 @@ class Carlotta(BaseChar):
         if self.liberation_ready:
             while self.time_elapsed_accounting_for_freeze(self.last_perform) < 14:
                 if self.liberation_available() and not liber:
-                    while self.liberation_available():
+                    auto_dodge = -1
+                    while self.liberation_available(): 
+                        if auto_dodge != -1 and time.time() - auto_dodge > 0.5 and self.flying():
+                            self.shorekeeper_auto_dodge()
                         if self.click_liberation():
                             self.liberation_ready = False
                             liber = True
                             self.forte = 0
+                            auto_dodge = time.time()
                         self.check_combat()
                     if liber:
                         self.sleep(0.2)
@@ -329,6 +323,11 @@ class Carlotta(BaseChar):
         self.logger.info(f'Frequncy analysis with forte {forte}')
         return forte
 
+    def shorekeeper_auto_dodge(self):
+        from src.char.ShoreKeeper import ShoreKeeper
+        for i, char in enumerate(self.task.chars):
+            if isinstance(char, ShoreKeeper):
+                return char.auto_dodge(condition = self.flying) 
 
 carlotta_forte_color = {
     'r': (70, 100),  # Red range
