@@ -159,6 +159,8 @@ class Phoebe(BaseChar):
         condition = self.get_prayer_condition()
         if not condition() and not self.heavy_attack_ready():
             while not self.heavy_attack_ready():
+                if self.flying():
+                    self.shorekeeper_auto_dodge()
                 self.click()
                 if time.time() - start > 5:
                     return
@@ -169,6 +171,7 @@ class Phoebe(BaseChar):
                     check_forte = time.time()
                 self.check_combat()
                 self.task.next_frame()
+            self.continues_right_click(0.05)
         if self.perform_heavy_attack():
             self.state["starflash_combo"] += 1
 
@@ -437,6 +440,11 @@ class Phoebe(BaseChar):
             self.logger.debug(f'is_forte_full mean {mean_val} contrast {contrast_val}')
         return mean_val > 190 and contrast_val > 40
 
+    def shorekeeper_auto_dodge(self):
+        from src.char.ShoreKeeper import ShoreKeeper
+        for i, char in enumerate(self.task.chars):
+            if isinstance(char, ShoreKeeper):
+                return char.auto_dodge(condition = self.flying)  
 
 phoebe_blue_color = {
     'r': (124, 134),  # Red range
