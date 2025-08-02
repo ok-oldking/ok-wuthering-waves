@@ -22,7 +22,7 @@
       "name": "po2mo (i18n)",
       "type": "PowerShell",
       "request": "launch",
-      "script": "cd '${workspaceFolder}/i18n/en_US/LC_MESSAGES' && msgfmt.exe -o ok.mo ok.po && echo '✅ en_US' && cd ../../zh_CN/LC_MESSAGES && msgfmt.exe -o ok.mo ok.po && echo '✅ zh_CN' && cd '${workspaceFolder}'",
+      "script": "Set-Location '${workspaceFolder}/i18n'; Get-ChildItem -Directory -Name . | ForEach-Object -Process { ./msgfmt.exe -o ./$_/LC_MESSAGES/ok.mo ./$_/LC_MESSAGES/ok.po && echo \"✅ $_\"}",
     },
   ]
 }
