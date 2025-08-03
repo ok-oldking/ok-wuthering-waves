@@ -82,7 +82,9 @@ python main_debug.py # run the debug version
 
 ### 相关项目
 
-* [ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact) 原神自动化,一键日常,后台剧情 (
+* [ok-sra](https://github.com/Shasnow/ok-starrailassistant) 基于ok-script开发的星铁自动化
+
+* [ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact)  基于ok-script开发的原神自动化,一键日常,后台剧情 (
   可后台,支持全游戏语言,支持全16:
   9分辨率)
 * [ok-gf2](https://github.com/ok-oldking/ok-gf2) 少前2追放自动化,一键日常,竞技场,兵棋推演,尘烟 (支持PC版后台)
