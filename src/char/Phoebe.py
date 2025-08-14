@@ -91,7 +91,7 @@ class Phoebe(BaseChar):
             self.logger.info('stop applying spectro frazzle')
             if not self.resonance_available():
                 if result == 0 or self.char_zani.liberation_time_left() > 3:
-                    self.continues_normal_attack(1, interval=0.15)
+                    self.continues_normal_attack(1, interval=0.25)
             else:
                 self.click_resonance(send_click=False)
             return True
@@ -196,7 +196,7 @@ class Phoebe(BaseChar):
                 if flying:
                     self.logger.info('flying')
                     self.task.wait_until(lambda: not self.flying(),
-                                         post_action=lambda: self.click(interval=0.1, after_sleep=0.1), time_out=2)
+                                         post_action=lambda: self.click(interval=0.2, after_sleep=0.1), time_out=2)
                     outer_start = time.time()
                 self.check_combat()
                 self.task.next_frame()
@@ -283,7 +283,7 @@ class Phoebe(BaseChar):
                 if self.flying():
                     self.logger.info('flying')
                     self.task.wait_until(lambda: not self.flying(),
-                                         post_action=lambda: self.click(interval=0.1, after_sleep=0.1), time_out=2)
+                                         post_action=lambda: self.click(interval=0.2, after_sleep=0.1), time_out=2)
                     outer_start = time.time()
                 self.task.next_frame()
             if self.attribute == 2:
@@ -444,7 +444,8 @@ class Phoebe(BaseChar):
         from src.char.ShoreKeeper import ShoreKeeper
         for i, char in enumerate(self.task.chars):
             if isinstance(char, ShoreKeeper):
-                return char.auto_dodge(condition = self.flying)  
+                return char.auto_dodge(condition=self.flying)
+
 
 phoebe_blue_color = {
     'r': (124, 134),  # Red range

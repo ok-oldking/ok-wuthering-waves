@@ -28,6 +28,6 @@ class Danjin(BaseChar):
             self.continues_normal_attack(1.1)
         else:
             self.wait_down()
-            self.continues_normal_attack(0.4, interval=0.1)
+            self.continues_normal_attack(0.4, interval=0.2)
         self.continues_click(self.get_resonance_key(), 1.1, interval=0.2)
         self.switch_next_char()

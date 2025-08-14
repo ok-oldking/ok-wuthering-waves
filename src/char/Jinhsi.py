@@ -66,7 +66,7 @@ class Jinhsi(BaseChar):
                 break
             if self.task.in_team()[0]:
                 if last_op == 'resonance':
-                    self.task.click(interval=0.1)
+                    self.task.click(interval=0.2)
                     last_op = 'click'
                 else:
                     self.send_resonance_key()
@@ -107,7 +107,7 @@ class Jinhsi(BaseChar):
                     # self.task.screenshot('incarnation_finished')
                     break
             else:
-                self.send_resonance_key(interval=0.1)
+                self.send_resonance_key(interval=0.2)
             self.task.next_frame()
             self.check_combat()
 
@@ -123,4 +123,4 @@ class Jinhsi(BaseChar):
 
     def wait_resonance(self):
         while not self.resonance_available(check_ready=True):
-            self.send_resonance_key(interval=0.1)
+            self.send_resonance_key(interval=0.2)

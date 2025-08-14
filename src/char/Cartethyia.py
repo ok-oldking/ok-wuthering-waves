@@ -2,6 +2,7 @@ import time, cv2
 import numpy as np
 from src.char.BaseChar import BaseChar, Priority, forte_white_color
 
+
 class Cartethyia(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -17,7 +18,7 @@ class Cartethyia(BaseChar):
     @property
     def intro_motion_freeze_duration(self):
         return 0.6 if self.is_cartethyia else 0.78
-    
+
     @intro_motion_freeze_duration.setter
     def intro_motion_freeze_duration(self, _):
         pass
@@ -49,11 +50,11 @@ class Cartethyia(BaseChar):
 
     def count_base_priority(self):
         return 10
-    
+
     def do_perform(self):
         self.transform = False
         if self.has_intro:
-            self.continues_normal_attack(1.2)   
+            self.continues_normal_attack(1.2)
         else:
             self.click_echo(time_out=0)
         if self.is_small():
@@ -90,8 +91,8 @@ class Cartethyia(BaseChar):
     def fleurdelys_n4_duration(self):
         if not self.transform and self.has_intro:
             duration = 3.9 - (time.time() - self.last_perform)
-        elif self.transform or self.is_first_engage() or\
-             self.time_elapsed_accounting_for_freeze(self.n4_time, intro_motion_freeze=True) < 1.5:
+        elif self.transform or self.is_first_engage() or \
+                self.time_elapsed_accounting_for_freeze(self.n4_time, intro_motion_freeze=True) < 1.5:
             duration = 3.25
         elif (backswing := self.time_elapsed_accounting_for_freeze(self.res_time, intro_motion_freeze=True)) < 2.5:
             duration = 2 + max(0, 1.6 - backswing)
@@ -143,7 +144,8 @@ class Cartethyia(BaseChar):
 
     def is_mid_air_attack_available(self):
         if self.is_cartethyia:
-            box = self.task.box_of_screen_scaled(3840, 2160, 2298, 1997, 2361, 2022, name='inner_cartethyia_space', hcenter=True)
+            box = self.task.box_of_screen_scaled(3840, 2160, 2298, 1997, 2361, 2022, name='inner_cartethyia_space',
+                                                 hcenter=True)
             self.task.draw_boxes(box.name, box)
             if self.task.calculate_color_percentage(forte_white_color, box) > 0.15:
                 cropped = box.crop_frame(self.task.frame)
@@ -152,7 +154,7 @@ class Cartethyia(BaseChar):
                 contrast_val = np.std(gray)
                 self.logger.debug(f'cartethyia_space mean {mean_val} contrast {contrast_val}')
                 return mean_val > 190 and contrast_val > 60
-    
+
     def try_mid_air_attack(self, timeout=2):
         self.get_sword_buffs()
         if self.liberation_available() or all(self.buffs.values()) or self.try_mid_air_attack_once:
@@ -163,9 +165,9 @@ class Cartethyia(BaseChar):
             self.logger.info('perform mid-air attack')
             start = time.time()
             while True:
-                self.task.send_key('SPACE', interval=0.1)
+                self.task.send_key('SPACE', interval=0.2)
                 self.sleep(0.01)
-                self.task.click(interval=0.1)
+                self.task.click(interval=0.2)
                 self.sleep(0.01)
                 if not self.is_mid_air_attack_available():
                     self.sleep(0.5)
@@ -175,19 +177,19 @@ class Cartethyia(BaseChar):
         elif self.try_mid_air_attack_once:
             start = time.time()
             while time.time() - start < 0.8:
-                self.task.send_key('SPACE', interval=0.1)
+                self.task.send_key('SPACE', interval=0.2)
                 self.sleep(0.01)
-                self.task.click(interval=0.1)
+                self.task.click(interval=0.2)
                 self.sleep(0.01)
         self.try_mid_air_attack_once = False
-    
+
     def is_small(self):
         if self.template_shape != self.task.frame.shape[:2]:
             self.init_template()
         self.is_cartethyia = bool(self.task.find_one(template=self.sword3_half_mat,
                                                      box=self.sword3_half_box, threshold=0.5))
         return self.is_cartethyia
-    
+
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if not self.is_cartethyia:
             return Priority.MAX
@@ -214,7 +216,7 @@ class Cartethyia(BaseChar):
         }
         self.logger.debug(f"buffs {self.buffs}")
         return self.buffs
-    
+
     def acquire_missing_buffs(self):
         self.get_sword_buffs()
         if all(self.buffs.values()):
@@ -240,7 +242,7 @@ class Cartethyia(BaseChar):
                     interrupt_handled = True
                     self.task.wait_until(lambda: self.current_tool() > 0.1, time_out=3)
                     start = time.time()
-                self.click(interval=0.1, after_sleep=0.01)
+                self.click(interval=0.2, after_sleep=0.01)
                 self.check_combat()
                 self.task.next_frame()
             self.logger.debug(f'sword2: click duration {time.time() - start}')

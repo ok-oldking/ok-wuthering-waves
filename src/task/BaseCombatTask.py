@@ -270,7 +270,7 @@ class BaseCombatTask(CombatCheck):
                         duration += step
 
                 if self.send_key_and_wait_f(direction, False, time_out=duration, running=True,
-                                                  target_text=self.absorb_echo_text()):
+                                            target_text=self.absorb_echo_text()):
                     if self.pick_f():
                         return True
                 total_index += 1
@@ -341,7 +341,7 @@ class BaseCombatTask(CombatCheck):
             if now - last_click > 0.1 and not switch_to.wait_switch():
                 self.send_key(switch_to.index + 1)
                 last_click = now
-                self.sleep(0.01)
+                self.sleep(0.2)
             in_team, current_index, size = self.in_team()
             if not in_team:
                 logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
@@ -362,7 +362,7 @@ class BaseCombatTask(CombatCheck):
                         self.screenshot(f'switch_not_detected_{current_char}_to_{switch_to}')
                     self.raise_not_in_combat('failed switch chars')
                 else:
-                    self.click(interval=0.1)
+                    self.click(interval=0.2)
             else:
                 self.in_liberation = False
                 current_char.switch_out()
