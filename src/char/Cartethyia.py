@@ -165,22 +165,19 @@ class Cartethyia(BaseChar):
             self.logger.info('perform mid-air attack')
             start = time.time()
             while True:
-                self.task.send_key('SPACE', interval=0.2)
-                self.sleep(0.01)
-                self.task.click(interval=0.2)
-                self.sleep(0.01)
+                self.task.send_key('SPACE', after_sleep=0.1)
+                self.task.click(after_sleep=0.1)
                 if not self.is_mid_air_attack_available():
-                    self.sleep(0.5)
+                    self.sleep(0.4)
                     break
                 if time.time() - start > timeout:
                     break
+                self.sleep(0.1)
         elif self.try_mid_air_attack_once:
             start = time.time()
             while time.time() - start < 0.8:
-                self.task.send_key('SPACE', interval=0.2)
-                self.sleep(0.01)
-                self.task.click(interval=0.2)
-                self.sleep(0.01)
+                self.task.send_key('SPACE', after_sleep=0.1)
+                self.task.click(after_sleep=0.1)
         self.try_mid_air_attack_once = False
 
     def is_small(self):
