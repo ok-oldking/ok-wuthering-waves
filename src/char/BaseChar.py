@@ -327,7 +327,7 @@ class BaseChar:
         self.logger.debug(f'click_resonance end clicked {clicked} duration {duration} animated {animated}')
         return clicked, duration, animated
 
-    def send_resonance_key(self, post_sleep=0, interval=-1, down_time=0.01):
+    def send_resonance_key(self, post_sleep=0.2, interval=-1, down_time=0.01):
         """发送共鸣技能按键。
 
         Args:
@@ -338,7 +338,7 @@ class BaseChar:
         self._resonance_available = False
         self.task.send_key(self.get_resonance_key(), interval=interval, down_time=down_time, after_sleep=post_sleep)
 
-    def send_echo_key(self, after_sleep=0, interval=-1, down_time=0.01):
+    def send_echo_key(self, after_sleep=0.2, interval=-1, down_time=0.01):
         """发送声骸技能按键。
 
         Args:
@@ -361,7 +361,7 @@ class BaseChar:
             self.sleep(0.05)
             return success
 
-    def send_liberation_key(self, after_sleep=0, interval=-1, down_time=0.01):
+    def send_liberation_key(self, after_sleep=0.2, interval=-1, down_time=0.01):
         """发送共鸣解放按键。
 
         Args:
