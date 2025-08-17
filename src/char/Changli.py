@@ -37,7 +37,7 @@ class Changli(BaseChar):
         if forte == 4 or self.is_mouse_forte_full():
             if self.current_tool() < 0.1:
                 self.heavy_attack()
-            self.heavy_click_forte(check_fun=self.is_mouse_forte_full)
+            self.heavy_click_forte(check_fun = self.is_mouse_forte_full)
             forte = 0
             self.check_combat()
             return self.switch_next_char()
@@ -61,7 +61,7 @@ class Changli(BaseChar):
                 if res and self.flick_resonance(send_click=False):
                     res = False
                     continue
-                self.click(interval=0.2)
+                self.click(interval=0.1)
                 if self.is_mouse_forte_full():
                     if time.time() - forte_time > 0.2:
                         break
@@ -70,12 +70,12 @@ class Changli(BaseChar):
                 self.check_combat()
                 self.task.next_frame()
             if self.is_mouse_forte_full():
-                self.heavy_click_forte(check_fun=self.is_mouse_forte_full)
+                self.heavy_click_forte(check_fun = self.is_mouse_forte_full)
                 self.sleep(1)
         elif forte >= 4 or self.is_mouse_forte_full():
             if self.current_tool() < 0.1:
                 self.heavy_attack()
-            self.heavy_click_forte(check_fun=self.is_mouse_forte_full)
+            self.heavy_click_forte(check_fun = self.is_mouse_forte_full)
             forte = 0
             self.sleep(1)
         if self.liberation_available() and self.liberation_and_heavy():
@@ -105,7 +105,7 @@ class Changli(BaseChar):
                 'liberation'):
             self.logger.debug(f'click_liberation wait ready {wait_if_cd_ready}')
             if send_click:
-                self.click(interval=0.2)
+                self.click(interval=0.1)
             self.task.next_frame()
         while self.liberation_available() and self.task.in_team()[0]:  # clicked and still in team wait for animation
             self.logger.debug('click_liberation liberation_available click')
@@ -135,7 +135,7 @@ class Changli(BaseChar):
                 clicked = True
                 self.update_liberation_cd()
             if send_click:
-                self.click(interval=0.2)
+                self.click(interval=0.1)
             if time.time() - start > 1.5 and not hold:
                 self.task.mouse_down()
                 hold = True

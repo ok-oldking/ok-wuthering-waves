@@ -55,7 +55,7 @@ class HavocRover(BaseChar):
 
     def perform_havoc_routine(self):
         self.wait_down()
-        self.heavy_click_forte(check_fun=self.is_mouse_forte_full)
+        self.heavy_click_forte(check_fun = self.is_mouse_forte_full)
         self.click_liberation(send_click=True)
         if self.click_resonance(send_click=True)[0]:
             return
@@ -82,9 +82,9 @@ class HavocRover(BaseChar):
             start = time.time()
             flying = False
             while time.time() - start < 1:
-                self.send_resonance_key(interval=0.2)
+                self.send_resonance_key(interval=0.1)
                 self.task.next_frame()
-                self.click(interval=0.2)
+                self.click(interval=0.1)
                 if flying := self.wind_routine_flying():
                     break
             if not self.use_skyfall_severance:
@@ -98,12 +98,12 @@ class HavocRover(BaseChar):
         self.click_liberation(send_click=True)
         self.wind_routine_wait_down()
 
-    def wind_routine_click_while_flying(self, duration, interval=0.2):
+    def wind_routine_click_while_flying(self, duration, interval=0.1):
         start = time.time()
         while time.time() - start < duration:
             if not self.wind_routine_flying():
                 return False
-            self.click(interval=0.2)
+            self.click(interval=0.1)
             self.sleep(interval)
         return True
 
@@ -119,7 +119,7 @@ class HavocRover(BaseChar):
                 self.wait_down()
             else:
                 self.task.wait_until(lambda: self.current_resonance() < 0.23,
-                                     post_action=lambda: self.click(interval=0.2, after_sleep=0.01), time_out=2.5)
+                                     post_action=lambda: self.click(interval=0.1, after_sleep=0.01), time_out=2.5)
         if check_forte_full:
             self.sleep(0.03)
             if self.is_forte_full():

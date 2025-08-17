@@ -160,7 +160,7 @@ class BaseChar:
         return (self.current_resonance() > 0 and not self.has_cd('resonance')) or (
                 self.current_liberation() > 0 and not self.has_cd('liberation'))
 
-    def click_with_interval(self, interval=0.2):
+    def click_with_interval(self, interval=0.1):
         """以指定间隔执行点击操作。
 
         Args:
@@ -481,12 +481,12 @@ class BaseChar:
                 'liberation'):
             self.logger.debug(f'click_liberation wait ready {wait_if_cd_ready}')
             if send_click:
-                self.click(interval=0.2)
+                self.click(interval=0.1)
             self.task.next_frame()
         while self.liberation_available():  # clicked and still in team wait for animation
             self.logger.debug(f'click_liberation liberation_available click')
             if send_click:
-                self.click(interval=0.2)
+                self.click(interval=0.1)
             now = time.time()
             if now - last_click > 0.1:
                 self.send_liberation_key()
@@ -514,7 +514,7 @@ class BaseChar:
             if not clicked:
                 clicked = True
             if send_click:
-                self.click(interval=0.2)
+                self.click(interval=0.1)
             if time.time() - start > 7:
                 self.task.in_liberation = False
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
@@ -707,9 +707,9 @@ class BaseChar:
         """普通攻击直到可以切人。"""
         self.task.click()
         while self.time_elapsed_accounting_for_freeze(self.last_perform) < 1.1:
-            self.task.click(interval=0.2)
+            self.task.click(interval=0.1)
 
-    def continues_normal_attack(self, duration, interval=0.2, after_sleep=0, click_resonance_if_ready_and_return=False,
+    def continues_normal_attack(self, duration, interval=0.1, after_sleep=0, click_resonance_if_ready_and_return=False,
                                 until_con_full=False):
         """持续进行普通攻击一段时间。
 
@@ -729,7 +729,7 @@ class BaseChar:
             self.sleep(interval)
         self.sleep(after_sleep)
 
-    def continues_click(self, key, duration, interval=0.2):
+    def continues_click(self, key, duration, interval=0.1):
         """持续发送指定按键一段时间。
 
         Args:
@@ -741,7 +741,7 @@ class BaseChar:
         while time.time() - start < duration:
             self.task.send_key(key, interval=interval)
 
-    def continues_right_click(self, duration, interval=0.2, direction_key=None):
+    def continues_right_click(self, duration, interval=0.1, direction_key=None):
         """持续进行鼠标右键点击操作一段时间，可选同时按住方向键。
 
         Args:

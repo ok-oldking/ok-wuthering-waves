@@ -68,7 +68,7 @@ class Roccia(BaseChar):
         self.task.send_key_down('w')
         while (self.is_mouse_forte_full() and time.time() - start < 1.1) or (
                 starting_count > 0 and time.time() - start < 4):
-            self.click(interval=0.2)
+            self.click(interval=0.1)
             if starting_count == 0:
                 starting_count = self.get_plunge_count()
                 # if starting_count > 0:
@@ -84,7 +84,7 @@ class Roccia(BaseChar):
         start = time.time()
         # has_charge = self.is_mouse_forte_full()
         while time.time() - start < 11:
-            self.click(interval=0.2)
+            self.click(interval=0.1)
         return True
 
 

@@ -239,7 +239,7 @@ class Cartethyia(BaseChar):
                     interrupt_handled = True
                     self.task.wait_until(lambda: self.current_tool() > 0.1, time_out=3)
                     start = time.time()
-                self.click(interval=0.2, after_sleep=0.01)
+                self.click(interval=0.1, after_sleep=0.01)
                 self.check_combat()
                 self.task.next_frame()
             self.logger.debug(f'sword2: click duration {time.time() - start}')
