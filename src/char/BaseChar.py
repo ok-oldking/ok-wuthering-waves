@@ -709,6 +709,12 @@ class BaseChar:
         while self.time_elapsed_accounting_for_freeze(self.last_perform) < 1.1:
             self.task.click(interval=0.1)
 
+    def wait_switch_cd(self):
+        since_last_switch = self.time_elapsed_accounting_for_freeze(self.last_perform)
+        self.logger.debug(f'wait_switch_cd {since_last_switch}')
+        if since_last_switch < 1:
+            self.continues_normal_attack(since_last_switch - 1)
+
     def continues_normal_attack(self, duration, interval=0.1, after_sleep=0, click_resonance_if_ready_and_return=False,
                                 until_con_full=False):
         """持续进行普通攻击一段时间。

@@ -289,6 +289,7 @@ class BaseCombatTask(CombatCheck):
         has_intro = free_intro
         current_con = 0
         self.update_lib_portrait_icon()
+        current_char.wait_switch_cd()
         if not has_intro:
             current_con = current_char.get_current_con()
             if current_con > 0.8 and current_con != 1:
