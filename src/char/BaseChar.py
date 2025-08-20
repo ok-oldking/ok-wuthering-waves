@@ -465,7 +465,6 @@ class BaseChar:
             con_less_than (float, optional): 仅当协奏值小于此值时释放。默认为 -1 (不检查)。
             send_click (bool, optional): 进入动画后是否发送普通点击。默认为 False。
             wait_if_cd_ready (float, optional): 如果技能冷却即将完成, 等待多少秒。默认为 0。
-            timeout (int, optional): 操作超时时间 (秒)。默认为 5。
 
         Returns:
             bool: 如果成功释放则返回 True。
@@ -477,8 +476,7 @@ class BaseChar:
         start = time.time()
         last_click = 0
         clicked = False
-        while time.time() - start < wait_if_cd_ready and not self.liberation_available() and not self.has_cd(
-                'liberation'):
+        while time.time() - start < wait_if_cd_ready:
             self.logger.debug(f'click_liberation wait ready {wait_if_cd_ready}')
             self.send_liberation_key(after_sleep=0.05)
             if send_click:
