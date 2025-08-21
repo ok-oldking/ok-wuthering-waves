@@ -458,7 +458,7 @@ class BaseChar:
         self._echo_available = False
         self._resonance_available = False
 
-    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0):
+    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0.1):
         """尝试点击并释放共鸣解放。
 
         Args:
@@ -476,15 +476,6 @@ class BaseChar:
         start = time.time()
         last_click = 0
         clicked = False
-        while time.time() - start < wait_if_cd_ready:
-            self.logger.debug(f'click_liberation wait ready {wait_if_cd_ready}')
-            self.send_liberation_key(after_sleep=0.05)
-            if send_click:
-                self.click(after_sleep=0.05)
-            if not self.task.in_team()[0]:
-                self.task.in_liberation = True
-                break
-            self.task.next_frame()
         if not self.task.in_liberation:
             while self.liberation_available():  # clicked and still in team wait for animation
                 self.logger.debug(f'click_liberation liberation_available click')
@@ -510,7 +501,8 @@ class BaseChar:
                     self.logger.error(f'clicked liberation but no effect')
                     return False
             else:
-                if not self.has_cd('liberation'):
+                start = time.time()
+                while not self.has_cd('liberation') and time.time() - start < wait_if_cd_ready:
                     self.send_liberation_key(after_sleep=0.05)
                     if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.1):
                         self.task.in_liberation = True
