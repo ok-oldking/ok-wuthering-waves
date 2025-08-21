@@ -458,14 +458,13 @@ class BaseChar:
         self._echo_available = False
         self._resonance_available = False
 
-    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0):
+    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0.1):
         """尝试点击并释放共鸣解放。
 
         Args:
             con_less_than (float, optional): 仅当协奏值小于此值时释放。默认为 -1 (不检查)。
             send_click (bool, optional): 进入动画后是否发送普通点击。默认为 False。
             wait_if_cd_ready (float, optional): 如果技能冷却即将完成, 等待多少秒。默认为 0。
-            timeout (int, optional): 操作超时时间 (秒)。默认为 5。
 
         Returns:
             bool: 如果成功释放则返回 True。
@@ -477,37 +476,39 @@ class BaseChar:
         start = time.time()
         last_click = 0
         clicked = False
-        while time.time() - start < wait_if_cd_ready and not self.liberation_available() and not self.has_cd(
-                'liberation'):
-            self.logger.debug(f'click_liberation wait ready {wait_if_cd_ready}')
-            if send_click:
-                self.click(interval=0.1)
-            self.task.next_frame()
-        while self.liberation_available():  # clicked and still in team wait for animation
-            self.logger.debug(f'click_liberation liberation_available click')
-            if send_click:
-                self.click(interval=0.1)
-            now = time.time()
-            if now - last_click > 0.1:
-                self.send_liberation_key()
-                if not clicked:
-                    clicked = True
-                last_click = now
-            if time.time() - start > SKILL_TIME_OUT:
-                self.alert_skill_failed()
-                self.task.raise_not_in_combat('too long clicking a liberation')
-            self.task.next_frame()
-        if clicked:
-            if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4,
-                                    post_action=self.click_with_interval):
-                self.task.in_liberation = True
-                self.logger.debug(f'not in_team successfully casted liberation')
+        if not self.task.in_liberation:
+            while self.liberation_available():  # clicked and still in team wait for animation
+                self.logger.debug(f'click_liberation liberation_available click')
+                if send_click:
+                    self.click(interval=0.1)
+                now = time.time()
+                if now - last_click > 0.1:
+                    self.send_liberation_key()
+                    if not clicked:
+                        clicked = True
+                    last_click = now
+                if time.time() - start > SKILL_TIME_OUT:
+                    self.alert_skill_failed()
+                    self.task.raise_not_in_combat('too long clicking a liberation')
+                self.task.next_frame()
+            if clicked:
+                if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4,
+                                        post_action=self.click_with_interval):
+                    self.task.in_liberation = True
+                    self.logger.debug(f'not in_team successfully casted liberation')
+                else:
+                    self.task.in_liberation = False
+                    self.logger.error(f'clicked liberation but no effect')
+                    return False
             else:
-                self.task.in_liberation = False
-                self.logger.error(f'clicked liberation but no effect')
-                return False
-        else:
-            return clicked
+                start = time.time()
+                while not self.has_cd('liberation') and time.time() - start < wait_if_cd_ready:
+                    self.send_liberation_key(after_sleep=0.05)
+                    if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.1):
+                        self.task.in_liberation = True
+                        self.logger.debug(f'not in_team successfully casted liberation')
+                if not self.task.in_liberation:
+                    return False
         start = time.time()
         while not self.task.in_team()[0]:
             self.task.in_liberation = True

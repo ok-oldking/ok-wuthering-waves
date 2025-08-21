@@ -16,22 +16,15 @@ class Roccia(BaseChar):
         if self.has_intro:
             self.heavy_attack(1.6)
             self.sleep(0.1)
-            self.last_e = time.time()
             self.last_intro = time.time()
-            self.can_plunge = True
             self.plunge()
-            if not self.click_resonance()[0]:
-                self.click_echo()
-            return self.switch_next_char()
+            if not self.liberation_available() and not self.resonance_available():
+                return self.switch_next_char()
         liberated = self.click_liberation()
-        if self.click_resonance()[0]:
-            self.last_e = time.time()
-            self.can_plunge = True
-            return self.switch_next_char()
-        if not liberated:
+        if self.click_resonance()[0] or not liberated:
             self.plunge()
-        if not self.click_resonance(send_click=False)[0]:
-            self.click_echo()
+            return self.switch_next_char()
+        self.click_echo()
         self.switch_next_char()
 
     def switch_next_char(self, post_action=None, free_intro=False, target_low_con=False):
@@ -74,7 +67,6 @@ class Roccia(BaseChar):
                 # if starting_count > 0:
                 #     self.task.screenshot(f"can_plunge_{starting_count}")
             if starting_count > 0 and not self.is_mouse_forte_full():
-                self.can_plunge = False
                 break
         self.task.send_key_up('w')
         self.plunge_count = 0
