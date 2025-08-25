@@ -169,6 +169,7 @@ config = {
         ["src.task.FarmEchoTask", "FarmEchoTask"],
         ["src.task.AutoRogueTask", "AutoRogueTask"],
         ["src.task.ForgeryTask", "ForgeryTask"],
+        ["src.task.NightmareNestTask", "NightmareNestTask"],
         ["src.task.SimulationTask", "SimulationTask"],
         ["src.task.TacetTask", "TacetTask"],
         ["src.task.DiagnosisTask", "DiagnosisTask"],
