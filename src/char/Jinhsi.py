@@ -122,5 +122,5 @@ class Jinhsi(BaseChar):
         self.incarnation_cd = False
 
     def wait_resonance(self):
-        while not self.resonance_available(check_ready=True):
+        while not self.resonance_available():
             self.send_resonance_key(interval=0.1)

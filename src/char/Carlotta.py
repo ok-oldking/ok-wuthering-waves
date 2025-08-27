@@ -35,11 +35,11 @@ class Carlotta(BaseChar):
             self.logger.debug('has_intro wait click 1.3 sec')
             self.bullet = 1
             self.continues_normal_attack(1.3)
-        if self.heavy_click_forte(check_fun = self.is_mouse_forte_full):
+        if self.heavy_click_forte(check_fun=self.is_mouse_forte_full):
             return self.switch_next_char()
-        if self.liberation_available() and not self.need_fast_perform():  
+        if self.liberation_available() and not self.need_fast_perform():
             auto_dodge = -1
-            while self.liberation_available(): 
+            while self.liberation_available():
                 if auto_dodge != -1 and time.time() - auto_dodge > 0.5 and self.flying():
                     self.shorekeeper_auto_dodge()
                 if self.click_liberation_1():
@@ -151,7 +151,7 @@ class Carlotta(BaseChar):
                     self.task.click()
                     last_op = 'click'
                     continue
-                if current_resonance > 0 and self.resonance_available(current_resonance):
+                if current_resonance > 0 and self.resonance_available():
                     if resonance_click_time == 0:
                         clicked = True
                         resonance_click_time = now
@@ -168,13 +168,13 @@ class Carlotta(BaseChar):
         duration = time.time() - resonance_click_time if resonance_click_time != 0 else 0
         self.logger.debug(f'click_resonance end clicked {clicked} duration {duration} animated {animated}')
         return clicked, duration, animated
-    
+
     def echo_available(self):
         if self.is_current_char:
             return not self.has_cd('echo')
         else:
-            return not self.task.has_cd('echo', self.index)        
-     
+            return not self.task.has_cd('echo', self.index)
+
     def decide_teammate(self):
         from src.char.Zhezhi import Zhezhi
         self.press_w = 0
@@ -192,8 +192,8 @@ class Carlotta(BaseChar):
         return self.forte
 
     def get_ready(self):
-        self.logger.debug(f'carlotta_state :{self.forte},{self.resonance_available(check_cd=True)}')
-        return (self.forte > 2) or (self.resonance_available(check_cd=True) and self.forte > 0) or self.liberation_ready
+        self.logger.debug(f'carlotta_state :{self.forte},{self.resonance_available()}')
+        return (self.forte > 2) or (self.resonance_available() and self.forte > 0) or self.liberation_ready
 
     def do_perform_interlock(self):
         self.bullet = 0
@@ -212,7 +212,7 @@ class Carlotta(BaseChar):
                 return self.switch_next_char()
         if self.get_ready():
             self.continue_liberation = False
-        if self.heavy_click_forte(check_fun = self.is_mouse_forte_full):
+        if self.heavy_click_forte(check_fun=self.is_mouse_forte_full):
             self.liberation_ready = True
             return self.switch_next_char()
         if self.liberation_available() and self.continue_liberation:
@@ -243,7 +243,7 @@ class Carlotta(BaseChar):
                 if self.time_elapsed_accounting_for_freeze(self.last_perform) > 6:
                     break
                 self.check_combat()
-        if self.heavy_click_forte(check_fun = self.is_mouse_forte_full):
+        if self.heavy_click_forte(check_fun=self.is_mouse_forte_full):
             self.liberation_ready = True
             self.forte = 0
         self.check_combat()
@@ -255,7 +255,7 @@ class Carlotta(BaseChar):
             while self.time_elapsed_accounting_for_freeze(self.last_perform) < 14:
                 if self.liberation_available() and not liber:
                     auto_dodge = -1
-                    while self.liberation_available(): 
+                    while self.liberation_available():
                         if auto_dodge != -1 and time.time() - auto_dodge > 0.5 and self.flying():
                             self.shorekeeper_auto_dodge()
                         if self.click_liberation():
@@ -327,7 +327,8 @@ class Carlotta(BaseChar):
         from src.char.ShoreKeeper import ShoreKeeper
         for i, char in enumerate(self.task.chars):
             if isinstance(char, ShoreKeeper):
-                return char.auto_dodge(condition = self.flying) 
+                return char.auto_dodge(condition=self.flying)
+
 
 carlotta_forte_color = {
     'r': (70, 100),  # Red range

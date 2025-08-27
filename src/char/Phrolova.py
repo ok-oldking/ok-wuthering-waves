@@ -24,13 +24,13 @@ class Phrolova(BaseChar):
             self.continues_normal_attack(1.7)
             self.continues_right_click(0.1)
         if self.flying():
-            self.wait_down() 
+            self.wait_down()
         if self.liberation_available() and self.click_liberation(wait_if_cd_ready=0):
             if self.task.name and self.task.name == "Nightmare Nest Task":
                 self.continues_click(self.get_liberation_key(), 1)
             return self.switch_next_char()
         if self.heavy_and_liber():
-            return self.switch_next_char()  
+            return self.switch_next_char()
         if self.resonance_available() or self.res_ready:
             self.continues_normal_attack(0.1)
             self.click_resonance()
@@ -43,7 +43,7 @@ class Phrolova(BaseChar):
         timeout = lambda: time.time() - start < 4
         if perform_under_outro:
             timeout = lambda: self.time_elapsed_accounting_for_freeze(self.last_perform) < 16
-            self.sp = True 
+            self.sp = True
         while timeout():
             if self.liberation_available() and self.click_liberation(wait_if_cd_ready=0):
                 if self.task.name and self.task.name == "Nightmare Nest Task":
@@ -58,7 +58,8 @@ class Phrolova(BaseChar):
                     self.continues_normal_attack(0.3)
                     if self.click_resonance():
                         self.continues_normal_attack(0.1)
-                        self.task.wait_until(lambda: not self.resonance_available(), post_action=self.task.click, time_out=0.3)
+                        self.task.wait_until(lambda: not self.resonance_available(), post_action=self.task.click,
+                                             time_out=0.3)
                         if not self.click_echo():
                             self.continues_right_click(0.1)
                 else:
@@ -67,25 +68,25 @@ class Phrolova(BaseChar):
             self.task.click()
             self.check_combat()
             self.task.next_frame()
-        self.switch_next_char()   
+        self.switch_next_char()
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.time_elapsed_accounting_for_freeze(self.last_liberation) > 14 and has_intro and current_char.char_name in {'char_cantarella'}:
+        if self.time_elapsed_accounting_for_freeze(
+                self.last_liberation) > 14 and has_intro and current_char.char_name in {'char_cantarella'}:
             return Priority.MAX
         self.logger.debug(f'Phrolova last_liberation {self.time_elapsed_accounting_for_freeze(self.last_liberation)}')
         if self.time_elapsed_accounting_for_freeze(self.last_liberation) < 24:
             return Priority.MIN
         return Priority.FAST_SWITCH
 
-    def resonance_available(self, current=None, check_ready=False, check_cd=False):
+    def resonance_available(self):
         if self.sp:
             return not (self.flying() or self.has_cd('resonance'))
-        return super().resonance_available(current = current, check_ready=check_ready, check_cd=check_cd)
-        
+        return super().resonance_available()
 
     def heavy_and_liber(self):
         if self.heavy_click_forte(check_fun=self.is_mouse_forte_full):
-            self.logger.debug('Phrolova heavy_click_forte')           
+            self.logger.debug('Phrolova heavy_click_forte')
             self.task.wait_until(lambda: self.click_liberation(wait_if_cd_ready=0), time_out=3)
             if self.task.name and self.task.name == "Nightmare Nest Task":
                 self.continues_click(self.get_liberation_key(), 1)
@@ -95,4 +96,4 @@ class Phrolova(BaseChar):
         from src.char.ShoreKeeper import ShoreKeeper
         for i, char in enumerate(self.task.chars):
             if isinstance(char, ShoreKeeper):
-                return char.auto_dodge(condition = self.flying)   
+                return char.auto_dodge(condition=self.flying)

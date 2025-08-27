@@ -18,8 +18,8 @@ class Priority(IntEnum):
     CURRENT_CHAR = -100  # 当前角色
     CURRENT_CHAR_PLUS = CURRENT_CHAR + 1  # 当前角色稍高优先级 (特殊情况)
     SKILL_AVAILABLE = 100  # 有可用技能
-    ALL_IN_CD = 0  # 所有技能冷却中
-    NORMAL = 10  # 普通优先级
+    BASE_MINUS_1 = -1
+    BASE = 0
     MAX = 9999999999  # 最高优先级
     FAST_SWITCH = MAX - 100  # 快速切换优先级 (例如应对特殊机制)
 
@@ -296,7 +296,7 @@ class BaseChar:
             self.check_combat()
             now = time.time()
             current_resonance = self.current_resonance()
-            if not self.resonance_available(current_resonance, check_cd=check_cd) and (
+            if not self.resonance_available() and (
                     not has_animation or now - start > animation_min_duration):
                 self.logger.debug(f'click_resonance not available break')
                 break
@@ -307,7 +307,7 @@ class BaseChar:
                     self.task.click()
                     last_op = 'click'
                     continue
-                if current_resonance > 0 and self.resonance_available(current_resonance):
+                if current_resonance > 0 and self.resonance_available():
                     if resonance_click_time == 0:
                         clicked = True
                         resonance_click_time = now
@@ -585,7 +585,7 @@ class BaseChar:
         Returns:
             int: 基础优先级数值。
         """
-        priority = 0
+        priority = Priority.BASE
         if self.count_liberation_priority() and self.liberation_available():
             priority += self.count_liberation_priority()
         if self.count_resonance_priority() and self.resonance_available():
@@ -619,7 +619,7 @@ class BaseChar:
         """计算共鸣回路技能对切换优先级的贡献值。"""
         return 0
 
-    def resonance_available(self, current=None, check_ready=False, check_cd=False):
+    def resonance_available(self):
         """判断共鸣技能是否可用。
 
         Args:

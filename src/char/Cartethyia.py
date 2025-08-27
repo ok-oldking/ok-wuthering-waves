@@ -125,7 +125,7 @@ class Cartethyia(BaseChar):
             self.logger.debug(f'click_resonance resonance_available click {current_resonance}')
 
             if now - last_click > 0.1:
-                if current_resonance > 0 and self.resonance_available(current_resonance):
+                if current_resonance > 0 and self.resonance_available():
                     if current_resonance < 0.17 and time.time() - resonance_click_time < 2.5:
                         self.click()
                         continue
