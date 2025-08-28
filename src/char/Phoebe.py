@@ -57,6 +57,8 @@ class Phoebe(BaseChar):
         attribute_mismatch = self.check_attribute_mismatch()
 
         if self.attribute == 2 and self.char_zani is not None:
+            if not self.star_available:
+                self.absolution_or_confession()
             if self.zani_linkage():
                 return self.switch_next_char()
 
