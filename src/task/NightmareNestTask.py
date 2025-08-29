@@ -31,9 +31,9 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.status = -1
         self.stamina = 2
         self.last_purple_icon = None
-        self.echo_list_cn = ["梦魇·振铎"]
-        self.echo_list_tw = ["夢魘·振鐸"]
-        self.echo_list_us = ["Nightmare: Tambourinist"]
+        self.echo_list_cn = ["梦魇·振铎", "梦魇·紫羽", "梦魇·青羽"]
+        self.echo_list_tw = ["夢魘·振鐸", "夢魘·紫羽鷺", "夢魘·青羽鷺"]
+        self.echo_list_us = ["Nightmare: Tambourinist", "Nightmare: Violet-F", "Nightmare: Cyan-F"]
 
     def run(self):
         WWOneTimeTask.run(self)
@@ -56,10 +56,10 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                     chance = True
                 if circle >= 30:
                     break
-        for echo_name in self.find_echo_list():
+        for i, echo_name in enumerate(self.find_echo_list()):
             self.ensure_main(time_out=180)
-            self.openF2Book("gray_book_quest")
-            self.click(0.04, 0.53)
+            gray_book_boss = self.openF2Book("gray_book_all_monsters")
+            self.click_box(gray_book_boss)
             self.wait_hint(0.05, 0.04, 0.12, 0.08, r'敌迹探寻')
             self.click(0.13, 0.14, after_sleep=0.5)
             self.input_text(echo_name)
@@ -67,11 +67,12 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self.click(0.13, 0.24, after_sleep=0.5)
             self.click(0.89, 0.92)
             self.wait_hint(0.79, 0.91, 0.87, 0.95, r'快速旅行')
-            if self.find_next_hint(0.90, 0.36, 0.94, 0.41, r'36'):
+            if self.find_next_hint(0.90, 0.31, 0.94, 0.41, r'36'):
                 self.log_info(f'{echo_name} is complete')
                 continue
             self.click(0.89, 0.92)
             self.wait_in_team_and_world(raise_if_not_found=False)
+            self.perform_before_battle(i)
             self.wait_until(self.in_combat, post_action=self.middle_click, time_out=10)
             if self.in_combat():
                 self.log_info('wait combat')
@@ -165,3 +166,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             if update_function is not None:
                 update_function()
         self._stop_last_direction(last_direction)
+
+    def perform_before_battle(self, i):
+        if i == 1:
+            self.run_until(lambda: False,'s',2)
