@@ -102,6 +102,10 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.ensure_main(time_out=180)
         self.log_info(f'NightmareNestTask complete')
 
+    def on_combat_check(self):
+        self.incr_drop(self.pick_f())
+        return True
+
     def find_echo_list(self):
         if self.game_lang == 'zh_CN':
             return self.echo_list_cn
@@ -169,4 +173,4 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
 
     def perform_before_battle(self, i):
         if i == 1:
-            self.run_until(lambda: False,'s',2)
+            self.run_until(lambda: False, 's', 2)
