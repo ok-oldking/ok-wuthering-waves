@@ -174,6 +174,9 @@ class BaseCombatTask(CombatCheck):
     def sleep(self, *args, **kwargs):
         self.cd_refreshed = False
         super().sleep(*args, **kwargs)
+        
+    def revive_action(self):
+        pass
 
     def teleport_to_heal(self):
         """传送回城治疗。"""
@@ -351,7 +354,8 @@ class BaseCombatTask(CombatCheck):
                 confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2)
                 if confirm:
                     self.log_info(f'char dead')
-                    self.raise_not_in_combat(f'char dead', exception_type=CharDeadException)
+                    if not self.revive_action():
+                        self.raise_not_in_combat(f'char dead', exception_type=CharDeadException)
                 if now - start > self.switch_char_time_out:
                     self.raise_not_in_combat(
                         f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')

@@ -1,3 +1,4 @@
+import re
 import time
 
 from qfluentwidgets import FluentIcon
@@ -5,6 +6,7 @@ from qfluentwidgets import FluentIcon
 from ok import Logger, TaskDisabledException
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.WWOneTimeTask import WWOneTimeTask
+from ok import find_boxes_by_name
 
 logger = Logger.get_logger(__name__)
 
@@ -36,6 +38,15 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self._in_realm = False
         self._farm_start_time = time.time()
         self.last_night_change = 0
+        self.aim_boss = None
+        self.combat_wait_time = 0
+        self.set_night = False
+        self.boss_dict = {
+            '伪作的神王': {'name': r'伪作的神王'},
+            '异构武装': {'name': r'(异构武装|加尔古耶)','set_combat_wait': 5},
+            '荣耀狮像': {'name': r'(狮像|亚狮诺索)','set_combat_wait': 5},
+            '罗蕾莱': {'name': r'(罗蕾莱|夜之女皇)','set_night': True},
+        }
 
     def on_combat_check(self):
         if not self._in_realm:
@@ -45,6 +56,14 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.log_info(f'in_realm: {self._in_realm}')
         return True
 
+    def revive_action(self):
+        if self._in_realm:
+            return False
+        self.teleport_to_heal()
+        self.run_until(lambda: False,'s',1,running = True)
+        self.teleport_to_nearest_boss()
+        return True
+        
     def run(self):
         WWOneTimeTask.run(self)
         try:
@@ -71,7 +90,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         while count < self.config.get("Repeat Farm Count", 0):
             if not self._in_realm and time.time() - self._farm_start_time < 60:
                 self._in_realm = self.in_realm()
-            if self.config.get('Change Time to Night') and not self.in_combat():
+            if self.set_night and not self.in_combat():
                 night_elapsed = time.time() - self.last_night_change
                 self.log_info(f"Night elapsed: {night_elapsed:.1f}s")
                 if night_elapsed > 660:
@@ -83,6 +102,11 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                         post_action=lambda: self.send_key('esc', after_sleep=1),
                                         settle_time=1)
                 self.wait_in_team_and_world(time_out=120)
+                if not self.in_realm():
+                    self.sleep(1)
+                    self.pick_f()
+                    self.sleep(2)
+                    self.wait_in_team_and_world(time_out=120)
                 self.sleep(2)
             elif not self.in_combat():
                 if self._has_treasure:
@@ -104,7 +128,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.log_info('_has_treasure = True')
                     self.scroll_and_click_buttons()
 
-            self.sleep(self.config.get("Combat Wait Time", 0))
+            self.sleep(self.combat_wait_time)
+            self.check_boss_name()
 
             self.combat_once(wait_combat_time=0, raise_if_not_found=False)
             if self.pick_echo():
@@ -152,6 +177,19 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w', time_out=12, running=True)
 
     def teleport_to_nearest_boss(self):
+        if self.aim_boss is not None:
+            self.log_info(f'teleport_to_nearest_boss {self.aim_boss}')
+            self.ensure_main(time_out=180)
+            gray_book_boss = self.openF2Book("gray_book_all_monsters")
+            self.click_box(gray_book_boss, after_sleep=1)
+            self.click(0.13, 0.14, after_sleep=0.5)
+            self.input_text(self.aim_boss)
+            self.click(0.39, 0.13, after_sleep=0.5)
+            self.click(0.13, 0.24, after_sleep=0.5)
+            self.click(0.89, 0.92, after_sleep=1)
+            self.click(0.89, 0.92)
+            self.wait_in_team_and_world(time_out=30,raise_if_not_found=False)
+            return 
         self.send_key('m', after_sleep=2)
         box = self.find_best_match_in_box(self.box_of_screen(0.3, 0.3, 0.7, 0.7),
                                           ['boss_no_check_mark', 'boss_check_mark'],
@@ -196,3 +234,25 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                 time_out=3, click_after_delay=0.5, threshold=0.8)
         self.wait_click_feature('gray_start_battle', relative_x=-1, raise_if_not_found=True,
                                 click_after_delay=0.5, threshold=0.8)
+                                   
+    def check_boss_name(self):
+        self.combat_wait_time = self.config.get("Combat Wait Time", 0)
+        self.set_night = self.config.get('Change Time to Night')
+        if self.game_lang != 'zh_CN':
+            return 
+        texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160, hcenter=True),
+                         target_height=540, name='boss_lv_text')
+        for key, value in self.boss_dict.items():
+            s = value.get('name')
+            fps_text = find_boxes_by_name(texts, re.compile(s, re.IGNORECASE))
+            if fps_text:
+                self.aim_boss = key
+                if value.get('set_combat_wait'):
+                    self.combat_wait_time = value.get('set_combat_wait')
+                if value.get('set_night'):
+                    self.set_night = True
+                break
+        if self.aim_boss is not None:
+            logger.info(f'combat with {self.aim_boss}')
+        else:
+            logger.info(f'boss_string is {find_boxes_by_name(texts, [re.compile(r'(?i)^L[Vv].*')])}')
