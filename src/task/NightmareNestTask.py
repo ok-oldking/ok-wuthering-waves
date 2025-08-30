@@ -23,7 +23,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.default_config = {'_enabled': True}
         self.trigger_interval = 0.1
         self.name = "Nightmare Nest Task"
-        self.description = "Enable auto combat in Nightmare Nest"
+        self.description = "Auto Farm all Nightmare Nest"
         self.icon = FluentIcon.CALORIES
         self.last_is_click = False
         self._in_realm = False

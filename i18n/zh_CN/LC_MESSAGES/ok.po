@@ -630,5 +630,5 @@ msgstr "刷梦魇·赫卡忒选是"
 msgid "Nightmare Nest Task"
 msgstr "梦魇巢穴"
 
-msgid "Enable auto combat in Nightmare Nest"
+msgid "Auto Farm all Nightmare Nest"
 msgstr "自动刷所有梦魇巢穴"

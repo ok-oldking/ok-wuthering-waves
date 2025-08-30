@@ -626,3 +626,6 @@ msgstr "副本Boss不點擊重開"
 
 msgid "Yes if Farming Nightmare: Hecate"
 msgstr "刷夢魘·赫卡忒請選是"
+
+msgid "Auto Farm all Nightmare Nest"
+msgstr "自动刷所有梦魇巢穴"
