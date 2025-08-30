@@ -104,20 +104,9 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.info_set('current task', 'claim daily')
         self.ensure_main(time_out=5)
         self.open_daily()
-        while True:
-            boxes = self.ocr(0.23, 0.16, 0.31, 0.69, match=re.compile(r"^[1-9]\d*/\d+$"))
-            count = 0
-            for box in boxes:
-                parts = box.name.split('/')
-                if len(parts) == 2 and parts[0] == parts[1]:
-                    count += 1
-
-            self.log_info(f'can claim count {count}')
-            if count == 0:
-                break
-            for _ in range(count):
-                self.click(0.87, 0.17, after_sleep=0.5)
-            self.sleep(1)
+        
+        self.click(0.87, 0.17, after_sleep=0.5)
+        self.sleep(1)
 
         total_points = self.get_total_daily_points()
         self.info_set('daily points', total_points)
