@@ -71,7 +71,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 self.log_info(f'{echo_name} is complete')
                 continue
             self.click(0.89, 0.92)
-            self.wait_in_team_and_world(raise_if_not_found=False)
+            self.wait_in_team_and_world(raise_if_not_found=False, time_out=120)
             self.perform_before_battle(i)
             self.wait_until(self.in_combat, post_action=self.middle_click, time_out=10)
             if self.in_combat():
