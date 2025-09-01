@@ -27,6 +27,7 @@ class BaseWWTask(BaseTask):
         super().__init__(*args, **kwargs)
         self.pick_echo_config = self.get_global_config('Pick Echo Config')
         self.monthly_card_config = self.get_global_config('Monthly Card Config')
+        self.key_config = self.get_global_config('Game Hotkey Config')  # 游戏热键配置
         self.next_monthly_card_start = 0
         self._logged_in = False
 
@@ -188,13 +189,15 @@ class BaseWWTask(BaseTask):
             self.sleep(0.01)
         return None
 
-    def walk_to_box(self, find_function, time_out=30, end_condition=None, y_offset=0.05, x_threshold=0.07):
+    def walk_to_box(self, find_function, time_out=30, end_condition=None, y_offset=0.05, x_threshold=0.07,
+                    use_hook=False):
         if not find_function:
             self.log_info('find_function not found, break')
             return False
         last_direction = None
         start = time.time()
         ended = False
+        running = False
         last_target = None
         centered = False
         while time.time() - start < time_out:
@@ -237,9 +240,26 @@ class BaseWWTask(BaseTask):
                 last_direction = next_direction
                 if next_direction:
                     self.send_key_down(next_direction)
+            if running:
+                if not self.find_one('on_the_wall', threshold=0.7):
+                    self.log_info('not on the wall, stop running')
+                    self.mouse_up(key='right')
+            else:
+                if next_direction == 'w' and self.find_one('on_the_wall', threshold=0.7):
+                    self.log_info('on the wall, start running')
+                    running = True
+                    self.mouse_down(key='right')
+                    self.sleep(0.1)
+            if use_hook and next_direction == 'w':
+                if self.find_one('tool_teleport', 0.75):
+                    self.send_key(self.key_config['Tool Key'])
+                    self.sleep(3)
+                    continue
         if last_direction:
             self.send_key_up(last_direction)
             self.sleep(0.001)
+        if running:
+            self.send_key_up('shift')
         if not end_condition:
             return last_direction is not None
         else:

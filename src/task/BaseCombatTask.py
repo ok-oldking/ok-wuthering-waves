@@ -55,7 +55,6 @@ class BaseCombatTask(CombatCheck):
         super().__init__(*args, **kwargs)
         self.chars = [None, None, None]  # 角色列表
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']  # 角色文本标识符列表
-        self.key_config = self.get_global_config('Game Hotkey Config')  # 游戏热键配置
         self.mouse_pos = None  # 当前鼠标位置
         self.combat_start = 0  # 战斗开始时间戳
 

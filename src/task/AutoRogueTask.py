@@ -51,6 +51,12 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
             logger.error('farm 4c error, try handle monthly card', e)
             raise
 
+    def on_combat_check(self):
+        if ult := self.find_one('rogue_ult'):
+            self.log_info('on_combat_check found {}'.format(ult))
+            self.send_key('4')
+        return True
+
     def do_run(self):
         self.log_info('start')
         start = time.time()
@@ -117,7 +123,6 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
             # 战斗处理
             if self.in_combat():
                 self.log_info('wait combat')
-                start = time.time()
                 self.combat_once(wait_combat_time=0, raise_if_not_found=False)
                 start = time.time()
             # 领声骸奖励时体力不够：按Esc
@@ -157,7 +162,7 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
             if self.find_treasure_icon() and self.stamina > 0:
                 self.log_info('walk to treasure')
                 self.walk_to_box(self.find_treasure_icon, time_out=10, end_condition=self.find_f_with_text,
-                                 y_offset=0.1)
+                                 y_offset=0.1, use_hook=True)
                 # 走向紫标，多个紫标时优先以离屏幕中心最近的紫标为对象
             elif self.find_purple_icon():
                 self.log_info('walk to purple icon')
