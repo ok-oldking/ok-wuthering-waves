@@ -74,7 +74,7 @@ char_dict = {
     'char_phrolova': {'cls': Phrolova, 'res_cd': 12, 'echo_cd': 25, 'liberation_cd': 20,
                       'ring_index': Elements.HAVOC},
     'Augusta': {'cls': Augusta, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25,
-                'ring_index': Elements.FIRE},
+                'ring_index': Elements.ELECTRIC},
 }
 
 char_names = char_dict.keys()

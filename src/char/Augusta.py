@@ -36,22 +36,23 @@ class Augusta(BaseChar):
                 now = time.time()
                 self.click_resonance()
                 self.logger.debug(f'time = {time.time() - now}') 
-                if time.time() - now < 1:
+                if time.time() - now < 1.4:
                     if self.flying():
                         continue
                     if self.task.wait_until(self.check_prowess, time_out=1) and self.perform_prowess():
                         if time.time() - start > switch_time and not self.flying():
                             return self.switch_next_char()
                 else: 
-                    if self.check_majesty() and self.perform_majesty(wait_down=True):
-                        self.send_echo_key()
+                    if self.check_majesty():
+                        self.wait_down()
+                        if self.perform_majesty():
+                            self.send_echo_key()
                     return self.switch_next_char()
             if self.liberation_available():
                 self.logger.debug('Augusta performs single liberation')
-                self.task.wait_until(lambda: not self.liberation_available, post_action=self.send_liberation_key, time_out=1)
-                self.update_liberation_cd()
-                if time.time() - start > switch_time:
-                    return self.switch_next_char()      
+                if self.task.wait_until(lambda: not self.liberation_available(), post_action=self.send_liberation_key, time_out=2):
+                    self.update_liberation_cd()
+                    return self.switch_next_char()     
             self.click()
             self.check_combat()
             self.task.next_frame()  
@@ -88,15 +89,11 @@ class Augusta(BaseChar):
         return False
     
     def liberation_available(self):
-        current = self.task.calculate_color_percentage(text_white_color,
-                                                  self.task.get_box_by_name('box_liberation'))
-        return current > 0 and bool(self.task.find_one('Augusta_lib1', threshold=0.6))
+        return self.current_liberation() > 0 and bool(self.task.find_one('Augusta_lib1', threshold=0.6))
             
     def check_majesty(self):
-        current = self.task.calculate_color_percentage(text_white_color,
-                                                  self.task.get_box_by_name('box_liberation'))
-        return current > 0 and bool(self.task.find_one('Augusta_lib2', threshold=0.6))
-        
+        return self.current_liberation() > 0 and bool(self.task.find_one('Augusta_lib2', threshold=0.6))
+     
     def check_prowess(self):
         long_inner_box = 'box_target_enemy_long_inner'
         if self.task.find_one(long_inner_box, box=self.task.get_box_by_name(long_inner_box), threshold=0.85):
