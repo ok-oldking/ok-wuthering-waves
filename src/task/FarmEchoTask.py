@@ -171,6 +171,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             if boss in ('Fenrico'):
                 while self.find_f_with_text():
                     self.incr_drop(self.pick_echo())
+                    self.sleep(1)
                 self.teleport_to_nearest_boss()
                 self.sleep(2)
                 if self.find_treasure_icon() and self.walk_to_treasure_and_restart():
