@@ -191,10 +191,10 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
     def walk_to_purple_and_restart(self):
         if self.find_next_hint(r'奇异的白猫'):
             if self.walk_to_box(self.find_purple_icon, time_out=10, end_condition=self.find_f_with_text,
-                                y_offset=0.1):
+                                y_offset=0.1, use_hook=True):
                 return True
         elif self.walk_to_box(self.find_purple_icon, time_out=3, end_condition=self.find_f_with_text,
-                              y_offset=0.1, x_threshold=0.15):
+                              y_offset=0.1, x_threshold=0.15, use_hook=True):
             return True
 
     def walk_to_gate(self):
