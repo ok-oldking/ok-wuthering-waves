@@ -626,3 +626,27 @@ msgstr "던전에서 재시작 안 함"
 
 msgid "Yes if Farming Nightmare: Hecate"
 msgstr "악몽: 헤카테 파밍 시 '예'"
+
+msgid "Auto Farm all Nightmare Nest"
+msgstr ""
+
+msgid "Default"
+msgstr ""
+
+msgid "Fenrico"
+msgstr ""
+
+msgid "Lady of the Sea"
+msgstr ""
+
+msgid "Lioness of Glory"
+msgstr ""
+
+msgid "Nightmare Nest Task"
+msgstr ""
+
+msgid "Select boss profile (includes Combat Wait Time)"
+msgstr ""
+
+msgid "Wait time before each combat (seconds), overrides Boss profile if set"
+msgstr ""

@@ -347,18 +347,18 @@ class BaseWWTask(BaseTask):
         return self.find_one('new_realm_4') and self.in_realm() and self.find_one('illusive_realm_menu', threshold=0.6)
 
     def walk_until_f(self, direction='w', time_out=1, raise_if_not_found=True, backward_time=0, target_text=None,
-                     check_combat=False):
+                     check_combat=False, running=False):
         logger.info(f'walk_until_f direction {direction} target_text: {target_text}')
         if not self.find_f_with_text(target_text=target_text):
             # 视角朝前
             self.middle_click(after_sleep=0.2)
             if backward_time > 0:
                 if self.send_key_and_wait_f('s', raise_if_not_found, backward_time, target_text=target_text,
-                                            running=False, check_combat=check_combat):
+                                            running=running, check_combat=check_combat):
                     logger.info('walk backward found f')
                     return True
             if self.send_key_and_wait_f(direction, raise_if_not_found, time_out, target_text=target_text,
-                                        running=False, check_combat=check_combat):
+                                        running=running, check_combat=check_combat):
                 logger.info('walk forward found f')
                 return True
             return False
@@ -435,15 +435,16 @@ class BaseWWTask(BaseTask):
             return
         self.send_key_down(direction)
         if running:
-            self.mouse_down(key='right')
             self.sleep(0.1)
-        if running:
-            self.mouse_up(key='right')
+            self.mouse_down(key='right')
         f_found = self.wait_until(
             lambda: self.find_f_with_text(target_text=target_text) or (check_combat and self.in_combat()),
             time_out=time_out,
             raise_if_not_found=False)
         self.send_key_up(direction)
+        if running:
+            self.sleep(0.1)
+            self.mouse_up(key='right')
         if not f_found:
             if raise_if_not_found:
                 raise CannotFindException('cant find the f to enter')
@@ -460,11 +461,12 @@ class BaseWWTask(BaseTask):
             self.sleep(0.1)
             logger.debug(f'run_until condiction {condiction} direction {direction}')
             self.mouse_down(key='right')
-            self.sleep(0.1)
-            self.mouse_up(key='right')
         result = self.wait_until(condiction, time_out=time_out,
                                  raise_if_not_found=raise_if_not_found)
         self.send_key_up(direction)
+        if running:
+            self.sleep(0.1)
+            self.mouse_up(key='right')
 
         return result
 

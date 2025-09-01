@@ -1,4 +1,4 @@
-import re
+import re, cv2
 import time
 
 from qfluentwidgets import FluentIcon
@@ -18,19 +18,19 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.description = "Click Start after Entering Dungeon or Teleporting to The Boss"
         self.name = "Farm 4C Echo in Dungeon/World"
         self.default_config.update({
+            'Boss': 'Default',
             'Repeat Farm Count': 10000,
             'Combat Wait Time': 0,
             'Echo Pickup Method': 'Walk',
-            'Change Time to Night': False,
-            "Don't restart in Realm": False,
         })
         self.config_description.update({
-            'Combat Wait Time': 'Wait time before each combat(seconds), set 5 if farming Sentry Construct',
-            'Change Time to Night': "Yes if Farming Lorelei",
-            "Don't restart in Realm": 'Yes if Farming Nightmare: Hecate',
+            'Boss': 'Select boss profile (includes Combat Wait Time)',
+            'Combat Wait Time': 'Wait time before each combat (seconds), overrides Boss profile if set',
         })
         self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
+        self.boss_list = ['Default', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory', 'Fenrico', 'Lady of the Sea']
+        self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
         self.add_exit_after_config()
@@ -41,6 +41,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.aim_boss = None
         self.combat_wait_time = 0
         self.set_night = False
+        self.bypass_end_wait = False
         self.boss_dict = {
             '伪作的神王': {'name': r'伪作的神王'},
             '异构武装': {'name': r'(异构武装|加尔古耶)','set_combat_wait': 5},
@@ -51,9 +52,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
     def on_combat_check(self):
         if not self._in_realm:
             self.incr_drop(self.pick_f(handle_claim=True))
-        if not self._in_realm and time.time() - self._farm_start_time < 20:
-            self._in_realm = self.in_realm()
-            self.log_info(f'in_realm: {self._in_realm}')
+        self.in_realm_check(20)
         return True
 
     def revive_action(self):
@@ -82,42 +81,29 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self._in_realm = self.in_realm()
         self.log_info(f'in_realm: {self._in_realm}')
         self._farm_start_time = time.time()
-        self.target_enemy_time_out = 3 if self._in_realm else 1.2
-        self.switch_char_time_out = 5 if self._in_realm else 3
-        threshold = 0.25 if self._in_realm else 0.65
-        time_out = 12 if self._in_realm else 4
         self._has_treasure = False
+        self.init_parameters()
         while count < self.config.get("Repeat Farm Count", 0):
-            if not self._in_realm and time.time() - self._farm_start_time < 60:
-                self._in_realm = self.in_realm()
-            if self.set_night and not self.in_combat():
-                night_elapsed = time.time() - self.last_night_change
-                self.log_info(f"Night elapsed: {night_elapsed:.1f}s")
-                if night_elapsed > 660:
-                    self.change_time_to_night()
-                    self.last_night_change = time.time()
-            if self._in_realm:
-                self.send_key('esc', after_sleep=0.5)
-                self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
-                                        post_action=lambda: self.send_key('esc', after_sleep=1),
-                                        settle_time=1)
-                self.wait_in_team_and_world(time_out=120)
-                if not self.in_realm():
-                    self.sleep(1)
-                    self.pick_f()
-                    self.sleep(2)
+            self.in_realm_check(60)
+            self.manage_boss_interactions()
+            if not self.in_combat():
+                if self._in_realm:
+                    self.send_key('esc', after_sleep=0.5)
+                    self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
+                                            post_action=lambda: self.send_key('esc', after_sleep=1),
+                                            settle_time=1)
                     self.wait_in_team_and_world(time_out=120)
-                self.sleep(2)
-            elif not self.in_combat():
-                if self._has_treasure:
-                    self.wait_until(lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(),
-                                    time_out=5, raise_if_not_found=False)
-                if not self.in_combat():
-                    self.log_info('not in combat try click restart')
-                    if self.walk_to_treasure_and_restart():
-                        self._has_treasure = True
-                        self.log_info('_has_treasure = True')
-                    self.scroll_and_click_buttons()
+                    self.sleep(2)
+                else:
+                    if self._has_treasure:
+                        self.wait_until(lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(),
+                                        time_out=5, raise_if_not_found=False)
+                    if not self.in_combat():
+                        self.log_info('not in combat try click restart')
+                        if self.walk_to_treasure_and_restart():
+                            self._has_treasure = True
+                            self.log_info('_has_treasure = True')
+                        self.scroll_and_click_buttons()
 
             count += 1
             self.log_info('start wait in combat')
@@ -129,7 +115,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.scroll_and_click_buttons()
 
             self.sleep(self.combat_wait_time)
-            self.check_boss_name()
+            self.log_info(f'combat_wait_time: {self.combat_wait_time}')
+            #self.check_boss_name()
 
             self.combat_once(wait_combat_time=0, raise_if_not_found=False)
             if self.pick_echo():
@@ -137,7 +124,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 dropped = True
             elif self.config.get('Echo Pickup Method', "Yolo") == "Yolo":
                 dropped = \
-                    self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=time_out, threshold=threshold)[0]
+                    self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=self.yolo_time_out, threshold=self.yolo_threshold)[0]
                 logger.info(f'farm echo yolo find {dropped}')
             elif self.config.get('Echo Pickup Method', "Yolo") == "Run in Circle":
                 dropped = self.run_in_circle_to_find_echo(circle_count=2)
@@ -146,10 +133,73 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 dropped = self.walk_find_echo()
                 logger.info(f'farm echo walk_find_echo {dropped}')
             self.incr_drop(dropped)
-            if dropped and not self._has_treasure:
-                self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
-            else:
-                self.wait_until(self.in_combat, raise_if_not_found=False, time_out=1)
+            if not self.bypass_end_wait:
+                if dropped and not self._has_treasure:
+                    self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
+                else:
+                    self.wait_until(self.in_combat, raise_if_not_found=False, time_out=1)
+
+    def in_realm_check(self, time_threshold):
+        if not self._in_realm and time.time() - self._farm_start_time < time_threshold:
+            self._in_realm = self.in_realm()
+            if self._in_realm:
+                self.init_parameters()
+                self.log_info(f'in_realm: {self._in_realm}')
+
+    def manage_boss_interactions(self):
+        boss = self.config.get('Boss')
+        if boss in ('Sentry Construct', 'Lioness of Glory', 'Fallacy of No Return'):
+            self.combat_wait_time = 5
+        else:
+            self.combat_wait_time = self.config.get("Combat Wait Time", 0)
+        self.bypass_end_wait = boss in ('Fenrico', 'Fallacy of No Return')
+        if self.in_combat():
+            return
+        if boss != 'Default':
+            if boss in ('Lorelei'):
+                night_elapsed = time.time() - self.last_night_change
+                self.log_info(f"Night elapsed: {night_elapsed:.1f}s")
+                if night_elapsed > 660:
+                    self.change_time_to_night()
+                    self.last_night_change = time.time()
+            if boss in ('Fallacy of No Return'):
+                if not self.find_f_with_text():
+                    self.teleport_to_heal(esc=False)
+                if self.walk_until_f(time_out=20, check_combat=True, running=True):
+                    self.scroll_and_click_buttons()
+                    self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
+            if boss in ('Fenrico'):
+                while self.find_f_with_text():
+                    self.incr_drop(self.pick_echo())
+                    self.sleep(1)
+                self.teleport_to_nearest_boss()
+                self.sleep(2)
+                if self.find_treasure_icon() and self.walk_to_treasure_and_restart():
+                    self._has_treasure = True
+                    self.log_info('_has_treasure = True')
+                    self.scroll_and_click_buttons()
+                    self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
+            if boss in ('Lady of the Sea'):
+                self.send_key('esc', after_sleep=0.5)
+                self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
+                                        post_action=lambda: self.send_key('esc', after_sleep=1),
+                                        settle_time=1)
+                self.sleep(2)
+                self.wait_in_team_and_world(time_out=120)
+                self.sleep(2)
+                if not self.in_realm():
+                    self.pick_f()
+                    self.sleep(2)
+                    self.wait_in_team_and_world(time_out=120)
+                    self.wait_until(self.in_combat, raise_if_not_found=False, time_out=7)
+            if boss not in self.boss_list:
+                logger.warning(f'unknown boss profile {boss}, run as Default')
+
+    def init_parameters(self):
+        self.target_enemy_time_out = 3 if self._in_realm else 1.2
+        self.switch_char_time_out = 5 if self._in_realm else 3
+        self.yolo_threshold = 0.25 if self._in_realm else 0.65
+        self.yolo_time_out = 12 if self._in_realm else 4
 
     def go_to_boss_minimap(self, threshold=0.5, time_out=15):
         start_time = time.time()
@@ -192,8 +242,23 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             return 
         self.send_key('m', after_sleep=2)
         box = self.find_best_match_in_box(self.box_of_screen(0.3, 0.3, 0.7, 0.7),
-                                          ['boss_no_check_mark', 'boss_check_mark'],
-                                          threshold=0.6)
+                                          ['boss_check_mark'], threshold=0.8)
+        if box is None:
+            boss_template = self.get_feature_by_name('boss_no_check_mark')
+            original_mat = boss_template.mat
+            (h, w) = boss_template.mat.shape[:2]
+            center = (w // 2, h // 2)
+            targets = []
+            for angle in range(0, 270, 90):
+                # Rotate the template image
+                rotation_matrix = cv2.getRotationMatrix2D(center, -angle, 1.0)
+                template = cv2.warpAffine(original_mat, rotation_matrix, (w, h))
+                boxes = self.find_feature(box=box, template=template, threshold=0.7)
+                targets.extend(boxes)
+            box = max(targets, key=lambda box: box.confidence, default=None)
+            if box is None:
+                raise Exception(f"boss not found")
+
         self.log_info(f'teleport_to_nearest_boss {box}')
         if box:
             self.click_box(box)
