@@ -626,3 +626,27 @@ msgstr "No reiniciar en el Reino"
 
 msgid "Yes if Farming Nightmare: Hecate"
 msgstr "Sí si farmeas Pesadilla: Hécate"
+
+msgid "Auto Farm all Nightmare Nest"
+msgstr ""
+
+msgid "Default"
+msgstr ""
+
+msgid "Fenrico"
+msgstr ""
+
+msgid "Lady of the Sea"
+msgstr ""
+
+msgid "Lioness of Glory"
+msgstr ""
+
+msgid "Nightmare Nest Task"
+msgstr ""
+
+msgid "Select boss profile (includes Combat Wait Time)"
+msgstr ""
+
+msgid "Wait time before each combat (seconds), overrides Boss profile if set"
+msgstr ""

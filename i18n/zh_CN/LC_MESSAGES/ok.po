@@ -537,9 +537,6 @@ msgstr "刷4C(大世界/副本)"
 msgid "Combat Wait Time"
 msgstr "战斗开始前等待时间(秒)"
 
-msgid "Wait time before each combat(seconds), set 5 if farming Sentry Construct"
-msgstr "如果刷异构武装设置为5秒"
-
 msgid "Simulation Challenge"
 msgstr "模拟领域"
 
@@ -632,3 +629,21 @@ msgstr "梦魇巢穴"
 
 msgid "Auto Farm all Nightmare Nest"
 msgstr "自动刷所有梦魇巢穴"
+
+msgid "Select boss profile (includes Combat Wait Time)"
+msgstr "选择Boss配置 (已包含战斗开始前等待时间)"
+
+msgid "Wait time before each combat (seconds), overrides Boss profile if set"
+msgstr "若设定大于0则覆盖Boss配置"
+
+msgid "Default"
+msgstr "默认"
+
+msgid "Lioness of Glory"
+msgstr "荣耀狮像"
+
+msgid "Fenrico"
+msgstr "芬莱克"
+
+msgid "Lady of the Sea"
+msgstr "海之女"

@@ -177,16 +177,17 @@ class BaseCombatTask(CombatCheck):
     def revive_action(self):
         pass
 
-    def teleport_to_heal(self):
+    def teleport_to_heal(self, esc=True):
         """传送回城治疗。"""
-        self.sleep(1)
-        self.info['Death Count'] = self.info.get('Death Count', 0) + 1
-        self.send_key('esc', after_sleep=2)
+        if esc:
+            self.sleep(1)
+            self.info['Death Count'] = self.info.get('Death Count', 0) + 1
+            self.send_key('esc', after_sleep=2)
         self.log_info('click m to open the map')
         self.send_key('m', after_sleep=2)
 
         teleport = self.find_best_match_in_box(self.box_of_screen(0.1, 0.1, 0.9, 0.9),
-                                               ['map_way_point', 'map_way_point_big'], 0.8)
+                                               ['map_way_point', 'map_way_point_big'], 0.7)
         if not teleport:
             raise RuntimeError(f'Can not find a teleport to heal')
         self.click(teleport, after_sleep=1)
