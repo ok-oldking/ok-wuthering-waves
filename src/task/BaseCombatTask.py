@@ -174,7 +174,7 @@ class BaseCombatTask(CombatCheck):
     def sleep(self, *args, **kwargs):
         self.cd_refreshed = False
         super().sleep(*args, **kwargs)
-        
+
     def revive_action(self):
         pass
 

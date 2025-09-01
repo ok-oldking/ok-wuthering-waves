@@ -33,10 +33,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         while self.in_combat():
             ret = True
             try:
-                if self._in_illusive:
-                    self.realm_perform()
-                else:
-                    self.get_current_char().perform()
+                self.get_current_char().perform()
             except CharDeadException:
                 self.log_error(f'Characters dead', notify=True)
                 break

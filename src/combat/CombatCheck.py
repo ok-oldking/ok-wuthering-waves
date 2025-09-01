@@ -33,7 +33,6 @@ class CombatCheck(BaseWWTask):
         self.target_enemy_time_out = 3
         self.switch_char_time_out = 5
         self.combat_end_condition = None
-        self._in_illusive = False
         self.has_lavitator = False
         self.cds = {
         }
@@ -84,7 +83,6 @@ class CombatCheck(BaseWWTask):
         self.boss_health = None
         self.boss_health_box = None
         self.last_in_realm_not_combat = 0
-        self._in_illusive = False
         self.has_lavitator = False
         return False
 
@@ -154,7 +152,6 @@ class CombatCheck(BaseWWTask):
             in_combat = has_target or ((self.config.get('Auto Target') or not isinstance(self,
                                                                                          AutoCombatTask)) and self.check_health_bar())
             if in_combat:
-                self._in_illusive = self.in_illusive_realm()
                 if not has_target and not self.target_enemy(wait=True):
                     return False
                 logger.info(
