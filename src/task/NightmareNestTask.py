@@ -15,6 +15,11 @@ from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
 
+nest_list = {
+    '千没沉岛': {'index_cn':"梦魇·振铎", 'index_tw':"夢魘·振鐸", 'index_us':"Nightmare: Tambourinist", 'direction':'w', 'running_time':1.5, 'set_night':False},
+    '受蚀地': {'index_cn':"梦魇·紫羽", 'index_tw':"夢魘·紫羽鷺", 'index_us':"Nightmare: Violet-F", 'direction':'s', 'running_time':2.5, 'set_night':True},
+    '潮痕岩摊': {'index_cn':"梦魇·青羽", 'index_tw':"夢魘·青羽鷺", 'index_us':"Nightmare: Cyan-F", 'direction':'s', 'running_time':2.5, 'set_night':True}
+}
 
 class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
 
@@ -26,14 +31,6 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.description = "Auto Farm all Nightmare Nest"
         self.icon = FluentIcon.CALORIES
         self.last_is_click = False
-        self._in_realm = False
-        self.skip_f = 0
-        self.status = -1
-        self.stamina = 2
-        self.last_purple_icon = None
-        self.echo_list_cn = ["梦魇·振铎", "梦魇·紫羽", "梦魇·青羽"]
-        self.echo_list_tw = ["夢魘·振鐸", "夢魘·紫羽鷺", "夢魘·青羽鷺"]
-        self.echo_list_us = ["Nightmare: Tambourinist", "Nightmare: Violet-F", "Nightmare: Cyan-F"]
 
     def run(self):
         WWOneTimeTask.run(self)
@@ -56,7 +53,14 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                     chance = True
                 if circle >= 30:
                     break
-        for i, echo_name in enumerate(self.find_echo_list()):
+        for _, value in nest_list.items():
+            if self.game_lang == 'zh_CN':
+                echo_name = value.get('index_cn')
+            elif self.game_lang == 'zh_TW':
+                echo_name = value.get('index_tw')
+            else:
+                echo_name = value.get('index_us')
+
             self.ensure_main(time_out=180)
             gray_book_boss = self.openF2Book("gray_book_all_monsters")
             self.click_box(gray_book_boss)
@@ -72,7 +76,11 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 continue
             self.click(0.89, 0.92)
             self.wait_in_team_and_world(raise_if_not_found=False, time_out=120)
-            self.perform_before_battle(i)
+            self.sleep(1)
+            if value.get('set_night'):
+                self.change_time_to_night()
+                self.sleep(1)
+            self.run_until(lambda: False,value.get('direction'),value.get('running_time'),running = True)            
             self.wait_until(self.in_combat, post_action=self.middle_click, time_out=10)
             if self.in_combat():
                 self.log_info('wait combat')
@@ -82,22 +90,26 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 continue
             self.log_info('find echo')
             self.pick_echo()
-            chance = True
             circle = 0
             while True:
-                dropped, has_more = self.yolo_find_echo(turn=True, use_color=False, time_out=12, threshold=0.25)
-                self.sleep(0.5)
+                self.ensure_main(time_out=180)
+                gray_book_boss = self.openF2Book("gray_book_all_monsters")
+                self.click_box(gray_book_boss)
+                self.wait_hint(0.05, 0.04, 0.12, 0.08, r'敌迹探寻')
+                self.click(0.13, 0.14, after_sleep=0.5)
+                self.input_text(echo_name)
+                self.click(0.39, 0.13, after_sleep=0.5)
+                self.click(0.13, 0.24, after_sleep=0.5)
+                self.click(0.89, 0.92)
+                self.wait_hint(0.79, 0.91, 0.87, 0.95, r'快速旅行')
+                self.click(0.89, 0.92)
+                self.wait_in_team_and_world(time_out=30,raise_if_not_found=False)
+                self.sleep(1)
+                self.run_until(lambda: False,value.get('direction'),value.get('running_time'),running = True)
+                if not self.try_pick_echo():
+                    break
                 circle += 1
-                if not dropped and not has_more:
-                    if chance:
-                        self.log_info('find echo failed, have another chance')
-                        chance = False
-                    else:
-                        self.log_info('find echo failed, tele to the next')
-                        break
-                else:
-                    chance = True
-                if circle >= 30:
+                if circle > 3:
                     break
         self.ensure_main(time_out=180)
         self.log_info(f'NightmareNestTask complete')
@@ -128,49 +140,24 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             return True
         return False
 
-    def walk_to_yolo_echo(self, time_out=8, update_function=None, echo_threshold=0.5):
-        last_direction = None
-        start = time.time()
-        no_echo_start = 0
-        while time.time() - start < time_out:
-            self.next_frame()
-            if self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box, threshold=0.8):
-                self._stop_last_direction(last_direction)
-                if self.pick_f():
-                    self.log_debug('pick echo success')
-                return True
-            if self.in_combat():
-                self.log_debug('pick echo has_target return fail')
-                self._stop_last_direction(last_direction)
-                return False
-            echos = self.find_echos(threshold=echo_threshold)
-            if not echos:
-                if no_echo_start == 0:
-                    no_echo_start = time.time()
-                elif time.time() - no_echo_start > 3:
-                    self.log_debug(f'walk front to_echo, no echos found, have another chance')
-                    self._stop_last_direction(last_direction)
-                    return True
-                next_direction = 'w'
-            else:
-                no_echo_start = 0
-                echo = echos[0]
-                center_distance = echo.center()[0] - self.width_of_screen(0.5)
-                threshold = 0.05 if not last_direction else 0.15
-                if abs(center_distance) < self.height_of_screen(threshold):
-                    if echo.y + echo.height > self.height_of_screen(0.65):
-                        next_direction = 's'
-                    else:
-                        next_direction = 'w'
-                elif center_distance > 0:
-                    next_direction = 'd'
+    def try_pick_echo(self):
+        success  = False
+        circle = 0
+        chance = True
+        while True:
+            dropped, has_more = self.yolo_find_echo(turn=True, use_color=False, time_out=12, threshold=0.25)
+            self.sleep(0.5)
+            circle += 1
+            if dropped:
+                success = True             
+            if not dropped and not has_more:
+                if chance:
+                    chance = False
                 else:
-                    next_direction = 'a'
-            last_direction = self._walk_direction(last_direction, next_direction)
-            if update_function is not None:
-                update_function()
-        self._stop_last_direction(last_direction)
+                    break
+            else:
+                chance = True           
+            if circle > 15:
+                break
+        return success
 
-    def perform_before_battle(self, i):
-        if i == 1:
-            self.run_until(lambda: False, 's', 2)
