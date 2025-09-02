@@ -29,7 +29,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         })
         self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
-        self.boss_list = ['Default', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory', 'Fenrico', 'Lady of the Sea']
+        self.boss_list = ['Default', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory', 'Nightmare: Hecate', 'Fenrico', 'Lady of the Sea']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
@@ -48,6 +48,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             '荣耀狮像': {'name': r'(狮像|亚狮诺索)','set_combat_wait': 5},
             '罗蕾莱': {'name': r'(罗蕾莱|夜之女皇)','set_night': True},
         }
+        self.is_revived = False
 
     def on_combat_check(self):
         if not self._in_realm:
@@ -59,8 +60,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         if self._in_realm:
             return False
         self.teleport_to_heal()
-        self.run_until(lambda: False,'s',1,running = True)
+        self.run_until(lambda: False, 's', 1, running=True)
         self.teleport_to_nearest_boss()
+        self.sleep(0.5)
+        self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w', time_out=12, running=True)
+        self.execute_treasure_hunt()
+        self.is_revived = True
         return True
         
     def run(self):
@@ -78,14 +83,19 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
     def do_run(self):
         count = 0
+        self.manage_boss_parameters()
         self._in_realm = self.in_realm()
         self.log_info(f'in_realm: {self._in_realm}')
         self._farm_start_time = time.time()
         self._has_treasure = False
+        self.is_revived = False
         self.init_parameters()
         while count < self.config.get("Repeat Farm Count", 0):
             self.in_realm_check(60)
-            self.manage_boss_interactions()
+            if not self.is_revived:
+                self.manage_boss_interactions()
+            else:
+                self.is_revived = False
             if not self.in_combat():
                 if self._in_realm:
                     self.send_key('esc', after_sleep=0.5)
@@ -109,16 +119,15 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.log_info('start wait in combat')
             if not self._in_realm and not self._has_treasure and not self.in_combat():
                 self.go_to_boss_minimap()
-                if not self.in_combat() and self.find_treasure_icon() and self.walk_to_treasure_and_restart():
-                    self._has_treasure = True
-                    self.log_info('_has_treasure = True')
-                    self.scroll_and_click_buttons()
+                self.execute_treasure_hunt()
 
             self.sleep(self.combat_wait_time)
             self.log_info(f'combat_wait_time: {self.combat_wait_time}')
             #self.check_boss_name()
 
             self.combat_once(wait_combat_time=0, raise_if_not_found=False)
+            if self.is_revived:
+                continue
             if self.pick_echo():
                 logger.info(f'farm echo on the face')
                 dropped = True
@@ -138,6 +147,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
                 else:
                     self.wait_until(self.in_combat, raise_if_not_found=False, time_out=1)
+    
+    def execute_treasure_hunt(self):
+        if not self.in_combat() and self.find_treasure_icon() and self.walk_to_treasure_and_restart():
+            self._has_treasure = True
+            self.log_info('_has_treasure = True')
+            self.scroll_and_click_buttons()
 
     def in_realm_check(self, time_threshold):
         if not self._in_realm and time.time() - self._farm_start_time < time_threshold:
@@ -146,15 +161,19 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.init_parameters()
                 self.log_info(f'in_realm: {self._in_realm}')
 
-    def manage_boss_interactions(self):
+    def manage_boss_parameters(self):
         boss = self.config.get('Boss')
         if boss in ('Sentry Construct', 'Lioness of Glory', 'Fallacy of No Return'):
             self.combat_wait_time = 5
         else:
             self.combat_wait_time = self.config.get("Combat Wait Time", 0)
-        self.bypass_end_wait = boss in ('Fenrico', 'Fallacy of No Return')
+        self.bypass_end_wait = boss in ('Fenrico', 'Fallacy of No Return', 'Lady of the Sea')
+        self.treat_as_not_in_realm = boss in ('Nightmare: Hecate')
+
+    def manage_boss_interactions(self):
         if self.in_combat():
             return
+        boss = self.config.get('Boss')
         if boss != 'Default':
             if boss in ('Lorelei'):
                 night_elapsed = time.time() - self.last_night_change

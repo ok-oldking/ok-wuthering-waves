@@ -307,7 +307,7 @@ msgid "Fallacy of No Return"
 msgstr "無歸的謬誤"
 
 msgid "Lorelei"
-msgstr "羅萊蕾"
+msgstr "羅蕾萊"
 
 msgid "click f2 to open the book"
 msgstr "點擊F2開啟指南"
@@ -647,3 +647,6 @@ msgstr "選擇Boss配置 (已包含戰鬥開始前等待時間)"
 
 msgid "Wait time before each combat (seconds), overrides Boss profile if set"
 msgstr "若設定大於0則覆蓋Boss配置"
+
+msgid "Nightmare: Hecate"
+msgstr "夢魘·赫卡忒"
