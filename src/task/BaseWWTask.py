@@ -337,7 +337,7 @@ class BaseWWTask(BaseTask):
         return 0
 
     def in_realm(self):
-        return not self.config.get("Don't restart in Realm") and self.find_one('illusive_realm_exit', threshold=0.8,
+        return not bool(getattr(self, 'treat_as_not_in_realm', False)) and self.find_one('illusive_realm_exit', threshold=0.8,
                                                                                frame_processor=convert_bw)
 
     def in_world(self):

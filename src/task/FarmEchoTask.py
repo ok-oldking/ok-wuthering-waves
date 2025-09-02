@@ -29,7 +29,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         })
         self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
-        self.boss_list = ['Default', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory', 'Fenrico', 'Lady of the Sea']
+        self.boss_list = ['Default', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory', 'Nightmare: Hecate', 'Fenrico', 'Lady of the Sea']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
@@ -78,6 +78,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
     def do_run(self):
         count = 0
+        self.manage_boss_parameters()
         self._in_realm = self.in_realm()
         self.log_info(f'in_realm: {self._in_realm}')
         self._farm_start_time = time.time()
@@ -146,15 +147,19 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.init_parameters()
                 self.log_info(f'in_realm: {self._in_realm}')
 
-    def manage_boss_interactions(self):
+    def manage_boss_parameters(self):
         boss = self.config.get('Boss')
         if boss in ('Sentry Construct', 'Lioness of Glory', 'Fallacy of No Return'):
             self.combat_wait_time = 5
         else:
             self.combat_wait_time = self.config.get("Combat Wait Time", 0)
-        self.bypass_end_wait = boss in ('Fenrico', 'Fallacy of No Return')
+        self.bypass_end_wait = boss in ('Fenrico', 'Fallacy of No Return', 'Lady of the Sea')
+        self.treat_as_not_in_realm = boss in ('Nightmare: Hecate')
+
+    def manage_boss_interactions(self):
         if self.in_combat():
             return
+        boss = self.config.get('Boss')
         if boss != 'Default':
             if boss in ('Lorelei'):
                 night_elapsed = time.time() - self.last_night_change

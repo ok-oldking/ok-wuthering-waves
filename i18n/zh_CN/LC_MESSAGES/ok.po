@@ -307,7 +307,7 @@ msgid "Fallacy of No Return"
 msgstr "无归的谬误"
 
 msgid "Lorelei"
-msgstr "罗莱蕾"
+msgstr "罗蕾莱"
 
 msgid "click f2 to open the book"
 msgstr "点击F2打开书"
@@ -647,3 +647,6 @@ msgstr "芬莱克"
 
 msgid "Lady of the Sea"
 msgstr "海之女"
+
+msgid "Nightmare: Hecate"
+msgstr "梦魇·赫卡忒"
