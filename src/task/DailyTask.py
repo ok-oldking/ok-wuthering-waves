@@ -50,7 +50,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                     self.sleep(2)
                     self.get_task_by_class(ForgeryTask).purification_material()
                 self.sleep(4)
-            if self.config.get('Which to Farm', self.support_tasks[0]) == self.support_tasks[0]:
+            if self.config.get('Auto Farm all Nightmare Nest'):
                 try:
                     self.get_task_by_class(NightmareNestTask).run()
                 except Exception as e:
