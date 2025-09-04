@@ -52,7 +52,9 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 self.sleep(4)
             if self.config.get('Auto Farm all Nightmare Nest'):
                 try:
-                    self.get_task_by_class(NightmareNestTask).run()
+                    nightmare_task = self.get_task_by_class(NightmareNestTask)
+                    nightmare_task.run()
+                    self.info_set('Echo Count', nightmare_task.info.get('Echo Count', 0))
                 except Exception as e:
                     self.log_error("NightmareNestTask Failed", e)
                     self.ensure_main(time_out=180)
@@ -104,7 +106,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.info_set('current task', 'claim daily')
         self.ensure_main(time_out=5)
         self.open_daily()
-        
+
         self.click(0.87, 0.17, after_sleep=0.5)
         self.sleep(1)
 

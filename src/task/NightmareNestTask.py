@@ -16,10 +16,14 @@ from src.task.WWOneTimeTask import WWOneTimeTask
 logger = Logger.get_logger(__name__)
 
 nest_list = {
-    '千没沉岛': {'index_cn':"梦魇·振铎", 'index_tw':"夢魘·振鐸", 'index_us':"Nightmare: Tambourinist", 'direction':'w', 'running_time':1.5, 'set_night':False},
-    '受蚀地': {'index_cn':"梦魇·紫羽", 'index_tw':"夢魘·紫羽鷺", 'index_us':"Nightmare: Violet-F", 'direction':'s', 'running_time':2.5, 'set_night':True},
-    '潮痕岩摊': {'index_cn':"梦魇·青羽", 'index_tw':"夢魘·青羽鷺", 'index_us':"Nightmare: Cyan-F", 'direction':'s', 'running_time':2.5, 'set_night':True}
+    '千没沉岛': {'index_cn': "梦魇·振铎", 'index_tw': "夢魘·振鐸", 'index_us': "Nightmare: Tambourinist",
+                 'direction': 'w', 'running_time': 1.5, 'set_night': False},
+    '受蚀地': {'index_cn': "梦魇·紫羽", 'index_tw': "夢魘·紫羽鷺", 'index_us': "Nightmare: Violet-F", 'direction': 's',
+               'running_time': 2.5, 'set_night': True},
+    '潮痕岩摊': {'index_cn': "梦魇·青羽", 'index_tw': "夢魘·青羽鷺", 'index_us': "Nightmare: Cyan-F", 'direction': 's',
+                 'running_time': 2.5, 'set_night': True}
 }
+
 
 class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
 
@@ -80,7 +84,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             if value.get('set_night'):
                 self.change_time_to_night()
                 self.sleep(1)
-            self.run_until(lambda: False,value.get('direction'),value.get('running_time'),running = True)            
+            self.run_until(lambda: False, value.get('direction'), value.get('running_time'), running=True)
             self.wait_until(self.in_combat, post_action=self.middle_click, time_out=10)
             if self.in_combat():
                 self.log_info('wait combat')
@@ -103,9 +107,9 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 self.click(0.89, 0.92)
                 self.wait_hint(0.79, 0.91, 0.87, 0.95, r'快速旅行')
                 self.click(0.89, 0.92)
-                self.wait_in_team_and_world(time_out=30,raise_if_not_found=False)
+                self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
                 self.sleep(1)
-                self.run_until(lambda: False,value.get('direction'),value.get('running_time'),running = True)
+                self.run_until(lambda: False, value.get('direction'), value.get('running_time'), running=True)
                 if not self.try_pick_echo():
                     break
                 circle += 1
@@ -141,23 +145,23 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         return False
 
     def try_pick_echo(self):
-        success  = False
+        success = False
         circle = 0
         chance = True
         while True:
             dropped, has_more = self.yolo_find_echo(turn=True, use_color=False, time_out=12, threshold=0.25)
+            self.incr_drop(dropped)
             self.sleep(0.5)
             circle += 1
             if dropped:
-                success = True             
+                success = True
             if not dropped and not has_more:
                 if chance:
                     chance = False
                 else:
                     break
             else:
-                chance = True           
+                chance = True
             if circle > 15:
                 break
         return success
-
