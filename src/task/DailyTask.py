@@ -4,6 +4,7 @@ from qfluentwidgets import FluentIcon
 
 from ok import Logger
 from src.task.BaseWWTask import number_re, stamina_re
+from src.task.FarmEchoTask import FarmEchoTask
 from src.task.ForgeryTask import ForgeryTask
 from src.task.NightmareNestTask import NightmareNestTask
 from src.task.TacetTask import TacetTask
@@ -52,9 +53,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 self.sleep(4)
             if self.config.get('Auto Farm all Nightmare Nest'):
                 try:
-                    nightmare_task = self.get_task_by_class(NightmareNestTask)
-                    nightmare_task.run()
-                    self.info_set('Echo Count', nightmare_task.info.get('Echo Count', 0))
+                    self.run_task_by_class(NightmareNestTask)
                 except Exception as e:
                     self.log_error("NightmareNestTask Failed", e)
                     self.ensure_main(time_out=180)

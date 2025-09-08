@@ -18,7 +18,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             'Which Tacet Suppression to Farm': 1,  # starts with 1
         }
         self.total_number = 12
-        self.target_enemy_time_out = 8
+        self.target_enemy_time_out = 10
         default_config.update(self.default_config)
         self.config_description = {
             'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
