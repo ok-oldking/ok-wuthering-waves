@@ -63,7 +63,7 @@ ok-ww.exe -t 1 -e
 
 ## Frequently Asked Questions (FAQ)
 
-1. **Extraction Issues:** Extract the archive to a directory with only English characters.
+1. **Install:** Install to a directory with only English characters, **Do NOT** install to the Program Files Folder.
 2. **Antivirus Interference:** Add the download and extraction directories to your antivirus/Windows Defender whitelist.
 3. **Display Settings:** Disable Windows HDR, eye protection modes, and automatic color management. Use default game
    brightness and disable external overlays (FPS, GPU info).
