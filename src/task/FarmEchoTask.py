@@ -1,4 +1,5 @@
-import re, cv2
+import re
+import cv2
 import time
 
 from qfluentwidgets import FluentIcon
@@ -67,7 +68,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.execute_treasure_hunt()
         self.is_revived = True
         return True
-        
+
     def run(self):
         WWOneTimeTask.run(self)
         try:
@@ -123,7 +124,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
             self.sleep(self.combat_wait_time)
             self.log_info(f'combat_wait_time: {self.combat_wait_time}')
-            #self.check_boss_name()
+            # self.check_boss_name()
 
             self.combat_once(wait_combat_time=0, raise_if_not_found=False)
             if self.is_revived:
@@ -147,7 +148,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
                 else:
                     self.wait_until(self.in_combat, raise_if_not_found=False, time_out=1)
-    
+
     def execute_treasure_hunt(self):
         if not self.in_combat() and self.find_treasure_icon() and self.walk_to_treasure_and_restart():
             self._has_treasure = True
@@ -164,11 +165,18 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
     def manage_boss_parameters(self):
         boss = self.config.get('Boss')
         if boss in ('Sentry Construct', 'Lioness of Glory', 'Fallacy of No Return'):
-            self.combat_wait_time = 5
+            self.combat_wait_time = self.config.get("Combat Wait Time", 0) or 5
         else:
             self.combat_wait_time = self.config.get("Combat Wait Time", 0)
         self.bypass_end_wait = boss in ('Fenrico', 'Fallacy of No Return', 'Lady of the Sea')
         self.treat_as_not_in_realm = boss in ('Nightmare: Hecate')
+        self.log_info(
+            f"profile: {boss} { { 
+                'combat_wait_time': self.combat_wait_time, 
+                'bypass_end_wait': self.bypass_end_wait, 
+                'treat_as_not_in_realm': self.treat_as_not_in_realm 
+            } }"
+        )
 
     def manage_boss_interactions(self):
         if self.in_combat():
@@ -186,18 +194,16 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.teleport_to_heal(esc=False)
                 if self.walk_until_f(time_out=20, check_combat=True, running=True):
                     self.scroll_and_click_buttons()
-                    self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
+                    self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10)
             if boss in ('Fenrico'):
                 while self.find_f_with_text():
-                    self.incr_drop(self.pick_echo())
                     self.sleep(1)
+                    self.incr_drop(self.pick_echo())
                 self.teleport_to_nearest_boss()
                 self.sleep(2)
-                if self.find_treasure_icon() and self.walk_to_treasure_and_restart():
-                    self._has_treasure = True
-                    self.log_info('_has_treasure = True')
-                    self.scroll_and_click_buttons()
-                    self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
+                self.run_until(lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(), 'w', time_out=5)
+                self.execute_treasure_hunt()
+                self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10)
             if boss in ('Lady of the Sea'):
                 self.send_key('esc', after_sleep=0.5)
                 self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
@@ -210,7 +216,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.pick_f()
                     self.sleep(2)
                     self.wait_in_team_and_world(time_out=120)
-                    self.wait_until(self.in_combat, raise_if_not_found=False, time_out=7)
+                    self.sleep(2)
+                    self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10)
             if boss not in self.boss_list:
                 logger.warning(f'unknown boss profile {boss}, run as Default')
 
@@ -318,7 +325,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                 time_out=3, click_after_delay=0.5, threshold=0.8)
         self.wait_click_feature('gray_start_battle', relative_x=-1, raise_if_not_found=True,
                                 click_after_delay=0.5, threshold=0.8)
-                                   
+
     def check_boss_name(self):
         self.combat_wait_time = self.config.get("Combat Wait Time", 0)
         self.set_night = self.config.get('Change Time to Night')
