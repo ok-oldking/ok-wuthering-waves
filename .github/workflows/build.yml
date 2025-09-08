@@ -13,8 +13,8 @@ jobs:
 
     env:
       PYTHONIOENCODING: 'UTF-8'
-      #      SIGN_BUILD: 'true'
-      SIGN_BUILD: 'false'
+      SIGN_BUILD: 'true'
+    #      SIGN_BUILD: 'false'
 
     strategy:
       matrix:
