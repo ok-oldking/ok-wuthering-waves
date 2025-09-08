@@ -95,7 +95,7 @@ class BaseWWTask(BaseTask):
         f_search_box = self.get_box_by_name('pick_up_f_hcenter_vcenter')
         f_search_box = f_search_box.copy(x_offset=-f_search_box.width * 0.3,
                                          width_offset=f_search_box.width * 0.65,
-                                         height_offset=f_search_box.height * 6,
+                                         height_offset=f_search_box.height * 6.5,
                                          y_offset=-f_search_box.height * 5,
                                          name='search_dialog')
         return f_search_box
@@ -127,7 +127,6 @@ class BaseWWTask(BaseTask):
                 if text[0].y > search_text_box.y + f.height * 1:
                     logger.debug(f'found f with text {text} below, target_text {target_text}')
                     self.scroll_relative(0.5, 0.5, 1)
-                    self.sleep(0.02)
                 return f
         else:
             return f
