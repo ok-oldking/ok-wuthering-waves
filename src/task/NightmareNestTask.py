@@ -31,6 +31,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.default_config = {'_enabled': True}
         self.trigger_interval = 0.1
+        self.target_enemy_time_out = 10
         self.name = "Nightmare Nest Task"
         self.description = "Auto Farm all Nightmare Nest"
         self.icon = FluentIcon.CALORIES
