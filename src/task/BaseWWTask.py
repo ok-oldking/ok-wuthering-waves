@@ -336,8 +336,9 @@ class BaseWWTask(BaseTask):
         return 0
 
     def in_realm(self):
-        return not bool(getattr(self, 'treat_as_not_in_realm', False)) and self.find_one('illusive_realm_exit', threshold=0.8,
-                                                                               frame_processor=convert_bw)
+        return not bool(getattr(self, 'treat_as_not_in_realm', False)) and self.find_one('illusive_realm_exit',
+                                                                                         threshold=0.8,
+                                                                                         frame_processor=convert_bw)
 
     def in_world(self):
         return self.find_one('world_earth_icon', threshold=0.8, frame_processor=binarize_for_matching)
@@ -367,9 +368,9 @@ class BaseWWTask(BaseTask):
     def get_stamina(self):
         boxes = self.wait_ocr(0.49, 0.0, 0.92, 0.10, log=True, raise_if_not_found=False,
                               match=[number_re, stamina_re])
-        if len(boxes) == 0:
+        if not boxes:
             self.screenshot('stamina_error')
-            return -1, -1
+            return -1, -1, -1
         current_box = find_boxes_by_name(boxes, stamina_re)
         if current_box:
             current = int(current_box[0].name.split('/')[0])
