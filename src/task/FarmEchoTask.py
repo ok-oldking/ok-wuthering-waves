@@ -279,7 +279,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 # Rotate the template image
                 rotation_matrix = cv2.getRotationMatrix2D(center, -angle, 1.0)
                 template = cv2.warpAffine(original_mat, rotation_matrix, (w, h))
-                boxes = self.find_feature(box=box, template=template, threshold=0.7)
+                boxes = self.find_feature(box=self.box_of_screen(0.3, 0.3, 0.7, 0.7), template=template, threshold=0.7)
                 targets.extend(boxes)
             box = max(targets, key=lambda box: box.confidence, default=None)
             if box is None:
