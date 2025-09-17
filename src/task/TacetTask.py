@@ -80,7 +80,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
             self.info_incr('used stamina', used)
             self.sleep(4)
-            self.click(0.51, 0.84, after_sleep=2)
+            self.click(0.51, 0.84, after_sleep=3)
             if not can_continue:
                 return self.not_enough_stamina()
             must_use -= used
