@@ -856,6 +856,20 @@ class BaseChar:
         """检查是否要暂缓切人。"""
         return False
 
+    def switch_other_char(self):
+        next_char = str((self.index + 1) % len(self.task.chars) + 1)
+        self.logger.debug(f'Camellya on_combat_end {self.index} switch next char: {next_char}')
+        start = time.time()
+        while time.time() - start < 6:
+            self.task.load_chars()
+            current_char = self.task.get_current_char(raise_exception=False)
+            if current_char and current_char.name != self.name:
+                break
+            else:
+                self.task.send_key(next_char)
+            self.sleep(0.2, False)
+        self.logger.debug(f'switch_other_char on_combat_end {self.index} switch end')
+
     # def count_rectangle_forte(self, left=0.42, right=0.57):
     # """计算矩形共鸣回路充能格数 (已注释)。"""
     #     # Perform image cropping once, as it's independent of saturation ranges

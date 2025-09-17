@@ -30,6 +30,7 @@ class Iuno(BaseChar):
                     self.last_heavy) > 20 and self.task.find_feature("iuno_heavy",
                                                                      box="box_extra_action",
                                                                      threshold=0.6):
+                # 特殊重击可用
                 self.sleep(0.05)
                 self.heavy_attack()
                 self.sleep(0.05)
@@ -40,27 +41,33 @@ class Iuno(BaseChar):
                     c6_performed = True
                     start = time.time()
                     time_out = 5
+                    # 6命多打一轮
                     self.logger.debug('iuno c6 continue')
                 else:
                     return True
             if not jumped and self.task.find_feature("iuno_jump", box="box_extra_action", threshold=0.6):
+                # 可以跳 起跳
                 while self.task.find_feature("iuno_jump", box="box_extra_action", threshold=0.6):
                     self.task.send_key('space', after_sleep=0.1)
                 time_out += 3
                 jumped = True
                 if self.has_intro:
                     continue
-                else:
+                else:  # 没有intro, 切人取消后摇
                     return
             if self.time_elapsed_accounting_for_freeze(
                     self.last_liberation) > 20 and self.click_liberation(
                 wait_if_cd_ready=0):
+                # 开大招
                 start = time.time()
                 time_out = 3
                 continue
-            if last_action == "click":
+            if last_action == "click":  # 左键和e轮流点击
                 last_action = "resonance"
                 self.send_resonance_key(post_sleep=0.1)
             else:
                 last_action = "click"
                 self.click(after_sleep=0.1)
+
+    def on_combat_end(self, chars):
+        self.switch_other_char()
