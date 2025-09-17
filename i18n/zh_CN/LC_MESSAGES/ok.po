@@ -650,3 +650,9 @@ msgstr "海之女"
 
 msgid "Nightmare: Hecate"
 msgstr "梦魇·赫卡忒"
+
+msgid "Character Config"
+msgstr "角色设置"
+
+msgid "Iuno C6"
+msgstr "尤诺6链"

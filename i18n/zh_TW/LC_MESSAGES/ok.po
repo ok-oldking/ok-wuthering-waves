@@ -650,3 +650,9 @@ msgstr "若設定大於0則覆蓋Boss配置"
 
 msgid "Nightmare: Hecate"
 msgstr "夢魘·赫卡忒"
+
+msgid "Character Config"
+msgstr "角色設置"
+
+msgid "Iuno C6"
+msgstr "尤諾6鏈"
