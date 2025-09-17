@@ -25,6 +25,24 @@ class Iuno(BaseChar):
         jumped = False
         while time.time() - float(start) < time_out:
             self.check_combat()
+            heavy_success = False
+            while self.time_elapsed_accounting_for_freeze(
+                    self.last_heavy) > 20 and self.task.find_feature("iuno_heavy",
+                                                                     box="box_extra_action",
+                                                                     threshold=0.6):
+                self.sleep(0.05)
+                self.heavy_attack()
+                self.sleep(0.05)
+                heavy_success = True
+            if heavy_success:
+                self.last_heavy = time.time()
+                if not c6_performed and self.task.char_config.get("Iuno C6"):
+                    c6_performed = True
+                    start = time.time()
+                    time_out = 5
+                    self.logger.debug('iuno c6 continue')
+                else:
+                    return True
             if not jumped and self.task.find_feature("iuno_jump", box="box_extra_action", threshold=0.6):
                 while self.task.find_feature("iuno_jump", box="box_extra_action", threshold=0.6):
                     self.task.send_key('space', after_sleep=0.1)
@@ -46,21 +64,3 @@ class Iuno(BaseChar):
             else:
                 last_action = "click"
                 self.click(after_sleep=0.1)
-            heavy_success = False
-            while self.time_elapsed_accounting_for_freeze(
-                    self.last_heavy) > 20 and self.task.find_feature("iuno_heavy",
-                                                                     box="box_extra_action",
-                                                                     threshold=0.6):
-                self.sleep(0.05)
-                self.heavy_attack()
-                self.sleep(0.05)
-                heavy_success = True
-            if heavy_success:
-                self.last_heavy = time.time()
-                if not c6_performed and self.task.char_config.get("Iuno C6"):
-                    c6_performed = True
-                    start = time.time()
-                    time_out = 5
-                    self.logger.debug('iuno c6 continue')
-                else:
-                    return True

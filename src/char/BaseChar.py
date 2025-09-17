@@ -298,7 +298,6 @@ class BaseChar:
             now = time.time()
             if not self.resonance_available() and (
                     not has_animation or now - start > animation_min_duration):
-                self.task.screenshot('click_resonance not available')
                 self.logger.debug(f'click_resonance not available break')
                 break
             self.logger.debug(f'click_resonance resonance_available click')
