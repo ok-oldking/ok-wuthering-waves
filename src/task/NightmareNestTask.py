@@ -74,11 +74,13 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self.input_text(echo_name)
             self.click(0.39, 0.13, after_sleep=0.5)
             self.click(0.13, 0.24, after_sleep=0.5)
-            self.click(0.89, 0.92)
+            self.click(0.89, 0.92, after_sleep=1)
             self.wait_hint(0.79, 0.91, 0.87, 0.95, r'快速旅行')
             if self.find_next_hint(0.90, 0.31, 0.94, 0.41, r'36'):
                 self.log_info(f'{echo_name} is complete')
                 continue
+            self.sleep(1)
+            self.log_info('click travel')
             self.click(0.89, 0.92)
             self.wait_in_team_and_world(raise_if_not_found=False, time_out=120)
             self.sleep(1)
