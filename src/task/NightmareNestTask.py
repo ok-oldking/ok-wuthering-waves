@@ -36,6 +36,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.description = "Auto Farm all Nightmare Nest"
         self.icon = FluentIcon.CALORIES
         self.last_is_click = False
+        self.count_re = re.compile(r"(\d{1,2})/(\d{1,2})")
 
     def run(self):
         WWOneTimeTask.run(self)
@@ -66,20 +67,8 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             else:
                 echo_name = value.get('index_us')
 
-            self.ensure_main(time_out=180)
-            gray_book_boss = self.openF2Book("gray_book_all_monsters")
-            self.click_box(gray_book_boss)
-            self.wait_hint(0.05, 0.04, 0.12, 0.08, r'敌迹探寻')
-            self.click(0.13, 0.14, after_sleep=0.5)
-            self.input_text(echo_name)
-            self.click(0.39, 0.13, after_sleep=0.5)
-            self.click(0.13, 0.24, after_sleep=0.5)
-            self.click(0.89, 0.92, after_sleep=1)
-            self.wait_hint(0.79, 0.91, 0.87, 0.95, r'快速旅行')
-            if self.find_next_hint(0.90, 0.31, 0.94, 0.41, r'36'):
-                self.log_info(f'{echo_name} is complete')
+            if self.travel_to_nest(echo_name):
                 continue
-            self.sleep(1)
             self.log_info('click travel')
             self.click(0.89, 0.92)
             self.wait_in_team_and_world(raise_if_not_found=False, time_out=120)
@@ -99,16 +88,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self.pick_echo()
             circle = 0
             while True:
-                self.ensure_main(time_out=180)
-                gray_book_boss = self.openF2Book("gray_book_all_monsters")
-                self.click_box(gray_book_boss)
-                self.wait_hint(0.05, 0.04, 0.12, 0.08, r'敌迹探寻')
-                self.click(0.13, 0.14, after_sleep=0.5)
-                self.input_text(echo_name)
-                self.click(0.39, 0.13, after_sleep=0.5)
-                self.click(0.13, 0.24, after_sleep=0.5)
-                self.click(0.89, 0.92)
-                self.wait_hint(0.79, 0.91, 0.87, 0.95, r'快速旅行')
+                self.travel_to_nest(echo_name)
                 self.click(0.89, 0.92)
                 self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
                 self.sleep(1)
@@ -120,6 +100,29 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                     break
         self.ensure_main(time_out=180)
         self.log_info(f'NightmareNestTask complete')
+
+    def travel_to_nest(self, echo_name):
+        self.ensure_main(time_out=180)
+        gray_book_boss = self.openF2Book("gray_book_all_monsters")
+        self.click_box(gray_book_boss)
+        self.wait_hint(0.05, 0.04, 0.12, 0.08, r'敌迹探寻')
+        self.click(0.13, 0.14, after_sleep=0.5)
+        self.input_text(echo_name)
+        self.click(0.39, 0.13, after_sleep=0.5)
+        self.click(0.13, 0.24, after_sleep=0.5)
+        self.click(0.89, 0.92, after_sleep=3)
+        texts = self.ocr()
+        count_box = self.find_boxes(texts, match=self.count_re)
+        if not count_box:
+            self.log_error("can not find nightmare echo")
+            self.ensure_main(time_out=180)
+            return
+        for match in re.finditer(self.count_re, count_box[0].name):
+            numerator = match.group(1)
+            denominator = match.group(2)
+            if numerator == denominator:
+                self.log_info(f'{echo_name} is complete')
+                return True
 
     def on_combat_check(self):
         self.incr_drop(self.pick_f())
