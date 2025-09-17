@@ -55,6 +55,10 @@ key_config_option = ConfigOption('Game Hotkey Config', {
     'Tool Key': 't',
 }, description='In Game Hotkey for Skills')
 
+char_config_option = ConfigOption('Character Config', {
+    'Iuno C6': False,
+}, description='Character Config')
+
 pick_echo_config_option = ConfigOption('Pick Echo Config', {
     'Use OCR': True
 }, config_description={
@@ -74,7 +78,7 @@ config = {
     'config_folder': 'configs',
     'screenshot_processor': make_bottom_right_black,
     'gui_icon': 'icon.png',
-    'global_configs': [key_config_option, pick_echo_config_option, monthly_card_config_option],
+    'global_configs': [key_config_option, char_config_option, pick_echo_config_option, monthly_card_config_option],
     'ocr': {
         'lib': 'onnxocr',
         'params': {

@@ -217,7 +217,7 @@ class BaseCombatTask(CombatCheck):
             exception_type = NotInCombatException
         raise exception_type(message)
 
-    def available(self, name):
+    def available(self, name, check_color=True):
         """检查指定名称的技能或动作是否可用 (通过颜色百分比和冷却时间判断)。
 
         Args:
@@ -226,8 +226,11 @@ class BaseCombatTask(CombatCheck):
         Returns:
             bool: 如果可用则返回 True, 否则 False。
         """
-        current = self.calculate_color_percentage(text_white_color,
-                                                  self.get_box_by_name(f'box_{name}'))
+        if check_color:
+            current = self.calculate_color_percentage(text_white_color,
+                                                      self.get_box_by_name(f'box_{name}'))
+        else:
+            current = 1
         if current > 0 and not self.has_cd(name):
             return True
 

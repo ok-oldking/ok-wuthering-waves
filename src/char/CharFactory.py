@@ -13,6 +13,7 @@ from src.char.Ciaccona import Ciaccona
 from src.char.Danjin import Danjin
 from src.char.Encore import Encore
 from src.char.HavocRover import HavocRover
+from src.char.Iuno import Iuno
 from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
 from src.char.Jiyan import Jiyan
@@ -75,6 +76,8 @@ char_dict = {
                       'ring_index': Elements.HAVOC},
     'Augusta': {'cls': Augusta, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25,
                 'ring_index': Elements.ELECTRIC},
+    'char_iuno': {'cls': Iuno, 'res_cd': 8, 'echo_cd': 20, 'liberation_cd': 25,
+                  'ring_index': Elements.WIND},
 }
 
 char_names = char_dict.keys()

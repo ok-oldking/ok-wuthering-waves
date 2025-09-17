@@ -59,6 +59,7 @@ class BaseChar:
             liberation_cd (int, optional): 共鸣解放冷却时间 (秒)。默认为 25。
             char_name (str, optional): 角色名称。默认为 None。
         """
+        self.priority = Priority.BASE
         self.white_off_threshold = 0.01
         self.echo_cd = echo_cd
         self.task = task
@@ -295,19 +296,19 @@ class BaseChar:
                     self.task.in_liberation = False
             self.check_combat()
             now = time.time()
-            current_resonance = self.current_resonance()
             if not self.resonance_available() and (
                     not has_animation or now - start > animation_min_duration):
+                self.task.screenshot('click_resonance not available')
                 self.logger.debug(f'click_resonance not available break')
                 break
-            self.logger.debug(f'click_resonance resonance_available click {current_resonance}')
+            self.logger.debug(f'click_resonance resonance_available click')
 
             if now - last_click > 0.1:
-                if send_click and (current_resonance == 0 or last_op == 'resonance'):
+                if send_click and last_op == 'resonance':
                     self.task.click()
                     last_op = 'click'
                     continue
-                if current_resonance > 0 and self.resonance_available():
+                if self.resonance_available():
                     if resonance_click_time == 0:
                         clicked = True
                         resonance_click_time = now
@@ -585,7 +586,7 @@ class BaseChar:
         Returns:
             int: 基础优先级数值。
         """
-        priority = Priority.BASE
+        priority = self.priority
         if self.count_liberation_priority() and self.liberation_available():
             priority += self.count_liberation_priority()
         if self.count_resonance_priority() and self.resonance_available():
@@ -630,11 +631,11 @@ class BaseChar:
         Returns:
             bool: 如果可用则返回 True。
         """
-        return self.available('resonance')
+        return self.available('resonance', check_color=False)
 
-    def available(self, box):
+    def available(self, box, check_color=True):
         if self.is_current_char:
-            return self.task.available(box)
+            return self.task.available(box, check_color=check_color)
         else:
             return not self.task.has_cd(box, self.index)
 
@@ -647,7 +648,7 @@ class BaseChar:
         Returns:
             bool: 如果可用则返回 True。
         """
-        return self.available('echo')
+        return self.available('echo', check_color=False)
 
     def is_con_full(self):
         if self.current_con == 1:
