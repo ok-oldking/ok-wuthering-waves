@@ -338,11 +338,16 @@ class BaseWWTask(BaseTask):
 
     def in_realm(self):
         return not bool(getattr(self, 'treat_as_not_in_realm', False)) and self.find_one('illusive_realm_exit',
-                                                                                         threshold=0.8,
-                                                                                         frame_processor=convert_bw)
+                                                                                         threshold=0.7,
+                                                                                         frame_processor=convert_bw) and self.in_team() and not self.find_one(
+            'world_earth_icon', threshold=0.55,
+            frame_processor=convert_bw)
 
     def in_world(self):
-        return self.find_one('world_earth_icon', threshold=0.8, frame_processor=binarize_for_matching)
+        return self.find_one('world_earth_icon', threshold=0.55,
+                             frame_processor=convert_bw) and self.in_team() and not self.find_one('illusive_realm_exit',
+                                                                                                  threshold=0.7,
+                                                                                                  frame_processor=convert_bw)
 
     def in_illusive_realm(self):
         return self.find_one('new_realm_4') and self.in_realm() and self.find_one('illusive_realm_menu', threshold=0.6)

@@ -88,8 +88,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
     def do_run(self):
         count = 0
-        self.manage_boss_parameters()
         self._in_realm = self.in_realm()
+        self.manage_boss_parameters()
         self.log_info(f'in_realm: {self._in_realm}')
         self._farm_start_time = time.time()
         self._has_treasure = False
@@ -97,12 +97,13 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.init_parameters()
         while count < self.config.get("Repeat Farm Count", 0):
             self.in_realm_check(60)
+            self.log_debug(f'start farming {count} {self._in_realm}')
             if not self.is_revived:
                 self.manage_boss_interactions()
             else:
                 self.is_revived = False
             if not self.in_combat():
-                if self._in_realm:
+                if self._in_realm and not self.in_world():
                     self.send_key('esc', after_sleep=0.5)
                     self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
                                             post_action=lambda: self.send_key('esc', after_sleep=1),
@@ -174,6 +175,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.combat_wait_time = self.config.get("Combat Wait Time", 0) or 5
         else:
             self.combat_wait_time = self.config.get("Combat Wait Time", 0)
+        if boss in ('Lady of the Sea'):
+            self.log_debug('manage_boss_parameters Lady of the Sea')
+            self._in_realm = True
         self.bypass_end_wait = boss in ('Fenrico', 'Fallacy of No Return', 'Lady of the Sea')
         self.treat_as_not_in_realm = boss in ('Nightmare: Hecate')
         self.log_info(
@@ -212,14 +216,19 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.execute_treasure_hunt()
                 self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10)
             if boss in ('Lady of the Sea'):
-                self.send_key('esc', after_sleep=0.5)
-                self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
-                                        post_action=lambda: self.send_key('esc', after_sleep=1),
-                                        settle_time=1)
-                self.sleep(2)
-                self.wait_in_team_and_world(time_out=120)
-                self.sleep(2)
-                if not self.in_realm():
+                self.log_debug('manage_boss_interactions Lady of the Sea')
+                self._in_realm = True
+                if not self.in_world():
+                    self.log_debug('manage_boss_interactions Lady of the Sea not self.in_world()')
+                    self.send_key('esc', after_sleep=0.5)
+                    self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
+                                            post_action=lambda: self.send_key('esc', after_sleep=1),
+                                            settle_time=1)
+                    self.sleep(2)
+                    self.wait_in_team_and_world(time_out=120)
+                    self.sleep(2)
+                if self.in_world():
+                    self.log_debug('manage_boss_interactions Lady of the Sea self.in_world()')
                     self.pick_f()
                     self.sleep(2)
                     self.wait_in_team_and_world(time_out=120)
