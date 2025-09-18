@@ -23,14 +23,17 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Repeat Farm Count': 10000,
             'Combat Wait Time': 0,
             'Echo Pickup Method': 'Walk',
+            'Use Liberation': True,
         })
         self.config_description.update({
             'Boss': 'Select boss profile (includes Combat Wait Time)',
             'Combat Wait Time': 'Wait time before each combat (seconds), overrides Boss profile if set',
+            'Use Liberation': 'Do not use Liberation to Save Time',
         })
         self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
-        self.boss_list = ['Default', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory', 'Nightmare: Hecate', 'Fenrico', 'Lady of the Sea']
+        self.boss_list = ['Default', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory',
+                          'Nightmare: Hecate', 'Fenrico', 'Lady of the Sea']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
@@ -45,9 +48,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.bypass_end_wait = False
         self.boss_dict = {
             '伪作的神王': {'name': r'伪作的神王'},
-            '异构武装': {'name': r'(异构武装|加尔古耶)','set_combat_wait': 5},
-            '荣耀狮像': {'name': r'(狮像|亚狮诺索)','set_combat_wait': 5},
-            '罗蕾莱': {'name': r'(罗蕾莱|夜之女皇)','set_night': True},
+            '异构武装': {'name': r'(异构武装|加尔古耶)', 'set_combat_wait': 5},
+            '荣耀狮像': {'name': r'(狮像|亚狮诺索)', 'set_combat_wait': 5},
+            '罗蕾莱': {'name': r'(罗蕾莱|夜之女皇)', 'set_night': True},
         }
         self.is_revived = False
 
@@ -71,6 +74,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
     def run(self):
         WWOneTimeTask.run(self)
+        self.use_liberation = self.config.get('Use Liberation')
         try:
             return self.do_run()
         except TaskDisabledException as e:
@@ -107,8 +111,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.sleep(2)
                 else:
                     if self._has_treasure:
-                        self.wait_until(lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(),
-                                        time_out=5, raise_if_not_found=False)
+                        self.wait_until(
+                            lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(),
+                            time_out=5, raise_if_not_found=False)
                     if not self.in_combat():
                         self.log_info('not in combat try click restart')
                         if self.walk_to_treasure_and_restart():
@@ -134,7 +139,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 dropped = True
             elif self.config.get('Echo Pickup Method', "Yolo") == "Yolo":
                 dropped = \
-                    self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=self.yolo_time_out, threshold=self.yolo_threshold)[0]
+                    self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=self.yolo_time_out,
+                                        threshold=self.yolo_threshold)[0]
                 logger.info(f'farm echo yolo find {dropped}')
             elif self.config.get('Echo Pickup Method', "Yolo") == "Run in Circle":
                 dropped = self.run_in_circle_to_find_echo(circle_count=2)
@@ -171,10 +177,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.bypass_end_wait = boss in ('Fenrico', 'Fallacy of No Return', 'Lady of the Sea')
         self.treat_as_not_in_realm = boss in ('Nightmare: Hecate')
         self.log_info(
-            f"profile: {boss} { { 
-                'combat_wait_time': self.combat_wait_time, 
-                'bypass_end_wait': self.bypass_end_wait, 
-                'treat_as_not_in_realm': self.treat_as_not_in_realm 
+            f"profile: {boss} { {
+                'combat_wait_time': self.combat_wait_time,
+                'bypass_end_wait': self.bypass_end_wait,
+                'treat_as_not_in_realm': self.treat_as_not_in_realm
             } }"
         )
 
@@ -201,7 +207,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.incr_drop(self.pick_echo())
                 self.teleport_to_nearest_boss()
                 self.sleep(2)
-                self.run_until(lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(), 'w', time_out=5)
+                self.run_until(lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(), 'w',
+                               time_out=5)
                 self.execute_treasure_hunt()
                 self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10)
             if boss in ('Lady of the Sea'):
@@ -264,8 +271,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.click(0.13, 0.24, after_sleep=0.5)
             self.click(0.89, 0.92, after_sleep=1)
             self.click(0.89, 0.92)
-            self.wait_in_team_and_world(time_out=30,raise_if_not_found=False)
-            return 
+            self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
+            return
         self.send_key('m', after_sleep=2)
         box = self.find_best_match_in_box(self.box_of_screen(0.3, 0.3, 0.7, 0.7),
                                           ['boss_check_mark'], threshold=0.8)
@@ -330,7 +337,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.combat_wait_time = self.config.get("Combat Wait Time", 0)
         self.set_night = self.config.get('Change Time to Night')
         if self.game_lang != 'zh_CN':
-            return 
+            return
         texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160, hcenter=True),
                          target_height=540, name='boss_lv_text')
         for key, value in self.boss_dict.items():

@@ -469,6 +469,8 @@ class BaseChar:
         Returns:
             bool: 如果成功释放则返回 True。
         """
+        if not self.task.use_liberation:
+            return False
         if con_less_than > 0:
             if self.get_current_con() > con_less_than:
                 return False
