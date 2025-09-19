@@ -662,3 +662,6 @@ msgstr "使用共鳴解放"
 
 msgid "Do not use Liberation to Save Time"
 msgstr "高練度情況下, 不使用共鳴解放以節約時間"
+
+msgid "Do not use Liberation in Open World to Save Time"
+msgstr "在大世界中, 不使用共鳴解放以節約時間"
