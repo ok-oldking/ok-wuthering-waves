@@ -113,6 +113,6 @@ class Augusta(BaseChar):
 
     def on_combat_end(self, chars):
         next_char = str((self.index + 1) % len(chars) + 1)
-        self.logger.debug(f'Cantarella on_combat_end {self.index} switch next char: {next_char}')
+        self.logger.debug(f'Augusta on_combat_end {self.index} switch next char: {next_char}')
         self.task.send_key(next_char)
  
