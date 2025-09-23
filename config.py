@@ -184,5 +184,6 @@ config = {
         ["src.task.SkipDialogTask", "AutoDialogTask"],
         ["src.task.AutoLoginTask", "AutoLoginTask"],
         ["src.task.MouseResetTask", "MouseResetTask"],
+        ["src.task.FastTravel", "FastTravel"],
     ], 'scene': ["src.scene.WWScene", "WWScene"],
 }
