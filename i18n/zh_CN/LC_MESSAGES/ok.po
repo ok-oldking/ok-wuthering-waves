@@ -669,3 +669,5 @@ msgstr "在大世界中, 不使用共鸣解放以节约时间"
 msgid "Fast Travel"
 msgstr "快速旅行"
 
+msgid "Auto Click Fast Travel in Map"
+msgstr "地图中自动点击快速旅行"

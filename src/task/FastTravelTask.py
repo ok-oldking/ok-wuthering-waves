@@ -1,32 +1,27 @@
 import re
 from ok import TriggerTask, Logger
-
+from src.task.BaseWWTask import BaseWWTask
 
 logger = Logger.get_logger(__name__)
 
 
-class FastTravelTask(TriggerTask):
+class FastTravelTask(BaseWWTask, TriggerTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.default_config = {'_enabled': False}
-        # self.trigger_interval = 0.5
         self.name = "Fast Travel"
-
-        # @TODO add more i18n support
-        self.match_re = re.compile(r'FastTravel|快速旅行')
+        self.description = 'Auto Click Fast Travel in Map'
+        self.match = [re.compile(r'Travel'), '快速旅行', '前往', 'Proceed']
 
     def run(self):
-        # Fast Travel box position 1480,980, 230, 63 with 1920x1080
-        self.log_debug("start run FastTravel.run")
-        results = self.ocr(
-            box=self.box_of_screen(0.77, 0.90, 0.88, 0.958, hcenter=True),
-            match=self.match_re,
-            # log=True,
-            threshold=0.8)
-    
-        if results:
-            self.log_debug("has result")
-            self.click_box(results[0])
-            return True
-            
+        travel = self.find_one('gray_teleport')
+        if travel:
+            results = self.ocr(
+                box=self.box_of_screen(0.7, 0.89, 1, 1),
+                match=self.match)
+
+            if results:
+                self.log_debug("has result")
+                self.click_traval_button()
+                return True
