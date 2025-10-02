@@ -229,7 +229,13 @@ class BaseWWTask(BaseTask):
                     else:
                         next_direction = 'a'
                 else:
-                    if y > self.height_of_screen(0.5):
+                    if last_direction == 's':
+                        center = 0.45
+                    elif last_direction == 'w':
+                        center = 0.6
+                    else:
+                        center = 0.5
+                    if y > self.height_of_screen(center):
                         next_direction = 's'
                     else:
                         next_direction = 'w'
