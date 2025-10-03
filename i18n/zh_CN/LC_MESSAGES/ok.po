@@ -636,8 +636,8 @@ msgstr "选择Boss配置 (已包含战斗开始前等待时间)"
 msgid "Wait time before each combat (seconds), overrides Boss profile if set"
 msgstr "若设定大于0则覆盖Boss配置"
 
-msgid "Default"
-msgstr "默认"
+msgid "Other"
+msgstr "其它"
 
 msgid "Lioness of Glory"
 msgstr "荣耀狮像"

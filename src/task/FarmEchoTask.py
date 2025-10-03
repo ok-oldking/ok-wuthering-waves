@@ -19,7 +19,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.description = "Click Start after Entering Dungeon or Teleporting to The Boss"
         self.name = "Farm 4C Echo in Dungeon/World"
         self.default_config.update({
-            'Boss': 'Default',
+            'Boss': 'Other',
             'Repeat Farm Count': 10000,
             'Combat Wait Time': 0,
             'Echo Pickup Method': 'Walk',
@@ -32,7 +32,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         })
         self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
-        self.boss_list = ['Default', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory',
+        self.boss_list = ['Other', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory',
                           'Nightmare: Hecate', 'Fenrico', 'Lady of the Sea']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.icon = FluentIcon.ALBUM
@@ -192,7 +192,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         if self.in_combat():
             return
         boss = self.config.get('Boss')
-        if boss != 'Default':
+        if boss != 'Other':
             if boss in ('Lorelei'):
                 night_elapsed = time.time() - self.last_night_change
                 self.log_info(f"Night elapsed: {night_elapsed:.1f}s")
@@ -235,7 +235,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.sleep(2)
                     self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10)
             if boss not in self.boss_list:
-                logger.warning(f'unknown boss profile {boss}, run as Default')
+                logger.warning(f'unknown boss profile {boss}, run as Other')
 
     def init_parameters(self):
         self.target_enemy_time_out = 3 if self._in_realm else 1.2

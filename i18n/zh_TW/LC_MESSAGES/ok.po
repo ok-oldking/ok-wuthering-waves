@@ -627,8 +627,8 @@ msgstr "刷夢魘·赫卡忒請選是"
 msgid "Auto Farm all Nightmare Nest"
 msgstr "自动刷所有梦魇巢穴"
 
-msgid "Default"
-msgstr "預設"
+msgid "Other"
+msgstr "其它"
 
 msgid "Fenrico"
 msgstr "芬萊克"
