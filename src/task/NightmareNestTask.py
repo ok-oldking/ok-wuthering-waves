@@ -1,16 +1,8 @@
-import time
 import re
-import cv2
-import numpy as np
-import win32api, win32gui, win32con
-
 from qfluentwidgets import FluentIcon
-from decimal import Decimal, ROUND_DOWN, ROUND_UP
-from ok import color_range_to_bound
-from ok import Logger, TaskDisabledException, PostMessageInteraction
+from ok import Logger
 from ok import find_boxes_by_name
 from src.task.BaseCombatTask import BaseCombatTask
-from src.task.BaseWWTask import binarize_for_matching
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
@@ -108,6 +100,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.wait_hint(0.05, 0.04, 0.12, 0.08, r'敌迹探寻')
         self.click(0.13, 0.14, after_sleep=0.5)
         self.input_text(echo_name)
+        self.sleep(0.2)
         self.click(0.39, 0.13, after_sleep=0.5)
         self.click(0.13, 0.24, after_sleep=0.5)
         self.click(0.89, 0.92, after_sleep=3)
@@ -121,7 +114,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             numerator = match.group(1)
             denominator = match.group(2)
             if numerator == denominator:
-                self.log_info(f'{echo_name} is complete')
+                self.log_info(f'{echo_name} {match.group(0)} is complete')
                 return True
 
     def on_combat_check(self):
