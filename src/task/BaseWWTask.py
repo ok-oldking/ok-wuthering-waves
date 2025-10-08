@@ -191,9 +191,20 @@ class BaseWWTask(BaseTask):
 
     def walk_to_box(self, find_function, time_out=30, end_condition=None, y_offset=0.05, x_threshold=0.07,
                     use_hook=False):
+        start = time.time()
+        while time.time() - start < time_out:
+            if ended := self.do_walk_to_box(find_function, time_out=time_out - (time.time() - start),
+                                            end_condition=end_condition, y_offset=y_offset,
+                                            x_threshold=x_threshold, use_hook=use_hook):
+                return ended
+
+    def do_walk_to_box(self, find_function, time_out=30, end_condition=None, y_offset=0.05, x_threshold=0.07,
+                       use_hook=False):
         if not find_function:
             self.log_info('find_function not found, break')
             return False
+        self.wait_until(lambda: (not end_condition or end_condition()) or find_function, raise_if_not_found=True,
+                        time_out=time_out)
         last_direction = None
         start = time.time()
         ended = False
@@ -562,19 +573,12 @@ class BaseWWTask(BaseTask):
                 self.log_debug('found a echo picked')
                 return True
 
-    def walk_to_treasure(self, retry=0, send_f=True, raise_if_not_found=True):
-        if retry > 4:
-            raise RuntimeError('walk_to_treasure too many retries!')
-        if self.find_treasure_icon():
-            self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text)
+    def walk_to_treasure(self, send_f=True, raise_if_not_found=True):
+        if not self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text):
+            raise Exception(f'can not walk to treasure!')
         if send_f:
             self.walk_until_f(time_out=2, backward_time=0, raise_if_not_found=raise_if_not_found)
         self.sleep(1)
-        if self.find_treasure_icon():
-            self.log_info('retry walk_to_treasure')
-            self.walk_to_treasure(retry=retry + 1)
-        else:
-            return True
 
     def yolo_find_echo(self, use_color=False, turn=True, update_function=None, time_out=8, threshold=0.5):
         # if self.debug:
