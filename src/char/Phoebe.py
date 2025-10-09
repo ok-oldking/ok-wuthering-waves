@@ -216,7 +216,7 @@ class Phoebe(BaseChar):
         return False
 
     def confession_ready(self):
-        box = self.task.box_of_screen_scaled(3840, 2160, 3103, 1844, 3285, 2026, name='phoebe_resonance', hcenter=False)
+        box = self.task.box_of_screen_scaled(2560, 1440, 2110, 1236, 2217, 1343, name='phoebe_resonance', hcenter=False)
         self.task.draw_boxes(box.name, box)
         blue_percent = self.calculate_color_percentage_in_masked(phoebe_blue_color, box, 0.425, 0.490)
         self.logger.debug(f'blue_percent {blue_percent}')

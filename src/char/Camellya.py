@@ -110,7 +110,7 @@ class Camellya(BaseChar):
             return True
 
     def ephemeral_ready(self):
-        box = self.task.box_of_screen_scaled(3840, 2160, 3100, 1840, 3289, 2029, name='camellya_resonance',
+        box = self.task.box_of_screen_scaled(2560, 1440, 2110, 1236, 2217, 1343, name='camellya_resonance',
                                              hcenter=True)
         red_percent = self.calculate_color_percentage_in_masked(camellya_red_color, box, 0.395, 0.496)
         self.logger.debug(f'red_percent {red_percent}')

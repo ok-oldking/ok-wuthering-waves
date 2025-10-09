@@ -3,9 +3,10 @@ from decimal import Decimal, ROUND_UP, ROUND_HALF_UP
 from enum import Enum
 import cv2
 import numpy as np
+import math
 
 from src.char.BaseChar import BaseChar, Priority, text_white_color, forte_white_color
-
+from ok import color_range_to_bound
 
 class State(Enum):
     FORTE_FULL = 1
@@ -40,11 +41,6 @@ class Zani(BaseChar):
 
     def count_forte_priority(self):
         return 1
-
-    def current_attack(self):
-        box = self.task.box_of_screen_scaled(3840, 2160, 2709, 1894, 2827, 1972, name='box_attack', hcenter=True)
-        self.task.draw_boxes(box.name, box)
-        return self.task.calculate_color_percentage(text_white_color, box)
 
     def do_perform(self):
         if self.blazes_threshold == -1:
@@ -236,14 +232,43 @@ class Zani(BaseChar):
         else:
             self.nightfall_time = time.time()
 
-    def is_nightfall_ready(self, threshold=0.05):
-        box = self.task.box_of_screen_scaled(3840, 2160, 2680, 1845, 2862, 2025, name='zani_attack', hcenter=True)
-        light_percent = self.task.calculate_color_percentage(zani_light_color, box)
+    def is_nightfall_ready(self, threshold=0.15):
+        box = self.task.box_of_screen_scaled(2560, 1440, 1853, 1233, 1964, 1344, name='zani_attack', hcenter=True)
+        self.task.draw_boxes(box.name, box)
+        light_percent = self.calculate_color_percentage_in_masked(zani_light_color, box, 0.425, 0.490)
         self.logger.debug(f'nightfall_percent {light_percent}')
         if light_percent > threshold:
             return True
         return False
 
+    def calculate_color_percentage_in_masked(self, target_color, box, mask_r1_ratio=0.0, mask_r2_ratio=0.0):
+        cropped = box.crop_frame(self.task.frame)
+        if cropped is None or cropped.size == 0:
+            return 0.0
+        h, w = cropped.shape[:2]
+
+        r1 = int(math.floor(h * mask_r1_ratio))
+        r2 = int(math.ceil(h * mask_r2_ratio))
+        if r2 <= r1:
+            return 0.0
+
+        center = (w // 2, h // 2)
+        ring_mask = np.zeros((h, w), dtype=np.uint8)
+        cv2.circle(ring_mask, center, r2, 255, -1)
+        if r1 > 0:
+            cv2.circle(ring_mask, center, r1, 0, -1)
+
+        lower_bound, upper_bound = color_range_to_bound(target_color)
+
+        color_mask = cv2.inRange(cropped, lower_bound, upper_bound)
+
+        combined_mask = cv2.bitwise_and(color_mask, ring_mask)
+        match_count = cv2.countNonZero(combined_mask)
+        total_mask_area = cv2.countNonZero(ring_mask)
+        if total_mask_area == 0:
+            return 0.0
+        return match_count / total_mask_area
+    
     def nightfall_time_left(self):
         if self.nightfall_time <= 0:
             return 0
@@ -403,7 +428,10 @@ class Zani(BaseChar):
         )
 
     def is_forte_full(self):
-        box = self.task.box_of_screen_scaled(3840, 2160, 2284, 1992, 2311, 2019, name='forte_full', hcenter=True)
+        if self.in_liberation:
+            box = self.task.box_of_screen_scaled(2560, 1440, 1527, 1335, 1544, 1352, name='forte_full', hcenter=True)
+        else:
+            box = self.task.box_of_screen_scaled(3840, 2160, 2284, 1992, 2311, 2019, name='forte_full', hcenter=True)
         self.task.draw_boxes(box.name, box)
         mean_val = contrast_val = 0
         if self.task.calculate_color_percentage(forte_white_color, box) > 0.08:
