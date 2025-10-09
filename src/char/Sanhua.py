@@ -14,6 +14,7 @@ class Sanhua(BaseChar):
         self.wait_down(click=False)
         if self.click_liberation(send_click=False):
             liber_clicked = True
+            sleep_time += 0.1
             self.sleep(0.15, False)
         elif self.resonance_available():
             self.task.mouse_up()
