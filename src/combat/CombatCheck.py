@@ -204,7 +204,7 @@ class CombatCheck(BaseWWTask):
     def ocr_lv_text(self):
         lvs = self.ocr(box=self.target_area_box,
                        match=re.compile(r'lv\.\d{1,3}', re.IGNORECASE),
-                       target_height=540, name='lv_text', log=True)
+                       target_height=540, name='lv_text')
         return lvs
 
     def has_target(self, double_check=False):

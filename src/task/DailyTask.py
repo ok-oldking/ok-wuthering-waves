@@ -69,8 +69,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.sleep(0.05)
         self.click_relative(0.86, 0.05)
         self.send_key_up('alt')
-        if not self.wait_ocr(0.2, 0.13, 0.32, 0.22, match=re.compile(r'\d+'), settle_time=1, raise_if_not_found=False,
-                             log=True):
+        if not self.wait_ocr(0.2, 0.13, 0.32, 0.22, match=re.compile(r'\d+'), settle_time=1, raise_if_not_found=False):
             self.log_error('can not open_millage, maybe ended')
         else:
             self.click(0.04, 0.3, after_sleep=1)

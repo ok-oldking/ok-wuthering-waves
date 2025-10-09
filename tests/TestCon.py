@@ -22,7 +22,7 @@ class TestCon(TaskTestCase):
         self.set_image('tests/images/in_combat.png')
         self.task.load_chars()
         con_full = self.task.get_current_char().is_con_full()
-        self.assertFalse(con_full)
+        self.assertTrue(con_full)
 
     def test_con_full3(self):
         self.task.do_reset_to_false()

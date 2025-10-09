@@ -477,7 +477,7 @@ class BaseCombatTask(CombatCheck):
             self.raise_not_in_combat('combat check not in combat')
 
     def set_key(self, key, box):
-        best = self.find_best_match_in_box(box, ['t', 'e', 'r', 'q'], threshold=0.78)
+        best = self.find_best_match_in_box(box, ['t', 'e', 'r', 'q'], threshold=0.7)
         logger.debug(f'set_key best match {key}: {best}')
         if best and best.name != self.key_config[key]:
             self.key_config[key] = best.name
