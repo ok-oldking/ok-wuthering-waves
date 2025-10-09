@@ -12,6 +12,7 @@ from src.char.Chixia import Chixia
 from src.char.Ciaccona import Ciaccona
 from src.char.Danjin import Danjin
 from src.char.Encore import Encore
+from src.char.Galbrena import Galbrena
 from src.char.HavocRover import HavocRover
 from src.char.Iuno import Iuno
 from src.char.Jianxin import Jianxin
@@ -78,6 +79,8 @@ char_dict = {
                 'ring_index': Elements.ELECTRIC},
     'char_iuno': {'cls': Iuno, 'res_cd': 8, 'echo_cd': 20, 'liberation_cd': 25,
                   'ring_index': Elements.WIND},
+    'char_galbrena': {'cls': Galbrena, 'res_cd': 5, 'echo_cd': 20, 'liberation_cd': 25,
+                      'ring_index': Elements.FIRE},
 }
 
 char_names = char_dict.keys()
