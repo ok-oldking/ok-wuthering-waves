@@ -25,7 +25,7 @@ class Galbrena(BaseChar):
                 self.continues_normal_attack(1)
         if self.check_res() and not self.need_fast_perform():
             self.click_liberation()
-            start = time.time();
+            start = time.time()
             while self.check_res() and time.time() - start < 10:
                 if self.flying():
                     self.shorekeeper_auto_dodge()
