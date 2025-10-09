@@ -200,11 +200,9 @@ class BaseWWTask(BaseTask):
 
     def do_walk_to_box(self, find_function, time_out=30, end_condition=None, y_offset=0.05, x_threshold=0.07,
                        use_hook=False):
-        if not find_function:
-            self.log_info('find_function not found, break')
-            return False
-        self.wait_until(lambda: (not end_condition or end_condition()) or find_function, raise_if_not_found=True,
-                        time_out=time_out)
+        if find_function:
+            self.wait_until(lambda: (not end_condition or end_condition()) or find_function(), raise_if_not_found=True,
+                            time_out=time_out)
         last_direction = None
         start = time.time()
         ended = False
