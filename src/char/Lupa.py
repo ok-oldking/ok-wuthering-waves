@@ -38,7 +38,8 @@ class Lupa(BaseChar):
                 self.res_wolf()
             else:
                 return self.switch_next_char()
-        if self.current_resonance() > 0.1 and self.click_resonance()[0]:
+        self.logger.debug(f'resonance percent {self.current_resonance()}')    
+        if self.current_resonance() > 0.05 and self.click_resonance()[0]:
             self.last_liberation = -1
             if self.liberation_available():
                 self.sleep(0.3)
