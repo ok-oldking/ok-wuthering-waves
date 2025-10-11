@@ -671,3 +671,9 @@ msgstr "快速旅行"
 
 msgid "Auto Click Fast Travel in Map"
 msgstr "地图中自动点击快速旅行"
+
+msgid "Check Levitator"
+msgstr "检查探索工具是否为控物"
+
+msgid "Toggle the levitator and verify if the character is floating"
+msgstr "在秘境中自动战斗时切换控物以判断角色是否处于空中"
