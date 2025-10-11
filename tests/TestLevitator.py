@@ -17,12 +17,12 @@ class TestLevitator(TaskTestCase):
     def test_levi(self):
         self.task.do_reset_to_false()
         self.set_image('tests/images/in_combat.png')
-        self.assertTrue(self.task.ensure_leviator())
+        self.assertTrue(self.task.ensure_levitator())
 
     def test_levi2(self):
         self.task.do_reset_to_false()
         self.set_image('tests/images/in_combat3.png')
-        self.assertTrue(self.task.ensure_leviator())
+        self.assertTrue(self.task.ensure_levitator())
 
 
 if __name__ == '__main__':

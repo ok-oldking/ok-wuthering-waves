@@ -21,10 +21,12 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         self.default_config.update({
             'Auto Target': True,
             'Use Liberation': True,
+            'Check Levitator': True,
         })
         self.config_description = {
             'Auto Target': 'Turn off to enable auto combat only when manually target enemy using middle click',
             'Use Liberation': 'Do not use Liberation in Open World to Save Time',
+            'Check Levitator': 'Toggle the levitator and verify if the character is floating',
         }
         self.op_index = 0
 
