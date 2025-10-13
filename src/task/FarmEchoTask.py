@@ -201,7 +201,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.last_night_change = time.time()
             if boss in ('Fallacy of No Return'):
                 if not self.find_f_with_text():
-                    self.teleport_to_heal(esc=False)
+                    self.teleport_to_octagon_boss()
+                    self.send_key('d', down_time=0.25, after_sleep=0.5)
+                    self.send_key('w', after_sleep=0.5)
                 if self.walk_until_f(time_out=20, check_combat=True, running=True):
                     self.scroll_and_click_buttons()
                     self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10)
