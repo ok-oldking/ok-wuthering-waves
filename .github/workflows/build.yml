@@ -13,8 +13,8 @@ jobs:
 
     env:
       PYTHONIOENCODING: 'UTF-8'
-      SIGN_BUILD: 'true'
-    #      SIGN_BUILD: 'false'
+      #      SIGN_BUILD: 'true'
+      SIGN_BUILD: 'false'
 
     strategy:
       matrix:
@@ -92,7 +92,7 @@ jobs:
         uses: ok-oldking/pyappify-action@master
         with:
           build_exe_only: true
-          #use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.6.15
+          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.7.8
 
       - name: Upload unsigned EXE artifact
         if: env.SIGN_BUILD == 'true'

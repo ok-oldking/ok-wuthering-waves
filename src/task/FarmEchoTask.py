@@ -206,17 +206,21 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.send_key('w', after_sleep=0.5)
                 if self.walk_until_f(time_out=20, check_combat=True, running=True):
                     self.scroll_and_click_buttons()
-                    self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10)
+                self.wait_until(self.in_combat, raise_if_not_found=False, time_out=300)
             if boss in ('Fenrico'):
                 while self.find_f_with_text():
                     self.sleep(1)
                     self.incr_drop(self.pick_echo())
-                self.teleport_to_nearest_boss()
-                self.sleep(2)
+                try:
+                    self.teleport_to_nearest_boss()
+                    self.sleep(2)
+                except Exception:
+                    self.log_info('Fenrico teleport_to_nearest_boss failed')
+                    self.ensure_main()
                 self.run_until(lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(), 'w',
                                time_out=5)
                 self.execute_treasure_hunt()
-                self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10)
+                self.wait_until(self.in_combat, raise_if_not_found=False, time_out=300)
             if boss in ('Lady of the Sea'):
                 self.log_debug('manage_boss_interactions Lady of the Sea')
                 self._in_realm = True
