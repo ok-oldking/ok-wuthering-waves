@@ -14,7 +14,68 @@ class Cartethyia(BaseChar):
         self.res_time = -1
         self.n4_time = -1
         self.init_template()
+        self.last_echo_time = -1
+        self.echo_nudge_window = 0.6
 
+    def _is_control_mode(self):
+        is_control = bool(getattr(self.task, 'control', False))
+        if callable(getattr(self.task, 'is_control_mode', None)):
+            is_control = is_control or bool(self.task.is_control_mode())
+        sel = getattr(self.task, 'selected_tool', None) or getattr(self.task, 'explore_mode', None) \
+            or getattr(self.task, 'navigator_mode', None)
+        if isinstance(sel, str):
+            is_control = is_control or (sel.lower() == 'control')
+        return is_control
+    
+    def _is_glide_mode_selected(self):
+        # 탐색도구에서 ‘활공’이 선택되어 있는지 최대한 관용적으로 판정
+        flags = [
+            getattr(self.task, 'glide', None),
+            getattr(self.task, 'is_glide_selected', None),
+        ]
+        for f in flags:
+            if isinstance(f, bool) and f:
+                return True
+            if callable(f):
+                try:
+                    if bool(f()):
+                        return True
+                except Exception:
+                    pass
+        # 문자열 기반 모드 이름
+        sel = getattr(self.task, 'selected_tool', None) or getattr(self.task, 'explore_mode', None) \
+              or getattr(self.task, 'navigator_mode', None)
+        if isinstance(sel, str) and ('glide' in sel.lower() or '활공' in sel):
+            return True
+        return False
+    
+    def nudge_after_echo_for_glide(self, max_time=0.35):
+        """
+        어린 모드 & (탐색도구=활공) & control 아님 & 에코 직후인 경우,
+        짧은 입력을 넣어 Q 직후 ‘멍때림’ 공백을 제거.
+        - 공중/지상 불문: SPACE 1~2틱 + click로 즉시 전투 재진입 유도
+        - 너무 강하지 않게 0.35s 내로만 수행
+        """
+        if self._is_control_mode():
+            return
+        if not self._is_glide_mode_selected():
+            return
+        if not self.is_small():
+            return
+        if self.last_echo_time < 0 or time.time() - self.last_echo_time > self.echo_nudge_window:
+            return
+
+        start = time.time()
+        self.logger.debug('nudge_after_echo_for_glide: begin')
+        # 지상/공중 관계없이 아주 짧게 SPACE+click로 상태머신을 깨워줌
+        while time.time() - start < max_time:
+            self.task.send_key('SPACE', after_sleep=0.05)
+            self.task.click(after_sleep=0.05)
+            self.check_combat()
+            self.task.next_frame()
+        self.sleep(0.05, False)
+        self.logger.debug('nudge_after_echo_for_glide: end')
+    
     @property
     def intro_motion_freeze_duration(self):
         return 0.6 if self.is_cartethyia else 0.78
@@ -56,7 +117,16 @@ class Cartethyia(BaseChar):
         if self.has_intro:
             self.continues_normal_attack(1.2)
         else:
-            self.click_echo(time_out=0)
+            _res = self.click_echo(time_out=0)
+            try:
+                _clicked = bool(_res[0]) if isinstance(_res, (tuple, list)) else bool(_res)
+            except Exception:
+                _clicked = bool(_res)
+        if _clicked:
+            self.last_echo_time = time.time()
+            # NEW: 탐색도구=활공 선택 시에만, 에코 직후 복귀 보정
+            self.nudge_after_echo_for_glide()
+
         if self.is_small():
             self.logger.info(f'is cartethyia')
             self.wait_down()
@@ -245,7 +315,16 @@ class Cartethyia(BaseChar):
             self.logger.debug(f'sword2: click duration {time.time() - start}')
         res = False
         if not self.buffs.get('sword3'):
-            res = self.click_resonance()[0]
+            _res = self.click_resonance()
++           try:
++               res = bool(_res[0]) if isinstance(_res, (tuple, list)) else bool(_res)
++           except Exception:
++               res = bool(_res)
+            self.check_combat()
+            if res:
+                self.last_echo_time = time.time()
+                # NEW: 탐색도구=활공 선택 시에만, 에코 직후 복귀 보정
+                self.nudge_after_echo_for_glide()
             self.check_combat()
         if self.liberation_available():
             res and self.sleep(0.2)

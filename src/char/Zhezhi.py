@@ -13,6 +13,86 @@ class Zhezhi(BaseChar):
         self.char_carlotta = None
         self.forte = 0
 
+    def _hold_inputs(self, hold_sec: float = 0.4):
+        mouse_down = getattr(self.task, "mouse_down", None) or getattr(self.task, "left_down", None)
+        mouse_up   = getattr(self.task, "mouse_up", None)   or getattr(self.task, "left_up", None)
+        key_down   = getattr(self.task, "key_down", None)
+        key_up     = getattr(self.task, "key_up", None)
+
+        pressed_mouse = False
+        pressed_e = False
+        pressed_space = False
+
+        try:
+            # Mouse down (좌클릭 홀드)
+            if mouse_down:
+                md_code = getattr(mouse_down, "__code__", None)
+                if md_code and md_code.co_argcount == 2:
+                    mouse_down("left")
+                else:
+                    mouse_down()
+                pressed_mouse = True
+            else:
+                self.continues_normal_attack(0.01)
+
+            # Space down
+            if key_down:
+                key_down("space")
+                pressed_space = True
+            else:
+                # 다운 API 없으면 짧은 점프 대체 (있다면)
+                press_jump = getattr(self, "press_jump", None)
+                if callable(press_jump):
+                    press_jump()
+
+            # E down
+            if key_down:
+                key_down("e")
+                pressed_e = True
+            else:
+                # 다운 유지 불가 환경: 최소 1회라도 신호 전달
+                self.send_resonance_key()
+
+            self.sleep(hold_sec)
+
+        finally:
+            # E up
+            if pressed_e and key_up:
+                key_up("e")
+            # Space up
+            if pressed_space and key_up:
+                key_up("space")
+            # Mouse up
+            if pressed_mouse and mouse_up:
+                if getattr(mouse_up, "__code__", None) and mouse_up.__code__.co_argcount == 2:
+                    mouse_up("left")
+                else:
+                    mouse_up()
+      
+    def perform_e_jump_combo(self, reps: int = 1, interval: float = 0.5, hold_sec: float = 0.4):
+        # 0.5초 간격으로 [일반공격+점프+E 동시입력]을 reps번 반복.
+        # 각 입력은 hold_sec 동안 유지.
+        # interval은 시작 간격(두 콤보 시작 사이의 간격) 기준.
+        
+        t_start = time.time()   # ⬅️ 경과시간 계산용
+        t_next  = time.time()   # ⬅️ 템포 기준시각  # ✅ 기준 시각 초기화
+        
+        for _ in range(reps):
+            t0 = time.time()
+            self._hold_inputs(hold_sec=hold_sec)
+
+            # 다음 콤보 시작을 interval에 맞춰 보정
+            t_next += interval
+            remain = t_next - time.time()
+            if remain > 0:
+                self.sleep(remain)
+
+            # 전투 중단/상태 체크
+            self.check_combat()
+            self.task.next_frame()
+
+        return time.time() - t_start
+
     def reset_state(self):
         super().reset_state()
         self._resonance_blue = False
@@ -42,13 +122,21 @@ class Zhezhi(BaseChar):
 
     def resonance_until_not_blue(self):
         start = time.time()
+        # 1) 파란불(blue) 뜰 때까지 최대 0.3초 대기
         while not self.resonance_blue():
             if time.time() - start > 0.3:
                 break
             self.check_combat()
             self.task.next_frame()
+        # 2) 파란불이면서 공명 사용 가능할 때, 동시입력 콤보 반복
+        #    - 0.5초 간격, 0.4초 홀드
+        #    - 중간에 빠른 수행/CON 풀/상태 이상 조건이면 탈출
         while self.resonance_available() and self.resonance_blue():
-            self.send_resonance_key()
+            # 기존: self.send_resonance_key()
+            # 변경: 일반공격+점프+E 동시입력 콤보 1회
+            self.perform_e_jump_combo(reps=1, interval=0.5, hold_sec=0.4)
+            if not self.resonance_blue():
+                break
             if self.need_fast_perform() and time.time() - start > 1.1:
                 break
             if self.is_con_full() and (self.char_carlotta is None or self.con_lock()):

@@ -32,6 +32,7 @@ class Zani(BaseChar):
         self.last_liber2 = -1
         self.dodge_time = -1
         self.attack_breakthrough_time = -1
+        self.no_post_n3_pause = True
 
     def reset_state(self):
         self.char_phoebe = None
@@ -143,7 +144,7 @@ class Zani(BaseChar):
         if self.is_forte_full():
             return State.FORTE_FULL
         self.logger.info(f'basic attack - breakthrough')
-        if self.chair_time == -1:
+        if self.chair_time == -1 or getattr(self, "no_post_n3_pause", False):
             if (result := self.basic_attack_breakthrough()) != State.DONE:
                 return result
         else:
@@ -306,6 +307,10 @@ class Zani(BaseChar):
                 return result
         elif result == State.FORTE_FULL:
             return State.FORTE_FULL
+        # ✅ 여기서 ‘3타 히트보정 대기’를 거의 0으로 줄임
+        if getattr(self, "no_post_n3_pause", False):
+            # 거의 즉시 다음 입력으로 넘어가도록 0~0.05초 사이로 클램프
+            wait_chair = 0.02
         if (result := self.wait_forte_full(wait_chair)) != State.DONE:
             return result
         self.continues_normal_attack(0.1)
@@ -527,6 +532,7 @@ class Zani(BaseChar):
             self.blazes = -1
             self.state = 0
         return self.state
+    
 
 
 zani_light_color = {
