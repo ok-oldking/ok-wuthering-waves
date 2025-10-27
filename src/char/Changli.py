@@ -35,10 +35,9 @@ class Changli(BaseChar):
                 forte = self.judge_forte()
         self.enhanced_normal = False
         if forte == 4 or self.is_mouse_forte_full():
-            if self.current_tool() < 0.1:
+            if self.flying():
                 self.heavy_attack()
-            self.heavy_click_forte(check_fun = self.is_mouse_forte_full)
-            forte = 0
+            self.heavy_click_forte(check_fun=self.is_mouse_forte_full)
             self.check_combat()
             return self.switch_next_char()
         if not (forte >= 3 and self.resonance_available()) and self.liberation_available():
@@ -70,12 +69,12 @@ class Changli(BaseChar):
                 self.check_combat()
                 self.task.next_frame()
             if self.is_mouse_forte_full():
-                self.heavy_click_forte(check_fun = self.is_mouse_forte_full)
+                self.heavy_click_forte(check_fun=self.is_mouse_forte_full)
                 self.sleep(1)
         elif forte >= 4 or self.is_mouse_forte_full():
-            if self.current_tool() < 0.1:
+            if self.flying():
                 self.heavy_attack()
-            self.heavy_click_forte(check_fun = self.is_mouse_forte_full)
+            self.heavy_click_forte(check_fun=self.is_mouse_forte_full)
             forte = 0
             self.sleep(1)
         if self.liberation_available() and self.liberation_and_heavy():

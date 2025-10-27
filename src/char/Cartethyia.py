@@ -234,10 +234,10 @@ class Cartethyia(BaseChar):
             while time.time() - start < time_out:
                 if not try_once and self.task.find_one(template=half_mat, box=half_box, threshold=0.85):
                     break
-                if not interrupt_handled and self.current_tool() < 0.1:
+                if not interrupt_handled and self.flying():
                     time_out = 2.5 if time_out == 2 else time_out
                     interrupt_handled = True
-                    self.task.wait_until(lambda: self.current_tool() > 0.1, time_out=3)
+                    self.task.wait_until(lambda: not self.flying(), time_out=3)
                     start = time.time()
                 self.click(interval=0.1, after_sleep=0.01)
                 self.check_combat()

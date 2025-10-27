@@ -786,10 +786,6 @@ class BaseChar:
         self.task.mouse_up()
         self.logger.debug('heavy attack end')
 
-    def current_tool(self):
-        """获取当前探索工具UI白色像素百分比。"""
-        return self.task.calculate_color_percentage(text_white_color, self.task.get_box_by_name('edge_levitator'))
-
     def current_resonance(self):
         """获取当前共鸣技能UI白色像素百分比。"""
         return self.task.calculate_color_percentage(text_white_color,

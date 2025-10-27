@@ -104,7 +104,7 @@ class Zani(BaseChar):
                             self.continues_right_click(0.05)
                             self.dodge_time = time.time()
                     if breakthrough_result == State.INTERRUPTED or result == State.INTERRUPTED:
-                        self.wait_until(lambda: self.is_interrupted() == False, time_out=0.6)
+                        self.wait_until(lambda: not self.flying(), time_out=0.6)
                     if self.crisis_response_protocol_combo():
                         cast_liberation = self.liberation_available()
                 else:
@@ -376,7 +376,7 @@ class Zani(BaseChar):
             return State.DONE
         kwargs = {
             'condition': self.is_forte_full,
-            'condition2': self.is_interrupted,
+            'condition2': self.flying,
             'time_out': timeout,
             'settle_time': settle_time
         }
@@ -384,7 +384,7 @@ class Zani(BaseChar):
             kwargs['post_action'] = self.click_with_interval
         if check_forte:
             pre_action_fn = self.check_forte_action()
-            kwargs['condition2'] = lambda: self.is_interrupted() or pre_action_fn()
+            kwargs['condition2'] = lambda: self.flying() or pre_action_fn()
         result = self.wait_until(**kwargs)
         if result == State.INTERRUPTED:
             pass
@@ -419,13 +419,6 @@ class Zani(BaseChar):
             post_action()
             self.task.next_frame()
         return False
-
-    def is_interrupted(self):
-        return (
-                self.current_tool() < 0.15 and
-                self.current_echo() < 0.15 and
-                self.current_resonance() < 0.15
-        )
 
     def is_forte_full(self):
         if self.in_liberation:
