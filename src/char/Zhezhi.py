@@ -47,6 +47,8 @@ class Zhezhi(BaseChar):
                 break
             self.check_combat()
             self.task.next_frame()
+        jump_intval = time.time() + 0.4
+        self.task.mouse_down()
         while self.resonance_available() and self.resonance_blue():
             self.send_resonance_key()
             if self.need_fast_perform() and time.time() - start > 1.1:
@@ -55,9 +57,13 @@ class Zhezhi(BaseChar):
                 break
             if time.time() - start > 4:
                 break
+            if time.time() > jump_intval:
+                self.task.send_key('SPACE')
+                jump_intval += 0.4
             self.check_combat()
             self.task.next_frame()
-
+        self.task.mouse_up()
+        
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if self.char_carlotta is not None and self.char_carlotta.get_ready():
             return Priority.MAX - 1
