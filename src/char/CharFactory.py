@@ -9,7 +9,6 @@ from src.char.Carlotta import Carlotta
 from src.char.Cartethyia import Cartethyia
 from src.char.Changli import Changli
 from src.char.Chixia import Chixia
-from src.char.Chouyuan import Qiuyuan
 from src.char.Ciaccona import Ciaccona
 from src.char.Danjin import Danjin
 from src.char.Encore import Encore
@@ -23,6 +22,7 @@ from src.char.Lupa import Lupa
 from src.char.Mortefi import Mortefi
 from src.char.Phoebe import Phoebe
 from src.char.Phrolova import Phrolova
+from src.char.Qiuyuan import Qiuyuan
 from src.char.Roccia import Roccia
 from src.char.Sanhua import Sanhua
 from src.char.ShoreKeeper import ShoreKeeper
