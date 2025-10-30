@@ -9,6 +9,7 @@ from src.char.Carlotta import Carlotta
 from src.char.Cartethyia import Cartethyia
 from src.char.Changli import Changli
 from src.char.Chixia import Chixia
+from src.char.Chouyuan import Qiuyuan
 from src.char.Ciaccona import Ciaccona
 from src.char.Danjin import Danjin
 from src.char.Encore import Encore
@@ -81,6 +82,8 @@ char_dict = {
                   'ring_index': Elements.WIND},
     'char_galbrena': {'cls': Galbrena, 'res_cd': 5, 'echo_cd': 20, 'liberation_cd': 25,
                       'ring_index': Elements.FIRE},
+    'char_chouyuan': {'cls': Qiuyuan, 'res_cd': 10, 'echo_cd': 20, 'liberation_cd': 25,
+                      'ring_index': Elements.WIND},
 }
 
 char_names = char_dict.keys()
