@@ -8,6 +8,7 @@ from decimal import Decimal, ROUND_DOWN, ROUND_UP
 from ok import color_range_to_bound
 from ok import Logger, TaskDisabledException
 from ok import find_boxes_by_name
+from src import text_white_color
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.BaseWWTask import binarize_for_matching
 from src.task.WWOneTimeTask import WWOneTimeTask
@@ -52,9 +53,11 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
             raise
 
     def on_combat_check(self):
-        if ult := self.find_one('rogue_ult'):
-            self.log_info('on_combat_check found {}'.format(ult))
-            self.send_key('4')
+        if ult := self.find_one('char_4_text'):
+            white_percent = self.calculate_color_percentage(text_white_color, ult)
+            self.log_info('on_combat_check found {} {}'.format(ult, white_percent))
+            if white_percent > 0.1:
+                self.send_key('4')
         return True
 
     def do_run(self):
