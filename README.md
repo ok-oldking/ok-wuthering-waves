@@ -65,7 +65,6 @@
 仅支持Python 3.12
 
 ```
-#CPU版本, 使用openvino
 pip install -r requirements.txt --upgrade #install python dependencies, 更新代码后可能需要重新运行
 python main.py # run the release version
 python main_debug.py # run the debug version
@@ -84,8 +83,8 @@ ok-ww.exe -t 1 -e
 
 * 鸣潮水群 462079653 进群答案:老王同学OK
 * 群满加QQ频道 [https://pd.qq.com/s/djmm6l44y](https://pd.qq.com/s/djmm6l44y)
-* 基于[ok-script](https://github.com/ok-oldking/ok-script)开发，项目代码仅有3000行（Python），简单易维护
-* 开发指南和文档[https://github.com/ok-oldking/ok-script-boilerplate](https://github.com/ok-oldking/ok-script-boilerplate)
+* 基于[ok-script](https://github.com/ok-oldking/ok-script)开发，项目代码仅有3000行（Python），简单易维护, 也欢迎使用ok-script来开发你自己的项目
+* 开发指南和文档 [https://github.com/ok-oldking/ok-script](https://github.com/ok-oldking/ok-script)
 * 有兴趣开发的请加开发者群926858895, 至少要能看文档, 使用源码运行, 问使用问题和提需求都会被踢
 
 
