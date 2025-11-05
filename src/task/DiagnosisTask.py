@@ -1,10 +1,7 @@
 import time
 
-from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.WWOneTimeTask import WWOneTimeTask
-
-logger = Logger.get_logger(__name__)
 
 
 class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
@@ -23,17 +20,22 @@ class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
         self.load_hotkey(force=True)
 
         self.start = time.time()
+        capture_cost = 0
         while True:
             self.load_chars()
             char = self.get_current_char()
+
             if not char:
                 self.info.clear()
                 self.info['Current Character'] = "None"
                 self.start = time.time()
             else:
+                start = time.time()
+                self.next_frame()
+                capture_cost += time.time() - start
                 self.info['Capture Frame Count'] = self.info.get('Capture Frame Count', 0) + 1
                 self.info['Capture Frame Rate'] = round(
-                    self.info['Capture Frame Count'] / ((time.time() - self.start) or 1),
+                    self.info['Capture Frame Count'] / (capture_cost or 1),
                     2)
                 self.info['Game Resolution'] = f'{self.frame.shape[1]}x{self.frame.shape[0]}'
                 self.info['Current Character'] = str(char)
@@ -41,7 +43,6 @@ class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
                 self.info['Echo CD'] = self.get_cd('echo')
                 self.info['Liberation CD'] = self.get_cd('liberation')
                 self.info['Concerto'] = char.get_current_con()
-                self.next_frame()
 
     def choose_level(self, start):
         y = 0.17

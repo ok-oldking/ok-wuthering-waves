@@ -101,13 +101,11 @@ config = {
         'calculate_pc_exe_path': calculate_pc_exe_path,
         'hwnd_class': 'UnrealWindow',
         'interaction': 'PostMessage',
-        'can_bit_blt': True,  # default false, opengl games does not support bit_blt
-        'bit_blt_render_full': True,
+        'capture_method': ['WGC', 'BitBlt_RenderFull'],  # Windows版本支持的话, 优先使用WGC, 否则使用BitBlt_Full
         'check_hdr': False,
         'force_no_hdr': False,
         'check_night_light': True,
         'force_no_night_light': False,
-        'require_bg': True
     },
     'analytics': {
         'report_url': 'http://report.ok-script.cn:8080/report',
