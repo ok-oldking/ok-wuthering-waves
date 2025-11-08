@@ -34,6 +34,7 @@ class CombatCheck(BaseWWTask):
         self.switch_char_time_out = 5
         self.combat_end_condition = None
         self.has_lavitator = False
+        self.target_enemy_error_notified = False
         self.cds = {
         }
         self.cd_refreshed = False
@@ -146,16 +147,17 @@ class CombatCheck(BaseWWTask):
             else:
                 return True
         else:
-            start = time.time()
             from src.task.AutoCombatTask import AutoCombatTask
             has_target = self.has_target()
             in_combat = has_target or ((self.config.get('Auto Target') or not isinstance(self,
                                                                                          AutoCombatTask)) and self.check_health_bar())
             if in_combat:
                 if not has_target and not self.target_enemy(wait=True):
+                    if not self.target_enemy_error_notified:
+                        self.target_enemy_error_notified = True
+                        self.log_error('Target enemy failed, please disable Nvidia/AMD Filter or Sharpening!',
+                                       notify=True)
                     return False
-                logger.info(
-                    f'enter combat cost {(time.time() - start):2f} boss_lv_template:{self.boss_lv_template is not None} boss_health_box:{self.boss_health_box} has_count_down:{self.has_count_down}')
                 self.has_lavitator = self.ensure_levitator()
                 self._in_combat = self.load_chars()
                 return self._in_combat
@@ -172,12 +174,17 @@ class CombatCheck(BaseWWTask):
         if self.is_open_world_auto_combat():
             return False
         start = time.time()
+        self.sleep(0.2)
+        if levi := self.find_one('edge_levitator', threshold=0.6):
+            self.log_debug('recheck edge levitator found {}'.format(levi))
+            return True
         while time.time() - start < 1 and self.in_team()[0]:
             self.send_key_down('tab')
-            self.sleep(0.3)
+            self.sleep(0.4)
         if self.in_team()[0]:
             self.log_info('can not open wheel')
             self.send_key_up('tab')
+            self.sleep(0.1)
             return False
         levitator = self.wait_feature('wheel_levitator', threshold=0.65, box=self.box_of_screen(0.27, 0.16, 0.68, 0.76))
         self.sleep(0.1)
@@ -190,7 +197,7 @@ class CombatCheck(BaseWWTask):
         win32api.SetCursorPos(abs_pos)
         self.sleep(0.1)
         self.send_key_up('tab')
-        self.sleep(0.1)
+        self.sleep(0.2)
         win32api.SetCursorPos(old)
         if not self.wait_feature('edge_levitator', threshold=0.6, time_out=1):
             if self.has_char(Roccia):

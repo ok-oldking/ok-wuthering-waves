@@ -668,3 +668,6 @@ msgstr "在大世界中, 不使用共鳴解放以節約時間"
 
 msgid "Auto Click Fast Travel in Map"
 msgstr "地圖中自動點擊快速旅行"
+
+msgid "Target enemy failed, please disable Nvidia/AMD Filter or Sharpening!"
+msgstr "选择目标失败!请关闭显卡滤镜和锐化!"

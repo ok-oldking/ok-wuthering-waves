@@ -677,3 +677,6 @@ msgstr "检查探索工具是否为控物"
 
 msgid "Toggle the levitator and verify if the character is floating"
 msgstr "在秘境中自动战斗时切换控物以判断角色是否处于空中"
+
+msgid "Target enemy failed, please disable Nvidia/AMD Filter or Sharpening!"
+msgstr "选择目标失败!请关闭显卡滤镜和锐化!"
