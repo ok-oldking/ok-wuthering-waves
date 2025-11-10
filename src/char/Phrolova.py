@@ -56,7 +56,7 @@ class Phrolova(BaseChar):
             if self.resonance_available() and 1 < time.time() - start:
                 if perform_under_outro:
                     self.continues_normal_attack(0.3)
-                    if self.click_resonance():
+                    if self.click_resonance()[0]:
                         self.continues_normal_attack(0.1)
                         self.task.wait_until(lambda: not self.resonance_available(), post_action=self.task.click,
                                              time_out=0.3)
