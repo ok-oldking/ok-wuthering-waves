@@ -1,5 +1,7 @@
 import re
 
+from qfluentwidgets import FluentIcon
+
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.WWOneTimeTask import WWOneTimeTask
@@ -13,6 +15,8 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.teleport_timeout = 100
         self.stamina_once = 0
+        self.group_name = "Dungeon"
+        self.group_icon = FluentIcon.HOME
 
     def make_sure_in_world(self):
         if (self.in_realm()):

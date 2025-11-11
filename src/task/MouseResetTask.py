@@ -13,6 +13,8 @@ class MouseResetTask(TriggerTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.default_config = {'_enabled': True}
+        self.group_name = "Diagnosis"
+        self.group_icon = FluentIcon.ROBOT
         self.trigger_interval = 10
         self.name = "Prevent Wuthering Waves from moving the mouse"
         self.description = "Turn on if you mouse jumps around"

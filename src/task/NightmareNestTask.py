@@ -15,7 +15,7 @@ nest_list = {
     '潮痕岩摊': {'index_cn': "梦魇·青羽", 'index_tw': "夢魘·青羽鷺", 'index_us': "Nightmare: Cyan-F", 'direction': 'w',
                  'running_time': 2.5, 'set_night': True},
     '三王峰': {'index_cn': "梦魇·绿熔", 'index_tw': "夢魘·綠熔", 'index_us': "Nightmare: Viridblaze", 'direction': 'w',
-                 'running_time': 0, 'set_night': True}
+               'running_time': 0, 'set_night': True}
 }
 
 
@@ -28,6 +28,8 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.target_enemy_time_out = 10
         self.name = "Nightmare Nest Task"
         self.description = "Auto Farm all Nightmare Nest"
+        self.group_name = "Dungeon"
+        self.group_icon = FluentIcon.HOME
         self.icon = FluentIcon.CALORIES
         self.last_is_click = False
         self.count_re = re.compile(r"(\d{1,2})/(\d{1,2})")

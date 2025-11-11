@@ -12,6 +12,8 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.icon = FluentIcon.FLAG
+        self.group_name = "Dungeon"
+        self.group_icon = FluentIcon.HOME
         self.description = "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
         self.name = "Tacet Suppression"
         default_config = {

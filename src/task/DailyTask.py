@@ -19,6 +19,8 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "Daily Task"
+        self.group_name = "Daily"
+        self.group_icon = FluentIcon.CALENDAR
         # self.add_exit_after_config()
         self.icon = FluentIcon.CAR
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge"]

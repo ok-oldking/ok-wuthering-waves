@@ -650,3 +650,45 @@ msgstr ""
 
 msgid "Wait time before each combat (seconds), overrides Boss profile if set"
 msgstr ""
+
+msgid "Auto Click Fast Travel in Map"
+msgstr ""
+
+msgid "Character Config"
+msgstr ""
+
+msgid "Check Levitator"
+msgstr ""
+
+msgid "Do not use Liberation in Open World to Save Time"
+msgstr ""
+
+msgid "Do not use Liberation to Save Time"
+msgstr ""
+
+msgid "Fast Travel"
+msgstr ""
+
+msgid "Iuno C6"
+msgstr ""
+
+msgid "Nightmare: Hecate"
+msgstr ""
+
+msgid "Other"
+msgstr ""
+
+msgid "Toggle the levitator and verify if the character is floating"
+msgstr ""
+
+msgid "Use Liberation"
+msgstr ""
+
+msgid "Daily"
+msgstr ""
+
+msgid "Dungeon"
+msgstr ""
+
+msgid "Farm"
+msgstr ""

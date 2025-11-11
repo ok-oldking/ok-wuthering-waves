@@ -680,3 +680,12 @@ msgstr "在秘境中自动战斗时切换控物以判断角色是否处于空中
 
 msgid "Target enemy failed, please disable Nvidia/AMD Filter or Sharpening!"
 msgstr "选择目标失败!请关闭显卡滤镜和锐化!"
+
+msgid "Daily"
+msgstr "周常日常"
+
+msgid "Dungeon"
+msgstr "副本任务"
+
+msgid "Farm"
+msgstr "4C任务"

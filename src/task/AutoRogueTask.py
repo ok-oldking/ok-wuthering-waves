@@ -23,6 +23,8 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
         self.default_config = {'_enabled': True}
         self.trigger_interval = 0.1
         self.name = "Half-Auto Rougue"
+        self.group_name = "Daily"
+        self.group_icon = FluentIcon.CALENDAR
         self.supported_languages = ["zh_CN"]
         self.description = "Enable half-auto combat in weekly rougue, language needs Chinese"
         self.icon = FluentIcon.CALORIES
