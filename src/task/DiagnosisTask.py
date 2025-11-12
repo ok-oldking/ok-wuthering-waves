@@ -11,7 +11,7 @@ class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.group_name = "Diagnosis"
-        self.group_icon = FluentIcon.ROBOT
+        self.group_icon = FluentIcon.UNIT
         self.description = "Diagnosis Problem, Performance Test, Run in Game World"
         self.name = "Diagnosis"
         self.start = 0
