@@ -1,106 +1,131 @@
 <div align="center">
   <h1 align="center">
-    <img src="icon.png" width="200"/>
+    <img src="icon.png" width="200" alt="ok-ww logo"/>
     <br/>
-      ok-ww
+    ok-ww
   </h1> 
-<h3><i>Automation for Wuthering Waves using computer vision and win32api</i></h3>
+  
+  <p>
+    An image-recognition-based automation tool for Wuthering Waves, with background mode support, developed with <a href="https://github.com/ok-oldking/ok-script">ok-script</a>.
+  </p>
+  
+  <p><i>Operates by simulating the Windows user interface, with no memory reading or file modification.</i></p>
 </div>
 
-![Static Badge](https://img.shields.io/badge/platfrom-Windows-blue?color=blue)
-[![GitHub release (with filter)](https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
-[![GitHub all releases](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
+<!-- Badges -->
+<div align="center">
+  
+![Platform](https://img.shields.io/badge/platform-Windows-blue)
+[![GitHub release](https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
+[![Total Downloads](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
 [![Discord](https://img.shields.io/discord/296598043787132928?color=5865f2&label=%20Discord)](https://discord.gg/vVyCatEBgA)
 
-### English Readme | [中文说明](README.md)
+</div>
 
-![img.png](readme/img.png)
-![img_1.png](readme/img_1.png)
+**Demo & Tutorial:** [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/h6P1KWjdnB4)
 
-## Key Features
+---
 
-* Works while the Game is in the Background
-* Farm Boss Echo (Dreamless, Jue, and World Bosses)
-* One Press Clear All Daily Tasks and Tacet Field
-* Auto Combat in Abyss, Game World, Tacet Field, etc.
-* Auto Skip Dialogs in Quests
-* Auto Pick-up (Echos, Flowers, Chests)
-* Supports All Game Languages (Most Features)
+## ⚠️ Disclaimer
 
-### Usage (Run from Compiled .exe)
+This software is an external auxiliary tool designed to automate parts of the Wuthering Waves gameplay. It interacts with the game solely by simulating standard user interface actions, in compliance with relevant laws and regulations. This project aims to simplify repetitive user tasks and does not disrupt game balance or provide an unfair advantage. It will never modify any game files or data.
 
-* Download `ok-ww.7z` from the latest releases
-* Extract and double-click the `ok-ww.exe`
+This software is open-source and free, intended for personal learning and communication purposes only. Do not use it for any commercial or profit-making activities. The development team reserves the right of final interpretation. Any issues arising from the use of this software are not the responsibility of this project or its developers.
 
-### Usage (Run from Python Source Code)
+Please note, according to Kuro Games' official Fair Play Declaration for Wuthering Waves:
+> The use of any third-party tools to disrupt the game experience is strictly prohibited.
+> We will take strict measures against the use of unauthorized tools such as cheats, speed hacks, cheat software, and macro scripts. This includes, but is not limited to, automated farming, skill acceleration, god mode, teleportation, and modification of game data.
+> Once verified, we will impose penalties based on the severity and frequency of the violation, including but not limited to deducting illicit gains, and suspending or permanently banning the game account.
 
-Use Python 3.12, other versions won't work.
+**By using this software, you acknowledge that you have read, understood, and agreed to the above statement, and you voluntarily assume all potential risks.**
 
+## 🚀 Quick Start
+
+1.  **Download the Installer**: From the "Downloads" section below, download the latest `ok-ww-win32-setup.exe` installer file.
+2.  **Install the Program**: Double-click the `ok-ww-win32-setup.exe` file and follow the on-screen instructions to complete the installation.
+3.  **Run the Program**: After installation, launch `ok-ww` from the desktop shortcut or the Start Menu.
+
+## 📥 Downloads
+
+*   **[GitHub](https://github.com/ok-oldking/ok-wuthering-waves/releases)**: Official release page, fast access worldwide. (**Please download the `setup.exe` installer, not the `Source Code` archive**).
+
+## ✨ Main Features
+<img width="1778" height="1186" alt="QQ_1762961412161" src="https://github.com/user-attachments/assets/0109c68e-d714-4c34-b016-b4b45f9861fd" />
+
+*   **High-Resolution Support**: Runs smoothly on all 16:9 resolutions up to 4K (minimum 1600x900). Some features are also compatible with ultrawide resolutions like 21:9.
+*   **Background Mode**: Supports running in the background while the game window is minimized or obscured, allowing you to use your computer for other tasks.
+*   **Intelligent Recognition**: Automatically recognizes all characters, eliminating the need for manual skill sequence configuration. Start with a single click.
+*   **Auto-Mute**: Can automatically mute the game audio when running in the background.
+
+## 🔧 Troubleshooting
+
+If you encounter issues, please check the following steps one by one before asking for help:
+
+1.  **Installation Path**: Ensure the software is installed in a path containing **only English characters** (e.g., `D:\Games\ok-ww`). Do not install it in `C:\Program Files` or folders with non-English characters.
+2.  **Antivirus Software**: Add the software's installation directory to the **exceptions or whitelist** of your antivirus software (including Windows Defender) to prevent files from being mistakenly deleted or blocked.
+3.  **Display Settings**:
+    *   Turn off all graphics card filters (like NVIDIA Game Filter) and sharpening features.
+    *   Use the game's default brightness settings.
+    *   Disable any overlays that display information on the game screen (e.g., frame rates from MSI Afterburner, Fraps, etc.).
+4.  **Custom Keybinds**: If you have changed the default in-game keybinds, you must update them accordingly in the `ok-ww` settings. Only the keybinds listed in the settings are supported.
+5.  **Software Version**: Check and ensure you are using the latest version of `ok-ww`.
+6.  **Game Performance**: Make sure the game can run stably at **60 FPS**. If the frame rate is unstable, try lowering the game's graphics quality or resolution.
+7.  **Game Disconnections**: If you frequently get disconnected from the server, try launching the game manually and playing for 5 minutes before starting the tool. If you get disconnected, simply log back in without closing the game.
+8.  **Getting Help**: If the steps above do not solve your problem, please submit a detailed bug report through our community channels.
+
+---
+
+## 💻 Developer Zone
+
+### Running from Source (Python)
+
+This project only supports Python 3.12.
+
+```bash
+# Install or update dependencies
+pip install -r requirements.txt --upgrade
+
+# Run Release version
+python main.py
+
+# Run Debug version
+python main_debug.py
 ```
-#CPU version
-git clone https://github.com/ok-oldking/ok-wuthering-waves
-pip install -r requirements.txt --upgrade #install python dependencies, you might need do run this again after updating the code
-python main.py # run the release version
-python main_debug.py # run the debug version
-```
 
-### Command Line Arguments
+### Command-Line Arguments
 
-```
+You can use command-line arguments for automated startup.
+
+```bash
+# Example: Automatically run the first task after launch and exit the program upon completion
 ok-ww.exe -t 1 -e
 ```
 
-- `-t` or `--task` represents the task number to execute automatically upon startup. `1` means the first task, a
-  one-click execution task.
-- `-e` or `--exit` when added, indicates that the program should automatically exit after the task is completed.
+*   `-t` or `--task`: Automatically runs the Nth task in the list after launch. `1` represents the first task.
+*   `-e` or `--exit`: Automatically exits the program after the task is completed.
 
-### Must Set Game Settings
+## 💬 Join Us
 
-![image](https://github.com/user-attachments/assets/7d5f27b4-7b28-4471-bf7b-096dccd4ec4d)
-![image](https://github.com/user-attachments/assets/66deba93-d0e7-41c0-985c-248deee9b8ff)
+This project is developed based on the [ok-script](https://github.com/ok-oldking/ok-script) framework. The core code is only about 3000 lines (Python), making it simple and easy to maintain. Developers interested in creating their own automation projects are welcome to use [ok-script](https://github.com/ok-oldking/ok-script).
 
-### FAQ
+## 🔗 Projects using ok-script:
 
-## Frequently Asked Questions (FAQ)
+*   Wuthering Waves: [https://github.com/ok-oldking/ok-wuthering-waves](https://github.com/ok-oldking/ok-wuthering-waves)
+*   Genshin Impact (No longer maintained, but can still be used for auto-skipping dialogue in the background): [https://github.com/ok-oldking/ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact)
+*   Girls' Frontline 2: [https://github.com/ok-oldking/ok-gf2](https://github.com/ok-oldking/ok-gf2)
+*   Honkai: Star Rail: [https://github.com/Shasnow/ok-starrailassistant](https://github.com/Shasnow/ok-starrailassistant)
+*   Starsee: [https://github.com/Sanheiii/ok-star-resonance](https://github.com/Sanheiii/ok-star-resonance)
+*   Duet Night Abyss: [https://github.com/BnanZ0/ok-duet-night-abyss](https://github.com/BnanZ0/ok-duet-night-abyss)
+*   Ash Echoes (Updates stopped): [https://github.com/ok-oldking/ok-baijing](https://github.com/ok-oldking/ok-baijing)
 
-1. **Install:** Install to a directory with only English characters, **Do NOT** install to the Program Files Folder.
-2. **Antivirus Interference:** Add the download and extraction directories to your antivirus/Windows Defender whitelist.
-3. **Display Settings:** Disable Windows HDR, eye protection modes, and automatic color management. Use default game
-   brightness and disable external overlays (FPS, GPU info).
-4. **Custom Keybinding:** If you are not using default keybindings, Set yours in the app settings, keys not in the
-   settings are not supported.
-5. **Outdated Version:** Ensure you are using the latest version of OK-GI.
-6. **Performance:** Maintain a stable 60 FPS in the game, reduce resolution if needed.
-7. **Disconnection** If you often got disconnected, try open the game first, and start playing 5 mins later, or when
-   disconnected, don't close the game, and re-login.
-8. **Further Assistance:** Submit a bug report if issues persist.
 
-# Disclaimer
+## ❤️ Sponsors & Acknowledgements
 
-This software is an external tool designed to automate the gameplay of “Wuthering Waves.” It interacts with the game
-solely through the existing user interface and complies with relevant laws and regulations. The package aims to simplify
-user interaction with the game without disrupting game balance or providing any unfair advantages. It does not modify
-any game files or code.
+### Sponsors
+*   **EXE Signing**: Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
 
-This software is open-source and free, intended solely for personal learning and communication purposes, and is limited
-to personal game accounts. It is not allowed for any commercial or profit-making purposes. The development team reserves
-the final interpretation rights of this project. Any issues arising from the use of this software are unrelated to the
-project and the development team. If you find merchants using this software for paid boosting services, it is their
-personal behavior, and this software is not authorized for boosting services. Any issues and consequences arising from
-such use are unrelated to this software. This software is not authorized for sale, and any sold versions may contain
-malicious code, leading to the theft of game accounts or computer data, which is unrelated to this software.
-
-## Sponsorship
-
-- Free code signing provided by [SignPath.io](https://signpath.io/), certificate
-  by [SignPath Foundation](https://signpath.org/)
-
-### Related Projects
-
-* [ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact) Genshin Impact Automation
-* [ok-gf2](https://github.com/ok-oldking/ok-gf2) Girls Frontline 2 Automation(Simplified-Chinese Only)
-
-### Credits
-
-[https://github.com/lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss)
-  
+### Acknowledgements
+*   [lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss)
+*   [ok-oldking/OnnxOCR](https://github.com/ok-oldking/OnnxOCR)
+*   [zhiyiYo/PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
+*   [Toufool/AutoSplit](https://github.com/Toufool/AutoSplit)
