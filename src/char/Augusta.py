@@ -87,14 +87,14 @@ class Augusta(BaseChar):
         return False
 
     def liberation_available(self):
-        return self.current_liberation() > 0 and bool(self.task.find_one('Augusta_lib1', threshold=0.6))
+        return self.current_liberation() > 0 and bool(self.task.find_one('Augusta_lib1', threshold=0.5))
 
     def check_majesty(self):
-        return self.current_liberation() > 0 and bool(self.task.find_one('Augusta_lib2', threshold=0.6))
+        return self.current_liberation() > 0 and bool(self.task.find_one('Augusta_lib2', threshold=0.5))
 
     def check_prowess(self):
         long_inner_box = 'box_target_enemy_long_inner'
-        if self.task.find_one(long_inner_box, box=self.task.get_box_by_name(long_inner_box), threshold=0.85):
+        if self.task.find_one(long_inner_box, box=self.task.get_box_by_name(long_inner_box), threshold=0.8):
             return True
 
     def resonance_available(self):
