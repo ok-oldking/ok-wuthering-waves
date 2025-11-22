@@ -35,7 +35,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
         self.boss_list = ['Other', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory',
-                          'Nightmare: Hecate', 'Fenrico', 'Lady of the Sea']
+                          'Nightmare: Hecate', 'Fenrico']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
