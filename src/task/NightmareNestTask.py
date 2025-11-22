@@ -15,7 +15,9 @@ nest_list = {
     '潮痕岩摊': {'index_cn': "梦魇·青羽", 'index_tw': "夢魘·青羽鷺", 'index_us': "Nightmare: Cyan-F", 'direction': 'w',
                  'running_time': 2.5, 'set_night': True},
     '三王峰': {'index_cn': "梦魇·绿熔", 'index_tw': "夢魘·綠熔", 'index_us': "Nightmare: Viridblaze", 'direction': 'w',
-               'running_time': 0, 'set_night': True}
+               'running_time': 0, 'set_night': True},
+    '穗波市': {'index_cn': "梦魇·呜咔", 'index_tw': "夢魘·侏侏", 'index_us': "Nightmare: Tick Tack", 'direction': 'w',
+               'running_time': 2, 'set_night': False, 'click_F': True}
 }
 
 
@@ -69,6 +71,9 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self.click(0.89, 0.92)
             self.wait_in_team_and_world(raise_if_not_found=False, time_out=120)
             self.sleep(1)
+            if value.get('click_F') is not None:
+                self.send_key('f', after_sleep = 1)
+                self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
             if value.get('set_night'):
                 self.change_time_to_night()
                 self.sleep(1)
@@ -88,6 +93,9 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 self.click(0.89, 0.92)
                 self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
                 self.sleep(1)
+                if value.get('click_F') is not None:
+                    self.send_key('f', after_sleep = 1)
+                    self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
                 self.run_until(lambda: False, value.get('direction'), value.get('running_time'), running=True)
                 if not self.try_pick_echo():
                     break
