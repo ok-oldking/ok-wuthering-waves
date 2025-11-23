@@ -145,7 +145,7 @@ class BaseCombatTask(CombatCheck):
         cds['resonance'] = 0
         cds['liberation'] = 0
         cds['echo'] = 0
-        texts = self.ocr(0.81, 0.86, 0.97, 0.93, frame_processor=isolate_white_text_to_black, match=cd_regex)
+        texts = self.ocr(0.83, 0.88, 0.97, 0.91, frame_processor=isolate_white_text_to_black, match=cd_regex, log=False)
         for text in texts:
             cd = convert_cd(text)
             if text.x < self.width_of_screen(0.86):
@@ -773,7 +773,7 @@ class BaseCombatTask(CombatCheck):
         # === 2. 提取白色部分（白边）===
         lower_white, upper_white = color_range_to_bound(white_color)
         mask = cv2.inRange(img, lower_white, upper_white)
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((3,3), np.uint8))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
 
         # 2. 找轮廓
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -788,13 +788,13 @@ class BaseCombatTask(CombatCheck):
         # 原梯形轮廓
         trapezoid = np.array([
             [35, 0], [0, 35], [92, 36], [56, 0]
-        ], np.int32).reshape((-1,1,2))
+        ], np.int32).reshape((-1, 1, 2))
 
         # 等比例缩放
         trapezoid_scaled = np.zeros_like(trapezoid, dtype=np.int32)
-        trapezoid_scaled[:,0,0] = (trapezoid[:,0,0] * scale_x).astype(np.int32)
-        trapezoid_scaled[:,0,1] = (trapezoid[:,0,1] * scale_y).astype(np.int32)
-        
+        trapezoid_scaled[:, 0, 0] = (trapezoid[:, 0, 0] * scale_x).astype(np.int32)
+        trapezoid_scaled[:, 0, 1] = (trapezoid[:, 0, 1] * scale_y).astype(np.int32)
+
         # 定义匹配阈值
         best_mat = None
         best_match = None
@@ -802,10 +802,10 @@ class BaseCombatTask(CombatCheck):
 
         for cnt in contours:
             cnt = cv2.convexHull(cnt)
-            x,y,_,_ = cv2.boundingRect(cnt)
+            x, y, _, _ = cv2.boundingRect(cnt)
             for dx in range(-10, 11, 2):
                 for dy in range(-10, 11, 2):
-                    shifted = trapezoid_scaled + [x+dx, y+dy]
+                    shifted = trapezoid_scaled + [x + dx, y + dy]
                     area_i, mat_i = cv2.intersectConvexConvex(cnt.astype(np.float32), shifted.astype(np.float32))
                     ratio = area_i / cv2.contourArea(trapezoid_scaled)
                     if ratio > best_ratio:
@@ -830,7 +830,7 @@ class BaseCombatTask(CombatCheck):
         # 点击轮廓中心
         if best_match is None:
             raise RuntimeError('Can not find the boss octagon on map')
-        
+
         x0, y0 = self.width_of_screen(0.3), self.height_of_screen(0.3)
         x, y, w, h = cv2.boundingRect(best_match)
         cx = x0 + x + w // 2
@@ -854,6 +854,7 @@ class BaseCombatTask(CombatCheck):
         self.click_box(travel, relative_x=1.5)
         self.wait_in_team_and_world(time_out=20)
         self.sleep(2)
+
 
 white_color = {  # 用于检测UI元素可用状态的白色颜色范围。
     'r': (253, 255),  # Red range
