@@ -145,7 +145,7 @@ class BaseCombatTask(CombatCheck):
         cds['resonance'] = 0
         cds['liberation'] = 0
         cds['echo'] = 0
-        texts = self.ocr(0.83, 0.88, 0.97, 0.91, frame_processor=isolate_white_text_to_black, match=cd_regex, log=False)
+        texts = self.ocr(0.82, 0.88, 0.97, 0.91, frame_processor=isolate_white_text_to_black, match=cd_regex, log=True)
         for text in texts:
             cd = convert_cd(text)
             if text.x < self.width_of_screen(0.86):
