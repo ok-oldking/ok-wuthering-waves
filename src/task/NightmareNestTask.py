@@ -9,15 +9,15 @@ logger = Logger.get_logger(__name__)
 
 nest_list = {
     '千没沉岛': {'index_cn': "梦魇·振铎", 'index_tw': "夢魘·振鐸", 'index_us': "Nightmare: Tambourinist",
-                 'direction': 'w', 'running_time': 1.5, 'set_night': False},
+                 'direction': 'w', 'running_time': 1.5},
     '受蚀地': {'index_cn': "梦魇·紫羽", 'index_tw': "夢魘·紫羽鷺", 'index_us': "Nightmare: Violet-F", 'direction': 'w',
-               'running_time': 2.5, 'set_night': True},
+               'running_time': 2.5},
     '潮痕岩摊': {'index_cn': "梦魇·青羽", 'index_tw': "夢魘·青羽鷺", 'index_us': "Nightmare: Cyan-F", 'direction': 'w',
-                 'running_time': 2.5, 'set_night': True},
+                 'running_time': 2.5},
     '三王峰': {'index_cn': "梦魇·绿熔", 'index_tw': "夢魘·綠熔", 'index_us': "Nightmare: Viridblaze", 'direction': 'w',
-               'running_time': 0, 'set_night': True},
+               'running_time': 0},
     '穗波市': {'index_cn': "梦魇·呜咔", 'index_tw': "夢魘·侏侏", 'index_us': "Nightmare: Tick Tack", 'direction': 'w',
-               'running_time': 2, 'set_night': False}
+               'running_time': 2}
 }
 
 
