@@ -17,7 +17,7 @@ nest_list = {
     '三王峰': {'index_cn': "梦魇·绿熔", 'index_tw': "夢魘·綠熔", 'index_us': "Nightmare: Viridblaze", 'direction': 'w',
                'running_time': 0, 'set_night': True},
     '穗波市': {'index_cn': "梦魇·呜咔", 'index_tw': "夢魘·侏侏", 'index_us': "Nightmare: Tick Tack", 'direction': 'w',
-               'running_time': 2, 'set_night': False, 'click_F': True}
+               'running_time': 2, 'set_night': False}
 }
 
 
@@ -57,27 +57,18 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                     chance = True
                 if circle >= 30:
                     break
-        for _, value in nest_list.items():
+        for _, nest in nest_list.items():
             if self.game_lang == 'zh_CN':
-                echo_name = value.get('index_cn')
+                echo_name = nest.get('index_cn')
             elif self.game_lang == 'zh_TW':
-                echo_name = value.get('index_tw')
+                echo_name = nest.get('index_tw')
             else:
-                echo_name = value.get('index_us')
+                echo_name = nest.get('index_us')
 
             if self.travel_to_nest(echo_name):
                 continue
             self.log_info('click travel')
-            self.click(0.89, 0.92)
-            self.wait_in_team_and_world(raise_if_not_found=False, time_out=120)
-            self.sleep(1)
-            if value.get('click_F') is not None:
-                self.send_key('f', after_sleep = 1)
-                self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
-            if value.get('set_night'):
-                self.change_time_to_night()
-                self.sleep(1)
-            self.run_until(lambda: False, value.get('direction'), value.get('running_time'), running=True)
+            self.click_travel_nest(nest)
             self.wait_until(self.in_combat, post_action=self.middle_click, time_out=10)
             if self.in_combat():
                 self.log_info('wait combat')
@@ -86,24 +77,23 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 self.log_info(f'combat with {echo_name} error')
                 continue
             self.log_info('find echo')
-            self.pick_echo()
-            circle = 0
-            while True:
-                self.travel_to_nest(echo_name)
-                self.click(0.89, 0.92)
-                self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
-                self.sleep(1)
-                if value.get('click_F') is not None:
-                    self.send_key('f', after_sleep = 1)
-                    self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
-                self.run_until(lambda: False, value.get('direction'), value.get('running_time'), running=True)
-                if not self.try_pick_echo():
-                    break
-                circle += 1
-                if circle > 3:
-                    break
+            dropped = self.walk_find_echo(time_out=10)
+            if dropped:
+                continue
+            self.travel_to_nest(echo_name)
+            self.click_travel_nest(nest)
+            self.walk_find_echo(time_out=10)
         self.ensure_main(time_out=180)
         self.log_info(f'NightmareNestTask complete')
+
+    def click_travel_nest(self, config):
+        self.click(0.89, 0.92)
+        self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
+        self.sleep(2)
+        while self.find_f_with_text():
+            self.send_key('f', after_sleep=1)
+            self.wait_in_team_and_world(time_out=40, raise_if_not_found=False)
+        self.run_until(lambda: False, config.get('direction'), config.get('running_time'), running=True)
 
     def travel_to_nest(self, echo_name):
         self.ensure_main(time_out=180)
@@ -129,10 +119,6 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 self.log_info(f'{echo_name} {match.group(0)} is complete')
                 return True
 
-    def on_combat_check(self):
-        self.incr_drop(self.pick_f())
-        return True
-
     def find_echo_list(self):
         if self.game_lang == 'zh_CN':
             return self.echo_list_cn
@@ -154,25 +140,3 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self.sleep(0.2)
             return True
         return False
-
-    def try_pick_echo(self):
-        success = False
-        circle = 0
-        chance = True
-        while True:
-            dropped, has_more = self.yolo_find_echo(turn=True, use_color=False, time_out=12, threshold=0.25)
-            self.incr_drop(dropped)
-            self.sleep(0.5)
-            circle += 1
-            if dropped:
-                success = True
-            if not dropped and not has_more:
-                if chance:
-                    chance = False
-                else:
-                    break
-            else:
-                chance = True
-            if circle > 15:
-                break
-        return success

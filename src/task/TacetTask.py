@@ -64,7 +64,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.teleport_to_tacet(index)
             self.wait_click_travel()
             self.wait_in_team_and_world(time_out=120)
-            self.sleep(1)
+            self.sleep(2)
             if self.door_walk_method.get(index) is not None:
                 for method in self.door_walk_method.get(index):
                     self.send_key_down(method[0])
