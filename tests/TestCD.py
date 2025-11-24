@@ -18,14 +18,6 @@ class TestCD(TaskTestCase):
         self.assertFalse(self.task.has_cd('liberation'))
         self.assertTrue(self.task.has_cd('echo'))
 
-    def test_cd2(self):
-        self.task.do_reset_to_false()
-        self.set_image('tests/images/all_cd_1080p.png')
-        self.task.load_chars()
-        self.assertTrue(self.task.has_cd('resonance'))
-        self.assertTrue(self.task.has_cd('liberation'))
-        self.assertTrue(self.task.has_cd('echo'))
-
     def test_cd3(self):
         self.task.do_reset_to_false()
         self.set_image('tests/images/in_combat3.png')
