@@ -21,7 +21,6 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.name = "Daily Task"
         self.group_name = "Daily"
         self.group_icon = FluentIcon.CALENDAR
-        # self.add_exit_after_config()
         self.icon = FluentIcon.CAR
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge"]
         self.default_config = {
@@ -76,9 +75,6 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         else:
             self.click(0.04, 0.3, after_sleep=1)
             self.click(0.68, 0.91, after_sleep=3)
-            self.click(0.04, 0.17, after_sleep=1)
-            self.click(0.68, 0.91, after_sleep=1)
-            self.click(0.68, 0.91, after_sleep=1)
         self.ensure_main()
 
     def open_daily(self):
