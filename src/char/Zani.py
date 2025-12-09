@@ -112,6 +112,7 @@ class Zani(BaseChar):
                     self.logger.info('liberation has cd')
                     if self.is_forte_full() and self.crisis_response_protocol_combo():
                         cast_liberation = self.liberation_available()
+                self.logger.info(f'cast_liberation {cast_liberation}')
                 if cast_liberation:
                     if self.blazes != 1:
                         self.wait_crisis_protocol_end()
@@ -286,14 +287,14 @@ class Zani(BaseChar):
         if self.resonance_available():
             self.logger.info('perform standard_defense_protocol')
             self.click_resonance(send_click=False)
-            self.sleep(0.1)
+            self.sleep(0.2)
             self.continues_normal_attack(0.1)
             return State.DONE
         return State.FAILED
 
     def basic_attack_breakthrough(self):
         result = self.standard_defense_protocol_combo()
-        wait_chair = 1.4
+        wait_chair = 1.3
         if result == State.FAILED:
             sleep = 0.3 - (time.time() - self.dodge_time)
             if (result := self.wait_forte_full(sleep)) != State.DONE:
@@ -302,7 +303,7 @@ class Zani(BaseChar):
             if (result := self.wait_forte_full(0.6)) != State.DONE:
                 return result
             self.task.mouse_up()
-            wait_chair = 1.4
+            wait_chair = 1.3
             if (result := self.wait_forte_full(0.85, send_click=True)) != State.DONE:
                 return result
         elif result == State.FORTE_FULL:
@@ -326,6 +327,7 @@ class Zani(BaseChar):
                     self.continues_right_click(0.05)
                     self.dodge_time = time.time()
             if result != State.FORTE_FULL and not self.is_forte_full():
+                self.logger.info('crisis_response_protocol not FORTE_FULL')
                 return False
         start = time.time()
         self.wait_until(lambda: not self.is_forte_full(), post_action=self.send_resonance_key, time_out=1)
