@@ -54,6 +54,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             '荣耀狮像': {'name': r'(狮像|亚狮诺索)', 'set_combat_wait': 5},
             '罗蕾莱': {'name': r'(罗蕾莱|夜之女皇)', 'set_night': True},
         }
+        self.boss_en2cn = {
+            "Sentry Construct": "异构武装"
+        }
         self.is_revived = False
 
     def on_combat_check(self):
@@ -174,6 +177,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
     def manage_boss_parameters(self):
         boss = self.config.get('Boss')
+        if not boss is None:
+            self.aim_boss = self.boss_en2cn[boss]
         if boss in ('Sentry Construct', 'Lioness of Glory', 'Fallacy of No Return'):
             self.combat_wait_time = self.config.get("Combat Wait Time", 0) or 5
         else:
@@ -278,6 +283,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w', time_out=12, running=True)
 
     def teleport_to_nearest_boss(self):
+        print(f"===============\n\n\n\n\n\n{self.aim_boss}\n\n\n\n\n\n=================")
         if self.aim_boss is not None:
             self.log_info(f'teleport_to_nearest_boss {self.aim_boss}')
             self.ensure_main(time_out=180)
