@@ -283,7 +283,6 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w', time_out=12, running=True)
 
     def teleport_to_nearest_boss(self):
-        print(f"===============\n\n\n\n\n\n{self.aim_boss}\n\n\n\n\n\n=================")
         if self.aim_boss is not None:
             self.log_info(f'teleport_to_nearest_boss {self.aim_boss}')
             self.ensure_main(time_out=180)
