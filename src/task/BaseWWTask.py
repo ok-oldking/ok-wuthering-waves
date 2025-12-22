@@ -885,6 +885,7 @@ class BaseWWTask(BaseTask):
             self.send_key_down('alt')
             self.sleep(0.05)
             self.click_relative(0.77, 0.05)
+            self.sleep(0.02)
             self.send_key_up('alt')
             self.sleep(1)
         gray_book_boss = self.wait_book(feature)
