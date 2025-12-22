@@ -232,7 +232,7 @@ class BaseCombatTask(CombatCheck):
                                                       self.get_box_by_name(f'box_{name}'))
         else:
             current = 1
-        if current > 0 and (not check_cd or self.has_cd(name)):
+        if current > 0 and (not check_cd or not self.has_cd(name)):
             return True
 
     def combat_once(self, wait_combat_time=200, raise_if_not_found=True):
