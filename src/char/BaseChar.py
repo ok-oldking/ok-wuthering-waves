@@ -634,9 +634,9 @@ class BaseChar:
         """
         return self.available('resonance', check_color=False)
 
-    def available(self, box, check_color=True):
+    def available(self, box, check_color=True, check_cd=True):
         if self.is_current_char:
-            return self.task.available(box, check_color=check_color)
+            return self.task.available(box, check_color=check_color, check_cd=check_cd)
         else:
             return not self.task.has_cd(box, self.index)
 
@@ -650,6 +650,17 @@ class BaseChar:
             bool: 如果可用则返回 True。
         """
         return self.available('echo', check_color=False)
+
+    def extra_action_available(self):
+        """判断最左边的额外技能是否可用。
+
+        Args:
+            current (float, optional): 可选的, 当前声骸技能UI白色像素百分比。默认为 None。
+
+        Returns:
+            bool: 如果可用则返回 True。
+        """
+        return self.available('extra_action', check_color=True, check_cd=False)
 
     def is_con_full(self):
         if self.current_con == 1:

@@ -12,6 +12,7 @@ from src.char.Chisa import Chisa
 from src.char.Chixia import Chixia
 from src.char.Ciaccona import Ciaccona
 from src.char.Danjin import Danjin
+from src.char.Douling import Douling
 from src.char.Encore import Encore
 from src.char.Galbrena import Galbrena
 from src.char.HavocRover import HavocRover
@@ -88,6 +89,7 @@ char_dict = {
                       'ring_index': Elements.WIND},
     'char_chisa': {'cls': Chisa, 'res_cd': 10, 'echo_cd': 20, 'liberation_cd': 25,
                    'ring_index': Elements.HAVOC},
+    'char_douling': {'cls': Douling, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.ELECTRIC},
 }
 
 char_names = char_dict.keys()
