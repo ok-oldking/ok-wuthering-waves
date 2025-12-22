@@ -41,18 +41,18 @@ class Ciaccona(BaseChar):
             self.continues_normal_attack(0.2)
         if self.click_resonance()[0]:
             jump = False
-            wait = True     
+            wait = True
         if self.judge_forte() >= 3:
             if jump:
                 start = time.time()
                 while not self.flying():
-                    self.task.send_key('SPACE')
-                    if time.time()-start > 0.3:
+                    self.task.jump(after_sleep=0.01)
+                    if time.time() - start > 0.3:
                         break
-                    self.task.next_frame() 
-            self.heavy_click_forte(check_fun = self.is_mouse_forte_full)
+                    self.task.next_frame()
+            self.heavy_click_forte(check_fun=self.is_mouse_forte_full)
             wait = True
-        if self.liberation_available(): 
+        if self.liberation_available():
             if wait:
                 self.sleep(0.4)
             if self.click_liberation():
@@ -64,11 +64,13 @@ class Ciaccona(BaseChar):
         self.switch_next_char()
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.attribute == 2 and self.in_liberation and self.time_elapsed_accounting_for_freeze(self.last_liberation) < 20:
+        if self.attribute == 2 and self.in_liberation and self.time_elapsed_accounting_for_freeze(
+                self.last_liberation) < 20:
             return Priority.MIN
         if self.attribute == 3:
             self.logger.debug(f'ciaccona cond: {self.cartethyia.is_cartethyia}')
-        if self.attribute == 3 and self.in_liberation and (self.time_elapsed_accounting_for_freeze(self.last_liberation) < 8 or not self.cartethyia.is_cartethyia):
+        if self.attribute == 3 and self.in_liberation and (
+                self.time_elapsed_accounting_for_freeze(self.last_liberation) < 8 or not self.cartethyia.is_cartethyia):
             return Priority.MIN
         return super().do_get_switch_priority(current_char, has_intro)
 
@@ -79,13 +81,13 @@ class Ciaccona(BaseChar):
             if time.time() - start > delay:
                 break
             if click == 0:
-                self.task.send_key('SPACE')
+                self.task.jump(after_sleep=0.01)
             else:
                 self.click()
             click = 1 - click
             self.check_combat()
             self.task.next_frame()
-            
+
     def continues_click_a(self, duration=0.6):
         start = time.time()
         while time.time() - start < duration:
@@ -135,34 +137,35 @@ class Ciaccona(BaseChar):
         self.logger.debug(f'forte with freq {frequncy} & amp {amplitude}')
         return (min_freq <= frequncy <= max_freq) or amplitude >= min_amp
 
-    def calculate_forte_num(self, forte_color, box, num = 1, min_freq = 39, max_freq = 41, min_amp = 50):
+    def calculate_forte_num(self, forte_color, box, num=1, min_freq=39, max_freq=41, min_amp=50):
         cropped = box.crop_frame(self.task.frame)
         lower_bound, upper_bound = color_range_to_bound(forte_color)
         image = cv2.inRange(cropped, lower_bound, upper_bound)
-        
+
         forte = 0
         height, width = image.shape
         step = int(width / num)
-        
+
         forte = num
-        left = step * (forte-1)
+        left = step * (forte - 1)
         while forte > 0:
-            gray = image[:,left:left+step]
-            score = self.judge_frequncy_and_amplitude(gray,min_freq,max_freq,min_amp)
+            gray = image[:, left:left + step]
+            score = self.judge_frequncy_and_amplitude(gray, min_freq, max_freq, min_amp)
             if score:
                 break
             left -= step
             forte -= 1
-        self.logger.info(f'Frequncy analysis with forte {forte}')    
+        self.logger.info(f'Frequncy analysis with forte {forte}')
         return forte
-        
+
     def switch_next_char(self, *args):
         if self.is_con_full():
             self.outrotime = time.time()
         return super().switch_next_char(*args)
-        
+
     def in_outro(self):
         return self.time_elapsed_accounting_for_freeze(self.outrotime) < 30
+
 
 ciaccona_forte_color = {
     'r': (70, 100),  # Red range

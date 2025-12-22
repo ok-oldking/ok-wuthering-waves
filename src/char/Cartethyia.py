@@ -165,7 +165,7 @@ class Cartethyia(BaseChar):
             self.logger.info('perform mid-air attack')
             start = time.time()
             while True:
-                self.task.send_key('SPACE', after_sleep=0.1)
+                self.task.jump(after_sleep=0.1)
                 self.task.click(after_sleep=0.1)
                 if not self.is_mid_air_attack_available():
                     self.sleep(0.4)
@@ -176,7 +176,7 @@ class Cartethyia(BaseChar):
         elif self.try_mid_air_attack_once:
             start = time.time()
             while time.time() - start < 0.8:
-                self.task.send_key('SPACE', after_sleep=0.1)
+                self.task.jump(after_sleep=0.1)
                 self.task.click(after_sleep=0.1)
         self.try_mid_air_attack_once = False
 

@@ -58,12 +58,12 @@ class Zhezhi(BaseChar):
             if time.time() - start > 4:
                 break
             if time.time() > jump_intval:
-                self.task.send_key('SPACE')
+                self.task.jump(after_sleep=0.01)
                 jump_intval += 0.4
             self.check_combat()
             self.task.next_frame()
         self.task.mouse_up()
-        
+
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if self.char_carlotta is not None and self.char_carlotta.get_ready():
             return Priority.MAX - 1
@@ -75,7 +75,7 @@ class Zhezhi(BaseChar):
 
     def con_lock(self):
         return self.char_carlotta.get_ready() or self.get_current_con() < 0.6 or (
-                    self.is_con_full() and not self.char_carlotta.get_ready())
+                self.is_con_full() and not self.char_carlotta.get_ready())
 
     def do_perform_interlock(self):
         if self.has_intro:

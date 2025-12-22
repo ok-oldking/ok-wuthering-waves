@@ -53,6 +53,9 @@ key_config_option = ConfigOption('Game Hotkey Config', {
     'Liberation Key': 'r',
     'Resonance Key': 'e',
     'Tool Key': 't',
+    'Jump Key': 'space',
+    'Dodge Key': 'lshift',
+    'Wheel Key': 'tab',
 }, description='In Game Hotkey for Skills')
 
 char_config_option = ConfigOption('Character Config', {

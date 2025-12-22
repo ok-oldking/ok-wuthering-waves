@@ -689,3 +689,12 @@ msgstr "副本任务"
 
 msgid "Farm"
 msgstr "4C任务"
+
+msgid  "Jump Key"
+msgstr "跳跃键"
+
+msgid  "Dodge Key"
+msgstr "轮盘键"
+
+msgid  "WheelKey"
+msgstr "闪避键"

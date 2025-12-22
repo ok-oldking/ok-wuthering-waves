@@ -48,7 +48,7 @@ class Iuno(BaseChar):
             if not jumped and self.task.find_feature("iuno_jump", box="box_extra_action", threshold=0.6):
                 # 可以跳 起跳
                 while self.task.find_feature("iuno_jump", box="box_extra_action", threshold=0.6):
-                    self.task.send_key('space', after_sleep=0.1)
+                    self.task.jump(after_sleep=0.1)
                 time_out += 3
                 jumped = True
                 if self.has_intro:

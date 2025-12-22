@@ -179,24 +179,24 @@ class CombatCheck(BaseWWTask):
             self.log_debug('recheck edge levitator found {}'.format(levi))
             return True
         while time.time() - start < 1 and self.in_team()[0]:
-            self.send_key_down('tab')
+            self.send_key_down(self.key_config.get('Wheel Key'))
             self.sleep(0.4)
         if self.in_team()[0]:
             self.log_info('can not open wheel')
-            self.send_key_up('tab')
+            self.send_key_up(self.key_config.get('Wheel Key'))
             self.sleep(0.1)
             return False
         levitator = self.wait_feature('wheel_levitator', threshold=0.65, box=self.box_of_screen(0.27, 0.16, 0.68, 0.76))
         self.sleep(0.1)
         if not levitator:
-            self.send_key_up('tab')
+            self.send_key_up(self.key_config.get('Wheel Key'))
             raise Exception('no levitator tool in the tab wheel!')
         old = win32api.GetCursorPos()
         self.move(levitator.x, levitator.y)
         abs_pos = self.executor.interaction.capture.get_abs_cords(levitator.x, levitator.y)
         win32api.SetCursorPos(abs_pos)
         self.sleep(0.1)
-        self.send_key_up('tab')
+        self.send_key_up(self.key_config.get('Wheel Key'))
         self.sleep(0.2)
         win32api.SetCursorPos(old)
         if not self.wait_feature('edge_levitator', threshold=0.6, time_out=1):
