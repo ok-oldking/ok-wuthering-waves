@@ -694,7 +694,7 @@ msgid  "Jump Key"
 msgstr "跳跃键"
 
 msgid  "Dodge Key"
-msgstr "轮盘键"
-
-msgid  "WheelKey"
 msgstr "闪避键"
+
+msgid  "Wheel Key"
+msgstr "轮盘键"
