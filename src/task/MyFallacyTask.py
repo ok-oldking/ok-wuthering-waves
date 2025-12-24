@@ -21,11 +21,12 @@ class MyFallacyTask(FarmEchoTask):
                 self.teleport_to_nearest_boss() 
                 self.sleep(3)
                 if not self.in_combat():
-                    self.log_info("正在向右前方斜向移動以對準挑戰位置...")
-                    # 這裡同時傳入 'wd'，角色會邊走邊向右轉向 
-                    self.run_until(lambda: self.in_combat() or self.find_f_with_text(), 'wd', time_out=1.5, running=True)
+                    self.log_info("執行微調：向右修正角度...")
+                    # 先往右走一小步（0.15秒），達成 1-2° 的位移效果 [cite: 2025-12-24]
+                    self.run_until(lambda: self.in_combat() or self.find_f_with_text(), 'd', time_out=0.15, running=True)
                     
-                    # 隨後恢復正常直走
+                    self.log_info("已修正角度，開始直走...")
+                    # 接著恢復正常前進 [cite: 2025-12-24]
                     self.run_until(lambda: self.in_combat() or self.find_f_with_text(), 'w', time_out=8, running=True)
             # 傳送後向前走以觸發 Boss
             if not self.in_combat():
