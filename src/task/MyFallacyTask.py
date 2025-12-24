@@ -20,7 +20,10 @@ class MyFallacyTask(FarmEchoTask):
                 self.log_info(f"偵測到目標為 {boss}，啟動自訂圖鑑傳送流程...")
                 self.teleport_to_nearest_boss() 
                 self.sleep(1.5)
-            
+                # --- 視角優化點：向右微調視角並直走 ---
+                self.log_info("調整視角：向右微調以對準挑戰區域...")
+                self.move(x=150, y=0) # 向右旋轉視角
+                self.sleep(0.5)
             # 傳送後向前走以觸發 Boss
             if not self.in_combat():
                 self.run_until(lambda: self.in_combat() or self.find_f_with_text(), 'w', time_out=8, running=True)
