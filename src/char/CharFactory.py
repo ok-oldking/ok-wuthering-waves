@@ -101,12 +101,12 @@ def get_char_by_pos(task, box, index, old_char):
     name = "unknown"
     char = None
     if old_char and old_char.char_name in char_names:
-        char = task.find_one(old_char.char_name, box=box, threshold=0.72)
+        char = task.find_one(old_char.char_name, box=box, threshold=0.6)
         if char:
             return old_char
 
     if not char:
-        char = task.find_best_match_in_box(box, char_names, threshold=0.72)
+        char = task.find_best_match_in_box(box, char_names, threshold=0.6)
         if char:
             info = char_dict.get(char.name)
             name = char.name

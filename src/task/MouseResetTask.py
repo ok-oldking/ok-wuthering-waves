@@ -23,6 +23,8 @@ class MouseResetTask(TriggerTask):
         self.mouse_pos = None
 
     def run(self):
+        if self.is_browser():
+            return
         if self.enabled:
             if not self.running_reset:
                 logger.info('start mouse reset')

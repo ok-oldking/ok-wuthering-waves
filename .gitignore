@@ -3,6 +3,7 @@ updates/
 working/
 update/
 tesseract
+cache/
 models
 fonts
 # Byte-compiled / optimized / DLL files

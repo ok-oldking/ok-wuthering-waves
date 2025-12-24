@@ -3,7 +3,7 @@ import time
 
 import win32api
 
-from ok import find_boxes_by_name, Logger
+from ok import find_boxes_by_name, Logger, calculate_color_percentage
 from ok import find_color_rectangles, get_mask_in_color_range, is_pure_black
 from src import text_white_color
 from src.char.Roccia import Roccia
@@ -217,20 +217,21 @@ class CombatCheck(BaseWWTask):
         return lvs
 
     def has_target(self, double_check=False):
+        threshold = 0.6
         best = self.find_best_match_in_box(self.get_box_by_name('has_target').scale(1.1), ['has_target', 'no_target'],
-                                           threshold=0.6)
+                                           threshold=threshold)
         if not best:
             best = self.find_best_match_in_box(self.get_box_by_name('box_target_enemy_long'),
                                                ['has_target', 'no_target'],
-                                               threshold=0.6)
+                                               threshold=threshold)
         if not best:
             best = self.find_best_match_in_box(self.get_box_by_name('target_box_long2'), ['has_target', 'no_target'],
-                                               threshold=0.6)
+                                               threshold=threshold)
 
         if not best:
             best = self.find_best_match_in_box(self.get_box_by_name('has_target').scale(1.1, 2.0),
                                                ['has_target', 'no_target'],
-                                               threshold=0.6)
+                                               threshold=threshold)
             if best and self.esc_count == 0:
                 if double_check:
                     logger.error(f'try fix bear echo')
@@ -241,6 +242,12 @@ class CombatCheck(BaseWWTask):
                 else:
                     self.sleep(1)
                     return self.has_target(double_check=True)
+        if best and best.name == 'no_target':
+            yellow_percent = self.calculate_color_percentage(target_enemy_color_yellow, best)
+            if yellow_percent > 0.02:
+                best.name = 'has_target'
+            # self.log_debug(
+            #     f'has_target target_enemy_color_yellow {yellow_percent} {best}')
         return best and best.name == 'has_target'
 
     def target_enemy(self, wait=True):
@@ -290,10 +297,11 @@ class CombatCheck(BaseWWTask):
     def find_boss_lv_text(self):
         texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160, hcenter=True),
                          target_height=540, name='boss_lv_text')
-        fps_text = find_boxes_by_name(texts,
-                                      re.compile(r'FPS', re.IGNORECASE))
-        if fps_text:
-            raise Exception('FPS text detected on screen, please close any FPS overlay!')
+        if not self.is_browser() and not self.debug:
+            fps_text = find_boxes_by_name(texts,
+                                          re.compile(r'FPS', re.IGNORECASE))
+            if fps_text:
+                raise Exception('FPS text detected on screen, please close any FPS overlay!')
         boss_lv_texts = find_boxes_by_name(texts,
                                            [re.compile(r'(?i)^L[Vv].*')])
         if len(boss_lv_texts) > 0:
@@ -327,10 +335,16 @@ def keep_only_white(frame):
     return frame
 
 
+target_enemy_color_yellow = {
+    'r': (0x84, 0xAD),  # Red range
+    'g': (0x84, 0xAF),  # Green range
+    'b': (0x20, 0x6F)  # Blue range
+}  # 207,75,60
+
 enemy_health_color_red = {
-    'r': (202, 212),  # Red range
-    'g': (70, 80),  # Green range
-    'b': (55, 65)  # Blue range
+    'r': (174, 212),  # Red range
+    'g': (55, 80),  # Green range
+    'b': (55, 76)  # Blue range
 }  # 207,75,60
 
 enemy_health_color_black = {

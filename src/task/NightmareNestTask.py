@@ -103,6 +103,8 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.click(0.13, 0.14, after_sleep=0.5)
         self.input_text(echo_name)
         self.sleep(0.2)
+        if self.is_browser():
+            self.click(0.39, 0.13, after_sleep=0.5)
         self.click(0.39, 0.13, after_sleep=0.5)
         self.click(0.13, 0.24, after_sleep=0.5)
         self.click(0.89, 0.92, after_sleep=3)
