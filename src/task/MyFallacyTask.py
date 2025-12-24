@@ -3,20 +3,7 @@ from ok import Logger
 
 logger = Logger.get_logger(__name__)
 
-class MyFallacyTask(FarmEchoTask):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # 修改在 GUI 顯示的名稱，方便你辨認
-        #self.        #self.name = "Farm 4C (ianias 
-        #self.        #self.description = "Custom logic for Fallacy of No Return using F
-
-    def manage_boss_interactions(self):
-        """
-        覆寫原作者的互動邏輯，只針對『無歸的謬誤』進行修改
-        """
-        if self.in_combat():
-            return
-            
+class MyFallacyTask(FarmEchoTask):   
         boss = self.config.get('Boss')
         
         # 核心修改點：針對『無歸的謬誤』採用圖鑑搜尋
