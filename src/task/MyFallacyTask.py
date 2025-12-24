@@ -20,14 +20,13 @@ class MyFallacyTask(FarmEchoTask):
                 self.log_info(f"偵測到目標為 {boss}，啟動自訂圖鑑傳送流程...")
                 self.teleport_to_nearest_boss() 
                 self.sleep(3)
-                # --- 優化點：微調 1-2° 角度並直走 ---
-                self.log_info("執行微調：模擬鍵盤右移以修正角度...")
-                # 手動模擬按下 'd' 鍵 [cite: 2025-12-24]
-                self.key_down('d')
-                self.sleep(0.12)  # 調整此數值來控制旋轉角度 (0.1~0.2秒) [cite: 2025-12-24]
-                # 放開 'd' 鍵 [cite: 2025-12-24]
-                self.key_up('d')
-                self.sleep(0.3)
+                if not self.in_combat():
+                    self.log_info("正在向右前方斜向移動以對準挑戰位置...")
+                    # 這裡同時傳入 'wd'，角色會邊走邊向右轉向 
+                    self.run_until(lambda: self.in_combat() or self.find_f_with_text(), 'wd', time_out=1.5, running=True)
+                    
+                    # 隨後恢復正常直走
+                    self.run_until(lambda: self.in_combat() or self.find_f_with_text(), 'w', time_out=8, running=True)
             # 傳送後向前走以觸發 Boss
             if not self.in_combat():
                 self.run_until(lambda: self.in_combat() or self.find_f_with_text(), 'w', time_out=8, running=True)
