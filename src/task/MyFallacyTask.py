@@ -7,8 +7,8 @@ class MyFallacyTask(FarmEchoTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # 修改在 GUI 顯示的名稱，方便你辨認
-        self.name = "Farm 4C (ianias Custom Logic)"
-        self.description = "Custom logic for Fallacy of No Return using F2 Book Search"
+        #self.        #self.name = "Farm 4C (ianias 
+        #self.        #self.description = "Custom logic for Fallacy of No Return using F
 
     def manage_boss_interactions(self):
         """
