@@ -4,6 +4,8 @@ from ok import Logger
 logger = Logger.get_logger(__name__)
 
 class MyFallacyTask(FarmEchoTask):   
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
     def manage_boss_interactions(self):
         if self.in_combat():
             return
