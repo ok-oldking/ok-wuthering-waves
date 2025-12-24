@@ -24,8 +24,8 @@ class MyFallacyTask(FarmEchoTask):
                 
                 if not self.in_combat():
                     self.log_info("執行微調：強制向右修正角度...")
-                    # 強制執行 0.25 秒的右偏位移 [cite: 2025-10-18]
-                    self.run_until(lambda: False, 'd', time_out=0.25, running=True)
+                    # 強制執行 0.15 秒的右偏位移 [cite: 2025-10-18]
+                    self.run_until(lambda: False, 'd', time_out=0.15, running=True)
                     self.sleep(0.2)
                     
                     self.log_info("修正完成，開始前進尋找 F 鍵...")
