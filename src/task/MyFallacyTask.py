@@ -6,8 +6,6 @@ logger = Logger.get_logger(__name__)
 class MyFallacyTask(FarmEchoTask):   
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "聲骸週迴" 
-        self.description = "進入副本或傳送至Boss後點擊開始"
     def manage_boss_interactions(self):
         if self.in_combat():
             return
