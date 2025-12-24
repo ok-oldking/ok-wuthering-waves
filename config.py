@@ -173,7 +173,7 @@ config = {
     'version': version,
     'onetime_tasks': [  # tasks to execute
         ["src.task.DailyTask", "DailyTask"],
-        ["src.task.FarmEchoTask", "FarmEchoTask"],
+        ["src.task.MyFallacyTask", "MyFallacyTask"],
         ["src.task.AutoRogueTask", "AutoRogueTask"],
         ["src.task.ForgeryTask", "ForgeryTask"],
         ["src.task.NightmareNestTask", "NightmareNestTask"],
