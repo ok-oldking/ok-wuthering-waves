@@ -21,9 +21,12 @@ class MyFallacyTask(FarmEchoTask):
                 self.teleport_to_nearest_boss() 
                 self.sleep(3)
                 # --- 優化點：微調 1-2° 角度並直走 ---
-                self.log_info("執行微調：向右偏轉小角度...")
-                # 模擬輕點 D 鍵（右移/右轉），0.05~0.1 秒約等於 1-2° 的位移量 [cite: 2025-10-18]
-                self.press_key('d', duration=0.1) 
+                self.log_info("執行微調：模擬鍵盤右移以修正角度...")
+                # 手動模擬按下 'd' 鍵 [cite: 2025-12-24]
+                self.key_down('d')
+                self.sleep(0.12)  # 調整此數值來控制旋轉角度 (0.1~0.2秒) [cite: 2025-12-24]
+                # 放開 'd' 鍵 [cite: 2025-12-24]
+                self.key_up('d')
                 self.sleep(0.3)
             # 傳送後向前走以觸發 Boss
             if not self.in_combat():
