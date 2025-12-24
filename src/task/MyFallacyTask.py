@@ -21,12 +21,14 @@ class MyFallacyTask(FarmEchoTask):
                 self.teleport_to_nearest_boss() 
                 self.sleep(3)
                 if not self.in_combat():
-                    self.log_info("執行微調：向右修正角度...")
-                    # 先往右走一小步（0.15秒），達成 1-2° 的位移效果 [cite: 2025-12-24]
-                    self.run_until(lambda: self.in_combat() or self.find_f_with_text(), 'd', time_out=0.15, running=True)
+                    self.log_info("執行微調：強制向右修正角度...")
                     
-                    self.log_info("已修正角度，開始直走...")
-                    # 接著恢復正常前進 [cite: 2025-12-24]
+                    # 使用一個永遠不會達成的條件 (lambda: False)，配合 time_out 
+                    # 這樣它就一定會強制執行足夠的秒數 [cite: 2025-10-18]
+                    self.run_until(lambda: False, 'd', time_out=0.25, running=True)
+                    
+                    self.log_info("修正完成，開始前進...")
+                    # 這裡才放真正的停止條件 [cite: 2025-10-18]
                     self.run_until(lambda: self.in_combat() or self.find_f_with_text(), 'w', time_out=8, running=True)
             # 傳送後向前走以觸發 Boss
             if not self.in_combat():
