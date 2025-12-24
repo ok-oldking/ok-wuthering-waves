@@ -4,6 +4,9 @@ from ok import Logger
 logger = Logger.get_logger(__name__)
 
 class MyFallacyTask(FarmEchoTask):   
+    def manage_boss_interactions(self):
+        if self.in_combat():
+            return
         boss = self.config.get('Boss')
         
         # 核心修改點：針對『無歸的謬誤』採用圖鑑搜尋
