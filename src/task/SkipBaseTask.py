@@ -32,12 +32,18 @@ class SkipBaseTask(BaseWWTask):
         if skip_button := self.find_one('skip_quest_confirm', threshold=0.8):
             self.click(skip_button)
             return True
+        if skip_button := self.find_one('skip_quest_confirm_new', threshold=0.8):
+            self.click(skip_button)
+            return True
         if self.in_team_and_world():
             return True
 
     def find_skip(self):
-        return self.find_one('skip_dialog', horizontal_variance=0.02, threshold=0.8,
-                             frame_processor=convert_dialog_icon)
+        return self.find_one('skip_dialog', horizontal_variance=0.02, threshold=0.75,
+                             frame_processor=convert_dialog_icon) or self.find_one('skip_dialog_new',
+                                                                                   horizontal_variance=0.02,
+                                                                                   threshold=0.75,
+                                                                                   frame_processor=convert_dialog_icon)
 
     def try_click_skip(self):
         skipped = False

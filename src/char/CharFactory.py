@@ -20,6 +20,7 @@ from src.char.Iuno import Iuno
 from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
 from src.char.Jiyan import Jiyan
+from src.char.Linnai import Linnai
 from src.char.Lupa import Lupa
 from src.char.Mortefi import Mortefi
 from src.char.Phoebe import Phoebe
@@ -90,6 +91,7 @@ char_dict = {
     'char_chisa': {'cls': Chisa, 'res_cd': 10, 'echo_cd': 20, 'liberation_cd': 25,
                    'ring_index': Elements.HAVOC},
     'char_douling': {'cls': Douling, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.ELECTRIC},
+    'char_linnai': {'cls': Linnai, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.SPECTRO},
 }
 
 char_names = char_dict.keys()

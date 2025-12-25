@@ -1061,7 +1061,7 @@ def convert_bw(cv_image):
 
 
 lower_icon_white = np.array([210, 210, 210], dtype=np.uint8)
-upper_icon_white = np.array([240, 240, 240], dtype=np.uint8)
+upper_icon_white = np.array([244, 244, 244], dtype=np.uint8)
 
 
 def convert_dialog_icon(cv_image):
