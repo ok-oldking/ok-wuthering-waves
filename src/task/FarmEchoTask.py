@@ -3,9 +3,10 @@ import cv2
 import time
 
 from qfluentwidgets import FluentIcon
+import numpy as np
 
-from ok import Logger, TaskDisabledException
-from src.task.BaseCombatTask import BaseCombatTask
+from ok import Logger, TaskDisabledException, color_range_to_bound
+from src.task.BaseCombatTask import BaseCombatTask, white_color
 from src.task.WWOneTimeTask import WWOneTimeTask
 from ok import find_boxes_by_name
 
@@ -204,7 +205,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.last_night_change = time.time()
             if boss in ('Fallacy of No Return'):
                 if not self.find_f_with_text():
-                    self.teleport_to_octagon_boss()
+                    self.teleport_to_nearest_boss()
                     self.send_key('d', down_time=0.25, after_sleep=0.5)
                     self.send_key('w', after_sleep=0.5)
                 if self.walk_until_f(time_out=20, check_combat=True, running=True):
@@ -315,6 +316,95 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.click_box(box)
             self.wait_click_travel()
             self.wait_in_team_and_world(time_out=30)
+
+    def click_boss_octagon(self):
+        # === 1. 读取图像 ===
+        img = self.box_of_screen(0.3, 0.3, 0.7, 0.7).crop_frame(self.frame)
+
+        # === 2. 提取白色部分（白边）===
+        lower_white, upper_white = color_range_to_bound(white_color)
+        mask = cv2.inRange(img, lower_white, upper_white)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((3,3), np.uint8))
+
+        # 2. 找轮廓
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # 3. 生成理想梯形轮廓（用于形状比对）
+        h, w = self.frame.shape[:2]
+
+        # 缩放比例
+        scale_x = w / 2560
+        scale_y = h / 1440
+
+        # 原梯形轮廓
+        trapezoid = np.array([
+            [35, 0], [0, 35], [92, 36], [56, 0]
+        ], np.int32).reshape((-1,1,2))
+
+        # 等比例缩放
+        trapezoid_scaled = np.zeros_like(trapezoid, dtype=np.int32)
+        trapezoid_scaled[:,0,0] = (trapezoid[:,0,0] * scale_x).astype(np.int32)
+        trapezoid_scaled[:,0,1] = (trapezoid[:,0,1] * scale_y).astype(np.int32)
+        
+        # 定义匹配阈值
+        best_mat = None
+        best_match = None
+        best_ratio = 0
+
+        for cnt in contours:
+            cnt = cv2.convexHull(cnt)
+            x,y,_,_ = cv2.boundingRect(cnt)
+            for dx in range(-10, 11, 2):
+                for dy in range(-10, 11, 2):
+                    shifted = trapezoid_scaled + [x+dx, y+dy]
+                    area_i, mat_i = cv2.intersectConvexConvex(cnt.astype(np.float32), shifted.astype(np.float32))
+                    ratio = area_i / cv2.contourArea(trapezoid_scaled)
+                    if ratio > best_ratio:
+                        best_ratio = ratio
+                        best_match = cnt
+                        best_mat = mat_i
+
+        # # 画出匹配到的轮廓
+        # if best_match is not None:
+        #     cv2.polylines(img, [best_match], isClosed=False, color=(0,255,0), thickness=2)
+
+        # if best_mat is not None and len(best_mat) > 0:
+        #     best_mat = best_mat.astype(np.int32)
+        #     cv2.polylines(img, [best_mat], isClosed=False, color=(255,0,0), thickness=2)
+
+        # # 显示结果
+        # print(f'Best match ratio: {best_ratio:.2f}')
+        # cv2.imshow("mask", mask)
+        # cv2.imshow("Matched", img)
+        # cv2.waitKey(1)
+
+        # 点击轮廓中心
+        if best_match is None:
+            raise RuntimeError('Can not find the boss octagon on map')
+        
+        x0, y0 = self.width_of_screen(0.3), self.height_of_screen(0.3)
+        x, y, w, h = cv2.boundingRect(best_match)
+        cx = x0 + x + w // 2
+        cy = y0 + y + h // 2
+        self.click(cx, cy, after_sleep=1)
+
+    def teleport_to_octagon_boss(self):
+        """传送到八边形Boss图标。"""
+        self.log_info('click m to open the map')
+        self.send_key('m', after_sleep=2)
+
+        self.click_boss_octagon()
+        travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
+        if not travel:
+            pop_up = self.find_feature('map_way_point', box='map_way_point_pop_up_box')
+            if pop_up:
+                self.click(pop_up, after_sleep=1)
+                travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
+        if not travel:
+            raise RuntimeError(f'Can not find the travel button')
+        self.click_box(travel, relative_x=1.5)
+        self.wait_in_team_and_world(time_out=20)
+        self.sleep(2)
 
     def scroll_and_click_buttons(self):
         self.sleep(0.2)
