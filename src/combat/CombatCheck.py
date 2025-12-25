@@ -244,7 +244,7 @@ class CombatCheck(BaseWWTask):
                     return self.has_target(double_check=True)
         if best and best.name == 'no_target':
             yellow_percent = self.calculate_color_percentage(target_enemy_color_yellow, best)
-            if yellow_percent > 0.02:
+            if 0.03 < yellow_percent < 0.12:
                 best.name = 'has_target'
             # self.log_debug(
             #     f'has_target target_enemy_color_yellow {yellow_percent} {best}')

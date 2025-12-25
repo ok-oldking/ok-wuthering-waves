@@ -29,9 +29,11 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.door_walk_method = {  # starts with 0
             0: [],
             1: [],
-            2: [["a", 0.3]],
-            3: [["d", 0.6]],
-            4: [["a", 1.5], ["w", 3], ["a", 2.5]],
+            2: [],
+            3: [],
+            4: [["a", 0.3]],
+            5: [["d", 0.6]],
+            6: [["a", 1.5], ["w", 3], ["a", 2.5]],
         }
         self.stamina_once = 60
 
