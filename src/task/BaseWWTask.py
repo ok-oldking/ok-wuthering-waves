@@ -687,9 +687,10 @@ class BaseWWTask(BaseTask):
                 self.log_info('点击登录按钮!')
                 return False
             if start := self.find_boxes(texts, boundary='bottom_right', match=["开始游戏", re.compile("进入游戏")]):
-                self.click(start)
-                self.log_info(f'点击开始游戏! {start}')
-                return False
+                if not self.find_boxes(texts, boundary='bottom_right', match="登录"):
+                    self.click(start)
+                    self.log_info(f'点击开始游戏! {start}')
+                    return False
 
     def in_team_and_world(self):
         return self.in_team()[

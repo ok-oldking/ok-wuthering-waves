@@ -218,19 +218,27 @@ class CombatCheck(BaseWWTask):
 
     def has_target(self, double_check=False):
         threshold = 0.6
-        best = self.find_best_match_in_box(self.get_box_by_name('has_target').scale(1.1), ['has_target', 'no_target'],
+        has_name = 'has_target'
+        no_name = 'no_target'
+        if self.is_browser():
+            has_name += '_cloud'
+            no_name += '_cloud'
+        elif self.width == 1600:
+            has_name += '_169'
+            no_name += '_169'
+        best = self.find_best_match_in_box(self.get_box_by_name(has_name).scale(1.1), [has_name, no_name],
                                            threshold=threshold)
         if not best:
             best = self.find_best_match_in_box(self.get_box_by_name('box_target_enemy_long'),
-                                               ['has_target', 'no_target'],
+                                               [has_name, no_name],
                                                threshold=threshold)
         if not best:
-            best = self.find_best_match_in_box(self.get_box_by_name('target_box_long2'), ['has_target', 'no_target'],
+            best = self.find_best_match_in_box(self.get_box_by_name('target_box_long2'), [has_name, no_name],
                                                threshold=threshold)
 
         if not best:
-            best = self.find_best_match_in_box(self.get_box_by_name('has_target').scale(1.1, 2.0),
-                                               ['has_target', 'no_target'],
+            best = self.find_best_match_in_box(self.get_box_by_name(has_name).scale(1.1, 2.0),
+                                               [has_name, no_name],
                                                threshold=threshold)
             if best and self.esc_count == 0:
                 if double_check:
@@ -242,13 +250,7 @@ class CombatCheck(BaseWWTask):
                 else:
                     self.sleep(1)
                     return self.has_target(double_check=True)
-        if best and best.name == 'no_target':
-            yellow_percent = self.calculate_color_percentage(target_enemy_color_yellow, best)
-            if 0.03 < yellow_percent < 0.12:
-                best.name = 'has_target'
-            # self.log_debug(
-            #     f'has_target target_enemy_color_yellow {yellow_percent} {best}')
-        return best and best.name == 'has_target'
+        return best and best.name == has_name
 
     def target_enemy(self, wait=True):
         if not wait:
