@@ -39,6 +39,7 @@ class CombatCheck(BaseWWTask):
         }
         self.cd_refreshed = False
         self.esc_count = 0
+        self.should_check_f_break = False
 
     @property
     def in_liberation(self):
@@ -85,6 +86,7 @@ class CombatCheck(BaseWWTask):
         self.boss_health_box = None
         self.last_in_realm_not_combat = 0
         self.has_lavitator = False
+        self.should_check_f_break = False
         return False
 
     def recent_liberation(self):
@@ -121,12 +123,19 @@ class CombatCheck(BaseWWTask):
     def target_area_box(self):
         return self.box_of_screen(0.1, 0.10, 0.9, 0.9, hcenter=True, name="target_area_box")
 
+    def is_boss(self):
+        return self.find_one('boss_break_shield') or self.find_one('boss_break_lock')
+
     def in_combat(self):
         if self.in_liberation or self.recent_liberation():
             return True
         if self._in_combat:
             now = time.time()
             if now - self.last_combat_check > self.combat_check_interval:
+                if self.should_check_f_break:
+                    if self.is_boss() and self.find_one('f_break', box=self.box_of_screen(0.3, 0.3, 0.7, 0.8)):
+                        self.log_debug('boss is broken, use f')
+                        self.send_key('f', after_sleep=0.1)
                 if current_char := self.get_current_char():
                     if current_char.skip_combat_check():
                         return True
@@ -160,6 +169,9 @@ class CombatCheck(BaseWWTask):
                     return False
                 self.has_lavitator = self.ensure_levitator()
                 self._in_combat = self.load_chars()
+                if self._in_combat:
+                    self.should_check_f_break = self.is_boss()
+                    self.log_debug(f'enter combat should_check_f_break {self.should_check_f_break}')
                 return self._in_combat
 
     def ensure_levitator(self):
@@ -294,26 +306,7 @@ class CombatCheck(BaseWWTask):
         if self.has_health_bar():
             return True
         else:
-            return self.find_boss_lv_text()
-
-    def find_boss_lv_text(self):
-        texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160, hcenter=True),
-                         target_height=540, name='boss_lv_text')
-        if not self.is_browser() and not self.debug:
-            fps_text = find_boxes_by_name(texts,
-                                          re.compile(r'FPS', re.IGNORECASE))
-            if fps_text:
-                raise Exception('FPS text detected on screen, please close any FPS overlay!')
-        boss_lv_texts = find_boxes_by_name(texts,
-                                           [re.compile(r'(?i)^L[Vv].*')])
-        if len(boss_lv_texts) > 0:
-            logger.debug(f'boss_lv_texts: {boss_lv_texts}')
-            self.boss_lv_box = boss_lv_texts[0]
-            self.boss_lv_template, self.boss_lv_mask = self.keep_boss_text_white()
-            if self.boss_lv_template is None:
-                self.boss_lv_box = None
-                return False
-            return True
+            return self.is_boss()
 
     def keep_boss_text_white(self):
         cropped = self.boss_lv_box.crop_frame(self.frame)
