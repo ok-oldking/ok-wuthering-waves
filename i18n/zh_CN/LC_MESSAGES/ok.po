@@ -625,10 +625,10 @@ msgid "Yes if Farming Nightmare: Hecate"
 msgstr "刷梦魇·赫卡忒选是"
 
 msgid "Nightmare Nest Task"
-msgstr "梦魇巢穴"
+msgstr "梦魇祓除"
 
 msgid "Auto Farm all Nightmare Nest"
-msgstr "自动刷所有梦魇巢穴"
+msgstr "自动刷所有梦魇祓除"
 
 msgid "Select boss profile (includes Combat Wait Time)"
 msgstr "选择Boss配置 (已包含战斗开始前等待时间)"
