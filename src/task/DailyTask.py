@@ -6,8 +6,9 @@ from ok import Logger
 from src.task.BaseWWTask import number_re, stamina_re
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.ForgeryTask import ForgeryTask
-from src.task.NightmareNestTask import NightmareNestTask
 from src.task.TacetTask import TacetTask
+from src.task.NightmareNestTask import NightmareNestTask
+from src.task.TacetDiscordNestTask import TacetDiscordNestTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
 
@@ -28,6 +29,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Which Tacet Suppression to Farm': 1,  # starts with 1
             'Which Forgery Challenge to Farm': 1,  # starts with 1
             'Auto Farm all Nightmare Nest': False,
+            'Auto Farm All Tacet Discord Nest': False,
         }
         self.config_description = {
             'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
@@ -57,6 +59,12 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                     self.run_task_by_class(NightmareNestTask)
                 except Exception as e:
                     self.log_error("NightmareNestTask Failed", e)
+                    self.ensure_main(time_out=180)
+            if self.config.get('Auto Farm All Tacet Discord Nest'):
+                try:
+                    self.run_task_by_class(TacetDiscordNestTask)
+                except Exception as e:
+                    self.log_error("TacetDiscordNestTask Failed", e)
                     self.ensure_main(time_out=180)
             self.claim_daily()
 
