@@ -642,6 +642,12 @@ msgstr "榮耀獅像"
 msgid "Nightmare Nest Task"
 msgstr "夢魘祓除"
 
+msgid "Tacet Discord Nest Task"
+msgstr "殘像聚落"
+
+msgid "Auto Farm All Tacet Discord Nest"
+msgstr "自動刷所有殘像聚落"
+
 msgid "Select boss profile (includes Combat Wait Time)"
 msgstr "選擇Boss配置 (已包含戰鬥開始前等待時間)"
 

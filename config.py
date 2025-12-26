@@ -181,6 +181,7 @@ config = {
         ["src.task.SimulationTask", "SimulationTask"],
         ["src.task.TacetTask", "TacetTask"],
         ["src.task.NightmareNestTask", "NightmareNestTask"],
+        ["src.task.TacetDiscordNestTask", "TacetDiscordNestTask"],
         ["src.task.DiagnosisTask", "DiagnosisTask"],
     ], 'trigger_tasks': [
         ["src.task.AutoCombatTask", "AutoCombatTask"],

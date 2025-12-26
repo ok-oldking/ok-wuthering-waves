@@ -630,6 +630,12 @@ msgstr "梦魇祓除"
 msgid "Auto Farm all Nightmare Nest"
 msgstr "自动刷所有梦魇祓除"
 
+msgid "Tacet Discord Nest Task"
+msgstr "残像聚落"
+
+msgid "Auto Farm All Tacet Discord Nest"
+msgstr "自动刷所有残像聚落"
+
 msgid "Select boss profile (includes Combat Wait Time)"
 msgstr "选择Boss配置 (已包含战斗开始前等待时间)"
 
