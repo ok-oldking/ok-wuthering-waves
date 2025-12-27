@@ -28,6 +28,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.step = 0
         while nest := self.get_nest_to_go():
             self.combat_nest(nest)
+        self.ensure_main(time_out=30)
 
     def combat_nest(self, nest):
         self.click(nest, after_sleep=2)
