@@ -31,6 +31,7 @@ class TestCombatCheck(TaskTestCase):
     def test_in_combat_cloud(self):
         self.task.ensure_levitator = return_true
         self.task.do_reset_to_false()
+        self.task.is_browser = return_true
         self.set_image('tests/images/cloud_game_combat.png')
         in_combat = self.task.in_combat()
         self.assertTrue(in_combat)
