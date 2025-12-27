@@ -1,6 +1,6 @@
 import re
 from qfluentwidgets import FluentIcon
-from ok import Logger
+from ok import Logger, Box, find_color_rectangles
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 
@@ -25,8 +25,6 @@ class TacetDiscordNestTask(WWOneTimeTask, BaseCombatTask):
             {"direction": "w", 'running_time': 4, "index": {"zh_CN": "复生丘原残象聚落", "zh_TW": "複生丘原殘象聚落", "en_US": "RebirthUplandsTacetDiscordNest"}},
             {"direction": "w", 'running_time': 6, "index": {"zh_CN": "陷足流川残象聚落", "zh_TW": "陷足流川殘象聚落", "en_US": "StagnantRunTacetDiscordNest"}},
         ]  # tips: new tacet discord nest can be added here
-        self.go_i18n = ['前往', 'Go']
-        self.counter_regex = re.compile(r"(\d{1,2})/(\d{1,2})")
 
     def run(self):
         mission_list = self.prepare(scoll_bar_y=0)
@@ -47,16 +45,32 @@ class TacetDiscordNestTask(WWOneTimeTask, BaseCombatTask):
             self.click_relative(0.98, scoll_bar_y, after_sleep=1)
         frame_width = self.frame.shape[1]
         frame_height = self.frame.shape[0] 
-        go_box_list = self.ocr(x=0.875, y=0.18, to_x=0.98, to_y=0.925, frame=self.frame, match=self.go_i18n)  # Go
+        go_box_list = find_color_rectangles(
+            image=self.frame,
+            color_range={
+                'r': (0, 72),
+                'g': (0, 72),
+                'b': (0, 72),
+            },
+            min_width=0.13 * frame_width,
+            min_height=0.05 * frame_height,
+            box=Box(
+                x=frame_width*0.82,
+                y=frame_height*0.18,
+                to_x=frame_width*0.97,
+                to_y=frame_height*0.93,
+            )
+        )
         if (not isinstance(go_box_list, list) or len(go_box_list) <= 0):
             raise "go button not found"
+        counter_regex = re.compile(r"(\d{1,2})/(\d{1,2})")
         missionList = []
         for go_box in go_box_list:
             center = go_box.center()
             x = center[0] / frame_width
             y = center[1] / frame_height
             # counter
-            counter_box = self.ocr(x=0.435, y=y+0.01, to_x=0.61, to_y=y+0.065, match=self.counter_regex, frame=self.frame)
+            counter_box = self.ocr(x=0.435, y=y+0.01, to_x=0.61, to_y=y+0.065, match=counter_regex, frame=self.frame)
             if (not isinstance(counter_box, list) or len(counter_box) <= 0):
                 continue
             # name (without space)
@@ -67,7 +81,7 @@ class TacetDiscordNestTask(WWOneTimeTask, BaseCombatTask):
             if name == "":
                 self.log_warn(f"prepare | name of tacet discord nest unrecognized")
             #
-            for match in re.finditer(self.counter_regex, counter_box[0].name):
+            for match in re.finditer(counter_regex, counter_box[0].name):
                 numerator = match.group(1)
                 denominator = match.group(2)
                 if numerator != denominator or not skip_collected:
