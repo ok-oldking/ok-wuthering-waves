@@ -39,6 +39,14 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
     def run(self):
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=180)
+        if self.config.get('Auto Farm all Nightmare Nest'):
+            try:
+                self.log_debug('Auto Farm all Nightmare Nest')
+                self.run_task_by_class(NightmareNestTask)
+            except Exception as e:
+                self.log_error("NightmareNestTask Failed", e)
+                self.ensure_main(time_out=180)
+
         used_stamina, completed = self.open_daily()
         self.send_key('esc', after_sleep=1)
         if not completed:
@@ -53,14 +61,6 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                     self.get_task_by_class(ForgeryTask).purification_material()
                 self.sleep(4)
             self.claim_daily()
-            
-        if self.config.get('Auto Farm all Nightmare Nest'):
-            try:
-                self.log_debug('Auto Farm all Nightmare Nest')
-                self.run_task_by_class(NightmareNestTask)
-            except Exception as e:
-                self.log_error("NightmareNestTask Failed", e)
-                self.ensure_main(time_out=180)
 
         self.claim_mail()
         self.claim_millage()
