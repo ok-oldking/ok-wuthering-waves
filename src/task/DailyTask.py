@@ -52,13 +52,15 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                     self.sleep(2)
                     self.get_task_by_class(ForgeryTask).purification_material()
                 self.sleep(4)
-            if self.config.get('Auto Farm all Nightmare Nest'):
-                try:
-                    self.run_task_by_class(NightmareNestTask)
-                except Exception as e:
-                    self.log_error("NightmareNestTask Failed", e)
-                    self.ensure_main(time_out=180)
             self.claim_daily()
+            
+        if self.config.get('Auto Farm all Nightmare Nest'):
+            try:
+                self.log_debug('Auto Farm all Nightmare Nest')
+                self.run_task_by_class(NightmareNestTask)
+            except Exception as e:
+                self.log_error("NightmareNestTask Failed", e)
+                self.ensure_main(time_out=180)
 
         self.claim_mail()
         self.claim_millage()

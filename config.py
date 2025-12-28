@@ -113,7 +113,7 @@ config = {
     'browser': {
         'url': 'https://mc.kurogames.com/cloud/#/',
         'resolution': (1600, 900),
-        'nick': 'Cloud Game',
+        'nick': '云游戏',
     },
     'window_size': {
         'width': 900,
