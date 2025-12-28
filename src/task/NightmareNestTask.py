@@ -25,9 +25,8 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def run(self):
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=30)
-        gray_book_boss = self.openF2Book("gray_book_boss")
-        self.click_box(gray_book_boss, after_sleep=1)
         self.step = 0
+        self.log_info('opened gray_book_boss')
         while nest := self.get_nest_to_go():
             self.combat_nest(nest)
         self.ensure_main(time_out=30)
@@ -51,7 +50,8 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.sleep(1)
 
     def get_nest_to_go(self):
-        self.openF2Book()
+        gray_book_boss = self.openF2Book("gray_book_boss")
+        self.click_box(gray_book_boss, after_sleep=1)
         while self.step <= 2:
             self.go_step()
             if nest := self.find_nest():
@@ -62,10 +62,13 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def go_step(self):
         if self.step <= 1:
             self.click(0.17, 0.68, after_sleep=1)
+            self.log_info('go step 1')
             if self.step == 1:
                 self.click(0.98, 0.54, after_sleep=1)
+                self.log_info('go step 2 scroll')
         else:
             self.click(0.17, 0.77, after_sleep=1)
+            self.log_info('go step 3')
 
     def find_nest(self):
         counts = self.ocr(0.36, 0.13, 0.98, 0.91, match=self.count_re)
@@ -73,7 +76,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             for match in re.finditer(self.count_re, count_box.name):
                 numerator = match.group(1)
                 denominator = match.group(2)
-                if numerator != denominator:
+                if numerator != denominator and denominator in ['24', '36', '48']:
                     self.log_info(f'{count_box} is not complete')
                     count_box.x = self.width_of_screen(0.9)
                     count_box.y -= count_box.height
