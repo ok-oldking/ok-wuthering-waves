@@ -25,6 +25,8 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def run(self):
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=30)
+        gray_book_boss = self.openF2Book("gray_book_boss")
+        self.click_box(gray_book_boss, after_sleep=1)
         self.step = 0
         while nest := self.get_nest_to_go():
             self.combat_nest(nest)
