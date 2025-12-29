@@ -22,7 +22,7 @@ class ForgeryTask(DomainTask):
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
         }
         self.stamina_once = 40
-        self.total_number = 10
+        self.total_number = 15
         self.material_mat = None
 
     def run(self):
