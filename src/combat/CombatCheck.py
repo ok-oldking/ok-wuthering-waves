@@ -39,7 +39,6 @@ class CombatCheck(BaseWWTask):
         }
         self.cd_refreshed = False
         self.esc_count = 0
-        self.should_check_f_break = False
 
     @property
     def in_liberation(self):
@@ -86,7 +85,6 @@ class CombatCheck(BaseWWTask):
         self.boss_health_box = None
         self.last_in_realm_not_combat = 0
         self.has_lavitator = False
-        self.should_check_f_break = False
         return False
 
     def recent_liberation(self):
@@ -132,10 +130,9 @@ class CombatCheck(BaseWWTask):
         if self._in_combat:
             now = time.time()
             if now - self.last_combat_check > self.combat_check_interval:
-                if self.should_check_f_break:
-                    if self.is_boss() and self.find_one('f_break', box=self.box_of_screen(0.3, 0.3, 0.7, 0.8)):
-                        self.log_debug('boss is broken, use f')
-                        self.send_key('f', after_sleep=0.1)
+                if self.find_one('f_break', box=self.box_of_screen(0.3, 0.3, 0.7, 0.8)):
+                    self.log_debug('boss is broken, use f')
+                    self.send_key('f', after_sleep=0.1)
                 if current_char := self.get_current_char():
                     if current_char.skip_combat_check():
                         return True
@@ -169,9 +166,6 @@ class CombatCheck(BaseWWTask):
                     return False
                 self.has_lavitator = self.ensure_levitator()
                 self._in_combat = self.load_chars()
-                if self._in_combat:
-                    self.should_check_f_break = self.is_boss()
-                    self.log_debug(f'enter combat should_check_f_break {self.should_check_f_break}')
                 return self._in_combat
 
     def ensure_levitator(self):
@@ -303,10 +297,7 @@ class CombatCheck(BaseWWTask):
         return False
 
     def check_health_bar(self):
-        if self.has_health_bar():
-            return True
-        else:
-            return self.is_boss()
+        return self.has_health_bar() or self.is_boss()
 
     def keep_boss_text_white(self):
         cropped = self.boss_lv_box.crop_frame(self.frame)
