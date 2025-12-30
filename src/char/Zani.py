@@ -75,23 +75,22 @@ class Zani(BaseChar):
                 if self.crisis_time_left() > - 1 and self.liberation_available() and self.is_prepared():
                     cast_liberation = True
                 else:
-                    self.logger.debug("crisis_protocol continue combo")
-                    self.sleep(0.3)
-                    self.click()
+                    self.continues_normal_attack(0.25)
+                    self.sleep(0.25)
             self.crisis_time = - 1
 
         if not cast_liberation:
             self.chair_time = -1
             if (not self.has_intro and
-                    not self.is_first_engage() and
-                    self.time_elapsed_accounting_for_freeze(self.last_liber2, intro_motion_freeze=True) >= 2.6
+                not self.is_first_engage() and
+                self.time_elapsed_accounting_for_freeze(self.last_liber2, intro_motion_freeze=True) >= 2.6
             ):
                 if self.time_elapsed_accounting_for_freeze(self.attack_breakthrough_time, intro_motion_freeze=True) < 4:
                     self.continues_right_click(0.05)
                     self.dodge_time = time.time()
                 else:
-                    self.sleep(0.3)
-                    self.continues_normal_attack(0.1)
+                    self.sleep(0.25)
+                    self.continues_normal_attack(0.25)
                     self.chair_time = time.time()
                 self.last_liber2 = -1
                 self.attack_breakthrough_time = -1
@@ -147,15 +146,8 @@ class Zani(BaseChar):
         if self.is_forte_full():
             return State.FORTE_FULL
         self.logger.info('basic attack - breakthrough')
-        if self.chair_time == -1:
-            if (result := self.basic_attack_breakthrough()) != State.DONE:
-                return result
-        else:
-            wait_time = 1.3 - (time.time() - self.chair_time)
-            self.logger.debug(f'breakthrough wait until chair time {wait_time}')
-            if (result := self.wait_forte_full(wait_time)) != State.DONE:
-                return result
-            self.continues_normal_attack(0.2)
+        if (result := self.basic_attack_breakthrough()) != State.DONE:
+            return result
         self.attack_breakthrough_time = time.time()
         return State.DONE
 
@@ -231,7 +223,7 @@ class Zani(BaseChar):
                     break
                 self.click()
                 self.task.next_frame()
-            self.sleep(0.1, check_combat=False)
+            self.sleep(0.25, check_combat=False)
             self.continues_right_click(0.1)
         else:
             self.nightfall_time = time.time()
@@ -290,30 +282,33 @@ class Zani(BaseChar):
             self.logger.info('perform standard_defense_protocol')
             self.click_resonance(send_click=False)
             self.sleep(0.2)
-            self.continues_normal_attack(0.1)
+            self.continues_normal_attack(0.2)
             return State.DONE
         return State.FAILED
 
     def basic_attack_breakthrough(self):
-        result = self.standard_defense_protocol_combo()
-        wait_chair = 1.3
-        if result == State.FAILED:
-            sleep = 0.3 - (time.time() - self.dodge_time)
-            if (result := self.wait_forte_full(sleep)) != State.DONE:
-                return result
-            self.task.mouse_down()
-            if (result := self.wait_forte_full(0.6)) != State.DONE:
-                return result
-            self.task.mouse_up()
-            wait_chair = 1.3
-            if (result := self.wait_forte_full(0.85, send_click=True)) != State.DONE:
-                return result
-        elif result == State.FORTE_FULL:
-            return State.FORTE_FULL
-        self.logger.debug(f"standard wait chair time {wait_chair}")
+        wait_chair = 1.2
+        if self.chair_time == -1:
+            result = self.standard_defense_protocol_combo()
+            if result == State.FAILED:
+                sleep = 0.3 - (time.time() - self.dodge_time)
+                if (result := self.wait_forte_full(sleep)) != State.DONE:
+                    return result
+                self.task.mouse_down()
+                if (result := self.wait_forte_full(0.6)) != State.DONE:
+                    return result
+                self.task.mouse_up()
+                wait_chair = 1.15
+                if (result := self.wait_forte_full(0.85, send_click=True)) != State.DONE:
+                    return result
+            elif result == State.FORTE_FULL:
+                return State.FORTE_FULL
+        else:
+            wait_chair -= (time.time() - self.chair_time)
+            self.chair_time = -1
         if (result := self.wait_forte_full(wait_chair)) != State.DONE:
             return result
-        self.continues_normal_attack(0.1)
+        self.continues_normal_attack(0.2)
         return result
 
     def crisis_response_protocol_combo(self):
