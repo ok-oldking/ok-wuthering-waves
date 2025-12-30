@@ -698,3 +698,9 @@ msgstr "闪避键"
 
 msgid  "Wheel Key"
 msgstr "轮盘键"
+
+msgid  "Farm Nightmare Nest for Daily Echo"
+msgstr "使用梦魇巢穴获取日常声骸"
+
+msgid  "Farm 1 Echo from Nightmare Nest to complete Daily Task when needed."
+msgstr "必要时，前往梦魇巢穴获取声骸完成日常"

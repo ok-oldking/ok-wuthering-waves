@@ -1,7 +1,8 @@
 import re
+import cv2
 from qfluentwidgets import FluentIcon
 from ok import Logger
-from src.task.BaseCombatTask import BaseCombatTask
+from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
@@ -31,7 +32,30 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self.combat_nest(nest)
         self.ensure_main(time_out=30)
 
-    def combat_nest(self, nest):
+    def run_capture_mode(self):
+        WWOneTimeTask.run(self)
+        self.ensure_main(time_out=30)
+        self.step = 0
+        self.log_info('opened gray_book_boss')
+        while nest := self.get_nest_to_go():
+            self.combat_nest(nest, capture_mode=True)
+            if self._capture_success:
+                break
+        self.ensure_main(time_out=30)
+
+    def on_combat_check(self):
+        if getattr(self, '_capture_mode', False):
+            self.pick_f(handle_claim=False)
+            if self.find_best_match_in_box(self.box_of_screen(0.078, 0.488, 0.094, 0.514),
+                                           ['char_1_text', 'char_3_text'], 0.7,
+                                           frame_processor=convert_image_to_negative):
+                self._capture_success = True
+                raise NotInCombatException
+        return True
+
+    def combat_nest(self, nest, capture_mode=False):
+        self._capture_mode = capture_mode
+        self._capture_success = False
         self.click(nest, after_sleep=2)
         self.click(0.89, 0.92, after_sleep=2)
         self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
@@ -41,12 +65,17 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self.wait_in_team_and_world(time_out=40, raise_if_not_found=False)
         self.run_until(self.in_combat, 'w', time_out=10, running=False)
         self.combat_once()
+        if capture_mode and self._capture_success:
+            self.log_info("Captured echo during combat, skipping search.")
+            return
         self.sleep(3)
         if not self.walk_find_echo(time_out=5, backward_time=2.5):
             dropped = self.yolo_find_echo(turn=True, use_color=False, time_out=30)[0]
             logger.info(f'farm echo yolo find {dropped}')
         else:
+            dropped = True
             self.log_info(f'farm echo walk find true')
+        self._capture_success = dropped
         self.sleep(1)
 
     def get_nest_to_go(self):
@@ -81,3 +110,17 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                     count_box.x = self.width_of_screen(0.9)
                     count_box.y -= count_box.height
                     return count_box
+                
+def convert_image_to_negative(img):
+    to_gray = False
+    _mat = cv2.resize(img, None, fx=0.8, fy=0.8, interpolation=cv2.INTER_LINEAR)
+    if len(_mat.shape) == 3:
+        to_gray = True
+        _mat = cv2.cvtColor(_mat, cv2.COLOR_BGR2GRAY)
+    _, _mat = cv2.threshold(_mat, 80, 255, cv2.THRESH_BINARY)
+    _mat = cv2.bitwise_not(_mat)
+    if to_gray:
+        _mat = cv2.cvtColor(_mat, cv2.COLOR_GRAY2BGR)
+    return _mat
+
+
