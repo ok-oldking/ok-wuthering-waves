@@ -130,9 +130,6 @@ class CombatCheck(BaseWWTask):
         if self._in_combat:
             now = time.time()
             if now - self.last_combat_check > self.combat_check_interval:
-                if self.find_one('f_break', box=self.box_of_screen(0.3, 0.3, 0.7, 0.8)):
-                    self.log_debug('boss is broken, use f')
-                    self.send_key('f', after_sleep=0.1)
                 if current_char := self.get_current_char():
                     if current_char.skip_combat_check():
                         return True

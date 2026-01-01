@@ -282,6 +282,11 @@ class BaseCombatTask(CombatCheck):
                         return True
                 total_index += 1
 
+    def f_break(self):
+        if self.find_one('f_break', box=self.box_of_screen(0.3, 0.3, 0.7, 0.8)):
+            self.log_debug('boss is broken, use f')
+            self.send_key('f', after_sleep=0.1)
+
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
         """切换到下一个最优角色。
 
@@ -339,7 +344,7 @@ class BaseCombatTask(CombatCheck):
         start = time.time()
         while True:
             now = time.time()
-
+            self.f_break()
             _, current_index, _ = self.in_team()
             if current_index == current_char.index:
                 self.update_lib_portrait_icon()
