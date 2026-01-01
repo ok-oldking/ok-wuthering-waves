@@ -66,8 +66,8 @@ class ForgeryTask(DomainTask):
         if serial_number > self.total_number:
             raise IndexError(f'Index out of range, max is {self.total_number}')
         self.click_on_book_target(serial_number, self.total_number)
-        if daily:
-            self.get_material_mat()
+        # if daily:
+        #     self.get_material_mat()
         self.wait_click_travel()
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
         self.sleep(1)

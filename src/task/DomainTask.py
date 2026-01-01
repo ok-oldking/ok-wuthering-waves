@@ -50,7 +50,19 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             if not can_continue:
                 self.log_info("used all stamina")
                 break
-            self.click(0.68, 0.84, after_sleep=2)  # farm again
+            self.click(0.68, 0.84, after_sleep=1)  # farm again
+            if confirm := self.wait_feature(
+                    ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
+                    raise_if_not_found=False,
+                    threshold=0.6,
+                    time_out=2):
+                self.click(0.49, 0.55, after_sleep=0.5)  # 点击不再提醒
+                self.click(confirm, after_sleep=0.5)
+                self.wait_click_feature(
+                    ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
+                    relative_x=-1, raise_if_not_found=False,
+                    threshold=0.6,
+                    time_out=1)
             self.wait_in_team_and_world(time_out=self.teleport_timeout)
             self.sleep(1)
         #
