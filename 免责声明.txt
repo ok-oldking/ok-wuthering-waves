@@ -1,9 +1,0 @@
-免责声明
-
-本软件是一个外部工具，旨在自动化鸣潮的游戏玩法。它仅通过现有用户界面与游戏交互，并遵守相关法律法规。该软件包旨在简化用户与游戏的交互，不会破坏游戏平衡或提供不公平优势，也不会修改任何游戏文件或代码。
-
-本软件开源、免费，仅供个人学习交流使用，仅限于个人游戏账号，不得用于任何商业或营利性目的。开发者团队拥有本项目的最终解释权。使用本软件产生的所有问题与本项目及开发者团队无关。若您发现商家使用本软件进行代练并收费，这是商家的个人行为，本软件不授权用于代练服务，产生的问题及后果与本软件无关。本软件不授权任何人进行售卖，售卖的软件可能被加入恶意代码，导致游戏账号或电脑资料被盗，与本软件无关。
-
-This software is an external tool designed to automate the gameplay of “鸣潮”. It interacts with the game solely through the existing user interface and complies with relevant laws and regulations. The package aims to simplify user interaction with the game without disrupting game balance or providing any unfair advantages. It does not modify any game files or code.
-
-This software is open-source and free, intended solely for personal learning and communication purposes, and is limited to personal game accounts. It is not allowed for any commercial or profit-making purposes. The development team reserves the final interpretation rights of this project. Any issues arising from the use of this software are unrelated to the project and the development team. If you find merchants using this software for paid boosting services, it is their personal behavior, and this software is not authorized for boosting services. Any issues and consequences arising from such use are unrelated to this software. This software is not authorized for sale, and any sold versions may contain malicious code, leading to the theft of game accounts or computer data, which is unrelated to this software.
