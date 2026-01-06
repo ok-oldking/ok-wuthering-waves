@@ -6,9 +6,8 @@ from src.char.BaseChar import BaseChar
 class Sanhua(BaseChar):
     def do_perform(self):
         liber_clicked = False
-        sleep_time = 0.8
-        if self.has_intro:
-            self.sleep(0.02)
+        sleep_time = 0.85
+        self.sleep(0.02)
         start = time.time()
         self.task.mouse_down()
         self.wait_down(click=False)
@@ -27,7 +26,7 @@ class Sanhua(BaseChar):
         if sleep_time > 0:
             self.sleep(sleep_time, False)
         self.task.mouse_up()
-        self.sleep(0.6)
+        self.sleep(0.8)
         if liber_clicked:
             self.click_resonance(send_click=False)
             self.sleep(0.3)
