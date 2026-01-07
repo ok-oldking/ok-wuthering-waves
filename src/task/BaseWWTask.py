@@ -684,6 +684,13 @@ class BaseWWTask(BaseTask):
                 self.click(login)
                 self.log_info('点击登录按钮!')
                 return False
+            if self.find_boxes(texts, match=re.compile("游戏即将重启")):                
+                self.log_info('游戏更新成功, 游戏即将重启')
+                self.click(self.find_boxes(texts, match="确认"), after_sleep=5)
+                result = self.start_device()
+                self.log_info(f'start_device end {result}')
+                self.sleep(20)
+                return False            
             if start := self.find_boxes(texts, boundary='bottom_right', match=["开始游戏", re.compile("进入游戏")]):
                 if not self.find_boxes(texts, boundary='bottom_right', match="登录"):
                     self.click(start)
