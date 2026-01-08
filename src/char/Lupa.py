@@ -44,7 +44,7 @@ class Lupa(BaseChar):
         if self.current_resonance() > 0.05 and self.click_resonance()[0]:
             self.last_liberation = -1
             if self.liberation_available():
-                self.sleep(0.3)
+                self.wait_down()
             else:
                 return self.switch_next_char()
         if (in_outro or not self.need_fast_perform()) and self.click_liberation():
@@ -116,8 +116,7 @@ class Lupa(BaseChar):
         if click:
             self.last_liberation = -1
             self.wolf = False
-            self.task.wait_until(lambda: self.get_current_con() >= 1, post_action=self.click_with_interval, time_out=1)
-            self.sleep(0.2)
+            self.sleep(1.2)
         return click
 
     def judge_forte(self):
