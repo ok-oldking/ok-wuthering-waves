@@ -651,6 +651,9 @@ msgstr "海之女"
 msgid "Nightmare: Hecate"
 msgstr "梦魇·赫卡忒"
 
+msgid "Hyvatia"
+msgstr "海维夏"
+
 msgid "Character Config"
 msgstr "角色设置"
 

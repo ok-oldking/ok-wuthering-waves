@@ -35,7 +35,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         })
         self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
-        self.boss_list = ['Other', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory',
+        self.boss_list = ['Other', 'Hyvatia', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory',
                           'Nightmare: Hecate', 'Fenrico']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.icon = FluentIcon.ALBUM
@@ -177,6 +177,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         boss = self.config.get('Boss')
         if boss in ('Sentry Construct', 'Lioness of Glory', 'Fallacy of No Return'):
             self.combat_wait_time = self.config.get("Combat Wait Time", 0) or 5
+        elif boss in ('Hyvatia'):
+            self.combat_wait_time = self.config.get("Combat Wait Time", 0) or 7
         else:
             self.combat_wait_time = self.config.get("Combat Wait Time", 0)
         if boss in ('Lady of the Sea'):

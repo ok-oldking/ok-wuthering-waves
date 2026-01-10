@@ -651,6 +651,9 @@ msgstr "若設定大於0則覆蓋Boss配置"
 msgid "Nightmare: Hecate"
 msgstr "夢魘·赫卡忒"
 
+msgid "Hyvatia"
+msgstr "海维夏"
+
 msgid "Character Config"
 msgstr "角色設置"
 
