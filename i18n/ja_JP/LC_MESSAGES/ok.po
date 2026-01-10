@@ -675,6 +675,9 @@ msgstr ""
 msgid "Nightmare: Hecate"
 msgstr ""
 
+msgid "Hyvatia"
+msgstr "ハイヴェイシャ"
+
 msgid "Other"
 msgstr ""
 
