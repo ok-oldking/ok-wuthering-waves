@@ -48,3 +48,6 @@ class Linnai(BaseChar):
         white_percent = self.task.calculate_color_percentage(forte_white_color, box)
         self.logger.debug(f'forte_color_percent {white_percent}')
         return white_percent > 0.06
+
+    def on_combat_end(self, chars):
+        self.switch_other_char()
