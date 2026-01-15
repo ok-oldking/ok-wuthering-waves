@@ -283,7 +283,7 @@ class BaseCombatTask(CombatCheck):
                 total_index += 1
 
     def f_break(self):
-        if self.find_one('f_break', box=self.box_of_screen(0.3, 0.3, 0.7, 0.8)):
+        if self.find_one('f_break', box=self.box_of_screen(0.2, 0.2, 0.75, 0.8)):
             self.log_debug('boss is broken, use f')
             self.send_key('f', after_sleep=0.1)
 

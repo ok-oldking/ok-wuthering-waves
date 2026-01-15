@@ -219,8 +219,7 @@ class CombatCheck(BaseWWTask):
                        target_height=540, name='lv_text')
         return lvs
 
-    def has_target(self, double_check=False):
-        threshold = 0.6
+    def get_target_names(self):
         has_name = 'has_target'
         no_name = 'no_target'
         if self.is_browser():
@@ -229,6 +228,13 @@ class CombatCheck(BaseWWTask):
         elif self.width == 1600:
             has_name += '_169'
             no_name += '_169'
+        return has_name, no_name
+        
+    
+    def has_target(self, double_check=False):
+        threshold = 0.6
+        has_name, no_name = self.get_target_names()
+       
         best = self.find_best_match_in_box(self.get_box_by_name(has_name).scale(1.1), [has_name, no_name],
                                            threshold=threshold)
         if not best:
