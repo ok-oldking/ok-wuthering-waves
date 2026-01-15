@@ -140,7 +140,7 @@ config = {
         'default': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
-            'sponsor': 'https://www.paypal.com/ncp/payment/JWQBH7JZKNGCQ',
+            'sponsor': 'https://patreon.com/ok_oldking',
             'share': 'Download OK-WW from https://github.com/ok-oldking/ok-wuthering-waves/releases/latest',
             'faq': 'https://github.com/ok-oldking/ok-wuthering-waves/blob/master/README_en.md'
         },
@@ -150,7 +150,7 @@ config = {
             'sponsor': 'https://afdian.com/a/ok-oldking',
             'share': 'OK-WW 夸克网盘下载：https://pan.quark.cn/s/75b55ef72a34 GitHub下载: https://github.com/ok-oldking/ok-wuthering-waves/releases/latest',
             'faq': 'https://cnb.cool/ok-oldking/ok-wuthering-waves/-/blob/main/README.md',
-            'qq_group': 'https://qm.qq.com/q/czPTr5iBRm',
+            'qq_group': '点击链接加入群聊【晒卡声骸踢群拉黑4】：https://qm.qq.com/q/6vNX9IYlYk',
             'qq_channel': 'https://pd.qq.com/s/djmm6l44y',
         },
     },
