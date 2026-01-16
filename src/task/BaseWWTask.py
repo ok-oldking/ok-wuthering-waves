@@ -684,7 +684,7 @@ class BaseWWTask(BaseTask):
                 result = self.start_device()
                 self.log_info(f'start_device end {result}')
                 self.sleep(20)
-                return False            
+                return self.wait_login()  # 更新完毕，此次执行会进入 `if self.find_one('login_account'):` 所在分支。
             if start := self.find_boxes(texts, boundary='bottom_right', match=["开始游戏", re.compile("进入游戏")]):
                 if not self.find_boxes(texts, boundary='bottom_right', match="登录"):
                     self.click(start)
