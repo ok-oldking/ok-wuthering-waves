@@ -63,7 +63,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         while self.find_f_with_text():
             self.send_key('f', after_sleep=1)
             self.wait_in_team_and_world(time_out=40, raise_if_not_found=False)
-        self.run_until(self.in_combat, 'w', time_out=10, running=False)
+        self.run_until(self.in_combat, 'w', time_out=5,raise_if_not_found=True,running=False,)
         self.combat_once()
         if capture_mode and self._capture_success:
             self.log_info("Captured echo during combat, skipping search.")

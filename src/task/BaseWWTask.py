@@ -470,19 +470,23 @@ class BaseWWTask(BaseTask):
     def run_until(self, condiction, direction, time_out, raise_if_not_found=False, running=False):
         if time_out <= 0:
             return
-        self.send_key_down(direction)
-        if running:
-            self.sleep(0.1)
-            logger.debug(f'run_until condiction {condiction} direction {direction}')
-            self.mouse_down(key='right')
-        result = self.wait_until(condiction, time_out=time_out,
-                                 raise_if_not_found=raise_if_not_found)
-        self.send_key_up(direction)
-        if running:
-            self.sleep(0.1)
-            self.mouse_up(key='right')
-
-        return result
+        while True :
+            self.send_key(direction,down_time=2.5)
+            if running:
+                self.sleep(0.1)
+                logger.debug(f'run_until condiction {condiction} direction {direction}')
+                self.mouse_down(key='right')
+            try :
+                result = self.wait_until(condiction, time_out=time_out,
+                                    raise_if_not_found=raise_if_not_found)
+            except Exception as e :
+                logger.debug(f'continue run_until exception {e}')
+                continue
+            else :
+                if running:
+                    self.sleep(0.1)
+                    self.mouse_up(key='right')
+                return result
 
     def is_moving(self):
         return False
