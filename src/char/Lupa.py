@@ -10,6 +10,7 @@ class Lupa(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.wolf = False
+        self.check_f_on_switch = False
 
     def reset_state(self):
         super().reset_state()
@@ -47,6 +48,7 @@ class Lupa(BaseChar):
                 self.wait_down()
             else:
                 return self.switch_next_char()
+        self.f_break()
         if (in_outro or not self.need_fast_perform()) and self.click_liberation():
             self.continues_normal_attack(0.3)
             if in_outro:

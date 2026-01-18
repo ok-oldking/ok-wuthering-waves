@@ -32,6 +32,7 @@ class Zani(BaseChar):
         self.last_liber2 = -1
         self.dodge_time = -1
         self.attack_breakthrough_time = -1
+        self.check_f_on_switch = False
 
     def reset_state(self):
         self.char_phoebe = None
@@ -62,6 +63,7 @@ class Zani(BaseChar):
             return self.switch_next_char()
         else:
             self.state = 0
+            self.f_break()
 
         if self.echo_available():
             self.click_echo(time_out=0)

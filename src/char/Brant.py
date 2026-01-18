@@ -9,6 +9,7 @@ class Brant(BaseChar):
         self.perform_anchor = 0
         self.attribute = 0
         self.char_lupa = None
+        self.check_f_on_switch = False
 
     def reset_state(self):
         super().reset_state()
@@ -21,6 +22,7 @@ class Brant(BaseChar):
             self.continues_normal_attack(1.3)
             if self.check_outro() in {'char_lupa'} and self.perform_in_outro():
                 return self.switch_next_char()
+        self.f_break()
         if self.is_forte_full() and self.resonance_available():
             self.resonance_forte_full()
             self.last_liberation = -1

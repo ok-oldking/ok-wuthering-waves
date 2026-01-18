@@ -18,6 +18,7 @@ class Changli(BaseChar):
     def do_perform(self):
         outro = False
         forte = -1
+        self.check_f_on_switch = True
         if self.has_intro:
             self.continues_normal_attack(0.3)
             self.enhanced_normal = True
@@ -38,10 +39,12 @@ class Changli(BaseChar):
             if self.flying():
                 self.heavy_attack()
             self.heavy_click_forte(check_fun=self.is_mouse_forte_full)
+            self.check_f_on_switch = False
             self.check_combat()
             return self.switch_next_char()
         if not (forte >= 3 and self.resonance_available()) and self.liberation_available():
             if self.liberation_and_heavy():
+                self.check_f_on_switch = False
                 return self.switch_next_char()
         if self.flick_resonance(send_click=False):
             self.enhanced_normal = True

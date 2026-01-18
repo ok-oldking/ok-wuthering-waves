@@ -86,6 +86,7 @@ class BaseChar:
         self.last_outro_time = -1
         self.confidence = confidence
         self.logger = Logger.get_logger(self.name)
+        self.check_f_on_switch = True
 
     def skip_combat_check(self):
         """是否在某些操作中跳过战斗状态检查。
@@ -886,6 +887,17 @@ class BaseChar:
     def has_long_action2(self):
         """是否有长动作条"""
         return self.task.find_one(self.task.get_target_names()[0], box='target_box_long2', threshold=0.6)
+        
+    def f_break(self, check_f_on_switch=False):
+        """使用F进行击破
+           若self.check_f_on_switch为False则不在切走前自动按F,须在逻辑中手动添加。
+           另外击破动画带全局时停且目前无法识别动画,可能会出现计时问题
+        """
+        if check_f_on_switch and not self.check_f_on_switch:
+            return 
+        if self.task.find_one('f_break', box=self.task.box_of_screen(0.2, 0.2, 0.75, 0.8)):
+            self.logger.debug('boss is broken, use f')
+            self.task.send_key('f', after_sleep=0.1)
 
 forte_white_color = {  # 用于检测共鸣回路UI元素可用状态的白色颜色范围。
     'r': (244, 255),  # Red range
