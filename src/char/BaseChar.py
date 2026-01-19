@@ -896,6 +896,8 @@ class BaseChar:
         if check_f_on_switch and not self.check_f_on_switch:
             return 
         if self.task.find_one('f_break', box=self.task.box_of_screen(0.2, 0.2, 0.75, 0.8)):
+            if self.task.is_pick_f():
+                return
             self.logger.debug('boss is broken, use f')
             self.task.send_key('f', after_sleep=0.1)
 
