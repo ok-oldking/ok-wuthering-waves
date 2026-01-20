@@ -243,14 +243,10 @@ class BaseChar:
                                    target_low_con=target_low_con)
 
     def sleep(self, sec, check_combat=True):
-        """休眠指定时间 (代理到 task.sleep_check_combat)。
-
-        Args:
-            sec (float): 休眠秒数。
-            check_combat (bool, optional): 是否检查战斗状态。默认为 True。
-        """
-        if sec > 0:
-            self.task.sleep_check_combat(sec + self.sleep_adjust, check_combat=check_combat)
+        if not check_combat:
+            self.task.skip_combat_check = True
+        self.task.sleep(sec)
+        self.task.skip_combat_check = False
 
     def alert_skill_failed(self):
         self.task.log_error(f'Click skill failed, check if the keybinding is correct in ok-ww settings!',

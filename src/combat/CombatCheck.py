@@ -17,17 +17,17 @@ class CombatCheck(BaseWWTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._in_combat = False
+        self.skip_combat_check = False
         self.boss_lv_template = None
         self.boss_lv_mask = None
         self._in_liberation = False  # return True
         self.has_count_down = False
+        self.sleep_check_interval = 0.3
         self.last_out_of_combat_time = 0
-        self.last_combat_check = 0
         self.boss_lv_box = None
         self.boss_health_box = None
         self.boss_health = None
         self.out_of_combat_reason = ""
-        self.combat_check_interval = 0.5
         self.last_in_realm_not_combat = 0
         self._last_liberation = 0
         self.target_enemy_time_out = 3
@@ -79,7 +79,6 @@ class CombatCheck(BaseWWTask):
         self.in_liberation = False  # return True
         self.has_count_down = False
         self.last_out_of_combat_time = 0
-        self.last_combat_check = 0
         self.boss_lv_box = None
         self.boss_health = None
         self.boss_health_box = None
@@ -129,26 +128,22 @@ class CombatCheck(BaseWWTask):
             return True
         if self._in_combat:
             now = time.time()
-            if now - self.last_combat_check > self.combat_check_interval:
-                if current_char := self.get_current_char():
-                    if current_char.skip_combat_check():
-                        return True
-                self.last_combat_check = now
-                if not self.on_combat_check():
-                    self.log_info('on_combat_check failed')
-                    return self.reset_to_false(recheck=False, reason='on_combat_check failed')
-                if self.has_target():
-                    self.last_in_realm_not_combat = 0
+            if current_char := self.get_current_char():
+                if current_char.skip_combat_check():
                     return True
-                if self.combat_end_condition is not None and self.combat_end_condition():
-                    return self.reset_to_false(recheck=True, reason='end condition reached')
-                if self.target_enemy(wait=True):
-                    logger.debug(f'retarget enemy succeeded')
-                    return True
-                logger.error('target_enemy failed, try recheck break out of combat')
-                return self.reset_to_false(recheck=True, reason='target enemy failed')
-            else:
+            if not self.on_combat_check():
+                self.log_info('on_combat_check failed')
+                return self.reset_to_false(recheck=False, reason='on_combat_check failed')
+            if self.has_target():
+                self.last_in_realm_not_combat = 0
                 return True
+            if self.combat_end_condition is not None and self.combat_end_condition():
+                return self.reset_to_false(recheck=True, reason='end condition reached')
+            if self.target_enemy(wait=True):
+                logger.debug(f'retarget enemy succeeded')
+                return True
+            logger.error('target_enemy failed, try recheck break out of combat')
+            return self.reset_to_false(recheck=True, reason='target enemy failed')
         else:
             from src.task.AutoCombatTask import AutoCombatTask
             has_target = self.has_target()

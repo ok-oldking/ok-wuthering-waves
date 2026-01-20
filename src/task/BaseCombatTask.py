@@ -458,17 +458,18 @@ class BaseCombatTask(CombatCheck):
         if current_char:
             self.get_current_char().on_combat_end(self.chars)
 
-    def sleep_check_combat(self, timeout, check_combat=True):
+    def sleep_check(self):
         """休眠指定时间, 并在休眠前后检查战斗状态。
 
         Args:
             timeout (float): 休眠的秒数。
             check_combat (bool, optional): 是否在休眠前检查战斗状态。默认为 True。
         """
-        start = time.time()
-        if check_combat and not self.in_combat():
-            self.raise_not_in_combat('sleep check not in combat')
-        self.sleep(timeout - (time.time() - start))
+        self.log_debug(f'sleep_check {self._in_combat} {self.check_combat}')
+        if self._in_combat and self.check_combat:
+            self.next_frame()
+            if not self.in_combat():
+                self.raise_not_in_combat('sleep check not in combat')        
 
     def check_combat(self):
         """检查当前是否处于战斗状态, 如果不是则抛出异常。"""
