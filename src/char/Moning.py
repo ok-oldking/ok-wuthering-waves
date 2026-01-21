@@ -3,30 +3,30 @@ import time
 
 
 class Moning(Healer):
-    
+
     def do_perform(self):
         time_out = 10
         start = time.time()
         if not self.on_air():
             self.logger.debug('not on_air start attacking')
             while time.time() - start < time_out and not self.on_air():
-                self.click()  
-                self.click_resonance()                      
-                self.sleep(0.1)  
+                self.click()
+                self.click_resonance()
+                self.sleep(0.1)
                 if self.is_mouse_forte_full():
                     self.heavy_attack()
-                    self.sleep(0.3)                    
+                    self.sleep(0.3)
         else:
             self.logger.debug('already on_air')
-        if self.on_air():  
+        if self.on_air():
             self.logger.debug('on_air start attacking')
             self.click_liberation()
             start = time.time()
             time_out = 10
             while time.time() - start < time_out and not self.is_mouse_forte_full():
-                self.click()  
-                self.click_resonance()                      
-                self.sleep(0.1) 
+                self.click()
+                self.click_resonance()
+                self.sleep(0.1)
             if self.is_mouse_forte_full():
                 self.logger.debug('mouse forte full, heavy attack')
                 self.heavy_attack()
@@ -36,4 +36,6 @@ class Moning(Healer):
 
     def on_air(self):
         return self.has_long_action2()
-        
+
+    def on_combat_end(self, chars):
+        self.switch_other_char()

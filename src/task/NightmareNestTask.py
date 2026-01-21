@@ -22,6 +22,8 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.icon = FluentIcon.CALORIES
         self.count_re = re.compile(r"(\d{1,2})/(\d{1,2})")
         self.step = 0
+        self._capture_success = False
+        self._capture_mode = False
 
     def run(self):
         WWOneTimeTask.run(self)
@@ -44,20 +46,24 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.ensure_main(time_out=30)
 
     def on_combat_check(self):
-        if getattr(self, '_capture_mode', False):
+        if self._capture_mode:
             self.pick_f(handle_claim=False)
-            if self.find_best_match_in_box(self.box_of_screen(0.078, 0.488, 0.094, 0.514),
-                                           ['char_1_text', 'char_3_text'], 0.7,
-                                           frame_processor=convert_image_to_negative):
-                self._capture_success = True
+            if self.has_echo_notification():
                 raise NotInCombatException
         return True
+
+    def has_echo_notification(self):
+        if self.find_best_match_in_box(self.box_of_screen(0.078, 0.488, 0.094, 0.514),
+                                           ['char_1_text', 'char_3_text'], 0.7,
+                                           frame_processor=convert_image_to_negative):
+            self._capture_success = True
+        return self._capture_success
 
     def combat_nest(self, nest, capture_mode=False):
         self._capture_mode = capture_mode
         self._capture_success = False
         self.click(nest, after_sleep=2)
-        self.click(0.89, 0.92, after_sleep=2)
+        self.wait_click_travel()
         self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
         self.sleep(1)
         while self.find_f_with_text():
@@ -65,10 +71,12 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self.wait_in_team_and_world(time_out=40, raise_if_not_found=False)
         self.run_until(self.in_combat, 'w', time_out=10, running=False)
         self.combat_once()
-        if capture_mode and self._capture_success:
-            self.log_info("Captured echo during combat, skipping search.")
-            return
-        self.sleep(3)
+        if self._capture_mode:
+            if self._capture_success or self.wait_until(self.has_echo_notification, time_out=3):
+                self.log_info("Captured echo during combat, skipping search.")
+                return
+        else:
+            self.sleep(3)
         if not self.walk_find_echo(time_out=5, backward_time=2.5):
             dropped = self.yolo_find_echo(turn=True, use_color=False, time_out=30)[0]
             logger.info(f'farm echo yolo find {dropped}')

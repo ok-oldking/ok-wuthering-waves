@@ -134,7 +134,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
             self.sleep(self.combat_wait_time)
             self.log_info(f'combat_wait_time: {self.combat_wait_time}')
-            # self.check_boss_name()
+            self.check_boss_name()
 
             self.combat_once(wait_combat_time=0, raise_if_not_found=False)
             if self.is_revived:
@@ -444,8 +444,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                 click_after_delay=0.5, threshold=0.8)
 
     def check_boss_name(self):
-        self.combat_wait_time = self.config.get("Combat Wait Time", 0)
-        self.set_night = self.config.get('Change Time to Night')
+        # self.combat_wait_time = self.config.get("Combat Wait Time", 0)
+        # self.set_night = self.config.get('Change Time to Night')
         if self.game_lang != 'zh_CN':
             return
         texts = self.ocr(box=self.box_of_screen(1269 / 3840, 10 / 2160, 2533 / 3840, 140 / 2160, hcenter=True),
@@ -455,10 +455,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             fps_text = find_boxes_by_name(texts, re.compile(s, re.IGNORECASE))
             if fps_text:
                 self.aim_boss = key
-                if value.get('set_combat_wait'):
-                    self.combat_wait_time = value.get('set_combat_wait')
-                if value.get('set_night'):
-                    self.set_night = True
+                # if value.get('set_combat_wait'):
+                #     self.combat_wait_time = value.get('set_combat_wait')
+                # if value.get('set_night'):
+                #     self.set_night = True
                 break
         if self.aim_boss is not None:
             logger.info(f'combat with {self.aim_boss}')

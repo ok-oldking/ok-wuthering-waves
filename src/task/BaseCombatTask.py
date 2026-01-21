@@ -282,10 +282,6 @@ class BaseCombatTask(CombatCheck):
                         return True
                 total_index += 1
 
-    def f_break(self):
-        if self.find_one('f_break', box=self.box_of_screen(0.2, 0.2, 0.75, 0.8)):
-            self.log_debug('boss is broken, use f')
-            self.send_key('f', after_sleep=0.1)
 
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
         """切换到下一个最优角色。
@@ -344,7 +340,7 @@ class BaseCombatTask(CombatCheck):
         start = time.time()
         while True:
             now = time.time()
-            self.f_break()
+            current_char.f_break(check_f_on_switch=True)
             _, current_index, _ = self.in_team()
             if current_index == current_char.index:
                 self.update_lib_portrait_icon()
@@ -462,17 +458,18 @@ class BaseCombatTask(CombatCheck):
         if current_char:
             self.get_current_char().on_combat_end(self.chars)
 
-    def sleep_check_combat(self, timeout, check_combat=True):
+    def sleep_check(self):
         """休眠指定时间, 并在休眠前后检查战斗状态。
 
         Args:
             timeout (float): 休眠的秒数。
             check_combat (bool, optional): 是否在休眠前检查战斗状态。默认为 True。
         """
-        start = time.time()
-        if check_combat and not self.in_combat():
-            self.raise_not_in_combat('sleep check not in combat')
-        self.sleep(timeout - (time.time() - start))
+        self.log_debug(f'sleep_check {self._in_combat} {self.check_combat}')
+        if self._in_combat and self.check_combat:
+            self.next_frame()
+            if not self.in_combat():
+                self.raise_not_in_combat('sleep check not in combat')        
 
     def check_combat(self):
         """检查当前是否处于战斗状态, 如果不是则抛出异常。"""
