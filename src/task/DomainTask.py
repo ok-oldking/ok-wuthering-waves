@@ -19,7 +19,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         self.group_icon = FluentIcon.HOME
 
     def make_sure_in_world(self):
-        if (self.in_realm()):
+        if self.in_realm():
             self.send_key('esc', after_sleep=1)
             self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False,
                                     time_out=3, click_after_delay=0.5, threshold=0.7)

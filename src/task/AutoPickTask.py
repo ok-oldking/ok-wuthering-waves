@@ -10,7 +10,7 @@ from src.task.BaseWWTask import BaseWWTask, f_white_color
 logger = Logger.get_logger(__name__)
 
 
-class AutoPickTask(TriggerTask, BaseWWTask, FindFeature):
+class AutoPickTask(TriggerTask, BaseWWTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
