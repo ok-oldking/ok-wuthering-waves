@@ -126,16 +126,6 @@ config = {
         'min_size': (1280, 720),
         'resize_to': [(2560, 1440), (1920, 1080), (1600, 900), (1280, 720)],
     },
-    'git_update': {'sources': [{
-        'name': 'Global',
-        'git_url': 'https://github.com/ok-oldking/ok-ww-update.git',
-        'pip_url': 'https://pypi.org/simple/'
-    }, {
-        'name': 'China',
-        'git_url': 'https://cnb.cool/ok-oldking/ok-wuthering-waves.git',
-        'pip_url': 'https://mirrors.aliyun.com/pypi/simple'
-    }
-    ]},
     'links': {
         'default': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
