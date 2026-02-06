@@ -14,16 +14,18 @@ class Chisa(BaseChar):
             self.wait_down()
         self.click_echo()
         start = time.time()
+        under_liber = False
         while time.time() - start < timeout: 
             if time.time() - start < 0.5 and self.click_liberation():
                 start = time.time()
+                under_liber = True
                 timeout = 10
                 self.sleep(0.2)
             if time.time() - start < 0.5 and not self.is_forte_full() and self.click_resonance()[0]:
                 start = time.time()
                 if timeout != 10:
                     timeout = 1.7
-            if self.is_forte_full() and self.perform_forte():
+            if under_liber and self.is_forte_full() and self.perform_forte():
                 return self.switch_next_char()  
             self.click()
             self.check_combat()
