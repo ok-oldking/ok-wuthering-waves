@@ -1,3 +1,4 @@
+from src.char.Aemeath import Aemeath
 from src.char.Augusta import Augusta
 from src.char.Baizhi import Baizhi
 from src.char.BaseChar import BaseChar, Elements
@@ -94,6 +95,7 @@ char_dict = {
     'char_douling': {'cls': Douling, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.ELECTRIC},
     'char_linnai': {'cls': Linnai, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.SPECTRO},
     'char_moning': {'cls': Moning, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.FIRE},
+    'char_aemeath': {'cls': Aemeath, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.FIRE},
 }
 
 char_names = char_dict.keys()

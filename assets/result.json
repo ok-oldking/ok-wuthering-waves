@@ -617,7 +617,13 @@
             "height": 2160,
             "id": 102,
             "file_name": "images/102.png"
-        }
+        },
+		{
+			"width": 3840,
+			"height": 2160,
+			"id": 103,
+			"file_name": "images/103.png"
+		}
     ],
     "categories": [
         {
@@ -1679,7 +1685,11 @@
         {
             "id": 264,
             "name": "ww"
-        }
+        },
+		{
+			"id": 265,
+			"name": "char_aemeath"
+		}
     ],
     "annotations": [
         {
@@ -4711,7 +4721,22 @@
             "ignore": 0,
             "iscrowd": 0,
             "area": 5899.447443219133
-        }
+        },
+		{
+			"id": 202,
+			"image_id": 103,
+			"category_id": 265,
+			"segmentation": [],
+			"bbox": [
+				3540.201538139597,
+				729.326796742598,
+				72.67841499646093,
+				96.90455332861531
+			],
+			"ignore": 0,
+			"iscrowd": 0,
+			"area": 7042.869341863783
+		}
     ],
     "info": {
         "year": 2026,
