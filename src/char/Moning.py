@@ -1,6 +1,6 @@
 from src.char.Healer import Healer
 import time
-
+from src.char.BaseChar import BaseChar, Priority
 
 class Moning(Healer):
 
@@ -39,3 +39,11 @@ class Moning(Healer):
 
     def on_combat_end(self, chars):
         self.switch_other_char()
+
+    def do_get_switch_priority(self,current_char:BaseChar,has_intro=False, target_low_con=False):
+        if self.liberation_available:
+            return Priority.MAX
+        if current_char.is_con_full():
+            return super().do_get_switch_priority(current_char, True)
+        return Priority.MIN
+
