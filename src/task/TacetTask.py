@@ -19,7 +19,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         default_config = {
             'Which Tacet Suppression to Farm': 1,  # starts with 1
         }
-        self.total_number = 14
+        self.total_number = 16
         self.target_enemy_time_out = 10
         default_config.update(self.default_config)
         self.config_description = {
@@ -31,9 +31,11 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             1: [],
             2: [],
             3: [],
-            4: [["a", 0.3]],
-            5: [["d", 0.6]],
-            6: [["a", 1.5], ["w", 3], ["a", 2.5]],
+            4: [],
+            5: [],
+            6: [["a", 0.3]],
+            7: [["d", 0.6]],
+            8: [["a", 1.5], ["w", 3], ["a", 2.5]],
         }
         self.stamina_once = 60
 
