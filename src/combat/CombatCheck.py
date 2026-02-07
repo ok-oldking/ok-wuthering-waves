@@ -269,11 +269,11 @@ class CombatCheck(BaseWWTask):
 
     def has_health_bar(self):
         if self._in_combat:
-            min_height = self.height_of_screen(12 / 2160)
+            min_height = self.height_of_screen(9 / 2160)
             max_height = min_height * 3
             min_width = self.width_of_screen(12 / 3840)
         else:
-            min_height = self.height_of_screen(12 / 2160)
+            min_height = self.height_of_screen(9 / 2160)
             max_height = min_height * 3
             min_width = self.width_of_screen(100 / 3840)
 
