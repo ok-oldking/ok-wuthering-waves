@@ -3,6 +3,9 @@ import time
 from src.char.BaseChar import BaseChar, forte_white_color
 
 class Linnai(BaseChar):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.last_heavy = 0
 
     def do_perform(self):
         if self.has_intro:
@@ -10,6 +13,10 @@ class Linnai(BaseChar):
         elif self.flying():
             self.wait_down()
         self.click_echo(time_out=0)
+        if self.combo_limit():
+            if not self.click_resonance()[0]:
+                self.continues_normal_attack(0.6)
+            return self.switch_next_char()
         if not self.check_res():
             start = time.time()
             second = False
@@ -32,6 +39,7 @@ class Linnai(BaseChar):
         if self.is_color_full() and self.task.wait_until(lambda: not self.is_forte_full(),
                                      post_action=self.task.jump, time_out=3):
             self.click_resonance()
+            self.last_heavy = time.time()
         self.switch_next_char()
 
     def check_res(self):
@@ -51,3 +59,6 @@ class Linnai(BaseChar):
 
     def on_combat_end(self, chars):
         self.switch_other_char()
+
+    def combo_limit(self):
+        return self.time_elapsed_accounting_for_freeze(self.last_heavy) < 20
