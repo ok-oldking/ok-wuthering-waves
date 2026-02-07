@@ -269,11 +269,11 @@ class CombatCheck(BaseWWTask):
 
     def has_health_bar(self):
         if self._in_combat:
-            min_height = self.height_of_screen(12 / 2160)
+            min_height = self.height_of_screen(9 / 2160)
             max_height = min_height * 3
             min_width = self.width_of_screen(12 / 3840)
         else:
-            min_height = self.height_of_screen(12 / 2160)
+            min_height = self.height_of_screen(9 / 2160)
             max_height = min_height * 3
             min_width = self.width_of_screen(100 / 3840)
 
@@ -326,8 +326,8 @@ target_enemy_color_yellow = {
 }  # 207,75,60
 
 enemy_health_color_red = {
-    'r': (174, 212),  # Red range
-    'g': (55, 80),  # Green range
+    'r': (174, 225),  # Red range
+    'g': (55, 85),  # Green range
     'b': (55, 76)  # Blue range
 }  # 207,75,60
 

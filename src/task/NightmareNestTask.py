@@ -21,26 +21,32 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.group_icon = FluentIcon.HOME
         self.icon = FluentIcon.CALORIES
         self.count_re = re.compile(r"(\d{1,2})/(\d{1,2})")
-        self.step = 0
+        self.queues = []
         self._capture_success = False
         self._capture_mode = False
+        self.default_config.update({'Which to Farm': ['Nightmare Purification', 'Tacet Discord Nest']})
+        self.config_type['Which to Farm'] = {'type': "multi_selection", 'options': ['Nightmare Purification', 'Tacet Discord Nest']}
 
     def run(self):
+        self._capture_mode = False
+        self._capture_success = False
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=30)
-        self.step = 0
+        self._init_queue()
         self.log_info('opened gray_book_boss')
         while nest := self.get_nest_to_go():
             self.combat_nest(nest)
         self.ensure_main(time_out=30)
 
     def run_capture_mode(self):
+        self._capture_mode = True
+        self._capture_success = False
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=30)
-        self.step = 0
+        self._init_queue()
         self.log_info('opened gray_book_boss')
         while nest := self.get_nest_to_go():
-            self.combat_nest(nest, capture_mode=True)
+            self.combat_nest(nest)
             if self._capture_success:
                 break
         self.ensure_main(time_out=30)
@@ -59,9 +65,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self._capture_success = True
         return self._capture_success
 
-    def combat_nest(self, nest, capture_mode=False):
-        self._capture_mode = capture_mode
-        self._capture_success = False
+    def combat_nest(self, nest):
         self.click(nest, after_sleep=2)
         self.wait_click_travel()
         self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
@@ -89,23 +93,35 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def get_nest_to_go(self):
         gray_book_boss = self.openF2Book("gray_book_boss")
         self.click_box(gray_book_boss, after_sleep=1)
-        while self.step <= 2:
-            self.go_step()
+        
+        while self.queues:
+            self.queues[0]()
             if nest := self.find_nest():
                 return nest
-            else:
-                self.step += 1
+            self.queues.pop(0)
 
-    def go_step(self):
-        if self.step <= 1:
-            self.click(0.17, 0.68, after_sleep=1)
-            self.log_info('go step 1')
-            if self.step == 1:
-                self.click(0.98, 0.54, after_sleep=1)
-                self.log_info('go step 2 scroll')
-        else:
-            self.click(0.17, 0.77, after_sleep=1)
-            self.log_info('go step 3')
+    def _init_queue(self):
+        quests = self.config.get("打什么") or ['Nightmare Purification', 'Tacet Discord Nest']
+        actions = []
+        if 'Nightmare Purification' in quests:
+            actions.append(self.go_nightmare)
+            actions.append(self.go_nightmare_scroll)
+        if 'Tacet Discord Nest' in quests:
+            actions.append(self.go_nest)
+        self.queues = actions
+
+    def go_nightmare(self):
+        self.click(0.17, 0.68, after_sleep=1)
+        self.log_info('go nightmare')
+
+    def go_nightmare_scroll(self):
+        self.click(0.17, 0.68, after_sleep=1)
+        self.click(0.98, 0.54, after_sleep=1)
+        self.log_info('go nightmare scroll')
+
+    def go_nest(self):
+        self.click(0.17, 0.77, after_sleep=1)
+        self.log_info('go nest')
 
     def find_nest(self):
         counts = self.ocr(0.36, 0.13, 0.98, 0.91, match=self.count_re)
