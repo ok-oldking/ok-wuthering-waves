@@ -14,7 +14,8 @@ class Aemeath(BaseChar):
             self.wait_down()
         self.click_echo(time_out=0)
         self.continues_normal_attack(1)
-        self.send_resonance_key()
+        self.task.wait_until(lambda: False, post_action=self.send_resonance_key,
+                                 time_out=0.2)
         self.switch_next_char()
         
     def perform_under_liber(self):
@@ -31,7 +32,6 @@ class Aemeath(BaseChar):
             self.task.next_frame()                 
             
     def handle_resonance(self):
-        self.incarnation = False
         start = time.time()
         animation_start = 0
         last_op = 'resonance'
