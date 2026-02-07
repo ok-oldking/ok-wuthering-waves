@@ -326,8 +326,8 @@ target_enemy_color_yellow = {
 }  # 207,75,60
 
 enemy_health_color_red = {
-    'r': (174, 212),  # Red range
-    'g': (55, 80),  # Green range
+    'r': (174, 225),  # Red range
+    'g': (55, 85),  # Green range
     'b': (55, 76)  # Blue range
 }  # 207,75,60
 
