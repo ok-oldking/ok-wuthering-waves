@@ -693,17 +693,35 @@ msgstr "副本任务"
 msgid "Farm"
 msgstr "4C任务"
 
-msgid  "Jump Key"
+msgid "Jump Key"
 msgstr "跳跃键"
 
-msgid  "Dodge Key"
+msgid "Dodge Key"
 msgstr "闪避键"
 
-msgid  "Wheel Key"
+msgid "Wheel Key"
 msgstr "轮盘键"
 
-msgid  "Farm Nightmare Nest for Daily Echo"
+msgid "Farm Nightmare Nest for Daily Echo"
 msgstr "使用夢魘巢穴獲取日常聲骸"
 
-msgid  "Farm 1 Echo from Nightmare Nest to complete Daily Task when needed."
+msgid "Farm 1 Echo from Nightmare Nest to complete Daily Task when needed."
 msgstr "必要時，前往夢魘巢穴取得聲骸完成日常"
+
+msgid "F10"
+msgstr ""
+
+msgid "F11"
+msgstr ""
+
+msgid "F12"
+msgstr ""
+
+msgid "F9"
+msgstr ""
+
+msgid "Nightmare Purification"
+msgstr "夢魘拔除"
+
+msgid "Tacet Discord Nest"
+msgstr "殘像聚落"
