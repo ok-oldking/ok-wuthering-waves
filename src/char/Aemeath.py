@@ -25,7 +25,8 @@ class Aemeath(BaseChar):
             if self.check_heavy():
                 self.heavy_attack(0.8)
             elif self.is_forte_full():
-                self.handle_resonance()
+                if not self.handle_resonance():
+                    return
             self.click()
             self.check_combat()
             self.task.next_frame()                 
@@ -58,6 +59,10 @@ class Aemeath(BaseChar):
         self.task.in_liberation = False
         self.add_freeze_duration(animation_start)
         self.logger.info(f'handle_resonance end {time.time() - start}')
+        if time.time() - start > 4:
+            self.logger.info('maybe using the liber2')
+            return False
+        return True
     
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if has_intro:
