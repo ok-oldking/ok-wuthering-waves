@@ -44,6 +44,8 @@ class Moning(BaseChar):
                 if self.heavy_click_forte(check_fun=self.is_mouse_forte_full):
                     self.last_heavy = time.time()
                     self.check_f_on_switch = False
+            self.logger.debug('finished attacking on_air, try click liberation again')
+            self.click_liberation()
         else:
             self.logger.debug('failed to jump on_air, switch next char')
         self.switch_next_char()
