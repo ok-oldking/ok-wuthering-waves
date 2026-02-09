@@ -25,6 +25,7 @@ class Phrolova(BaseChar):
             self.continues_right_click(0.1)
         if self.flying():
             self.wait_down()
+        self.check_combat()
         if self.liberation_available() and self.click_liberation(wait_if_cd_ready=0):
             if self.task.name and self.task.name == "Nightmare Nest Task":
                 self.continues_click(self.get_liberation_key(), 1)
@@ -45,6 +46,7 @@ class Phrolova(BaseChar):
             timeout = lambda: self.time_elapsed_accounting_for_freeze(self.last_perform) < 16
             self.sp = True
         while timeout():
+            self.check_combat()
             if self.liberation_available() and self.click_liberation(wait_if_cd_ready=0):
                 if self.task.name and self.task.name == "Nightmare Nest Task":
                     self.continues_click(self.get_liberation_key(), 1.5)
@@ -87,6 +89,7 @@ class Phrolova(BaseChar):
     def heavy_and_liber(self):
         if self.heavy_click_forte(check_fun=self.is_mouse_forte_full):
             self.logger.debug('Phrolova heavy_click_forte')
+            self.check_combat()
             self.task.wait_until(lambda: self.click_liberation(wait_if_cd_ready=0), time_out=3)
             if self.task.name and self.task.name == "Nightmare Nest Task":
                 self.continues_click(self.get_liberation_key(), 1)
