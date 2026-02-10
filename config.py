@@ -93,7 +93,7 @@ config = {
     'wait_until_settle_time': 0,
     # required if using feature detection
     'template_matching': {
-        'coco_feature_json': os.path.join('assets', 'result.json'),
+        'coco_feature_json': os.path.join('assets', 'coco_detection.json'),
         'default_horizontal_variance': 0.002,
         'default_vertical_variance': 0.002,
         'default_threshold': 0.8,
@@ -122,7 +122,7 @@ config = {
         'min_height': 600,
     },
     'supported_resolution': {
-        'ratio': '16:9', 
+        'ratio': '16:9',
         'resize_to': [(2560, 1440), (1920, 1080), (1600, 900), (1280, 720)],
         'min_size': (1280, 720)
     },

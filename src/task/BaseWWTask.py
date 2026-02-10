@@ -564,17 +564,17 @@ class BaseWWTask(BaseTask):
             if not self.handle_claim_button():
                 self.log_debug('found a echo picked')
                 return True
-    
+
     def is_pick_f(self):
         f = self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box,
-                              threshold=0.8)
+                          threshold=0.8)
         if not f:
             return False
         dialog_search = f.copy(x_offset=f.width * 3, width_offset=f.width * 2, height_offset=f.height * 2,
-                                   y_offset=-f.height,
-                                   name='search_dialog')
+                               y_offset=-f.height,
+                               name='search_dialog')
         dialog_3_dots = self.find_feature('dialog_3_dots', box=dialog_search,
-                                              threshold=0.6)
+                                          threshold=0.6)
         return bool(dialog_3_dots)
 
     def walk_to_treasure(self, send_f=True, raise_if_not_found=True):
@@ -687,16 +687,17 @@ class BaseWWTask(BaseTask):
                 return True
             texts = self.ocr()
             if login := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match="登录"):
-                self.click(login)
-                self.log_info('点击登录按钮!')
+                if not self.find_boxes(texts, match="+86"):
+                    self.click(login)
+                    self.log_info('点击登录按钮!')
                 return False
-            if self.find_boxes(texts, match=re.compile("游戏即将重启")):                
+            if self.find_boxes(texts, match=re.compile("游戏即将重启")):
                 self.log_info('游戏更新成功, 游戏即将重启')
                 self.click(self.find_boxes(texts, match="确认"), after_sleep=30)
                 result = self.start_device()
                 self.log_info(f'start_device end {result}')
                 self.sleep(30)
-                return False            
+                return False
             if start := self.find_boxes(texts, boundary='bottom_right', match=["开始游戏", re.compile("进入游戏")]):
                 if not self.find_boxes(texts, boundary='bottom_right', match="登录"):
                     self.click(start)
