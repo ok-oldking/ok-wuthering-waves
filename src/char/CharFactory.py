@@ -24,7 +24,7 @@ from src.char.Jiyan import Jiyan
 from src.char.Linnai import Linnai
 from src.char.Lupa import Lupa
 from src.char.Mortefi import Mortefi
-from src.char.Moning import Moning
+from src.char.Mornye import Mornye
 from src.char.Phoebe import Phoebe
 from src.char.Phrolova import Phrolova
 from src.char.Qiuyuan import Qiuyuan
@@ -94,7 +94,7 @@ char_dict = {
                    'ring_index': Elements.HAVOC},
     'char_douling': {'cls': Douling, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.ELECTRIC},
     'char_linnai': {'cls': Linnai, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.SPECTRO},
-    'char_moning': {'cls': Moning, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.FIRE},
+    'char_mornye': {'cls': Mornye, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.FIRE},
     'char_aemeath': {'cls': Aemeath, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.FIRE},
 }
 
