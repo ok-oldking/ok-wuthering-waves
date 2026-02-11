@@ -147,6 +147,7 @@ class CombatCheck(BaseWWTask):
             from src.task.AutoCombatTask import AutoCombatTask
             has_target = self.has_target()
             if not has_target and target:
+                self.log_debug('try target')
                 self.middle_click(after_sleep=0.1)
             in_combat = has_target or ((self.config.get('Auto Target') or not isinstance(self,
                                                                                          AutoCombatTask)) and self.check_health_bar())
