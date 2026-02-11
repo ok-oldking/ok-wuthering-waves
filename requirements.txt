@@ -4,7 +4,7 @@
 #
 #    pip-compile '.\requirements.in'
 #
-ok-script==1.0.48
+ok-script==1.0.49
     # via -r .\requirements.in
 playwright==1.57.0
 onnxocr-ppocrv4==0.0.5

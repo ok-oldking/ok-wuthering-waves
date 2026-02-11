@@ -70,7 +70,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.run_until(lambda: False, 's', 1, running=True)
         self.teleport_to_nearest_boss()
         self.sleep(0.5)
-        self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w', time_out=12, running=True)
+        self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w', time_out=12, running=True,
+                       target=True)
         self.execute_treasure_hunt()
         self.is_revived = True
         return True
@@ -117,7 +118,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 else:
                     if self._has_treasure:
                         self.wait_until(
-                            lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(),
+                            lambda: self.find_treasure_icon() or self.in_combat(target=True) or self.find_f_with_text(),
                             time_out=5, raise_if_not_found=False)
                     if not self.in_combat():
                         self.log_info('not in combat try click restart')
@@ -224,7 +225,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.log_info('Fenrico teleport_to_nearest_boss failed')
                     self.ensure_main()
                 self.run_until(lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(), 'w',
-                               time_out=5)
+                               time_out=5, target=True)
                 self.execute_treasure_hunt()
                 self.wait_until(self.in_combat, raise_if_not_found=False, time_out=300)
             if boss in ('Lady of the Sea'):
@@ -262,7 +263,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.center_camera()
         while time.time() - start_time < time_out:
             self.sleep(0.01)
-            if self.in_combat():
+            if self.in_combat(target=True):
                 break
             angle = self.get_mini_map_turn_angle('boss_check_mark_minimap', threshold=threshold, x_offset=-1,
                                                  y_offset=1)
@@ -275,10 +276,11 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 continue
 
         self._stop_movement(current_direction)
-        if not self.in_combat():
+        if not self.in_combat(target=True):
             self.teleport_to_nearest_boss()
             self.sleep(0.5)
-            self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w', time_out=12, running=True)
+            self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w', time_out=12, running=True,
+                           target=True)
 
     def teleport_to_nearest_boss(self):
         if self.aim_boss is not None:
@@ -326,7 +328,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         # === 2. 提取白色部分（白边）===
         lower_white, upper_white = color_range_to_bound(white_color)
         mask = cv2.inRange(img, lower_white, upper_white)
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((3,3), np.uint8))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
 
         # 2. 找轮廓
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -341,13 +343,13 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         # 原梯形轮廓
         trapezoid = np.array([
             [35, 0], [0, 35], [92, 36], [56, 0]
-        ], np.int32).reshape((-1,1,2))
+        ], np.int32).reshape((-1, 1, 2))
 
         # 等比例缩放
         trapezoid_scaled = np.zeros_like(trapezoid, dtype=np.int32)
-        trapezoid_scaled[:,0,0] = (trapezoid[:,0,0] * scale_x).astype(np.int32)
-        trapezoid_scaled[:,0,1] = (trapezoid[:,0,1] * scale_y).astype(np.int32)
-        
+        trapezoid_scaled[:, 0, 0] = (trapezoid[:, 0, 0] * scale_x).astype(np.int32)
+        trapezoid_scaled[:, 0, 1] = (trapezoid[:, 0, 1] * scale_y).astype(np.int32)
+
         # 定义匹配阈值
         best_mat = None
         best_match = None
@@ -355,10 +357,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
         for cnt in contours:
             cnt = cv2.convexHull(cnt)
-            x,y,_,_ = cv2.boundingRect(cnt)
+            x, y, _, _ = cv2.boundingRect(cnt)
             for dx in range(-10, 11, 2):
                 for dy in range(-10, 11, 2):
-                    shifted = trapezoid_scaled + [x+dx, y+dy]
+                    shifted = trapezoid_scaled + [x + dx, y + dy]
                     area_i, mat_i = cv2.intersectConvexConvex(cnt.astype(np.float32), shifted.astype(np.float32))
                     ratio = area_i / cv2.contourArea(trapezoid_scaled)
                     if ratio > best_ratio:
@@ -383,7 +385,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         # 点击轮廓中心
         if best_match is None:
             raise RuntimeError('Can not find the boss octagon on map')
-        
+
         x0, y0 = self.width_of_screen(0.3), self.height_of_screen(0.3)
         x, y, w, h = cv2.boundingRect(best_match)
         cx = x0 + x + w // 2

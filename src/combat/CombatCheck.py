@@ -123,11 +123,10 @@ class CombatCheck(BaseWWTask):
     def is_boss(self):
         return self.find_one('boss_break_shield') or self.find_one('boss_break_lock')
 
-    def in_combat(self):
+    def in_combat(self, target=False):
         if self.in_liberation or self.recent_liberation():
             return True
         if self._in_combat:
-            now = time.time()
             if current_char := self.get_current_char():
                 if current_char.skip_combat_check():
                     return True
@@ -147,6 +146,8 @@ class CombatCheck(BaseWWTask):
         else:
             from src.task.AutoCombatTask import AutoCombatTask
             has_target = self.has_target()
+            if not has_target and target:
+                self.middle_click(after_sleep=0.1)
             in_combat = has_target or ((self.config.get('Auto Target') or not isinstance(self,
                                                                                          AutoCombatTask)) and self.check_health_bar())
             if in_combat:

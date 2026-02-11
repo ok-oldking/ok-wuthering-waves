@@ -7,7 +7,6 @@ import numpy as np  # noqa
 
 from ok import Config, Logger  # noqa
 from src import text_white_color  # noqa
-from src.task.AutoCombatTask import AutoCombatTask
 
 SKILL_TIME_OUT = 10
 
@@ -865,6 +864,7 @@ class BaseChar:
 
     def switch_other_char(self):
         next_char = str((self.index + 1) % len(self.task.chars) + 1)
+        from src.task.AutoCombatTask import AutoCombatTask
         if not isinstance(self.task, AutoCombatTask):
             self.logger.debug('not AutoCombatTask, skip switch_other_char')
             return
