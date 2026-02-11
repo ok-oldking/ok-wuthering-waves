@@ -20,7 +20,7 @@ jobs:
           # Choose your AI provider and key
           AI_PROVIDER: "google" # or "anthropic" or "google"
           AI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          AI_MODEL: "gemini-2.5-flash"
+          AI_MODEL: "gemini-3-flash-preview"
           AI_TEMPERATURE: 0 # 0 to 1 - higher values = more creativity and variance
 
           # Optional configurations
