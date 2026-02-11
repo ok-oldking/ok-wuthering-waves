@@ -19,10 +19,6 @@ comtypes==1.4.11
     # via pycaw
 darkdetect==0.8.0
     # via pyside6-fluent-widgets
-gitdb==4.0.12
-    # via gitpython
-gitpython==3.1.44
-    # via -r .\requirements.in
 idna==3.10
     # via requests
 numpy==2.2.6
@@ -77,8 +73,6 @@ shiboken6==6.9.1
     #   pyside6
     #   pyside6-addons
     #   pyside6-essentials
-smmap==5.0.2
-    # via gitdb
 typing-extensions==4.14.1
     # via ok-script
 urllib3==2.5.0
