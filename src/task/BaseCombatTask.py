@@ -282,7 +282,6 @@ class BaseCombatTask(CombatCheck):
                         return True
                 total_index += 1
 
-
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
         """切换到下一个最优角色。
 
@@ -465,11 +464,11 @@ class BaseCombatTask(CombatCheck):
             timeout (float): 休眠的秒数。
             check_combat (bool, optional): 是否在休眠前检查战斗状态。默认为 True。
         """
-        self.log_debug(f'sleep_check {self._in_combat} {self.check_combat}')
-        if self._in_combat and self.check_combat:
+        self.log_debug(f'sleep_check {self._in_combat}')
+        if self._in_combat:
             self.next_frame()
             if not self.in_combat():
-                self.raise_not_in_combat('sleep check not in combat')        
+                self.raise_not_in_combat('sleep check not in combat')
 
     def check_combat(self):
         """检查当前是否处于战斗状态, 如果不是则抛出异常。"""

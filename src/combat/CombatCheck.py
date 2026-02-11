@@ -61,9 +61,9 @@ class CombatCheck(BaseWWTask):
             return True
         if recheck:
             logger.info('out of combat start double check')
-            # if self.debug:
-            #     self.screenshot('out of combat start double check')
+            self._in_combat = False
             if self.wait_until(self.check_health_bar, time_out=1.2):
+                self._in_combat = True
                 return True
         self.out_of_combat_reason = reason
         self.do_reset_to_false()
@@ -224,12 +224,11 @@ class CombatCheck(BaseWWTask):
             has_name += '_169'
             no_name += '_169'
         return has_name, no_name
-        
-    
+
     def has_target(self, double_check=False):
         threshold = 0.6
         has_name, no_name = self.get_target_names()
-       
+
         best = self.find_best_match_in_box(self.get_box_by_name(has_name).scale(1.1), [has_name, no_name],
                                            threshold=threshold)
         if not best:
