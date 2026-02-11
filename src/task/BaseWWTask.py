@@ -467,7 +467,7 @@ class BaseWWTask(BaseTask):
                 return False
         return f_found
 
-    def run_until(self, condiction, direction, time_out, raise_if_not_found=False, running=False):
+    def run_until(self, condiction, direction, time_out, raise_if_not_found=False, running=False, target=False):
         if time_out <= 0:
             return
         self.send_key_down(direction)
@@ -475,13 +475,21 @@ class BaseWWTask(BaseTask):
             self.sleep(0.1)
             logger.debug(f'run_until condiction {condiction} direction {direction}')
             self.mouse_down(key='right')
-        result = self.wait_until(condiction, time_out=time_out,
-                                 raise_if_not_found=raise_if_not_found)
+        start = time.time()
+        result = None
+        while time.time() - start < time_out:
+            if result := condiction():
+                break
+            if target:
+                self.middle_click(interval=0.5)
+            self.sleep(0.02)
         self.send_key_up(direction)
         if running:
             self.sleep(0.1)
             self.mouse_up(key='right')
 
+        if raise_if_not_found and not result:
+            raise Exception('wait condition failed while walking')
         return result
 
     def is_moving(self):

@@ -25,7 +25,8 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self._capture_success = False
         self._capture_mode = False
         self.default_config.update({'Which to Farm': ['Nightmare Purification', 'Tacet Discord Nest']})
-        self.config_type['Which to Farm'] = {'type': "multi_selection", 'options': ['Nightmare Purification', 'Tacet Discord Nest']}
+        self.config_type['Which to Farm'] = {'type': "multi_selection",
+                                             'options': ['Nightmare Purification', 'Tacet Discord Nest']}
 
     def run(self):
         self._capture_mode = False
@@ -60,8 +61,8 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
 
     def has_echo_notification(self):
         if self.find_best_match_in_box(self.box_of_screen(0.078, 0.488, 0.094, 0.514),
-                                           ['char_1_text', 'char_3_text'], 0.7,
-                                           frame_processor=convert_image_to_negative):
+                                       ['char_1_text', 'char_3_text'], 0.7,
+                                       frame_processor=convert_image_to_negative):
             self._capture_success = True
         return self._capture_success
 
@@ -73,7 +74,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         while self.find_f_with_text():
             self.send_key('f', after_sleep=1)
             self.wait_in_team_and_world(time_out=40, raise_if_not_found=False)
-        self.run_until(self.in_combat, 'w', time_out=10, running=False)
+        self.run_until(self.in_combat, 'w', time_out=10, running=False, target=True)
         self.combat_once()
         if self._capture_mode:
             if self._capture_success or self.wait_until(self.has_echo_notification, time_out=3):
@@ -93,7 +94,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def get_nest_to_go(self):
         gray_book_boss = self.openF2Book("gray_book_boss")
         self.click_box(gray_book_boss, after_sleep=1)
-        
+
         while self.queues:
             self.queues[0]()
             if nest := self.find_nest():
@@ -134,7 +135,8 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                     count_box.x = self.width_of_screen(0.9)
                     count_box.y -= count_box.height
                     return count_box
-                
+
+
 def convert_image_to_negative(img):
     to_gray = False
     _mat = cv2.resize(img, None, fx=0.8, fy=0.8, interpolation=cv2.INTER_LINEAR)
@@ -146,5 +148,3 @@ def convert_image_to_negative(img):
     if to_gray:
         _mat = cv2.cvtColor(_mat, cv2.COLOR_GRAY2BGR)
     return _mat
-
-
