@@ -2,6 +2,7 @@ import time
 
 from src.char.BaseChar import BaseChar, Priority
 
+
 class Aemeath(BaseChar):
     def do_perform(self):
         if self.has_intro:
@@ -15,9 +16,9 @@ class Aemeath(BaseChar):
         self.click_echo(time_out=0)
         self.continues_normal_attack(1)
         self.task.wait_until(lambda: False, post_action=self.send_resonance_key,
-                                 time_out=0.2)
+                             time_out=0.2)
         self.switch_next_char()
-        
+
     def perform_under_liber(self):
         start = time.time()
         while self.time_elapsed_accounting_for_freeze(start) < 18:
@@ -30,8 +31,8 @@ class Aemeath(BaseChar):
                     return
             self.click()
             self.check_combat()
-            self.task.next_frame()                 
-            
+            self.task.next_frame()
+
     def handle_resonance(self):
         start = time.time()
         animation_start = 0
@@ -63,17 +64,20 @@ class Aemeath(BaseChar):
             self.logger.info('maybe using the liber2')
             return False
         return True
-    
+
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if has_intro:
             return Priority.MAX
         return super().do_get_switch_priority(current_char, has_intro)
-        
+
     def check_heavy(self):
         if not self.task.in_team_and_world():
             return False
         best = self.task.find_best_match_in_box(self.task.get_box_by_name('box_target_enemy_long'),
-                                               ['has_target', 'no_target'],
-                                               threshold=0.6)
+                                                ['has_target', 'no_target'],
+                                                threshold=0.6)
         self.logger.debug(f'check res {best}')
         return best
+
+    def on_combat_end(self, chars):
+        self.switch_other_char()

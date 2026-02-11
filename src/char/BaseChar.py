@@ -7,6 +7,7 @@ import numpy as np  # noqa
 
 from ok import Config, Logger  # noqa
 from src import text_white_color  # noqa
+from src.task.AutoCombatTask import AutoCombatTask
 
 SKILL_TIME_OUT = 10
 
@@ -864,7 +865,10 @@ class BaseChar:
 
     def switch_other_char(self):
         next_char = str((self.index + 1) % len(self.task.chars) + 1)
-        self.logger.debug(f'Camellya on_combat_end {self.index} switch next char: {next_char}')
+        if not isinstance(self.task, AutoCombatTask):
+            self.logger.debug('not AutoCombatTask, skip switch_other_char')
+            return
+        self.logger.debug(f'{self.char_name} on_combat_end {self.index} switch next char: {next_char}')
         start = time.time()
         while time.time() - start < 6:
             self.task.load_chars()
@@ -875,7 +879,7 @@ class BaseChar:
                 self.task.send_key(next_char)
             self.sleep(0.2, False)
         self.logger.debug(f'switch_other_char on_combat_end {self.index} switch end')
-    
+
     def has_long_action(self):
         """是否有长动作条"""
         return self.task.find_one(self.task.get_target_names()[0], box='box_target_enemy_long', threshold=0.6)
@@ -883,19 +887,20 @@ class BaseChar:
     def has_long_action2(self):
         """是否有长动作条"""
         return self.task.find_one(self.task.get_target_names()[0], box='target_box_long2', threshold=0.6)
-        
+
     def f_break(self, check_f_on_switch=False):
         """使用F进行击破
            若self.check_f_on_switch为False则不在切走前自动按F,须在逻辑中手动添加。
            另外击破动画带全局时停且目前无法识别动画,可能会出现计时问题
         """
         if check_f_on_switch and not self.check_f_on_switch:
-            return 
+            return
         if self.task.find_one('f_break', box=self.task.box_of_screen(0.2, 0.2, 0.75, 0.8)):
             if self.task.is_pick_f():
                 return
             self.logger.debug('boss is broken, use f')
             self.task.send_key('f', after_sleep=0.1)
+
 
 forte_white_color = {  # 用于检测共鸣回路UI元素可用状态的白色颜色范围。
     'r': (244, 255),  # Red range
