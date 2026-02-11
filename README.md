@@ -11,7 +11,7 @@
     An image-recognition-based automation tool for Wuthering Waves, with background mode support, developed with <a href="https://github.com/ok-oldking/ok-script">ok-script</a>.
   </p>
   
-  <p><i>通过模拟 Windows 用户接口进行操作，无内存读取、无文件修改</i></p>
+  <p><i>通过 Windows 接口模拟用户进行操作，无内存读取、无文件修改</i></p>
 </div>
 
 <!-- Badges -->
