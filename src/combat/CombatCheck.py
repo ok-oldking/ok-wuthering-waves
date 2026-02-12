@@ -39,6 +39,7 @@ class CombatCheck(BaseWWTask):
         }
         self.cd_refreshed = False
         self.esc_count = 0
+        self.can_break = False
 
     @property
     def in_liberation(self):
@@ -84,7 +85,19 @@ class CombatCheck(BaseWWTask):
         self.boss_health_box = None
         self.last_in_realm_not_combat = 0
         self.has_lavitator = False
+        self.can_break = False
         return False
+
+    def check_f_break(self):
+        if self.find_one('f_break', box=self.box_of_screen(0.2, 0.2, 0.75, 0.8)):
+            if self.is_pick_f():
+                self.can_break = True
+                return True
+
+    def f_break(self):
+        if self.can_break or self.check_f_break():
+            self.send_key('f', after_sleep=0.1)
+            self.can_break = False
 
     def recent_liberation(self):
         return time.time() - self._last_liberation < 0.15
@@ -127,6 +140,7 @@ class CombatCheck(BaseWWTask):
         if self.in_liberation or self.recent_liberation():
             return True
         if self._in_combat:
+            self.check_f_break()
             if current_char := self.get_current_char():
                 if current_char.skip_combat_check():
                     return True

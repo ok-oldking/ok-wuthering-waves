@@ -282,20 +282,24 @@ class BaseChar:
             if has_animation:
                 if not self.task.in_team()[0]:
                     self.task.in_liberation = True
-                    animated = True
                     if time.time() - resonance_click_time > 6:
                         self.task.in_liberation = False
                         self.logger.error(f'resonance animation too long, breaking')
                     self.task.next_frame()
                     self.check_combat()
                     continue
-                else:
+                elif self.task.in_liberation:
                     self.task.in_liberation = False
+                    animated = True
+
             self.check_combat()
             now = time.time()
             if not self.resonance_available() and (
                     not has_animation or now - start > animation_min_duration):
                 self.logger.debug(f'click_resonance not available break')
+                break
+            if animated:
+                self.logger.debug(f'click_resonance animated break')
                 break
             self.logger.debug(f'click_resonance resonance_available click')
 
@@ -895,11 +899,7 @@ class BaseChar:
         """
         if check_f_on_switch and not self.check_f_on_switch:
             return
-        if self.task.find_one('f_break', box=self.task.box_of_screen(0.2, 0.2, 0.75, 0.8)):
-            if self.task.is_pick_f():
-                return
-            self.logger.debug('boss is broken, use f')
-            self.task.send_key('f', after_sleep=0.1)
+        self.task.f_break()
 
 
 forte_white_color = {  # 用于检测共鸣回路UI元素可用状态的白色颜色范围。
