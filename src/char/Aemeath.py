@@ -25,15 +25,24 @@ class Aemeath(BaseChar):
                 else:
                     return
             elif self.has_long_action():
+                self.f_break()
                 self.heavy_attack(0.8)
             else:
                 self.click(interval=0.1)
             self.sleep(0.01)
 
+    # def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
+    #     if has_intro:
+    #         return Priority.MAX
+    #     return super().do_get_switch_priority(current_char, has_intro)
+
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if has_intro:
+            self.logger.info(
+                f'switch priority max because has_intro {has_intro}')
             return Priority.MAX
-        return super().do_get_switch_priority(current_char, has_intro)
+        else:
+            return Priority.MIN
 
     def on_combat_end(self, chars):
         self.switch_other_char()

@@ -89,8 +89,8 @@ class CombatCheck(BaseWWTask):
         return False
 
     def check_f_break(self):
-        if self.find_one('f_break', box=self.box_of_screen(0.2, 0.2, 0.75, 0.8)):
-            if self.is_pick_f():
+        if not self.can_break and self.find_one('f_break', box=self.box_of_screen(0.2, 0.2, 0.75, 0.8)):
+            if not self.is_pick_f():
                 self.can_break = True
                 return True
 
