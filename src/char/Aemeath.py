@@ -15,7 +15,10 @@ class Aemeath(BaseChar):
         start = time.time()
         while time.time() - start < 30:
             if self.click_liberation():
-                continue
+                if self.has_long_action():
+                    continue
+                else:
+                    return
             elif self.task.find_one('aemeath_e1') or self.task.find_one('aemeath_e2'):
                 self.logger.debug('found aemeath_e, click_resonance')
                 self.task.screenshot('aemeath_e')
@@ -42,7 +45,7 @@ class Aemeath(BaseChar):
                 f'switch priority max because has_intro {has_intro}')
             return Priority.MAX
         else:
-            return Priority.MIN
+            return Priority.MIN + 1
 
     def on_combat_end(self, chars):
         self.switch_other_char()
