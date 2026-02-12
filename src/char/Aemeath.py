@@ -22,7 +22,6 @@ class Aemeath(BaseChar):
                     return
             elif self.task.find_one('aemeath_e1') or self.task.find_one('aemeath_e2'):
                 self.logger.debug('found aemeath_e, click_resonance')
-                self.task.screenshot('aemeath_e')
                 self.click_resonance(has_animation=True, animation_min_duration=0.5)
                 use_lib = True
                 if self.has_long_action() or self.liberation_available():
@@ -35,11 +34,6 @@ class Aemeath(BaseChar):
             else:
                 self.click(interval=0.1)
             self.sleep(0.01)
-
-    # def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-    #     if has_intro:
-    #         return Priority.MAX
-    #     return super().do_get_switch_priority(current_char, has_intro)
 
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if has_intro:
