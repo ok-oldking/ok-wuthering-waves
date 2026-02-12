@@ -21,13 +21,15 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "批量强化声骸(仅支持简中游戏语言)"
-        self.description = "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按照等级倒序排列后点开始."
+        self.description = "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按照等级从0排序后开始."
         self.icon = FluentIcon.ADD
         self.group_name = "强化声骸"
         self.group_icon = FluentIcon.ADD
         self.scene: WWScene | None = None
+        self.fail_reason = ""
         self.default_config.update({
             '必须有双爆': True,
+            '双爆出现之前必须全有效词条': True,
             '双爆总计>=': 13.8,
             '首条暴击>=': 6.9,
             '首条暴击伤害>=': 13.8,
@@ -42,6 +44,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                                                     '共鸣技能伤害加成']}
         self.config_description = {
             '必须有双爆': '如果开启，声骸最终必须同时拥有暴击和暴击伤害。如果剩余孔位不足以凑齐双爆，则丢弃',
+            '双爆出现之前必须全有效词条': '开启后，在暴击或暴击伤害词条出现之前，前面的所有词条必须都在有效词条列表中',
             '双爆总计>=': '当声骸同时存在暴击和爆伤时，需要满足 暴击 + (爆伤/2) >= 此数值',
             '首条暴击>=': '仅检查第一条出现的暴击是否满足条件',
             '首条暴击伤害>=': '仅检查第一条出现的暴击伤害是否满足条件',
@@ -123,6 +126,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                     break
 
     def check_echo_stats(self, properties, values):
+        self.fail_reason = ""
         invalid_count = 0
         total_count = len(values)
 
@@ -133,6 +137,9 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
         checked_first_crit_rate = False
         checked_first_crit_dmg = False
+        has_encountered_crit = False
+
+        valid_stats = self.config.get('有效词条') or []
 
         for i in range(total_count):
             p = properties[i].name
@@ -140,7 +147,6 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
             is_valid_prop = True
 
-            # Normalize property name and check percentage
             if p in ['攻击', '生命', '防御']:
                 if '%' not in values[i].name:
                     is_valid_prop = False
@@ -148,25 +154,35 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                 else:
                     p += '百分比'
 
-            if is_valid_prop and p not in self.config.get('有效词条'):
+            is_crit_stat = p in ['暴击', '暴击伤害']
+
+            if self.config.get(
+                    '双爆出现之前必须全有效词条') and '暴击' in valid_stats and '暴击伤害' in valid_stats and not has_encountered_crit:
+                if not is_crit_stat:
+                    if p not in valid_stats:
+                        self.fail_reason = f'双爆前含无效_{p}'
+                        self.log_info(f'双爆出现前存在无效词条 {p}, 丢弃')
+                        return False
+                else:
+                    has_encountered_crit = True
+
+            if is_valid_prop and p not in valid_stats:
                 is_valid_prop = False
                 self.log_debug(f'非有效词条, {p} 不符合条件')
 
-            # First Occurrence Check for Crit Rate
-            if p in ['暴击', '暴击']:
+            if p == '暴击':
                 has_crit_rate = True
                 crit_rate_val += v
-                if not checked_first_crit_rate:
+                if '暴击' in valid_stats and not checked_first_crit_rate:
                     checked_first_crit_rate = True
                     if v < self.config.get('首条暴击>='):
                         is_valid_prop = False
                         self.log_info(f'首条暴击 {v} < {self.config.get("首条暴击>=")}')
 
-            # First Occurrence Check for Crit Dmg
             elif p == '暴击伤害':
                 has_crit_dmg = True
                 crit_dmg_val += v
-                if not checked_first_crit_dmg:
+                if '暴击伤害' in valid_stats and not checked_first_crit_dmg:
                     checked_first_crit_dmg = True
                     if v < self.config.get('首条暴击伤害>='):
                         is_valid_prop = False
@@ -177,26 +193,28 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
         self.info_set('不符合条件属性', invalid_count)
 
-        # Must have Double Crit Check
         if self.config.get('必须有双爆'):
             missing_crit = (0 if has_crit_rate else 1) + (0 if has_crit_dmg else 1)
             remaining_slots = 5 - total_count
             if remaining_slots < missing_crit:
+                self.fail_reason = f'无法凑齐双爆_缺{missing_crit}'
                 self.log_info(f'无法凑齐双爆 (缺{missing_crit}种, 剩{remaining_slots}孔), 丢弃')
                 return False
 
-        # Double Crit Total Check
         if has_crit_rate and has_crit_dmg:
             total_score = crit_rate_val + (crit_dmg_val / 2)
             if total_score < self.config.get('双爆总计>='):
+                self.fail_reason = f'双爆总计不足_{total_score:.1f}'
                 self.log_info(f'双爆总计 {total_score:.1f} < {self.config.get("双爆总计>=")}，丢弃')
                 return False
 
         if total_count == 1 and self.config.get('第一条必须为有效词条') and invalid_count == 1:
+            self.fail_reason = '首条无效'
             self.log_info('第一条必须为有效词条, 丢弃')
             return False
 
         if invalid_count >= self.config.get('无效词条>=则终止'):
+            self.fail_reason = f'{invalid_count}无效词条终止'
             self.log_info(f'{invalid_count}无效词条>=则终止, 丢弃')
             return False
 
@@ -213,7 +231,8 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
     def trash_and_esc(self):
         self.info_incr('失败声骸数量')
         self.send_key('z', after_sleep=0.5)
-        self.screenshot_echo(f'failed/{self.info_get("失败声骸数量")}')
+        safe_reason = re.sub(r'[<>:"/\\|?*]', '', self.fail_reason)
+        self.screenshot_echo(f'failed/{self.info_get("失败声骸数量")}_{safe_reason}')
         self.esc()
         self.log_info('不符合条件 丢弃')
         self.wait_ocr(0.82, 0.86, 0.97, 0.96, match='培养', settle_time=0.1)
@@ -232,4 +251,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
 
 def parse_number(text):
-    return float(text.replace('%', ''))
+    try:
+        return float(text.split('%')[0])
+    except (ValueError, IndexError):
+        return 0.0
