@@ -12,9 +12,10 @@ class Aemeath(BaseChar):
         self.switch_next_char()
 
     def perform_everything(self):
+        use_lib = not self.has_intro
         start = time.time()
         while time.time() - start < 30:
-            if self.click_liberation():
+            if use_lib and self.click_liberation():
                 if self.has_long_action():
                     continue
                 else:
@@ -23,12 +24,13 @@ class Aemeath(BaseChar):
                 self.logger.debug('found aemeath_e, click_resonance')
                 self.task.screenshot('aemeath_e')
                 self.click_resonance(has_animation=True, animation_min_duration=0.5)
-                if self.has_long_action():
+                use_lib = True
+                if self.has_long_action() or self.liberation_available():
+                    self.f_break()
                     continue
                 else:
                     return
             elif self.has_long_action():
-                self.f_break()
                 self.heavy_attack(0.8)
             else:
                 self.click(interval=0.1)
