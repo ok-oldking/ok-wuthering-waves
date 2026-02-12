@@ -65,3 +65,5 @@ pip-delete-this-directory.txt
 autohelper
 working_images/
 repo/
+
+assets/result.json
