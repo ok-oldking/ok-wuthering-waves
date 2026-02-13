@@ -1,5 +1,5 @@
 import time
-from decimal import Decimal, ROUND_HALF_UP, ROUND_DOWN, ROUND_UP
+from decimal import Decimal, ROUND_HALF_UP
 from ok import color_range_to_bound
 from src.char.BaseChar import BaseChar, Priority
 import cv2
@@ -110,45 +110,9 @@ class Camellya(BaseChar):
             return True
 
     def ephemeral_ready(self):
-        box = self.task.box_of_screen_scaled(2560, 1440, 2110, 1236, 2217, 1343, name='camellya_resonance',
-                                             hcenter=True)
-        red_percent = self.calculate_color_percentage_in_masked(camellya_red_color, box, 0.395, 0.496)
+        red_percent = self.current_resonance_circle(camellya_red_color, 0.79, 0.99, 'non_black')
         self.logger.debug(f'red_percent {red_percent}')
         return red_percent > 0.1
-
-    def calculate_color_percentage_in_masked(self, target_color, box, mask_r1_ratio=0.0, mask_r2_ratio=0.0):
-        cropped = box.crop_frame(self.task.frame).copy()
-        if cropped is None or cropped.size == 0:
-            return 0.0
-        h, w = cropped.shape[:2]
-
-        center = (w // 2, h // 2)
-        r1, r2 = h * mask_r1_ratio, h * mask_r2_ratio
-        r1 = Decimal(str(r1)).quantize(Decimal('0'), rounding=ROUND_DOWN)
-        r2 = Decimal(str(r2)).quantize(Decimal('0'), rounding=ROUND_UP)
-
-        ring_mask = np.zeros((h, w), dtype=np.uint8)
-        if r2 > 0:
-            cv2.circle(ring_mask, center, int(r2), 255, -1)
-        if r1 > 0:
-            cv2.circle(ring_mask, center, int(r1), 0, -1)
-        masked_image = cv2.bitwise_and(cropped, cropped, mask=ring_mask)
-
-        if masked_image.ndim == 3:
-            non_black_mask = np.all(masked_image != 0, axis=2)
-        else:
-            return 0.0
-
-        free_space = np.count_nonzero(non_black_mask)
-        if free_space == 0:
-            return 0.0
-
-        lower_bound, upper_bound = color_range_to_bound(target_color)
-        gray = cv2.inRange(masked_image, lower_bound, upper_bound)
-        colored_pixels = np.count_nonzero(gray == 255)
-
-        color_percent = colored_pixels / free_space
-        return color_percent
 
     def ephemeral_cast(self):
         self.check_combat()

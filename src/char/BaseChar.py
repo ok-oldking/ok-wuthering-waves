@@ -5,7 +5,7 @@ from typing import Any  # noqa
 import cv2  # noqa
 import numpy as np  # noqa
 
-from ok import Config, Logger  # noqa
+from ok import Config, Logger, color_range_to_bound # noqa
 from src import text_white_color  # noqa
 
 SKILL_TIME_OUT = 10
@@ -811,6 +811,71 @@ class BaseChar:
     def current_liberation(self):
         """获取当前共鸣解放UI白色像素百分比。"""
         return self.task.calculate_color_percentage(text_white_color, self.task.get_box_by_name('box_liberation'))
+
+    def current_resonance_circle(self, circle_color=text_white_color, inner_radius_ratio=0.9, outer_radius_ratio=1.0, denominator_mode='ring_area'):
+        """获取当前共鸣技能圆环UI颜色像素百分比。"""
+        box = self.task.box_of_screen_scaled(
+            3840, 2160, 3165, 1854, 3326, 2015, name="box_resonance_circle", hcenter=False
+        )
+        self.task.draw_boxes(box.name, box)
+        return self.calculate_color_percentage_in_circle(
+            circle_color, box, inner_radius_ratio, outer_radius_ratio, denominator_mode
+        )
+
+    def current_liberation_circle(self, circle_color=text_white_color, inner_radius_ratio=0.9, outer_radius_ratio=1.0, denominator_mode='ring_area'):
+        """获取当前共鸣解放圆环UI颜色像素百分比。"""
+        box = self.task.box_of_screen_scaled(
+            3840, 2160, 3547, 1850, 3711, 2014, name="box_liberation_circle", hcenter=False
+        )
+        self.task.draw_boxes(box.name, box)
+        return self.calculate_color_percentage_in_circle(
+            circle_color, box, inner_radius_ratio, outer_radius_ratio, denominator_mode
+        )
+
+    def calculate_color_percentage_in_circle(
+        self, target_color, box, inner_radius_ratio=0.9, outer_radius_ratio=1.0, denominator_mode='ring_area'
+    ):
+        """计算指定圆环区域内目标颜色的像素百分比
+        Args:
+            target_color (tuple): 目标颜色的BGR值。
+            box (Box): 圆环所在的UI区域（建议为正方形）。
+            inner_radius_ratio (float, optional): 圆环内圆的半径占比 (相对于最大可内接圆半径)。默认为 0.9。
+            outer_radius_ratio (float, optional): 圆环外圆的半径占比 (相对于最大可内接圆半径)。默认为 1.0（顶到边缘）。
+            denominator_mode (str, optional): 分母模式，'ring_area' 使用圆环几何面积，'non_black' 使用圆环内非黑像素数。
+        Returns:
+            float: 圆环区域内目标颜色的像素百分比
+        """
+        cropped = box.crop_frame(self.task.frame)
+        if cropped is None or cropped.size == 0:
+            return 0.0
+        h, w = cropped.shape[:2]
+        # 使用box较小边的一半作为最大可内接圆半径，确保圆形不会超出box边界
+        max_radius = min(h, w) / 2
+        r1 = int(max_radius * inner_radius_ratio)
+        r2 = int(max_radius * outer_radius_ratio + 0.999)  # 等价于 ceil，但更快
+        if r2 <= r1:
+            return 0.0
+        center = (w // 2, h // 2)
+        ring_mask = np.zeros((h, w), dtype=np.uint8)
+        cv2.circle(ring_mask, center, r2, 255, -1)
+        if r1 > 0:
+            cv2.circle(ring_mask, center, r1, 0, -1)
+        lower_bound, upper_bound = color_range_to_bound(target_color)
+        color_mask = cv2.inRange(cropped, lower_bound, upper_bound)
+        cv2.bitwise_and(color_mask, ring_mask, dst=color_mask)
+
+        if denominator_mode == 'non_black':
+            masked_image = cv2.bitwise_and(cropped, cropped, mask=ring_mask)
+            if masked_image.ndim != 3:
+                return 0.0
+            total_mask_area = np.count_nonzero(np.all(masked_image != 0, axis=2))
+        else:
+            total_mask_area = cv2.countNonZero(ring_mask)
+
+        if total_mask_area == 0:
+            return 0.0
+        match_count = cv2.countNonZero(color_mask)
+        return match_count / total_mask_area
 
     def flying(self):
         """通过控物判断是否在空中"""

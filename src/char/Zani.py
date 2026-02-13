@@ -3,10 +3,8 @@ from decimal import Decimal, ROUND_UP, ROUND_HALF_UP
 from enum import Enum
 import cv2
 import numpy as np
-import math
 
 from src.char.BaseChar import BaseChar, Priority, forte_white_color
-from ok import color_range_to_bound
 
 class State(Enum):
     FORTE_FULL = 1
@@ -229,41 +227,13 @@ class Zani(BaseChar):
             self.nightfall_time = time.time()
 
     def is_nightfall_ready(self, threshold=0.15):
-        box = self.task.box_of_screen_scaled(2560, 1440, 1853, 1233, 1964, 1344, name='zani_attack', hcenter=True)
+        box = self.task.box_of_screen_scaled(3840, 2160, 2780, 1850, 2946, 2016, name='zani_attack', hcenter=True)
         self.task.draw_boxes(box.name, box)
-        light_percent = self.calculate_color_percentage_in_masked(zani_light_color, box, 0.425, 0.490)
+        light_percent = self.calculate_color_percentage_in_circle(zani_light_color, box, 0.85, 0.98)
         self.logger.debug(f'nightfall_percent {light_percent}')
         if light_percent > threshold:
             return True
         return False
-
-    def calculate_color_percentage_in_masked(self, target_color, box, mask_r1_ratio=0.0, mask_r2_ratio=0.0):
-        cropped = box.crop_frame(self.task.frame)
-        if cropped is None or cropped.size == 0:
-            return 0.0
-        h, w = cropped.shape[:2]
-
-        r1 = int(math.floor(h * mask_r1_ratio))
-        r2 = int(math.ceil(h * mask_r2_ratio))
-        if r2 <= r1:
-            return 0.0
-
-        center = (w // 2, h // 2)
-        ring_mask = np.zeros((h, w), dtype=np.uint8)
-        cv2.circle(ring_mask, center, r2, 255, -1)
-        if r1 > 0:
-            cv2.circle(ring_mask, center, r1, 0, -1)
-
-        lower_bound, upper_bound = color_range_to_bound(target_color)
-
-        color_mask = cv2.inRange(cropped, lower_bound, upper_bound)
-
-        combined_mask = cv2.bitwise_and(color_mask, ring_mask)
-        match_count = cv2.countNonZero(combined_mask)
-        total_mask_area = cv2.countNonZero(ring_mask)
-        if total_mask_area == 0:
-            return 0.0
-        return match_count / total_mask_area
     
     def nightfall_time_left(self):
         if self.nightfall_time <= 0:
