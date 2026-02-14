@@ -8,7 +8,7 @@ import numpy as np  # noqa
 from ok import Config, Logger  # noqa
 from src import text_white_color  # noqa
 
-SKILL_TIME_OUT = 10
+SKILL_TIME_OUT = 15
 
 
 class Priority(IntEnum):
@@ -278,6 +278,10 @@ class BaseChar:
             if time.time() - start > SKILL_TIME_OUT:
                 self.task.in_liberation = False
                 self.alert_skill_failed()
+                break
+            elif self.task.in_liberation and time.time() - start > 6:
+                self.task.in_liberation = False
+                animated = True
                 break
             if has_animation:
                 if not self.task.in_team()[0]:
