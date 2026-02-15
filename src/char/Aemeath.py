@@ -28,7 +28,7 @@ class Aemeath(BaseChar):
                 else:
                     return
             elif self.task.find_one('aemeath_e1', threshold=0.8) or self.task.find_one('aemeath_e2', threshold=0.8):
-                if self.click_resonance(has_animation=True, send_click=True, animation_min_duration=0.5):
+                if self.click_resonance(has_animation=True, send_click=True, animation_min_duration=0.5, time_out=1.5):
                     self.click_echo(time_out=0)
                     self.f_break()
                     self.click(after_sleep=0.1)

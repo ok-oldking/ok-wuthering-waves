@@ -254,7 +254,7 @@ class BaseChar:
         self.task.screenshot('click_resonance too long, breaking')
 
     def click_resonance(self, post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0,
-                        check_cd=False):
+                        check_cd=False, time_out=0):
         """尝试点击并释放共鸣技能。
 
         Args:
@@ -274,10 +274,15 @@ class BaseChar:
         resonance_click_time = 0
         animated = False
         start = time.time()
+        if time_out == 0:
+            the_time_out = SKILL_TIME_OUT
+        else:
+            the_time_out = time_out
         while True:
-            if time.time() - start > SKILL_TIME_OUT:
+            if time.time() - start > the_time_out:
                 self.task.in_liberation = False
-                self.alert_skill_failed()
+                if the_time_out == 0:
+                    self.alert_skill_failed()
                 break
             elif self.task.in_liberation and time.time() - start > 6:
                 self.task.in_liberation = False
@@ -286,6 +291,7 @@ class BaseChar:
             if has_animation:
                 if not self.task.in_team()[0]:
                     self.task.in_liberation = True
+                    the_time_out = SKILL_TIME_OUT
                     if time.time() - resonance_click_time > 6:
                         self.task.in_liberation = False
                         self.logger.error(f'resonance animation too long, breaking')
