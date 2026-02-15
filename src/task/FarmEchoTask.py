@@ -114,7 +114,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                             post_action=lambda: self.send_key('esc', after_sleep=1),
                                             settle_time=1)
                     self.wait_in_team_and_world(time_out=120)
-                    self.sleep(2)
+                    self.sleep(1)
                 else:
                     if self._has_treasure:
                         self.wait_until(
