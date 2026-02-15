@@ -103,7 +103,8 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                 self.wait_click_ocr(0.17, 0.88, 0.29, 0.96, match=['强化并调谐'], raise_if_not_found=True,
                                     settle_time=0.1,
                                     after_sleep=1.5)
-                while handle := self.wait_ocr(0.24, 0.18, 0.75, 0.93, match=['本次登录不再提示', '点击任意位置返回'],
+                while handle := self.wait_ocr(0.24, 0.18, 0.75, 0.93,
+                                              match=['本次登录不再提示', '调谐成功', '点击任意位置返回'],
                                               time_out=1):
                     if handle[0].name == '本次登录不再提示':
                         click = handle[0]
@@ -111,7 +112,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                         click.x -= click.height * 1.1
                         self.click(click, after_sleep=0.5)
                         self.wait_click_ocr(0.24, 0.18, 0.75, 0.93, match='确认', after_sleep=0.5)
-                    elif handle[0].name == '点击任意位置返回':
+                    elif handle[0].name in ['点击任意位置返回', '调谐成功']:
                         self.click(handle, after_sleep=0.5)
 
                 texts = self.ocr(0.11, 0.29, 0.36, 0.51)
