@@ -272,8 +272,8 @@ class BaseChar:
         last_click = 0
         last_op = 'click'
         resonance_click_time = 0
-        animated = False
         start = time.time()
+        animation_start = 0
         if time_out == 0:
             the_time_out = SKILL_TIME_OUT
         else:
@@ -286,11 +286,11 @@ class BaseChar:
                 break
             elif self.task.in_liberation and time.time() - start > 6:
                 self.task.in_liberation = False
-                animated = True
                 break
             if has_animation:
                 if not self.task.in_team()[0]:
                     self.task.in_liberation = True
+                    animation_start = time.time()
                     the_time_out = SKILL_TIME_OUT
                     if time.time() - resonance_click_time > 6:
                         self.task.in_liberation = False
@@ -300,16 +300,14 @@ class BaseChar:
                     continue
                 elif self.task.in_liberation:
                     self.task.in_liberation = False
-                    animated = True
+                    self.logger.debug(f'click_resonance animated break')
+                    break
 
             self.check_combat()
             now = time.time()
             if not self.resonance_available() and (
                     not has_animation or now - start > animation_min_duration):
                 self.logger.debug(f'click_resonance not available break')
-                break
-            if animated:
-                self.logger.debug(f'click_resonance animated break')
                 break
             self.logger.debug(f'click_resonance resonance_available click')
 
@@ -330,13 +328,15 @@ class BaseChar:
                 last_click = now
             self.task.next_frame()
         self.task.in_liberation = False
+        duration = time.time() - start
+        self.add_freeze_duration(start, duration)
         if clicked:
             self.sleep(post_sleep)
         duration = time.time() - resonance_click_time if resonance_click_time != 0 else 0
-        if animated:
-            self.add_freeze_duration(resonance_click_time, duration)
-        self.logger.debug(f'click_resonance end clicked {clicked} duration {duration} animated {animated}')
-        return clicked, duration, animated
+        if animation_start > 0:
+            self.add_freeze_duration(resonance_click_time, time.time() - animation_start)
+        self.logger.debug(f'click_resonance end clicked {clicked} duration {duration} animated {animation_start > 0}')
+        return clicked, duration, animation_start > 0
 
     def send_resonance_key(self, post_sleep=0, interval=-1, down_time=0.01):
         """发送共鸣技能按键。
