@@ -18,6 +18,8 @@ class TestCombatCheck(TaskTestCase):
     def test_aemeath_lib(self):
         self.task.do_reset_to_false()
         self.set_image('tests/images/aemeath_lib.png')
+        in_combat = self.task.in_combat()
+        self.assertTrue(in_combat)
         liberation_available = self.task.available('liberation')
         self.assertTrue(liberation_available)
 
