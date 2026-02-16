@@ -25,14 +25,7 @@ class Aemeath(BaseChar):
         while self.time_elapsed_accounting_for_freeze(self.last_none_normal) < 3:
             old_none_normal = self.last_none_normal
             self.last_none_normal = time.time()
-            if self.lib():
-                if self.has_long_action():
-                    continue
-                elif self.lib():
-                    continue
-                else:
-                    continue
-            elif self.task.find_one('aemeath_e1', threshold=0.8) or self.task.find_one('aemeath_e2', threshold=0.8):
+            if self.task.find_one('aemeath_e1', threshold=0.8) or self.task.find_one('aemeath_e2', threshold=0.8):
                 if self.click_resonance(has_animation=True, send_click=True, animation_min_duration=0.5, time_out=1.5):
                     self.click_echo(time_out=0)
                     self.f_break()
@@ -43,6 +36,13 @@ class Aemeath(BaseChar):
                 else:
                     self.click()
                     return
+            elif self.lib():
+                if self.has_long_action():
+                    continue
+                elif self.lib():
+                    continue
+                else:
+                    continue
             elif self.handle_heavy():
                 pass
             else:
