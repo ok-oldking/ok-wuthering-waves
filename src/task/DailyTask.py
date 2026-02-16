@@ -69,7 +69,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             except Exception as e:
                 self.log_error("NightmareNestTask Failed", e)
                 self.ensure_main(time_out=180)
-
+        self.go_to_tower()
         used_stamina, completed = self.open_daily()
         self.send_key('esc', after_sleep=1)
         if not completed:
@@ -156,3 +156,17 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.click(0.64, 0.95, after_sleep=1)
         self.click(0.14, 0.9, after_sleep=1)
         self.ensure_main(time_out=5)
+
+    def go_to_tower(self):
+        self.log_info('go to tower')
+        self.ensure_main(time_out=5)
+        self.openF2Book("gray_book_quest")
+        self.click(0.04, 0.4, after_sleep=2)
+        self.click(0.2270, 0.1743, after_sleep=2)
+        btn = self.find_one('boss_proceed', box=self.box_of_screen(0.94, 0.3, 0.97, 0.41), threshold=0.8)
+        if btn is None:
+            self.ensure_main(time_out=5)
+            return
+        self.click_box(btn, after_sleep=1)
+        self.wait_click_travel()
+        self.wait_in_team_and_world(time_out=30)
