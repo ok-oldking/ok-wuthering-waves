@@ -1,14 +1,24 @@
+import time
+
 from src.char.Healer import Healer
 
 
 class Douling(Healer):
 
     def do_perform(self):
-        self.wait_down()
-        self.click_liberation(con_less_than=1)
-        self.click_resonance()
-        self.click_echo()
-        if self.extra_action_available():
-            self.logger.debug('Douling heavy attack')
-            self.heavy_attack()
+        if self.has_intro:
+            self.continues_normal_attack(1.2)
+        time_out = 1
+        start_time = time.time()
+        while time.time() - start_time < time_out and not self.is_con_full():
+            if self.click_liberation(wait_if_cd_ready=False):
+                self.sleep(0.001)
+                continue
+            elif self.click_resonance(send_click=True, time_out=0):
+                self.sleep(0.001)
+                continue
+            else:
+                self.click()
+                self.sleep(0.1)
+        self.click_echo(time_out=0)
         self.switch_next_char()

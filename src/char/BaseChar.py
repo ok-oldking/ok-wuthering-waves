@@ -88,6 +88,10 @@ class BaseChar:
         self.logger = Logger.get_logger(self.name)
         self.check_f_on_switch = True
 
+    def flying_based_on_resonance(self):
+        if not self.has_cd('resonance') and not self.task.box_highlighted('resonance'):
+            return True
+
     def skip_combat_check(self):
         """是否在某些操作中跳过战斗状态检查。
 
@@ -328,8 +332,6 @@ class BaseChar:
                 last_click = now
             self.task.next_frame()
         self.task.in_liberation = False
-        duration = time.time() - start
-        self.add_freeze_duration(start, duration)
         if clicked:
             self.sleep(post_sleep)
         duration = time.time() - resonance_click_time if resonance_click_time != 0 else 0
@@ -716,13 +718,13 @@ class BaseChar:
         self.task.draw_boxes('forte_full', box)
         return white_percent > 0.08
 
-    def liberation_available(self):
+    def liberation_available(self, check_color=True):
         """判断共鸣解放是否可用。
 
         Returns:
             bool: 如果可用则返回 True。
         """
-        return self.available('liberation')
+        return self.available('liberation', check_color=check_color)
 
     def __str__(self):
         """返回角色类名作为其字符串表示。"""
@@ -806,6 +808,7 @@ class BaseChar:
         self.task.mouse_down()
         self.sleep(duration)
         self.task.mouse_up()
+        self.sleep(0.01)
         self.logger.debug('heavy attack end')
 
     def current_resonance(self):
