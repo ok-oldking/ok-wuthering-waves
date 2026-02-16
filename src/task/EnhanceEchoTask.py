@@ -57,7 +57,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         return self.ocr(0.82, 0.86, 0.97, 0.96, match='培养')
 
     def is_0_level(self):
-        return self.ocr(0.66, 0.5, 0.75, 0.55, match='声骸技能')
+        return self.ocr(0.66, 0.48, 0.77, 0.56, match=re.compile('声骸技能'))
 
     def run(self):
         self.info_set('成功声骸数量', 0)
@@ -70,6 +70,8 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             current_level = self.is_0_level()
             if not current_level:
                 total = self.info_get('成功声骸数量') + self.info_get('失败声骸数量')
+                if self.debug:
+                    self.screenshot('无可强化声骸')
                 self.log_info(f'无可强化声骸, 任务结束! 强化{total}个, 符合条件{self.info_get("成功声骸数量")}个',
                               notify=True)
                 if self.info_get('成功声骸数量') >= 1:

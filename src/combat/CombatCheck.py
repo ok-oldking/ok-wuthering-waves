@@ -280,7 +280,8 @@ class CombatCheck(BaseWWTask):
             else:
                 logger.info(f'target lost try retarget')
                 start = time.time()
-                while time.time() - start < self.target_enemy_time_out:
+                time_out = 1 if self.is_pick_f() else self.target_enemy_time_out
+                while time.time() - start < time_out:
                     if self.has_target():
                         return True
                     self.middle_click(interval=0.1)
