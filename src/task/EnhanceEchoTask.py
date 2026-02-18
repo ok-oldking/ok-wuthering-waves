@@ -232,7 +232,8 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
     def esc(self):
         start = time.time()
         while not self.find_echo_enhance() and time.time() - start < 5:
-            self.send_key('esc', after_sleep=0.7)
+            self.send_key('esc', after_sleep=1)
+        self.sleep(0.1)
 
     def trash_and_esc(self):
         self.info_incr('失败声骸数量')
