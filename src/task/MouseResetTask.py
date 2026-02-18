@@ -34,6 +34,8 @@ class MouseResetTask(TriggerTask):
             self.running_reset = False
 
     def mouse_reset(self):
+        if self.is_browser():
+            return
         try:
             current_position = win32api.GetCursorPos()
             if self.mouse_pos and self.hwnd and self.hwnd.exists and not self.hwnd.visible and self.executor.interaction and self.executor.interaction.capture:

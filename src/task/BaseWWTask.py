@@ -10,8 +10,8 @@ from ok import CannotFindException
 import cv2
 
 logger = Logger.get_logger(__name__)
-number_re = re.compile(r'^(\d+)$')
-stamina_re = re.compile(r'^(\d+)/(\d+)$')
+number_re = re.compile(r'(\d+)')
+stamina_re = re.compile(r'(\d+)/(\d+)')
 f_white_color = {
     'r': (235, 255),  # Red range
     'g': (235, 255),  # Green range
@@ -392,16 +392,13 @@ class BaseWWTask(BaseTask):
         if not boxes:
             self.screenshot('stamina_error')
             return -1, -1, -1
-        current_box = find_boxes_by_name(boxes, stamina_re)
-        if current_box:
-            current = int(current_box[0].name.split('/')[0])
-        else:
-            current = 0
-        back_up_box = find_boxes_by_name(boxes, number_re)
-        if back_up_box:
-            back_up = int(back_up_box[0].name)
-        else:
-            back_up = 0
+        current = 0
+        back_up = 0
+        for box in boxes:
+            if match := stamina_re.search(box.name):
+                current = int(match.group(1))
+            elif match := number_re.search(box.name):
+                back_up = int(match.group(1))
         self.info_set('current_stamina', current)
         self.info_set('back_up_stamina', back_up)
         return current, back_up, current + back_up
