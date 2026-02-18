@@ -267,7 +267,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         success = False
         while time.time() - start < 5:
             drop_status = self.find_best_match_in_box(self.get_box_by_name('echo_locked').scale(1.05),
-                                                      ['echo_droped', 'echo_not_locked'], threshold=0.7)
+                                                      ['echo_locked', 'echo_not_locked'], threshold=0.7)
             if not drop_status:
                 raise Exception('无法找到声骸上锁状态!')
             if drop_status.name == 'echo_not_locked':
