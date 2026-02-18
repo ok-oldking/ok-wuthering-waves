@@ -239,7 +239,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         start = time.time()
         success = False
         while time.time() - start < 5:
-            drop_status = self.find_best_match_in_box(self.get_box_by_name('echo_droped'),
+            drop_status = self.find_best_match_in_box(self.get_box_by_name('echo_droped').scale(1.05),
                                                       ['echo_droped', 'echo_not_droped'], threshold=0.7)
             if not drop_status:
                 raise Exception('无法找到声骸弃置状态!')
@@ -266,7 +266,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         start = time.time()
         success = False
         while time.time() - start < 5:
-            drop_status = self.find_best_match_in_box(self.get_box_by_name('echo_locked'),
+            drop_status = self.find_best_match_in_box(self.get_box_by_name('echo_locked').scale(1.05),
                                                       ['echo_droped', 'echo_not_locked'], threshold=0.7)
             if not drop_status:
                 raise Exception('无法找到声骸上锁状态!')
