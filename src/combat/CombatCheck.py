@@ -136,7 +136,7 @@ class CombatCheck(BaseWWTask):
     def is_boss(self):
         return self.find_one('boss_break_shield') or self.find_one('boss_break_lock')
 
-    def in_combat(self, target=False):
+    def do_check_in_combat(self, target):
         if self.in_liberation or self.recent_liberation():
             return True
         if self._in_combat:
@@ -176,7 +176,16 @@ class CombatCheck(BaseWWTask):
                 self._in_combat = self.load_chars()
                 return self._in_combat
 
-    def ensure_levitator(self):
+    def in_combat(self, target=False):
+        self.in_sleep_check = True
+        try:
+            return self.do_check_in_combat(target)
+        except Exception as e:
+            logger.error(f'do_check_in_combat: {e}')
+        finally:
+            self.in_sleep_check = False
+
+    def ensure_levitator(self):  # 目前未使用
         if not self.config.get('Check Levitator', True):
             return True
         if levi := self.find_one('edge_levitator', threshold=0.6):
