@@ -253,8 +253,8 @@ class CombatCheck(BaseWWTask):
     def has_target(self, double_check=False):
         threshold = 0.6
         has_name, no_name = self.get_target_names()
-
-        best = self.find_best_match_in_box(self.get_box_by_name(has_name).scale(1.1), [has_name, no_name],
+        scale = 1.2 if self.is_browser() else 1.1
+        best = self.find_best_match_in_box(self.get_box_by_name(has_name).scale(scale), [has_name, no_name],
                                            threshold=threshold)
         if not best:
             best = self.find_best_match_in_box(self.get_box_by_name('box_target_enemy_long'),
