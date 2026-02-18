@@ -236,7 +236,21 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
     def trash_and_esc(self):
         self.info_incr('失败声骸数量')
-        self.send_key('z', after_sleep=0.5)
+        start = time.time()
+        success = False
+        while time.time() - start < 5:
+            drop_status = self.find_best_match_in_box(self.get_box_by_name('echo_droped'),
+                                                      ['echo_droped', 'echo_not_droped'], threshold=0.7)
+            if not drop_status:
+                raise Exception('无法找到声骸弃置状态!')
+            if drop_status.name == 'echo_not_droped':
+                self.send_key('z', after_sleep=1)
+            else:
+                self.log_info('成功弃置!')
+                success = True
+                break
+        if not success:
+            raise Exception('弃置失败!')
         safe_reason = re.sub(r'[<>:"/\\|?*]', '', self.fail_reason)
         self.screenshot_echo(f'failed/{self.info_get("失败声骸数量")}_{safe_reason}')
         self.esc()
@@ -249,7 +263,21 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
     def lock_and_esc(self):
         self.info_incr('成功声骸数量')
-        self.send_key('c', after_sleep=0.5)
+        start = time.time()
+        success = False
+        while time.time() - start < 5:
+            drop_status = self.find_best_match_in_box(self.get_box_by_name('echo_locked'),
+                                                      ['echo_droped', 'echo_not_locked'], threshold=0.7)
+            if not drop_status:
+                raise Exception('无法找到声骸上锁状态!')
+            if drop_status.name == 'echo_not_locked':
+                self.send_key('c', after_sleep=1)
+            else:
+                self.log_info('成功弃置!')
+                success = True
+                break
+        if not success:
+            raise Exception('上锁失败!')
         self.screenshot_echo(f'success/{self.info_get("成功声骸数量")}')
         self.log_info('成功并上锁')
         self.esc()
