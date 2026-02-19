@@ -1,7 +1,6 @@
 import time
 
 from src.char.BaseChar import BaseChar, Priority
-from src.char.Healer import Healer
 
 
 class Aemeath(BaseChar):

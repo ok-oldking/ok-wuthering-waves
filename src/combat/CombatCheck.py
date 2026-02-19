@@ -22,7 +22,7 @@ class CombatCheck(BaseWWTask):
         self.boss_lv_mask = None
         self._in_liberation = False  # return True
         self.has_count_down = False
-        self.sleep_check_interval = 0.3
+        self.sleep_check_interval = 0.1
         self.last_out_of_combat_time = 0
         self.boss_lv_box = None
         self.boss_health_box = None

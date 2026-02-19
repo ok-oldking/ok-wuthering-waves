@@ -664,6 +664,7 @@ class BaseWWTask(BaseTask):
         self.info_set('current task', f'wait main esc={esc}')
         if not self.wait_until(lambda: self.is_main(esc=esc), time_out=time_out, raise_if_not_found=False):
             raise Exception('Please start in game world and in team!')
+        self.sleep(0.5)
         self.info_set('current task', f'in main esc={esc}')
 
     def is_main(self, esc=True):
@@ -915,7 +916,7 @@ class BaseWWTask(BaseTask):
             self.send_key('f2', after_sleep=1)
             self.log_info('send f2 key to open the book')
         gray_book_boss = self.wait_book(feature)
-        self.sleep(0.5)
+        self.sleep(0.8)
         if not gray_book_boss:
             self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
             raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")
