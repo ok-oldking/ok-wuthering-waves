@@ -19,7 +19,7 @@ class Aemeath(BaseChar):
         self.switch_next_char()
 
     def lib(self):
-        if self.click_liberation():
+        if self.click_liberation(wait_if_cd_ready=0):
             self.f_break()
             return True
 
@@ -49,7 +49,7 @@ class Aemeath(BaseChar):
                     self.should_wait = True
                     start = time.time()
                 else:
-                    self.click()
+                    self.click(after_sleep=0.01)
                     return
             else:
                 self.switch_mech()
