@@ -39,6 +39,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         })
         self.config_type["有效词条"] = {'type': "multi_selection",
                                         'options': ['暴击伤害', '暴击', '攻击百分比', '生命百分比', '防御百分比',
+                                                    '攻击', '生命', '防御',
                                                     '共鸣效率', '普攻伤害加成',
                                                     '重击伤害加成', '共鸣解放伤害加成',
                                                     '共鸣技能伤害加成']}
@@ -107,7 +108,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                                     after_sleep=1.5)
                 while handle := self.wait_ocr(0.24, 0.18, 0.75, 0.93,
                                               match=['本次登录不再提示', '调谐成功', '点击任意位置返回'],
-                                              time_out=1):
+                                              time_out=2):
                     if handle[0].name == '本次登录不再提示':
                         click = handle[0]
                         click.width = 1
@@ -115,7 +116,9 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                         self.click(click, after_sleep=0.5)
                         self.wait_click_ocr(0.24, 0.18, 0.75, 0.93, match='确认', after_sleep=0.5)
                     elif handle[0].name in ['点击任意位置返回', '调谐成功']:
-                        self.click(handle, after_sleep=0.5)
+                        self.click(handle, after_sleep=1)
+                    else:
+                        self.sleep(0.5)
 
                 texts = self.ocr(0.11, 0.29, 0.36, 0.51)
                 properties = self.find_boxes(texts, match=property_pattern)
@@ -134,7 +137,18 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
     def check_echo_stats(self, properties, values):
         self.fail_reason = ""
         invalid_count = 0
-        total_count = len(values)
+
+        paired_stats = []
+        unmatched_values = values.copy()
+        for prop in properties:
+            matched_val_text = "0"
+            if unmatched_values:
+                closest_val = min(unmatched_values, key=lambda v: abs(prop.y - v.y))
+                matched_val_text = closest_val.name
+                unmatched_values.remove(closest_val)
+            paired_stats.append((prop.name, matched_val_text))
+
+        total_count = len(paired_stats)
 
         crit_rate_val = 0
         crit_dmg_val = 0
@@ -147,17 +161,13 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
         valid_stats = self.config.get('有效词条') or []
 
-        for i in range(total_count):
-            p = properties[i].name
-            v = parse_number(values[i].name)
+        for p, v_str in paired_stats:
+            v = parse_number(v_str)
 
             is_valid_prop = True
 
             if p in ['攻击', '生命', '防御']:
-                if '%' not in values[i].name:
-                    is_valid_prop = False
-                    self.log_debug(f'非百分比属性, {p} 不符合条件')
-                else:
+                if '%' in v_str:
                     p += '百分比'
 
             is_crit_stat = p in ['暴击', '暴击伤害']
