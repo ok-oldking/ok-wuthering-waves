@@ -31,8 +31,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             '必须有双爆': True,
             '双爆出现之前必须全有效词条': True,
             '双爆总计>=': 13.8,
-            '首条暴击>=': 6.9,
-            '首条暴击伤害>=': 13.8,
+            '首条双爆>=': 6.9,
             '有效词条>=': 3,
             '第一条必须为有效词条': True,
             '有效词条': ['暴击', '暴击伤害', '攻击百分比']
@@ -47,8 +46,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             '必须有双爆': '如果开启，声骸最终必须同时拥有暴击和暴击伤害。如果剩余孔位不足以凑齐双爆，则丢弃',
             '双爆出现之前必须全有效词条': '开启后，在暴击或暴击伤害词条出现之前，前面的所有词条必须都在有效词条列表中',
             '双爆总计>=': '当声骸同时存在暴击和爆伤时，需要满足 暴击 + (爆伤/2) >= 此数值',
-            '首条暴击>=': '仅检查第一条出现的暴击是否满足条件',
-            '首条暴击伤害>=': '仅检查第一条出现的暴击伤害是否满足条件',
+            '首条双爆>=': '仅检查第一条出现的暴击或暴击伤害是否满足条件, 爆伤/2',
             '有效词条>=': '声骸满级时需达到的有效词条数量，若剩余孔位无法凑齐该数量，则停止强化并丢弃',
             '第一条必须为有效词条': '如果开启，第一个副词条必须在有效词条列表中且符合数值要求，否则直接丢弃',
             '有效词条': '定义哪些属性被视为有效',
@@ -191,18 +189,20 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                 crit_rate_val += v
                 if '暴击' in valid_stats and not checked_first_crit_rate:
                     checked_first_crit_rate = True
-                    if v < self.config.get('首条暴击>='):
-                        is_valid_prop = False
-                        self.log_info(f'首条暴击 {v} < {self.config.get("首条暴击>=")}')
+                    if v < self.config.get('首条双爆>='):
+                        self.fail_reason = f'首条暴击不足_{v}'
+                        self.log_info(f'首条暴击 {v} < {self.config.get("首条双爆>=")}，丢弃')
+                        return False
 
             elif p == '暴击伤害':
                 has_crit_dmg = True
                 crit_dmg_val += v
                 if '暴击伤害' in valid_stats and not checked_first_crit_dmg:
                     checked_first_crit_dmg = True
-                    if v < self.config.get('首条暴击伤害>='):
-                        is_valid_prop = False
-                        self.log_info(f'首条暴击伤害 {v} < {self.config.get("首条暴击伤害>=")}')
+                    if v / 2 < self.config.get('首条双爆>='):
+                        self.fail_reason = f'首条爆伤不足_{v}'
+                        self.log_info(f'首条爆伤 {v} < {self.config.get("首条双爆>=")}，丢弃')
+                        return False
 
             if not is_valid_prop:
                 invalid_count += 1
