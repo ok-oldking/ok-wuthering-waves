@@ -54,18 +54,12 @@ class CombatCheck(BaseWWTask):
     def on_combat_check(self):
         return True
 
-    def reset_to_false(self, recheck=False, reason=""):
+    def reset_to_false(self, reason=""):
         if self.should_check_monthly_card() and self.handle_monthly_card():
             return True
         if is_pure_black(self.frame):
             logger.error('getting a pure black frame for unknown reason, reset_to_false return true')
             return True
-        if recheck:
-            logger.info('out of combat start double check')
-            self._in_combat = False
-            if self.wait_until(self.check_health_bar, time_out=1.2):
-                self._in_combat = True
-                return True
         self.out_of_combat_reason = reason
         self.do_reset_to_false()
         return False
@@ -100,7 +94,7 @@ class CombatCheck(BaseWWTask):
             self.can_break = False
 
     def recent_liberation(self):
-        return time.time() - self._last_liberation < 0.15
+        return time.time() - self._last_liberation < 0.1
 
     def check_count_down(self):
         count_down_area = self.box_of_screen_scaled(3840, 2160, 1820, 266, 2100,
@@ -146,17 +140,17 @@ class CombatCheck(BaseWWTask):
                     return True
             if not self.on_combat_check():
                 self.log_info('on_combat_check failed')
-                return self.reset_to_false(recheck=False, reason='on_combat_check failed')
+                return self.reset_to_false(reason='on_combat_check failed')
             if self.has_target():
                 self.last_in_realm_not_combat = 0
                 return True
             if self.combat_end_condition is not None and self.combat_end_condition():
-                return self.reset_to_false(recheck=True, reason='end condition reached')
+                return self.reset_to_false(reason='end condition reached')
             if self.target_enemy(wait=True):
                 logger.debug(f'retarget enemy succeeded')
                 return True
             logger.error('target_enemy failed, try recheck break out of combat')
-            return self.reset_to_false(recheck=True, reason='target enemy failed')
+            return self.reset_to_false(reason='target enemy failed')
         else:
             from src.task.AutoCombatTask import AutoCombatTask
             has_target = self.has_target()

@@ -345,6 +345,7 @@ class BaseCombatTask(CombatCheck):
         last_click = 0
         start = time.time()
         while True:
+            self.check_combat()
             now = time.time()
             current_char.f_break(check_f_on_switch=True)
             _, current_index, _ = self.in_team()
@@ -389,6 +390,7 @@ class BaseCombatTask(CombatCheck):
                     self.add_freeze_duration(current_time, switch_to.intro_motion_freeze_duration, -100)
                     current_char.last_outro_time = current_time
                 break
+            self.next_frame()
 
         if post_action:
             logger.debug(f'post_action {post_action}')
