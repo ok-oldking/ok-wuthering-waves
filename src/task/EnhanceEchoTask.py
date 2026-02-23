@@ -90,7 +90,6 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
             while True:
                 start_wait = time.time()
-                add_mat = None
                 have_add_mat = False
                 while time.time() - start_wait < 5:
                     add_mat = self.find_add_mat()
@@ -98,6 +97,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                         have_add_mat = True
                         self.click(add_mat, after_sleep=0.3)
                     else:
+                        self.next_frame()
                         break
                 if not have_add_mat:
                     raise Exception('强化方式需要改为阶段放入!')
@@ -127,7 +127,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                     self.trash_and_esc()
                     break
 
-                if len(values) == 5:
+                if len(properties) >= 5:
                     self.lock_and_esc()
                     break
 
@@ -227,7 +227,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         return True
 
     def find_add_mat(self):
-        return self.wait_ocr(0.22, 0.67, 0.31, 0.72, match=['阶段放入'], time_out=1)
+        return self.wait_ocr(0.09, 0.6, 0.38, 0.86, match=['阶段放入'], time_out=1)
 
     def esc(self):
         start = time.time()
