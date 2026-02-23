@@ -33,7 +33,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             '双爆总计>=': 13.8,
             '首条暴击>=': 6.9,
             '首条暴击伤害>=': 13.8,
-            '无效词条>=则终止': 3,
+            '有效词条>=': 3,
             '第一条必须为有效词条': True,
             '有效词条': ['暴击', '暴击伤害', '攻击百分比']
         })
@@ -48,7 +48,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             '双爆总计>=': '当声骸同时存在暴击和爆伤时，需要满足 暴击 + (爆伤/2) >= 此数值',
             '首条暴击>=': '仅检查第一条出现的暴击是否满足条件',
             '首条暴击伤害>=': '仅检查第一条出现的暴击伤害是否满足条件',
-            '无效词条>=则终止': '当检测到的无效词条数量达到此数值时，停止强化并丢弃',
+            '有效词条>=': '声骸满级时需达到的有效词条数量，若剩余孔位无法凑齐该数量，则停止强化并丢弃',
             '第一条必须为有效词条': '如果开启，第一个副词条必须在有效词条列表中且符合数值要求，否则直接丢弃',
             '有效词条': '定义哪些属性被视为有效',
         }
@@ -219,9 +219,11 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             self.log_info('第一条必须为有效词条, 丢弃')
             return False
 
-        if invalid_count >= self.config.get('无效词条>=则终止'):
-            self.fail_reason = f'{invalid_count}无效词条终止'
-            self.log_info(f'{invalid_count}无效词条>=则终止, 丢弃')
+        valid_count = total_count - invalid_count
+        remaining_slots = 5 - total_count
+        if (valid_count + remaining_slots) < self.config.get('有效词条>='):
+            self.fail_reason = f'有效词条不足_上限{valid_count + remaining_slots}'
+            self.log_info(f'剩余孔位不足以达到设定的有效词条数量, 丢弃')
             return False
 
         return True
