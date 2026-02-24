@@ -552,6 +552,7 @@ class BaseCombatTask(CombatCheck):
                     char.is_current_char = False
         self.combat_start = time.time()
         if len(self.chars) >= 2:
+            self.info_set('Chars', self.chars)
             return True
 
     @staticmethod
