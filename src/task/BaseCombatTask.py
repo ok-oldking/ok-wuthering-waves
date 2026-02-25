@@ -8,6 +8,7 @@ import numpy as np
 from ok import Logger, Config
 from ok import color_range_to_bound
 from ok import safe_get
+from ok.feature.Box import get_bounding_box
 from src import text_white_color
 from src.char import BaseChar
 from src.char.BaseChar import Priority, dot_color  # noqa
@@ -553,6 +554,8 @@ class BaseCombatTask(CombatCheck):
         self.combat_start = time.time()
         if len(self.chars) >= 2:
             self.info_set('Chars', self.chars)
+            for c in self.chars:
+                self.log_info(f'loaded chars success {c} {c.confidence}')
             return True
 
     @staticmethod

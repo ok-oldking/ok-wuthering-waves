@@ -106,11 +106,10 @@ def get_char_by_pos(task, box, index, old_char):
     info = None
     name = "unknown"
     char = None
-    if old_char and old_char.char_name in char_names:
+    if old_char and old_char.confidence > 0.92 and old_char.char_name in char_names:
         char = task.find_one(old_char.char_name, box=box, threshold=0.6)
         if char:
             return old_char
-
     if not char:
         char = task.find_best_match_in_box(box, char_names, threshold=0.6)
         if char:
@@ -122,11 +121,6 @@ def get_char_by_pos(task, box, index, old_char):
     task.log_info(f'could not find char {index} {info} {highest_confidence}')
     if old_char:
         return old_char
-    has_cd = task.ocr(box=box)
-    if has_cd and is_float(has_cd[0].name):
-        task.log_info(f'found char {has_cd[0]} wait and reload')
-        task.next_frame()
-        return get_char_by_pos(task, box, index, old_char)
     if task.debug:
         task.screenshot(f'could not find char {index}')
     return BaseChar(task, index, char_name=name)
