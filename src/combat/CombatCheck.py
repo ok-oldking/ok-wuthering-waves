@@ -93,9 +93,6 @@ class CombatCheck(BaseWWTask):
             self.send_key('f', after_sleep=0.1)
             self.can_break = False
 
-    def recent_liberation(self):
-        return time.time() - self._last_liberation < 0.1
-
     def check_count_down(self):
         count_down_area = self.box_of_screen_scaled(3840, 2160, 1820, 266, 2100,
                                                     340, name="check_count_down", hcenter=True)
@@ -131,7 +128,7 @@ class CombatCheck(BaseWWTask):
         return self.find_one('boss_break_shield') or self.find_one('boss_break_lock')
 
     def do_check_in_combat(self, target):
-        if self.in_liberation or self.recent_liberation():
+        if self.in_liberation:
             return True
         if self._in_combat:
             self.check_f_break()

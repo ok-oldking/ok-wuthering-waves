@@ -29,6 +29,7 @@ class Aemeath(BaseChar):
         self.should_wait = self.has_intro
         while self.time_elapsed_accounting_for_freeze(start) < 2.2 or (
                 self.should_wait and self.time_elapsed_accounting_for_freeze(start) < 10):
+            self.check_combat()
             if self.handle_heavy():
                 self.should_wait = True
                 start = time.time()
