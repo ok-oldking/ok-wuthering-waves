@@ -243,8 +243,8 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
     def esc(self):
         start = time.time()
-        while not self.find_echo_enhance() and time.time() - start < 5:
-            self.send_key('esc', after_sleep=1)
+        while not self.find_echo_enhance() and time.time() - start < 10:
+            self.send_key('esc', interval=4, after_sleep=0.2)
         self.sleep(0.1)
 
     def trash_and_esc(self):
