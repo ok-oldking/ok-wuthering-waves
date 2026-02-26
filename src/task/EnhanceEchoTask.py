@@ -117,8 +117,10 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                         self.click(handle, after_sleep=1)
                     else:
                         self.sleep(0.5)
-
-                texts = self.ocr(0.11, 0.29, 0.36, 0.51)
+                self.sleep(0.1)
+                texts = self.ocr()
+                texts = self.find_boxes(texts, boundary=self.box_of_screen(0.09, 0.28, 0.40, 0.53))
+                self.log_info(f'found values: {texts}')
                 properties = self.find_boxes(texts, match=property_pattern)
                 values = self.find_boxes(texts, match=number_pattern)
                 self.info_set('属性', properties)
