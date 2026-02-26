@@ -1054,7 +1054,7 @@ def calculate_angle_clockwise(box1, box2):
 
 
 lower_white = np.array([244, 244, 244], dtype=np.uint8)
-lower_white_none_inclusive = np.array([243, 243, 243], dtype=np.uint8)
+lower_white_none_inclusive = np.array([240, 240, 240], dtype=np.uint8)
 upper_white = np.array([255, 255, 255], dtype=np.uint8)
 black = np.array([0, 0, 0], dtype=np.uint8)
 

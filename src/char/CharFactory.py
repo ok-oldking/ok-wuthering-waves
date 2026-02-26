@@ -22,6 +22,7 @@ from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
 from src.char.Jiyan import Jiyan
 from src.char.Linnai import Linnai
+from src.char.Luhesi import Luhesi
 from src.char.Lupa import Lupa
 from src.char.Mortefi import Mortefi
 from src.char.Mornye import Mornye
@@ -96,6 +97,7 @@ char_dict = {
     'char_linnai': {'cls': Linnai, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.SPECTRO},
     'char_moning': {'cls': Mornye, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.FIRE},
     'char_aemeath': {'cls': Aemeath, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.FIRE},
+    'char_luhesi': {'cls': Luhesi, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.SPECTRO},
 }
 
 char_names = char_dict.keys()
