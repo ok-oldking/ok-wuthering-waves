@@ -153,8 +153,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         has_crit_rate = False
         has_crit_dmg = False
 
-        checked_first_crit_rate = False
-        checked_first_crit_dmg = False
+        checked_first_crit = False
         has_encountered_crit = False
 
         valid_stats = self.config.get('有效词条') or []
@@ -187,8 +186,8 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             if p == '暴击':
                 has_crit_rate = True
                 crit_rate_val += v
-                if '暴击' in valid_stats and not checked_first_crit_rate:
-                    checked_first_crit_rate = True
+                if '暴击' in valid_stats and not checked_first_crit:
+                    checked_first_crit = True
                     if v < self.config.get('首条双爆>='):
                         self.fail_reason = f'首条暴击不足_{v}'
                         self.log_info(f'首条暴击 {v} < {self.config.get("首条双爆>=")}，丢弃')
@@ -197,8 +196,8 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             elif p == '暴击伤害':
                 has_crit_dmg = True
                 crit_dmg_val += v
-                if '暴击伤害' in valid_stats and not checked_first_crit_dmg:
-                    checked_first_crit_dmg = True
+                if '暴击伤害' in valid_stats and not checked_first_crit:
+                    checked_first_crit = True
                     if v / 2 < self.config.get('首条双爆>='):
                         self.fail_reason = f'首条爆伤不足_{v}'
                         self.log_info(f'首条爆伤 {v} < {self.config.get("首条双爆>=")}，丢弃')
