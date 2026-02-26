@@ -16,3 +16,8 @@ profiles:
     main_script: "main.py"
     requirements: "requirements.txt"
 
+  - name: "Debug"
+    git_url: "https://cnb.cool/ok-oldking/ok-wuthering-waves.git"
+    main_script: "main_debug.py"
+    requirements: "requirements.txt"
+
