@@ -9,6 +9,8 @@ from ok import BaseTask, Logger, find_boxes_by_name, og, find_color_rectangles, 
 from ok import CannotFindException
 import cv2
 
+from src.Labels import Labels
+
 logger = Logger.get_logger(__name__)
 number_re = re.compile(r'(\d+)')
 stamina_re = re.compile(r'(\d+)/(\d+)')
@@ -102,7 +104,7 @@ class BaseWWTask(BaseTask):
         return f_search_box
 
     def find_f_with_text(self, target_text=None):
-        f = self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box, threshold=0.8)
+        f = self.find_one(Labels.pick_up_f_hcenter_vcenter, box=self.f_search_box, threshold=0.8)
         if not f:
             return None
         if not target_text:
