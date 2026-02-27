@@ -81,8 +81,8 @@ jobs:
         uses: ok-oldking/partial-sync-repo@master # Replace with your action path
         with:
           repos: |
-            https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update
             https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-wuthering-waves.git
+            https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update
           sync_list: 'deploy.txt'
           tag: ${{ github.ref_name }}
           gitignore_file: '.update_repo_gitignore'
