@@ -26,7 +26,6 @@ class Mornye(BaseChar):
 
         if self.on_air():
             self.on_air_actions()
-
         self.switch_next_char()
 
     def on_air(self):
@@ -49,6 +48,9 @@ class Mornye(BaseChar):
         if self.on_air() and self.is_mouse_forte_full():
             self.logger.debug("mouse forte full, heavy attack")
             if self.heavy_click_forte(check_fun=self.is_mouse_forte_full):
+                if not self.task.wait_until(lambda: self.is_con_full(), time_out=1.5):
+                    self.logger.debug("not condition full, try clicking echo")
+                    self.click_echo(duration=0.2)
                 self.last_heavy = time.time()
                 self.check_f_on_switch = False
         self.logger.debug("finished attacking on_air")
