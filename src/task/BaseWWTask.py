@@ -678,7 +678,7 @@ class BaseWWTask(BaseTask):
         if self.wait_login():
             return True
         if esc:
-            self.back(after_sleep=1.5)
+            self.back(after_sleep=2)
 
     def wait_login(self):
         if not self._logged_in:
@@ -908,15 +908,18 @@ class BaseWWTask(BaseTask):
     def openF2Book(self, feature="gray_book_all_monsters", opened=False):
         if not opened:
             self.log_info('click f2 to open the book')
-            self.send_key_down('alt')
-            self.sleep(0.05)
-            self.click_relative(0.77, 0.05)
-            self.sleep(0.02)
-            self.send_key_up('alt')
-            self.sleep(1)
-        if self.in_team_and_world():
-            self.send_key('f2', after_sleep=1)
-            self.log_info('send f2 key to open the book')
+            if self.in_team_and_world():
+                self.send_key('f2', after_sleep=1.5)
+                self.log_info('send f2 key to open the book')
+            if self.in_team_and_world():
+                self.log_info('send f2 key to open the book failed, use mouse')
+                self.send_key_down('alt')
+                self.sleep(0.05)
+                self.click_relative(0.77, 0.05)
+                self.sleep(0.02)
+                self.send_key_up('alt')
+                self.sleep(1)
+
         gray_book_boss = self.wait_book(feature)
         self.sleep(0.8)
         if not gray_book_boss:
