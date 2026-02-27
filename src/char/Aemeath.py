@@ -77,7 +77,7 @@ class Aemeath(BaseChar):
 
     def heavy_wait_highlight_down(self):
         self.task.mouse_down()
-        ret = self.task.wait_until(lambda: not self.has_long_action, time_out=1.2)
+        ret = self.task.wait_until(lambda: not self.has_long_action(), time_out=1.2)
         self.task.mouse_up()
         self.sleep(0.01)
         return ret
@@ -90,8 +90,8 @@ class Aemeath(BaseChar):
     def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
         if has_intro:
             self.logger.info(
-                f'switch priority max because has_intro {has_intro}')
-            return Priority.MAX
+                f'set priority as high because has_intro {has_intro}')
+            return Priority.FAST_SWITCH+1
         else:
             return super().do_get_switch_priority(current_char, has_intro, target_low_con)
 
