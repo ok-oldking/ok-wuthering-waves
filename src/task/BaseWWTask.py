@@ -390,7 +390,7 @@ class BaseWWTask(BaseTask):
 
     def get_stamina(self):
         boxes = self.wait_ocr(0.49, 0.0, 0.92, 0.10, raise_if_not_found=False,
-                              match=[number_re, stamina_re])
+                              match=[number_re, stamina_re], log=self.debug)
         if not boxes:
             self.screenshot('stamina_error')
             return -1, -1, -1
@@ -911,7 +911,7 @@ class BaseWWTask(BaseTask):
         if not opened:
             self.log_info('click f2 to open the book')
             if self.in_team_and_world():
-                self.send_key('f2', after_sleep=1.5)
+                self.send_key('f2', after_sleep=3)
                 self.log_info('send f2 key to open the book')
             if self.in_team_and_world():
                 self.log_info('send f2 key to open the book failed, use mouse')
@@ -920,7 +920,7 @@ class BaseWWTask(BaseTask):
                 self.click_relative(0.77, 0.05)
                 self.sleep(0.02)
                 self.send_key_up('alt')
-                self.sleep(1)
+                self.sleep(3)
 
         gray_book_boss = self.wait_book(feature)
         self.sleep(0.8)
@@ -954,7 +954,7 @@ class BaseWWTask(BaseTask):
 
     def wait_book(self, feature="gray_book_all_monsters", time_out=3):
         gray_book_boss = self.wait_until(
-            lambda: self.find_one(feature, vertical_variance=0.8, horizontal_variance=0.05,
+            lambda: self.find_one(feature, vertical_variance=0.5, horizontal_variance=0.05,
                                   threshold=0.3),
             time_out=time_out, settle_time=1)
         logger.info(f'found gray_book_boss {gray_book_boss}')
