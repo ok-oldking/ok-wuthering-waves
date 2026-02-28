@@ -99,11 +99,15 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                         self.next_frame()
                         break
                 if not have_add_mat:
-                    raise Exception('强化方式需要改为阶段放入!')
+                    raise Exception('强化设置需要开启阶段放入!')
 
-                self.wait_click_ocr(0.17, 0.88, 0.29, 0.96, match=['强化并调谐'], raise_if_not_found=True,
-                                    settle_time=0.1,
-                                    after_sleep=1.5)
+                if not self.wait_click_ocr(0.17, 0.88, 0.29, 0.96, match=['强化并调谐'],
+                                           settle_time=0.1,
+                                           after_sleep=1.5):
+                    if self.ocr(0.17, 0.88, 0.29, 0.96, match=['强化']):
+                        raise Exception('强化设置需要开启同步调谐!')
+                    else:
+                        raise Exception('找不到 强化并调谐!')
                 while handle := self.wait_ocr(0.24, 0.18, 0.75, 0.93,
                                               match=['本次登录不再提示', '调谐成功', '点击任意位置返回'],
                                               time_out=2):
