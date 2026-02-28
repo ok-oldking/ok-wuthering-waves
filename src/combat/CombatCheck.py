@@ -55,11 +55,6 @@ class CombatCheck(BaseWWTask):
         return True
 
     def reset_to_false(self, reason=""):
-        if self.should_check_monthly_card() and self.handle_monthly_card():
-            return True
-        if is_pure_black(self.frame):
-            logger.error('getting a pure black frame for unknown reason, reset_to_false return true')
-            return True
         self.out_of_combat_reason = reason
         self.do_reset_to_false()
         return False
@@ -145,6 +140,11 @@ class CombatCheck(BaseWWTask):
                 return self.reset_to_false(reason='end condition reached')
             if self.target_enemy(wait=True):
                 logger.debug(f'retarget enemy succeeded')
+                return True
+            if self.should_check_monthly_card() and self.handle_monthly_card():
+                return True
+            if is_pure_black(self.frame):
+                logger.error('getting a pure black frame for unknown reason, reset_to_false return true')
                 return True
             logger.error('target_enemy failed, try recheck break out of combat')
             return self.reset_to_false(reason='target enemy failed')

@@ -132,10 +132,11 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             if not self._in_realm and not self._has_treasure and not self.in_combat():
                 self.go_to_boss_minimap()
                 self.execute_treasure_hunt()
-
-            self.sleep(self.combat_wait_time)
-            self.log_info(f'combat_wait_time: {self.combat_wait_time}')
-            self.check_boss_name()
+                
+            if not self.in_combat():
+                self.sleep(self.combat_wait_time)
+                self.log_info(f'combat_wait_time: {self.combat_wait_time}')
+                self.check_boss_name()
 
             self.combat_once(wait_combat_time=0, raise_if_not_found=False)
             if self.is_revived:
