@@ -110,7 +110,7 @@ class HavocRover(BaseChar):
     def wind_routine_flying(self):
         if self.task.has_lavitator:
             return self.flying()
-        elif self.current_resonance() > 0.25:
+        elif self.current_resonance() > 0.15:
             return True
 
     def wind_routine_wait_down(self, check_forte_full=True):
@@ -118,7 +118,7 @@ class HavocRover(BaseChar):
             if self.task.has_lavitator:
                 self.wait_down()
             else:
-                self.task.wait_until(lambda: self.current_resonance() < 0.23,
+                self.task.wait_until(lambda: self.current_resonance() < 0.15,
                                      post_action=lambda: self.click(interval=0.1, after_sleep=0.01), time_out=2.5)
         if check_forte_full:
             self.sleep(0.03)
