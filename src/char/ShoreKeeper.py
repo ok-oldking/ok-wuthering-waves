@@ -21,6 +21,7 @@ class ShoreKeeper(Healer):
         time_out = 1
         start_time = time.time()
         while time.time() - start_time < time_out and not self.is_con_full():
+            self.f_break()
             if self.click_liberation(wait_if_cd_ready=False):
                 self.sleep(0.001)
                 continue
