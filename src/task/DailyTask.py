@@ -155,4 +155,4 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.back(after_sleep=1.5)
         self.click(0.64, 0.95, after_sleep=1)
         self.click(0.14, 0.9, after_sleep=1)
-        self.ensure_main(time_out=5)
+        self.ensure_main(time_out=10)
