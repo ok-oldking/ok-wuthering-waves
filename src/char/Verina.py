@@ -18,7 +18,7 @@ class Verina(Healer):
             if self.click_liberation(wait_if_cd_ready=False):
                 self.sleep(0.001)
                 continue
-            elif self.click_resonance(send_click=False, time_out=0):
+            elif self.click_resonance(send_click=False, time_out=0)[0]:
                 self.sleep(0.001)
                 continue
             elif self.heavy_click_forte(self.is_mouse_forte_full):
