@@ -9,10 +9,18 @@ class Aemeath(BaseChar):
         super().__init__(*args, **kwargs)
         self.should_wait = False
         self.human_heavy = False
+        self.intro_time = -1
+        self.last_liber = -1
 
     def do_perform(self):
+        self.intro_time = -1
         if self.has_intro:
-            self.continues_normal_attack(1)
+            self.task.wait_until(self.enhance_e_available, post_action=self.click,
+                                     time_out=3.5)
+            if self.check_outro() in {'char_linnai', 'char_lupa'}:
+                self.intro_time = 14
+            if self.check_outro() in {'chang_changli', 'char_changli2'}:
+                self.intro_time = 10
         elif not self.liberation_available():
             self.switch_mech()
         self.perform_everything()
@@ -22,6 +30,10 @@ class Aemeath(BaseChar):
         if self.click_liberation(wait_if_cd_ready=0):
             self.f_break()
             return True
+            
+    def continue_in_intro(self):
+        return self.time_elapsed_accounting_for_freeze(self.last_liber) < 30 and \
+             self.time_elapsed_accounting_for_freeze(self.last_perform) < self.intro_time
 
     def perform_everything(self):
         start = time.time()
@@ -34,10 +46,12 @@ class Aemeath(BaseChar):
                 self.should_wait = True
                 start = time.time()
             elif self.lib():
+                self.last_liber = time.time()
                 self.should_wait = True
                 start = time.time()
                 if self.is_human():
                     self.switch_mech()
+                    self.last_liber = -1
                     return
             elif self.enhance_e_available():
                 if self.click_resonance(has_animation=True, send_click=True, animation_min_duration=0.5, time_out=1.5):
@@ -46,7 +60,7 @@ class Aemeath(BaseChar):
                     self.f_break()
                     self.switch_mech()
                     self.click(after_sleep=0.1)
-                if self.has_long_action() or self.lib_cd_eminent():
+                if self.has_long_action() or self.lib_cd_eminent() or self.continue_in_intro():
                     self.should_wait = True
                     start = time.time()
                 else:
