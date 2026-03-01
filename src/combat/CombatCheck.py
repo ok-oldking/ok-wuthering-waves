@@ -163,7 +163,7 @@ class CombatCheck(BaseWWTask):
                         self.log_error('Target enemy failed, please disable Nvidia/AMD Filter or Sharpening!',
                                        notify=True)
                     return False
-                self.has_lavitator = False
+                self.has_lavitator = bool(self.find_one('edge_levitator', threshold=0.6))
                 self._in_combat = self.load_chars()
                 return self._in_combat
 
