@@ -140,6 +140,7 @@ class Labels(str, Enum):
     edge_levitator = 'edge_levitator'
     f = 'f'
     f_break = 'f_break'
+    f_break_full = 'f_break_full'
     fast_travel_custom = 'fast_travel_custom'
     forte_cartethyia_space = 'forte_cartethyia_space'
     forte_cartethyia_sword1 = 'forte_cartethyia_sword1'

@@ -12,11 +12,13 @@ class WWScene(BaseScene):
         self._in_team = None
         self._echo_enhance_btn = None
         self._in_combat = None
+        self.cd_refreshed = False
 
     def reset(self):
         self._in_team = None
         self._echo_enhance_btn = None
         self._in_combat = None
+        self.cd_refreshed = False
 
     def in_combat(self):
         return self._in_combat

@@ -135,7 +135,7 @@ class BaseCombatTask(CombatCheck):
         logger.info(f'send_key_and_wait_animation timed out {key}')
 
     def refresh_cd(self):
-        if self.cd_refreshed:
+        if self.scene.cd_refreshed:
             return
         index = self.get_current_char().index
         cds = self.cds.get(index)
@@ -146,7 +146,7 @@ class BaseCombatTask(CombatCheck):
         cds['resonance'] = 0
         cds['liberation'] = 0
         cds['echo'] = 0
-        texts = self.ocr(0.81, 0.86, 0.97, 0.93, frame_processor=isolate_white_text_to_black, match=cd_regex, log=True)
+        texts = self.ocr(0.81, 0.86, 0.97, 0.93, frame_processor=isolate_white_text_to_black, match=cd_regex)
         for text in texts:
             cd = convert_cd(text)
             if text.x < self.width_of_screen(0.86):
@@ -155,7 +155,7 @@ class BaseCombatTask(CombatCheck):
                 cds['liberation'] = cd
             else:
                 cds['echo'] = cd
-        self.cd_refreshed = True
+        self.scene.cd_refreshed = True
         self.log_debug(f'cd refreshed: {cds} {time.time() - cds["time"]}')
 
     def get_cd(self, box_name, char_index=None):
@@ -167,14 +167,6 @@ class BaseCombatTask(CombatCheck):
             return cds[box_name] - time_elapsed
         else:
             return 0
-
-    def next_frame(self):
-        self.cd_refreshed = False
-        return super().next_frame()
-
-    def sleep(self, *args, **kwargs):
-        self.cd_refreshed = False
-        super().sleep(*args, **kwargs)
 
     def revive_action(self):
         pass

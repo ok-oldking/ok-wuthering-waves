@@ -6,6 +6,7 @@ import win32api
 from ok import find_boxes_by_name, Logger, calculate_color_percentage
 from ok import find_color_rectangles, get_mask_in_color_range, is_pure_black
 from src import text_white_color
+from src.Labels import Labels
 from src.char.Roccia import Roccia
 from src.task.BaseWWTask import BaseWWTask
 
@@ -27,6 +28,7 @@ class CombatCheck(BaseWWTask):
         self.boss_lv_box = None
         self.boss_health_box = None
         self.boss_health = None
+        self.last_break_check_time = 0
         self.out_of_combat_reason = ""
         self.last_in_realm_not_combat = 0
         self._last_liberation = 0
@@ -37,7 +39,6 @@ class CombatCheck(BaseWWTask):
         self.target_enemy_error_notified = False
         self.cds = {
         }
-        self.cd_refreshed = False
         self.esc_count = 0
         self.can_break = False
 
@@ -61,7 +62,6 @@ class CombatCheck(BaseWWTask):
 
     def do_reset_to_false(self):
         self.cds = {}
-        self.cd_refreshed = False
         self._in_combat = False
         self.boss_lv_mask = None
         self.esc_count = 0
@@ -79,10 +79,17 @@ class CombatCheck(BaseWWTask):
         return False
 
     def check_f_break(self):
-        if not self.can_break and self.find_one('f_break', box=self.box_of_screen(0.2, 0.2, 0.75, 0.8)):
-            if not self.is_pick_f():
+        if not self.can_break and not self._in_liberation and time.time() - self.last_break_check_time > 1:
+            self.last_break_check_time = time.time()
+            if self.find_one(Labels.f_break_full, threshold=0.9):
+                self.logger.debug('found f_break_full')
                 self.can_break = True
                 return True
+            if self.find_one('f_break', box=self.box_of_screen(0.2, 0.2, 0.75,
+                                                               0.8)):
+                if not self.is_pick_f():
+                    self.can_break = True
+                    return True
 
     def f_break(self):
         if self.can_break or self.check_f_break():
