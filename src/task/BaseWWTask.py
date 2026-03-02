@@ -10,6 +10,7 @@ from ok import CannotFindException
 import cv2
 
 from src.Labels import Labels
+from src.scene.WWScene import WWScene
 
 logger = Logger.get_logger(__name__)
 number_re = re.compile(r'(\d+)')
@@ -33,6 +34,7 @@ class BaseWWTask(BaseTask):
         self.key_config = self.get_global_config('Game Hotkey Config')  # 游戏热键配置
         self.next_monthly_card_start = 0
         self._logged_in = False
+        self.scene: WWScene | None = None
 
     def is_open_world_auto_combat(self):
         from src.task.AutoCombatTask import AutoCombatTask
@@ -466,7 +468,8 @@ class BaseWWTask(BaseTask):
                 return False
         return f_found
 
-    def run_until(self, condiction, direction, time_out, raise_if_not_found=False, running=False, target=False):
+    def run_until(self, condiction, direction, time_out, raise_if_not_found=False, running=False, target=False,
+                  post_walk=0):
         if time_out <= 0:
             return
         self.send_key_down(direction)
@@ -482,6 +485,8 @@ class BaseWWTask(BaseTask):
             if target:
                 self.middle_click(interval=0.5)
             self.sleep(0.02)
+        if result and post_walk:
+            self.sleep(post_walk)
         self.send_key_up(direction)
         if running:
             self.sleep(0.1)
@@ -954,7 +959,7 @@ class BaseWWTask(BaseTask):
 
     def wait_book(self, feature="gray_book_all_monsters", time_out=3):
         gray_book_boss = self.wait_until(
-            lambda: self.find_one(feature, vertical_variance=0.5, horizontal_variance=0.05,
+            lambda: self.find_one(feature, box='box_gray_book',
                                   threshold=0.3),
             time_out=time_out, settle_time=1)
         logger.info(f'found gray_book_boss {gray_book_boss}')

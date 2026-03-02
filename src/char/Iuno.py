@@ -23,8 +23,8 @@ class Iuno(BaseChar):
         self.click_echo()
         c6_performed = False
         jumped = False
-        while time.time() - float(start) < time_out:
-            self.check_combat()
+        while self.time_elapsed_accounting_for_freeze(start) < time_out:
+            cycle_start = time.time()
             heavy_success = False
             while self.time_elapsed_accounting_for_freeze(
                     self.last_heavy) > 20 and self.task.find_feature("iuno_heavy",
@@ -61,13 +61,13 @@ class Iuno(BaseChar):
                 # 开大招
                 start = time.time()
                 time_out = 3
-                continue
             if last_action == "click":  # 左键和e轮流点击
                 last_action = "resonance"
-                self.send_resonance_key(post_sleep=0.1)
+                self.send_resonance_key()
             else:
                 last_action = "click"
-                self.click(after_sleep=0.1)
+                self.click()
+            self.sleep(0.1 - (time.time() - cycle_start))
 
     def on_combat_end(self, chars):
         self.switch_other_char()

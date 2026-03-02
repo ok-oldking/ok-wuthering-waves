@@ -3,6 +3,7 @@ import re
 from qfluentwidgets import FluentIcon
 
 from ok import Logger, TaskDisabledException
+from src.Labels import Labels
 from src.task.BaseWWTask import number_re, stamina_re
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.ForgeryTask import ForgeryTask
@@ -54,6 +55,8 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
     def run(self):
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=180)
+        self.go_to_tower()
+
         condition1 = self.config.get('Auto Farm all Nightmare Nest')
         condition2 = self.config.get('Farm Nightmare Nest for Daily Echo')
         if condition1 or condition2:
@@ -91,6 +94,23 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.sleep(1)
         self.claim_battle_pass()
         self.log_info('Task completed', notify=True)
+
+    def go_to_tower(self):
+        self.log_info('go to tower')
+        self.ensure_main(time_out=80)
+        gray_book_weekly = self.openF2Book(Labels.gray_book_weekly)
+        if not gray_book_weekly:
+            self.log_error('go_to_tower can not find gray_book_weekly')
+            return
+        self.click_box(gray_book_weekly, after_sleep=1)
+        btn = self.find_one(Labels.boss_proceed, box=self.box_of_screen(0.94, 0.3, 0.97, 0.41), threshold=0.8)
+        if btn is None:
+            self.ensure_main(time_out=10)
+            return
+        self.click_box(btn, after_sleep=1)
+        self.wait_click_travel()
+        self.wait_in_team_and_world(time_out=120)
+        self.sleep(1)
 
     def claim_battle_pass(self):
         self.log_info('battle pass')

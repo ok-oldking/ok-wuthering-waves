@@ -16,7 +16,6 @@ class AutoLoginTask(BaseWWTask, TriggerTask):
         self.name = "Auto Login"
         self.description = "Auto Login After Game Starts"
         self.icon = FluentIcon.ACCEPT
-        self.scene: WWScene | None = None
 
     def run(self):
         if self._logged_in:

@@ -19,7 +19,6 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         self.description = "Enable auto combat in Abyss, Game World etc"
         self.icon = FluentIcon.CALORIES
         self.last_is_click = False
-        self.scene: WWScene | None = None
         self.default_config.update({
             'Auto Target': True,
             'Use Liberation': True,

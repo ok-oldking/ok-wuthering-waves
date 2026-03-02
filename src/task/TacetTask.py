@@ -75,7 +75,10 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                     self.sleep(method[1])
                     self.send_key_up(method[0])
                     self.sleep(0.05)
-                self.run_until(self.in_combat, 'w', time_out=10, running=True)
+                in_combat = self.run_until(self.in_combat, 'w', time_out=10, running=True,
+                                           target=False, post_walk=1)
+                if not in_combat:
+                    raise Exception('Tacet can not walk to combat')
             else:
                 self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
                 self.pick_f(handle_claim=False)
