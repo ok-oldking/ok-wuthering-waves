@@ -24,7 +24,6 @@ class ChangeEchoTask(BaseWWTask, FindFeature):
         self.icon = FluentIcon.CUT
         self.group_name = "强化声骸"
         self.group_icon = FluentIcon.ADD
-        self.scene: WWScene | None = None
         self.fail_reason = ""
         self.add_text_fix(
             {'凝夜自霜': '凝夜白霜', '主属性灭伤害加成': '主属性湮灭伤害加成', "灭伤害加成": "主属性湮灭伤害加成",

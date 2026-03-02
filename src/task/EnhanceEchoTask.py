@@ -25,7 +25,6 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         self.icon = FluentIcon.ADD
         self.group_name = "强化声骸"
         self.group_icon = FluentIcon.ADD
-        self.scene: WWScene | None = None
         self.fail_reason = ""
         self.default_config.update({
             '必须有双爆': True,

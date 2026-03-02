@@ -87,6 +87,16 @@ class BaseChar:
         self.confidence = confidence
         self.logger = Logger.get_logger(self.name)
         self.check_f_on_switch = True
+        self.cycle_start_time = 0.0
+
+    def cycle_start(self):
+        self.cycle_start_time = time.time()
+
+    def cycle_sleep(self, duration=0.1):
+        to_sleep = duration - (time.time() - self.cycle_start_time)
+        if to_sleep > 0.05:
+            self.check_combat()
+        self.sleep(duration - (time.time() - self.cycle_start_time))
 
     def flying_based_on_resonance(self):
         if not self.has_cd('resonance') and not self.task.box_highlighted('resonance'):

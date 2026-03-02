@@ -17,7 +17,6 @@ class AutoPickTask(TriggerTask, BaseWWTask):
         self.name = "Auto Pick"
         self.description = "Auto Pick Flowers in Game World"
         self.icon = FluentIcon.SHOPPING_CART
-        self.scene: WWScene | None = None
         self.default_config.update({
             '_enabled': True,
             'Pick Up White List': ['吸收', 'Absorb'],

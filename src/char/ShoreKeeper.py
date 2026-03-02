@@ -16,25 +16,31 @@ class ShoreKeeper(Healer):
         if self.has_intro:
             self.logger.debug('ShoreKeeper wait intro animation')
             time.sleep(0.1)
-            self.task.wait_in_team_and_world(time_out=4, raise_if_not_found=False)
+            if not self.task.in_team_and_world():
+                self.task.wait_in_team_and_world(time_out=4, raise_if_not_found=False)
+            else:
+                self.continues_normal_attack(1.2)
             self.check_combat()
         time_out = 1
         start_time = time.time()
-        while time.time() - start_time < time_out and not self.is_con_full():
+        while self.time_elapsed_accounting_for_freeze(start_time) < time_out and not self.is_con_full():
             self.f_break()
             if self.click_liberation(wait_if_cd_ready=False):
-                self.sleep(0.001)
+                self.sleep(0.1)
                 continue
             elif self.click_resonance(send_click=False)[0]:
-                self.sleep(0.001)
+                time_out += 0.2
+                self.sleep(0.1)
+                continue
+            elif self.click_echo(time_out=0):
+                self.sleep(0.1)
                 continue
             elif self.heavy_click_forte(self.is_mouse_forte_full):
                 self.sleep(0.001)
                 break
             else:
                 self.click()
-                self.sleep(0.01)
-                break
+                self.sleep(0.1)
         self.click_echo(time_out=0)
         self.switch_next_char()
 

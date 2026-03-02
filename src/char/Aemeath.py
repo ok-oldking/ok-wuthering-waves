@@ -29,10 +29,12 @@ class Aemeath(BaseChar):
         self.should_wait = self.has_intro
         while self.time_elapsed_accounting_for_freeze(start) < 2.2 or (
                 self.should_wait and self.time_elapsed_accounting_for_freeze(start) < 10):
-            self.check_combat()
+            self.cycle_start()
             if self.handle_heavy():
                 self.should_wait = True
                 start = time.time()
+                self.task.next_frame()
+                continue
             elif self.lib():
                 self.should_wait = True
                 start = time.time()
@@ -45,7 +47,7 @@ class Aemeath(BaseChar):
                     self.click_echo(time_out=0)
                     self.f_break()
                     self.switch_mech()
-                    self.click(after_sleep=0.1)
+                    self.click()
                 if self.has_long_action() or self.lib_cd_eminent():
                     self.should_wait = True
                     start = time.time()
@@ -54,8 +56,8 @@ class Aemeath(BaseChar):
                     return
             else:
                 self.switch_mech()
-                self.click(interval=0.1)
-            self.sleep(0.01)
+                self.click()
+            self.cycle_sleep()
 
     def lib_cd_eminent(self):
         cd = self.task.get_cd('liberation')
@@ -91,7 +93,7 @@ class Aemeath(BaseChar):
         if has_intro:
             self.logger.info(
                 f'set priority as high because has_intro {has_intro}')
-            return Priority.FAST_SWITCH+1
+            return Priority.FAST_SWITCH + 1
         else:
             return super().do_get_switch_priority(current_char, has_intro, target_low_con)
 
