@@ -916,16 +916,16 @@ class BaseWWTask(BaseTask):
         if not opened:
             self.log_info('click f2 to open the book')
             if self.in_team_and_world():
-                self.send_key('f2', after_sleep=3)
-                self.log_info('send f2 key to open the book')
-            if self.in_team_and_world():
-                self.log_info('send f2 key to open the book failed, use mouse')
+                self.log_info('send mouse key to open the book')
                 self.send_key_down('alt')
                 self.sleep(0.05)
                 self.click_relative(0.77, 0.05)
                 self.sleep(0.02)
                 self.send_key_up('alt')
                 self.sleep(3)
+            if self.in_team_and_world():
+                self.send_key('f2', after_sleep=3)
+                self.log_info('send f2 key to open the book failed, use f2')
 
         gray_book_boss = self.wait_book(feature)
         self.sleep(0.8)
