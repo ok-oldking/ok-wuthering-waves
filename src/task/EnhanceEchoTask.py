@@ -26,6 +26,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         self.group_name = "强化声骸"
         self.group_icon = FluentIcon.ADD
         self.fail_reason = ""
+        self.supported_languages = ["zh_CN"]
         self.default_config.update({
             '必须有双爆': True,
             '双爆出现之前必须全有效词条': True,
