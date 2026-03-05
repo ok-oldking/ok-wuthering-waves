@@ -25,6 +25,7 @@ class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
 
         self.start = time.time()
         capture_cost = 0
+        ocr_cost = 0
         while True:
             self.load_chars()
             char = self.get_current_char()
@@ -35,12 +36,17 @@ class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
                 self.start = time.time()
             else:
                 start = time.time()
+                self.reset_scene()
                 self.next_frame()
                 capture_cost += time.time() - start
+                start = time.time()
+                self.refresh_cd()
+                ocr_cost += time.time() - start
                 self.info['Capture Frame Count'] = self.info.get('Capture Frame Count', 0) + 1
                 self.info['Capture Frame Rate'] = round(
                     self.info['Capture Frame Count'] / (capture_cost or 1),
                     2)
+                self.info['OCR'] = ocr_cost / self.info['Capture Frame Count']
                 self.info['Game Resolution'] = f'{self.frame.shape[1]}x{self.frame.shape[0]}'
                 self.info['Current Character'] = str(char)
                 self.info['Resonance CD'] = self.get_cd('resonance')
