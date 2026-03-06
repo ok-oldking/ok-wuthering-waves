@@ -672,6 +672,9 @@ msgstr ""
 msgid "Iuno C6"
 msgstr ""
 
+msgid "Chisa DPS"
+msgstr ""
+
 msgid "Nightmare: Hecate"
 msgstr ""
 
