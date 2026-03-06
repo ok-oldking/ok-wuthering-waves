@@ -25,7 +25,7 @@ class Chisa(BaseChar):
                 start = time.time()
                 if timeout != 10:
                     timeout = 1.7
-            if under_liber and self.is_forte_full() and self.perform_forte():
+            if (under_liber or self.task.char_config.get("Chisa DPS")) and self.is_forte_full() and self.perform_forte():
                 return self.switch_next_char()  
             self.click()
             self.check_combat()
