@@ -7,6 +7,7 @@ class Chisa(BaseChar):
 
     def do_perform(self):
         timeout = 2.5
+        self.check_f_on_switch=True
         if self.has_intro:
             self.continues_normal_attack(0.8)
             timeout = 2.3
@@ -26,6 +27,7 @@ class Chisa(BaseChar):
                 if timeout != 10:
                     timeout = 1.7
             if (under_liber or self.task.char_config.get("Chisa DPS")) and self.is_forte_full() and self.perform_forte():
+                self.check_f_on_switch=False
                 return self.switch_next_char()  
             self.click()
             self.check_combat()
