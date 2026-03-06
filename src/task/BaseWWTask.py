@@ -936,8 +936,9 @@ class BaseWWTask(BaseTask):
 
     def click_traval_button(self):
         for feature_name in ['fast_travel_custom', 'gray_teleport', 'remove_custom']:
-            if feature := self.find_one(feature_name, threshold=0.7):
+            if self.find_one(feature_name, threshold=0.7):
                 self.sleep(0.5)
+                feature = self.find_one(feature_name, threshold=0.7)
                 self.click(feature, after_sleep=1)
                 if feature.name == 'fast_travel_custom':
                     if confirm := self.wait_feature(
