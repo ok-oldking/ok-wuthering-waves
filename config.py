@@ -60,6 +60,7 @@ key_config_option = ConfigOption('Game Hotkey Config', {
 
 char_config_option = ConfigOption('Character Config', {
     'Iuno C6': False,
+    'Verina C2': False,
     'Chisa DPS': False,
 }, description='Character Config')
 

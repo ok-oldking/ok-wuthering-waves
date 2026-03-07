@@ -672,6 +672,9 @@ msgstr ""
 msgid "Iuno C6"
 msgstr ""
 
+msgid "Verina C2"
+msgstr "벨리나 2돌파"
+
 msgid "Chisa DPS"
 msgstr ""
 
