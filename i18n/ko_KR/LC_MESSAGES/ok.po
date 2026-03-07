@@ -655,7 +655,7 @@ msgid "Auto Click Fast Travel in Map"
 msgstr ""
 
 msgid "Character Config"
-msgstr ""
+msgstr "캐릭터 설정"
 
 msgid "Check Levitator"
 msgstr ""
@@ -670,10 +670,13 @@ msgid "Fast Travel"
 msgstr ""
 
 msgid "Iuno C6"
-msgstr ""
+msgstr "유노 6돌파"
+
+msgid "Verina C2"
+msgstr "벨리나 2돌파"
 
 msgid "Chisa DPS"
-msgstr ""
+msgstr "치사 메인 딜러"
 
 msgid "Nightmare: Hecate"
 msgstr ""

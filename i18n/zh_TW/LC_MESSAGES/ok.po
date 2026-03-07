@@ -660,6 +660,9 @@ msgstr "角色設置"
 msgid "Iuno C6"
 msgstr "尤諾6鏈"
 
+msgid "Verina C2"
+msgstr "維里奈2鏈"
+
 msgid "Chisa DPS"
 msgstr "千咲主C"
 

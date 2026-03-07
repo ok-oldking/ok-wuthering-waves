@@ -655,7 +655,7 @@ msgid "Auto Click Fast Travel in Map"
 msgstr ""
 
 msgid "Character Config"
-msgstr ""
+msgstr "キャラクター設定"
 
 msgid "Check Levitator"
 msgstr ""
@@ -670,10 +670,13 @@ msgid "Fast Travel"
 msgstr ""
 
 msgid "Iuno C6"
-msgstr ""
+msgstr "ユーノ完凸"
+
+msgid "Verina C2"
+msgstr "ヴェリーナ2凸"
 
 msgid "Chisa DPS"
-msgstr ""
+msgstr "千咲 アタッカー"
 
 msgid "Nightmare: Hecate"
 msgstr ""
