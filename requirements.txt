@@ -4,10 +4,10 @@
 #
 #    pip-compile '.\requirements.in'
 #
-ok-script==1.0.68
+ok-script==1.0.71
     # via -r .\requirements.in
 playwright==1.57.0
-onnxocr-ppocrv5==0.0.9
+onnxocr-ppocrv5==0.0.11
     # via -r .\requirements.in
 pyappify==1.0.2
     # via ok-script

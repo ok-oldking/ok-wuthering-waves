@@ -87,6 +87,7 @@ config = {
         'lib': 'onnxocr',
         'params': {
             'use_openvino': True,
+            'use_npu': True,
         }
     },
     'my_app': ['src.globals', 'Globals'],
