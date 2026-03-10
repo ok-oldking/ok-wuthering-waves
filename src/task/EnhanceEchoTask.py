@@ -109,7 +109,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                     else:
                         raise Exception('找不到 强化并调谐!')
                 while handle := self.wait_ocr(0.24, 0.18, 0.75, 0.93,
-                                              match=['本次登录不再提示', '调谐成功', '点击任意位置返回'],
+                                              match=[re.compile('不再提示'), '调谐成功', re.compile('点击任')],
                                               time_out=2):
                     if handle[0].name == '本次登录不再提示':
                         click = handle[0]
