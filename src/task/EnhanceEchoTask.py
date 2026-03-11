@@ -116,7 +116,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                         click.width = 1
                         click.x -= click.height * 1.1
                         self.click(click, after_sleep=0.5)
-                        self.wait_click_ocr(0.24, 0.18, 0.75, 0.93, match='确认', after_sleep=0.5)
+                        self.click(self.find_confirm(), after_sleep=0.5)
                     elif handle[0].name in ['点击任意位置返回', '调谐成功']:
                         self.click(handle, after_sleep=1)
                     else:
@@ -137,6 +137,11 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                 if len(properties) >= 5:
                     self.lock_and_esc()
                     break
+
+    def find_confirm(self):
+        box = self.box_of_screen(0.24, 0.18, 0.75, 0.93)
+        self.screenshot('find_confirm', frame=box.crop_frame(self.frame))
+        return self.ocr(box=box, match='确认')
 
     def check_echo_stats(self, properties, values):
         self.fail_reason = ""

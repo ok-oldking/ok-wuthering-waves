@@ -20,9 +20,12 @@ class TestEnchaneEcho(TaskTestCase):
     def test_find_add_mat(self):
         self.set_image('tests/images/find_add_mat.png')
         find_add_mat = self.task.find_add_mat()
-        self.task.screenshot('find_add_mat.png', show_box=True)
-        time.sleep(1)
         self.assertTrue(find_add_mat)
+
+    def test_find_confirm(self):
+        self.set_image('tests/images/find_confirm.png')
+        find_confirm = self.task.find_confirm()
+        self.assertEqual(len(find_confirm), 1)
 
 
 if __name__ == '__main__':
