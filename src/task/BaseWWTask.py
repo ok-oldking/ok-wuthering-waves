@@ -883,6 +883,7 @@ class BaseWWTask(BaseTask):
         # self.screenshot('monthly_card1')
         if monthly_card is not None:
             # self.screenshot('monthly_card1')
+            self.log_info('monthly_card found click')
             self.click_relative(0.50, 0.89)
             self.sleep(2)
             # self.screenshot('monthly_card2')
