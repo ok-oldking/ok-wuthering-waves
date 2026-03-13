@@ -218,6 +218,7 @@ class BaseWWTask(BaseTask):
             if end_condition:
                 ended = end_condition()
                 if ended:
+                    logger.info(f'do_walk_to_box ended {ended}')
                     break
             treasure_icon = find_function()
             if isinstance(treasure_icon, list):
