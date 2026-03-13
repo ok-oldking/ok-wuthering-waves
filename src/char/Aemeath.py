@@ -15,7 +15,7 @@ class Aemeath(BaseChar):
     def do_perform(self):
         self.intro_time = -1
         if self.has_intro:
-            self.task.wait_until(self.enhance_e_available, post_action=self.click,
+            self.task.wait_until(self.enhance_e_available, post_action=self.click_with_interval,
                                      time_out=3.5)
             if self.check_outro() in {'char_linnai', 'char_lupa'}:
                 self.intro_time = 14

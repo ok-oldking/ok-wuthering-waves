@@ -49,7 +49,7 @@ class Linnai(BaseChar):
             self.sleep(0.3) 
         self.wait_down()
         if not self.is_con_full() and self.click_liberation():
-            self.task.wait_until(self.is_con_full, post_action=self.click, time_out=1.2) 
+            self.task.wait_until(self.is_con_full, post_action=self.click_with_interval, time_out=1.2) 
         return True
 
     def check_res(self):
