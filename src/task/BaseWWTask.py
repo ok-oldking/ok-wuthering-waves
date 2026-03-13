@@ -692,7 +692,7 @@ class BaseWWTask(BaseTask):
             if self.find_one('login_account', vertical_variance=0.1, threshold=0.7):
                 self.wait_until(lambda: self.find_one('login_account', threshold=0.7) is None,
                                 pre_action=lambda: self.click_relative(0.5, 0.9, after_sleep=3), time_out=30)
-                self.wait_until(lambda: self.find_one('monthly_card', threshold=0.7) or self.in_team_and_world(),
+                self.wait_until(lambda: self.find_monthly_card() or self.in_team_and_world(),
                                 pre_action=lambda: self.click_relative(0.5, 0.9, after_sleep=3), time_out=120)
                 self.wait_until(lambda: self.in_team_and_world(),
                                 post_action=lambda: self.click_relative(0.5, 0.9, after_sleep=3), time_out=5)
@@ -878,8 +878,11 @@ class BaseWWTask(BaseTask):
 
         # Function to check if a component forms a ring
 
+    def find_monthly_card(self):
+        return self.find_one('monthly_card', threshold=0.8, vertical_variance=0.07)
+
     def handle_monthly_card(self):
-        monthly_card = self.find_one('monthly_card', threshold=0.8)
+        monthly_card = self.find_monthly_card
         # self.screenshot('monthly_card1')
         if monthly_card is not None:
             # self.screenshot('monthly_card1')

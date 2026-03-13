@@ -19,6 +19,15 @@ class TestWorld(TaskTestCase):
         self.logger.info(f'in_world = {in_world}')
         self.assertIsNotNone(in_world)
 
+    def test_monthly_card(self):
+        self.set_image('tests/images/monthly_card.png')
+        self.assertTrue(bool(self.task.find_monthly_card()))
+        self.task.screenshot('monthly_card', show_box=True)
+        self.task.sleep(1)
+        in_world = self.task.in_world()
+        self.logger.info(f'in_world = {in_world}')
+        self.assertFalse(in_world)
+
 
 if __name__ == '__main__':
     unittest.main()
