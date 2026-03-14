@@ -633,7 +633,7 @@ class BaseWWTask(BaseTask):
 
     def center_camera(self):
         self.click(0.5, 0.5, down_time=0.2, key='middle')
-        self.wait_until(self.in_combat, time_out=1)
+        self.sleep(1)
 
     def turn_direction(self, direction):
         if direction != 'w':
@@ -918,6 +918,8 @@ class BaseWWTask(BaseTask):
         self.sleep(0.5)
 
     def openF2Book(self, feature="gray_book_all_monsters", opened=False):
+        if hasattr(self, 'reset_to_false'):
+            self.reset_to_false('opening book')
         if not opened:
             self.log_info('click f2 to open the book')
             if self.in_team_and_world():

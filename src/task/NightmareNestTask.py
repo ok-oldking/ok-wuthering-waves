@@ -76,7 +76,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self.wait_in_team_and_world(time_out=40, raise_if_not_found=False)
         self.sleep(2)
         self.run_until(self.in_combat, 'w', time_out=10, running=False, target=True)
-        self.combat_once()
+        self.combat_once(wait_combat_time=0)
         if self._capture_mode:
             if self._capture_success or self.wait_until(self.has_echo_notification, time_out=3):
                 self.log_info("Captured echo during combat, skipping search.")
