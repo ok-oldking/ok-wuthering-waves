@@ -591,6 +591,7 @@ class BaseWWTask(BaseTask):
         return bool(dialog_3_dots)
 
     def walk_to_treasure(self, send_f=True, raise_if_not_found=True):
+        self.log_info('start walk_to_treasure')
         if not self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text):
             raise Exception(f'can not walk to treasure!')
         if send_f:

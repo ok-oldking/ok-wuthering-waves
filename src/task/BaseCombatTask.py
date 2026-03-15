@@ -468,6 +468,8 @@ class BaseCombatTask(CombatCheck):
             timeout (float): 休眠的秒数。
             check_combat (bool, optional): 是否在休眠前检查战斗状态。默认为 True。
         """
+        if self.skip_combat_check:
+            return
         # self.log_debug(f'sleep_check {self._in_combat}')
         if self._in_combat:
             self.next_frame()

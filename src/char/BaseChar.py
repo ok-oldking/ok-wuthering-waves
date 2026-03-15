@@ -898,9 +898,11 @@ class BaseChar:
         self.logger.debug(f'{self.char_name} on_combat_end {self.index} switch next char: {next_char}')
         start = time.time()
         while time.time() - start < 6:
-            self.task.load_chars()
-            current_char = self.task.get_current_char(raise_exception=False)
-            if current_char and current_char.name != self.name:
+            in_team, current_index, count = self.task.in_team()
+            if in_team and current_index != self.index:
+                for char in self.task.chars:
+                    if char:
+                        char.is_current_char = (char.index == current_index)
                 break
             else:
                 self.task.send_key(next_char)
