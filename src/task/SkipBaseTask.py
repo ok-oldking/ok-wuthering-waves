@@ -30,6 +30,8 @@ class SkipBaseTask(BaseWWTask):
                 self.confirm_dialog_checked = True
                 return True
         if skip_button := self.find_one('skip_quest_confirm', threshold=0.8):
+            # sleep 0.2 to stable click skip button
+            self.sleep(0.2)
             self.click(skip_button)
             return True
         if skip_button := self.find_one('skip_quest_confirm_new', threshold=0.8):
