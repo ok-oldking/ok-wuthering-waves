@@ -890,7 +890,14 @@ class BaseChar:
         return False
 
     def switch_other_char(self):
-        next_char = str((self.index + 1) % len(self.task.chars) + 1)
+        from src.char.Healer import Healer
+        target_index = (self.index + 1) % len(self.task.chars)
+        for char in self.task.chars:
+            if char and isinstance(char, Healer) and char.index != self.index:
+                target_index = char.index
+                break
+        next_char = str(target_index + 1)
+
         from src.task.AutoCombatTask import AutoCombatTask
         if isinstance(self.task, AutoCombatTask):
             self.logger.debug('AutoCombatTask, skip switch_other_char')
