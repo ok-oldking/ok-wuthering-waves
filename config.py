@@ -70,7 +70,7 @@ pick_echo_config_option = ConfigOption('Pick Echo Config', {
     'Use OCR': 'Turn on if your CPU is Powerful for more accuracy'}, description='Turn on to enable auto pick echo')
 
 monthly_card_config_option = ConfigOption('Monthly Card Config', {
-    'Check Monthly Card': False,
+    'Check Monthly Card': True,
     'Monthly Card Time': 4
 }, description='Turn on to avoid interruption by monthly card when executing tasks', config_description={
     'Check Monthly Card': 'Check for monthly card to avoid interruption of tasks',
@@ -101,6 +101,8 @@ config = {
         'default_vertical_variance': 0.002,
         'default_threshold': 0.8,
         'feature_processor': process_feature,
+        'vcenter_features': ['monthly_card'],
+        'hcenter_features': ['monthly_card']
     },
     'windows': {  # required  when supporting windows game
         'exe': 'Client-Win64-Shipping.exe',

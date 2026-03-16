@@ -22,8 +22,14 @@ class TestWorld(TaskTestCase):
     def test_monthly_card(self):
         self.set_image('tests/images/monthly_card.png')
         self.assertTrue(bool(self.task.find_monthly_card()))
-        self.task.screenshot('monthly_card', show_box=True)
-        self.task.sleep(1)
+
+        in_world = self.task.in_world()
+        self.logger.info(f'in_world = {in_world}')
+        self.assertFalse(in_world)
+
+        self.set_image('tests/images/monthly_card2.png')
+        self.assertTrue(bool(self.task.find_monthly_card()))
+
         in_world = self.task.in_world()
         self.logger.info(f'in_world = {in_world}')
         self.assertFalse(in_world)
