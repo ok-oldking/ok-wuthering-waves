@@ -97,7 +97,8 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                         self.click(add_mat, after_sleep=0.3)
                     else:
                         self.next_frame()
-                        break
+                        if have_add_mat:
+                            break
                 if not have_add_mat:
                     raise Exception('强化设置需要开启阶段放入!')
 
