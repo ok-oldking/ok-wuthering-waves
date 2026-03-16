@@ -12,8 +12,8 @@ from src.task.BaseWWTask import BaseWWTask
 
 logger = Logger.get_logger(__name__)
 
-number_pattern = re.compile(r"^[\d.% ]+$")
-property_pattern = re.compile(r"^\D*$")
+number_pattern = re.compile(r"^[\d.%％ ]+$")
+property_pattern = re.compile(r"^(?!.*激活).*?[\u4e00-\u9fff]{2,}.*?$")
 
 
 class EnhanceEchoTask(BaseWWTask, FindFeature):
@@ -168,15 +168,32 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
         valid_stats = self.config.get('有效词条') or []
 
-        for p, v_str in paired_stats:
+        for p_raw, v_str in paired_stats:
+            p = p_raw
+            if '暴击伤害' in p:
+                p = '暴击伤害'
+            elif '暴击' in p:
+                p = '暴击'
+            elif '攻击' in p:
+                p = '攻击' + ('百分比' if '%' in v_str or '％' in v_str else '')
+            elif '生命' in p:
+                p = '生命' + ('百分比' if '%' in v_str or '％' in v_str else '')
+            elif '防御' in p:
+                p = '防御' + ('百分比' if '%' in v_str or '％' in v_str else '')
+            elif '效率' in p:
+                p = '共鸣效率'
+            elif '普攻' in p:
+                p = '普攻伤害加成'
+            elif '重击' in p:
+                p = '重击伤害加成'
+            elif '解放' in p:
+                p = '共鸣解放伤害加成'
+            elif '技能' in p:
+                p = '共鸣技能伤害加成'
+
             v = parse_number(v_str)
 
             is_valid_prop = True
-
-            if p in ['攻击', '生命', '防御']:
-                if '%' in v_str:
-                    p += '百分比'
-
             is_crit_stat = p in ['暴击', '暴击伤害']
 
             if self.config.get(
@@ -308,6 +325,6 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
 def parse_number(text):
     try:
-        return float(text.split('%')[0])
+        return float(text.replace('％', '%').split('%')[0])
     except (ValueError, IndexError):
         return 0.0
