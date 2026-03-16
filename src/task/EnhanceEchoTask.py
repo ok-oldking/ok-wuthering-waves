@@ -12,7 +12,7 @@ from src.task.BaseWWTask import BaseWWTask
 
 logger = Logger.get_logger(__name__)
 
-number_pattern = re.compile(r"^[\d.%]+$")
+number_pattern = re.compile(r"^[\d.% ]+$")
 property_pattern = re.compile(r"^\D*$")
 
 
@@ -122,9 +122,8 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                     else:
                         self.sleep(0.5)
                 self.sleep(0.1)
-                texts = self.ocr()
-                texts = self.find_boxes(texts, boundary=self.box_of_screen(0.09, 0.28, 0.40, 0.53))
-                self.log_info(f'found values: {texts}')
+                texts = self.ocr(0.09, 0.28, 0.40, 0.53)
+                self.log_info(f'ocr values: {texts}')
                 properties = self.find_boxes(texts, match=property_pattern)
                 values = self.find_boxes(texts, match=number_pattern)
                 self.info_set('属性', properties)
