@@ -36,7 +36,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
         self.boss_list = ['Other', 'Hyvatia', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory',
-                          'Nightmare: Hecate', 'Fenrico']
+                          'Nightmare: Hecate', 'Fenrico', 'Nameless Explorer']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
@@ -186,7 +186,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         if boss in ('Lady of the Sea'):
             self.log_debug('manage_boss_parameters Lady of the Sea')
             self._in_realm = True
-        self.bypass_end_wait = boss in ('Fenrico', 'Fallacy of No Return', 'Lady of the Sea')
+        self.bypass_end_wait = boss in ('Fenrico', 'Fallacy of No Return', 'Lady of the Sea',
+                                          'Nameless Explorer')
         self.treat_as_not_in_realm = boss in ('Nightmare: Hecate')
         self.log_info(
             f"profile: {boss} { {
@@ -248,8 +249,39 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.wait_in_team_and_world(time_out=120)
                     self.sleep(2)
                     self.wait_until(self.in_combat, raise_if_not_found=False, time_out=10)
+            if boss in ('Nameless Explorer'):
+                # 无铭探索者无主动攻击欲望，重新挑战后需主动靠近触发战斗
+                self._handle_unnamed_explorer()
             if boss not in self.boss_list:
                 logger.warning(f'unknown boss profile {boss}, run as Other')
+
+    def _handle_unnamed_explorer(self):
+        """处理无铭探索者：重新挑战后主动靠近boss触发战斗。"""
+        if self.in_combat():
+            return
+        # 尝试走向宝箱图标并点击重新挑战
+        if self.find_treasure_icon() or self.find_f_with_text():
+            if self.walk_to_treasure_and_restart():
+                self._has_treasure = True
+            self.scroll_and_click_buttons()
+        # 重新挑战后等待1秒让场景加载
+        self.sleep(1)
+        if not self.in_combat():
+            if not self._has_treasure:
+                self.teleport_to_nearest_boss()
+                self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w', time_out=12, running=True,
+                               target=True)
+            else:
+                # 无铭探索者重新挑战后，boss在前方一段距离处刷新，需主动向前跑靠近触发战斗
+                self.run_until(lambda: self.in_combat(), 'w', time_out=8, running=True, target=True)
+                if not self.in_combat():
+                    # 向前跑仍未触发战斗，回退到小地图导航
+                    self.go_to_boss_minimap(time_out=10)
+            self.execute_treasure_hunt()
+        # 等待进入战斗，无铭探索者可能需要更长时间
+        self.wait_until(
+            self.in_combat, raise_if_not_found=False, time_out=10
+        )
 
     def init_parameters(self):
         self.target_enemy_time_out = 3 if self._in_realm else 1.2
@@ -296,6 +328,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.click(0.89, 0.92, after_sleep=1)
             self.click(0.89, 0.92)
             self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
+            self._correct_direction_after_teleport()
             return
         self.send_key('m', after_sleep=2)
         box = self.find_best_match_in_box(self.box_of_screen(0.3, 0.3, 0.7, 0.7),
@@ -321,6 +354,14 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.click_box(box)
             self.wait_click_travel()
             self.wait_in_team_and_world(time_out=30)
+        self._correct_direction_after_teleport()
+
+    def _correct_direction_after_teleport(self):
+        """传送到boss后修正朝向。某些boss传送点朝向与boss方向不一致，需要额外转向。"""
+        boss = self.config.get('Boss')
+        if boss == 'Nameless Explorer':  # 无铭探索者传送到boss后需要额外向左转90度
+            self.sleep(0.5)
+            self.turn_direction('a')
 
     def click_boss_octagon(self):
         # === 1. 读取图像 ===

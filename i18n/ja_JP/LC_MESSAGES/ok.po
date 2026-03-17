@@ -636,6 +636,9 @@ msgstr ""
 msgid "Fenrico"
 msgstr ""
 
+msgid "Nameless Explorer"
+msgstr "名もない探索者"
+
 msgid "Lady of the Sea"
 msgstr ""
 

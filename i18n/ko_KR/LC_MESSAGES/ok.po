@@ -636,6 +636,9 @@ msgstr ""
 msgid "Fenrico"
 msgstr ""
 
+msgid "Nameless Explorer"
+msgstr "이름없는 탐색자"
+
 msgid "Lady of the Sea"
 msgstr ""
 
