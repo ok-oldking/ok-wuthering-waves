@@ -1,18 +1,21 @@
 import time
 
 from src.char.Healer import Healer
-
+from src.char.BaseChar import BaseChar, Priority
 
 class ShoreKeeper(Healer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.outrotime = -1
         self.dodge_count = 0
+        self.attribute = 0
 
     def count_liberation_priority(self):
         return 2
 
     def do_perform(self):
+        self.decide_teammate()
+        time_out = 1
         if self.has_intro:
             self.logger.debug('ShoreKeeper wait intro animation')
             time.sleep(0.1)
@@ -21,11 +24,13 @@ class ShoreKeeper(Healer):
             else:
                 self.continues_normal_attack(1.2)
             self.check_combat()
-        time_out = 1
+            if self.check_outro() in {'Augusta'}:
+                time_out = 14
         start_time = time.time()
         while self.time_elapsed_accounting_for_freeze(start_time) < time_out and not self.is_con_full():
             self.f_break()
-            if self.click_liberation(wait_if_cd_ready=False):
+            self.click_echo(time_out=0)
+            if (self.attribute < 2 or time_out == 14) and self.click_liberation(wait_if_cd_ready=False):
                 self.sleep(0.1)
                 continue
             elif self.click_resonance(send_click=False)[0]:
@@ -37,11 +42,11 @@ class ShoreKeeper(Healer):
                 continue
             elif self.heavy_click_forte(self.is_mouse_forte_full):
                 self.sleep(0.001)
-                break
+                if self.attribute < 2 or time_out < 14:
+                    break
             else:
                 self.click()
-                self.sleep(0.1)
-        self.click_echo(time_out=0)
+                self.sleep(0.1)       
         self.switch_next_char()
 
     def switch_next_char(self, *args):
@@ -65,3 +70,19 @@ class ShoreKeeper(Healer):
             self.dodge_count -= 1
             self.logger.info('ShoreKeepers auto dodge success!')
         return clicked
+
+    def decide_teammate(self):
+        from src.char.Augusta import Augusta
+        if self.attribute > 0:
+            return
+        if self.task.has_char(Augusta):
+            self.attribute = 2
+        else:
+            self.attribute = 1
+            
+    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
+        self.decide_teammate()
+        if self.attribute == 2 and has_intro and current_char.char_name in {'Augusta'}:
+            return Priority.MAX
+        else:
+            return super().do_get_switch_priority(current_char, has_intro)

@@ -336,10 +336,12 @@ class BaseCombatTask(CombatCheck):
             f'switch_next_char {current_char} -> {switch_to} has_intro {switch_to.has_intro} current_con {current_con}')
         # if self.debug:
         #     self.screenshot(f'switch_next_char_{current_con}')
+        from src.char.ShoreKeeper import ShoreKeeper 
         last_click = 0
         start = time.time()
         while True:
-            self.check_combat()
+            if not (isinstance(switch_to, ShoreKeeper) and has_intro):
+                self.check_combat()
             now = time.time()
             current_char.f_break(check_f_on_switch=True)
             _, current_index, _ = self.in_team()

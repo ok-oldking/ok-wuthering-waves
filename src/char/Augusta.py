@@ -11,12 +11,15 @@ switch_time = 3
 
 class Augusta(BaseChar):
     def do_perform(self):
+        time_out = switch_time
         if self.has_intro:
             self.continues_normal_attack(1.13)
+            if self.check_outro() in {'char_iuno'}:
+                time_out = 14
         if self.flying():
             self.wait_down()
         start = time.time()
-        timeout = lambda: time.time() - start < 6
+        timeout = lambda: time.time() - start < time_out + 3
         while timeout():
             self.cycle_start()
             if self.check_majesty():
@@ -27,7 +30,7 @@ class Augusta(BaseChar):
             if self.flying():
                 self.shorekeeper_auto_dodge()
             if self.check_prowess() and self.perform_prowess():
-                if time.time() - start > switch_time:
+                if time.time() - start > time_out:
                     return self.switch_next_char()
             if self.resonance_available():
                 self.logger.debug('Augusta performs single resonance')
@@ -38,20 +41,21 @@ class Augusta(BaseChar):
                     if self.flying():
                         continue
                     if self.task.wait_until(self.check_prowess, time_out=1) and self.perform_prowess():
-                        if time.time() - start > switch_time and not self.flying():
+                        if time.time() - start > time_out and not self.flying():
                             return self.switch_next_char()
                 else:
                     if self.check_majesty():
                         self.wait_down()
                         if self.perform_majesty():
                             self.send_echo_key()
-                    return self.switch_next_char()
+                        return self.switch_next_char()
             if self.liberation_available():
                 self.logger.debug('Augusta performs single liberation')
                 if self.task.wait_until(lambda: not self.liberation_available(), post_action=self.send_liberation_key,
                                         time_out=2):
                     self.update_liberation_cd()
-                    return self.switch_next_char()
+                    if time_out < 14:
+                        return self.switch_next_char()
             self.click()
             self.cycle_sleep()
         self.send_echo_key()
