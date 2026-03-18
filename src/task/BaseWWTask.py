@@ -702,6 +702,7 @@ class BaseWWTask(BaseTask):
                 self._logged_in = True
                 self.sleep(3)
                 return True
+            self.handle_monthly_card()
             texts = self.ocr()
             if login := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match="登录"):
                 if not self.find_boxes(texts, match="+86"):
