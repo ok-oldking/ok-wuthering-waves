@@ -645,6 +645,9 @@ msgstr "荣耀狮像"
 msgid "Fenrico"
 msgstr "芬莱克"
 
+msgid "Nameless Explorer"
+msgstr "无铭探索者"
+
 msgid "Lady of the Sea"
 msgstr "海之女"
 
