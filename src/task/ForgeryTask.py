@@ -15,6 +15,7 @@ class ForgeryTask(DomainTask):
         self.icon = FluentIcon.FLAG
         self.name = 'Forgery Challenge'
         self.description = 'Farms the selected Forgery Challenge. Must be able to teleport (F2).'
+        self.support_schedule_task = True
         self.default_config = {
             'Which Forgery Challenge to Farm': 1,  # starts with 1
         }
