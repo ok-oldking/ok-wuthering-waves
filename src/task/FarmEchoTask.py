@@ -132,7 +132,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             if not self._in_realm and not self._has_treasure and not self.in_combat():
                 self.go_to_boss_minimap()
                 self.execute_treasure_hunt()
-                
+
             if not self.in_combat():
                 self.sleep(self.combat_wait_time)
                 self.log_info(f'combat_wait_time: {self.combat_wait_time}')
@@ -187,7 +187,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.log_debug('manage_boss_parameters Lady of the Sea')
             self._in_realm = True
         self.bypass_end_wait = boss in ('Fenrico', 'Fallacy of No Return', 'Lady of the Sea',
-                                          'Nameless Explorer')
+                                        'Nameless Explorer')
         self.treat_as_not_in_realm = boss in ('Nightmare: Hecate')
         self.log_info(
             f"profile: {boss} { {
@@ -315,6 +315,26 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w', time_out=12, running=True,
                            target=True)
 
+    def find_boss_check_mark(self):
+        box = self.find_best_match_in_box(self.box_of_screen(0.3, 0.3, 0.7, 0.7),
+                                          ['boss_check_mark'], threshold=0.8)
+        if not box:
+            boss_template = self.get_feature_by_name('boss_no_check_mark')
+            original_mat = boss_template.mat
+            (h, w) = boss_template.mat.shape[:2]
+            center = (w // 2, h // 2)
+            targets = []
+            for angle in range(0, 270, 90):
+                # Rotate the template image
+                rotation_matrix = cv2.getRotationMatrix2D(center, -angle, 1.0)
+                template = cv2.warpAffine(original_mat, rotation_matrix, (w, h))
+                boxes = self.find_feature(box=self.box_of_screen(0.3, 0.3, 0.7, 0.7), template=template, threshold=0.7)
+                targets.extend(boxes)
+                box = max(targets, key=lambda box: box.confidence, default=None)
+            if box is None:
+                raise Exception(f"boss not found")
+        return box
+
     def teleport_to_nearest_boss(self):
         if self.aim_boss is not None:
             self.log_info(f'teleport_to_nearest_boss {self.aim_boss}')
@@ -331,23 +351,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self._correct_direction_after_teleport()
             return
         self.send_key('m', after_sleep=2)
-        box = self.find_best_match_in_box(self.box_of_screen(0.3, 0.3, 0.7, 0.7),
-                                          ['boss_check_mark'], threshold=0.8)
-        if box is None:
-            boss_template = self.get_feature_by_name('boss_no_check_mark')
-            original_mat = boss_template.mat
-            (h, w) = boss_template.mat.shape[:2]
-            center = (w // 2, h // 2)
-            targets = []
-            for angle in range(0, 270, 90):
-                # Rotate the template image
-                rotation_matrix = cv2.getRotationMatrix2D(center, -angle, 1.0)
-                template = cv2.warpAffine(original_mat, rotation_matrix, (w, h))
-                boxes = self.find_feature(box=self.box_of_screen(0.3, 0.3, 0.7, 0.7), template=template, threshold=0.7)
-                targets.extend(boxes)
-            box = max(targets, key=lambda box: box.confidence, default=None)
-            if box is None:
-                raise Exception(f"boss not found")
+
+        box = self.find_boss_check_mark()
 
         self.log_info(f'teleport_to_nearest_boss {box}')
         if box:
