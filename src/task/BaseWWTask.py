@@ -3,11 +3,10 @@ import re
 import time
 from datetime import datetime, timedelta
 
-import numpy as np
-
-from ok import BaseTask, Logger, find_boxes_by_name, og, find_color_rectangles, mask_white
-from ok import CannotFindException
 import cv2
+import numpy as np
+from ok import BaseTask, Logger, og, find_color_rectangles, mask_white
+from ok import CannotFindException
 
 from src.Labels import Labels
 from src.scene.WWScene import WWScene
@@ -1043,8 +1042,8 @@ class BaseWWTask(BaseTask):
         self.send_key(self.key_config.get('Jump Key'), after_sleep=after_sleep)
     def kill_all_related_processes(self):
         """尝试杀死游戏进程和本软件自身进程"""
-        import os, sys
-        import win32process, win32gui, win32api, win32con
+        import os
+        import win32process, win32api, win32con
         import psutil
 
         # 1. 杀死游戏进程
@@ -1064,7 +1063,7 @@ class BaseWWTask(BaseTask):
                 self.log_info("未获取到 hwnd 属性，无法终止游戏进程", notify=True)
         except Exception as e:
             self.log_info(f"终止游戏进程失败: {e}", notify=True)
-        # 2. 杀死本软件所有同名进程（除当前进程）
+        # 2. 杀死本软件所有同名进程
         try:
             current_pid = os.getpid()
             exe_name = psutil.Process(current_pid).name()
