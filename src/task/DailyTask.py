@@ -73,23 +73,22 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             except Exception as e:
                 self.log_error("NightmareNestTask Failed", e)
                 self.ensure_main(time_out=180)
-        used_stamina, completed = self.open_daily()
-
-        self.send_key('esc', after_sleep=1)
-        if not completed:
-            if used_stamina < 180:
-                target = self.config.get('Which to Farm', self.support_tasks[0])
-                if target == self.support_tasks[0]:
-                    self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina,
+        used_stamina, daily_reward_ready = self.open_daily()
+        if not daily_reward_ready and used_stamina < 180:
+            self.send_key('esc', after_sleep=1)
+            target = self.config.get('Which to Farm', self.support_tasks[0])
+            if target == self.support_tasks[0]:
+                self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina,
+                                                             config=self.config)
+            elif target == self.support_tasks[1]:
+                self.get_task_by_class(ForgeryTask).farm_forgery(daily=True, used_stamina=used_stamina,
                                                                  config=self.config)
-                elif target == self.support_tasks[1]:
-                    self.get_task_by_class(ForgeryTask).farm_forgery(daily=True, used_stamina=used_stamina,
-                                                                     config=self.config)
-                else:
-                    self.get_task_by_class(SimulationTask).farm_simulation(daily=True, used_stamina=used_stamina,
-                                                                           config=self.config)
-                self.sleep(4)
-            self.claim_daily()
+            else:
+                self.get_task_by_class(SimulationTask).farm_simulation(daily=True, used_stamina=used_stamina,
+                                                                       config=self.config)
+            self.sleep(4)
+
+        self.claim_daily()
 
         self.claim_mail()
         self.sleep(1)
@@ -157,19 +156,44 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def claim_daily(self):
         self.info_set('current task', 'claim daily')
-        self.ensure_main(time_out=5)
-        self.open_daily()
-
-        self.click(0.87, 0.17, after_sleep=0.5)
-        self.sleep(1)
-
         total_points = self.get_total_daily_points()
+        if total_points < 100:
+            self.ensure_main(time_out=5)
+            self.open_daily()
+            self.log_info('claim pending daily quest rewards before claiming daily chest')
+            self.click(0.87, 0.17, after_sleep=0.5)
+            self.sleep(1)
+            total_points = self.get_total_daily_points()
+
         self.info_set('daily points', total_points)
         if total_points < 100:
             raise Exception("Can't complete daily task, may need to increase stamina manually!")
 
-        self.click(0.89, 0.85, after_sleep=1)
+        self.click_daily_reward_box(100)
         self.ensure_main(time_out=10)
+
+    def click_daily_reward_box(self, reward_points):
+        reward_boxes = self.ocr(
+            0.72, 0.78, 0.98, 0.98,
+            match=re.compile(rf'^{reward_points}$')
+        )
+        if reward_boxes:
+            reward_box = max(reward_boxes, key=lambda box: box.x)
+            click_box = reward_box.copy(
+                x_offset=int(-reward_box.width * 0.8),
+                y_offset=int(-reward_box.height * 3.0),
+                width_offset=int(reward_box.width * 1.6),
+                height_offset=int(reward_box.height * 2.2),
+                name=f'daily_reward_{reward_points}'
+            )
+            self.log_info(f'claim daily reward {reward_points} via OCR {reward_box}')
+            self.click(click_box, after_sleep=1)
+            return True
+
+        # Fall back to a more right-shifted point than the previous fixed coordinate.
+        self.log_info(f'claim daily reward {reward_points} via fallback coordinate')
+        self.click(0.94, 0.85, after_sleep=1)
+        return False
 
     def claim_mail(self):
         self.info_set('current task', 'claim mail')
