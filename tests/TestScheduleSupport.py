@@ -46,6 +46,28 @@ class TestScheduleSupport(unittest.TestCase):
 
                 self.assertTrue(has_schedule_assignment, file_path.as_posix())
 
+    def test_tacet_task_run_handles_login_before_entering_world(self):
+        module = ast.parse(Path("src/task/TacetTask.py").read_text(encoding="utf-8"))
+        class_node = next(
+            node for node in module.body
+            if isinstance(node, ast.ClassDef) and node.name == "TacetTask"
+        )
+        run_node = next(
+            node for node in class_node.body
+            if isinstance(node, ast.FunctionDef) and node.name == "run"
+        )
+
+        ensure_main_calls = [
+            node for node in ast.walk(run_node)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "self"
+            and node.func.attr == "ensure_main"
+        ]
+
+        self.assertTrue(ensure_main_calls)
+
 
 if __name__ == "__main__":
     unittest.main()
