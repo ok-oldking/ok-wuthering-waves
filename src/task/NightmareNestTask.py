@@ -17,6 +17,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.target_enemy_time_out = 10
         self.name = "Nightmare Nest Task"
         self.description = "Auto Farm all Nightmare Nest"
+        self.support_schedule_task = True
         self.group_name = "Daily"
         self.group_icon = FluentIcon.HOME
         self.icon = FluentIcon.CALORIES

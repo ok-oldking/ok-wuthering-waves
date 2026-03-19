@@ -15,6 +15,7 @@ class SimulationTask(DomainTask):
         self.icon = FluentIcon.FLAG
         self.name = 'Simulation Challenge'
         self.description = 'Farms the selected Simulation Challenge. Must be able to teleport (F2).'
+        self.support_schedule_task = True
         self.default_config = {
             'Material Selection': 'Shell Credit',
         }
