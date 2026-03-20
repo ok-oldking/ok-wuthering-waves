@@ -36,6 +36,7 @@ from src.char.ShoreKeeper import ShoreKeeper
 from src.char.Taoqi import Taoqi
 from src.char.Verina import Verina
 from src.char.Xiangliyao import Xiangliyao
+from src.char.Xigelika import Xigelika
 from src.char.Yinlin import Yinlin
 from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
@@ -102,6 +103,8 @@ char_dict = {
                          'ring_index': Elements.SPECTRO},
     Labels.char_moning: {'cls': Mornye, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.FIRE},
     Labels.char_aemeath: {'cls': Aemeath, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 25, 'ring_index': Elements.FIRE},
+    Labels.char_xigelika: {'cls': Xigelika, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 25,
+                           'ring_index': Elements.WIND},
     Labels.char_luhesi: {'cls': Luhesi, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 25,
                          'ring_index': Elements.SPECTRO},
 }

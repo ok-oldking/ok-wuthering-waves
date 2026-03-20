@@ -336,7 +336,7 @@ class BaseCombatTask(CombatCheck):
             f'switch_next_char {current_char} -> {switch_to} has_intro {switch_to.has_intro} current_con {current_con}')
         # if self.debug:
         #     self.screenshot(f'switch_next_char_{current_con}')
-        from src.char.ShoreKeeper import ShoreKeeper 
+        from src.char.ShoreKeeper import ShoreKeeper
         last_click = 0
         start = time.time()
         while True:
@@ -395,6 +395,10 @@ class BaseCombatTask(CombatCheck):
 
     def find_mouse_forte(self):
         return self.find_one('mouse_forte', horizontal_variance=0.025, threshold=0.6,
+                             frame_processor=binarize_for_matching)
+
+    def find_e_forte(self):
+        return self.find_one('e_forte', horizontal_variance=0.025, threshold=0.6,
                              frame_processor=binarize_for_matching)
 
     def get_liberation_key(self):

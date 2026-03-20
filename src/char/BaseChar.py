@@ -705,6 +705,9 @@ class BaseChar:
         """
         return self.task.find_mouse_forte()
 
+    def is_e_forte_full(self):
+        return self.task.find_e_forte()
+
     def is_forte_full(self):
         """判断共鸣回路是否已充满/可用。
 
