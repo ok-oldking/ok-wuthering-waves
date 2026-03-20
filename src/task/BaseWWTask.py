@@ -1010,7 +1010,8 @@ class BaseWWTask(BaseTask):
                 self.draw_boxes('double_drop', double, color='blue')
             gap_per_index = (bar_bottom - bar_top) / total_number
             y = gap_per_index * (serial_number - container_max_rows + default_container_display) + bar_top
-            self.click_relative(0.98, y)
+            x = 2490 / 2560
+            self.click_relative(x, y)
             logger.info(f'scroll to target')
             btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.94, 0.6, 0.97, 0.88), threshold=0.8)
             if btns is None:
