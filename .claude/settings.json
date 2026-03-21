@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Administrator/anaconda3/envs/okww/Lib/site-packages/ok/**)"
+    ]
+  }
+}

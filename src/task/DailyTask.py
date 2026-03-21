@@ -56,12 +56,12 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.default_config.update({
             '多账号切换': False,
             '账号列表': '',
-            '全部完成后退出游戏': False,
+            '全部完成后退出': False,
         })
         self.config_description.update({
             '多账号切换': '完成一条龙任务后自动切换账号并重复执行',
             '账号列表': '使用逗号、分号分隔手机号前3位,后4位（例：138,0001;139,0002;），自动识别当前账号',
-            '全部完成后退出游戏': '列表中所有账号完成后退出游戏',
+            '全部完成后退出': '所有账号完成后退出游戏并关闭软件',
         })
         self.description = "登录、月卡、刷声骸、活跃度、战令、邮件一条龙"
 
@@ -96,11 +96,10 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 self._switch_to_login()
                 in_game = False
 
-        if self.config.get('全部完成后退出游戏'):
+        if self.config.get('全部完成后退出'):
             if in_game:
                 self._exit_game()
-            else:
-                self.log_info('All accounts done (on login screen), skipping game exit')
+            self._exit_software()
 
     def _run_daily_once(self):
         self.ensure_main(time_out=180)
@@ -312,27 +311,8 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.ensure_main(time_out=180)
         self.log_info(f'Login successful: {prefix}****{suffix}')
 
-    def _confirm_exit_countdown(self, timeout_seconds=180):
-        import ctypes
-        MB_OKCANCEL = 0x00000001
-        MB_ICONINFORMATION = 0x00000040
-        MB_TOPMOST = 0x00040000
-        IDCANCEL = 2
-        result = ctypes.windll.user32.MessageBoxTimeoutW(
-            None,
-            f"所有账号已完成一条龙任务。\n\n将在 {timeout_seconds // 60} 分钟后自动退出游戏。\n\n点击「确定」立即退出，点击「取消」停止退出。",
-            "ok-ww — 即将退出游戏",
-            MB_OKCANCEL | MB_ICONINFORMATION | MB_TOPMOST,
-            0,
-            timeout_seconds * 1000,
-        )
-        return result != IDCANCEL
-
     def _exit_game(self):
-        if not self._confirm_exit_countdown():
-            self.log_info('Auto-exit cancelled by user.')
-            return
-        self.log_info('All accounts done. Exiting game.')
+        self.log_info('所有账号已完成，正在退出游戏')
         self.send_key('esc', after_sleep=1.5)
         self.wait_until(
             lambda: bool(self.find_boxes(self.ocr(), match='终端')),
@@ -348,6 +328,10 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             self.click(btn, after_sleep=2)
         else:
             self.click_relative(0.32, 0.63, after_sleep=2)
+
+    def _exit_software(self):
+        self.log_info('正在关闭软件')
+        self.exit_event.set()
 
     def claim_battle_pass(self):
         self.log_info('battle pass')
