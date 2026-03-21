@@ -7,6 +7,7 @@ from PIL import ImageGrab
 from qfluentwidgets import FluentIcon
 
 from ok import Logger, TaskDisabledException
+from src.Labels import Labels
 from src.task.BaseWWTask import number_re, stamina_re
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.ForgeryTask import ForgeryTask
@@ -27,6 +28,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.group_name = "Daily"
         self.group_icon = FluentIcon.CALENDAR
         self.icon = FluentIcon.CAR
+        self.support_schedule_task = True
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
         self.default_config = {
             'Which to Farm': self.support_tasks[0],
@@ -53,6 +55,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 'options': material_option_list
             },
         }
+        self.description = "Login, claim monthly card, farm echo, and claim daily reward"
         self.default_config.update({
             '多账号切换': False,
             '账号列表': '',
@@ -67,6 +70,8 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def run(self):
         WWOneTimeTask.run(self)
+        self.ensure_main(time_out=180)
+        self.go_to_tower()
         accounts = self._parse_account_list() if self.config.get('多账号切换') else []
 
         self._run_daily_once()
@@ -118,8 +123,23 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             except Exception as e:
                 self.log_error("NightmareNestTask Failed", e)
                 self.ensure_main(time_out=180)
-        used_stamina, completed = self.open_daily()
+        used_stamina, daily_reward_ready = self.open_daily()
+        completed = daily_reward_ready
+        if not daily_reward_ready and used_stamina < 180:
+            self.send_key('esc', after_sleep=1)
+            target = self.config.get('Which to Farm', self.support_tasks[0])
+            if target == self.support_tasks[0]:
+                self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina,
+                                                             config=self.config)
+            elif target == self.support_tasks[1]:
+                self.get_task_by_class(ForgeryTask).farm_forgery(daily=True, used_stamina=used_stamina,
+                                                                 config=self.config)
+            else:
+                self.get_task_by_class(SimulationTask).farm_simulation(daily=True, used_stamina=used_stamina,
+                                                                       config=self.config)
+            self.sleep(4)
 
+        self.claim_daily()
         self.send_key('esc', after_sleep=1)
         if not completed:
             if used_stamina < 180:
@@ -140,6 +160,23 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.sleep(1)
         self.claim_battle_pass()
         self.log_info('Task completed', notify=True)
+
+    def go_to_tower(self):
+        self.log_info('go to tower')
+        self.ensure_main(time_out=80)
+        gray_book_weekly = self.openF2Book(Labels.gray_book_weekly)
+        if not gray_book_weekly:
+            self.log_error('go_to_tower can not find gray_book_weekly')
+            return
+        self.click_box(gray_book_weekly, after_sleep=1)
+        btn = self.find_one(Labels.boss_proceed, box=self.box_of_screen(0.94, 0.3, 0.97, 0.41), threshold=0.8)
+        if btn is None:
+            self.ensure_main(time_out=10)
+            return
+        self.click_box(btn, after_sleep=1)
+        self.wait_click_travel()
+        self.wait_in_team_and_world(time_out=120)
+        self.sleep(1)
 
     def _parse_account_list(self):
         raw = self.config.get('账号列表', '')
@@ -376,6 +413,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         return points
 
     def claim_daily(self):
+        self.info_set('current task', 'claim daily')
         total_points = self.get_total_daily_points()
         if total_points < 100:
             self.ensure_main(time_out=5)
