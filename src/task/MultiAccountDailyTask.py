@@ -1,0 +1,241 @@
+import ctypes
+import re
+
+import numpy as np
+import win32gui
+from PIL import ImageGrab
+from qfluentwidgets import FluentIcon
+
+from ok import Logger
+from src.task.DailyTask import DailyTask
+from src.task.WWOneTimeTask import WWOneTimeTask
+from src.task.BaseCombatTask import BaseCombatTask
+
+logger = Logger.get_logger(__name__)
+
+
+class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.name = "多账号一条龙"
+        self.group_name = "Daily"
+        self.group_icon = FluentIcon.CALENDAR
+        self.icon = FluentIcon.PEOPLE
+        self.supported_languages = ["zh_CN"]
+        self.description = "多账号自动切换，依次执行每日一条龙任务"
+        self.default_config = {
+            '账号列表': '',
+            '全部完成后退出': False,
+        }
+        self.config_description = {
+            '账号列表': '每行填写一个手机尾号（后4位），自动识别当前登录账号',
+            '全部完成后退出': '所有账号完成后退出游戏并关闭软件',
+        }
+        self.config_type = {
+            '账号列表': {'type': 'text_edit'},
+        }
+
+    def run(self):
+        WWOneTimeTask.run(self)
+        accounts = self._parse_account_list()
+
+        self.run_task_by_class(DailyTask)
+
+        if not accounts:
+            return
+
+        done_set = set()
+        in_game = True
+
+        detected = self._switch_to_login_and_detect()
+        in_game = False
+        if detected:
+            done_set.add(detected)
+
+        for i, suffix in enumerate(accounts):
+            if suffix in done_set:
+                self.log_info(f'跳过 ****{suffix}（已完成）')
+                continue
+            self._select_and_login_account(suffix)
+            in_game = True
+            self.run_task_by_class(DailyTask)
+            done_set.add(suffix)
+            remaining = [a for a in accounts[i + 1:] if a not in done_set]
+            if remaining:
+                self._switch_to_login()
+                in_game = False
+
+        if self.config.get('全部完成后退出'):
+            if in_game:
+                self._exit_game()
+            self._exit_software()
+
+    def _parse_account_list(self):
+        raw = self.config.get('账号列表', '')
+        if not raw or not raw.strip():
+            return []
+        result = []
+        for idx, line in enumerate(raw.splitlines(), 1):
+            line = line.strip()
+            if not line:
+                continue
+            if not line.isdigit():
+                self.log_error(f'账号列表第{idx}行格式错误（必须为纯数字）："{line}"')
+                continue
+            if len(line) != 4:
+                self.log_error(f'账号列表第{idx}行格式错误（应为4位尾号）："{line}"')
+                continue
+            result.append(line)
+        if not result:
+            self.log_error('账号列表中没有有效账号，请每行填写一个4位手机尾号')
+        return result
+
+    def _make_masked_pattern(self, suffix):
+        return re.compile(rf'\d+\*+{re.escape(suffix)}')
+
+    def _bring_game_to_front(self):
+        hwnd = self.hwnd.hwnd
+        try:
+            win32gui.SetForegroundWindow(hwnd)
+        except Exception:
+            pass
+        self.sleep(0.3)
+
+    def _screenshot_login_screen(self):
+        self._bring_game_to_front()
+        hwnd = self.hwnd.hwnd
+        _, _, client_w, client_h = win32gui.GetClientRect(hwnd)
+        client_x, client_y = win32gui.ClientToScreen(hwnd, (0, 0))
+        img = ImageGrab.grab(bbox=(client_x, client_y, client_x + client_w, client_y + client_h))
+        return np.array(img)[..., ::-1]
+
+    def _ocr_login_screen(self, **kwargs):
+        frame = self._screenshot_login_screen()
+        return self.ocr(frame=frame, **kwargs)
+
+    def _login_click(self, rel_x, rel_y, after_sleep=0.5):
+        hwnd = self.hwnd.hwnd
+        _, _, client_w, client_h = win32gui.GetClientRect(hwnd)
+        client_x, client_y = win32gui.ClientToScreen(hwnd, (0, 0))
+        abs_x = int(client_x + client_w * rel_x)
+        abs_y = int(client_y + client_h * rel_y)
+        self._bring_game_to_front()
+        ctypes.windll.user32.SetCursorPos(abs_x, abs_y)
+        self.sleep(0.05)
+        ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
+        self.sleep(0.05)
+        ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
+        if after_sleep > 0:
+            self.sleep(after_sleep)
+
+    def _login_dialog_click(self, offset_x, offset_y, after_sleep=0.5):
+        hwnd = self.hwnd.hwnd
+        _, _, client_w, client_h = win32gui.GetClientRect(hwnd)
+        client_x, client_y = win32gui.ClientToScreen(hwnd, (0, 0))
+        center_x = client_x + client_w // 2
+        center_y = client_y + client_h // 2
+        abs_x = center_x + int(offset_x)
+        abs_y = center_y + int(offset_y)
+        self._bring_game_to_front()
+        ctypes.windll.user32.SetCursorPos(abs_x, abs_y)
+        self.sleep(0.05)
+        ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
+        self.sleep(0.05)
+        ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
+        if after_sleep > 0:
+            self.sleep(after_sleep)
+
+    def _switch_to_login(self):
+        self.log_info('正在返回登录界面')
+        self.send_key('esc', after_sleep=1.5)
+        self.wait_until(
+            lambda: bool(self.find_boxes(self.ocr(), match='终端')),
+            time_out=10, raise_if_not_found=False
+        )
+        self.click_relative(0.04, 0.96, after_sleep=1)
+        self.wait_until(
+            lambda: bool(self.find_boxes(self.ocr(), match='返回登录')),
+            time_out=10, raise_if_not_found=False
+        )
+        texts = self.ocr()
+        if btn := self.find_boxes(texts, match='返回登录'):
+            self.click(btn, after_sleep=3)
+        else:
+            self.click_relative(0.67, 0.63, after_sleep=3)
+        self.wait_until(
+            lambda: bool(self.find_boxes(
+                self._ocr_login_screen(),
+                boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.8),
+                match='其他登录方式')),
+            time_out=60, raise_if_not_found=False
+        )
+        self.log_info('已返回登录界面')
+
+    def _switch_to_login_and_detect(self):
+        self._switch_to_login()
+        suffix = self._detect_current_account_from_login()
+        if suffix:
+            self.log_info(f'检测到已完成账号：****{suffix}')
+        else:
+            self.log_info('无法识别当前登录账号')
+        return suffix
+
+    def _detect_current_account_from_login(self):
+        texts = self._ocr_login_screen()
+        pattern = re.compile(r'\d{3}\*+(\d{4})')
+        for box in texts:
+            m = pattern.search(box.name)
+            if m:
+                return m.group(1)
+        return None
+
+    def _click_account_in_list(self, pattern):
+        texts = self._ocr_login_screen()
+        if boxes := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.65, 0.9), match=pattern):
+            box = boxes[0]
+            hwnd = self.hwnd.hwnd
+            _, _, client_w, client_h = win32gui.GetClientRect(hwnd)
+            box_cx, box_cy = box.center()
+            max_x = client_w // 2 + 200
+            box_cx = min(box_cx, max_x)
+            offset_x = box_cx - client_w // 2
+            offset_y = box_cy - client_h // 2
+            self._login_dialog_click(offset_x, offset_y, after_sleep=0.5)
+            return True
+        return False
+
+    def _select_and_login_account(self, suffix):
+        pattern = self._make_masked_pattern(suffix)
+        self.log_info(f'正在选择账号：****{suffix}')
+        self._login_dialog_click(270, -43, after_sleep=1)
+        self.wait_until(
+            lambda: self._click_account_in_list(pattern),
+            time_out=10, raise_if_not_found=True
+        )
+        self._login_dialog_click(0, 95, after_sleep=3)
+        self._logged_in = False
+        self.ensure_main(time_out=180)
+        self.log_info(f'登录成功：****{suffix}')
+
+    def _exit_game(self):
+        self.log_info('所有账号已完成，正在退出游戏')
+        self.send_key('esc', after_sleep=1.5)
+        self.wait_until(
+            lambda: bool(self.find_boxes(self.ocr(), match='终端')),
+            time_out=10, raise_if_not_found=False
+        )
+        self.click_relative(0.04, 0.96, after_sleep=1)
+        self.wait_until(
+            lambda: bool(self.find_boxes(self.ocr(), match='退出游戏')),
+            time_out=10, raise_if_not_found=False
+        )
+        texts = self.ocr()
+        if btn := self.find_boxes(texts, match='退出游戏'):
+            self.click(btn, after_sleep=2)
+        else:
+            self.click_relative(0.32, 0.63, after_sleep=2)
+
+    def _exit_software(self):
+        self.log_info('正在关闭软件')
+        self.exit_after_task = True
