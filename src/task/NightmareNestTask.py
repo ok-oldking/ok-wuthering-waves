@@ -119,7 +119,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
 
     def go_nightmare_scroll(self):
         self.click(0.17, 0.68, after_sleep=1)
-        self.click(0.98, 0.54, after_sleep=1)
+        self.click(self.tacet_scroll_x, 0.54, after_sleep=1)
         self.log_info('go nightmare scroll')
 
     def go_nest(self):

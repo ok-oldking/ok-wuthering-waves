@@ -35,6 +35,7 @@ class BaseWWTask(BaseTask):
         self.next_monthly_card_start = 0
         self._logged_in = False
         self.scene: WWScene | None = None
+        self.tacet_scroll_x = 2490 / 2560
 
     def is_open_world_auto_combat(self):
         from src.task.AutoCombatTask import AutoCombatTask
@@ -593,7 +594,8 @@ class BaseWWTask(BaseTask):
     def walk_to_treasure(self, send_f=True, raise_if_not_found=True):
         self.log_info('start walk_to_treasure')
         if not self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text):
-            raise Exception(f'can not walk to treasure!')
+            if not self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text):
+                raise Exception(f'can not walk to treasure!')
         if send_f:
             self.walk_until_f(time_out=2, backward_time=0, raise_if_not_found=raise_if_not_found)
         self.sleep(1)
@@ -711,7 +713,7 @@ class BaseWWTask(BaseTask):
                 return False
             if self.find_boxes(texts, match=re.compile("游戏即将重启")):
                 self.log_info('游戏更新成功, 游戏即将重启')
-                self.click(self.find_boxes(texts, match="确认"), after_sleep=30)
+                self.click(self.find_boxes(texts, match="确认"), after_sleep=60)
                 result = self.start_device()
                 self.log_info(f'start_device end {result}')
                 self.sleep(30)
@@ -1010,8 +1012,7 @@ class BaseWWTask(BaseTask):
                 self.draw_boxes('double_drop', double, color='blue')
             gap_per_index = (bar_bottom - bar_top) / total_number
             y = gap_per_index * (serial_number - container_max_rows + default_container_display) + bar_top
-            x = 2490 / 2560
-            self.click_relative(x, y)
+            self.click_relative(self.tacet_scroll_x, y)
             logger.info(f'scroll to target')
             btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.94, 0.6, 0.97, 0.88), threshold=0.8)
             if btns is None:
