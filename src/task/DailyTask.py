@@ -61,7 +61,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.config_description.update({
             '多账号切换': '完成一条龙任务后自动切换账号并重复执行',
             '账号列表': '使用逗号、分号分隔手机号前3位,后4位（例：138,0001;139,0002;），自动识别当前账号',
-            '全部完成后退出': '所有账号完成后退出游戏并关闭软件',
+            '全部完成后退出': '所有账号完成后退出游戏并关闭软件（列表只有一个账号可能会失败）',
         })
         self.description = "登录、月卡、刷声骸、活跃度、战令、邮件一条龙"
 
@@ -331,7 +331,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def _exit_software(self):
         self.log_info('正在关闭软件')
-        self.exit_event.set()
+        self.exit_after_task = True
 
     def claim_battle_pass(self):
         self.log_info('battle pass')
@@ -376,20 +376,44 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         return points
 
     def claim_daily(self):
-        self.info_set('current task', 'claim daily')
-        self.ensure_main(time_out=5)
-        self.open_daily()
-
-        self.click(0.87, 0.17, after_sleep=0.5)
-        self.sleep(1)
-
         total_points = self.get_total_daily_points()
+        if total_points < 100:
+            self.ensure_main(time_out=5)
+            self.open_daily()
+            self.log_info('claim pending daily quest rewards before claiming daily chest')
+            self.click(0.87, 0.17, after_sleep=0.5)
+            self.sleep(1)
+            total_points = self.get_total_daily_points()
+
         self.info_set('daily points', total_points)
         if total_points < 100:
             raise Exception("Can't complete daily task, may need to increase stamina manually!")
 
-        self.click(0.89, 0.85, after_sleep=1)
+        self.click_daily_reward_box(100)
         self.ensure_main(time_out=10)
+
+    def click_daily_reward_box(self, reward_points):
+        reward_boxes = self.ocr(
+            0.72, 0.78, 0.98, 0.98,
+            match=re.compile(rf'^{reward_points}$')
+        )
+        if reward_boxes:
+            reward_box = max(reward_boxes, key=lambda box: box.x)
+            click_box = reward_box.copy(
+                x_offset=int(-reward_box.width * 0.8),
+                y_offset=int(-reward_box.height * 3.0),
+                width_offset=int(reward_box.width * 1.6),
+                height_offset=int(reward_box.height * 2.2),
+                name=f'daily_reward_{reward_points}'
+            )
+            self.log_info(f'claim daily reward {reward_points} via OCR {reward_box}')
+            self.click(click_box, after_sleep=1)
+            return True
+
+        # Fall back to a more right-shifted point than the previous fixed coordinate.
+        self.log_info(f'claim daily reward {reward_points} via fallback coordinate')
+        self.click(0.94, 0.85, after_sleep=1)
+        return False
 
     def claim_mail(self):
         self.info_set('current task', 'claim mail')
