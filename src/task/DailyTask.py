@@ -1,9 +1,12 @@
+import ctypes
 import re
 
+import numpy as np
+import win32gui
+from PIL import ImageGrab
 from qfluentwidgets import FluentIcon
 
 from ok import Logger, TaskDisabledException
-from src.Labels import Labels
 from src.task.BaseWWTask import number_re, stamina_re
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.ForgeryTask import ForgeryTask
@@ -24,7 +27,6 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.group_name = "Daily"
         self.group_icon = FluentIcon.CALENDAR
         self.icon = FluentIcon.CAR
-        self.support_schedule_task = True
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
         self.default_config = {
             'Which to Farm': self.support_tasks[0],
@@ -51,13 +53,57 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 'options': material_option_list
             },
         }
-        self.description = "Login, claim monthly card, farm echo, and claim daily reward"
+        self.default_config.update({
+            '多账号切换': False,
+            '账号列表': '',
+            '全部完成后退出游戏': False,
+        })
+        self.config_description.update({
+            '多账号切换': '完成一条龙任务后自动切换账号并重复执行',
+            '账号列表': '使用逗号、分号分隔手机号前3位,后4位（例：138,0001;139,0002;），自动识别当前账号',
+            '全部完成后退出游戏': '列表中所有账号完成后退出游戏',
+        })
+        self.description = "登录、月卡、刷声骸、活跃度、战令、邮件一条龙"
 
     def run(self):
         WWOneTimeTask.run(self)
-        self.ensure_main(time_out=180)
-        self.go_to_tower()
+        accounts = self._parse_account_list() if self.config.get('多账号切换') else []
 
+        self._run_daily_once()
+
+        if not accounts:
+            return
+
+        done_set = set()
+        in_game = True
+
+        # Go to login screen and detect which account was just completed
+        detected = self._switch_to_login_and_detect()
+        in_game = False
+        if detected:
+            done_set.add(detected)
+
+        for i, account in enumerate(accounts):
+            if account in done_set:
+                self.log_info(f'Skipping {account[0]}****{account[1]} (already done)')
+                continue
+            self._select_and_login_account(*account)
+            in_game = True
+            self._run_daily_once()
+            done_set.add(account)
+            remaining_after = [a for a in accounts[i + 1:] if a not in done_set]
+            if remaining_after:
+                self._switch_to_login()
+                in_game = False
+
+        if self.config.get('全部完成后退出游戏'):
+            if in_game:
+                self._exit_game()
+            else:
+                self.log_info('All accounts done (on login screen), skipping game exit')
+
+    def _run_daily_once(self):
+        self.ensure_main(time_out=180)
         condition1 = self.config.get('Auto Farm all Nightmare Nest')
         condition2 = self.config.get('Farm Nightmare Nest for Daily Echo')
         if condition1 or condition2:
@@ -73,44 +119,235 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             except Exception as e:
                 self.log_error("NightmareNestTask Failed", e)
                 self.ensure_main(time_out=180)
-        used_stamina, daily_reward_ready = self.open_daily()
-        if not daily_reward_ready and used_stamina < 180:
-            self.send_key('esc', after_sleep=1)
-            target = self.config.get('Which to Farm', self.support_tasks[0])
-            if target == self.support_tasks[0]:
-                self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina,
-                                                             config=self.config)
-            elif target == self.support_tasks[1]:
-                self.get_task_by_class(ForgeryTask).farm_forgery(daily=True, used_stamina=used_stamina,
-                                                                 config=self.config)
-            else:
-                self.get_task_by_class(SimulationTask).farm_simulation(daily=True, used_stamina=used_stamina,
-                                                                       config=self.config)
-            self.sleep(4)
+        used_stamina, completed = self.open_daily()
 
-        self.claim_daily()
+        self.send_key('esc', after_sleep=1)
+        if not completed:
+            if used_stamina < 180:
+                target = self.config.get('Which to Farm', self.support_tasks[0])
+                if target == self.support_tasks[0]:
+                    self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina,
+                                                                 config=self.config)
+                elif target == self.support_tasks[1]:
+                    self.get_task_by_class(ForgeryTask).farm_forgery(daily=True, used_stamina=used_stamina,
+                                                                     config=self.config)
+                else:
+                    self.get_task_by_class(SimulationTask).farm_simulation(daily=True, used_stamina=used_stamina,
+                                                                           config=self.config)
+                self.sleep(4)
+            self.claim_daily()
 
         self.claim_mail()
         self.sleep(1)
         self.claim_battle_pass()
         self.log_info('Task completed', notify=True)
 
-    def go_to_tower(self):
-        self.log_info('go to tower')
-        self.ensure_main(time_out=80)
-        gray_book_weekly = self.openF2Book(Labels.gray_book_weekly)
-        if not gray_book_weekly:
-            self.log_error('go_to_tower can not find gray_book_weekly')
+    def _parse_account_list(self):
+        raw = self.config.get('账号列表', '')
+        if not raw or not raw.strip():
+            self.log_info('账号列表为空，跳过多账号切换')
+            return []
+        # 兼容中文分号/逗号
+        raw = raw.replace('；', ';').replace('，', ',')
+        result = []
+        for idx, entry in enumerate(raw.split(';'), 1):
+            entry = entry.strip()
+            if not entry:
+                continue
+            if ',' not in entry:
+                self.log_error(f'账号列表第{idx}项格式错误（缺少逗号分隔）："{entry}"，正确格式：前3位,后4位')
+                continue
+            parts = entry.split(',', 1)
+            prefix, suffix = parts[0].strip(), parts[1].strip()
+            if not prefix or not suffix:
+                self.log_error(f'账号列表第{idx}项格式错误（前缀或后缀为空）："{entry}"')
+                continue
+            if not prefix.isdigit() or not suffix.isdigit():
+                self.log_error(f'账号列表第{idx}项格式错误（必须为纯数字）："{entry}"')
+                continue
+            if len(prefix) != 3 or len(suffix) != 4:
+                self.log_error(f'账号列表第{idx}项格式错误（应为前3位,后4位）："{entry}"')
+                continue
+            result.append((prefix, suffix))
+        if not result:
+            self.log_error('账号列表中没有有效账号，请检查格式（例：138,0001;139,0002;）')
+        return result
+
+    def _make_masked_pattern(self, prefix, suffix):
+        return re.compile(rf'{re.escape(prefix)}\*+{re.escape(suffix)}')
+
+    def _bring_game_to_front(self):
+        """Bring the game window to foreground (push ok-ww behind)."""
+        hwnd = self.hwnd.hwnd
+        try:
+            win32gui.SetForegroundWindow(hwnd)
+        except Exception:
+            pass
+        self.sleep(0.3)
+
+    def _screenshot_login_screen(self):
+        """Capture game window region from desktop (includes CEF login overlay)."""
+        self._bring_game_to_front()
+        hwnd = self.hwnd.hwnd
+        _, _, client_w, client_h = win32gui.GetClientRect(hwnd)
+        client_x, client_y = win32gui.ClientToScreen(hwnd, (0, 0))
+        img = ImageGrab.grab(bbox=(client_x, client_y, client_x + client_w, client_y + client_h))
+        return np.array(img)[..., ::-1]  # RGB→BGR
+
+    def _ocr_login_screen(self, **kwargs):
+        """OCR using desktop screenshot instead of framework capture."""
+        frame = self._screenshot_login_screen()
+        return self.ocr(frame=frame, **kwargs)
+
+    def _login_click(self, rel_x, rel_y, after_sleep=0.5):
+        """Click on login screen using real mouse (PostMessage can't reach CEF).
+        Coordinates are relative to game client area (0.0~1.0)."""
+        hwnd = self.hwnd.hwnd
+        _, _, client_w, client_h = win32gui.GetClientRect(hwnd)
+        client_x, client_y = win32gui.ClientToScreen(hwnd, (0, 0))
+        abs_x = int(client_x + client_w * rel_x)
+        abs_y = int(client_y + client_h * rel_y)
+        self._bring_game_to_front()
+        ctypes.windll.user32.SetCursorPos(abs_x, abs_y)
+        self.sleep(0.05)
+        ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)  # LEFTDOWN
+        self.sleep(0.05)
+        ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)  # LEFTUP
+        if after_sleep > 0:
+            self.sleep(after_sleep)
+
+    def _login_dialog_click(self, offset_x, offset_y, after_sleep=0.5):
+        """Click at game-window-center + (offset_x, offset_y) using real mouse.
+        The login dialog is always centered on the game window regardless of resolution,
+        so center offsets are constant across all resolutions."""
+        hwnd = self.hwnd.hwnd
+        _, _, client_w, client_h = win32gui.GetClientRect(hwnd)
+        client_x, client_y = win32gui.ClientToScreen(hwnd, (0, 0))
+        center_x = client_x + client_w // 2
+        center_y = client_y + client_h // 2
+        abs_x = center_x + int(offset_x)
+        abs_y = center_y + int(offset_y)
+        self._bring_game_to_front()
+        ctypes.windll.user32.SetCursorPos(abs_x, abs_y)
+        self.sleep(0.05)
+        ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)  # LEFTDOWN
+        self.sleep(0.05)
+        ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)  # LEFTUP
+        if after_sleep > 0:
+            self.sleep(after_sleep)
+
+    def _switch_to_login(self):
+        self.log_info('Switching account: opening terminal menu')
+        self.send_key('esc', after_sleep=1.5)
+        self.wait_until(
+            lambda: bool(self.find_boxes(self.ocr(), match='终端')),
+            time_out=10, raise_if_not_found=False
+        )
+        self.click_relative(0.04, 0.96, after_sleep=1)
+        self.wait_until(
+            lambda: bool(self.find_boxes(self.ocr(), match='返回登录')),
+            time_out=10, raise_if_not_found=False
+        )
+        texts = self.ocr()
+        if btn := self.find_boxes(texts, match='返回登录'):
+            self.click(btn, after_sleep=3)
+        else:
+            self.click_relative(0.67, 0.63, after_sleep=3)
+        # Login overlay is rendered by CEF — must use desktop screenshot
+        self.wait_until(
+            lambda: bool(self.find_boxes(
+                self._ocr_login_screen(),
+                boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.8),
+                match='其他登录方式')),
+            time_out=60, raise_if_not_found=False
+        )
+        self.log_info('Returned to login screen')
+
+    def _switch_to_login_and_detect(self):
+        self._switch_to_login()
+        account = self._detect_current_account_from_login()
+        if account:
+            self.log_info(f'Detected completed account: {account[0]}****{account[1]}')
+        else:
+            self.log_info('Could not detect current account from login screen')
+        return account
+
+    def _detect_current_account_from_login(self):
+        texts = self._ocr_login_screen()
+        pattern = re.compile(r'(\d{3})\*+(\d{4})')
+        for box in texts:
+            m = pattern.search(box.name)
+            if m:
+                return m.group(1), m.group(2)
+        return None
+
+    def _click_account_in_list(self, pattern):
+        texts = self._ocr_login_screen()
+        if boxes := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.65, 0.9), match=pattern):
+            box = boxes[0]
+            hwnd = self.hwnd.hwnd
+            _, _, client_w, client_h = win32gui.GetClientRect(hwnd)
+            box_cx, box_cy = box.center()
+            # Cap x to left side of dialog to avoid minus button
+            max_x = client_w // 2 + 200
+            box_cx = min(box_cx, max_x)
+            offset_x = box_cx - client_w // 2
+            offset_y = box_cy - client_h // 2
+            self._login_dialog_click(offset_x, offset_y, after_sleep=0.5)
+            return True
+        return False
+
+    def _select_and_login_account(self, prefix, suffix):
+        pattern = self._make_masked_pattern(prefix, suffix)
+        self.log_info(f'Selecting account: {prefix}****{suffix}')
+        # Click dropdown arrow — center offset (dialog is fixed-size, centered)
+        self._login_dialog_click(270, -43, after_sleep=1)
+        self.wait_until(
+            lambda: self._click_account_in_list(pattern),
+            time_out=10, raise_if_not_found=True
+        )
+        # Click login button — horizontally centered, 95px below center (320px from dialog top)
+        self._login_dialog_click(0, 95, after_sleep=3)
+        self._logged_in = False
+        self.ensure_main(time_out=180)
+        self.log_info(f'Login successful: {prefix}****{suffix}')
+
+    def _confirm_exit_countdown(self, timeout_seconds=180):
+        import ctypes
+        MB_OKCANCEL = 0x00000001
+        MB_ICONINFORMATION = 0x00000040
+        MB_TOPMOST = 0x00040000
+        IDCANCEL = 2
+        result = ctypes.windll.user32.MessageBoxTimeoutW(
+            None,
+            f"所有账号已完成一条龙任务。\n\n将在 {timeout_seconds // 60} 分钟后自动退出游戏。\n\n点击「确定」立即退出，点击「取消」停止退出。",
+            "ok-ww — 即将退出游戏",
+            MB_OKCANCEL | MB_ICONINFORMATION | MB_TOPMOST,
+            0,
+            timeout_seconds * 1000,
+        )
+        return result != IDCANCEL
+
+    def _exit_game(self):
+        if not self._confirm_exit_countdown():
+            self.log_info('Auto-exit cancelled by user.')
             return
-        self.click_box(gray_book_weekly, after_sleep=1)
-        btn = self.find_one(Labels.boss_proceed, box=self.box_of_screen(0.94, 0.3, 0.97, 0.41), threshold=0.8)
-        if btn is None:
-            self.ensure_main(time_out=10)
-            return
-        self.click_box(btn, after_sleep=1)
-        self.wait_click_travel()
-        self.wait_in_team_and_world(time_out=120)
-        self.sleep(1)
+        self.log_info('All accounts done. Exiting game.')
+        self.send_key('esc', after_sleep=1.5)
+        self.wait_until(
+            lambda: bool(self.find_boxes(self.ocr(), match='终端')),
+            time_out=10, raise_if_not_found=False
+        )
+        self.click_relative(0.04, 0.96, after_sleep=1)
+        self.wait_until(
+            lambda: bool(self.find_boxes(self.ocr(), match='退出游戏')),
+            time_out=10, raise_if_not_found=False
+        )
+        texts = self.ocr()
+        if btn := self.find_boxes(texts, match='退出游戏'):
+            self.click(btn, after_sleep=2)
+        else:
+            self.click_relative(0.32, 0.63, after_sleep=2)
 
     def claim_battle_pass(self):
         self.log_info('battle pass')
@@ -156,44 +393,19 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def claim_daily(self):
         self.info_set('current task', 'claim daily')
-        total_points = self.get_total_daily_points()
-        if total_points < 100:
-            self.ensure_main(time_out=5)
-            self.open_daily()
-            self.log_info('claim pending daily quest rewards before claiming daily chest')
-            self.click(0.87, 0.17, after_sleep=0.5)
-            self.sleep(1)
-            total_points = self.get_total_daily_points()
+        self.ensure_main(time_out=5)
+        self.open_daily()
 
+        self.click(0.87, 0.17, after_sleep=0.5)
+        self.sleep(1)
+
+        total_points = self.get_total_daily_points()
         self.info_set('daily points', total_points)
         if total_points < 100:
             raise Exception("Can't complete daily task, may need to increase stamina manually!")
 
-        self.click_daily_reward_box(100)
+        self.click(0.89, 0.85, after_sleep=1)
         self.ensure_main(time_out=10)
-
-    def click_daily_reward_box(self, reward_points):
-        reward_boxes = self.ocr(
-            0.72, 0.78, 0.98, 0.98,
-            match=re.compile(rf'^{reward_points}$')
-        )
-        if reward_boxes:
-            reward_box = max(reward_boxes, key=lambda box: box.x)
-            click_box = reward_box.copy(
-                x_offset=int(-reward_box.width * 0.8),
-                y_offset=int(-reward_box.height * 3.0),
-                width_offset=int(reward_box.width * 1.6),
-                height_offset=int(reward_box.height * 2.2),
-                name=f'daily_reward_{reward_points}'
-            )
-            self.log_info(f'claim daily reward {reward_points} via OCR {reward_box}')
-            self.click(click_box, after_sleep=1)
-            return True
-
-        # Fall back to a more right-shifted point than the previous fixed coordinate.
-        self.log_info(f'claim daily reward {reward_points} via fallback coordinate')
-        self.click(0.94, 0.85, after_sleep=1)
-        return False
 
     def claim_mail(self):
         self.info_set('current task', 'claim mail')
