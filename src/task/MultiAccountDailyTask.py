@@ -1,9 +1,5 @@
-import ctypes
 import re
 
-import numpy as np
-import win32gui
-from PIL import ImageGrab
 from qfluentwidgets import FluentIcon
 
 from ok import Logger
@@ -94,57 +90,11 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
     def _make_masked_pattern(self, suffix):
         return re.compile(rf'\d+\*+{re.escape(suffix)}')
 
-    def _bring_game_to_front(self):
-        hwnd = self.hwnd.hwnd
-        try:
-            win32gui.SetForegroundWindow(hwnd)
-        except Exception:
-            pass
-        self.sleep(0.3)
-
-    def _screenshot_login_screen(self):
-        self._bring_game_to_front()
-        hwnd = self.hwnd.hwnd
-        _, _, client_w, client_h = win32gui.GetClientRect(hwnd)
-        client_x, client_y = win32gui.ClientToScreen(hwnd, (0, 0))
-        img = ImageGrab.grab(bbox=(client_x, client_y, client_x + client_w, client_y + client_h))
-        return np.array(img)[..., ::-1]
-
-    def _ocr_login_screen(self, **kwargs):
-        frame = self._screenshot_login_screen()
-        return self.ocr(frame=frame, **kwargs)
-
-    def _login_click(self, rel_x, rel_y, after_sleep=0.5):
-        hwnd = self.hwnd.hwnd
-        _, _, client_w, client_h = win32gui.GetClientRect(hwnd)
-        client_x, client_y = win32gui.ClientToScreen(hwnd, (0, 0))
-        abs_x = int(client_x + client_w * rel_x)
-        abs_y = int(client_y + client_h * rel_y)
-        self._bring_game_to_front()
-        ctypes.windll.user32.SetCursorPos(abs_x, abs_y)
-        self.sleep(0.05)
-        ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
-        self.sleep(0.05)
-        ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
-        if after_sleep > 0:
-            self.sleep(after_sleep)
-
-    def _login_dialog_click(self, offset_x, offset_y, after_sleep=0.5):
-        hwnd = self.hwnd.hwnd
-        _, _, client_w, client_h = win32gui.GetClientRect(hwnd)
-        client_x, client_y = win32gui.ClientToScreen(hwnd, (0, 0))
-        center_x = client_x + client_w // 2
-        center_y = client_y + client_h // 2
-        abs_x = center_x + int(offset_x)
-        abs_y = center_y + int(offset_y)
-        self._bring_game_to_front()
-        ctypes.windll.user32.SetCursorPos(abs_x, abs_y)
-        self.sleep(0.05)
-        ctypes.windll.user32.mouse_event(2, 0, 0, 0, 0)
-        self.sleep(0.05)
-        ctypes.windll.user32.mouse_event(4, 0, 0, 0, 0)
-        if after_sleep > 0:
-            self.sleep(after_sleep)
+    def _click_center_offset(self, offset_x, offset_y, after_sleep=0.5):
+        h, w = self.frame.shape[:2]
+        rel_x = 0.5 + offset_x / w
+        rel_y = 0.5 + offset_y / h
+        self.click_relative(rel_x, rel_y, after_sleep=after_sleep)
 
     def _switch_to_login(self):
         self.log_info('正在返回登录界面')
@@ -165,7 +115,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             self.click_relative(0.67, 0.63, after_sleep=3)
         self.wait_until(
             lambda: bool(self.find_boxes(
-                self._ocr_login_screen(),
+                self.ocr(),
                 boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.8),
                 match='其他登录方式')),
             time_out=60, raise_if_not_found=False
@@ -182,7 +132,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         return suffix
 
     def _detect_current_account_from_login(self):
-        texts = self._ocr_login_screen()
+        texts = self.ocr()
         pattern = re.compile(r'\d{3}\*+(\d{4})')
         for box in texts:
             m = pattern.search(box.name)
@@ -191,29 +141,26 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         return None
 
     def _click_account_in_list(self, pattern):
-        texts = self._ocr_login_screen()
+        texts = self.ocr()
         if boxes := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.65, 0.9), match=pattern):
-            box = boxes[0]
-            hwnd = self.hwnd.hwnd
-            _, _, client_w, client_h = win32gui.GetClientRect(hwnd)
-            box_cx, box_cy = box.center()
-            max_x = client_w // 2 + 200
-            box_cx = min(box_cx, max_x)
-            offset_x = box_cx - client_w // 2
-            offset_y = box_cy - client_h // 2
-            self._login_dialog_click(offset_x, offset_y, after_sleep=0.5)
+            self.click(boxes[0], after_sleep=0.5)
             return True
         return False
 
     def _select_and_login_account(self, suffix):
         pattern = self._make_masked_pattern(suffix)
         self.log_info(f'正在选择账号：****{suffix}')
-        self._login_dialog_click(270, -43, after_sleep=1)
+        self._click_center_offset(270, -43, after_sleep=1)
         self.wait_until(
             lambda: self._click_account_in_list(pattern),
             time_out=10, raise_if_not_found=True
         )
-        self._login_dialog_click(0, 95, after_sleep=3)
+        texts = self.ocr()
+        login_btn = self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.8), match="登录")
+        if login_btn:
+            self.click(login_btn, after_sleep=3)
+        else:
+            self._click_center_offset(0, 95, after_sleep=3)
         self._logged_in = False
         self.ensure_main(time_out=180)
         self.log_info(f'登录成功：****{suffix}')
