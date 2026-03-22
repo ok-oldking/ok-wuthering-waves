@@ -693,23 +693,20 @@ class BaseWWTask(BaseTask):
 
     def wait_login(self):
         if not self._logged_in:
-            if self.find_one('login_account', vertical_variance=0.1, threshold=0.7):
-                self.wait_until(lambda: self.find_one('login_account', threshold=0.7) is None,
-                                pre_action=lambda: self.click_relative(0.5, 0.9, after_sleep=3), time_out=30)
-                self.wait_until(lambda: self.find_monthly_card() or self.in_team_and_world(),
-                                pre_action=lambda: self.click_relative(0.5, 0.9, after_sleep=3), time_out=120)
-                self.wait_until(lambda: self.in_team_and_world(),
-                                post_action=lambda: self.click_relative(0.5, 0.9, after_sleep=3), time_out=5)
-                self.log_info('Auto Login Success', notify=True)
-                self._logged_in = True
-                self.sleep(3)
+            if self.in_team_and_world():
                 return True
             self.handle_monthly_card()
-            texts = self.ocr()
+            texts = self.ocr(log=self.debug)
             if login := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match="登录"):
-                if not self.find_boxes(texts, match="+86"):
+                if not self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match="+86"):
                     self.click(login, after_sleep=1)
                     self.log_info('点击登录按钮!')
+                return False
+            if agree := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match="同意"):
+                self.log_debug(f'found agree {agree}')
+                if self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match=re.compile("隐私")):
+                    self.click(agree, after_sleep=1)
+                    self.log_info('点击同意按钮!')
                 return False
             if self.find_boxes(texts, match=re.compile("游戏即将重启")):
                 self.log_info('游戏更新成功, 游戏即将重启')
@@ -718,11 +715,17 @@ class BaseWWTask(BaseTask):
                 self.log_info(f'start_device end {result}')
                 self.sleep(30)
                 return False
+
             if start := self.find_boxes(texts, boundary='bottom_right', match=["开始游戏", re.compile("进入游戏")]):
                 if not self.find_boxes(texts, boundary='bottom_right', match="登录"):
                     self.click(start)
                     self.log_info(f'点击开始游戏! {start}')
                     return False
+
+            if login_account := self.find_boxes(texts, match=re.compile("Windows.{0,3}Product", re.IGNORECASE)):
+                self.log_info(f'wait_login {login_account}')
+                self.click(0.5, 0.5, after_sleep=3)
+                return False
 
     def in_team_and_world(self):
         return self.in_team()[
@@ -901,7 +904,7 @@ class BaseWWTask(BaseTask):
                             post_action=lambda: self.click_relative(0.50, 0.89, after_sleep=1))
             # self.screenshot('monthly_card3')
             self.set_check_monthly_card(next_day=True)
-        logger.debug(f'check_monthly_card {monthly_card}')
+        # logger.debug(f'check_monthly_card {monthly_card}')
         return monthly_card is not None
 
     @property

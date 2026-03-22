@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 
 import numpy as np
@@ -105,9 +106,11 @@ config = {
         'hcenter_features': ['monthly_card']
     },
     'windows': {  # required  when supporting windows game
-        'exe': 'Client-Win64-Shipping.exe',
+        'top_hwnd_class': [re.compile('CAgreementDlg'), re.compile('CLoginDlg_P_'),
+                           'Chrome_RenderWidgetHostHWND', re.compile('CNativeLoginDlg'), '#32770'],
         'calculate_pc_exe_path': calculate_pc_exe_path,
-        # 'hwnd_class': 'UnrealWindow',
+        'exe': 'Client-Win64-Shipping.exe',
+        'hwnd_class': 'UnrealWindow',
         'interaction': 'PostMessage',
         'capture_method': ['WGC', 'BitBlt_RenderFull'],  # Windows版本支持的话, 优先使用WGC, 否则使用BitBlt_Full
         'check_hdr': False,
