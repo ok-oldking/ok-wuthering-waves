@@ -107,7 +107,7 @@ config = {
     'windows': {  # required  when supporting windows game
         'exe': 'Client-Win64-Shipping.exe',
         'calculate_pc_exe_path': calculate_pc_exe_path,
-        'hwnd_class': 'UnrealWindow',
+        # 'hwnd_class': 'UnrealWindow',
         'interaction': 'PostMessage',
         'capture_method': ['WGC', 'BitBlt_RenderFull'],  # Windows版本支持的话, 优先使用WGC, 否则使用BitBlt_Full
         'check_hdr': False,

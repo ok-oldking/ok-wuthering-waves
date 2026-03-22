@@ -708,7 +708,7 @@ class BaseWWTask(BaseTask):
             texts = self.ocr()
             if login := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match="登录"):
                 if not self.find_boxes(texts, match="+86"):
-                    self.click(login)
+                    self.click(login, after_sleep=1)
                     self.log_info('点击登录按钮!')
                 return False
             if self.find_boxes(texts, match=re.compile("游戏即将重启")):
