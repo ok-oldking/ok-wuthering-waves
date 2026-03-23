@@ -186,6 +186,7 @@ class BaseChar:
 
     def click(self, *args: Any, **kwargs: Any):
         """执行一次点击操作 (代理到 task.click)。"""
+        kwargs['down_time'] = 0.01
         self.task.click(*args, **kwargs)
 
     def do_perform(self):
