@@ -22,15 +22,14 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         self.description = "多账号自动切换，依次执行每日一条龙任务"
         self.default_config = {
             '账号列表': '',
-            '全部完成后退出': False,
         }
         self.config_description = {
             '账号列表': '每行填写一个手机尾号（后4位），自动识别当前登录账号',
-            '全部完成后退出': '所有账号完成后退出游戏并关闭软件',
         }
         self.config_type = {
             '账号列表': {'type': 'text_edit'},
         }
+        self.add_exit_after_config()
 
     def run(self):
         WWOneTimeTask.run(self)
@@ -42,10 +41,8 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             return
 
         done_set = set()
-        in_game = True
 
         detected = self._switch_to_login_and_detect()
-        in_game = False
         if detected:
             done_set.add(detected)
 
@@ -54,18 +51,11 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
                 self.log_info(f'跳过 ****{suffix}（已完成）')
                 continue
             self._select_and_login_account(suffix)
-            in_game = True
             self.run_task_by_class(DailyTask)
             done_set.add(suffix)
             remaining = [a for a in accounts[i + 1:] if a not in done_set]
             if remaining:
                 self._switch_to_login()
-                in_game = False
-
-        if self.config.get('全部完成后退出'):
-            if in_game:
-                self._exit_game()
-            self._exit_software()
 
     def _parse_account_list(self):
         raw = self.config.get('账号列表', '')
@@ -101,12 +91,12 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         self.send_key('esc', after_sleep=1.5)
         self.wait_until(
             lambda: bool(self.find_boxes(self.ocr(), match='终端')),
-            time_out=10, raise_if_not_found=False
+            time_out=30, raise_if_not_found=False
         )
         self.click_relative(0.04, 0.96, after_sleep=1)
         self.wait_until(
             lambda: bool(self.find_boxes(self.ocr(), match='返回登录')),
-            time_out=10, raise_if_not_found=False
+            time_out=30, raise_if_not_found=False
         )
         texts = self.ocr()
         if btn := self.find_boxes(texts, match='返回登录'):
@@ -165,24 +155,3 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         self.ensure_main(time_out=180)
         self.log_info(f'登录成功：****{suffix}')
 
-    def _exit_game(self):
-        self.log_info('所有账号已完成，正在退出游戏')
-        self.send_key('esc', after_sleep=1.5)
-        self.wait_until(
-            lambda: bool(self.find_boxes(self.ocr(), match='终端')),
-            time_out=10, raise_if_not_found=False
-        )
-        self.click_relative(0.04, 0.96, after_sleep=1)
-        self.wait_until(
-            lambda: bool(self.find_boxes(self.ocr(), match='退出游戏')),
-            time_out=10, raise_if_not_found=False
-        )
-        texts = self.ocr()
-        if btn := self.find_boxes(texts, match='退出游戏'):
-            self.click(btn, after_sleep=2)
-        else:
-            self.click_relative(0.32, 0.63, after_sleep=2)
-
-    def _exit_software(self):
-        self.log_info('正在关闭软件')
-        self.exit_after_task = True
