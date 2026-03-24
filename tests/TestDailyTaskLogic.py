@@ -65,7 +65,7 @@ class TestDailyTaskLogic(unittest.TestCase):
         result = task.click_daily_reward_box(100)
 
         self.assertFalse(result)
-        task.click.assert_called_once_with(0.94, 0.85, after_sleep=1)
+        task.click.assert_called_once_with(0.90, 0.85, after_sleep=1)
 
     def test_claim_daily_skips_top_claim_click_when_points_already_ready(self):
         task = self.make_task()
