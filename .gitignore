@@ -19,6 +19,8 @@ click_screenshots/
 test_scripts/
 screenshots/
 thread_dumps.txt
+.claude/
+CLAUDE.md
 # C extensions
 ok
 ok/
