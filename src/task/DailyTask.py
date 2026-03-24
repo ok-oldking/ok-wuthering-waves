@@ -192,7 +192,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
         # Fall back to a more right-shifted point than the previous fixed coordinate.
         self.log_info(f'claim daily reward {reward_points} via fallback coordinate')
-        self.click(0.94, 0.85, after_sleep=1)
+        self.click(0.90, 0.85, after_sleep=1)
         return False
 
     def claim_mail(self):
