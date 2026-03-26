@@ -30,6 +30,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             '账号列表': {'type': 'text_edit'},
         }
         self.add_exit_after_config()
+        self.support_schedule_task = True
 
     def run(self):
         WWOneTimeTask.run(self)
