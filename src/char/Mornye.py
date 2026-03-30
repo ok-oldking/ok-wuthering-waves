@@ -32,27 +32,32 @@ class Mornye(BaseChar):
         return self.has_long_action2()
 
     def on_air_actions(self):
+        detect_ready = self.echo_available()
         self.logger.debug("on_air start attacking")
         start = time.time()
         while (
                 time.time() - start < 10
                 and self.on_air()
-                and not self.is_mouse_forte_full()
         ):
-            self.click_liberation()
+            if self.detect_elbow_strike(detect_ready):
+                self.logger.debug("Detected an elbow strike, attempting to reset.")
+                self.task.wait_until(lambda: not self.detect_elbow_strike(detect_ready), 
+                                     post_action=lambda: self.continues_right_click(0.05), time_out=1.5)
+            self.click_liberation()               
+            if self.on_air() and self.is_mouse_forte_full():
+                self.logger.debug("mouse forte full, heavy attack")
+                if self.heavy_click_forte(check_fun=lambda: self.is_mouse_forte_full() and not self.detect_elbow_strike(detect_ready)):
+                    if self.detect_elbow_strike(detect_ready):
+                        continue
+                    elif not self.task.wait_until(lambda: self.is_con_full(), time_out=1.5):
+                        self.logger.debug("not condition full, try clicking echo")
+                        self.click_echo(duration=0.2)
+                    self.last_heavy = time.time()
+                    self.check_f_on_switch = False
+                    break
             self.click_resonance()
             self.click()
-            self.check_combat()
-            self.sleep(0.1)
-        """可能会被打断，或者强制落地，这时候就不继续重置重击了"""
-        if self.on_air() and self.is_mouse_forte_full():
-            self.logger.debug("mouse forte full, heavy attack")
-            if self.heavy_click_forte(check_fun=self.is_mouse_forte_full):
-                if not self.task.wait_until(lambda: self.is_con_full(), time_out=1.5):
-                    self.logger.debug("not condition full, try clicking echo")
-                    self.click_echo(duration=0.2)
-                self.last_heavy = time.time()
-                self.check_f_on_switch = False
+            self.sleep(0.01)
         self.logger.debug("finished attacking on_air")
 
     def not_on_air_actions(self):
@@ -72,3 +77,6 @@ class Mornye(BaseChar):
 
     def combo_limit(self):
         return self.time_elapsed_accounting_for_freeze(self.last_heavy) < 23
+        
+    def detect_elbow_strike(self, ready):
+        return ready and not self.available('echo', check_color=True)
