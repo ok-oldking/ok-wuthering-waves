@@ -39,6 +39,10 @@ class Xigelika(BaseChar):
             self.task.mouse_down()
             wait = lambda: not self.has_long_action()
         else:
+            if self.has_cd('resonance'):
+                self.click(interval=0.1)
+                self.sleep(0.05)
+                return False
             self.task.send_key_down(self.get_resonance_key())
             wait = lambda: not self.is_forte_full()
         ret = self.task.wait_until(wait, time_out=1.2)
@@ -51,7 +55,8 @@ class Xigelika(BaseChar):
 
     def handle_heavy(self):
         handled = False
-        while self.is_forte_full():
+        start = time.time()
+        while self.is_forte_full() and self.time_elapsed_accounting_for_freeze(start) < 3:
             self.heavy_wait_highlight_down()
             handled = True
         return handled

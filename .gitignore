@@ -9,6 +9,7 @@ fonts
 # Byte-compiled / optimized / DLL files
 .idea/
 __pycache__/
+issue*.json
 *.py[cod]
 *$py.class
 configs/
