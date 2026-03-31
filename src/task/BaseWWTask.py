@@ -395,7 +395,7 @@ class BaseWWTask(BaseTask):
 
     def get_stamina(self):
         boxes = self.wait_ocr(0.49, 0.0, 0.92, 0.10, raise_if_not_found=False,
-                              match=[number_re, stamina_re], log=self.debug)
+                              match=[number_re, stamina_re])
         if not boxes:
             self.screenshot('stamina_error')
             return -1, -1, -1

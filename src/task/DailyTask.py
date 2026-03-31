@@ -56,6 +56,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def run(self):
         WWOneTimeTask.run(self)
+        self._logged_in = False
         self.ensure_main(time_out=180)
         self.go_to_tower()
 
