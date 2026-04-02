@@ -77,8 +77,9 @@ class Linnai(BaseChar):
         self.decide_teammate()
         if self.attribute == 2 and has_intro and current_char.char_name in {'char_moning'}:
             return Priority.MAX
-        else:
-            return super().do_get_switch_priority(current_char, has_intro)
+        if not has_intro and current_char.char_name in {'char_aemeath'}:
+            return Priority.FAST_SWITCH + 1
+        return super().do_get_switch_priority(current_char, has_intro)
         
     def decide_teammate(self):
         from src.char.Mornye import Mornye

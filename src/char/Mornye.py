@@ -1,5 +1,5 @@
 import time
-from src.char.BaseChar import BaseChar
+from src.char.BaseChar import BaseChar, Priority
 
 
 class Mornye(BaseChar):
@@ -80,3 +80,8 @@ class Mornye(BaseChar):
         
     def detect_elbow_strike(self, ready):
         return ready and not self.available('echo', check_color=True)
+
+    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
+        if has_intro and current_char.char_name in {'char_aemeath'}:
+            return Priority.MAX
+        return super().do_get_switch_priority(current_char, has_intro)
