@@ -80,7 +80,7 @@ class ForgeryTask(DomainTask):
                 self.click_relative(0.93, 0.90, after_sleep=1)
                 self.wait_in_team_and_world(time_out=self.teleport_timeout)
                 return
-        raise Exception('Failed to enter Forgery Challenge')
+        raise RuntimeError('Failed to enter Forgery Challenge')
 
     def get_material_mat(self):
         min_width = self.width_of_screen(80 / 2560)
