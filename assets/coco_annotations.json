@@ -5,7 +5,7 @@
         "description": "COCO Label Conversion",
         "contributor": "CVHub",
         "url": "https://github.com/CVHub520/X-AnyLabeling",
-        "date_created": "2026-03-23"
+        "date_created": "2026-04-06"
     },
     "licenses": [
         {
@@ -5377,21 +5377,6 @@
             "segmentation": []
         },
         {
-            "id": 432,
-            "image_id": 220,
-            "category_id": 186,
-            "bbox": [
-                1540,
-                1517,
-                710,
-                105
-            ],
-            "area": 74437.83462224888,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
-        },
-        {
             "id": 434,
             "image_id": 222,
             "category_id": 217,
@@ -5407,7 +5392,7 @@
             "segmentation": []
         },
         {
-            "id": 436,
+            "id": 435,
             "image_id": 224,
             "category_id": 97,
             "bbox": [
@@ -5416,13 +5401,11 @@
                 91,
                 101
             ],
-            "area": 9201.020408163267,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
+            "area": 9191,
+            "iscrowd": 0
         },
         {
-            "id": 437,
+            "id": 436,
             "image_id": 224,
             "category_id": 127,
             "bbox": [
@@ -5431,10 +5414,21 @@
                 22,
                 24
             ],
-            "area": 537.7551020408085,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
+            "area": 528,
+            "iscrowd": 0
+        },
+        {
+            "id": 437,
+            "image_id": 220,
+            "category_id": 186,
+            "bbox": [
+                1540,
+                1517,
+                710,
+                105
+            ],
+            "area": 74550,
+            "iscrowd": 0
         }
     ]
 }

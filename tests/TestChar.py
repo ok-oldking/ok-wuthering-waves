@@ -30,7 +30,7 @@ class TestChar(TaskTestCase):
         self.assertTrue(len(self.task.chars) > 0)
         self.assertEqual(self.task.chars[0].name, 'Aemeath')
 
-        self.set_image('xanylabeling/project_dir/char_iuno.png')
+        self.set_image('ok_templates/project_dir/char_iuno.png')
         self.task.load_chars()
         self.assertTrue(len(self.task.chars) > 0)
         self.assertEqual(self.task.chars[0].name, 'Iuno')

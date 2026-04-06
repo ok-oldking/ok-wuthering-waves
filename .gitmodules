@@ -1,4 +1,4 @@
-[submodule "xanylabeling"]
-	path = xanylabeling
+[submodule "ok_templates"]
+	path = ok_templates
 	url = https://github.com/ok-oldking/ok-wuthering-waves-coco-labeling.git
 	branch = master
