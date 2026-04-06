@@ -27,7 +27,7 @@ class TestCombatCheck(TaskTestCase):
     def test_4k_combat_check(self):
         self.task.ensure_levitator = return_true
         self.task.do_reset_to_false()
-        self.set_image("ok_templates/project_dir/57d8d801-BitBlt_True_3840x2160_1759986393607.1733_original.png")
+        self.set_image("ok_templates/57d8d801-BitBlt_True_3840x2160_1759986393607.1733_original.png")
         in_combat = self.task.in_combat()
         # self.task.screenshot('in_combat4k.png', show_box=True)
         # time.sleep(1)
@@ -52,7 +52,7 @@ class TestCombatCheck(TaskTestCase):
         self.task.ensure_levitator = return_true
         self.task.do_reset_to_false()
         self.task.is_browser = return_true
-        self.set_image('ok_templates/project_dir/browser_in_combat.png')
+        self.set_image('ok_templates/browser_in_combat.png')
         in_combat = self.task.in_combat()
         self.assertTrue(in_combat)
 
