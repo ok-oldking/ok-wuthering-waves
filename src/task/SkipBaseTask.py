@@ -35,6 +35,7 @@ class SkipBaseTask(BaseWWTask):
             self.click(skip_button)
             return True
         if skip_button := self.find_one('skip_quest_confirm_new', threshold=0.8):
+            self.sleep(0.2)
             self.click(skip_button)
             return True
         if self.in_team_and_world():
