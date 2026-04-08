@@ -87,6 +87,7 @@ config = {
     'global_configs': [key_config_option, char_config_option, pick_echo_config_option, monthly_card_config_option],
     'ocr': {
         'lib': 'onnxocr',
+        'auto_simplify': True,
         'params': {
             'use_openvino': True,
             'use_npu': True,

@@ -13,20 +13,20 @@ from src.task.BaseWWTask import BaseWWTask
 logger = Logger.get_logger(__name__)
 
 number_pattern = re.compile(r"^[\d.%％ ]+$")
-property_pattern = re.compile(r"^(?!.*激活).*?[\u4e00-\u9fff]{2,}.*?$")
+property_pattern = re.compile(r"[\u4e00-\u9fff]{2,}")
 
 
 class EnhanceEchoTask(BaseWWTask, FindFeature):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "批量强化声骸(仅支持简中游戏语言)"
+        self.name = "批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
         self.description = "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按照等级从0排序后开始."
         self.icon = FluentIcon.ADD
         self.group_name = "强化声骸"
         self.group_icon = FluentIcon.ADD
         self.fail_reason = ""
-        self.supported_languages = ["zh_CN"]
+        self.supported_languages = ["zh_CN", "zh_TW"]
         self.default_config.update({
             '必须有双爆': True,
             '双爆出现之前必须全有效词条': True,
@@ -56,7 +56,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         return self.ocr(0.82, 0.86, 0.97, 0.96, match='培养')
 
     def is_0_level(self):
-        return self.ocr(0.66, 0.48, 0.77, 0.56, match=re.compile('声骸技能'))
+        return self.ocr(0.65, 0.35, 1, 0.57, match=re.compile('声骸技能'))
 
     def run(self):
         self.info_set('成功声骸数量', 0)
@@ -112,7 +112,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                 while handle := self.wait_ocr(0.24, 0.18, 0.75, 0.93,
                                               match=[re.compile('不再提示'), '调谐成功', re.compile('点击任')],
                                               time_out=2):
-                    if handle[0].name == '本次登录不再提示':
+                    if handle[0].name in ['本次登录不再提示', '本次登入不再提示']:
                         click = handle[0]
                         click.width = 1
                         click.x -= click.height * 1.1
@@ -125,7 +125,11 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                 self.sleep(0.1)
                 texts = self.ocr(0.09, 0.28, 0.40, 0.53)
                 self.log_info(f'ocr values: {texts}')
-                properties = self.find_boxes(texts, match=property_pattern)
+                properties = [p for p in self.find_boxes(texts, match=property_pattern) if '辅音' not in p.name]
+                for p in properties:
+                    match = property_pattern.search(p.name)
+                    if match:
+                        p.name = match.group()
                 values = self.find_boxes(texts, match=number_pattern)
                 self.info_set('属性', properties)
                 self.info_set('值', values)
