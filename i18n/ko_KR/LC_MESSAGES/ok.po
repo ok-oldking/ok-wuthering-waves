@@ -550,7 +550,7 @@ msgid "Material Selection"
 msgstr "재료 선택"
 
 msgid "Resonator EXP / Weapon EXP / Shell Credit"
-msgstr "공명자 경험치 / 무기 경험치 / 조개 코인"
+msgstr "공명자 경험치 / 무기 경험치 / 클램 코인"
 
 msgid "Resonator EXP"
 msgstr "공명자 경험치"
@@ -559,7 +559,7 @@ msgid "Weapon EXP"
 msgstr "무기 경험치"
 
 msgid "Shell Credit"
-msgstr "조개 코인"
+msgstr "클램 코인"
 
 msgid "Forgery Challenge"
 msgstr "응소의 영역"
