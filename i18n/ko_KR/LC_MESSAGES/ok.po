@@ -13,16 +13,16 @@ msgid "Fleurdelys"
 msgstr "플뢰르 드 리스"
 
 msgid "no levitator tool in the tab wheel!"
-msgstr "TAB 키 휠에 레비테이터 도구를 추가해야 합니다!"
+msgstr "TAB 휠에 레비테이터 도구가 없습니다!"
 
 msgid "Check hotkey error! Please check if hotkey settings are correct!"
 msgstr "단축키 오류! 단축키 설정이 올바른지 확인해주세요!"
 
 msgid "Can not switch to levitator please ensure you have equipped echos!"
-msgstr "레비테이터로 전환할 수 없습니다. 에코를 장착했는지 확인해주세요!"
+msgstr "레비테이터로 전환할 수 없습니다. 에코를 장착했는지 확인하세요!"
 
 msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
-msgstr "(1-6) 중요, 파밍할 레벨을 선택하세요. 낮은 레벨에서는 에코가 나오지 않을 수 있습니다."
+msgstr "(1-6) 중요: 파밍할 레벨을 선택하세요. 낮은 레벨에서는 에코가 나오지 않을 수 있습니다."
 
 msgid "Boss1"
 msgstr "보스 1"
@@ -37,7 +37,7 @@ msgid "Click Start in Game World"
 msgstr "게임 월드에서 시작을 클릭하세요"
 
 msgid "Echo Key"
-msgstr "에코 키 (기본 q)"
+msgstr "에코 키 (기본 Q)"
 
 msgid "Entrance Direction"
 msgstr "입구 방향"
@@ -64,7 +64,7 @@ msgid "Auto Target"
 msgstr "자동 타겟팅"
 
 msgid "Turn off to enable auto combat only when manually target enemy using middle click"
-msgstr "끄면 마우스 휠 클릭으로 수동 타겟팅 시에만 자동 전투"
+msgstr "끄면 마우스 휠 클릭으로 적을 수동 지정했을 때에만 자동 전투가 작동합니다"
 
 msgid "Repeat Farm Count"
 msgstr "반복 파밍 횟수"
@@ -79,10 +79,10 @@ msgid "Backward"
 msgstr "뒤로"
 
 msgid "Bell-Borne Geochelone"
-msgstr "큰바위 거북"
+msgstr "타종 거북이"
 
 msgid "Crownless"
-msgstr "무관의 연무"
+msgstr "크라운리스"
 
 msgid "Jue"
 msgstr "뿔"
@@ -94,55 +94,55 @@ msgid "Sentry Construct"
 msgstr "이형의 무사"
 
 msgid "Dragon of Dirge"
-msgstr "비탄의 고룡"
+msgstr "탄식의 고룡"
 
 msgid "Nightmare: Feilian Beringal"
-msgstr "악몽: 페리지트"
+msgstr "악몽 ・폭주의 고릴라"
 
 msgid "Nightmare: Impermanence Heron"
-msgstr "악몽: 무상귀"
+msgstr "악몽 ・음험한 백로"
 
 msgid "Nightmare: Thundering Mephis"
-msgstr "악몽: 번개 프리즘"
+msgstr "악몽 ・뇌운의 비늘"
 
 msgid "Nightmare: Tempest Mephis"
-msgstr "악몽: 바람 프리즘"
+msgstr "악몽 ・천둥의 비늘"
 
 msgid "Nightmare: Inferno Rider"
-msgstr "악몽: 인페르노 라이더"
+msgstr "악몽 ・지옥불 기사"
 
 msgid "Nightmare: Crownless"
-msgstr "악몽: 무관의 연무"
+msgstr "악몽 ・크라운리스"
 
 msgid "Nightmare: Mourning Aix"
-msgstr "악몽: 애곡하는 흑조"
+msgstr "악몽 ・애곡하는 아익스"
 
 msgid "Nightmare: Lampylumen Myriad"
-msgstr "악몽: 빛나는 반딧불의 무리"
+msgstr "악몽 ・반디의 군세"
 
 msgid "Enable auto combat in Abyss, Game World etc"
-msgstr "월드, 심연, 무음구역 등에서 자동 전투 활성화"
+msgstr "심연, 월드 등에서 자동 전투 활성화"
 
 msgid "Feilian Beringal"
-msgstr "페리지트"
+msgstr "폭주의 고릴라"
 
 msgid "Forward"
 msgstr "앞으로"
 
 msgid "Impermanence Heron"
-msgstr "무상귀"
+msgstr "음험한 백로"
 
 msgid "Inferno Rider"
-msgstr "인페르노 라이더"
+msgstr "지옥불 기사"
 
 msgid "Lampylumen Myriad"
-msgstr "빛나는 반딧불의 무리"
+msgstr "반디의 군세"
 
 msgid "Mech Abomination"
 msgstr "기계 융합체"
 
 msgid "Mourning Aix"
-msgstr "애곡하는 흑조"
+msgstr "애곡하는 아익스"
 
 msgid "N/A"
 msgstr "해당 없음"
@@ -151,10 +151,10 @@ msgid "Skip Dialog during Quests"
 msgstr "퀘스트 중 대화 스킵"
 
 msgid "Tempest Mephis"
-msgstr "바람 프리즘"
+msgstr "천둥의 비늘"
 
 msgid "Thundering Mephis"
-msgstr "번개 프리즘"
+msgstr "뇌운의 비늘"
 
 msgid "Combat Count"
 msgstr "전투 횟수"
@@ -169,7 +169,7 @@ msgid "Auto Pick"
 msgstr "자동 줍기"
 
 msgid "Auto Pick Flowers in Game World"
-msgstr "월드에서 자동 아이템 줍기"
+msgstr "월드에서 꽃 자동 줍기"
 
 msgid "Pick Echo Config"
 msgstr "에코 줍기 설정"
@@ -193,10 +193,10 @@ msgid "Monthly Card Time"
 msgstr "월정액 시간"
 
 msgid "Your computer's local time when the monthly card will popup, hour in (1-24)"
-msgstr "월정액 팝업이 표시될 현지 시간 (1-24시)"
+msgstr "월정액 팝업이 표시될 현지 시간 (1~24시)"
 
 msgid "must be in game world and in teams, please check you game resolution is 16:9"
-msgstr "게임 월드 내 팀 상태여야 합니다. 게임 해상도가 16:9인지 확인하세요"
+msgstr "게임 월드의 팀 상태여야 합니다. 게임 해상도가 16:9인지 확인하세요"
 
 msgid "Capture Frame Count"
 msgstr "프레임 캡처 횟수"
@@ -241,7 +241,7 @@ msgid "True"
 msgstr "예"
 
 msgid "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}"
-msgstr "게임 단축키를 불러올 수 없습니다. 모든 캐릭터에 에코를 장착하고 A-Z를 스킬 단축키로 사용하세요. 감지된 키: {}"
+msgstr "게임 단축키를 불러올 수 없습니다. 모든 캐릭터에 에코를 장착하고 스킬 단축키를 A-Z로 설정하세요. 감지된 키: {}"
 
 msgid "Tool Key"
 msgstr "탐색 도구 단축키"
@@ -250,7 +250,7 @@ msgid "Echo per Hour"
 msgstr "시간당 에코 수"
 
 msgid "Can't auto combat, Please equip echos!"
-msgstr "자동 전투 불가, 에코를 장착해주세요!"
+msgstr "자동 전투를 사용할 수 없습니다. 에코를 장착하세요!"
 
 msgid "Turn on to avoid interruption by monthly card when executing tasks"
 msgstr "작업 실행 중 월정액 카드로 인한 중단을 방지하려면 켜세요"
@@ -262,7 +262,7 @@ msgid "can't find gray_book_boss, make sure f2 is the hotkey for book"
 msgstr "보스 목록을 찾을 수 없습니다. F2가 도감 단축키인지 확인하세요"
 
 msgid "Echo Pickup Method"
-msgstr "에코 탐색 방법"
+msgstr "에코 줍기 방식"
 
 msgid "Run in Circle"
 msgstr "원형으로 달리기"
@@ -271,7 +271,7 @@ msgid "Turn Around and Search"
 msgstr "4방향 탐색"
 
 msgid "Walk"
-msgstr "후진 후 전진"
+msgstr "도보 이동"
 
 msgid "Yolo"
 msgstr "Yolo 모델"
@@ -292,7 +292,7 @@ msgid "Pick Up White List"
 msgstr "줍기 화이트리스트"
 
 msgid "Auto Combat in Illusive Realm"
-msgstr "환상 비경에서 자동 전투"
+msgstr "수많은 문의 환상에서 자동 전투"
 
 msgid "Auto Combat in Multiplayer Mode"
 msgstr "멀티플레이 모드에서 자동 전투"
@@ -301,10 +301,10 @@ msgid "Enable auto combat in Multiplayer Mode"
 msgstr "멀티플레이 모드에서 자동 전투 활성화"
 
 msgid "Illusive Realm"
-msgstr "환상 비경 (로그라이크)"
+msgstr "수많은 문의 환상"
 
 msgid "Fallacy of No Return"
-msgstr "돌아오지 않는 오류"
+msgstr "돌아갈 곳이 없는 오류"
 
 msgid "Lorelei"
 msgstr "로렐라이"
@@ -313,13 +313,13 @@ msgid "click f2 to open the book"
 msgstr "F2를 눌러 도감을 여세요"
 
 msgid "Check configs to keep, click start in game world, must be in a 16:9 screen ratio"
-msgstr "유지할 설정을 확인하고, 게임 월드에서 시작을 클릭하세요. 16:9 화면 비율이어야 합니다"
+msgstr "유지할 설정을 확인한 뒤 게임 월드에서 시작을 클릭하세요. 화면 비율은 16:9여야 합니다"
 
 msgid "Boss"
 msgstr "보스"
 
 msgid "Celestial Light"
-msgstr "부유하는 별"
+msgstr "빛나는 별"
 
 msgid "Discard Echo"
 msgstr "에코 폐기"
@@ -328,7 +328,7 @@ msgid "Discarded"
 msgstr "폐기됨"
 
 msgid "Freezing Frost"
-msgstr "차가운 서리"
+msgstr "야밤의 서리"
 
 msgid "Keep 1C ATK"
 msgstr "1코스트 공격력 유지"
@@ -388,46 +388,46 @@ msgid "Keep 4C Healing"
 msgstr "4코스트 치유 보너스 유지"
 
 msgid "Lingering Tunes"
-msgstr "울려퍼지는 선율"
+msgstr "끊임없는 잔향"
 
 msgid "Molten Rift"
-msgstr "용암의 틈"
+msgstr "솟구치는 용암"
 
 msgid "Moonlit Clouds"
-msgstr "빛나는 구름"
+msgstr "떠오르는 구름"
 
 msgid "Rejuvenating Glow"
-msgstr "되살아나는 빛"
+msgstr "찬란한 광휘"
 
 msgid "Sierra Gale"
-msgstr "끝없는 바람"
+msgstr "스쳐가는 바람"
 
 msgid "Sun-sinking Eclipse"
-msgstr "황혼의 서곡"
+msgstr "해가 지는 이클립스"
 
 msgid "Void Thunder"
-msgstr "천둥의 비"
+msgstr "울려퍼지는 뇌음"
 
 msgid "Frosty Resolve"
-msgstr "서리 같은 결의"
+msgstr "냉철한 결단"
 
 msgid "Eternal Radiance"
-msgstr "영원한 광휘"
+msgstr "영원의 광채"
 
 msgid "Midnight Veil"
-msgstr "자정의 장막"
+msgstr "어둠의 장막"
 
 msgid "Empyrean Anthem"
-msgstr "창공의 찬가"
+msgstr "하늘의 합주곡"
 
 msgid "Tidebreaking Courage"
-msgstr "파도를 가르는 용기"
+msgstr "파도에 맞선 용기"
 
 msgid "Prevent Wuthering Waves from moving the mouse"
-msgstr "명조 게임이 마우스를 움직이는 것을 방지"
+msgstr "명조가 마우스를 움직이지 못하게 방지"
 
 msgid "Turn on if you mouse jumps around"
-msgstr "마우스가 튈 경우 켜세요"
+msgstr "마우스 커서가 튄다면 켜세요"
 
 msgid "Auto Echo Data Merge"
 msgstr "자동 에코 데이터 합성"
@@ -436,10 +436,10 @@ msgid "Data Merge Completed!"
 msgstr "데이터 합성 완료!"
 
 msgid "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
-msgstr "자동 전투 오류: 에코를 장착하고 게임 색상을 변경하는 효과(게임 감마/Nvidia AMD 게임 필터)를 끄고, 게임 비디오 옵션에서 모션 블러를 끄세요."
+msgstr "자동 전투 오류: 에코를 장착하고 게임 색상을 바꾸는 효과(게임 감마/NVIDIA/AMD 게임 필터)를 끄고, 비디오 옵션에서 모션 블러를 꺼주세요."
 
 msgid "Auto combat error: Make sure to turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter/HDR)"
-msgstr "자동 전투 오류: 게임 색상을 변경하는 효과(게임 감마/Nvidia AMD 게임 필터/HDR)를 끄세요."
+msgstr "자동 전투 오류: 게임 색상을 바꾸는 효과(게임 감마/NVIDIA/AMD 게임 필터/HDR)를 꺼주세요."
 
 msgid "Auto Login"
 msgstr "자동 로그인"
@@ -469,7 +469,7 @@ msgid "Dreamless"
 msgstr "무망자"
 
 msgid "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
-msgstr "선택한 무음 구역을 스태미나가 소진될 때까지 파밍합니다. 텔레포트(F2)가 가능해야 합니다."
+msgstr "선택한 무음구역을 스태미나가 소진될 때까지 파밍합니다. 텔레포트(F2)가 가능해야 합니다."
 
 msgid "Login, claim monthly card, farm echo, and claim daily reward"
 msgstr "로그인, 월정액 수령, 에코 파밍, 일일 보상 수령"
@@ -496,7 +496,7 @@ msgid "used all stamina"
 msgstr "스태미나 모두 소진"
 
 msgid "The Tacet Suppression number in the F2 list."
-msgstr "F2 목록에서 몇 번째 무음 구역인지."
+msgstr "F2 목록에서 해당 무음구역의 번호입니다."
 
 msgid "Please start in game world and in team!"
 msgstr "게임 월드 내 팀 상태에서 시작해주세요!"
@@ -508,7 +508,7 @@ msgid "Auto Enhance Echo"
 msgstr "자동 에코 강화"
 
 msgid "Auto Enhance and Tune Echo after you add EXP Material"
-msgstr "경험치 재료 추가 후 자동 강화 및 튜닝"
+msgstr "EXP 재료를 추가한 뒤 에코를 자동 강화 및 튜닝"
 
 msgid "Auto Pick Echo After Combat"
 msgstr "전투 후 자동 에코 줍기"
@@ -517,16 +517,16 @@ msgid "Farm Map with Star Path"
 msgstr "별 경로로 맵 파밍"
 
 msgid "Farm world map with a marked path of stars (diamond as the starting point), start in the map screen"
-msgstr "별로 표시된 경로로 월드 맵을 파밍합니다 (다이아몬드가 시작점). 지도 화면에서 시작하세요."
+msgstr "별로 표시한 경로를 따라 월드 맵을 파밍합니다. 시작점은 다이아몬드이며, 지도 화면에서 시작하세요."
 
 msgid "Stars"
 msgstr "별 표시"
 
 msgid "Need be in the map screen and have a diamond as the starting point!"
-msgstr "지도 화면에 있어야 하며 다이아몬드를 시작점으로 지정해야 합니다!"
+msgstr "지도 화면에 있어야 하며, 시작점으로 다이아몬드가 지정되어 있어야 합니다!"
 
 msgid "Need be in the map screen and have a path of at least 3 stars!"
-msgstr "지도 화면에 있어야 하며 최소 3개의 별로 경로를 지정해야 합니다!"
+msgstr "지도 화면에 있어야 하며, 최소 3개의 별 경로가 필요합니다!"
 
 msgid "Click Start after Entering Dungeon or Teleporting to The Boss"
 msgstr "던전 입장 또는 보스에게 텔레포트 후 시작 클릭"
@@ -538,19 +538,19 @@ msgid "Combat Wait Time"
 msgstr "전투 대기 시간 (초)"
 
 msgid "Wait time before each combat(seconds), set 5 if farming Sentry Construct"
-msgstr "각 전투 전 대기 시간(초), 이형의 무사 파밍 시 5로 설정"
+msgstr "각 전투 전 대기 시간(초). 이성 무장 파밍 시 5로 설정하세요."
 
 msgid "Simulation Challenge"
-msgstr "시뮬레이션 필드"
+msgstr "시뮬레이션 영역"
 
 msgid "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
-msgstr "선택한 시뮬레이션 필드를 파밍합니다. 텔레포트(F2)가 가능해야 합니다."
+msgstr "선택한 시뮬레이션 영역을 파밍합니다. 텔레포트(F2)가 가능해야 합니다."
 
 msgid "Material Selection"
 msgstr "재료 선택"
 
 msgid "Resonator EXP / Weapon EXP / Shell Credit"
-msgstr "공명자 경험치 / 무기 경험치 / 조개 코인"
+msgstr "공명자 경험치 / 무기 경험치 / 클램 코인"
 
 msgid "Resonator EXP"
 msgstr "공명자 경험치"
@@ -559,19 +559,19 @@ msgid "Weapon EXP"
 msgstr "무기 경험치"
 
 msgid "Shell Credit"
-msgstr "조개 코인"
+msgstr "클램 코인"
 
 msgid "Forgery Challenge"
-msgstr "위조 도전"
+msgstr "응소의 영역"
 
 msgid "Farms the selected Forgery Challenge. Must be able to teleport (F2)."
-msgstr "선택한 위조 도전을 파밍합니다. 텔레포트(F2)가 가능해야 합니다."
+msgstr "선택한 응소의 영역을 파밍합니다. 텔레포트(F2)가 가능해야 합니다."
 
 msgid "Which Forgery Challenge to Farm"
-msgstr "파밍할 위조 도전 (F2 목록)"
+msgstr "파밍할 응소의 영역 (F2 목록)"
 
 msgid "The Forgery Challenge number in the F2 list."
-msgstr "F2 목록에서 몇 번째 위조 도전인지."
+msgstr "F2 목록에서 몇 번째 응소의 영역인지."
 
 msgid "not enough stamina"
 msgstr "스태미나 부족"
@@ -592,13 +592,13 @@ msgid "Half-Auto Rougue"
 msgstr "반자동 로그라이크 (주간)"
 
 msgid "Enable half-auto combat in weekly rougue, language needs Chinese"
-msgstr "주간 로그라이크에서 반자동 전투 활성화"
+msgstr "주간 로그라이크에서 반자동 전투를 활성화합니다. 게임 언어는 중국어여야 합니다."
 
 msgid "Auto Pick Echo Treasure"
 msgstr "자동 에코 보상 획득"
 
 msgid "If set to False, treasure will be claimed if stamina is sufficient"
-msgstr "아니요'로 설정하면 스태미나가 충분할 때 보상을 수령합니다"
+msgstr "False로 설정하면 스태미나가 충분할 때 보상을 수령합니다."
 
 msgid "Half-Auto Rougue Task Finish"
 msgstr "반자동 로그라이크 임무 완료"
@@ -607,7 +607,7 @@ msgid "Not in realm and cant find the entrance"
 msgstr "영역 내에 없거나 입구를 찾을 수 없습니다"
 
 msgid "Need mankind help"
-msgstr "수동 조작 필요!"
+msgstr "수동 조작이 필요합니다!"
 
 msgid "current task"
 msgstr "현재 임무"
@@ -628,49 +628,49 @@ msgid "Yes if Farming Nightmare: Hecate"
 msgstr "악몽: 헤카테 파밍 시 '예'"
 
 msgid "Auto Farm all Nightmare Nest"
-msgstr ""
+msgstr "모든 악몽 군락 자동 파밍"
 
 msgid "Default"
-msgstr ""
+msgstr "기본"
 
 msgid "Fenrico"
-msgstr ""
+msgstr "펜리코"
 
 msgid "Nameless Explorer"
 msgstr "이름없는 탐색자"
 
 msgid "Lady of the Sea"
-msgstr ""
+msgstr "바다의 여인"
 
 msgid "Lioness of Glory"
-msgstr ""
+msgstr "영광의 사자"
 
 msgid "Nightmare Nest Task"
-msgstr ""
+msgstr "악몽 군락 임무"
 
 msgid "Select boss profile (includes Combat Wait Time)"
-msgstr ""
+msgstr "보스 프로필 선택 (전투 대기 시간 포함)"
 
 msgid "Wait time before each combat (seconds), overrides Boss profile if set"
-msgstr ""
+msgstr "각 전투 전 대기 시간(초), 설정하면 보스 프로필보다 우선 적용"
 
 msgid "Auto Click Fast Travel in Map"
-msgstr ""
+msgstr "지도에서 빠른 이동 자동 클릭"
 
 msgid "Character Config"
 msgstr "캐릭터 설정"
 
 msgid "Check Levitator"
-msgstr ""
+msgstr "레비테이터 확인"
 
 msgid "Do not use Liberation in Open World to Save Time"
-msgstr ""
+msgstr "시간 절약을 위해 오픈 월드에서는 공명 해방 사용 안 함"
 
 msgid "Do not use Liberation to Save Time"
-msgstr ""
+msgstr "시간 절약을 위해 공명 해방 사용 안 함"
 
 msgid "Fast Travel"
-msgstr ""
+msgstr "빠른 이동"
 
 msgid "Iuno C6"
 msgstr "유노 6돌파"
@@ -682,25 +682,25 @@ msgid "Chisa DPS"
 msgstr "치사 메인 딜러"
 
 msgid "Nightmare: Hecate"
-msgstr ""
+msgstr "악몽 ・헤카테"
 
 msgid "Hyvatia"
 msgstr "하이와티아"
 
 msgid "Other"
-msgstr ""
+msgstr "기타"
 
 msgid "Toggle the levitator and verify if the character is floating"
-msgstr ""
+msgstr "레비테이터를 전환해 캐릭터가 떠 있는지 확인합니다"
 
 msgid "Use Liberation"
-msgstr ""
+msgstr "공명 해방 사용"
 
 msgid "Daily"
-msgstr ""
+msgstr "일일"
 
 msgid "Dungeon"
-msgstr ""
+msgstr "던전"
 
 msgid "Farm"
-msgstr ""
+msgstr "파밍"
