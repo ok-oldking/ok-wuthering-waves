@@ -21,31 +21,47 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.group_name = "Daily"
         self.group_icon = FluentIcon.HOME
         self.icon = FluentIcon.CALORIES
-        self.count_re = re.compile(r"(\d{1,2})/(\d{1,2})")
+        self.count_re = re.compile(r"([Oo0-9]{1,2})\s*/\s*(\d{1,2})")
         self.queues = []
         self._capture_success = False
         self._capture_mode = False
-        self.default_config.update({'Which to Farm': ['Nightmare Purification', 'Tacet Discord Nest']})
-        self.config_type['Which to Farm'] = {'type': "multi_selection",
-                                             'options': ['Nightmare Purification', 'Tacet Discord Nest']}
+        self.nightmare_purification_count = 5
+        self.tacet_discord_nest_count = 3
+        purification_options = [str(i) for i in range(1, self.nightmare_purification_count + 1)]
+        nest_options = [str(i) for i in range(1, self.tacet_discord_nest_count + 1)]
+        self.default_config.update({
+            'Nightmare Purification': purification_options[:],
+            'Tacet Discord Nest': nest_options[:],
+        })
+        self.config_type['Nightmare Purification'] = {
+            'type': "multi_selection",
+            'options': purification_options
+        }
+        self.config_type['Tacet Discord Nest'] = {
+            'type': "multi_selection",
+            'options': nest_options
+        }
 
     def run(self):
         self._capture_mode = False
         self._capture_success = False
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=30)
-        self._init_queue()
+        
+        nests = getattr(self, 'selected_nests', None)
+        self._init_queue(nests)
+        self.selected_nests = None  # Reset for future runs
         self.log_info('opened gray_book_boss')
         while nest := self.get_nest_to_go():
             self.combat_nest(nest)
         self.ensure_main(time_out=30)
 
-    def run_capture_mode(self):
+    def run_capture_mode(self, selected_nests=None):
         self._capture_mode = True
         self._capture_success = False
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=30)
-        self._init_queue()
+        self._init_queue(selected_nests)
         self.log_info('opened gray_book_boss')
         while nest := self.get_nest_to_go():
             self.combat_nest(nest)
@@ -98,42 +114,79 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.click_box(gray_book_boss, after_sleep=1)
 
         while self.queues:
-            self.queues[0]()
-            if nest := self.find_nest():
+            category, index = self.queues[0]
+            self._go_to_category(category)
+            need_scroll = category == 'Nightmare Purification' and index > 3
+            if need_scroll:
+                self.click(self.tacet_scroll_x, 0.54, after_sleep=1)
+                self.log_info(f'scroll nightmare purification to index {index}')
+            if nest := self._find_nest_by_index(index, need_scroll):
                 return nest
             self.queues.pop(0)
 
-    def _init_queue(self):
-        quests = self.config.get('Which to Farm') or ['Nightmare Purification', 'Tacet Discord Nest']
+    def _init_queue(self, selected_nests=None):
         actions = []
-        if 'Nightmare Purification' in quests:
-            actions.append(self.go_nightmare)
-            actions.append(self.go_nightmare_scroll)
-        if 'Tacet Discord Nest' in quests:
-            actions.append(self.go_nest)
+        if selected_nests is not None:
+            # Use the provided nest list (from DailyTask)
+            for category, index in selected_nests:
+                actions.append((category, index))
+        else:
+            # Build from own config
+            purification_list = self.config.get('Nightmare Purification') or []
+            for i in sorted(purification_list, key=lambda x: int(x)):
+                actions.append(('Nightmare Purification', int(i)))
+            nest_list = self.config.get('Tacet Discord Nest') or []
+            for i in sorted(nest_list, key=lambda x: int(x)):
+                actions.append(('Tacet Discord Nest', int(i)))
         self.queues = actions
 
-    def go_nightmare(self):
-        self.click(0.17, 0.68, after_sleep=1)
-        self.log_info('go nightmare')
+    def _go_to_category(self, category):
+        if category == 'Nightmare Purification':
+            self.click(0.17, 0.68, after_sleep=1)
+            self.log_info('go nightmare purification')
+        elif category == 'Tacet Discord Nest':
+            self.click(0.17, 0.77, after_sleep=1)
+            self.log_info('go tacet discord nest')
 
-    def go_nightmare_scroll(self):
-        self.click(0.17, 0.68, after_sleep=1)
-        self.click(self.tacet_scroll_x, 0.54, after_sleep=1)
-        self.log_info('go nightmare scroll')
+    def _find_nest_by_index(self, index, scrolled):
+        """Find the nest at a specific index position and return it if incomplete.
 
-    def go_nest(self):
-        self.click(0.17, 0.77, after_sleep=1)
-        self.log_info('go nest')
+        Instead of guessing Y coordinates, this method scans the entire right 
+        panel, sorts the progress texts from top to bottom, and picks the 
+        target one by its visual index.
+        """
+        visible_index = index
+        if scrolled:
+            visible_index = index - 1  # After scrolling, items shift up by ~1
+            
+        # Scan the entire right panel
+        counts = self.ocr(0.36, 0.13, 0.98, 0.91, match=self.count_re)
+        # Sort the boxes from top to bottom
+        counts.sort(key=lambda box: box.y)
+        
+        target_list_idx = visible_index - 1
+        if target_list_idx < len(counts):
+            count_box = counts[target_list_idx]
+            for match in re.finditer(self.count_re, count_box.name):
+                numerator = match.group(1).replace('O', '0').replace('o', '0')
+                denominator = match.group(2)
+                if numerator != denominator and denominator in ['24', '36', '48']:
+                    self.log_info(f'nest #{index} {count_box} is not complete (recognized {numerator}/{denominator})')
+                    count_box.x = self.width_of_screen(0.9)
+                    count_box.y -= count_box.height
+                    return count_box
+                    
+        self.log_info(f'nest #{index} is complete or not found, skipping')
+        return None
 
     def find_nest(self):
         counts = self.ocr(0.36, 0.13, 0.98, 0.91, match=self.count_re)
         for count_box in counts:
             for match in re.finditer(self.count_re, count_box.name):
-                numerator = match.group(1)
+                numerator = match.group(1).replace('O', '0').replace('o', '0')
                 denominator = match.group(2)
                 if numerator != denominator and denominator in ['24', '36', '48']:
-                    self.log_info(f'{count_box} is not complete')
+                    self.log_info(f'{count_box} is not complete (recognized {numerator}/{denominator})')
                     count_box.x = self.width_of_screen(0.9)
                     count_box.y -= count_box.height
                     return count_box

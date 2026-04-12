@@ -10,8 +10,9 @@ class TestDailyTaskLogic(unittest.TestCase):
     def make_task(self):
         task = DailyTask.__new__(DailyTask)
         task.config = {
-            'Auto Farm all Nightmare Nest': False,
-            'Farm Nightmare Nest for Daily Echo': False,
+            'Nightmare Nest Mode': 'Never',
+            'Nightmare Purification': ['1', '2', '3', '4', '5'],
+            'Tacet Discord Nest': ['1', '2', '3'],
         }
         task.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
         task.ensure_main = MagicMock()

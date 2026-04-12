@@ -26,19 +26,21 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.icon = FluentIcon.CAR
         self.support_schedule_task = True
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
+        self.nightmare_nest_modes = ['Always', 'When Needed', 'Never']
         self.default_config = {
             'Which to Farm': self.support_tasks[0],
             'Which Tacet Suppression to Farm': 1,  # starts with 1
             'Which Forgery Challenge to Farm': 1,  # starts with 1
             'Material Selection': 'Shell Credit',
-            'Auto Farm all Nightmare Nest': False,
-            'Farm Nightmare Nest for Daily Echo': True,
+            'Nightmare Nest Mode': 'When Needed',
+            'Nightmare Purification': ['1', '2', '3', '4', '5'],
+            'Tacet Discord Nest': ['1', '2', '3'],
         }
         self.config_description = {
             'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
-            'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.'
+            'Nightmare Nest Mode': 'The Nightmare Nest number in the F2 list.',
         }
         material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type = {
@@ -50,6 +52,18 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 'type': 'drop_down',
                 'options': material_option_list
             },
+            'Nightmare Nest Mode': {
+                'type': 'drop_down',
+                'options': self.nightmare_nest_modes
+            },
+            'Nightmare Purification': {
+                'type': 'multi_selection',
+                'options': ['1', '2', '3', '4', '5']
+            },
+            'Tacet Discord Nest': {
+                'type': 'multi_selection',
+                'options': ['1', '2', '3']
+            },
         }
         self.add_exit_after_config()
         self.description = "Login, claim monthly card, farm echo, and claim daily reward"
@@ -60,21 +74,25 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.ensure_main(time_out=180)
         self.go_to_tower()
 
-        condition1 = self.config.get('Auto Farm all Nightmare Nest')
-        condition2 = self.config.get('Farm Nightmare Nest for Daily Echo')
-        if condition1 or condition2:
-            try:
-                if condition1:
-                    self.log_debug('Auto Farm all Nightmare Nest')
-                    self.run_task_by_class(NightmareNestTask)
-                elif condition2 and self.config.get('Which to Farm', self.support_tasks[0]) != self.support_tasks[0]:
-                    self.log_debug('Farm Nightmare Nest for Daily Echo')
-                    self.get_task_by_class(NightmareNestTask).run_capture_mode()
-            except TaskDisabledException:
-                raise
-            except Exception as e:
-                self.log_error("NightmareNestTask Failed", e)
-                self.ensure_main(time_out=180)
+        nest_mode = self.config.get('Nightmare Nest Mode', 'When Needed')
+        if nest_mode != 'Never':
+            selected_nests = self._build_selected_nests()
+            if selected_nests:
+                try:
+                    if nest_mode == 'Always':
+                        self.log_debug('Nightmare Nest Mode: Always')
+                        nm_task = self.get_task_by_class(NightmareNestTask)
+                        nm_task.selected_nests = selected_nests
+                        self.run_task_by_class(NightmareNestTask)
+                    elif nest_mode == 'When Needed' and self.config.get('Which to Farm', self.support_tasks[0]) != self.support_tasks[0]:
+                        self.log_debug('Nightmare Nest Mode: When Needed')
+                        first_nest = [selected_nests[0]]
+                        self.get_task_by_class(NightmareNestTask).run_capture_mode(selected_nests=first_nest)
+                except TaskDisabledException:
+                    raise
+                except Exception as e:
+                    self.log_error("NightmareNestTask Failed", e)
+                    self.ensure_main(time_out=180)
         used_stamina, daily_reward_ready = self.open_daily()
         if not daily_reward_ready and used_stamina < 180:
             self.send_key('esc', after_sleep=1)
@@ -96,6 +114,17 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.sleep(1)
         self.claim_battle_pass()
         self.log_info('Task completed', notify=True)
+
+    def _build_selected_nests(self):
+        """Build a list of (category, index) tuples from the config selections."""
+        selected = []
+        purification_list = self.config.get('Nightmare Purification') or []
+        for i in sorted(purification_list, key=lambda x: int(x)):
+            selected.append(('Nightmare Purification', int(i)))
+        nest_list = self.config.get('Tacet Discord Nest') or []
+        for i in sorted(nest_list, key=lambda x: int(x)):
+            selected.append(('Tacet Discord Nest', int(i)))
+        return selected
 
     def go_to_tower(self):
         self.log_info('go to tower')

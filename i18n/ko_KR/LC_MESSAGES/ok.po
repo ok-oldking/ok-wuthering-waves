@@ -704,3 +704,27 @@ msgstr ""
 
 msgid "Farm"
 msgstr ""
+
+msgid "Nightmare Nest Mode"
+msgstr "나이트메어 둥지"
+
+msgid "Always"
+msgstr "항상 실행"
+
+msgid "When Needed"
+msgstr "필요 시에만 실행"
+
+msgid "Never"
+msgstr "실행 안 함"
+
+msgid "The Nightmare Nest number in the F2 list."
+msgstr "F2 목록에서 몇 번째 나이트메어 둥지인지"
+
+msgid "Nightmare Purification"
+msgstr "나이트메어 정화"
+
+msgid "Tacet Discord Nest"
+msgstr "잔상 집락"
+
+msgid "Farm Nightmare Nest for Daily Echo"
+msgstr "일일 에코를 위한 나이트메어 둥지 파밍"

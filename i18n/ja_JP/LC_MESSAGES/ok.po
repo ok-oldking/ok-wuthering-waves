@@ -704,3 +704,27 @@ msgstr ""
 
 msgid "Farm"
 msgstr ""
+
+msgid "Nightmare Nest Mode"
+msgstr "ナイトメアネスト"
+
+msgid "Always"
+msgstr "常に実行"
+
+msgid "When Needed"
+msgstr "必要時のみ実行"
+
+msgid "Never"
+msgstr "実行しない"
+
+msgid "The Nightmare Nest number in the F2 list."
+msgstr "F2リスト内のナイトメアネストの番号"
+
+msgid "Nightmare Purification"
+msgstr "ナイトメア浄化"
+
+msgid "Tacet Discord Nest"
+msgstr "残像集落"
+
+msgid "Farm Nightmare Nest for Daily Echo"
+msgstr "デイリーエコーのためにナイトメアネストを周回"
