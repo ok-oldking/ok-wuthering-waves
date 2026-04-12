@@ -630,6 +630,21 @@ msgstr "梦魇巢穴"
 msgid "Auto Farm all Nightmare Nest"
 msgstr "自动刷所有梦魇巢穴"
 
+msgid "Nightmare Nest Mode"
+msgstr "梦魇巢穴"
+
+msgid "Always"
+msgstr "一律进行"
+
+msgid "When Needed"
+msgstr "仅必要时进行"
+
+msgid "Never"
+msgstr "不进行"
+
+msgid "The Nightmare Nest number in the F2 list."
+msgstr "F2列表中第几个梦魇巢穴"
+
 msgid "Select boss profile (includes Combat Wait Time)"
 msgstr "选择Boss配置 (已包含战斗开始前等待时间)"
 
@@ -714,9 +729,6 @@ msgstr "轮盘键"
 msgid "Farm Nightmare Nest for Daily Echo"
 msgstr "使用梦魇巢穴获取日常声骸"
 
-msgid "Farm 1 Echo from Nightmare Nest to complete Daily Task when needed."
-msgstr "必要时，前往梦魇巢穴获取声骸完成日常"
-
 msgid "F10"
 msgstr ""
 
@@ -730,7 +742,7 @@ msgid "F9"
 msgstr ""
 
 msgid "Nightmare Purification"
-msgstr "梦魇拔除"
+msgstr "梦魇祓除"
 
 msgid "Tacet Discord Nest"
 msgstr "残像聚落"

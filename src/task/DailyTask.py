@@ -7,13 +7,29 @@ from src.Labels import Labels
 from src.task.BaseWWTask import number_re, stamina_re
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.ForgeryTask import ForgeryTask
-from src.task.NightmareNestTask import NightmareNestTask
+from src.task.NightmareNestTask import (NightmareNestTask, CATEGORY_PURIFICATION, CATEGORY_NEST,
+                                     PURIFICATION_OPTIONS, NEST_OPTIONS)
 from src.task.TacetTask import TacetTask
 from src.task.SimulationTask import SimulationTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
 
 logger = Logger.get_logger(__name__)
+
+NEST_MODE_KEY = 'Nightmare Nest Mode'
+NEST_MODE_ALWAYS = 'Always'
+NEST_MODE_WHEN_NEEDED = 'When Needed'
+NEST_MODE_NEVER = 'Never'
+
+MAT_RESONATOR = 'Resonator EXP'
+MAT_WEAPON = 'Weapon EXP'
+MAT_SHELL = 'Shell Credit'
+MATERIAL_OPTIONS = [MAT_RESONATOR, MAT_WEAPON, MAT_SHELL]
+
+DESC_TACET = 'The Tacet Suppression number in the F2 list.'
+DESC_FORGERY = 'The Forgery Challenge number in the F2 list.'
+DESC_MATERIAL = f'{MAT_RESONATOR} / {MAT_WEAPON} / {MAT_SHELL}'
+DESC_NEST_MODE = 'The Nightmare Nest number in the F2 list.'
 
 
 class DailyTask(WWOneTimeTask, BaseCombatTask):
@@ -26,21 +42,22 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.icon = FluentIcon.CAR
         self.support_schedule_task = True
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
+        self.nightmare_nest_modes = [NEST_MODE_ALWAYS, NEST_MODE_WHEN_NEEDED, NEST_MODE_NEVER]
         self.default_config = {
             'Which to Farm': self.support_tasks[0],
             'Which Tacet Suppression to Farm': 1,  # starts with 1
             'Which Forgery Challenge to Farm': 1,  # starts with 1
-            'Material Selection': 'Shell Credit',
-            'Auto Farm all Nightmare Nest': False,
-            'Farm Nightmare Nest for Daily Echo': True,
+            'Material Selection': MAT_SHELL,
+            NEST_MODE_KEY: NEST_MODE_WHEN_NEEDED,
+            CATEGORY_PURIFICATION: PURIFICATION_OPTIONS[:],
+            CATEGORY_NEST: NEST_OPTIONS[:],
         }
         self.config_description = {
-            'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
-            'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
-            'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
-            'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.'
+            'Which Tacet Suppression to Farm': DESC_TACET,
+            'Which Forgery Challenge to Farm': DESC_FORGERY,
+            'Material Selection': DESC_MATERIAL,
+            NEST_MODE_KEY: DESC_NEST_MODE,
         }
-        material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type = {
             'Which to Farm': {
                 'type': "drop_down",
@@ -48,7 +65,19 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             },
             'Material Selection': {
                 'type': 'drop_down',
-                'options': material_option_list
+                'options': MATERIAL_OPTIONS
+            },
+            NEST_MODE_KEY: {
+                'type': 'drop_down',
+                'options': self.nightmare_nest_modes
+            },
+            CATEGORY_PURIFICATION: {
+                'type': 'multi_selection',
+                'options': PURIFICATION_OPTIONS
+            },
+            CATEGORY_NEST: {
+                'type': 'multi_selection',
+                'options': NEST_OPTIONS
             },
         }
         self.add_exit_after_config()
@@ -60,21 +89,25 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.ensure_main(time_out=180)
         self.go_to_tower()
 
-        condition1 = self.config.get('Auto Farm all Nightmare Nest')
-        condition2 = self.config.get('Farm Nightmare Nest for Daily Echo')
-        if condition1 or condition2:
-            try:
-                if condition1:
-                    self.log_debug('Auto Farm all Nightmare Nest')
-                    self.run_task_by_class(NightmareNestTask)
-                elif condition2 and self.config.get('Which to Farm', self.support_tasks[0]) != self.support_tasks[0]:
-                    self.log_debug('Farm Nightmare Nest for Daily Echo')
-                    self.get_task_by_class(NightmareNestTask).run_capture_mode()
-            except TaskDisabledException:
-                raise
-            except Exception as e:
-                self.log_error("NightmareNestTask Failed", e)
-                self.ensure_main(time_out=180)
+        nest_mode = self.config.get(NEST_MODE_KEY, NEST_MODE_WHEN_NEEDED)
+        if nest_mode != NEST_MODE_NEVER:
+            selected_nests = self._build_selected_nests()
+            if selected_nests:
+                try:
+                    if nest_mode == NEST_MODE_ALWAYS:
+                        self.log_debug('Nightmare Nest Mode: Always')
+                        nm_task = self.get_task_by_class(NightmareNestTask)
+                        nm_task.selected_nests = selected_nests
+                        self.run_task_by_class(NightmareNestTask)
+                    elif nest_mode == NEST_MODE_WHEN_NEEDED and self.config.get('Which to Farm', self.support_tasks[0]) != self.support_tasks[0]:
+                        self.log_debug('Nightmare Nest Mode: When Needed')
+                        first_nest = [selected_nests[0]]
+                        self.get_task_by_class(NightmareNestTask).run_capture_mode(selected_nests=first_nest)
+                except TaskDisabledException:
+                    raise
+                except Exception as e:
+                    self.log_error("NightmareNestTask Failed", e)
+                    self.ensure_main(time_out=180)
         used_stamina, daily_reward_ready = self.open_daily()
         if not daily_reward_ready and used_stamina < 180:
             self.send_key('esc', after_sleep=1)
@@ -96,6 +129,16 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.sleep(1)
         self.claim_battle_pass()
         self.log_info('Task completed', notify=True)
+
+    def _build_selected_nests(self):
+        selected = []
+        purification_list = self.config.get(CATEGORY_PURIFICATION) or []
+        for i in sorted(purification_list, key=lambda x: int(x)):
+            selected.append((CATEGORY_PURIFICATION, int(i)))
+        nest_list = self.config.get(CATEGORY_NEST) or []
+        for i in sorted(nest_list, key=lambda x: int(x)):
+            selected.append((CATEGORY_NEST, int(i)))
+        return selected
 
     def go_to_tower(self):
         self.log_info('go to tower')
