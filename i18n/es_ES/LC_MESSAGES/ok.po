@@ -704,3 +704,27 @@ msgstr ""
 
 msgid "Farm"
 msgstr ""
+
+msgid "Nightmare Nest Mode"
+msgstr "Nido de Pesadilla"
+
+msgid "Always"
+msgstr "Siempre"
+
+msgid "When Needed"
+msgstr "Solo cuando sea necesario"
+
+msgid "Never"
+msgstr "Nunca"
+
+msgid "The Nightmare Nest number in the F2 list."
+msgstr "El número del Nido de Pesadilla en la lista F2."
+
+msgid "Nightmare Purification"
+msgstr "Purificación de Pesadilla"
+
+msgid "Tacet Discord Nest"
+msgstr "Nido de Discordia Tácita"
+
+msgid "Farm Nightmare Nest for Daily Echo"
+msgstr "Farmear Nido de Pesadilla para Eco Diario"

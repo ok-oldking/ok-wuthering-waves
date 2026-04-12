@@ -15,8 +15,15 @@ from src.task.BaseCombatTask import BaseCombatTask
 
 logger = Logger.get_logger(__name__)
 
+ 
+
 
 class DailyTask(WWOneTimeTask, BaseCombatTask):
+    _purification = 'Nightmare Purification'
+    _nest = 'Tacet Discord Nest'
+    _nest_mode = 'Nightmare Nest Mode'
+    _which_to_farm = 'Which to Farm'
+    _when_needed = 'When Needed'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -26,29 +33,42 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.icon = FluentIcon.CAR
         self.support_schedule_task = True
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
+        self.nightmare_nest_modes = ['Always', self._when_needed, 'Never']
         self.default_config = {
-            'Which to Farm': self.support_tasks[0],
+            self._which_to_farm: self.support_tasks[0],
             'Which Tacet Suppression to Farm': 1,  # starts with 1
             'Which Forgery Challenge to Farm': 1,  # starts with 1
             'Material Selection': 'Shell Credit',
-            'Auto Farm all Nightmare Nest': False,
-            'Farm Nightmare Nest for Daily Echo': True,
+            self._nest_mode: self._when_needed,
+            self._purification: [str(i) for i in range(1, 6)],
+            self._nest: [str(i) for i in range(1, 4)],
         }
         self.config_description = {
             'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
-            'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.'
+            self._nest_mode: 'The Nightmare Nest number in the F2 list.',
         }
-        material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type = {
-            'Which to Farm': {
+            self._which_to_farm: {
                 'type': "drop_down",
                 'options': self.support_tasks
             },
             'Material Selection': {
                 'type': 'drop_down',
-                'options': material_option_list
+                'options': ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
+            },
+            self._nest_mode: {
+                'type': 'drop_down',
+                'options': self.nightmare_nest_modes
+            },
+            self._purification: {
+                'type': 'multi_selection',
+                'options': [str(i) for i in range(1, 6)]
+            },
+            self._nest: {
+                'type': 'multi_selection',
+                'options': [str(i) for i in range(1, 4)]
             },
         }
         self.add_exit_after_config()
@@ -60,25 +80,29 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.ensure_main(time_out=180)
         self.go_to_tower()
 
-        condition1 = self.config.get('Auto Farm all Nightmare Nest')
-        condition2 = self.config.get('Farm Nightmare Nest for Daily Echo')
-        if condition1 or condition2:
-            try:
-                if condition1:
-                    self.log_debug('Auto Farm all Nightmare Nest')
-                    self.run_task_by_class(NightmareNestTask)
-                elif condition2 and self.config.get('Which to Farm', self.support_tasks[0]) != self.support_tasks[0]:
-                    self.log_debug('Farm Nightmare Nest for Daily Echo')
-                    self.get_task_by_class(NightmareNestTask).run_capture_mode()
-            except TaskDisabledException:
-                raise
-            except Exception as e:
-                self.log_error("NightmareNestTask Failed", e)
-                self.ensure_main(time_out=180)
+        nest_mode = self.config.get(self._nest_mode, self._when_needed)
+        if nest_mode != 'Never':
+            selected_nests = self._build_selected_nests()
+            if selected_nests:
+                try:
+                    if nest_mode == 'Always':
+                        self.log_debug('Nightmare Nest Mode: Always')
+                        nm_task = self.get_task_by_class(NightmareNestTask)
+                        nm_task.selected_nests = selected_nests
+                        self.run_task_by_class(NightmareNestTask)
+                    elif nest_mode == self._when_needed and self.config.get(self._which_to_farm, self.support_tasks[0]) != self.support_tasks[0]:
+                        self.log_debug('Nightmare Nest Mode: When Needed')
+                        first_nest = [selected_nests[0]]
+                        self.get_task_by_class(NightmareNestTask).run_capture_mode(selected_nests=first_nest)
+                except TaskDisabledException:
+                    raise
+                except Exception as e:
+                    self.log_error("NightmareNestTask Failed", e)
+                    self.ensure_main(time_out=180)
         used_stamina, daily_reward_ready = self.open_daily()
         if not daily_reward_ready and used_stamina < 180:
             self.send_key('esc', after_sleep=1)
-            target = self.config.get('Which to Farm', self.support_tasks[0])
+            target = self.config.get(self._which_to_farm, self.support_tasks[0])
             if target == self.support_tasks[0]:
                 self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina,
                                                              config=self.config)
@@ -96,6 +120,16 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.sleep(1)
         self.claim_battle_pass()
         self.log_info('Task completed', notify=True)
+
+    def _build_selected_nests(self):
+        selected = []
+        purification_list = self.config.get(self._purification) or []
+        for i in sorted(purification_list, key=lambda x: int(x)):
+            selected.append((self._purification, int(i)))
+        nest_list = self.config.get(self._nest) or []
+        for i in sorted(nest_list, key=lambda x: int(x)):
+            selected.append((self._nest, int(i)))
+        return selected
 
     def go_to_tower(self):
         self.log_info('go to tower')
