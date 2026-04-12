@@ -128,9 +128,11 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                     self.click(self.tacet_scroll_x, 0.54, after_sleep=1)
                     self.log_info(f'scroll {category} to index {index}')
                 
-                # Fetch boxes for this new state
-                all_boxes_cache = self.ocr(0.36, 0.13, 0.98, 0.91)
-                self.log_info(f"DEBUG: All OCR texts in right panel: {[b.name + f' (y={b.y})' for b in all_boxes_cache]}")
+                # 雙區域掃描：分別掃描文字與按鈕以排除干擾 (2倍放大座標系)
+                text_boxes = self.ocr(0.43, 0.13, 0.58, 0.91, frame_processor=self.ocr_preprocess)
+                button_boxes = self.ocr(0.80, 0.13, 0.98, 0.91, frame_processor=self.ocr_preprocess)
+                
+                all_boxes_cache = text_boxes + button_boxes
                 last_scanned_category = category
                 last_scanned_scroll = need_scroll
 
@@ -138,6 +140,17 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 return nest
                 
             self.queues.pop(0)
+
+    def ocr_preprocess(self, img):
+        """
+        OCR預處理：灰度化 + 二值化(閾值120) + 2倍縮放，提昇文字辨識精度
+        """
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, binary = cv2.threshold(gray, 120, 255, cv2.THRESH_BINARY)
+        
+        h, w = binary.shape[:2]
+        upscaled = cv2.resize(binary, (w * 2, h * 2), interpolation=cv2.INTER_LINEAR)
+        return cv2.cvtColor(upscaled, cv2.COLOR_GRAY2BGR)
 
     def _init_queue(self, selected_nests=None):
         actions = []
@@ -165,79 +178,68 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
 
     def _evaluate_nest_from_cache(self, index, need_scroll, all_boxes):
         """
-        Evaluate the target nest index using an already cached OCR scan.
+        從緩存的OCR結果中評估目標
         """
-        # Scan the current right panel
         go_buttons = [b for b in all_boxes if '前往' in b.name]
         go_buttons.sort(key=lambda box: box.y)
-        self.log_info(f"DEBUG: Found {len(go_buttons)} '前往' anchors: {[b.y for b in go_buttons]}")
         
         target_go_box = None
         target_progress_box = None
 
         if not need_scroll:
-            # When resting at the top of the list, counting from the top is 100% accurate
+            # 列表頂部時按索引查找
             if index - 1 < len(go_buttons):
                 target_go_box = go_buttons[index - 1]
         else:
-            # We scrolled down, UI layout shifted drastically and Boss/Tacet cards might have appeared.
-            # Nightmare cards have a unique signature: their progress denominator is exactly 36.
-            # We find all boxes matching xx/36
+            # 滾動後通過 36 簽名精確定位夢魔卡片
             nm_counts = [b for b in all_boxes if re.search(r'([0-9]+)/36', b.name)]
             nm_counts.sort(key=lambda box: box.y)
             
             if len(nm_counts) > 0:
-                # Nightmare Validation: Card 5 is ALWAYS the absolute last Nightmare card.
-                # So if index=5, we want the very last one. If index=4, we want the second to last.
                 idx_from_end = -1 if index == 5 else -2
                 if len(nm_counts) >= abs(idx_from_end):
                     target_progress_box = nm_counts[idx_from_end]
-                    self.log_info(f"DEBUG: Found precise Nightmare progress by OCR signature: {target_progress_box.name} at y={target_progress_box.y}")
                     
-                    # Find the '前往' button physically closest to (and above) this progress text
+                    # 查找該進度文字上方最近的按鈕
                     for gb in reversed(go_buttons):
                         if gb.y < target_progress_box.y:
                             target_go_box = gb
                             break
             
-            # Absolute Fallback if OCR fails on progress string
+            # 進度文本辨識失敗時的兜底邏輯
             if not target_go_box and len(go_buttons) > 0:
-                self.log_info("DEBUG: Progress regex fallback failed, picking the last '前往' button")
                 target_go_box = go_buttons[-1] if index == 5 else go_buttons[-2] if len(go_buttons) >= 2 else go_buttons[-1]
 
         if not target_go_box:
-            self.log_info(f'nest #{index} `前往` button not found')
+            self.log_info(f'未找到第 #{index} 個 "前往" 按鈕')
             return None
 
-        # If we didn't firmly tie a progress box during the scroll logic, dynamically find it again
+        # 找尋按鈕下方的進度文本
+        if not target_progress_box:
+            target_progress_box = next((b for b in all_boxes if "已击败" in b.name and b.y > target_go_box.y and b.y < target_go_box.y + 250), None)
         if not target_progress_box:
             for b in all_boxes:
-                # Same card elements, progress text is under '前往'
                 if b.y > target_go_box.y and (b.y - target_go_box.y) < target_go_box.height * 3:
-                    if '已' in b.name or '/' in b.name or re.search(r'\d', b.name) or 're' in b.name or '肉' in b.name:
+                    if '已' in b.name or '/' in b.name or re.search(r'\d', b.name):
                         target_progress_box = b
                         break
 
         if target_progress_box:
-            self.log_info(f"DEBUG: Associated progress text for card #{index}: {target_progress_box.name} at y={target_progress_box.y}")
-            
-            # Use original upstream number extraction logic to check completeness
-            # Allow some noise between the digits like 0/36 or 36/36
+            # 使用原作者提取邏輯判斷是否完成
             match = re.search(r'([0-9]{1,2})[^0-9]*([234][468])', target_progress_box.name)
             if match:
                 num = match.group(1)
                 den = match.group(2)
                 if num != den:
-                    self.log_info(f'nest #{index} {num}/{den} is NOT COMPLETE')
+                    self.log_info(f'副本 #{index} {num}/{den} 未完成')
                     return target_go_box
                 else:
-                    self.log_info(f'nest #{index} {num}/{den} is COMPLETE')
+                    self.log_info(f'副本 #{index} {num}/{den} 已完成')
             else:
-                self.log_info(f'nest #{index} {target_progress_box.name} is COMPLETE (unable to read numbers, assuming upstream completion state)')
+                self.log_info(f'副本 #{index} {target_progress_box.name} 已完成 (無法讀取數字)')
         else:
-            self.log_info(f"DEBUG: Could not find progress text below '前往' at y={target_go_box.y}. Assuming complete!")
+            self.log_info(f"未能在按鈕 y={target_go_box.y} 下方找到進度，假設已完成")
             
-        self.log_info(f'nest #{index} is complete or not found, skipping')
         return None
 
     def find_nest(self):
