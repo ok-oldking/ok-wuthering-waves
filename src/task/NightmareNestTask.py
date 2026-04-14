@@ -21,7 +21,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.group_name = "Daily"
         self.group_icon = FluentIcon.HOME
         self.icon = FluentIcon.CALORIES
-        self.count_re = re.compile(r"(\d{1,2})/(\d{1,2})")
+        self.count_re = re.compile(r"(\d{1,2})\D*(\d{1,2})")
         self.queues = []
         self._capture_success = False
         self._capture_mode = False
@@ -126,12 +126,29 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.click(0.17, 0.77, after_sleep=1)
         self.log_info('go nest')
 
+    def _process_ocr_results(self, text_boxes):
+        tx = self.width_of_screen(0.43)
+        ty = self.height_of_screen(0.13)
+        for b in text_boxes:
+            b.x = tx + (b.x - tx) / 2
+            b.y = ty + (b.y - ty) / 2
+            b.width /= 2
+            b.height /= 2
+        return text_boxes
+
+    def ocr_preprocess(self, img):
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, binary = cv2.threshold(gray, 120, 255, cv2.THRESH_BINARY)
+        h, w = binary.shape[:2]
+        upscaled = cv2.resize(binary, (w * 2, h * 2), interpolation=cv2.INTER_LINEAR)
+        return cv2.cvtColor(upscaled, cv2.COLOR_GRAY2BGR)
+
     def find_nest(self):
-        counts = self.ocr(0.36, 0.13, 0.98, 0.91, match=self.count_re)
+        text_boxes = self.ocr(0.43, 0.13, 0.58, 0.91, frame_processor=self.ocr_preprocess)
+        counts = self._process_ocr_results(text_boxes)
         for count_box in counts:
             for match in re.finditer(self.count_re, count_box.name):
-                numerator = match.group(1)
-                denominator = match.group(2)
+                numerator, denominator = match.group(1), match.group(2)
                 if numerator != denominator and denominator in ['24', '36', '48']:
                     self.log_info(f'{count_box} is not complete')
                     count_box.x = self.width_of_screen(0.9)
