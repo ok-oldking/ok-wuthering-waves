@@ -187,6 +187,8 @@ class Labels(str, Enum):
     map_way_point_big = 'map_way_point_big'
     map_way_point_pop_up_box = 'map_way_point_pop_up_box'
     merge_echo_check = 'merge_echo_check'
+    message = 'message'
+    message_dialog = 'message_dialog'
     monthly_card = 'monthly_card'
     mouse_forte = 'mouse_forte'
     multiplayer_world_mark = 'multiplayer_world_mark'

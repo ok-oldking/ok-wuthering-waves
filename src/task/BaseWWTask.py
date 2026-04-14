@@ -1022,7 +1022,7 @@ class BaseWWTask(BaseTask):
             if btns is None:
                 raise Exception("can't find boss_proceed")
             bottom_btn = max(btns, key=lambda box: box.y)
-            self.click_box(bottom_btn, after_sleep=1)
+            self.click_box(bottom_btn.copy(x_offset=-bottom_btn.width * 2), after_sleep=1)
         self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom'], time_out=10, settle_time=0.5)
 
     def change_time_to_night(self):
