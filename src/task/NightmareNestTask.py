@@ -126,9 +126,9 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.click(0.17, 0.77, after_sleep=1)
         self.log_info('go nest')
 
-    def _process_ocr_results(self, text_boxes):
-        tx = self.width_of_screen(0.43)
-        ty = self.height_of_screen(0.13)
+    def _process_ocr_results(self, text_boxes, x_offset, y_offset):
+        tx = self.width_of_screen(x_offset)
+        ty = self.height_of_screen(y_offset)
         for b in text_boxes:
             b.x = tx + (b.x - tx) / 2
             b.y = ty + (b.y - ty) / 2
@@ -144,8 +144,8 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         return cv2.cvtColor(upscaled, cv2.COLOR_GRAY2BGR)
 
     def find_nest(self):
-        text_boxes = self.ocr(0.43, 0.13, 0.58, 0.91, frame_processor=self.ocr_preprocess)
-        counts = self._process_ocr_results(text_boxes)
+        text_boxes = self.ocr(0.43, 0.13, 0.58, 0.94, frame_processor=self.ocr_preprocess)
+        counts = self._process_ocr_results(text_boxes, 0.43, 0.13)
         for count_box in counts:
             for match in re.finditer(self.count_re, count_box.name):
                 numerator, denominator = match.group(1), match.group(2)
