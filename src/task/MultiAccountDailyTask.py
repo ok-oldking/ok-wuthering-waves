@@ -141,11 +141,12 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
     def _select_and_login_account(self, suffix):
         pattern = self._make_masked_pattern(suffix)
         self.log_info(f'正在选择账号：****{suffix}')
-        self._click_center_offset(270, -43, after_sleep=1)
+        self._click_center_offset(270, -43, after_sleep=5)
         self.wait_until(
             lambda: self._click_account_in_list(pattern),
             time_out=10, raise_if_not_found=True
         )
+        self.sleep(5)
         texts = self.ocr()
         login_btn = self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.8), match="登录")
         if login_btn:
@@ -155,4 +156,3 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         self._logged_in = False
         self.ensure_main(time_out=180)
         self.log_info(f'登录成功：****{suffix}')
-
