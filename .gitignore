@@ -1,4 +1,5 @@
 .venv
+onnxocr/
 updates/
 working/
 update/
