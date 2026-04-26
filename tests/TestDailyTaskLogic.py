@@ -83,6 +83,25 @@ class TestDailyTaskLogic(unittest.TestCase):
         task.open_daily.assert_not_called()
         task.click_daily_reward_box.assert_called_once_with(100)
 
+    def test_claim_daily_logs_error_and_continues_when_points_still_low(self):
+        task = self.make_task()
+        task.claim_daily = DailyTask.claim_daily.__get__(task, DailyTask)
+        task.open_daily = MagicMock()
+        task.get_total_daily_points = MagicMock(side_effect=[0, 0])
+        task.click = MagicMock()
+        task.click_daily_reward_box = MagicMock()
+        task.ensure_main = MagicMock()
+        task.log_error = MagicMock()
+
+        result = task.claim_daily()
+
+        self.assertFalse(result)
+        task.ensure_main.assert_called_once_with(time_out=5)
+        task.open_daily.assert_called_once()
+        task.click.assert_called_once_with(0.87, 0.17, after_sleep=0.5)
+        task.click_daily_reward_box.assert_not_called()
+        task.log_error.assert_called_once_with("Can't complete daily task, may need to increase stamina manually!")
+
 
 if __name__ == '__main__':
     unittest.main()
