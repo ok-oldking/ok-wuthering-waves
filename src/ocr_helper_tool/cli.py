@@ -7,7 +7,7 @@ from pathlib import Path
 
 import cv2
 
-from .artifacts import make_timestamp_image_path, write_annotated_image, write_raw_frame, write_results_json
+from .artifacts import make_timestamp_image_path, write_annotated_frame, write_results_json
 from .interfaces import Box, OCRText
 from .okww_adapter import OKWWOCRHelper, OCRHelperConfig
 
@@ -59,9 +59,8 @@ def _run_toolbox_ocr(frame, args, screenshot_dir: str, wl) -> tuple[list[OCRText
         tag="toolbox",
         save_artifacts=False,
     )
-    raw_path = make_timestamp_image_path(screenshot_dir, ".png", stem_suffix="ocr_helper")
-    write_raw_frame(frame, raw_path)
-    return results, raw_path, helper.engine_name
+    base_path = make_timestamp_image_path(screenshot_dir, ".png", stem_suffix="ocr_helper")
+    return results, base_path, helper.engine_name
 
 
 def _to_native_items(native_result) -> list[OCRText]:
@@ -97,9 +96,8 @@ def _run_native_ocr(frame, args, screenshot_dir: str) -> tuple[list[OCRText], st
     )
     native_result = ocr.ocr(frame)
     results = _to_native_items(native_result)
-    raw_path = make_timestamp_image_path(screenshot_dir, ".png", stem_suffix="ocr_native")
-    write_raw_frame(frame, raw_path)
-    return results, raw_path, "ONNXPaddleOcr(native)"
+    base_path = make_timestamp_image_path(screenshot_dir, ".png", stem_suffix="ocr_native")
+    return results, base_path, "ONNXPaddleOcr(native)"
 
 
 def main() -> int:
@@ -135,26 +133,23 @@ def main() -> int:
 
     outputs: dict[str, dict] = {}
     if args.frontend_mode in ("toolbox", "both"):
-        res_b, raw_b, engine_b = _run_toolbox_ocr(frame, args, screenshot_dir, wl)
+        res_b, base_b, engine_b = _run_toolbox_ocr(frame, args, screenshot_dir, wl)
         outputs["toolbox"] = {
-            "raw": raw_b,
-            "annotated": write_annotated_image(raw_b, res_b),
-            "json": write_results_json(raw_b, res_b, w, h, engine_b),
+            "annotated": write_annotated_frame(frame, base_b, res_b),
+            "json": write_results_json(base_b, res_b, w, h, engine_b),
             "count": len(res_b),
             "engine": engine_b,
         }
     if args.frontend_mode in ("native", "both"):
-        res_c, raw_c, engine_c = _run_native_ocr(frame, args, screenshot_dir)
+        res_c, base_c, engine_c = _run_native_ocr(frame, args, screenshot_dir)
         outputs["native"] = {
-            "raw": raw_c,
-            "annotated": write_annotated_image(raw_c, res_c),
-            "json": write_results_json(raw_c, res_c, w, h, engine_c),
+            "annotated": write_annotated_frame(frame, base_c, res_c),
+            "json": write_results_json(base_c, res_c, w, h, engine_c),
             "count": len(res_c),
             "engine": engine_c,
         }
 
     for mode, info in outputs.items():
-        print(f"[{mode}] raw={info['raw']}")
         print(f"[{mode}] annotated={info['annotated']}")
         print(f"[{mode}] json={info['json']}")
         print(f"[{mode}] count={info['count']} engine={info['engine']}")
@@ -205,7 +200,8 @@ def main() -> int:
             "common_texts_count": len(common_all),
             "available_engines_count": sum(1 for v in snapshots.values() if v.get("available")),
         }
-        report_path = _write_compare_report(selected["raw"], report)
+        # Anchor compare report to the annotated image path (always persisted).
+        report_path = _write_compare_report(selected["annotated"], report)
         print(f"compare_report={report_path}")
     return 0
 

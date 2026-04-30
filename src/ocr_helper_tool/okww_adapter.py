@@ -8,7 +8,7 @@ from typing import Iterable, List, Optional, Pattern, Union
 from ok import Box as OKBox
 
 from .adapters import create_ocr_adapter
-from .artifacts import make_timestamp_image_path, write_annotated_image, write_raw_frame, write_results_json
+from .artifacts import make_timestamp_image_path, write_annotated_frame, write_results_json
 from .interfaces import Box, OCRText
 
 MatchType = Union[str, Pattern[str], Iterable[Union[str, Pattern[str]]]]
@@ -118,10 +118,10 @@ class OKWWOCRHelper:
         image_path = ""
         should_save_artifacts = self.config.save_artifacts_on_verbose if save_artifacts is None else save_artifacts
         if should_save_artifacts:
-            image_path = make_timestamp_image_path(screenshot_dir, ".png", stem_suffix="ocr_helper")
-            write_raw_frame(frame_bgr, image_path)
-            write_annotated_image(image_path, fixed_results)
-            write_results_json(image_path, fixed_results, frame_bgr.shape[1], frame_bgr.shape[0], self.engine_name)
+            base_path = make_timestamp_image_path(screenshot_dir, ".png", stem_suffix="ocr_helper")
+            annotated = write_annotated_frame(frame_bgr, base_path, fixed_results)
+            write_results_json(base_path, fixed_results, frame_bgr.shape[1], frame_bgr.shape[0], self.engine_name)
+            return fixed_results, annotated
         return fixed_results, image_path
 
     def _build_fallback_adapters(self):
