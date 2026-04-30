@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 import os
-import time
+from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import cv2
 from PIL import Image, ImageDraw, ImageFont
@@ -13,10 +13,14 @@ from .geometry import pixel_box_to_rel
 from .interfaces import OCRText
 
 
-def make_timestamp_image_path(folder: str, ext: str = ".png") -> str:
+def make_timestamp_image_path(folder: str, ext: str = ".png", stem_suffix: Optional[str] = None) -> str:
     Path(folder).mkdir(parents=True, exist_ok=True)
-    ts = int(time.time() * 1000)
-    return str(Path(folder) / f"{ts}{ext}")
+    # Align with OK-WW screenshot naming: HH-MM-SS.mmm
+    ts = datetime.now().strftime("%H-%M-%S.%f")[:-3]
+    suffix = stem_suffix or ""
+    if suffix and not suffix.startswith("_"):
+        suffix = f"_{suffix}"
+    return str(Path(folder) / f"{ts}{suffix}{ext}")
 
 
 def build_artifact_path(base_image_path: str, suffix: str) -> str:
