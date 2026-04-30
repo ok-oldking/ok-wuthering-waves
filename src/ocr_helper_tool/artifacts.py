@@ -50,12 +50,7 @@ def write_raw_frame(frame_bgr, output_path: str) -> str:
     return output_path
 
 
-def write_annotated_frame(frame_bgr, base_path: str, results: List[OCRText]) -> str:
-    # base_path is used for naming only; no raw image is persisted.
-    rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
-    img = Image.fromarray(rgb).convert("RGB")
-    draw = ImageDraw.Draw(img)
-    font = pick_cjk_font(16)
+def _draw_ocr_overlays(draw: ImageDraw.ImageDraw, results: List[OCRText], font) -> None:
     for item in results:
         b = item.box.normalized()
         draw.rectangle((b.x1, b.y1, b.x2, b.y2), outline=(0, 80, 255), width=2)
@@ -63,6 +58,15 @@ def write_annotated_frame(frame_bgr, base_path: str, results: List[OCRText]) -> 
         tx, ty = b.x1 + 2, max(2, b.y1 - 20)
         draw.rectangle((tx - 1, ty - 1, tx + len(label) * 9, ty + 18), fill=(20, 20, 20))
         draw.text((tx, ty), label, fill=(255, 255, 0), font=font)
+
+
+def write_annotated_frame(frame_bgr, base_path: str, results: List[OCRText]) -> str:
+    # base_path is used for naming only; no raw image is persisted.
+    rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
+    img = Image.fromarray(rgb).convert("RGB")
+    draw = ImageDraw.Draw(img)
+    font = pick_cjk_font(16)
+    _draw_ocr_overlays(draw, results, font)
     out = build_artifact_path(base_path, "_annotated")
     img.save(out)
     return out
@@ -72,13 +76,7 @@ def write_annotated_image(image_path: str, results: List[OCRText]) -> str:
     img = Image.open(image_path).convert("RGB")
     draw = ImageDraw.Draw(img)
     font = pick_cjk_font(16)
-    for item in results:
-        b = item.box.normalized()
-        draw.rectangle((b.x1, b.y1, b.x2, b.y2), outline=(0, 80, 255), width=2)
-        label = f"{item.text} | {item.confidence:.2f}"
-        tx, ty = b.x1 + 2, max(2, b.y1 - 20)
-        draw.rectangle((tx - 1, ty - 1, tx + len(label) * 9, ty + 18), fill=(20, 20, 20))
-        draw.text((tx, ty), label, fill=(255, 255, 0), font=font)
+    _draw_ocr_overlays(draw, results, font)
     out = build_artifact_path(image_path, "_annotated")
     img.save(out)
     return out

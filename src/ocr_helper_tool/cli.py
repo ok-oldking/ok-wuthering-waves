@@ -10,19 +10,12 @@ import cv2
 from .artifacts import make_timestamp_image_path, write_annotated_frame, write_results_json
 from .interfaces import Box, OCRText
 from .okww_adapter import OKWWOCRHelper, OCRHelperConfig
-
-
-def _normalize_text(text: str) -> str:
-    out = []
-    for ch in (text or ""):
-        if ("\u4e00" <= ch <= "\u9fff") or ch.isalnum():
-            out.append(ch)
-    return "".join(out).lower()
+from .text_utils import normalize_text_for_compare
 
 
 def _engine_snapshot(items: list[OCRText]) -> dict:
     confs = [float(x.confidence) for x in items]
-    texts = [_normalize_text(x.text) for x in items if _normalize_text(x.text)]
+    texts = [normalize_text_for_compare(x.text) for x in items if normalize_text_for_compare(x.text)]
     return {
         "count": len(items),
         "avg_confidence": round(sum(confs) / len(confs), 6) if confs else 0.0,
@@ -148,6 +141,8 @@ def main() -> int:
             "count": len(res_c),
             "engine": engine_c,
         }
+    if not outputs:
+        raise SystemExit("No OCR output generated. Check frontend mode and input image.")
 
     for mode, info in outputs.items():
         print(f"[{mode}] annotated={info['annotated']}")

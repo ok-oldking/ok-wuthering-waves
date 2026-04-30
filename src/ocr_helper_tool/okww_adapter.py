@@ -10,6 +10,7 @@ from ok import Box as OKBox
 from .adapters import create_ocr_adapter
 from .artifacts import make_timestamp_image_path, write_annotated_frame, write_results_json
 from .interfaces import Box, OCRText
+from .text_utils import normalize_text_for_compare
 
 MatchType = Union[str, Pattern[str], Iterable[Union[str, Pattern[str]]]]
 
@@ -206,18 +207,8 @@ def _text_quality(text: str) -> int:
     return score
 
 
-def _normalize_for_compare(text: str) -> str:
-    if not text:
-        return ""
-    chars = []
-    for ch in text:
-        if ("\u4e00" <= ch <= "\u9fff") or ch.isalnum():
-            chars.append(ch)
-    return "".join(chars).lower()
-
-
 def _match_whitelist_detail(text: str, whitelist: List[str], threshold: float) -> tuple[Optional[str], float, bool]:
-    src = _normalize_for_compare(text)
+    src = normalize_text_for_compare(text)
     if not src:
         return None, 0.0, False
 
@@ -225,7 +216,7 @@ def _match_whitelist_detail(text: str, whitelist: List[str], threshold: float) -
     best_score = 0.0
     best_exact = False
     for term in whitelist:
-        target = _normalize_for_compare(term)
+        target = normalize_text_for_compare(term)
         if not target:
             continue
 
@@ -249,11 +240,11 @@ def _dedupe_results(results: List[OCRText], iou_threshold: float) -> List[OCRTex
     ordered = sorted(results, key=lambda x: float(x.confidence), reverse=True)
     kept: List[OCRText] = []
     for cand in ordered:
-        c_text = _normalize_for_compare(cand.text)
+        c_text = normalize_text_for_compare(cand.text)
         c_box = cand.box.normalized()
         drop = False
         for exist in kept:
-            if _normalize_for_compare(exist.text) != c_text:
+            if normalize_text_for_compare(exist.text) != c_text:
                 continue
             e_box = exist.box.normalized()
             if _box_iou(c_box, e_box) >= thr or _box_contains(e_box, c_box):
@@ -269,11 +260,11 @@ def _merge_results(primary: List[OCRText], secondary: List[OCRText]) -> List[OCR
         return primary
     merged = list(primary)
     for cand in secondary:
-        cand_text = _normalize_for_compare(cand.text)
+        cand_text = normalize_text_for_compare(cand.text)
         cand_box = cand.box.normalized()
         replaced = False
         for idx, exist in enumerate(merged):
-            if _normalize_for_compare(exist.text) != cand_text:
+            if normalize_text_for_compare(exist.text) != cand_text:
                 continue
             overlap = _box_iou(exist.box.normalized(), cand_box)
             if overlap >= 0.4 and cand.confidence > exist.confidence:
