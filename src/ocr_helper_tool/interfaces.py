@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional, Protocol
+from typing import Any, List, Optional, Protocol, Union
 
 
 @dataclass(frozen=True)
@@ -37,7 +37,10 @@ class OCRText:
     font_size: int
 
 
+ImageInput = Union[str, Any]
+
+
 class OCRAdapter(Protocol):
-    def recognize(self, image_path: str, region: Optional[Box] = None) -> List[OCRText]:
-        """Execute OCR on image_path. If region is given, limit OCR to that region."""
+    def recognize(self, image: ImageInput, region: Optional[Box] = None) -> List[OCRText]:
+        """Execute OCR on image input (path or in-memory image)."""
 

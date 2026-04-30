@@ -89,8 +89,9 @@ config = {
         'lib': 'onnxocr',
         'auto_simplify': True,
         'params': {
-            'use_openvino': True,
-            'use_npu': True,
+            # Prefer CPU path for stable full-screen OCR coverage.
+            'use_openvino': False,
+            'use_npu': False,
         }
     },
     'my_app': ['src.globals', 'Globals'],

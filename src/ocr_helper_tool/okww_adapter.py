@@ -1,21 +1,14 @@
 from __future__ import annotations
 
-import os
 import re
-import time
-import json
 from dataclasses import dataclass
 from difflib import SequenceMatcher
-from pathlib import Path
-from typing import Any, Iterable, List, Optional, Pattern, Union
-
-import cv2
-from PIL import Image, ImageDraw, ImageFont
+from typing import Iterable, List, Optional, Pattern, Union
 
 from ok import Box as OKBox
 
 from .adapters import create_ocr_adapter
-from .geometry import pixel_box_to_rel
+from .artifacts import make_timestamp_image_path, write_annotated_image, write_raw_frame, write_results_json
 from .interfaces import Box, OCRText
 
 MatchType = Union[str, Pattern[str], Iterable[Union[str, Pattern[str]]]]
@@ -92,18 +85,12 @@ class OKWWOCRHelper:
         if frame_bgr is None:
             return [], ""
 
-        # Persist the frame to disk (adapters use image_path).
-        Path(screenshot_dir).mkdir(parents=True, exist_ok=True)
-        ts = int(time.time() * 1000)
-        # Keep filename minimal for quick sorting: timestamp only.
-        image_path = os.path.join(screenshot_dir, f"{ts}.png")
-        cv2.imwrite(image_path, frame_bgr)
-
         helper_region: Optional[Box] = None
         if region is not None:
             helper_region = Box(int(region.x), int(region.y), int(region.x + region.width), int(region.y + region.height))
 
-        results: List[OCRText] = self.adapter.recognize(image_path, helper_region)
+        # In-memory OCR by default; avoid disk IO in high-frequency loops.
+        results: List[OCRText] = self.adapter.recognize(frame_bgr, helper_region)
         fixed_results: List[OCRText] = []
         for item in results:
             fixed_text, fixed_confidence = self._normalize_and_whitelist(item.text, item.confidence)
@@ -115,10 +102,13 @@ class OKWWOCRHelper:
                     font_size=item.font_size,
                 )
             )
+        image_path = ""
         should_save_artifacts = self.config.save_artifacts_on_verbose if save_artifacts is None else save_artifacts
         if should_save_artifacts:
-            self._write_annotated_image(image_path, fixed_results)
-            self._write_results_json(image_path, fixed_results, frame_bgr.shape[1], frame_bgr.shape[0])
+            image_path = make_timestamp_image_path(screenshot_dir, ".png")
+            write_raw_frame(frame_bgr, image_path)
+            write_annotated_image(image_path, fixed_results)
+            write_results_json(image_path, fixed_results, frame_bgr.shape[1], frame_bgr.shape[0], self.engine_name)
         return fixed_results, image_path
 
     def _normalize_and_whitelist(self, text: str, confidence: float) -> tuple[str, float]:
@@ -129,49 +119,6 @@ class OKWWOCRHelper:
             boosted = max(float(confidence), float(self.config.whitelist_confidence_floor))
             return matched, boosted
         return repaired, float(confidence)
-
-    def _write_annotated_image(self, raw_path: str, results: List[OCRText]) -> str:
-        img = Image.open(raw_path).convert("RGB")
-        draw = ImageDraw.Draw(img)
-        font = _pick_cjk_font(16)
-        for item in results:
-            b = item.box.normalized()
-            draw.rectangle((b.x1, b.y1, b.x2, b.y2), outline=(0, 80, 255), width=2)
-            label = f"{item.text} | {item.confidence:.2f}"
-            tx, ty = b.x1 + 2, max(2, b.y1 - 20)
-            draw.rectangle((tx - 1, ty - 1, tx + len(label) * 9, ty + 18), fill=(20, 20, 20))
-            draw.text((tx, ty), label, fill=(255, 255, 0), font=font)
-        out = raw_path.replace(".png", "_annotated.png")
-        img.save(out)
-        return out
-
-    def _write_results_json(self, raw_path: str, results: List[OCRText], frame_w: int, frame_h: int) -> str:
-        payload = {
-            "engine": self.engine_name,
-            "frame_size": {"width": frame_w, "height": frame_h},
-            "count": len(results),
-            "items": [],
-        }
-        for item in results:
-            b = item.box.normalized()
-            rel = pixel_box_to_rel(b, frame_w, frame_h).normalized()
-            payload["items"].append(
-                {
-                    "text": item.text,
-                    "confidence": round(float(item.confidence), 6),
-                    "pixel_box": {"x1": b.x1, "y1": b.y1, "x2": b.x2, "y2": b.y2},
-                    "relative_box": {
-                        "x1": round(rel.x1, 6),
-                        "y1": round(rel.y1, 6),
-                        "x2": round(rel.x2, 6),
-                        "y2": round(rel.y2, 6),
-                    },
-                }
-            )
-        out = raw_path.replace(".png", "_results.json")
-        with open(out, "w", encoding="utf-8") as f:
-            json.dump(payload, f, ensure_ascii=False, indent=2)
-        return out
 
 
 def _match_text(text: str, match: MatchType) -> bool:
@@ -261,18 +208,4 @@ def _match_whitelist(text: str, whitelist: List[str], threshold: float) -> Optio
     return None
 
 
-def _pick_cjk_font(size: int):
-    candidates = [
-        r"C:\Windows\Fonts\msyh.ttc",
-        r"C:\Windows\Fonts\msyhbd.ttc",
-        r"C:\Windows\Fonts\simhei.ttf",
-        r"C:\Windows\Fonts\simsun.ttc",
-    ]
-    for path in candidates:
-        if os.path.exists(path):
-            try:
-                return ImageFont.truetype(path, size=size)
-            except Exception:
-                pass
-    return ImageFont.load_default()
 

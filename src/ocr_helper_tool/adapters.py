@@ -3,9 +3,10 @@ from __future__ import annotations
 import importlib
 from typing import Dict, List, Optional, Tuple
 
+import numpy as np
 from PIL import Image
 
-from .interfaces import Box, OCRAdapter, OCRText
+from .interfaces import Box, ImageInput, OCRAdapter, OCRText
 
 
 def _to_text_items(
@@ -40,7 +41,7 @@ def _to_text_items(
 class DummyOCRAdapter(OCRAdapter):
     name = "Dummy"
 
-    def recognize(self, image_path: str, region: Optional[Box] = None) -> List[OCRText]:
+    def recognize(self, image: ImageInput, region: Optional[Box] = None) -> List[OCRText]:
         if region is None:
             region = Box(20, 20, 380, 84)
         return [
@@ -61,8 +62,8 @@ class TesseractOCRAdapter(OCRAdapter):
         if tesseract_cmd:
             self.module.pytesseract.tesseract_cmd = tesseract_cmd
 
-    def recognize(self, image_path: str, region: Optional[Box] = None) -> List[OCRText]:
-        image = Image.open(image_path).convert("RGB")
+    def recognize(self, image: ImageInput, region: Optional[Box] = None) -> List[OCRText]:
+        image = _to_pil_rgb(image)
         ox, oy = 0, 0
         if region is not None:
             r = region.normalized()
@@ -101,17 +102,16 @@ class RapidOCRAdapter(OCRAdapter):
         module = importlib.import_module("rapidocr_onnxruntime")
         self.engine = getattr(module, "RapidOCR")()
 
-    def recognize(self, image_path: str, region: Optional[Box] = None) -> List[OCRText]:
+    def recognize(self, image: ImageInput, region: Optional[Box] = None) -> List[OCRText]:
         ox, oy = 0, 0
-        if region is None:
-            result, _elapsed = self.engine(image_path)
+        if region is None and isinstance(image, str):
+            result, _elapsed = self.engine(image)
         else:
-            import numpy as np
-
-            image = Image.open(image_path).convert("RGB")
-            r = region.normalized()
-            image = image.crop((r.x1, r.y1, r.x2, r.y2))
-            ox, oy = r.x1, r.y1
+            image = _to_pil_rgb(image)
+            if region is not None:
+                r = region.normalized()
+                image = image.crop((r.x1, r.y1, r.x2, r.y2))
+                ox, oy = r.x1, r.y1
             result, _elapsed = self.engine(np.array(image))
         if not result:
             return []
@@ -127,17 +127,16 @@ class PaddleOCRAdapter(OCRAdapter):
         PaddleOCR = getattr(module, "PaddleOCR")
         self.engine = PaddleOCR(use_angle_cls=True, lang="ch")
 
-    def recognize(self, image_path: str, region: Optional[Box] = None) -> List[OCRText]:
+    def recognize(self, image: ImageInput, region: Optional[Box] = None) -> List[OCRText]:
         ox, oy = 0, 0
-        if region is None:
-            result = self.engine.ocr(image_path, cls=True)
+        if region is None and isinstance(image, str):
+            result = self.engine.ocr(image, cls=True)
         else:
-            import numpy as np
-
-            image = Image.open(image_path).convert("RGB")
-            r = region.normalized()
-            image = image.crop((r.x1, r.y1, r.x2, r.y2))
-            ox, oy = r.x1, r.y1
+            image = _to_pil_rgb(image)
+            if region is not None:
+                r = region.normalized()
+                image = image.crop((r.x1, r.y1, r.x2, r.y2))
+                ox, oy = r.x1, r.y1
             result = self.engine.ocr(np.array(image), cls=True)
         raw_items: List[Tuple[List[List[float]], str, float]] = []
         if result and result[0]:
@@ -147,6 +146,20 @@ class PaddleOCRAdapter(OCRAdapter):
                 score = line[1][1]
                 raw_items.append((pts, txt, score))
         return _to_text_items(raw_items, ox, oy)
+
+
+def _to_pil_rgb(image: ImageInput) -> Image.Image:
+    if isinstance(image, Image.Image):
+        return image.convert("RGB")
+    if isinstance(image, str):
+        return Image.open(image).convert("RGB")
+    if isinstance(image, np.ndarray):
+        if image.ndim == 2:
+            return Image.fromarray(image).convert("RGB")
+        if image.ndim == 3 and image.shape[2] >= 3:
+            rgb = image[:, :, :3][:, :, ::-1]
+            return Image.fromarray(rgb).convert("RGB")
+    raise TypeError(f"Unsupported OCR image input type: {type(image)}")
 
 
 def create_ocr_adapter(engine: str = "auto") -> Tuple[OCRAdapter, str, Dict[str, bool]]:
