@@ -32,7 +32,7 @@ def _write_compare_report(image_path: str, report: dict) -> str:
 
 
 def _run_toolbox_ocr(frame, args, screenshot_dir: str, wl) -> tuple[list[OCRText], str, str]:
-    reliability_mode = False if args.no_reliability_mode else True if args.reliability_mode else True
+    reliability_mode = not args.no_reliability_mode
     helper = OKWWOCRHelper(
         OCRHelperConfig(
             engine=args.engine,
@@ -122,7 +122,7 @@ def main() -> int:
     h, w = frame.shape[:2]
     screenshot_dir = args.output_dir or "screenshots"
     wl = [s.strip() for s in args.whitelist.split(",") if s.strip()] or None
-    reliability_mode = False if args.no_reliability_mode else True if args.reliability_mode else True
+    reliability_mode = not args.no_reliability_mode
 
     outputs: dict[str, dict] = {}
     if args.frontend_mode in ("toolbox", "both"):
