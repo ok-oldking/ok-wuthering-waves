@@ -40,7 +40,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         recover_retry = 0
         max_recover_retry = 3
         while True:
-            current, back_up, total = self.open_F2_book_and_get_stamina()
+            current, _, total = self.open_F2_book_and_get_stamina()
             if total < self.stamina_once or total < must_use or (must_use == 0 and current < self.stamina_once):
                 self.log_info('not enough stamina', notify=True)
                 self.back()

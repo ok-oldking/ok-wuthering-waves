@@ -194,25 +194,7 @@ class BaseCombatTask(CombatCheck):
         try:
             for attempt in range(max_retries):
                 try:
-                # Step 1: close revive popup (single action), confirm it is gone.
-                    if not self._step_close_revive_popup_once():
-                        raise RuntimeError('step1 close revive popup failed')
-                    if not skip_exit_confirm_steps:
-                        # Step 2: press ESC once, confirm exit dialog appears.
-                        if not self._step_open_exit_confirm_dialog_once():
-                            raise RuntimeError('step2 open exit-confirm dialog failed')
-                        # Step 3: click confirm once, confirm back to world.
-                        if not self._step_confirm_exit_once():
-                            raise RuntimeError('step3 confirm exit failed')
-                # Step 4: reuse weekly entrance route and confirm in-world.
-                    if not self.go_to_weekly_entrance_for_recovery():
-                        raise RuntimeError('step4 go weekly entrance failed')
-                # Step 5: open map once, confirm map state.
-                    if not self._step_open_map_once():
-                        raise RuntimeError('step5 open map failed')
-                # Step 6: click left waypoint once and travel once.
-                    if not self._step_fast_travel_left_waypoint_once():
-                        raise RuntimeError('step6 fast travel left waypoint failed')
+                    self._run_revive_steps_once(skip_exit_confirm_steps=skip_exit_confirm_steps)
                     raise CombatAbortedAfterRevive(f'{flow_tag} recovered after character death')
                 except CombatAbortedAfterRevive:
                     raise
@@ -225,6 +207,30 @@ class BaseCombatTask(CombatCheck):
             raise CombatAbortedAfterRevive(f'{flow_tag} recovery attempted with partial failure')
         finally:
             self.skip_combat_check = prev_skip_combat_check
+
+    def _run_revive_steps_once(self, skip_exit_confirm_steps=False):
+        # Step 1: close revive popup (single action), confirm it is gone.
+        if not self._step_close_revive_popup_once():
+            raise RuntimeError('step1 close revive popup failed')
+        if not skip_exit_confirm_steps:
+            self._run_exit_confirm_steps_once()
+        # Step 4: reuse weekly entrance route and confirm in-world.
+        if not self.go_to_weekly_entrance_for_recovery():
+            raise RuntimeError('step4 go weekly entrance failed')
+        # Step 5: open map once, confirm map state.
+        if not self._step_open_map_once():
+            raise RuntimeError('step5 open map failed')
+        # Step 6: click left waypoint once and travel once.
+        if not self._step_fast_travel_left_waypoint_once():
+            raise RuntimeError('step6 fast travel left waypoint failed')
+
+    def _run_exit_confirm_steps_once(self):
+        # Step 2: press ESC once, confirm exit dialog appears.
+        if not self._step_open_exit_confirm_dialog_once():
+            raise RuntimeError('step2 open exit-confirm dialog failed')
+        # Step 3: click confirm once, confirm back to world.
+        if not self._step_confirm_exit_once():
+            raise RuntimeError('step3 confirm exit failed')
 
     def exit_realm_to_world(self, time_out=120, retries=2):
         """复用 DomainTask 的稳定退副本流程：ESC -> 确认离开 -> 等待回世界。"""
@@ -442,36 +448,10 @@ class BaseCombatTask(CombatCheck):
         """Select a waypoint like teleport_to_heal(), but assumes the map is already open."""
         if not self._is_map_open_for_recovery():
             return False
-        waypoint_box = self.box_of_screen(0.1, 0.1, 0.9, 0.9)
-        max_attempts = 3
-        for attempt in range(max_attempts):
-            threshold = max(0.6, 0.7 - attempt * 0.04)
-            teleport = self.find_best_match_in_box(waypoint_box, ['map_way_point', 'map_way_point_big'], threshold)
-            if not teleport:
-                if attempt < max_attempts - 1:
-                    self.click_relative(0.94, 0.33, after_sleep=0.4)  # slight zoom and retry
-                    self._recovery_pause(recovery_settle_s)
-                    continue
-                return False
-
-            self.click(teleport, after_sleep=1)
-            travel = self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom'],
-                                       raise_if_not_found=False, time_out=2.5, settle_time=0.3)
-            if not travel:
-                pop_up = self.find_feature('map_way_point', box='map_way_point_pop_up_box')
-                if pop_up:
-                    self.click(pop_up, after_sleep=0.8)
-                    travel = self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom'],
-                                               raise_if_not_found=False, time_out=2.5, settle_time=0.3)
-            if travel and self.click_traval_button():
-                self.wait_in_team_and_world(time_out=20)
-                self.sleep(2)
-                return True
-            if attempt < max_attempts - 1:
-                self.log_info(f'revive_action step6: no travel button after waypoint click, retry {attempt + 1}')
-                self.click_relative(0.94, 0.33, after_sleep=0.4)
-                self._recovery_pause(recovery_settle_s)
-        return False
+        return self._try_fast_travel_nearest_waypoint(
+            retry_log_prefix='revive_action step6',
+            use_recovery_pause=True
+        )
 
     def teleport_to_heal(self, esc=True, raise_if_not_found=True):
         """传送回城治疗。"""
@@ -481,41 +461,65 @@ class BaseCombatTask(CombatCheck):
             self.send_key('esc', after_sleep=2)
         self.log_info('click m to open the map')
         self.send_key('m', after_sleep=2)
+        success = self._try_fast_travel_nearest_waypoint(
+            retry_log_prefix='teleport_to_heal',
+            use_recovery_pause=False
+        )
+        if success:
+            return True
+        if raise_if_not_found:
+            raise RuntimeError('Can not find a teleport to heal')
+        return False
+
+    def _try_fast_travel_nearest_waypoint(self, retry_log_prefix, use_recovery_pause):
         waypoint_box = self.box_of_screen(0.1, 0.1, 0.9, 0.9)
         max_attempts = 3
         for attempt in range(max_attempts):
-            # 避免命中地图事件点后无「传送」按钮：每次失败后轻度缩放并重选锚点。
-            threshold = 0.7 - attempt * 0.04
-            threshold = max(0.6, threshold)
+            threshold = max(0.6, 0.7 - attempt * 0.04)
             teleport = self.find_best_match_in_box(waypoint_box, ['map_way_point', 'map_way_point_big'], threshold)
             if not teleport:
                 if attempt < max_attempts - 1:
-                    self.click_relative(0.94, 0.33, after_sleep=0.4)
+                    self._zoom_map_for_next_travel_attempt(use_recovery_pause)
                     continue
-                if raise_if_not_found:
-                    raise RuntimeError(f'Can not find a teleport to heal')
                 return False
 
-            self.click(teleport, after_sleep=1)
-            travel = self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom'],
-                                       raise_if_not_found=False, time_out=2.5, settle_time=0.3)
-            if not travel:
-                pop_up = self.find_feature('map_way_point', box='map_way_point_pop_up_box')
-                if pop_up:
-                    self.click(pop_up, after_sleep=0.8)
-                    travel = self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom'],
-                                               raise_if_not_found=False, time_out=2.5, settle_time=0.3)
-            if travel and self.click_traval_button():
-                self.wait_in_team_and_world(time_out=20)
-                self.sleep(2)
+            if self._click_waypoint_and_try_travel(teleport, use_recovery_pause):
                 return True
             if attempt < max_attempts - 1:
-                self.log_info(f'teleport_to_heal: no travel button after waypoint click, retry {attempt + 1}')
-                self.click_relative(0.94, 0.33, after_sleep=0.4)
-
-        if raise_if_not_found:
-            raise RuntimeError(f'Can not find the travel button')
+                self.log_info(f'{retry_log_prefix}: no travel button after waypoint click, retry {attempt + 1}')
+                self._zoom_map_for_next_travel_attempt(use_recovery_pause)
         return False
+
+    def _click_waypoint_and_try_travel(self, waypoint, use_recovery_pause):
+        self.click(waypoint, after_sleep=1)
+        travel = self._find_travel_feature_after_waypoint_click()
+        if not travel:
+            return False
+        if self.click_traval_button():
+            self.wait_in_team_and_world(time_out=20)
+            if use_recovery_pause:
+                self._recovery_pause(recovery_settle_s)
+            else:
+                self.sleep(2)
+            return True
+        return False
+
+    def _find_travel_feature_after_waypoint_click(self):
+        travel = self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom'],
+                                   raise_if_not_found=False, time_out=2.5, settle_time=0.3)
+        if travel:
+            return travel
+        pop_up = self.find_feature('map_way_point', box='map_way_point_pop_up_box')
+        if pop_up:
+            self.click(pop_up, after_sleep=0.8)
+            return self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom'],
+                                     raise_if_not_found=False, time_out=2.5, settle_time=0.3)
+        return None
+
+    def _zoom_map_for_next_travel_attempt(self, use_recovery_pause):
+        self.click_relative(0.94, 0.33, after_sleep=0.4)  # slight zoom and retry
+        if use_recovery_pause:
+            self._recovery_pause(recovery_settle_s)
 
     def raise_not_in_combat(self, message, exception_type=None):
         """抛出未在战斗状态的异常。
