@@ -36,6 +36,28 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         self.click_box(gray_book_boss, after_sleep=1)
         return self.get_stamina()
 
+    def farm_domain_with_recovery_loop(self, must_use, teleport_into_domain_once, task_name):
+        recover_retry = 0
+        max_recover_retry = 3
+        while True:
+            current, back_up, total = self.open_F2_book_and_get_stamina()
+            if total < self.stamina_once or total < must_use or (must_use == 0 and current < self.stamina_once):
+                self.log_info('not enough stamina', notify=True)
+                self.back()
+                return
+            teleport_into_domain_once()
+            self.sleep(1)
+            finished, must_use = self.farm_in_domain(must_use=must_use)
+            if finished:
+                return
+            recover_retry += 1
+            if recover_retry > max_recover_retry:
+                self.log_error(f'farm_{task_name}: recovery retries exceeded, stop task')
+                self.make_sure_in_world()
+                return
+            self.log_info(f'farm_{task_name}: death recovery completed, re-enter {task_name}')
+            self.sleep(1)
+
     def farm_in_domain(self, must_use=0):
         if self.stamina_once <= 0:
             raise RuntimeError('"self.stamina_once" must be override')

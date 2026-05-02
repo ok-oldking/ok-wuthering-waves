@@ -183,7 +183,10 @@ class BaseCombatTask(CombatCheck):
 
     def revive_action(self):
         """Common Forgery/Simulation recovery flow with strict step confirmations."""
-        self.log_info('revive_action: recovering after character death')
+        self._run_structured_revive_flow(flow_tag='revive_action', skip_exit_confirm_steps=False)
+
+    def _run_structured_revive_flow(self, flow_tag='revive_action', skip_exit_confirm_steps=False):
+        self.log_info(f'{flow_tag}: recovering after character death')
         max_retries = 2
         last_error = None
         prev_skip_combat_check = self.skip_combat_check
@@ -194,12 +197,13 @@ class BaseCombatTask(CombatCheck):
                 # Step 1: close revive popup (single action), confirm it is gone.
                     if not self._step_close_revive_popup_once():
                         raise RuntimeError('step1 close revive popup failed')
-                # Step 2: press ESC once, confirm exit dialog appears.
-                    if not self._step_open_exit_confirm_dialog_once():
-                        raise RuntimeError('step2 open exit-confirm dialog failed')
-                # Step 3: click confirm once, confirm back to world.
-                    if not self._step_confirm_exit_once():
-                        raise RuntimeError('step3 confirm exit failed')
+                    if not skip_exit_confirm_steps:
+                        # Step 2: press ESC once, confirm exit dialog appears.
+                        if not self._step_open_exit_confirm_dialog_once():
+                            raise RuntimeError('step2 open exit-confirm dialog failed')
+                        # Step 3: click confirm once, confirm back to world.
+                        if not self._step_confirm_exit_once():
+                            raise RuntimeError('step3 confirm exit failed')
                 # Step 4: reuse weekly entrance route and confirm in-world.
                     if not self.go_to_weekly_entrance_for_recovery():
                         raise RuntimeError('step4 go weekly entrance failed')
@@ -209,16 +213,16 @@ class BaseCombatTask(CombatCheck):
                 # Step 6: click left waypoint once and travel once.
                     if not self._step_fast_travel_left_waypoint_once():
                         raise RuntimeError('step6 fast travel left waypoint failed')
-                    raise CombatAbortedAfterRevive('recovered after character death')
+                    raise CombatAbortedAfterRevive(f'{flow_tag} recovered after character death')
                 except CombatAbortedAfterRevive:
                     raise
                 except Exception as e:
                     last_error = e
-                    self.log_error(f'revive_action: recovery failed attempt {attempt + 1}/{max_retries}', e)
+                    self.log_error(f'{flow_tag}: recovery failed attempt {attempt + 1}/{max_retries}', e)
                     self._force_reset_to_main_after_recovery_failure()
             if last_error:
-                self.log_error('revive_action: all retries failed', last_error)
-            raise CombatAbortedAfterRevive('recovery attempted with partial failure')
+                self.log_error(f'{flow_tag}: all retries failed', last_error)
+            raise CombatAbortedAfterRevive(f'{flow_tag} recovery attempted with partial failure')
         finally:
             self.skip_combat_check = prev_skip_combat_check
 
