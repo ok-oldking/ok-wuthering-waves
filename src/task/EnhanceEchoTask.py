@@ -109,7 +109,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                         raise Exception('强化设置需要开启同步调谐!')
                     else:
                         raise Exception('找不到 强化并调谐!')
-                while handle := self.wait_ocr(0.24, 0.18, 0.75, 0.93,
+                while handle := self.wait_ocr(0.24, 0.18, 0.75, 0.98,
                                               match=[re.compile('不再提示'), '调谐成功', re.compile('点击任')],
                                               time_out=2):
                     if handle[0].name in ['本次登录不再提示', '本次登入不再提示']:

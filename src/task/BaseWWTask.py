@@ -715,6 +715,7 @@ class BaseWWTask(BaseTask):
                     self.log_info('点击同意按钮!')
                 return False
             if self.find_boxes(texts, match=re.compile("游戏即将重启")):
+                self.sleep(0.2)
                 self.log_info('游戏更新成功, 游戏即将重启')
                 self.click(self.find_boxes(texts, match="确认"), after_sleep=60)
                 result = self.start_device()
