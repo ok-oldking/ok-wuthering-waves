@@ -466,6 +466,29 @@ class BaseCombatTask(CombatCheck):
         current_char = self.get_current_char(raise_exception=False)
         if current_char:
             self.get_current_char().on_combat_end(self.chars)
+        self.switch_to_healer_and_heal()
+
+    def switch_to_healer_and_heal(self):
+        from src.char.ShoreKeeper import ShoreKeeper
+        shore_keeper = None
+        for char in self.chars:
+            if char and isinstance(char, ShoreKeeper):
+                shore_keeper = char
+                break
+        if not shore_keeper:
+            return
+
+        target_key = str(shore_keeper.index + 1)
+        start = time.time()
+        while time.time() - start < 3:
+            in_team, current_index, count = self.in_team()
+            if in_team and current_index == shore_keeper.index:
+                break
+            self.send_key(target_key)
+            self.sleep(0.2)
+
+        self.send_key(self.get_resonance_key(), after_sleep=0.5)
+        logger.info('ShoreKeeper healed after combat end')
 
     def sleep_check(self):
         """休眠指定时间, 并在休眠前后检查战斗状态。
