@@ -466,6 +466,26 @@ class BaseCombatTask(CombatCheck):
         current_char = self.get_current_char(raise_exception=False)
         if current_char:
             self.get_current_char().on_combat_end(self.chars)
+        self.switch_to_healer_and_heal()
+
+    def switch_to_healer_and_heal(self):
+        healer = None
+        for char in self.chars:
+            if char and isinstance(char, Healer):
+                healer = char
+                break
+        if not healer:
+            return
+
+        target_key = str(healer.index + 1)
+        start = time.time()
+        while time.time() - start < 3:
+            in_team, current_index, count = self.in_team()
+            if in_team and current_index == healer.index:
+                break
+            self.send_key(target_key)
+            self.sleep(0.2)
+        logger.info(f'{healer.char_name} switched after combat end')
 
     def sleep_check(self):
         """休眠指定时间, 并在休眠前后检查战斗状态。
