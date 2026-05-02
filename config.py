@@ -108,7 +108,9 @@ config = {
     },
     'windows': {  # required  when supporting windows game
         'top_hwnd_class': [re.compile('CAgreementDlg'), re.compile('CLoginDlg_P_'),
-                           'Chrome_RenderWidgetHostHWND', re.compile('CNativeLoginDlg'), 'ComboLBox', '#32770'],
+                           'CefBrowserWindow', 'Chrome_RenderWidgetHostHWND',
+                           re.compile('CNativeLoginDlg'), 'ComboLBox', '#32770'
+                           ],
         'calculate_pc_exe_path': calculate_pc_exe_path,
         'exe': 'Client-Win64-Shipping.exe',
         'hwnd_class': 'UnrealWindow',

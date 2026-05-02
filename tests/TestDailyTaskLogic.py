@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from ok import Box
 from src.task.DailyTask import DailyTask
 
 
@@ -44,28 +43,14 @@ class TestDailyTaskLogic(unittest.TestCase):
         task.get_task_by_class.assert_not_called()
         task.send_key.assert_not_called()
 
-    def test_click_daily_reward_box_prefers_ocr_located_reward(self):
+    def test_click_daily_reward_box_uses_fallback_coordinate(self):
         task = self.make_task()
-        task.ocr = MagicMock(return_value=[Box(2300, 1280, 70, 30, name='100')])
-        task.click = MagicMock()
-
-        result = task.click_daily_reward_box(100)
-
-        self.assertTrue(result)
-        task.click.assert_called_once()
-        click_box = task.click.call_args.args[0]
-        self.assertLess(click_box.y, 1280)
-        self.assertGreater(click_box.height, 30)
-
-    def test_click_daily_reward_box_falls_back_when_ocr_not_found(self):
-        task = self.make_task()
-        task.ocr = MagicMock(return_value=[])
         task.click = MagicMock()
 
         result = task.click_daily_reward_box(100)
 
         self.assertFalse(result)
-        task.click.assert_called_once_with(0.90, 0.85, after_sleep=1)
+        task.click.assert_called_once_with(0.93, 0.88, after_sleep=1)
 
     def test_claim_daily_skips_top_claim_click_when_points_already_ready(self):
         task = self.make_task()

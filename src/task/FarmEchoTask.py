@@ -109,7 +109,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             if not self.in_combat():
                 if self._in_realm and not self.in_world():
                     self.send_key('esc', after_sleep=0.5)
-                    self.wait_click_feature('claim_cancel_button_hcenter_vcenter', relative_x=1,
+                    self.wait_click_feature('claim_cancel_button_hcenter_vcenter', relative_x=2,
                                             raise_if_not_found=True,
                                             post_action=lambda: self.send_key('esc', after_sleep=1),
                                             settle_time=1)

@@ -697,7 +697,12 @@ class BaseWWTask(BaseTask):
             if self.in_team_and_world():
                 return True
             self.handle_monthly_card()
+            if login_close := self.find_one('login_close', horizontal_variance=0.1, vertical_variance=0.1):
+                self.click(login_close, after_sleep=1)
+                self.log_info('关闭公告!')
+                return False
             texts = self.ocr(log=self.debug)
+
             if login := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match="登录"):
                 if not self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match="+86"):
                     self.click(login, after_sleep=1)
@@ -710,6 +715,7 @@ class BaseWWTask(BaseTask):
                     self.log_info('点击同意按钮!')
                 return False
             if self.find_boxes(texts, match=re.compile("游戏即将重启")):
+                self.sleep(0.2)
                 self.log_info('游戏更新成功, 游戏即将重启')
                 self.click(self.find_boxes(texts, match="确认"), after_sleep=60)
                 result = self.start_device()
