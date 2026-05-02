@@ -946,6 +946,11 @@
             "supercategory": ""
         },
         {
+            "id": 187,
+            "name": "login_close",
+            "supercategory": ""
+        },
+        {
             "id": 188,
             "name": "multiplayer_world_mark",
             "supercategory": ""
@@ -1119,11 +1124,6 @@
             "id": 222,
             "name": "message_dialog",
             "supercategory": ""
-        },
-        {
-            "id": 223,
-            "name": "login_close",
-            "supercategory": ""
         }
     ],
     "images": [
@@ -1162,6 +1162,12 @@
             "width": 3840,
             "date_captured": null,
             "id": 6
+        },
+        {
+            "id": 8,
+            "file_name": "images/32.png",
+            "width": 1920,
+            "height": 1080
         },
         {
             "license": 0,
@@ -1400,7 +1406,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/32.png",
+            "file_name": "images/33.png",
             "height": 1080,
             "width": 1920,
             "date_captured": null,
@@ -1598,7 +1604,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/1.png",
+            "file_name": "images/0.png",
             "height": 2160,
             "width": 3840,
             "date_captured": null,
@@ -2066,15 +2072,6 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/1.png",
-            "height": 2160,
-            "width": 3840,
-            "date_captured": null,
-            "id": 220
-        },
-        {
-            "license": 0,
-            "url": null,
             "file_name": "images/0.png",
             "height": 2160,
             "width": 3840,
@@ -2092,12 +2089,6 @@
         },
         {
             "id": 226,
-            "file_name": "images/0.png",
-            "width": 3840,
-            "height": 2160
-        },
-        {
-            "id": 227,
             "file_name": "images/0.png",
             "width": 3840,
             "height": 2160
@@ -2129,6 +2120,12 @@
         {
             "id": 232,
             "file_name": "images/33.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 233,
+            "file_name": "images/32.png",
             "width": 1920,
             "height": 1080
         }
@@ -2263,15 +2260,15 @@
         },
         {
             "id": 9,
-            "image_id": 227,
-            "category_id": 223,
+            "image_id": 233,
+            "category_id": 187,
             "bbox": [
-                2058,
-                289,
-                90,
-                78
+                1553,
+                159,
+                51,
+                55
             ],
-            "area": 7020,
+            "area": 2805,
             "iscrowd": 0
         },
         {
@@ -2970,6 +2967,19 @@
                 67
             ],
             "area": 3819,
+            "iscrowd": 0
+        },
+        {
+            "id": 60,
+            "image_id": 8,
+            "category_id": 186,
+            "bbox": [
+                825,
+                353,
+                238,
+                123
+            ],
+            "area": 29274,
             "iscrowd": 0
         },
         {
@@ -5381,19 +5391,6 @@
                 24
             ],
             "area": 528,
-            "iscrowd": 0
-        },
-        {
-            "id": 437,
-            "image_id": 220,
-            "category_id": 186,
-            "bbox": [
-                1540,
-                1517,
-                710,
-                105
-            ],
-            "area": 74550,
             "iscrowd": 0
         }
     ]
