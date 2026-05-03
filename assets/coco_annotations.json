@@ -1316,15 +1316,6 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/0.png",
-            "height": 2160,
-            "width": 3840,
-            "date_captured": null,
-            "id": 42
-        },
-        {
-            "license": 0,
-            "url": null,
             "file_name": "images/1.png",
             "height": 2160,
             "width": 3840,
@@ -1374,15 +1365,6 @@
             "height": 2160,
             "width": 3840,
             "date_captured": null,
-            "id": 54
-        },
-        {
-            "license": 0,
-            "url": null,
-            "file_name": "images/0.png",
-            "height": 2160,
-            "width": 3840,
-            "date_captured": null,
             "id": 58
         },
         {
@@ -1406,7 +1388,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/32.png",
+            "file_name": "images/33.png",
             "height": 1080,
             "width": 1920,
             "date_captured": null,
@@ -1451,7 +1433,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/1.png",
+            "file_name": "images/0.png",
             "height": 2160,
             "width": 3840,
             "date_captured": null,
@@ -1541,7 +1523,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/2.png",
+            "file_name": "images/1.png",
             "height": 2160,
             "width": 3840,
             "date_captured": null,
@@ -2120,6 +2102,18 @@
         {
             "id": 235,
             "file_name": "images/33.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 236,
+            "file_name": "images/32.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 237,
+            "file_name": "images/32.png",
             "width": 1920,
             "height": 1080
         }
@@ -2968,12 +2962,12 @@
             "image_id": 8,
             "category_id": 186,
             "bbox": [
-                829,
-                561,
-                279,
-                118
+                825,
+                353,
+                238,
+                123
             ],
-            "area": 32922,
+            "area": 29274,
             "iscrowd": 0
         },
         {
@@ -3089,6 +3083,32 @@
             "iscrowd": 0
         },
         {
+            "id": 69,
+            "image_id": 236,
+            "category_id": 209,
+            "bbox": [
+                1106,
+                683,
+                32,
+                48
+            ],
+            "area": 1536,
+            "iscrowd": 0
+        },
+        {
+            "id": 70,
+            "image_id": 237,
+            "category_id": 208,
+            "bbox": [
+                1157,
+                734,
+                48,
+                59
+            ],
+            "area": 2832,
+            "iscrowd": 0
+        },
+        {
             "id": 72,
             "image_id": 38,
             "category_id": 81,
@@ -3114,21 +3134,6 @@
                 85
             ],
             "area": 6035,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
-        },
-        {
-            "id": 76,
-            "image_id": 42,
-            "category_id": 208,
-            "bbox": [
-                2297,
-                1462,
-                105,
-                124
-            ],
-            "area": 13020,
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
@@ -3414,21 +3419,6 @@
                 75
             ],
             "area": 6075,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
-        },
-        {
-            "id": 116,
-            "image_id": 54,
-            "category_id": 209,
-            "bbox": [
-                2203,
-                1368,
-                51,
-                94
-            ],
-            "area": 4794,
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
