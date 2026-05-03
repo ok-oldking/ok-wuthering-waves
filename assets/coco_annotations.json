@@ -1406,7 +1406,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/33.png",
+            "file_name": "images/32.png",
             "height": 1080,
             "width": 1920,
             "date_captured": null,
@@ -2968,12 +2968,12 @@
             "image_id": 8,
             "category_id": 186,
             "bbox": [
-                825,
-                353,
-                238,
-                123
+                829,
+                561,
+                279,
+                118
             ],
-            "area": 29274,
+            "area": 32922,
             "iscrowd": 0
         },
         {
