@@ -210,6 +210,8 @@ class Labels(str, Enum):
     set_name_13 = 'set_name_13'
     set_name_9 = 'set_name_9'
     skip_dialog = 'skip_dialog'
+    skip_dialog_check = 'skip_dialog_check'
+    skip_dialog_confirm = 'skip_dialog_confirm'
     skip_dialog_new = 'skip_dialog_new'
     skip_quest_confirm = 'skip_quest_confirm'
     skip_quest_confirm_new = 'skip_quest_confirm_new'

@@ -19,14 +19,13 @@ class SkipBaseTask(BaseWWTask):
         pass
 
     def skip_confirm(self):
-        if not self.confirm_dialog_checked:
-            if self.calculate_color_percentage(dialog_white_color, box=self.box_of_screen(0.42, 0.59, 0.56,
-                                                                                          0.64)) > 0.9 and self.calculate_color_percentage(
-                dialog_black_color, box=self.box_of_screen(0.61, 0.60, 0.74, 0.64)) > 0.8:
+        if skip_dialog_confirm := self.find_one('skip_dialog_confirm'):
+            if skip_dialog_check := self.find_one('skip_dialog_check', horizontal_variance=0.1):
                 logger.info('confirm dialog exists, click confirm')
-                self.click_relative(0.44, 0.55)
+                self.click(skip_dialog_check)
                 self.sleep(0.2)
-                self.click_relative(0.67, 0.62)
+                self.click(skip_dialog_confirm)
+                self.sleep(0.2)
                 self.confirm_dialog_checked = True
                 return True
         if skip_button := self.find_one('skip_quest_confirm', threshold=0.8):

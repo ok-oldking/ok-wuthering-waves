@@ -1124,6 +1124,16 @@
             "id": 222,
             "name": "message_dialog",
             "supercategory": ""
+        },
+        {
+            "id": 223,
+            "name": "skip_dialog_confirm",
+            "supercategory": ""
+        },
+        {
+            "id": 224,
+            "name": "skip_dialog_check",
+            "supercategory": ""
         }
     ],
     "images": [
@@ -2116,6 +2126,12 @@
             "file_name": "images/32.png",
             "width": 1920,
             "height": 1080
+        },
+        {
+            "id": 238,
+            "file_name": "images/33.png",
+            "width": 1920,
+            "height": 1080
         }
     ],
     "annotations": [
@@ -2492,9 +2508,7 @@
                 220
             ],
             "area": 24640,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
+            "iscrowd": 0
         },
         {
             "id": 27,
@@ -3109,6 +3123,19 @@
             "iscrowd": 0
         },
         {
+            "id": 71,
+            "image_id": 238,
+            "category_id": 223,
+            "bbox": [
+                1073,
+                645,
+                55,
+                71
+            ],
+            "area": 3905,
+            "iscrowd": 0
+        },
+        {
             "id": 72,
             "image_id": 38,
             "category_id": 81,
@@ -3122,6 +3149,19 @@
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
+        },
+        {
+            "id": 73,
+            "image_id": 238,
+            "category_id": 224,
+            "bbox": [
+                830,
+                570,
+                44,
+                58
+            ],
+            "area": 2552,
+            "iscrowd": 0
         },
         {
             "id": 74,
