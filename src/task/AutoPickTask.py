@@ -59,16 +59,16 @@ class AutoPickTask(TriggerTask, BaseWWTask):
 
             if dialog_3_dots:
                 if self.config.get('Pick Up White List'):
-                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up White List'))
-                    if texts:
-                        logger.info(f'found Pick Up White List {texts}')
+                    f = self.find_f_with_text(self.config.get('Pick Up White List'))
+                    if f:
+                        logger.info(f'found Pick Up White List {f}')
                         self.send_fs()
                         return True
             else:
                 if self.config.get('Pick Up Black List'):
-                    texts = self.ocr(box=text_area, match=self.config.get('Pick Up Black List'))
-                    if texts:
-                        logger.info(f'found Pick Up Black List: {texts}')
+                    f = self.find_f_with_text(self.config.get('Pick Up Black List'))
+                    if f:
+                        logger.info(f'found Pick Up Black List: {f}')
                         return False
                 self.send_fs()
                 return True

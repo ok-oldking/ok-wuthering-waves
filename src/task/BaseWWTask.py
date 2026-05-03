@@ -125,7 +125,7 @@ class BaseWWTask(BaseTask):
             return None
 
         if target_text:
-            search_text_box = f.copy(x_offset=f.width * 5, width_offset=f.width * 7, height_offset=4.5 * f.height,
+            search_text_box = f.copy(x_offset=f.width * 5.2, width_offset=f.width * 6, height_offset=4.5 * f.height,
                                      y_offset=-0.8 * f.height, name='search_text_box')
             text = self.ocr(box=search_text_box, match=target_text)
             logger.debug(f'found f with text {text}, target_text {target_text}')
@@ -585,7 +585,7 @@ class BaseWWTask(BaseTask):
                           threshold=0.8)
         if not f:
             return False
-        dialog_search = f.copy(x_offset=f.width * 3, width_offset=f.width * 2, height_offset=f.height * 2,
+        dialog_search = f.copy(x_offset=f.width * 3, width_offset=f.width * 1.8, height_offset=f.height * 2,
                                y_offset=-f.height,
                                name='search_dialog')
         dialog_3_dots = self.find_feature('dialog_3_dots', box=dialog_search,
