@@ -123,7 +123,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                     else:
                         self.sleep(0.5)
                 self.sleep(0.1)
-                texts = self.ocr(0.09, 0.28, 0.40, 0.53)
+                texts = self.ocr(0.09, 0.3, 0.40, 0.53)
                 self.log_info(f'ocr values: {texts}')
                 properties = [p for p in self.find_boxes(texts, match=property_pattern) if '辅音' not in p.name]
                 for p in properties:

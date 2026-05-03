@@ -83,7 +83,7 @@ class ChangeEchoTask(BaseWWTask, FindFeature):
             self.click(0.04, 0.41)
             self.wait_ocr(match='主音属性', raise_if_not_found=True)
             self.sleep(0.8)
-            self.click(0.5, 0.76)
+            self.click(0.52, 0.71)
             target = self.wait_ocr(match=re.compile(target_main), raise_if_not_found=True)
             self.sleep(0.1)
             self.click(target, after_sleep=0.5)
