@@ -135,7 +135,9 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 if numerator != denominator and denominator in ['24', '36', '48']:
                     self.log_info(f'{count_box} is not complete')
                     count_box.x = self.width_of_screen(0.9)
-                    count_box.y -= count_box.height
+                    count_box.y -= count_box.height * 0.9
+                    count_box.height = 1
+                    count_box.width = 1
                     return count_box
 
 
