@@ -18,7 +18,6 @@ from src.char.Douling import Douling
 from src.char.Encore import Encore
 from src.char.Galbrena import Galbrena
 from src.char.HavocRover import HavocRover
-from src.char.Hiyuki import Hiyuki
 from src.char.Iuno import Iuno
 from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
@@ -108,8 +107,6 @@ char_dict = {
                            'ring_index': Elements.WIND},
     Labels.char_luhesi: {'cls': Luhesi, 'res_cd': 4, 'echo_cd': 25, 'liberation_cd': 25,
                          'ring_index': Elements.SPECTRO},
-    Labels.char_hiyuki: {'cls': Hiyuki, 'res_cd': 12, 'echo_cd': 25, 'liberation_cd': 25,
-                         'ring_index': Elements.ICE},
 }
 
 char_names = char_dict.keys()
