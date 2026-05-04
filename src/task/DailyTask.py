@@ -169,10 +169,12 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
         self.info_set('daily points', total_points)
         if total_points < 100:
-            raise Exception("Can't complete daily task, may need to increase stamina manually!")
+            self.log_error("Can't complete daily task, may need to increase stamina manually!")
+            return False
 
         self.click_daily_reward_box(100)
         self.ensure_main(time_out=10)
+        return True
 
     def click_daily_reward_box(self, reward_points):
         self.log_info(f'claim daily reward {reward_points} via fallback coordinate')

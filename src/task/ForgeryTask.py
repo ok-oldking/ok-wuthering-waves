@@ -38,14 +38,12 @@ class ForgeryTask(DomainTask):
             must_use = 0
         if config is None:
             config = self.config
-        current, back_up, total = self.open_F2_book_and_get_stamina()
-        if total < self.stamina_once or total < must_use or (must_use == 0 and current < self.stamina_once):
-            self.log_info(f'not enough stamina', notify=True)
-            self.back()
-            return
-        self.teleport_into_domain(config.get('Which Forgery Challenge to Farm', 1), daily)
-        self.sleep(1)
-        self.farm_in_domain(must_use=must_use)
+        self.farm_domain_with_recovery_loop(
+            must_use=must_use,
+            teleport_into_domain_once=lambda: self.teleport_into_domain(
+                config.get('Which Forgery Challenge to Farm', 1), daily),
+            task_name='forgery'
+        )
 
     def purification_material(self):
         self.send_key("esc")

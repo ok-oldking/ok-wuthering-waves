@@ -1,7 +1,7 @@
 from qfluentwidgets import FluentIcon
 
 from ok import Logger
-from src.task.BaseCombatTask import BaseCombatTask
+from src.task.BaseCombatTask import BaseCombatTask, CombatAbortedAfterRevive
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
@@ -47,6 +47,10 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.wait_in_team_and_world(esc=True)
         self.farm_tacet()
 
+    def revive_action(self):
+        """Tacet flow: same structured recovery, skipping exit-confirm steps."""
+        self._run_structured_revive_flow(flow_tag='tacet revive_action', skip_exit_confirm_steps=True)
+
     def farm_tacet(self, daily=False, used_stamina=0, config=None):
         if config is None:
             config = self.config
@@ -85,10 +89,18 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             else:
                 self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
                 self.pick_f(handle_claim=False)
-            self.combat_once()
-            self.sleep(3)
-            self.walk_to_treasure()
-            self.pick_f(handle_claim=False)
+            try:
+                self.combat_once()
+                self.sleep(3)
+                self.walk_to_treasure()
+                self.pick_f(handle_claim=False)
+            except CombatAbortedAfterRevive:
+                self.log_info('farm_tacet: death recovery, retry from F2 book')
+                try:
+                    self.ensure_main(esc=False, time_out=180)
+                except Exception as e:
+                    self.log_error('farm_tacet: ensure_main after death recovery failed, continue', e)
+                continue
             can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
             self.info_incr('used stamina', used)
             self.sleep(4)

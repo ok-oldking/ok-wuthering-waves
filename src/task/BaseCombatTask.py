@@ -19,6 +19,15 @@ from src.task.BaseWWTask import isolate_white_text_to_black, binarize_for_matchi
 
 logger = Logger.get_logger(__name__)
 cd_regex = re.compile(r'\d{1,2}\.\d')
+# 复苏弹窗：与 ONNXPaddleOcr(native) 在实机截图上对齐；标题易被裁成「苏物品」，正文含「恢复意识」「60秒」「共鸣者」「命值」等。
+revive_popup_title_re = re.compile(
+    r'(选择复苏物品|选择复苏|复苏物品|苏物品|revive)', re.IGNORECASE)
+revive_popup_body_a_re = re.compile(r'(恢复意识|即时恢复|指定共鸣者)', re.IGNORECASE)
+revive_popup_body_b_re = re.compile(r'(60秒|每60|共鸣者|命值|生命值|多人游戏)', re.IGNORECASE)
+revive_popup_confirm_re = re.compile(r'(确认|confirm)', re.IGNORECASE)
+exit_confirm_confirm_re = re.compile(r'^(确认|confirm)$', re.IGNORECASE)
+exit_confirm_cancel_re = re.compile(r'^(取消|cancel)$', re.IGNORECASE)
+recovery_settle_s = 1.5
 
 
 class NotInCombatException(Exception):
@@ -29,6 +38,10 @@ class NotInCombatException(Exception):
 class CharDeadException(NotInCombatException):
     """角色死亡异常。"""
     pass
+
+
+class CombatAbortedAfterRevive(NotInCombatException):
+    """阵亡后已尝试退出副本并传送回血，战斗循环应中止并由上层重试。"""
 
 
 class BaseCombatTask(CombatCheck):
@@ -169,9 +182,278 @@ class BaseCombatTask(CombatCheck):
             return 0
 
     def revive_action(self):
-        pass
+        """Common Forgery/Simulation recovery flow with strict step confirmations."""
+        self._run_structured_revive_flow(flow_tag='revive_action', skip_exit_confirm_steps=False)
 
-    def teleport_to_heal(self, esc=True):
+    def _run_structured_revive_flow(self, flow_tag='revive_action', skip_exit_confirm_steps=False):
+        self.log_info(f'{flow_tag}: recovering after character death')
+        max_retries = 2
+        last_error = None
+        prev_skip_combat_check = self.skip_combat_check
+        self.skip_combat_check = True
+        try:
+            for attempt in range(max_retries):
+                try:
+                    self._run_revive_steps_once(skip_exit_confirm_steps=skip_exit_confirm_steps)
+                    raise CombatAbortedAfterRevive(f'{flow_tag} recovered after character death')
+                except CombatAbortedAfterRevive:
+                    raise
+                except Exception as e:
+                    last_error = e
+                    self.log_error(f'{flow_tag}: recovery failed attempt {attempt + 1}/{max_retries}', e)
+                    self._force_reset_to_main_after_recovery_failure()
+            if last_error:
+                self.log_error(f'{flow_tag}: all retries failed', last_error)
+            raise CombatAbortedAfterRevive(f'{flow_tag} recovery attempted with partial failure')
+        finally:
+            self.skip_combat_check = prev_skip_combat_check
+
+    def _run_revive_steps_once(self, skip_exit_confirm_steps=False):
+        # Step 1: close revive popup (single action), confirm it is gone.
+        if not self._step_close_revive_popup_once():
+            raise RuntimeError('step1 close revive popup failed')
+        if not skip_exit_confirm_steps:
+            self._run_exit_confirm_steps_once()
+        # Step 4: reuse weekly entrance route and confirm in-world.
+        if not self.go_to_weekly_entrance_for_recovery():
+            raise RuntimeError('step4 go weekly entrance failed')
+        # Step 5: open map once, confirm map state.
+        if not self._step_open_map_once():
+            raise RuntimeError('step5 open map failed')
+        # Step 6: click left waypoint once and travel once.
+        if not self._step_fast_travel_left_waypoint_once():
+            raise RuntimeError('step6 fast travel left waypoint failed')
+
+    def _run_exit_confirm_steps_once(self):
+        # Step 2: press ESC once, confirm exit dialog appears.
+        if not self._step_open_exit_confirm_dialog_once():
+            raise RuntimeError('step2 open exit-confirm dialog failed')
+        # Step 3: click confirm once, confirm back to world.
+        if not self._step_confirm_exit_once():
+            raise RuntimeError('step3 confirm exit failed')
+
+    def exit_realm_to_world(self, time_out=120, retries=2):
+        """复用 DomainTask 的稳定退副本流程：ESC -> 确认离开 -> 等待回世界。"""
+        if not self.in_realm():
+            return self.wait_in_team_and_world(time_out=min(30, time_out), raise_if_not_found=False)
+        for attempt in range(retries):
+            # 避免 after_sleep 触发 sleep_check 在非战斗态抛异常。
+            self.send_key('esc')
+            self.sleep(1)
+            self._dismiss_exit_confirm_popup(prefer_confirm=True)
+            self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False,
+                                    time_out=3, click_after_delay=0.5, threshold=0.7)
+            self.wait_click_feature('claim_cancel_button_hcenter_vcenter', relative_x=2,
+                                    raise_if_not_found=False, settle_time=1, time_out=2)
+            if self.wait_in_team_and_world(time_out=time_out, raise_if_not_found=False):
+                return True
+            if not self.in_realm():
+                return True
+            self.log_info(f'exit_realm_to_world retry {attempt + 1}/{retries}')
+        return False
+
+    def _dismiss_exit_confirm_popup(self, prefer_confirm: bool):
+        """Handle the '确认离开' modal that may appear after ESC.
+
+        - prefer_confirm=True: click confirm (Forgery/Simulation recovery wants to exit)
+        - prefer_confirm=False: click cancel (used by Tacet-specific logic)
+        """
+        if not self.wait_feature('gray_confirm_exit_button', raise_if_not_found=False, time_out=0.2):
+            return False
+        if prefer_confirm:
+            self.log_info('exit-confirm popup detected, confirm exit')
+            # Click the confirm button feature directly to avoid coordinate drift.
+            self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False,
+                                    threshold=0.7, time_out=1.5, click_after_delay=0.2, after_sleep=0)
+        else:
+            self.log_info('exit-confirm popup detected, cancel exit')
+            self.wait_click_feature('cancel_button_hcenter_vcenter', relative_x=-1, raise_if_not_found=False,
+                                    threshold=0.7, time_out=1.5, click_after_delay=0.2, after_sleep=0)
+        self.sleep(1)
+        # Confirm dialog should be gone; if still present, try OCR-based click as a last resort.
+        if not self.wait_feature('gray_confirm_exit_button', raise_if_not_found=False, time_out=0.2):
+            return True
+
+        match = exit_confirm_confirm_re if prefer_confirm else exit_confirm_cancel_re
+        # Only scan the lower part of the modal where the buttons are.
+        buttons = self.ocr(0.15, 0.62, 0.95, 0.90, match=match)
+        if buttons:
+            self.log_info(f'exit-confirm popup ocr fallback click {buttons[0].name}')
+            self.click_box(buttons[0], after_sleep=0.2)
+            self.sleep(1)
+        return not bool(self.wait_feature('gray_confirm_exit_button', raise_if_not_found=False, time_out=0.2))
+
+    def _force_reset_to_main_after_recovery_failure(self):
+        self.log_info('revive_action: force reset to main')
+        # If we failed while map is open, close it first to avoid ESC opening/closing other modals.
+        if self._is_map_open_for_recovery():
+            self.send_key('m')
+            self._recovery_pause(recovery_settle_s)
+        for _ in range(3):
+            self.send_key('esc')
+            self._recovery_pause(recovery_settle_s)
+            self._dismiss_exit_confirm_popup(prefer_confirm=False)
+            if self.in_team_and_world():
+                return
+        self.ensure_main(esc=True, time_out=60)
+
+    def _is_map_open_for_recovery(self):
+        """Best-effort check: whether the big map UI is open."""
+        if self.feature_exists('map_setting_gear') and self.find_one('map_setting_gear', threshold=0.7):
+            return True
+        if self.feature_exists('map_search') and self.find_one('map_search', threshold=0.7):
+            return True
+        if self.feature_exists('map_my_location') and self.find_one('map_my_location', threshold=0.7):
+            return True
+        box = self.box_of_screen(0.05, 0.05, 0.95, 0.95)
+        return bool(self.find_feature('map_way_point', box=box, threshold=0.7) or
+                    self.find_feature('map_way_point_big', box=box, threshold=0.7))
+
+    def _recovery_pause(self, timeout):
+        """Pause during recovery without triggering in-combat sleep checks."""
+        old = self.skip_combat_check
+        self.skip_combat_check = True
+        try:
+            self.sleep(timeout)
+        finally:
+            self.skip_combat_check = old
+
+    def _step_close_revive_popup_once(self):
+        self.log_info('revive_action step1: close revive popup')
+        if close_btn := self.find_one('btn_dialog_close', threshold=0.75):
+            self.click(close_btn, move_back=True, after_sleep=0)
+        else:
+            self.click_relative(0.935, 0.205, move_back=True, after_sleep=0)
+        self._recovery_pause(recovery_settle_s)
+        return not self.has_revive_popup()
+
+    def _step_open_exit_confirm_dialog_once(self):
+        self.log_info('revive_action step2: open exit-confirm dialog')
+        # If the dialog is already present (e.g., triggered by a prior ESC), do not press ESC again.
+        if self.wait_feature('gray_confirm_exit_button', raise_if_not_found=False, time_out=0.2):
+            return True
+        self.send_key('esc')
+        self._recovery_pause(recovery_settle_s)
+        return bool(self.wait_feature('gray_confirm_exit_button', raise_if_not_found=False, time_out=recovery_settle_s))
+
+    def _step_confirm_exit_once(self):
+        self.log_info('revive_action step3: confirm exit')
+        self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False,
+                                threshold=0.7, time_out=1.5, click_after_delay=0.2, after_sleep=0)
+        self._recovery_pause(recovery_settle_s)
+        if self.wait_feature('gray_confirm_exit_button', raise_if_not_found=False, time_out=recovery_settle_s):
+            return False
+        return bool(self.wait_in_team_and_world(time_out=60, raise_if_not_found=False))
+
+    def has_revive_popup(self):
+        """检测是否出现复苏物品/复活确认类弹窗。
+
+        区域与关键字按 native Paddle OCR 在「选择复苏物品」弹窗截图上的结果标定：
+        标题宜单独扫左上一带；正文占中部大块；「确认」按钮在 native 下常漏检，不作为必要条件。
+        """
+        title = self.ocr(0.03, 0.05, 0.52, 0.28, match=revive_popup_title_re)
+        body_lo, body_hi, body_l, body_r = 0.06, 0.72, 0.06, 0.92
+        body_a = self.ocr(body_l, body_lo, body_r, body_hi, match=revive_popup_body_a_re)
+        body_b = self.ocr(body_l, body_lo, body_r, body_hi, match=revive_popup_body_b_re)
+        body = bool(body_a and body_b)
+        confirm = self.ocr(0.45, 0.70, 0.98, 0.96, match=revive_popup_confirm_re)
+        detected = bool(title or body or confirm)
+        if title or body_a or body_b or confirm:
+            self.log_debug(
+                f'revive popup ocr title={bool(title)} body_a={bool(body_a)} body_b={bool(body_b)} '
+                f'body_pair={body} confirm={bool(confirm)} -> {detected}')
+        return detected
+
+    def close_revive_popup(self):
+        """优先点击关闭复苏弹窗，避免通过 ESC 连续退层。"""
+        if not self._has_stable_revive_popup():
+            return True
+
+        # 1) 通用右上角关闭按钮（若该弹窗存在 close icon）。
+        if close_btn := self.find_one('btn_dialog_close', threshold=0.75):
+            self.click(close_btn, move_back=True, after_sleep=0.3)
+            if self.wait_until(lambda: not self.has_revive_popup(), time_out=1.5, raise_if_not_found=False):
+                return True
+
+        # 2) 根据截图，弹窗外侧背景可关闭弹窗，优先尝试左右两侧空白区。
+        for x, y in ((0.03, 0.50), (0.97, 0.50), (0.50, 0.95)):
+            self.click_relative(x, y, move_back=True, after_sleep=0.25)
+            if self.wait_until(lambda: not self.has_revive_popup(), time_out=1.2, raise_if_not_found=False):
+                return True
+
+        # 3) Fallback: click the top-right "X" area inside modal (for UI variants without template).
+        # The revive modal in 16:9 places the close icon near the top-right corner of the popup.
+        self.click_relative(0.935, 0.205, move_back=True, after_sleep=0.3)
+        if self.wait_until(lambda: not self.has_revive_popup(), time_out=1.2, raise_if_not_found=False):
+            return True
+
+        # 3) 仅作为兜底，最后尝试一次 ESC。
+        if not self.has_revive_popup():
+            return True
+        self.send_key('esc')
+        return bool(self.wait_until(lambda: not self.has_revive_popup(), time_out=1.5, raise_if_not_found=False))
+
+    def _has_stable_revive_popup(self):
+        """Require two consecutive detections to reduce OCR false positives."""
+        if not self.has_revive_popup():
+            return False
+        # Avoid sleep() here: it may trigger combat state checks while the modal is blocking.
+        self.next_frame()
+        self.next_frame()
+        return self.has_revive_popup()
+
+    def go_to_weekly_entrance_for_recovery(self):
+        """Reuse the weekly-book route used by daily task to reach the weekly entrance."""
+        from src.Labels import Labels
+
+        self.log_info('revive_action: go to weekly entrance')
+        self.ensure_main(time_out=80)
+        gray_book_weekly = self.openF2Book(Labels.gray_book_weekly)
+        if not gray_book_weekly:
+            self.log_error('revive_action: can not find gray_book_weekly')
+            return False
+        self.click_box(gray_book_weekly, after_sleep=1)
+        btn = self.find_one(Labels.boss_proceed, box=self.box_of_screen(0.91, 0.3, 0.95, 0.41), threshold=0.8)
+        if btn is None:
+            self.log_error('revive_action: can not find weekly boss_proceed')
+            self.ensure_main(time_out=10)
+            return False
+        self.click_box(btn, after_sleep=1)
+        self.wait_click_travel()
+        self.wait_in_team_and_world(time_out=120)
+        self.sleep(1)
+        return True
+
+    def teleport_to_heal_via_weekly_entrance(self, raise_if_not_found=True):
+        """Stabilized heal route: weekly entrance first, then open map and teleport to nearest waypoint."""
+        if not self.go_to_weekly_entrance_for_recovery():
+            if raise_if_not_found:
+                raise RuntimeError('Can not reach weekly entrance before heal teleport')
+            return False
+        self.sleep(1)
+        return self.teleport_to_heal(esc=False, raise_if_not_found=raise_if_not_found)
+
+    def _step_open_map_once(self):
+        self.log_info('revive_action step5: open map')
+        self.send_key('m')
+        # Single action only, but allow time for slow devices/UI to render.
+        return bool(self.wait_until(self._is_map_open_for_recovery, time_out=recovery_settle_s, raise_if_not_found=False))
+
+    def _step_fast_travel_left_waypoint_once(self):
+        """Step6: more reliable travel by reusing the 'nearest waypoint' selection logic."""
+        self.log_info('revive_action step6: fast travel nearest waypoint')
+        return self._fast_travel_nearest_waypoint_on_open_map()
+
+    def _fast_travel_nearest_waypoint_on_open_map(self):
+        """Select a waypoint like teleport_to_heal(), but assumes the map is already open."""
+        if not self._is_map_open_for_recovery():
+            return False
+        return self._try_fast_travel_nearest_waypoint(
+            retry_log_prefix='revive_action step6',
+            use_recovery_pause=True
+        )
+
+    def teleport_to_heal(self, esc=True, raise_if_not_found=True):
         """传送回城治疗。"""
         if esc:
             self.sleep(1)
@@ -179,23 +461,65 @@ class BaseCombatTask(CombatCheck):
             self.send_key('esc', after_sleep=2)
         self.log_info('click m to open the map')
         self.send_key('m', after_sleep=2)
+        success = self._try_fast_travel_nearest_waypoint(
+            retry_log_prefix='teleport_to_heal',
+            use_recovery_pause=False
+        )
+        if success:
+            return True
+        if raise_if_not_found:
+            raise RuntimeError('Can not find a teleport to heal')
+        return False
 
-        teleport = self.find_best_match_in_box(self.box_of_screen(0.1, 0.1, 0.9, 0.9),
-                                               ['map_way_point', 'map_way_point_big'], 0.7)
-        if not teleport:
-            raise RuntimeError(f'Can not find a teleport to heal')
-        self.click(teleport, after_sleep=1)
-        travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
+    def _try_fast_travel_nearest_waypoint(self, retry_log_prefix, use_recovery_pause):
+        waypoint_box = self.box_of_screen(0.1, 0.1, 0.9, 0.9)
+        max_attempts = 3
+        for attempt in range(max_attempts):
+            threshold = max(0.6, 0.7 - attempt * 0.04)
+            teleport = self.find_best_match_in_box(waypoint_box, ['map_way_point', 'map_way_point_big'], threshold)
+            if not teleport:
+                if attempt < max_attempts - 1:
+                    self._zoom_map_for_next_travel_attempt(use_recovery_pause)
+                    continue
+                return False
+
+            if self._click_waypoint_and_try_travel(teleport, use_recovery_pause):
+                return True
+            if attempt < max_attempts - 1:
+                self.log_info(f'{retry_log_prefix}: no travel button after waypoint click, retry {attempt + 1}')
+                self._zoom_map_for_next_travel_attempt(use_recovery_pause)
+        return False
+
+    def _click_waypoint_and_try_travel(self, waypoint, use_recovery_pause):
+        self.click(waypoint, after_sleep=1)
+        travel = self._find_travel_feature_after_waypoint_click()
         if not travel:
-            pop_up = self.find_feature('map_way_point', box='map_way_point_pop_up_box')
-            if pop_up:
-                self.click(pop_up, after_sleep=1)
-                travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
-        if not travel:
-            raise RuntimeError(f'Can not find the travel button')
-        self.click_box(travel, relative_x=1.5)
-        self.wait_in_team_and_world(time_out=20)
-        self.sleep(2)
+            return False
+        if self.click_traval_button():
+            self.wait_in_team_and_world(time_out=20)
+            if use_recovery_pause:
+                self._recovery_pause(recovery_settle_s)
+            else:
+                self.sleep(2)
+            return True
+        return False
+
+    def _find_travel_feature_after_waypoint_click(self):
+        travel = self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom'],
+                                   raise_if_not_found=False, time_out=2.5, settle_time=0.3)
+        if travel:
+            return travel
+        pop_up = self.find_feature('map_way_point', box='map_way_point_pop_up_box')
+        if pop_up:
+            self.click(pop_up, after_sleep=0.8)
+            return self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom'],
+                                     raise_if_not_found=False, time_out=2.5, settle_time=0.3)
+        return None
+
+    def _zoom_map_for_next_travel_attempt(self, use_recovery_pause):
+        self.click_relative(0.94, 0.33, after_sleep=0.4)  # slight zoom and retry
+        if use_recovery_pause:
+            self._recovery_pause(recovery_settle_s)
 
     def raise_not_in_combat(self, message, exception_type=None):
         """抛出未在战斗状态的异常。
@@ -253,6 +577,8 @@ class BaseCombatTask(CombatCheck):
                 self.get_current_char().perform()
         except CharDeadException as e:
             raise e
+        except CombatAbortedAfterRevive:
+            raise
         except NotInCombatException as e:
             logger.info(f'combat_once out of combat break {e}')
         self.combat_end()
@@ -340,6 +666,12 @@ class BaseCombatTask(CombatCheck):
         last_click = 0
         start = time.time()
         while True:
+            # 复苏弹窗打开时 in_combat 常为假，若先 check_combat 会抛脱战异常，永远走不到 OCR。
+            confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=0.2,
+                                        raise_if_not_found=False)
+            if confirm or self.has_revive_popup():
+                self.log_info('char dead popup detected while switching')
+                self.revive_action()
             if not (isinstance(switch_to, ShoreKeeper) and has_intro):
                 self.check_combat()
             now = time.time()
@@ -362,11 +694,6 @@ class BaseCombatTask(CombatCheck):
                 logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
                 # if self.debug:
                 #     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2)
-                if confirm:
-                    self.log_info(f'char dead')
-                    if not self.revive_action():
-                        self.raise_not_in_combat(f'char dead', exception_type=CharDeadException)
                 if now - start > self.switch_char_time_out:
                     self.raise_not_in_combat(
                         f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
