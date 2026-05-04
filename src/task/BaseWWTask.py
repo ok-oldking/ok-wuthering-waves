@@ -695,6 +695,7 @@ class BaseWWTask(BaseTask):
     def wait_login(self):
         if not self._logged_in:
             if self.in_team_and_world():
+                self._logged_in = True
                 return True
             self.handle_monthly_card()
             if login_close := self.find_one('login_close', horizontal_variance=0.1, vertical_variance=0.1):
