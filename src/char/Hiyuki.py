@@ -5,8 +5,7 @@ from src.char.BaseChar import BaseChar
 class Hiyuki(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.last_heavy = 0
-        self.attribute = 0
+        self.lib_permission = False
 
     def do_perform(self):
         if self.has_intro:
@@ -23,12 +22,16 @@ class Hiyuki(BaseChar):
         while self.has_long_action() and self.time_elapsed_accounting_for_freeze(start) < 6:
             self.click_echo(time_out=0)
             if self.click_liberation():
+                self.logger.debug('hiyuki perform lib1')
+                self.lib_permission = False
                 return
             if self.is_mouse_forte_full():
                 self.task.click(key="right")
                 self.heavy_click_forte(check_fun=self.is_mouse_forte_full)
                 self.task.wait_until(self.liberation_available, post_action=self.click_with_interval, time_out=6)
                 if self.click_liberation():
+                    self.logger.debug('hiyuki perform lib1')
+                    self.lib_permission = False
                     return
             self.click_resonance(send_click=False, time_out=0)
             self.click(interval=0.1)
@@ -36,18 +39,28 @@ class Hiyuki(BaseChar):
             
     def perform_lib(self):  
         start = time.time()
-        while self.has_long_action2() and self.time_elapsed_accounting_for_freeze(start) < 18:
+        timeout = 18
+        if self.lib_permission:
+            timeout = 3
+        while self.has_long_action2() and self.time_elapsed_accounting_for_freeze(start) < timeout:
             self.click_echo(time_out=0)
             self.logger.debug(f'hiyuki find mouse_forte{self.task.find_one('hiyuki_lib_forte', threshold=0.7)}')
+            if self.lib_permission and self.liberation_available():
+                self.hold_liberation()
+                self.logger.debug('hiyuki perform lib2')
+                return
             if self.click_resonance(send_click=False, time_out=0)[0]:
                 pass
             elif self.lib_heavy_available():
                 self.heavy_click_forte(check_fun=self.lib_heavy_available)
+                self.lib_permission = True
                 if self.liberation_available():
                     self.hold_liberation()
-                    return
+                    self.logger.debug('hiyuki perform lib2')
+                return
             elif bool(self.task.find_one('hiyuki_left', threshold=0.5)):
                 self.click()
+                self.sleep(0.1)
             elif bool(self.task.find_one('hiyuki_right', threshold=0.5)):
                 self.task.click(key="right")
                 self.sleep(0.1)
@@ -61,10 +74,9 @@ class Hiyuki(BaseChar):
     def hold_liberation(self):
         if not self.task.use_liberation:
             return False
+        last_click = 0
         self.logger.debug('hold_liberation start')
         start = time.time()
-        last_click = 0
-        clicked = False
         while self.task.in_team()[0] and self.liberation_available() and time.time() - start < 8:  
             if time.time() - start > last_click:
                 self.task.send_key_down(self.get_liberation_key())
