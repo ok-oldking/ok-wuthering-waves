@@ -108,13 +108,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.is_revived = False
             if not self.in_combat():
                 if self._in_realm and not self.in_world():
-                    self.send_key('esc', after_sleep=0.5)
-                    self.wait_click_feature('claim_cancel_button_hcenter_vcenter', relative_x=2,
-                                            raise_if_not_found=True,
-                                            post_action=lambda: self.send_key('esc', after_sleep=1),
-                                            settle_time=1)
-                    self.wait_in_team_and_world(time_out=120)
-                    self.sleep(1)
+                    if self.collect_realm_echo_and_restart():
+                        count += 1
+                        continue
                 else:
                     if self._has_treasure:
                         self.wait_until(
@@ -156,6 +152,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 dropped = self.walk_find_echo()
                 logger.info(f'farm echo walk_find_echo {dropped}')
             self.incr_drop(dropped)
+            if self._in_realm and dropped:
+                self.restart_realm_challenge()
+                continue
             if not self.bypass_end_wait:
                 if dropped and not self._has_treasure:
                     self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
@@ -475,6 +474,45 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         if self.find_treasure_icon():
             self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text, y_offset=0.1)
             return True
+
+    def restart_realm_challenge(self):
+        self.log_info('restart realm challenge')
+        self.send_key('esc', after_sleep=0.5)
+        self.wait_click_feature(
+            'claim_cancel_button_hcenter_vcenter',
+            relative_x=2,
+            raise_if_not_found=True,
+            post_action=lambda: self.send_key('esc', after_sleep=1),
+            settle_time=1
+        )
+        self.sleep(1)
+        self.wait_until(
+            lambda: self.in_combat() or self.find_treasure_icon() or self.find_f_with_text(),
+            time_out=20,
+            raise_if_not_found=False
+        )
+        return True
+
+    def collect_realm_echo_and_restart(self):
+        dropped = self.pick_echo()
+        if not dropped:
+            method = self.config.get('Echo Pickup Method', "Yolo")
+            if method == "Yolo":
+                dropped = self.yolo_find_echo(
+                    turn=self._in_realm,
+                    use_color=False,
+                    time_out=min(self.yolo_time_out, 4),
+                    threshold=self.yolo_threshold,
+                )[0]
+                logger.info(f'realm echo yolo find {dropped}')
+            elif method == "Run in Circle":
+                dropped = self.run_in_circle_to_find_echo(circle_count=1)
+                logger.info(f'realm echo walk_circle_find_echo {dropped}')
+            else:
+                dropped = self.walk_find_echo(time_out=2, backward_time=1)
+                logger.info(f'realm echo walk_find_echo {dropped}')
+        self.incr_drop(dropped)
+        return self.restart_realm_challenge()
 
     def choose_level(self, start):
         y = 0.17
