@@ -35,7 +35,7 @@ class Xigelika(BaseChar):
             elif not self.has_intro and self.lib():
                 time_out = 15
                 start = time.time()
-            elif self.click_resonance(send_click=False, time_out=0)[0]:
+            elif self.click_resonance(send_click=False, time_out=2)[0]:
                 pass
             else:
                 self.click(interval=0.1)
@@ -84,9 +84,10 @@ class Xigelika(BaseChar):
                 return char.auto_dodge(condition = self.flying)  
                 
     def is_forte_full(self):
-        box = self.task.box_of_screen_scaled(3840, 2160, 2251, 1993, 2311, 2016, name='forte_full', hcenter=True)
+        box = self.task.box_of_screen_scaled(5120, 2880, 3032, 2654, 3076, 2700, name='forte_full', hcenter=True)
         white_percent = self.task.calculate_color_percentage(forte_white_color, box)
         box.confidence = white_percent
+        self.logger.debug(f'sigrika find forte {white_percent}')
         self.task.draw_boxes('forte_full', box)
         return white_percent > 0.1
         
