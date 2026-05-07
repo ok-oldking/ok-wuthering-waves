@@ -153,7 +153,7 @@ class Cartethyia(BaseChar):
                 mean_val = np.mean(gray)
                 contrast_val = np.std(gray)
                 self.logger.debug(f'cartethyia_space mean {mean_val} contrast {contrast_val}')
-                return mean_val > 190 and contrast_val > 60
+                return mean_val > 190 and contrast_val < 45
 
     def try_mid_air_attack(self, timeout=2):
         self.get_sword_buffs()
