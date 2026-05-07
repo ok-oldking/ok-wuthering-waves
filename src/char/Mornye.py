@@ -63,12 +63,16 @@ class Mornye(BaseChar):
     def not_on_air_actions(self):
         self.logger.debug("not on_air start attacking")
         start = time.time()
+        try_douge = True
         while time.time() - start < 10 and not self.on_air():
             self.click()
             self.click_resonance()
             self.check_combat()
             self.sleep(0.1)
             if self.is_mouse_forte_full():
+                if try_douge:
+                    self.task.click(key="right")
+                    try_douge = False
                 self.heavy_attack()
                 self.sleep(0.3)
 
