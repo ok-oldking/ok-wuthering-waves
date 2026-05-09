@@ -357,6 +357,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             return
         self.send_key('m', after_sleep=2)
 
+        boss = self.config.get('Boss')
+        if boss == 'Nameless Explorer':
+            self.click(0.06, 0.50, after_sleep=0.5)  # 无铭探索者图标在上层地图，切换到上层
+
         box = self.find_boss_check_mark()
 
         self.log_info(f'teleport_to_nearest_boss {box}')
