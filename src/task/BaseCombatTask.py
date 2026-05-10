@@ -374,7 +374,6 @@ class BaseCombatTask(CombatCheck):
             if self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.6,
                                  time_out=0.3, raise_if_not_found=False):
                 self.log_info('char dead (detected during switch loop)')
-                self.screenshot(f'revive_detected_{current_char}_to_{switch_to}')
                 if not self.revive_action():
                     self.raise_not_in_combat('char dead during switch', exception_type=CharDeadException)
             now = time.time()
@@ -395,7 +394,6 @@ class BaseCombatTask(CombatCheck):
             in_team, current_index, size = self.in_team()
             if not in_team:
                 logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                self.screenshot(f'not_in_team_switching_{current_char}_to_{switch_to}')
                 confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.6, time_out=2)
                 if confirm:
                     self.log_info(f'char dead')
@@ -425,8 +423,6 @@ class BaseCombatTask(CombatCheck):
                     self.log_info('char dead (detected after switch)')
                     if not self.revive_action():
                         self.raise_not_in_combat('char dead after switch', exception_type=CharDeadException)
-                else:
-                    self.screenshot(f'after_switch_no_revive_{current_char}_to_{switch_to}')
                 break
             self.next_frame()
 

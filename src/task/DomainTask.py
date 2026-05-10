@@ -3,7 +3,7 @@ import re
 from qfluentwidgets import FluentIcon
 
 from ok import Logger
-from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
+from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharDeadException
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
@@ -23,13 +23,36 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         prev = self.skip_combat_check
         self.skip_combat_check = True
         try:
-            self.send_key('esc', after_sleep=2)                     # ① 关闭复活弹窗
-            self.send_key('esc')                                    # ② 打开退出菜单
+            # ① 关闭复活弹窗：优先点击弹窗按钮（避免 ESC 注入不生效），失败再回退 ESC
+            closed_by_click = False
+            if self.wait_click_feature('cancel_button_hcenter_vcenter',
+                                       raise_if_not_found=False,
+                                       time_out=1.2,
+                                       click_after_delay=0.2,
+                                       threshold=0.7):
+                closed_by_click = True
+            else:
+                btn_dialog_close = self.find_one('btn_dialog_close', threshold=0.8)
+                if btn_dialog_close:
+                    self.click(btn_dialog_close, move_back=True)
+                    closed_by_click = True
+            if not closed_by_click:
+                self.send_key('esc', after_sleep=2)
+                self.sleep(1)
+
+            # ② 打开退出菜单
+            self.send_key('esc')
             self.sleep(1)
-            self.wait_click_feature('gray_confirm_exit_button',     # ③ 确认离开
+
+            # ③ 确认离开
+            self.wait_click_feature('gray_confirm_exit_button',
                                     relative_x=-1, raise_if_not_found=False,
                                     time_out=3, click_after_delay=0.5, threshold=0.7)
-            self.wait_in_team_and_world(time_out=self.teleport_timeout)
+
+            # ④ 必须确认已回到大世界队伍态后，再继续走 F2/传送流程
+            if not self.wait_in_team_and_world(time_out=max(self.teleport_timeout, 120), raise_if_not_found=False):
+                return False
+            self.sleep(0.5)
             self._revive_goto_weekly_entrance()                     # ④ 走周本入口路线
             self.teleport_to_heal(esc=False)                        # ⑤ 传送最近传送点回血
         finally:
@@ -78,7 +101,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
                 self.sleep(3)
                 self.walk_to_treasure()
                 self.pick_f(handle_claim=False)
-            except NotInCombatException:
+            except (NotInCombatException, CharDeadException):
                 self.log_info('farm_in_domain: death recovered, exiting domain')
                 self.make_sure_in_world()
                 return False
