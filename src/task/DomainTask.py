@@ -3,7 +3,6 @@ import re
 from qfluentwidgets import FluentIcon
 
 from ok import Logger
-from src.Labels import Labels
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
 from src.task.WWOneTimeTask import WWOneTimeTask
 
@@ -36,24 +35,6 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         finally:
             self.skip_combat_check = prev
         return False
-
-    def _revive_goto_weekly_entrance(self):
-        """复用周本入口作为复活后的稳定锚点。"""
-        self.ensure_main(time_out=80)
-        gray_book_weekly = self.openF2Book(Labels.gray_book_weekly)
-        if not gray_book_weekly:
-            self.log_error('revive: gray_book_weekly not found, skip weekly entrance')
-            return
-        self.click_box(gray_book_weekly, after_sleep=1)
-        btn = self.find_one(Labels.boss_proceed, box=self.box_of_screen(0.91, 0.3, 0.95, 0.41), threshold=0.8)
-        if not btn:
-            self.log_error('revive: boss_proceed not found, skip weekly entrance')
-            self.ensure_main(time_out=10)
-            return
-        self.click_box(btn, after_sleep=1)
-        self.wait_click_travel()
-        self.wait_in_team_and_world(time_out=120)
-        self.sleep(1)
 
     def make_sure_in_world(self):
         if self.in_realm():

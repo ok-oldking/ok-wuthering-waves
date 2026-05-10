@@ -169,14 +169,34 @@ class BaseCombatTask(CombatCheck):
             return 0
 
     def revive_action(self):
-        """角色死亡后传送回城治疗。返回 False 以触发 CharDeadException 向上传播。"""
+        """角色死亡恢复：关闭弹窗 → 传周本入口 → 传最近传送点回血。"""
         prev = self.skip_combat_check
         self.skip_combat_check = True
         try:
-            self.teleport_to_heal()
+            self.send_key('esc', after_sleep=2)          # ① 关闭复活弹窗
+            self._revive_goto_weekly_entrance()          # ② 传周本锚点
+            self.teleport_to_heal(esc=False)             # ③ 传最近传送点
         finally:
             self.skip_combat_check = prev
         return False
+
+    def _revive_goto_weekly_entrance(self):
+        """复用周本入口作为复活后的稳定锚点。"""
+        self.ensure_main(time_out=80)
+        gray_book_weekly = self.openF2Book('gray_book_weekly')
+        if not gray_book_weekly:
+            self.log_error('revive: gray_book_weekly not found')
+            return
+        self.click_box(gray_book_weekly, after_sleep=1)
+        btn = self.find_one('boss_proceed', box=self.box_of_screen(0.91, 0.3, 0.95, 0.41), threshold=0.8)
+        if not btn:
+            self.log_error('revive: boss_proceed not found')
+            self.ensure_main(time_out=10)
+            return
+        self.click_box(btn, after_sleep=1)
+        self.wait_click_travel()
+        self.wait_in_team_and_world(time_out=120)
+        self.sleep(1)
 
     def teleport_to_heal(self, esc=True):
         """传送回城治疗。"""
