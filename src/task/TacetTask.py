@@ -1,7 +1,7 @@
 from qfluentwidgets import FluentIcon
 
 from ok import Logger
-from src.task.BaseCombatTask import BaseCombatTask
+from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharDeadException
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
@@ -85,10 +85,14 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             else:
                 self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
                 self.pick_f(handle_claim=False)
-            self.combat_once()
-            self.sleep(3)
-            self.walk_to_treasure()
-            self.pick_f(handle_claim=False)
+            try:
+                self.combat_once()
+                self.sleep(3)
+                self.walk_to_treasure()
+                self.pick_f(handle_claim=False)
+            except (NotInCombatException, CharDeadException):
+                self.log_info('farm_tacet: death recovered, re-enter from F2 book')
+                continue
             can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
             self.info_incr('used stamina', used)
             self.sleep(4)

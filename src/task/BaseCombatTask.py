@@ -169,7 +169,34 @@ class BaseCombatTask(CombatCheck):
             return 0
 
     def revive_action(self):
-        pass
+        """角色死亡恢复：关闭弹窗 → 传周本入口 → 传最近传送点回血。"""
+        prev = self.skip_combat_check
+        self.skip_combat_check = True
+        try:
+            self.send_key('esc', after_sleep=2)          # ① 关闭复活弹窗
+            self._revive_goto_weekly_entrance()          # ② 传周本锚点
+            self.teleport_to_heal(esc=False)             # ③ 传最近传送点
+        finally:
+            self.skip_combat_check = prev
+        return False
+
+    def _revive_goto_weekly_entrance(self):
+        """复用周本入口作为复活后的稳定锚点。"""
+        self.ensure_main(time_out=80)
+        gray_book_weekly = self.openF2Book('gray_book_weekly')
+        if not gray_book_weekly:
+            self.log_error('revive: gray_book_weekly not found')
+            return
+        self.click_box(gray_book_weekly, after_sleep=1)
+        btn = self.find_one('boss_proceed', box=self.box_of_screen(0.91, 0.3, 0.95, 0.41), threshold=0.8)
+        if not btn:
+            self.log_error('revive: boss_proceed not found')
+            self.ensure_main(time_out=10)
+            return
+        self.click_box(btn, after_sleep=1)
+        self.wait_click_travel()
+        self.wait_in_team_and_world(time_out=120)
+        self.sleep(1)
 
     def teleport_to_heal(self, esc=True):
         """传送回城治疗。"""
@@ -343,6 +370,12 @@ class BaseCombatTask(CombatCheck):
         while True:
             if not (isinstance(switch_to, ShoreKeeper) and has_intro):
                 self.check_combat()
+            # 每次循环迭代先检查复活弹窗（不依赖 in_team 结果）
+            if self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.6,
+                                 time_out=0.3, raise_if_not_found=False):
+                self.log_info('char dead (detected during switch loop)')
+                if not self.revive_action():
+                    self.raise_not_in_combat('char dead during switch', exception_type=CharDeadException)
             now = time.time()
             current_char.f_break(check_f_on_switch=True)
             _, current_index, _ = self.in_team()
@@ -361,9 +394,7 @@ class BaseCombatTask(CombatCheck):
             in_team, current_index, size = self.in_team()
             if not in_team:
                 logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                # if self.debug:
-                #     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2)
+                confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.6, time_out=2)
                 if confirm:
                     self.log_info(f'char dead')
                     if not self.revive_action():
@@ -386,6 +417,12 @@ class BaseCombatTask(CombatCheck):
                     current_time = time.time()
                     self.add_freeze_duration(current_time, switch_to.intro_motion_freeze_duration, -100)
                     current_char.last_outro_time = current_time
+                # 切人成功后补检：目标角色可能已阵亡（弹窗在入场动画期间出现）
+                if self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.6,
+                                     time_out=0.5, raise_if_not_found=False):
+                    self.log_info('char dead (detected after switch)')
+                    if not self.revive_action():
+                        self.raise_not_in_combat('char dead after switch', exception_type=CharDeadException)
                 break
             self.next_frame()
 
