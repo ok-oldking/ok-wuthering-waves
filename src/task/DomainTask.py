@@ -57,6 +57,8 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             self.teleport_to_heal(esc=False)                        # ⑤ 传送最近传送点回血
         finally:
             self.skip_combat_check = prev
+        # 这里保持返回 False，用于强制退出当前战斗上下文（不是“成功/失败”的语义）。
+        # 副本死亡恢复会在任务循环层继续推进（更安全的重进路径）。
         return False
 
     def make_sure_in_world(self):
@@ -76,7 +78,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
     def farm_domain_with_recovery_loop(self, must_use, teleport_into_domain_once):
         """包装副本刷取循环：死亡恢复后自动从 F2 重新进入。"""
         while True:
-            current, back_up, total = self.open_F2_book_and_get_stamina()
+            current, _, total = self.open_F2_book_and_get_stamina()
             if total < self.stamina_once or total < must_use or (must_use == 0 and current < self.stamina_once):
                 self.log_info('not enough stamina', notify=True)
                 self.back()

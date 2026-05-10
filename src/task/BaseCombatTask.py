@@ -178,6 +178,8 @@ class BaseCombatTask(CombatCheck):
             self.teleport_to_heal(esc=False)             # ③ 传最近传送点
         finally:
             self.skip_combat_check = prev
+        # 这里刻意返回 False，用于中断当前 combat loop（不是“成功/失败”的语义）。
+        # 上层任务会在捕获异常后重建状态（回到大世界/重进副本/继续循环）。
         return False
 
     def _revive_goto_weekly_entrance(self):
