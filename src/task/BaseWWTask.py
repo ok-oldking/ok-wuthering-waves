@@ -404,8 +404,13 @@ class BaseWWTask(BaseTask):
         for box in boxes:
             if match := stamina_re.search(box.name):
                 current = int(match.group(1))
-            elif match := number_re.search(box.name):
-                back_up = int(match.group(1))
+                back_up = int(match.group(2))
+                break  # 找到 "65/240" 即停，避免后面杂数覆盖
+        # fallback: 未匹配到 stamina_re 时逐数字识别
+        if current == 0:
+            for box in boxes:
+                if match := number_re.search(box.name):
+                    back_up = max(back_up, int(match.group(1)))
         self.info_set('current_stamina', current)
         self.info_set('back_up_stamina', back_up)
         return current, back_up, current + back_up
