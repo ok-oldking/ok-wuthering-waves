@@ -1,0 +1,23 @@
+name: "ok-ww"
+uac: true
+profiles:
+  - name: "China"
+    git_url: "https://cnb.cool/ok-oldking/ok-wuthering-waves.git"
+    admin: true
+    main_script: "main.py"
+    requires_python: "3.12"
+    requirements: "requirements.txt"
+    use_pythonw: true
+    show_add_defender: true
+    # PYTHONPATH: "your/default/path" # Optional, will be "" if missing
+
+  - name: "Global"
+    git_url: "https://github.com/ok-oldking/ok-ww-update.git"
+    main_script: "main.py"
+    requirements: "requirements.txt"
+
+  - name: "Debug"
+    git_url: "https://cnb.cool/ok-oldking/ok-wuthering-waves.git"
+    main_script: "main_debug.py"
+    requirements: "requirements.txt"
+

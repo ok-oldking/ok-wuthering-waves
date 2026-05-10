@@ -1,0 +1,175 @@
+name: Build Windows Executable
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build exe with launcher
+    runs-on: windows-latest
+
+    env:
+      PYTHONIOENCODING: 'UTF-8'
+      #      SIGN_BUILD: 'true'
+      SIGN_BUILD: 'false'
+
+    strategy:
+      matrix:
+        python-version: [ 3.12 ]
+
+    steps:
+      - name: Configure git
+        run: |
+          [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+          git config --global user.email "ok-oldking@users.noreply.github.com"
+          git config --global user.name "ok-oldking"
+          echo "action_state=yellow" >> $env:GITHUB_ENV
+          echo "${{ env.action_state }}"
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: true
+          fetch-depth: 0
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set UTF-8 encoding
+        run: |
+          set PYTHONIOENCODING=utf-8
+          set PYTHONLEGACYWINDOWSSTDIO=utf-8
+          echo PYTHONIOENCODING=utf-8 >> $GITHUB_ENV
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: inline_ok_requirements
+        run: |
+          python -m ok.update.inline_ok_requirements --tag ${{ github.ref_name }}
+
+      - name: Run tests
+        run: |
+          Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
+              Write-Host "Running tests in $($_.FullName)"
+              try {
+                  # Run the Python unittest command
+                  python -m unittest $_.FullName
+
+                  # Check if the previous command succeeded
+                  if ($LASTEXITCODE -ne 0) {
+                      throw "Tests failed in $($_.FullName)"
+                  }
+              } catch {
+                  # Stop the loop and return the error
+                  Write-Error $_
+                  exit 1
+              }
+          }
+
+      - name: Sync Repositories
+        id: sync   # Give the step an ID to access its outputs
+        uses: ok-oldking/partial-sync-repo@master # Replace with your action path
+        with:
+          repos: |
+            https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-wuthering-waves.git
+            https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update
+          sync_list: 'deploy.txt'
+          tag: ${{ github.ref_name }}
+          gitignore_file: '.update_repo_gitignore'
+          show_author: true
+
+      - name: pyappify build-exe-only
+        id: build-exe-only
+        uses: ok-oldking/pyappify-action@master
+        with:
+          build_exe_only: false
+      #          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.7.12
+
+      - name: Upload unsigned EXE artifact
+        if: env.SIGN_BUILD == 'true'
+        id: upload-unsigned-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: to-sign
+          path: ${{ steps.build-exe-only.outputs.exe-path }}
+
+      - name: Sign EXE
+        if: env.SIGN_BUILD == 'true'
+        uses: signpath/github-action-submit-signing-request@v1.1
+        with:
+          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
+          organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
+          project-slug: 'ok-wuthering-waves'
+          signing-policy-slug: 'release-signing'
+          artifact-configuration-slug: "single-exe"
+          github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 60000
+          output-artifact-directory: ${{ steps.build-exe-only.outputs.exe-folder }}
+
+      - name: pyappify build-setup-exe
+        if: env.SIGN_BUILD == 'true'
+        id: build-setup-exe
+        uses: ok-oldking/pyappify-action@master
+
+      - name: Upload unsigned setup EXE artifact
+        if: env.SIGN_BUILD == 'true'
+        id: upload-unsigned-setup-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: setup-to-sign
+          path: pyappify_dist/ok-ww-win32-online-setup.exe
+
+      #      - name: Sign setup EXE
+      #        if: env.SIGN_BUILD == 'true'
+      #        uses: signpath/github-action-submit-signing-request@v1.1
+      #        with:
+      #          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
+      #          organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
+      #          project-slug: 'ok-wuthering-waves'
+      #          signing-policy-slug: 'release-signing'
+      #          artifact-configuration-slug: "single-exe"
+      #          github-artifact-id: '${{ steps.upload-unsigned-setup-artifact.outputs.artifact-id }}'
+      #          wait-for-completion: true
+      #          wait-for-completion-timeout-in-seconds: 60000
+      #          output-artifact-directory: 'pyappify_dist'
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          body: |
+            ###  更新日志 ${{ steps.sync.outputs.start_tag }} -> ${{ steps.sync.outputs.end_tag }}:
+              ${{ steps.sync.outputs.changes_with_asterisk }}          
+            ### 下载包说明
+              * [ok-ww-win32-China-setup.exe](https://github.com/ok-oldking/ok-wuthering-waves/releases/download/${{ github.ref_name }}/ok-ww-win32-China-setup.exe) 完整安装包, 更新使用阿里云+腾讯CNB.               
+              * [ok-ww-win32-Global-setup.exe](https://github.com/ok-oldking/ok-wuthering-waves/releases/download/${{ github.ref_name }}/ok-ww-win32-Global-setup.exe) full package with dependencies, using GitHub and PyPi as update source 
+              * 不要下载ok-ww-win32.zip,和SourceCode.zip, Do Not Download the SourceCode, ok-ww-win32.zip
+            ### 如果无法下载或下载慢, 可以使用其他下载源
+              * [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okww&source=ok-ww-release), 国内网页直链, 下载需要购买CD-KEY, 已有Mirror酱CD-KEY可免费下载
+              * [百度网盘](https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww) 免费下载
+              * [夸克网盘](https://pan.quark.cn/s/418018ddf7a0) 免费下载
+          draft: false
+          prerelease: false
+          files: pyappify_dist/*
+
+      - name: Trigger MirrorChyanUploading
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_uploading
+          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_release_note
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

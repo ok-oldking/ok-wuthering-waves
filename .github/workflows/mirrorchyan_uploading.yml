@@ -1,0 +1,20 @@
+name: mirrorchyan_uploading
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  mirrorchyan:
+    runs-on: macos-latest
+    steps:
+      - uses: MirrorChyan/uploading-action@v1
+        with:
+          filetype: latest-release
+          filename: "ok-ww-win32-China-setup.exe"
+          mirrorchyan_rid: okww
+
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          owner: ok-oldking
+          repo: ok-wuthering-waves
+          upload_token: ${{ secrets.MirrorChyanUploadToken }}

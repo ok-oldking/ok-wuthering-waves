@@ -1,0 +1,14 @@
+src
+ok
+config.py
+main.py
+ok-ww.exe
+readme
+README.md
+README_en.md
+assets
+icon.png
+requirements.txt
+main_debug.py
+i18n
+pyappify.yml

@@ -1,0 +1,13 @@
+from src.char.BaseChar import BaseChar
+
+
+class Jianxin(BaseChar):
+    def do_perform(self):
+        if self.has_intro:
+            self.continues_normal_attack(1)
+        self.click_liberation()
+        if self.resonance_available():
+            self.click_resonance()
+        if self.echo_available():
+            self.click_echo()
+        self.switch_next_char()

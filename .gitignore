@@ -1,0 +1,73 @@
+.venv
+onnxocr/
+updates/
+working/
+update/
+tesseract
+cache/
+models
+fonts
+# Byte-compiled / optimized / DLL files
+.idea/
+__pycache__/
+issue*.json
+*.py[cod]
+*$py.class
+configs/
+paddle_model/
+md5.txt
+update.bat
+click_screenshots/
+test_scripts/
+screenshots/
+thread_dumps.txt
+.claude/
+CLAUDE.md
+# C extensions
+ok
+ok/
+*.cpp
+*.pyx
+*.so
+*.bat
+.vscode/
+**/__pycache__/
+# Distribution / packaging
+.Python
+tests/configs/
+tests/logs/
+i18n/en_US/
+logs/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+python/
+
+# PyInstaller
+# Usually these files are written by a python script from a template
+# before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+autohelper
+working_images/
+repo/
+
+assets/result.json
