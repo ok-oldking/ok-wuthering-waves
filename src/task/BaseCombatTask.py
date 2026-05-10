@@ -173,11 +173,6 @@ class BaseCombatTask(CombatCheck):
         self.teleport_to_heal()
         return False
 
-    def _check_revive_needed(self):
-        """检测复活弹窗是否正在显示（兜底：combat_once 可能吞掉脱战异常）。"""
-        return self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8,
-                                 time_out=0.5, raise_if_not_found=False)
-
     def teleport_to_heal(self, esc=True):
         """传送回城治疗。"""
         if esc:

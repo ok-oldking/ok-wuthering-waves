@@ -82,11 +82,6 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         except (CharDeadException, NotInCombatException):
             self.log_info('combat_nest: death recovered, skip current nest')
             return
-        # 兜底：combat_once 内部可能吞掉脱战异常，额外检查复活弹窗
-        if self._check_revive_needed():
-            self.revive_action()
-            self.log_info('combat_nest: death recovered (post-check), skip current nest')
-            return
         if self._capture_mode:
             if self._capture_success or self.wait_until(self.has_echo_notification, time_out=3):
                 self.log_info("Captured echo during combat, skipping search.")
