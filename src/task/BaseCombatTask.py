@@ -393,6 +393,12 @@ class BaseCombatTask(CombatCheck):
                     current_time = time.time()
                     self.add_freeze_duration(current_time, switch_to.intro_motion_freeze_duration, -100)
                     current_char.last_outro_time = current_time
+                # 切人成功后补检：目标角色可能已阵亡（弹窗在入场动画期间出现）
+                if self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.6,
+                                     time_out=0.5, raise_if_not_found=False):
+                    self.log_info('char dead (detected after switch)')
+                    if not self.revive_action():
+                        self.raise_not_in_combat('char dead after switch', exception_type=CharDeadException)
                 break
             self.next_frame()
 
