@@ -350,6 +350,13 @@ class BaseCombatTask(CombatCheck):
         while True:
             if not (isinstance(switch_to, ShoreKeeper) and has_intro):
                 self.check_combat()
+            # 每次循环迭代先检查复活弹窗（不依赖 in_team 结果）
+            if self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.6,
+                                 time_out=0.3, raise_if_not_found=False):
+                self.log_info('char dead (detected during switch loop)')
+                self.screenshot(f'revive_detected_{current_char}_to_{switch_to}')
+                if not self.revive_action():
+                    self.raise_not_in_combat('char dead during switch', exception_type=CharDeadException)
             now = time.time()
             current_char.f_break(check_f_on_switch=True)
             _, current_index, _ = self.in_team()
