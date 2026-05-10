@@ -2,7 +2,7 @@ import re
 import cv2
 from qfluentwidgets import FluentIcon
 from ok import Logger
-from src.task.BaseCombatTask import BaseCombatTask, CombatAbortedAfterRevive, NotInCombatException
+from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharDeadException
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
@@ -79,12 +79,8 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.run_until(self.in_combat, 'w', time_out=10, running=False, target=True)
         try:
             self.combat_once(wait_combat_time=0)
-        except CombatAbortedAfterRevive:
-            self.log_info('combat_nest: death recovery, skip nest cleanup')
-            try:
-                self.ensure_main(esc=False, time_out=30)
-            except Exception as e:
-                self.log_error('combat_nest: ensure_main after death recovery failed, continue', e)
+        except (CharDeadException, NotInCombatException):
+            self.log_info('combat_nest: death recovered, skip current nest')
             return
         if self._capture_mode:
             if self._capture_success or self.wait_until(self.has_echo_notification, time_out=3):
@@ -127,7 +123,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
 
     def go_nightmare_scroll(self):
         self.click(0.17, 0.68, after_sleep=1)
-        self.click(self.tacet_scroll_x, 0.54, after_sleep=1)
+        self.click(3737 / 3840, 0.54, after_sleep=1)
         self.log_info('go nightmare scroll')
 
     def go_nest(self):
@@ -143,7 +139,9 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 if numerator != denominator and denominator in ['24', '36', '48']:
                     self.log_info(f'{count_box} is not complete')
                     count_box.x = self.width_of_screen(0.9)
-                    count_box.y -= count_box.height
+                    count_box.y -= count_box.height * 0.9
+                    count_box.height = 1
+                    count_box.width = 1
                     return count_box
 
 

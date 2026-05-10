@@ -42,7 +42,6 @@ class ForgeryTask(DomainTask):
             must_use=must_use,
             teleport_into_domain_once=lambda: self.teleport_into_domain(
                 config.get('Which Forgery Challenge to Farm', 1), daily),
-            task_name='forgery'
         )
 
     def purification_material(self):

@@ -1,7 +1,7 @@
 from qfluentwidgets import FluentIcon
 
 from ok import Logger
-from src.task.BaseCombatTask import BaseCombatTask, CombatAbortedAfterRevive
+from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
@@ -20,7 +20,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         default_config = {
             'Which Tacet Suppression to Farm': 1,  # starts with 1
         }
-        self.total_number = 16
+        self.total_number = 17
         self.target_enemy_time_out = 10
         default_config.update(self.default_config)
         self.config_description = {
@@ -34,9 +34,10 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             3: [],
             4: [],
             5: [],
-            6: [["a", 0.3]],
-            7: [["d", 0.6]],
-            8: [["a", 1.5], ["w", 3], ["a", 2.5]],
+            6: [],
+            7: [["a", 0.3]],
+            8: [["d", 0.6]],
+            9: [["a", 1.5], ["w", 3], ["a", 2.5]],
         }
         self.stamina_once = 60
 
@@ -45,10 +46,6 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.ensure_main(time_out=180)
         self.wait_in_team_and_world(esc=True)
         self.farm_tacet()
-
-    def revive_action(self):
-        """Tacet flow: same structured recovery, skipping exit-confirm steps."""
-        self._run_structured_revive_flow(flow_tag='tacet revive_action', skip_exit_confirm_steps=True)
 
     def farm_tacet(self, daily=False, used_stamina=0, config=None):
         if config is None:
@@ -93,12 +90,8 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                 self.sleep(3)
                 self.walk_to_treasure()
                 self.pick_f(handle_claim=False)
-            except CombatAbortedAfterRevive:
-                self.log_info('farm_tacet: death recovery, retry from F2 book')
-                try:
-                    self.ensure_main(esc=False, time_out=180)
-                except Exception as e:
-                    self.log_error('farm_tacet: ensure_main after death recovery failed, continue', e)
+            except NotInCombatException:
+                self.log_info('farm_tacet: death recovered, re-enter from F2 book')
                 continue
             can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
             self.info_incr('used stamina', used)

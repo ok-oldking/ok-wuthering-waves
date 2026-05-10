@@ -42,7 +42,6 @@ class SimulationTask(DomainTask):
             must_use=must_use,
             teleport_into_domain_once=lambda: self.teleport_into_domain(
                 config.get('Material Selection', 'Shell Credit')),
-            task_name='simulation'
         )
 
     def teleport_into_domain(self, selection):
