@@ -370,7 +370,7 @@ class BaseCombatTask(CombatCheck):
                 logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
                 # if self.debug:
                 #     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2)
+                confirm = self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.6, time_out=2)
                 if confirm:
                     self.log_info(f'char dead')
                     if not self.revive_action():
