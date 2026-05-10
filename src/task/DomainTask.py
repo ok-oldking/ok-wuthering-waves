@@ -18,6 +18,18 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         self.group_name = "Dungeon"
         self.group_icon = FluentIcon.HOME
 
+    def revive_action(self):
+        """副本内死亡恢复：关闭复活弹窗 → 退出副本 → 传送回城。"""
+        prev = self.skip_combat_check
+        self.skip_combat_check = True
+        try:
+            self.send_key('esc', after_sleep=2)  # 关闭复活弹窗
+            self.make_sure_in_world()            # 退出副本回到大世界
+            self.teleport_to_heal(esc=False)     # 打开地图传送回城
+        finally:
+            self.skip_combat_check = prev
+        return False
+
     def make_sure_in_world(self):
         if self.in_realm():
             self.send_key('esc', after_sleep=1)
