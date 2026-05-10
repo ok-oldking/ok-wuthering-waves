@@ -170,7 +170,12 @@ class BaseCombatTask(CombatCheck):
 
     def revive_action(self):
         """角色死亡后传送回城治疗。返回 False 以触发 CharDeadException 向上传播。"""
-        self.teleport_to_heal()
+        prev = self.skip_combat_check
+        self.skip_combat_check = True
+        try:
+            self.teleport_to_heal()
+        finally:
+            self.skip_combat_check = prev
         return False
 
     def teleport_to_heal(self, esc=True):
