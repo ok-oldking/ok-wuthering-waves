@@ -93,6 +93,11 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             except NotInCombatException:
                 self.log_info('farm_tacet: death recovered, re-enter from F2 book')
                 continue
+            # 兜底：combat_once 内部可能吞掉脱战异常，额外检查复活弹窗
+            if self._check_revive_needed():
+                self.revive_action()
+                self.log_info('farm_tacet: death recovered (post-check), re-enter from F2 book')
+                continue
             can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
             self.info_incr('used stamina', used)
             self.sleep(4)

@@ -64,6 +64,12 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
                 self.log_info('farm_in_domain: death recovered, exiting domain')
                 self.make_sure_in_world()
                 return False
+            # 兜底：combat_once 内部可能吞掉脱战异常，额外检查复活弹窗
+            if self._check_revive_needed():
+                self.revive_action()
+                self.log_info('farm_in_domain: death recovered (post-check), exiting domain')
+                self.make_sure_in_world()
+                return False
             can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
             self.info_incr('used stamina', used)
             must_use -= used

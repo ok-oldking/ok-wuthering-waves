@@ -169,9 +169,14 @@ class BaseCombatTask(CombatCheck):
             return 0
 
     def revive_action(self):
-        """角色死亡后传送回城治疗，由 switch_next_char 中的 revive_confirm 检测触发。"""
+        """角色死亡后传送回城治疗。返回 False 以触发 CharDeadException 向上传播。"""
         self.teleport_to_heal()
-        return True
+        return False
+
+    def _check_revive_needed(self):
+        """检测复活弹窗是否正在显示（兜底：combat_once 可能吞掉脱战异常）。"""
+        return self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8,
+                                 time_out=0.5, raise_if_not_found=False)
 
     def teleport_to_heal(self, esc=True):
         """传送回城治疗。"""
