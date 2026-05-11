@@ -53,13 +53,10 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             if not self.wait_in_team_and_world(time_out=max(self.teleport_timeout, 120), raise_if_not_found=False):
                 return False
             self.sleep(0.5)
-            self._revive_goto_weekly_entrance()                     # ④ 走周本入口路线
-            self.teleport_to_heal(esc=False)                        # ⑤ 传送最近传送点回血
+            self.revive_at_tower_and_heal()
         finally:
             self.skip_combat_check = prev
-        # 这里保持返回 False，用于强制退出当前战斗上下文（不是“成功/失败”的语义）。
-        # 副本死亡恢复会在任务循环层继续推进（更安全的重进路径）。
-        return False
+        return True
 
     def make_sure_in_world(self):
         if self.in_realm():

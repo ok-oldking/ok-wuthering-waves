@@ -97,23 +97,6 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.claim_battle_pass()
         self.log_info('Task completed', notify=True)
 
-    def go_to_tower(self):
-        self.log_info('go to tower')
-        self.ensure_main(time_out=80)
-        gray_book_weekly = self.openF2Book(Labels.gray_book_weekly)
-        if not gray_book_weekly:
-            self.log_error('go_to_tower can not find gray_book_weekly')
-            return
-        self.click_box(gray_book_weekly, after_sleep=1)
-        btn = self.find_one(Labels.boss_proceed, box=self.box_of_screen(0.91, 0.3, 0.95, 0.41), threshold=0.8)
-        if btn is None:
-            self.ensure_main(time_out=10)
-            return
-        self.click_box(btn, after_sleep=1)
-        self.wait_click_travel()
-        self.wait_in_team_and_world(time_out=120)
-        self.sleep(1)
-
     def claim_battle_pass(self):
         self.log_info('battle pass')
         self.send_key_down('alt')

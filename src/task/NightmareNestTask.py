@@ -2,7 +2,7 @@ import re
 import cv2
 from qfluentwidgets import FluentIcon
 from ok import Logger
-from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
+from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharRevivedException
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
@@ -77,7 +77,11 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self.wait_in_team_and_world(time_out=40, raise_if_not_found=False)
         self.sleep(2)
         self.run_until(self.in_combat, 'w', time_out=10, running=False, target=True)
-        self.combat_once(wait_combat_time=0)
+        try:
+            self.combat_once(wait_combat_time=0)
+        except CharRevivedException:
+            self.log_info('nightmare nest: death recovered, re-enter from F2 book')
+            return
         if self._capture_mode:
             if self._capture_success or self.wait_until(self.has_echo_notification, time_out=3):
                 self.log_info("Captured echo during combat, skipping search.")
