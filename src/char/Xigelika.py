@@ -45,19 +45,27 @@ class Xigelika(BaseChar):
         use_mouse = self.has_long_action()
         if use_mouse:
             self.task.mouse_down()
-            wait = lambda: not self.has_long_action()
+            try:
+                ret = self.task.wait_until(lambda: not self.has_long_action(), time_out=1.2)
+            finally:
+                self.task.mouse_up()
         else:
             if self.has_cd('resonance'):
                 self.click(interval=0.1)
                 self.sleep(0.05)
                 return False
             self.task.send_key_down(self.get_resonance_key())
-            wait = lambda: not self.is_forte_full()
-        ret = self.task.wait_until(wait, time_out=1.2)
-        if use_mouse:
-            self.task.mouse_up()
-        else:
-            self.task.send_key_up(self.get_resonance_key())
+            start = time.time()
+            ret = False
+            try:
+                while self.time_elapsed_accounting_for_freeze(start) < 1.2:
+                    elapsed = self.time_elapsed_accounting_for_freeze(start)
+                    if elapsed >= 0.6 and not self.is_forte_full():
+                        ret = True
+                        break
+                    self.task.next_frame()
+            finally:
+                self.task.send_key_up(self.get_resonance_key())
         self.sleep(0.01)
         return ret
 
