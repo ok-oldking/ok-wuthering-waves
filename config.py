@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -190,3 +191,36 @@ config = {
         ["src.task.FastTravelTask", "FastTravelTask"],
     ], 'scene': ["src.scene.WWScene", "WWScene"],
 }
+
+if sys.platform == 'darwin':
+    # macOS packaging currently cannot re-sign OpenVINO's bundled Intel TBB dylib.
+    # Keep OK-WW's OCR/YOLO flow, but use the official ONNX Runtime code path on Darwin.
+    config['gui_icon'] = os.path.join('icons', 'icon.png')
+    config['ocr']['params']['use_openvino'] = False
+    config['ocr']['params']['use_npu'] = False
+    config['mac'] = {
+        'window_keywords': ['Wuthering Waves', 'Wuthering', '鳴潮', '鸣潮', 'Client-Win64-Shipping'],
+        'owner_keywords': ['Wuthering Waves', 'Wuthering', '鳴潮', '鸣潮', 'Client-Win64-Shipping'],
+        'exclude_owner_keywords': [
+            'Arc', 'Safari', 'Chrome', 'Firefox', 'Code', 'Cursor', 'Terminal', 'iTerm', 'Finder'
+        ],
+        'bundle_ids': ['com.kurogame.wutheringwaves.global'],
+        'include_offscreen': True,
+        'content_ratio': '16:9',
+        'activate_on_capture': False,
+        'activate_on_capture_failure': True,
+        'activation_interval': 1.0,
+        'activate_wait': 1.25,
+        'require_frontmost_for_input': True,
+        'display_fallback_grace': 0.0,
+        'display_fallback_prefer_seconds': 0.75,
+        'display_fallback_settle_wait': 0.75,
+        'display_fallback_window_stable_seconds': 0.45,
+        'display_fallback_when_frontmost': True,
+        'request_screen_capture_on_soft_preflight': False,
+        'startup_capture_timeout': 10.0,
+        'screen_capture_error_delay': 3.0,
+        'min_width': 1280,
+        'min_height': 720,
+        'allow_main_display_fallback': os.environ.get('OKWW_MAC_CAPTURE_DISPLAY') == '1',
+    }
