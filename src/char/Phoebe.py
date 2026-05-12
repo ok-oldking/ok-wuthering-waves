@@ -440,7 +440,7 @@ class Phoebe(BaseChar):
             mean_val = np.mean(gray)
             contrast_val = np.std(gray)
             self.logger.debug(f'is_forte_full mean {mean_val} contrast {contrast_val}')
-        return mean_val > 190 and contrast_val > 40
+        return mean_val > 190 and contrast_val < 50
 
     def shorekeeper_auto_dodge(self):
         from src.char.ShoreKeeper import ShoreKeeper
