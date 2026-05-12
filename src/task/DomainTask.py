@@ -68,8 +68,9 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         self.click_box(gray_book_boss, after_sleep=1)
         return self.get_stamina()
 
-    def farm_domain_with_recovery_loop(self, must_use, teleport_into_domain_once):
-        """包装副本刷取循环：死亡恢复后自动从 F2 重新进入。"""
+    def farm_domain_with_recovery_loop(self, must_use, teleport_into_domain_once, max_recovery_retries=3):
+        """包装副本刷取循环：死亡恢复后自动从 F2 重新进入，并限制重试次数。"""
+        recovery_retries = 0
         while True:
             current, _, total = self.open_F2_book_and_get_stamina()
             if total < self.stamina_once or total < must_use or (must_use == 0 and current < self.stamina_once):
@@ -80,6 +81,12 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             self.sleep(1)
             finished = self.farm_in_domain(must_use=must_use)
             if finished:
+                return
+            recovery_retries += 1
+            if recovery_retries >= max_recovery_retries:
+                self.log_info(f'farm_domain: exceeded recovery retries ({max_recovery_retries}), stop farming',
+                              notify=True)
+                self.make_sure_in_world()
                 return
             self.log_info('farm_domain: death recovered, re-enter from F2 book')
             self.sleep(1)
