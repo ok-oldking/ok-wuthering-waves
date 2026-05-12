@@ -20,42 +20,38 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
 
     def revive_action(self):
         """副本内死亡恢复：关闭弹窗 → 退出副本 → 传周本入口 → 传最近传送点。"""
-        prev = self.skip_combat_check
-        self.skip_combat_check = True
-        try:
-            # ① 关闭复活弹窗：优先点击弹窗按钮（避免 ESC 注入不生效），失败再回退 ESC
-            closed_by_click = False
-            if self.wait_click_feature('cancel_button_hcenter_vcenter',
-                                       raise_if_not_found=False,
-                                       time_out=1.2,
-                                       click_after_delay=0.2,
-                                       threshold=0.7):
-                closed_by_click = True
-            else:
-                btn_dialog_close = self.find_one('btn_dialog_close', threshold=0.8)
-                if btn_dialog_close:
-                    self.click(btn_dialog_close, move_back=True)
-                    closed_by_click = True
-            if not closed_by_click:
-                self.send_key('esc', after_sleep=2)
-                self.sleep(1)
 
-            # ② 打开退出菜单
-            self.send_key('esc')
+        # ① 关闭复活弹窗：优先点击弹窗按钮（避免 ESC 注入不生效），失败再回退 ESC
+        closed_by_click = False
+        if self.wait_click_feature('cancel_button_hcenter_vcenter',
+                                   raise_if_not_found=False,
+                                   time_out=1.2,
+                                   click_after_delay=0.2,
+                                   threshold=0.7):
+            closed_by_click = True
+        else:
+            btn_dialog_close = self.find_one('btn_dialog_close', threshold=0.8)
+            if btn_dialog_close:
+                self.click(btn_dialog_close, move_back=True)
+                closed_by_click = True
+        if not closed_by_click:
+            self.send_key('esc', after_sleep=2)
             self.sleep(1)
 
-            # ③ 确认离开
-            self.wait_click_feature('gray_confirm_exit_button',
-                                    relative_x=-1, raise_if_not_found=False,
-                                    time_out=3, click_after_delay=0.5, threshold=0.7)
+        # ② 打开退出菜单
+        self.send_key('esc')
+        self.sleep(1)
 
-            # ④ 必须确认已回到大世界队伍态后，再继续走 F2/传送流程
-            if not self.wait_in_team_and_world(time_out=max(self.teleport_timeout, 120), raise_if_not_found=False):
-                return False
-            self.sleep(0.5)
-            self.revive_at_tower_and_heal()
-        finally:
-            self.skip_combat_check = prev
+        # ③ 确认离开
+        self.wait_click_feature('gray_confirm_exit_button',
+                                relative_x=-1, raise_if_not_found=False,
+                                time_out=3, click_after_delay=0.5, threshold=0.7)
+
+        # ④ 必须确认已回到大世界队伍态后，再继续走 F2/传送流程
+        if not self.wait_in_team_and_world(time_out=max(self.teleport_timeout, 120), raise_if_not_found=False):
+            return False
+        self.sleep(0.5)
+        self.revive_at_tower_and_heal()
         return True
 
     def make_sure_in_world(self):

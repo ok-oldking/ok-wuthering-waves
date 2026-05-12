@@ -179,9 +179,6 @@ class BaseCombatTask(CombatCheck):
             self.revive_at_tower_and_heal()
             logger.info(f'revive_action success')
             return True
-        except CharRevivedException:
-            logger.info(f'revive_action success')
-            return True
         except Exception as e:
             logger.error(f'revive_action failed', e)
             return False
