@@ -1002,57 +1002,55 @@ class BaseWWTask(BaseTask):
         return True
 
     def click_on_book_target(self, serial_number: int, total_number: int):
-        self.sleep(0.2)
-        # Double-drop layouts used to change the old scrollbar top.
-        # There is no current double-drop event; remeasure before restoring support.
-        # Will see whether the current double_drop_color still applies.
-
-        visible_rows = 5
-        # scrollbar coordinates
-        scrollbar_x = 3737 / 3840
-        # The game aligns the slider bottom to the click point when clicking below the slider.
-        # 856 is the measured slider-bottom Y when item 1 is at the top of the list.
-        slider_bottom_top = 856 / 2160
-        scrollbar_bottom = 1899 / 2160
-        first_row_y = 580 / 2160
-        row_y_offset = (1809 - 580) / 2160 / (visible_rows - 1)
-        proceed_box_x1 = 0.94
-        proceed_box_x2 = 0.97
-        first_proceed_box_y1 = 0.21
-        first_proceed_box_y2 = 0.33
-
         if serial_number < 1 or serial_number > total_number:
             raise Exception(f'Index out of range, max is {total_number}')
+        self.sleep(0.2)
+
+        # scroll region coordinates
+        scroll_x = 3737 / 3840
+        scroll_y_top = 424 / 2160
+        scroll_y_bottom = 1899 / 2160
+
+        visible_rows = 5
+        row_pitch = (1809 - 580) /4 / 2160 
+
+        # proceed button dectect region
+        top_proceed_box_y1 = 0.21
+        top_proceed_box_y2 = 0.33
+        bottom_proceed_box_y1 = 0.74
+        bottom_proceed_box_y2 = 0.88
+
+        # double drop event changes the page layout
+        min_height = self.height_of_screen(50 / 2160)
+        double = find_color_rectangles(self.frame, double_drop_color, 3, min_height,
+                                       box = self.box_of_screen(3719/3840, 424/2160, 3761/3840, 541/2160))
+        if not bool(double):
+            logger.info(f'double drop!')
+            scroll_y_top = 541 / 2160
+            visible_rows = 4
+            top_proceed_box_y1 = 0.26
+            top_proceed_box_y2 = 0.38
 
         if serial_number <= visible_rows:
-            # no need to scroll
+            # the target is on the first page. no need to scroll
             row_index = serial_number - 1
+            proceed_box_y1 = top_proceed_box_y1 + row_pitch * row_index
+            proceed_box_y2 = top_proceed_box_y2 + row_pitch * row_index
         else:
             # If scroll is required, calculate the target scrollbar y coordinate to click.
-            # We try to put the target item on the top. If this is possible, then row_index = 0.
-            # For the last few items, this is not possible.
-            # We scroll to that last page and calculate a nonzero row_index as offset.
-            max_top_index = total_number - visible_rows + 1
-            target_top_index = min(serial_number, max_top_index)
+            # We try to put the target item on the buttom.
+            target_scroll_y = scroll_y_top + serial_number * (scroll_y_bottom - scroll_y_top) / total_number
+            self.click_relative(scroll_x, target_scroll_y, after_sleep=1)
+            proceed_box_y1 = bottom_proceed_box_y1
+            proceed_box_y2 = bottom_proceed_box_y2
 
-            scrollbar_y = (scrollbar_bottom - slider_bottom_top) / (max_top_index - 1) * (
-                    target_top_index - 1) + slider_bottom_top
-
-            self.click_relative(scrollbar_x, scrollbar_y, after_sleep=1)
-
-            row_index = serial_number - target_top_index
-
-        proceed_box_y1 = first_proceed_box_y1 + row_y_offset * row_index
-        proceed_box_y2 = first_proceed_box_y2 + row_y_offset * row_index
         btns = self.find_feature('boss_proceed',
-                                 box=self.box_of_screen(proceed_box_x1, proceed_box_y1,
-                                                        proceed_box_x2, proceed_box_y2),
+                                 box=self.box_of_screen(0.94,proceed_box_y1,0.97,proceed_box_y2),
                                  threshold=0.8)
-        if btns is None:
+        if not bool(btns):
             raise Exception("can't find boss_proceed")
-
-        top_btn = min(btns, key=lambda box: box.y)
-        self.click_box(top_btn.copy(x_offset=-top_btn.width * 2), after_sleep=1)
+        btn = max(btns, key=lambda box: box.y)
+        self.click_box(btn.copy(x_offset=-btn.width * 2), after_sleep=1)
         self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom'], time_out=10, settle_time=0.5)
 
     def change_time_to_night(self):
@@ -1098,9 +1096,9 @@ class BaseWWTask(BaseTask):
 
 
 double_drop_color = {
-    'r': (140, 180),  # Red range
-    'g': (120, 160),  # Green range
-    'b': (70, 110)  # Blue range
+    'r': (180, 255),  # Red range
+    'g': (180, 255),  # Green range
+    'b': (180, 255)  # Blue range
 }
 
 echo_color = {
