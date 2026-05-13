@@ -59,6 +59,20 @@ class TestDomainRecoveryLoop(unittest.TestCase):
         )
         self.assertTrue(has_make_sure_in_world_call)
 
+    def test_loop_unpacks_must_use_from_farm_in_domain(self):
+        has_unpack = any(
+            isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Tuple)
+            and len(node.targets[0].elts) == 2
+            and {elt.id for elt in node.targets[0].elts if isinstance(elt, ast.Name)} == {"finished", "must_use"}
+            and isinstance(node.value, ast.Call)
+            and isinstance(node.value.func, ast.Attribute)
+            and node.value.func.attr == "farm_in_domain"
+            for node in ast.walk(self.method_node)
+        )
+        self.assertTrue(has_unpack)
+
 
 if __name__ == "__main__":
     unittest.main()

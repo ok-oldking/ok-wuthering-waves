@@ -79,7 +79,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
                 return
             teleport_into_domain_once()
             self.sleep(1)
-            finished = self.farm_in_domain(must_use=must_use)
+            finished, must_use = self.farm_in_domain(must_use=must_use)
             if finished:
                 return
             recovery_retries += 1
@@ -92,6 +92,10 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             self.sleep(1)
 
     def farm_in_domain(self, must_use=0):
+        """刷本循环；返回 (是否整段正常结束, 剩余 must_use)。
+
+        第二项在死亡提前退出时仍会带上本局内已扣过的额度，供外层恢复循环继续传参。
+        """
         if self.stamina_once <= 0:
             raise RuntimeError('"self.stamina_once" must be override')
         self.info_incr('used stamina', 0)
@@ -106,7 +110,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             except (NotInCombatException, CharDeadException):
                 self.log_info('farm_in_domain: death recovered, exiting domain')
                 self.make_sure_in_world()
-                return False
+                return False, must_use
             can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
             self.info_incr('used stamina', used)
             must_use -= used
@@ -132,4 +136,4 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         #
         self.click(0.42, 0.84, after_sleep=2)  # back to world
         self.make_sure_in_world()
-        return True
+        return True, must_use
