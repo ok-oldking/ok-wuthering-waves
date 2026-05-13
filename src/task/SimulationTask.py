@@ -38,14 +38,12 @@ class SimulationTask(DomainTask):
             must_use = 0
         if config is None:
             config = self.config
-        current, back_up, total = self.open_F2_book_and_get_stamina()
-        if total < self.stamina_once or total < must_use or (must_use == 0 and current < self.stamina_once):
-            self.log_info(f'not enough stamina', notify=True)
-            self.back()
-            return
-        self.teleport_into_domain(config.get('Material Selection', 'Shell Credit'))
-        self.sleep(1)
-        self.farm_in_domain(must_use=must_use)
+        selection = config.get('Material Selection', 'Shell Credit')
+
+        def teleport_once():
+            self.teleport_into_domain(selection)
+
+        self.farm_domain_with_recovery_loop(must_use, teleport_once)
 
     def teleport_into_domain(self, selection):
         self.click_relative(0.18, 0.28, after_sleep=1)
