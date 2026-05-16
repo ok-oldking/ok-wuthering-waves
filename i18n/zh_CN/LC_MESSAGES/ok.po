@@ -9,6 +9,81 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Notification Config"
+msgstr "通知设置"
+
+msgid "Send task notifications to Discord"
+msgstr "发送任务通知到 Discord"
+
+msgid "Send external task notifications"
+msgstr "发送外部任务通知"
+
+msgid "Enable Discord Webhook"
+msgstr "启用 Discord Webhook"
+
+msgid "Send task notifications to a Discord webhook"
+msgstr "发送任务通知到 Discord Webhook"
+
+msgid "Discord Webhook URL"
+msgstr "Discord Webhook URL"
+
+msgid "Discord webhook URL"
+msgstr "Discord Webhook URL"
+
+msgid "Discord Username"
+msgstr "Discord 用户名"
+
+msgid "Webhook display name"
+msgstr "Webhook 显示名称"
+
+msgid "Attach Screenshot"
+msgstr "附加截图"
+
+msgid "Attach the current game screenshot when possible"
+msgstr "可用时附加当前游戏截图"
+
+msgid "Attach the latest captured frame when available"
+msgstr "可用时附加最新捕获的画面"
+
+msgid "Mention User ID"
+msgstr "要提及的用户 ID"
+
+msgid "Optional Discord user ID to mention"
+msgstr "可选的 Discord 用户 ID，用于提及"
+
+msgid "Notify On Info"
+msgstr "发送信息通知"
+
+msgid "Send notifications for informational task events"
+msgstr "发送任务信息事件通知"
+
+msgid "Notify On Error"
+msgstr "发送错误通知"
+
+msgid "Send notifications for task errors"
+msgstr "发送任务错误通知"
+
+msgid "Send Discord Notification"
+msgstr "发送 Discord 通知"
+
+msgid "Send Discord notifications for this task when notification is enabled"
+msgstr "启用通知时，为此任务发送 Discord 通知"
+
+msgid "Send Test Notification"
+msgstr "发送测试通知"
+
+msgid "Send a test notification to Discord"
+msgstr "发送测试通知到 Discord"
+
+msgid "Discord webhook test notification"
+msgstr "Discord Webhook 测试通知"
+
+msgid "Discord Webhook URL is empty"
+msgstr "Discord Webhook URL 为空"
+
+msgid "Discord Webhook URL is empty. Please set it in Notification Config."
+msgstr "Discord Webhook URL 为空，请在通知设置中配置。"
+
 msgid "Fleurdelys"
 msgstr "芙露德莉斯"
 
@@ -746,80 +821,5 @@ msgstr "符合条件后暂停"
 
 msgid "When a success occurs, send notification and pause task"
 msgstr "当强化出符合条件的声骸并锁定后，发送通知并暂停任务"
-
-msgid "Multi Account Daily Task"
-msgstr "多账号一条龙"
-
-msgid "Automatically switch accounts and run Daily Task for each account"
-msgstr "自动切换多账号，并为每个账号执行日常一条龙任务"
-
-msgid "Completed"
-msgstr "已完成"
-
-msgid "All Accounts"
-msgstr "全部账号"
-
-msgid "Switching back to login screen"
-msgstr "正在返回登录界面"
-
-msgid "Back at login screen"
-msgstr "已返回登录界面"
-
-msgid "Current account: {account}"
-msgstr "当前账号：{account}"
-
-msgid "Click next account: {account}"
-msgstr "点击下一个账号：{account}"
-
-msgid "Selected account: {selected}, displayed account: {displayed}"
-msgstr "已选择账号：{selected}，当前显示账号：{displayed}"
-
-msgid "Confirmed selected account: {account}"
-msgstr "已确认选中账号：{account}"
-
-msgid "Account display does not match, retrying ({attempt}/{max_retries})"
-msgstr "账号显示不匹配，重试（{attempt}/{max_retries}）"
-
-msgid "Account selection failed after {max_retries} retries; {account} is still not displayed. Continuing login attempt"
-msgstr "账号选择失败，已重试 {max_retries} 次仍未显示 {account}，继续尝试登录"
-
-msgid "Failed to switch account"
-msgstr "切换账号失败"
-
-msgid "Login successful"
-msgstr "登录成功"
-
-msgid "Teleport to Boss"
-msgstr "传送至Boss"
-
-msgid "Boss Level"
-msgstr "Boss等级"
-
-msgid "Teleport to Boss in F2 Menu"
-msgstr "在F2菜单中传送至Boss"
-
-msgid "Choose the Lowest that Drop a Echo"
-msgstr "选择会掉落声骸的最低等级"
-
-msgid "No"
-msgstr "否"
-
-msgid "Weekly Challenge"
-msgstr "战歌重奏"
-
-msgid "Boss Challenge"
-msgstr "讨伐强敌"
-
-msgid "Which Weekly Boss to Teleport"
-msgstr "传送到第几个周常Boss"
-
-msgid "Which Boss Challenge to Teleport"
-msgstr "传送到第几个Boss挑战"
-
-msgid "For Example, Denia, From Top to Bottom, Starting with 1"
-msgstr "例如德尼亚，从上到下，从1开始"
-
-msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
-msgstr "例如无铭探索者，从上到下，从1开始"
 
 

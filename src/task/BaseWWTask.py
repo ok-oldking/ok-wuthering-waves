@@ -22,6 +22,8 @@ f_white_color = {
     'b': (235, 255)  # Blue range
 }
 processed_feature = False
+SEND_DISCORD_NOTIFICATION = 'Send Discord Notification'
+DISCORD_WEBHOOK_URL_EMPTY = 'Discord Webhook URL is empty. Please set it in Notification Config.'
 
 
 class BaseWWTask(BaseTask):
@@ -57,11 +59,40 @@ class BaseWWTask(BaseTask):
                 self.send_key('esc', after_sleep=1)
 
     def validate(self, key, value):
+        if key == SEND_DISCORD_NOTIFICATION and value:
+            notification_config = self.get_global_config('Notification Config')
+            if not notification_config.get('Discord Webhook URL'):
+                return False, self._translate_notification_message(DISCORD_WEBHOOK_URL_EMPTY)
         message = self.validate_config(key, value)
         if message:
             return False, message
         else:
             return True, None
+
+    def add_notification_config(self, enabled=False):
+        self.default_config.update({SEND_DISCORD_NOTIFICATION: enabled})
+        self.config_description.update({
+            SEND_DISCORD_NOTIFICATION: 'Send Discord notifications for this task when notification is enabled'
+        })
+
+    def log_info(self, message, notify=False):
+        super().log_info(message, notify=False)
+        if self._should_send_notification(notify):
+            self.notification(self._translate_notification_message(str(message)), tray=True)
+
+    def log_error(self, message, exception=None, notify=False):
+        super().log_error(message, exception=exception, notify=False)
+        if self._should_send_notification(notify):
+            self.notification(self._translate_notification_message(str(message)), error=True, tray=True)
+
+    def _should_send_notification(self, notify: bool) -> bool:
+        return bool(notify and self.config.get(SEND_DISCORD_NOTIFICATION, False))
+
+    @staticmethod
+    def _translate_notification_message(message):
+        if og.app:
+            return og.app.tr(message)
+        return message
 
     def absorb_echo_text(self, ignore_config=False):
         if self.game_lang == 'zh_CN' or self.game_lang == 'en_US' or self.game_lang == 'zh_TW':

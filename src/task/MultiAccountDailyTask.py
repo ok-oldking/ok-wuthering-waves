@@ -25,6 +25,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         self.done_set = set()
         self.all_accounts = set()
         self.support_schedule_task = True
+        self.add_notification_config(True)
 
     def run(self):
         WWOneTimeTask.run(self)

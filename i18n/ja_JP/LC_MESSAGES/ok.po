@@ -9,6 +9,111 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Notification Config"
+msgstr "通知設定"
+
+msgid "Send task notifications to Discord"
+msgstr "タスク通知をDiscordへ送信します"
+
+msgid "Send external task notifications"
+msgstr "外部タスク通知を送信します"
+
+msgid "Enable Discord Webhook"
+msgstr "Discord Webhookを有効化"
+
+msgid "Send task notifications to a Discord webhook"
+msgstr "タスク通知をDiscord Webhookへ送信します"
+
+msgid "Discord Webhook URL"
+msgstr "Discord Webhook URL"
+
+msgid "Discord webhook URL"
+msgstr "Discord Webhook URL"
+
+msgid "Discord Username"
+msgstr "Discordユーザー名"
+
+msgid "Webhook display name"
+msgstr "Webhookの表示名"
+
+msgid "Attach Screenshot"
+msgstr "スクリーンショットを添付"
+
+msgid "Attach the current game screenshot when possible"
+msgstr "可能な場合、現在のゲーム画面を添付します"
+
+msgid "Attach the latest captured frame when available"
+msgstr "利用可能な場合、最新のキャプチャ画像を添付します"
+
+msgid "Mention User ID"
+msgstr "メンションするユーザーID"
+
+msgid "Optional Discord user ID to mention"
+msgstr "任意でメンションするDiscordユーザーID"
+
+msgid "Notify On Info"
+msgstr "情報通知を送信"
+
+msgid "Send notifications for informational task events"
+msgstr "タスクの情報イベントを通知します"
+
+msgid "Notify On Error"
+msgstr "エラー通知を送信"
+
+msgid "Send notifications for task errors"
+msgstr "タスクエラーを通知します"
+
+msgid "Send Discord Notification"
+msgstr "Discord通知を送信"
+
+msgid "Send Discord notifications for this task when notification is enabled"
+msgstr "通知設定が有効な場合、このタスクのDiscord通知を送信します"
+
+msgid "Send Test Notification"
+msgstr "テスト通知を送信"
+
+msgid "Send a test notification to Discord"
+msgstr "Discordへテスト通知を送信します"
+
+msgid "Discord webhook test notification"
+msgstr "Discord Webhookのテスト通知"
+
+msgid "Discord Webhook URL is empty"
+msgstr "Discord Webhook URLが空です"
+
+msgid "Discord Webhook URL is empty. Please set it in Notification Config."
+msgstr "Discord Webhook URLが未設定です。通知設定で設定してください。"
+
+msgid "farm_domain: exceeded recovery retries ({max_recovery_retries}), stop farming"
+msgstr "復帰リトライが上限（{max_recovery_retries}回）に達したため、周回を停止します"
+
+msgid "Loaded {loaded_count} from {total_count} Stars"
+msgstr "{total_count}個中{loaded_count}個のスターを読み込みました"
+
+msgid "No echo can be modified. Task finished. Enhanced {total_count}, matched {success_count}."
+msgstr "変更できる音骸がありません。タスクを終了します。強化数: {total_count}個、条件一致: {success_count}個"
+
+msgid "No echo can be enhanced. Task finished. Enhanced {total_count}, matched {success_count}."
+msgstr "強化できる音骸がありません。タスクを終了します。強化数: {total_count}個、条件一致: {success_count}個"
+
+msgid "Characters dead"
+msgstr "キャラクターが戦闘不能になりました"
+
+msgid "Target enemy failed, please disable Nvidia/AMD Filter or Sharpening!"
+msgstr "敵のターゲットに失敗しました。NVIDIA/AMDのフィルターまたはシャープ化を無効にしてください。"
+
+msgid "cannot find any stars, stop farming"
+msgstr "スターが見つからないため、周回を停止します"
+
+msgid "too far from next star, stop farming"
+msgstr "次のスターまで遠すぎるため、周回を停止します"
+
+msgid "自动肉鸽结束!"
+msgstr "自動ローグライクが終了しました！"
+
+msgid "符合条件的声骸，已暂停任务"
+msgstr "条件に合う音骸を見つけたため、タスクを一時停止しました"
+
 msgid "Fleurdelys"
 msgstr "フルールドリス"
 
@@ -88,7 +193,7 @@ msgid "Jue"
 msgstr "角"
 
 msgid "Hecate"
-msgstr "ヘカテ"
+msgstr "ヘカテー"
 
 msgid "Sentry Construct"
 msgstr "異構艤装"
@@ -97,28 +202,28 @@ msgid "Dragon of Dirge"
 msgstr "嘆きの古龍"
 
 msgid "Nightmare: Feilian Beringal"
-msgstr "悪夢：燎原の焚き火"
+msgstr "ナイトメア・飛廉の大猿"
 
 msgid "Nightmare: Impermanence Heron"
-msgstr "悪夢：無常のサギ"
+msgstr "ナイトメア・無情のサギ"
 
 msgid "Nightmare: Thundering Mephis"
-msgstr "悪夢：雲閃のウロコ"
+msgstr "ナイトメア・雲閃のウロコ"
 
 msgid "Nightmare: Tempest Mephis"
-msgstr "悪夢：朔雷のウロコ"
+msgstr "ナイトメア・朔雷のウロコ"
 
 msgid "Nightmare: Inferno Rider"
-msgstr "悪夢：燎火の騎兵"
+msgstr "ナイトメア・燎火の騎兵"
 
 msgid "Nightmare: Crownless"
-msgstr "悪夢：無冠者"
+msgstr "ナイトメア・無冠者"
 
 msgid "Nightmare: Mourning Aix"
-msgstr "悪夢：哀声のシシ"
+msgstr "ナイトメア・哀切の凶鳥"
 
 msgid "Nightmare: Lampylumen Myriad"
-msgstr "悪夢：輝螢軍勢"
+msgstr "ナイトメア・輝き蛍の軍勢"
 
 msgid "Enable auto combat in Abyss, Game World etc"
 msgstr "フィールド、深淵、無音区などで自動戦闘を有効にする"
@@ -625,52 +730,52 @@ msgid "Don't restart in Realm"
 msgstr "ダンジョンボス戦後、再挑戦しない"
 
 msgid "Yes if Farming Nightmare: Hecate"
-msgstr "悪夢・ヘカテを周回する場合は「はい」を選択"
+msgstr "ナイトメア・ヘカテーを周回する場合は「はい」を選択"
 
 msgid "Auto Farm all Nightmare Nest"
-msgstr ""
+msgstr "すべてのナイトメア集落を自動周回"
 
 msgid "Default"
-msgstr ""
+msgstr "デフォルト"
 
 msgid "Fenrico"
-msgstr ""
+msgstr "フェンリコ"
 
 msgid "Nameless Explorer"
 msgstr "名もない探索者"
 
 msgid "Lady of the Sea"
-msgstr ""
+msgstr "海の女王"
 
 msgid "Lioness of Glory"
-msgstr ""
+msgstr "栄光の獅子"
 
 msgid "Nightmare Nest Task"
-msgstr ""
+msgstr "ナイトメア集落タスク"
 
 msgid "Select boss profile (includes Combat Wait Time)"
-msgstr ""
+msgstr "ボス設定を選択（戦闘待機時間を含む）"
 
 msgid "Wait time before each combat (seconds), overrides Boss profile if set"
-msgstr ""
+msgstr "各戦闘前の待機時間（秒）。設定するとボス設定より優先されます"
 
 msgid "Auto Click Fast Travel in Map"
-msgstr ""
+msgstr "マップでファストトラベルを自動クリック"
 
 msgid "Character Config"
 msgstr "キャラクター設定"
 
 msgid "Check Levitator"
-msgstr ""
+msgstr "レビテーターを確認"
 
 msgid "Do not use Liberation in Open World to Save Time"
-msgstr ""
+msgstr "時間短縮のため、オープンワールドでは共鳴解放を使わない"
 
 msgid "Do not use Liberation to Save Time"
-msgstr ""
+msgstr "時間短縮のため、共鳴解放を使わない"
 
 msgid "Fast Travel"
-msgstr ""
+msgstr "ファストトラベル"
 
 msgid "Iuno C6"
 msgstr "ユーノ完凸"
@@ -682,100 +787,25 @@ msgid "Chisa DPS"
 msgstr "千咲 アタッカー"
 
 msgid "Nightmare: Hecate"
-msgstr ""
+msgstr "ナイトメア・ヘカテー"
 
 msgid "Hyvatia"
 msgstr "ハイヴェイシャ"
 
 msgid "Other"
-msgstr ""
+msgstr "その他"
 
 msgid "Toggle the levitator and verify if the character is floating"
-msgstr ""
+msgstr "レビテーターを切り替えて、キャラクターが浮遊しているか確認します"
 
 msgid "Use Liberation"
-msgstr ""
+msgstr "共鳴解放を使用"
 
 msgid "Daily"
-msgstr ""
+msgstr "デイリー"
 
 msgid "Dungeon"
-msgstr ""
+msgstr "ダンジョン"
 
 msgid "Farm"
-msgstr ""
-
-msgid "Multi Account Daily Task"
-msgstr "マルチアカウントデイリータスク"
-
-msgid "Automatically switch accounts and run Daily Task for each account"
-msgstr "アカウントを自動で切り替え、各アカウントでデイリータスクを実行します"
-
-msgid "Completed"
-msgstr "完了"
-
-msgid "All Accounts"
-msgstr "すべてのアカウント"
-
-msgid "Switching back to login screen"
-msgstr "ログイン画面に戻っています"
-
-msgid "Back at login screen"
-msgstr "ログイン画面に戻りました"
-
-msgid "Current account: {account}"
-msgstr "現在のアカウント: {account}"
-
-msgid "Click next account: {account}"
-msgstr "次のアカウントをクリック: {account}"
-
-msgid "Selected account: {selected}, displayed account: {displayed}"
-msgstr "選択したアカウント: {selected}、表示中のアカウント: {displayed}"
-
-msgid "Confirmed selected account: {account}"
-msgstr "選択アカウントを確認しました: {account}"
-
-msgid "Account display does not match, retrying ({attempt}/{max_retries})"
-msgstr "表示中のアカウントが一致しません。再試行中 ({attempt}/{max_retries})"
-
-msgid "Account selection failed after {max_retries} retries; {account} is still not displayed. Continuing login attempt"
-msgstr "アカウント選択に {max_retries} 回失敗しました。{account} がまだ表示されていません。ログインを続行します"
-
-msgid "Failed to switch account"
-msgstr "アカウント切り替えに失敗しました"
-
-msgid "Login successful"
-msgstr "ログイン成功"
-
-msgid "Teleport to Boss"
-msgstr "ボスへテレポート"
-
-msgid "Boss Level"
-msgstr "ボスレベル"
-
-msgid "Teleport to Boss in F2 Menu"
-msgstr "F2メニューでボスへテレポート"
-
-msgid "Choose the Lowest that Drop a Echo"
-msgstr "音骸がドロップする最低レベルを選択"
-
-msgid "No"
-msgstr "いいえ"
-
-msgid "Weekly Challenge"
-msgstr "週間チャレンジ"
-
-msgid "Boss Challenge"
-msgstr "ボスチャレンジ"
-
-msgid "Which Weekly Boss to Teleport"
-msgstr "テレポートする週間ボス"
-
-msgid "Which Boss Challenge to Teleport"
-msgstr "テレポートするボスチャレンジ"
-
-msgid "For Example, Denia, From Top to Bottom, Starting with 1"
-msgstr "例: Denia。上から下へ、1から開始"
-
-msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
-msgstr "例: Nameless Explorer。上から下へ、1から開始"
+msgstr "周回"

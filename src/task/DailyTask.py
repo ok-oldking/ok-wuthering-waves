@@ -57,6 +57,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 'options': material_option_list
             },
         }
+        self.add_notification_config(True)
         self.add_exit_after_config()
         self.description = "Login, claim monthly card, farm echo, and claim daily reward"
 

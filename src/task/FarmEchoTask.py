@@ -61,6 +61,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.combat_end_condition = self.find_echos
         self.total_weekly_number = 9
         self.total_boss_number = 20
+        self.add_notification_config(False)
         self.add_exit_after_config()
         self._has_treasure = False
         self._in_realm = False

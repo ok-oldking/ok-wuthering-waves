@@ -9,6 +9,81 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Notification Config"
+msgstr "Configuración de notificaciones"
+
+msgid "Send task notifications to Discord"
+msgstr "Enviar notificaciones de tareas a Discord"
+
+msgid "Send external task notifications"
+msgstr "Enviar notificaciones externas de tareas"
+
+msgid "Enable Discord Webhook"
+msgstr "Activar Discord Webhook"
+
+msgid "Send task notifications to a Discord webhook"
+msgstr "Enviar notificaciones de tareas a un Webhook de Discord"
+
+msgid "Discord Webhook URL"
+msgstr "URL del Webhook de Discord"
+
+msgid "Discord webhook URL"
+msgstr "URL del Webhook de Discord"
+
+msgid "Discord Username"
+msgstr "Nombre de usuario de Discord"
+
+msgid "Webhook display name"
+msgstr "Nombre visible del Webhook"
+
+msgid "Attach Screenshot"
+msgstr "Adjuntar captura de pantalla"
+
+msgid "Attach the current game screenshot when possible"
+msgstr "Adjuntar la captura actual del juego cuando sea posible"
+
+msgid "Attach the latest captured frame when available"
+msgstr "Adjuntar el último fotograma capturado cuando esté disponible"
+
+msgid "Mention User ID"
+msgstr "ID de usuario para mencionar"
+
+msgid "Optional Discord user ID to mention"
+msgstr "ID opcional de usuario de Discord para mencionar"
+
+msgid "Notify On Info"
+msgstr "Notificar información"
+
+msgid "Send notifications for informational task events"
+msgstr "Enviar notificaciones para eventos informativos de tareas"
+
+msgid "Notify On Error"
+msgstr "Notificar errores"
+
+msgid "Send notifications for task errors"
+msgstr "Enviar notificaciones para errores de tareas"
+
+msgid "Send Discord Notification"
+msgstr "Enviar notificación de Discord"
+
+msgid "Send Discord notifications for this task when notification is enabled"
+msgstr "Enviar notificaciones de Discord para esta tarea cuando las notificaciones estén habilitadas"
+
+msgid "Send Test Notification"
+msgstr "Enviar notificación de prueba"
+
+msgid "Send a test notification to Discord"
+msgstr "Enviar una notificación de prueba a Discord"
+
+msgid "Discord webhook test notification"
+msgstr "Notificación de prueba del Webhook de Discord"
+
+msgid "Discord Webhook URL is empty"
+msgstr "La URL del Webhook de Discord está vacía"
+
+msgid "Discord Webhook URL is empty. Please set it in Notification Config."
+msgstr "La URL del Webhook de Discord está vacía. Configúrala en la configuración de notificaciones."
+
 msgid "Fleurdelys"
 msgstr "Fleurdelys"
 
@@ -704,78 +779,3 @@ msgstr ""
 
 msgid "Farm"
 msgstr ""
-
-msgid "Multi Account Daily Task"
-msgstr "Tarea diaria multi cuenta"
-
-msgid "Automatically switch accounts and run Daily Task for each account"
-msgstr "Cambiar cuentas automáticamente y ejecutar la Tarea Diaria para cada cuenta"
-
-msgid "Completed"
-msgstr "Completado"
-
-msgid "All Accounts"
-msgstr "Todas las cuentas"
-
-msgid "Switching back to login screen"
-msgstr "Volviendo a la pantalla de inicio de sesión"
-
-msgid "Back at login screen"
-msgstr "De vuelta en la pantalla de inicio de sesión"
-
-msgid "Current account: {account}"
-msgstr "Cuenta actual: {account}"
-
-msgid "Click next account: {account}"
-msgstr "Hacer clic en la siguiente cuenta: {account}"
-
-msgid "Selected account: {selected}, displayed account: {displayed}"
-msgstr "Cuenta seleccionada: {selected}, cuenta mostrada: {displayed}"
-
-msgid "Confirmed selected account: {account}"
-msgstr "Cuenta seleccionada confirmada: {account}"
-
-msgid "Account display does not match, retrying ({attempt}/{max_retries})"
-msgstr "La cuenta mostrada no coincide, reintentando ({attempt}/{max_retries})"
-
-msgid "Account selection failed after {max_retries} retries; {account} is still not displayed. Continuing login attempt"
-msgstr "La selección de cuenta falló tras {max_retries} reintentos; {account} aún no se muestra. Se continuará con el intento de inicio de sesión"
-
-msgid "Failed to switch account"
-msgstr "No se pudo cambiar de cuenta"
-
-msgid "Login successful"
-msgstr "Inicio de sesión correcto"
-
-msgid "Teleport to Boss"
-msgstr "Teletransportar al jefe"
-
-msgid "Boss Level"
-msgstr "Nivel del jefe"
-
-msgid "Teleport to Boss in F2 Menu"
-msgstr "Teletransportar al jefe desde el menu F2"
-
-msgid "Choose the Lowest that Drop a Echo"
-msgstr "Elige el nivel mas bajo que suelte un eco"
-
-msgid "No"
-msgstr "No"
-
-msgid "Weekly Challenge"
-msgstr "Desafio semanal"
-
-msgid "Boss Challenge"
-msgstr "Desafio de jefe"
-
-msgid "Which Weekly Boss to Teleport"
-msgstr "Jefe semanal al que teletransportar"
-
-msgid "Which Boss Challenge to Teleport"
-msgstr "Desafio de jefe al que teletransportar"
-
-msgid "For Example, Denia, From Top to Bottom, Starting with 1"
-msgstr "Por ejemplo, Denia, de arriba a abajo, empezando en 1"
-
-msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
-msgstr "Por ejemplo, Nameless Explorer, de arriba a abajo, empezando en 1"
