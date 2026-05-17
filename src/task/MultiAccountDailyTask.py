@@ -34,6 +34,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
 
     def run(self):
         WWOneTimeTask.run(self)
+        return self._select_and_login_account('8780')
         accounts = self._parse_account_list()
 
         self.run_task_by_class(DailyTask)
@@ -158,7 +159,9 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
                 }
             })
             self.sleep(1)
-            self._click_center_offset(270, -43, after_sleep=2)
+            drop_down = self.find_one('account_drop_down', horizontal_variance=0.2, vertical_variance=0.2)
+            if drop_down:
+                self.click(drop_down, after_sleep=1)
             self.wait_until(
                 lambda: self._click_account_in_list(pattern),
                 time_out=10, raise_if_not_found=True
@@ -187,3 +190,10 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         })
         self.ensure_main(time_out=180)
         self.log_info(f'登录成功：****{suffix}')
+
+
+from ok import run_task
+from config import config
+
+if __name__ == "__main__":
+    run_task(config, task=MultiAccountDailyTask, debug=True)

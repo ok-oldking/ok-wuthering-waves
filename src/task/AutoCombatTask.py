@@ -71,3 +71,10 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         self.last_is_click = not self.last_is_click
         self.op_index += 1
         self.sleep(0.02)
+
+
+from ok import run_task
+from config import config
+
+if __name__ == "__main__":
+    run_task(config, task=AutoCombatTask, debug=True)
