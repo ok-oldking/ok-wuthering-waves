@@ -78,8 +78,6 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.is_revived = True
         return True
 
-
-
     def run(self):
         WWOneTimeTask.run(self)
         self.use_liberation = self.config.get('Use Liberation')
@@ -137,12 +135,11 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.go_to_boss_minimap()
                 self.execute_treasure_hunt()
 
-            if not self.in_combat():
-                self.sleep(self.combat_wait_time)
-                self.log_info(f'combat_wait_time: {self.combat_wait_time}')
-                self.check_boss_name()
+            self.sleep(self.combat_wait_time)
+            self.log_info(f'combat_wait_time: {self.combat_wait_time}')
+            self.check_boss_name()
 
-            self.combat_once(wait_combat_time=0, raise_if_not_found=False)
+            self.combat_once(wait_combat_time=5, raise_if_not_found=False)
             if self.is_revived:
                 continue
 
@@ -522,3 +519,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             logger.info(f'combat with {self.aim_boss}')
         else:
             logger.info(f'boss_string is {find_boxes_by_name(texts, [re.compile(r'(?i)^L[Vv].*')])}')
+
+
+from ok import run_task
+from config import config
+
+if __name__ == "__main__":
+    run_task(config, task=FarmEchoTask, debug=True)
