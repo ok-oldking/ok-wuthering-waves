@@ -1121,6 +1121,11 @@
             "supercategory": ""
         },
         {
+            "id": 222,
+            "name": "message",
+            "supercategory": ""
+        },
+        {
             "id": 223,
             "name": "skip_dialog_confirm",
             "supercategory": ""
@@ -1153,6 +1158,11 @@
         {
             "id": 229,
             "name": "char_moning_new",
+            "supercategory": ""
+        },
+        {
+            "id": 230,
+            "name": "message_dialog",
             "supercategory": ""
         }
     ],
@@ -2169,6 +2179,12 @@
             "height": 1080
         },
         {
+            "id": 240,
+            "file_name": "images/34.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
             "id": 241,
             "file_name": "images/39.png",
             "width": 2048,
@@ -2218,6 +2234,19 @@
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
+        },
+        {
+            "id": 3,
+            "image_id": 240,
+            "category_id": 222,
+            "bbox": [
+                409,
+                46,
+                37,
+                26
+            ],
+            "area": 962,
+            "iscrowd": 0
         },
         {
             "id": 4,
@@ -3359,6 +3388,19 @@
                 43
             ],
             "area": 1849,
+            "iscrowd": 0
+        },
+        {
+            "id": 86,
+            "image_id": 240,
+            "category_id": 230,
+            "bbox": [
+                434,
+                637,
+                50,
+                36
+            ],
+            "area": 1800,
             "iscrowd": 0
         },
         {
