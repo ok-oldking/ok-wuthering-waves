@@ -34,7 +34,6 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
 
     def run(self):
         WWOneTimeTask.run(self)
-        return self._select_and_login_account('8780')
         accounts = self._parse_account_list()
 
         self.run_task_by_class(DailyTask)
