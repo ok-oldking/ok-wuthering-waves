@@ -820,10 +820,12 @@ class BaseChar:
         self.check_combat()
         self.logger.debug('heavy attack start')
         self.task.mouse_down()
-        self.sleep(duration)
-        self.task.mouse_up()
-        self.sleep(0.01)
-        self.logger.debug('heavy attack end')
+        try:
+            self.sleep(duration)
+        finally:
+            self.task.mouse_up()
+            self.sleep(0.01)
+            self.logger.debug('heavy attack end')
 
     def current_resonance(self):
         """获取当前共鸣技能UI白色像素百分比。"""
