@@ -146,7 +146,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
     def find_confirm(self):
         box = self.box_of_screen(0.24, 0.18, 0.75, 0.93)
-        self.screenshot('find_confirm', frame=box.crop_frame(self.frame))
+        # self.screenshot('find_confirm', frame=box.crop_frame(self.frame))
         return self.ocr(box=box, match='确认')
 
     def check_echo_stats(self, properties, values):
