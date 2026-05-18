@@ -10,6 +10,24 @@ from src.task.process_feature import process_feature
 version = "dev"
 
 
+def send_discord_test_notification():
+    from ok import Logger, og
+    from src.notification.notification_service import NotificationService
+
+    logger = Logger.get_logger(__name__)
+    notification_config = dict(og.global_config.get_config(notification_config_option))
+
+    if not notification_config.get('Discord Webhook URL'):
+        logger.error(og.app.tr('Discord Webhook URL is empty'))
+        return
+
+    try:
+        message = og.app.tr('Discord webhook test notification')
+    except Exception:
+        message = 'Discord webhook test notification'
+    NotificationService(notification_config).notify('INFO', message)
+
+
 def calculate_pc_exe_path(running_path):
     game_exe_folder = Path(running_path).parents[3]
     return str(game_exe_folder / "Wuthering Waves.exe")
@@ -78,13 +96,42 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
     'Monthly Card Time': 'Your computer\'s local time when the monthly card will popup, hour in (1-24)'
 })
 
+notification_config_option = ConfigOption('Notification Config', {
+    'Discord Webhook URL': '',
+    'Discord Username': 'OK-WW',
+    'Attach Screenshot': True,
+    'Mention User ID': '',
+    'Notify On Info': True,
+    'Notify On Error': True,
+}, description='Send task notifications to Discord', config_description={
+    'Discord Webhook URL': 'Discord webhook URL',
+    'Discord Username': 'Webhook display name',
+    'Attach Screenshot': 'Attach the current game screenshot when possible',
+    'Mention User ID': 'Optional Discord user ID to mention',
+    'Notify On Info': 'Send notifications for informational task events',
+    'Notify On Error': 'Send notifications for task errors',
+    'Send Test Notification': 'Send a test notification to Discord',
+}, config_type={
+    'Send Test Notification': {
+        'type': 'button',
+        'text': 'Send Test Notification',
+        'callback': send_discord_test_notification,
+    },
+})
+
 config = {
     'debug': False,  # Optional, default: False
     'use_gui': True,
     'config_folder': 'configs',
     'screenshot_processor': make_bottom_right_black,
     'gui_icon': 'icon.png',
-    'global_configs': [key_config_option, char_config_option, pick_echo_config_option, monthly_card_config_option],
+    'global_configs': [
+        key_config_option,
+        char_config_option,
+        pick_echo_config_option,
+        monthly_card_config_option,
+        notification_config_option,
+    ],
     'ocr': {
         'lib': 'onnxocr',
         'auto_simplify': True,

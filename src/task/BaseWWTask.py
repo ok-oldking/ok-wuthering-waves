@@ -10,6 +10,7 @@ from ok import CannotFindException
 import cv2
 
 from src.Labels import Labels
+from src.notification.notification_service import NotificationService
 from src.scene.WWScene import WWScene
 
 logger = Logger.get_logger(__name__)
@@ -57,11 +58,58 @@ class BaseWWTask(BaseTask):
                 self.send_key('esc', after_sleep=1)
 
     def validate(self, key, value):
+        if key == 'Send Discord Notification' and value:
+            notification_config = self.get_global_config('Notification Config')
+            if not notification_config.get('Discord Webhook URL'):
+                return False, self._translate_notification_message(
+                    'Discord Webhook URL is empty. Please set it in Notification Config.')
         message = self.validate_config(key, value)
         if message:
             return False, message
         else:
             return True, None
+
+    def add_notification_config(self, enabled=False):
+        self.default_config.update({'Send Discord Notification': enabled})
+        self.config_description.update(
+            {'Send Discord Notification': 'Send Discord notifications for this task when notification is enabled'})
+
+    def log_info(self, message, *args, notify=False, notification_key=None, notification_args=None, **kwargs):
+        result = super().log_info(message, *args, notify=notify, **kwargs)
+        if notify:
+            self._send_notification("INFO", message, *args, notification_key=notification_key,
+                                    notification_args=notification_args)
+        return result
+
+    def log_error(self, message, *args, notify=False, notification_key=None, notification_args=None, **kwargs):
+        result = super().log_error(message, *args, notify=notify, **kwargs)
+        if notify:
+            self._send_notification("ERROR", message, *args, notification_key=notification_key,
+                                    notification_args=notification_args)
+        return result
+
+    def _send_notification(self, level, message, *args, notification_key=None, notification_args=None):
+        if args:
+            message = " ".join([str(message), *[str(arg) for arg in args]])
+        NotificationService(self.get_global_config('Notification Config')).notify(
+            level,
+            self._translate_notification_message(str(message), notification_key, notification_args),
+            self,
+        )
+
+    @staticmethod
+    def _translate_notification_message(message, notification_key=None, notification_args=None):
+        key = notification_key or message
+        try:
+            translated = og.app.tr(key)
+        except Exception:
+            translated = key
+        if notification_key and notification_args:
+            try:
+                return translated.format(**notification_args)
+            except Exception:
+                return message
+        return translated
 
     def absorb_echo_text(self, ignore_config=False):
         if self.game_lang == 'zh_CN' or self.game_lang == 'en_US' or self.game_lang == 'zh_TW':

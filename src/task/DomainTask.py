@@ -84,8 +84,12 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
                 return
             recovery_retries += 1
             if recovery_retries >= max_recovery_retries:
-                self.log_info(f'farm_domain: exceeded recovery retries ({max_recovery_retries}), stop farming',
-                              notify=True)
+                self.log_info(
+                    f'farm_domain: exceeded recovery retries ({max_recovery_retries}), stop farming',
+                    notify=True,
+                    notification_key='farm_domain: exceeded recovery retries ({max_recovery_retries}), stop farming',
+                    notification_args={'max_recovery_retries': max_recovery_retries},
+                )
                 self.make_sure_in_world()
                 return
             self.log_info('farm_domain: death recovered, re-enter from F2 book')

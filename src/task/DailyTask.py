@@ -52,6 +52,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             },
         }
         self.add_exit_after_config()
+        self.add_notification_config(True)
         self.description = "Login, claim monthly card, farm echo, and claim daily reward"
 
     def run(self):

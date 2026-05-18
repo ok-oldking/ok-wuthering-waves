@@ -50,12 +50,19 @@ class BigMap(WWOneTimeTask, BaseCombatTask):
         if len(self.stars) <= 2:
             raise Exception('Need be in the map screen and have a path of at least 3 stars!')
 
-        self.log_info(f'Loaded {len(self.stars)} from {all_star_len + 1} Stars', notify=True)
+        loaded_count = len(self.stars)
+        total_count = all_star_len + 1
+        self.log_info(
+            f'Loaded {loaded_count} from {total_count} Stars',
+            notify=True,
+            notification_key='Loaded {loaded_count} from {total_count} Stars',
+            notification_args={'loaded_count': loaded_count, 'total_count': total_count},
+        )
 
         # self.click(self.diamond, after_sleep=1)
         # self.wait_click_travel()
         self.send_key('esc')
-        self.info_set('Stars', len(self.stars))
+        self.info_set('Stars', loaded_count)
         if wait_world:
             self.wait_in_team_and_world()
 

@@ -9,6 +9,69 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Notification Config"
+msgstr "Configuración de notificaciones"
+
+msgid "Send task notifications to Discord"
+msgstr "Enviar notificaciones de tareas a Discord"
+
+msgid "Discord Webhook URL"
+msgstr "URL del Webhook de Discord"
+
+msgid "Discord webhook URL"
+msgstr "URL del Webhook de Discord"
+
+msgid "Discord Username"
+msgstr "Nombre de usuario de Discord"
+
+msgid "Webhook display name"
+msgstr "Nombre visible del Webhook"
+
+msgid "Attach Screenshot"
+msgstr "Adjuntar captura de pantalla"
+
+msgid "Attach the current game screenshot when possible"
+msgstr "Adjuntar la captura actual del juego cuando sea posible"
+
+msgid "Mention User ID"
+msgstr "ID de usuario para mencionar"
+
+msgid "Optional Discord user ID to mention"
+msgstr "ID opcional de usuario de Discord para mencionar"
+
+msgid "Notify On Info"
+msgstr "Notificar información"
+
+msgid "Send notifications for informational task events"
+msgstr "Enviar notificaciones para eventos informativos de tareas"
+
+msgid "Notify On Error"
+msgstr "Notificar errores"
+
+msgid "Send notifications for task errors"
+msgstr "Enviar notificaciones para errores de tareas"
+
+msgid "Send Discord Notification"
+msgstr "Enviar notificación de Discord"
+
+msgid "Send Discord notifications for this task when notification is enabled"
+msgstr "Enviar notificaciones de Discord para esta tarea cuando las notificaciones estén habilitadas"
+
+msgid "Send Test Notification"
+msgstr "Enviar notificación de prueba"
+
+msgid "Send a test notification to Discord"
+msgstr "Enviar una notificación de prueba a Discord"
+
+msgid "Discord webhook test notification"
+msgstr "Notificación de prueba del Webhook de Discord"
+
+msgid "Discord Webhook URL is empty"
+msgstr "La URL del Webhook de Discord está vacía"
+
+msgid "Discord Webhook URL is empty. Please set it in Notification Config."
+msgstr "La URL del Webhook de Discord está vacía. Configúrala en la configuración de notificaciones."
+
 msgid "Fleurdelys"
 msgstr "Fleurdelys"
 

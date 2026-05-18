@@ -43,6 +43,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
         self.add_exit_after_config()
+        self.add_notification_config()
         self._has_treasure = False
         self._in_realm = False
         self._farm_start_time = time.time()

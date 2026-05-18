@@ -9,6 +9,69 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Notification Config"
+msgstr "알림 설정"
+
+msgid "Send task notifications to Discord"
+msgstr "작업 알림을 Discord로 전송"
+
+msgid "Discord Webhook URL"
+msgstr "Discord Webhook URL"
+
+msgid "Discord webhook URL"
+msgstr "Discord Webhook URL"
+
+msgid "Discord Username"
+msgstr "Discord 사용자 이름"
+
+msgid "Webhook display name"
+msgstr "Webhook 표시 이름"
+
+msgid "Attach Screenshot"
+msgstr "스크린샷 첨부"
+
+msgid "Attach the current game screenshot when possible"
+msgstr "가능한 경우 현재 게임 스크린샷을 첨부합니다"
+
+msgid "Mention User ID"
+msgstr "멘션할 사용자 ID"
+
+msgid "Optional Discord user ID to mention"
+msgstr "멘션할 Discord 사용자 ID(선택)"
+
+msgid "Notify On Info"
+msgstr "정보 알림 전송"
+
+msgid "Send notifications for informational task events"
+msgstr "정보성 작업 이벤트 알림을 전송합니다"
+
+msgid "Notify On Error"
+msgstr "오류 알림 전송"
+
+msgid "Send notifications for task errors"
+msgstr "작업 오류 알림을 전송합니다"
+
+msgid "Send Discord Notification"
+msgstr "Discord 알림 전송"
+
+msgid "Send Discord notifications for this task when notification is enabled"
+msgstr "알림 설정이 활성화된 경우 이 작업의 Discord 알림을 전송합니다"
+
+msgid "Send Test Notification"
+msgstr "테스트 알림 전송"
+
+msgid "Send a test notification to Discord"
+msgstr "Discord로 테스트 알림을 전송합니다"
+
+msgid "Discord webhook test notification"
+msgstr "Discord Webhook 테스트 알림"
+
+msgid "Discord Webhook URL is empty"
+msgstr "Discord Webhook URL이 비어 있습니다"
+
+msgid "Discord Webhook URL is empty. Please set it in Notification Config."
+msgstr "Discord Webhook URL이 설정되어 있지 않습니다. 알림 설정에서 설정하세요."
+
 msgid "Fleurdelys"
 msgstr "플뢰르 드 리스"
 

@@ -264,7 +264,7 @@ class BaseChar:
         self.task.skip_combat_check = False
 
     def alert_skill_failed(self):
-        self.task.log_error(f'Click skill failed, check if the keybinding is correct in ok-ww settings!',
+        self.task.log_error('Click skill failed, check if the keybinding is correct in ok-ww settings!',
                             notify=True)
         self.task.screenshot('click_resonance too long, breaking')
 

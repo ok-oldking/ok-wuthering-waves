@@ -56,8 +56,13 @@ class ChangeEchoTask(BaseWWTask, FindFeature):
                 total = self.info_get('成功声骸数量') + self.info_get('失败声骸数量')
                 if self.debug:
                     self.screenshot('无可强化声骸')
-                self.log_info(f'无可修改声骸, 任务结束! 强化{total}个, 符合条件{self.info_get("成功声骸数量")}个',
-                              notify=True)
+                success_count = self.info_get('成功声骸数量')
+                self.log_info(
+                    f'无可修改声骸, 任务结束! 强化{total}个, 符合条件{self.info_get("成功声骸数量")}个',
+                    notify=True,
+                    notification_key='No echo can be modified. Task finished. Enhanced {total_count}, matched {success_count}.',
+                    notification_args={'total_count': total, 'success_count': success_count},
+                )
                 if self.info_get('成功声骸数量') >= 1:
                     try:
                         os.startfile(os.path.abspath("screenshots"))
