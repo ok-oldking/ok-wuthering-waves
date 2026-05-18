@@ -6,6 +6,7 @@ from ok import Logger
 from src.task.DailyTask import DailyTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
+from src.task.MouseResetTask import MouseResetTask
 
 logger = Logger.get_logger(__name__)
 
@@ -146,49 +147,57 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         return bool(boxes)
 
     def _select_and_login_account(self, suffix):
-        pattern = self._make_masked_pattern(suffix)
-        self.log_info(f'正在选择账号：****{suffix}')
-        max_retries = 3
-        for attempt in range(1, max_retries + 1):
-            self.ensure_in_front()
+        mouse_reset_task = self.executor.get_task_by_class(MouseResetTask)
+        mouse_reset_was_enabled = mouse_reset_task.enabled if mouse_reset_task else False
+        if mouse_reset_was_enabled:
+            mouse_reset_task.disable()
+        try:
+            pattern = self._make_masked_pattern(suffix)
+            self.log_info(f'正在选择账号：****{suffix}')
+            max_retries = 3
+            for attempt in range(1, max_retries + 1):
+                self.ensure_in_front()
+                self.update_capture({
+                    'windows': {
+                        'interaction': 'Pynput',
+                        'capture_method': 'ForegroundBitBlt',
+                    }
+                })
+                self.sleep(1)
+                drop_down = self.find_one('account_drop_down', horizontal_variance=0.2, vertical_variance=0.2)
+                if drop_down:
+                    self.click(drop_down, after_sleep=1)
+                self.wait_until(
+                    lambda: self._click_account_in_list(pattern),
+                    time_out=10, raise_if_not_found=True
+                )
+                self.sleep(1)
+                if self._is_account_displayed(suffix):
+                    self.log_info(f'已确认选中账号：****{suffix}')
+                    break
+                if attempt < max_retries:
+                    self.log_info(f'账号显示不匹配，重试（{attempt}/{max_retries}）')
+                else:
+                    self.log_error(f'账号选择失败，已重试 {max_retries} 次仍未显示 ****{suffix}，继续尝试登录')
+            self.sleep(4)
+            texts = self.ocr()
+            login_btn = self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.8), match="登录")
+            if login_btn:
+                self.click(login_btn, after_sleep=3)
+            else:
+                self._click_center_offset(0, 95, after_sleep=3)
+            self._logged_in = False
             self.update_capture({
                 'windows': {
-                    'interaction': 'Pynput',
-                    'capture_method': 'ForegroundBitBlt',
+                    'interaction': 'PostMessage',
+                    'capture_method': ['WGC', 'BitBlt_RenderFull'],
                 }
             })
-            self.sleep(1)
-            drop_down = self.find_one('account_drop_down', horizontal_variance=0.2, vertical_variance=0.2)
-            if drop_down:
-                self.click(drop_down, after_sleep=1)
-            self.wait_until(
-                lambda: self._click_account_in_list(pattern),
-                time_out=10, raise_if_not_found=True
-            )
-            self.sleep(1)
-            if self._is_account_displayed(suffix):
-                self.log_info(f'已确认选中账号：****{suffix}')
-                break
-            if attempt < max_retries:
-                self.log_info(f'账号显示不匹配，重试（{attempt}/{max_retries}）')
-            else:
-                self.log_error(f'账号选择失败，已重试 {max_retries} 次仍未显示 ****{suffix}，继续尝试登录')
-        self.sleep(4)
-        texts = self.ocr()
-        login_btn = self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.8), match="登录")
-        if login_btn:
-            self.click(login_btn, after_sleep=3)
-        else:
-            self._click_center_offset(0, 95, after_sleep=3)
-        self._logged_in = False
-        self.update_capture({
-            'windows': {
-                'interaction': 'PostMessage',
-                'capture_method': ['WGC', 'BitBlt_RenderFull'],
-            }
-        })
-        self.ensure_main(time_out=180)
-        self.log_info(f'登录成功：****{suffix}')
+            self.ensure_main(time_out=180)
+            self.log_info(f'登录成功：****{suffix}')
+        finally:
+            if mouse_reset_was_enabled:
+                mouse_reset_task.enable()
 
 
 from ok import run_task
