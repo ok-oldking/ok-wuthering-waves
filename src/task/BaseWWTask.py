@@ -869,11 +869,23 @@ class BaseWWTask(BaseTask):
         return current_direction, current_adjust, False
 
     def in_team(self):
+        horizontal_variance = 0
+        try:
+            device = self.executor.device_manager.get_preferred_device() or {}
+            if device.get('capture') == 'mac' or device.get('device') == 'mac':
+                # macOS native capture is cropped from the real WUWA window bounds
+                # instead of being resized exactly like the Windows templates.
+                horizontal_variance = 0.025
+        except Exception:
+            pass
         c1 = self.find_one('char_1_text',
+                           horizontal_variance=horizontal_variance,
                            threshold=0.8)
         c2 = self.find_one('char_2_text',
+                           horizontal_variance=horizontal_variance,
                            threshold=0.8)
         c3 = self.find_one('char_3_text',
+                           horizontal_variance=horizontal_variance,
                            threshold=0.8)
         arr = [c1, c2, c3]
         # logger.debug(f'in_team check {arr}')

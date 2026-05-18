@@ -1,7 +1,7 @@
 import re
 import time
 
-import win32api
+from src.compat import win32api
 
 from ok import find_boxes_by_name, Logger, calculate_color_percentage
 from ok import find_color_rectangles, get_mask_in_color_range, is_pure_black
