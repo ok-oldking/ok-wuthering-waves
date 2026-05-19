@@ -146,9 +146,10 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                     break
 
     def find_confirm(self):
-        box = self.box_of_screen(0.24, 0.18, 0.75, 0.93)
-        # self.screenshot('find_confirm', frame=box.crop_frame(self.frame))
-        return self.ocr(box=box, match='确认')
+        button_box = self.box_of_screen(0.60, 0.65, 0.82, 0.82)
+        if confirm := self.find_one('echo_enhance_confirm', box=button_box, threshold=0.7):
+            return [confirm]
+        return self.ocr(box=button_box, match='确认')
 
     def check_echo_stats(self, properties, values):
         self.fail_reason = ""
