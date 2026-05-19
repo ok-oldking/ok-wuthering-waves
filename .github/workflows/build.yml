@@ -88,6 +88,15 @@ jobs:
           gitignore_file: '.update_repo_gitignore'
           show_author: true
 
+      - name: Check release version
+        id: release-version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $isRelease = $tag -match '^v?\d+\.\d+\.\d+$'
+          "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          Write-Host "Release version: $isRelease"
+
       - name: pyappify build-exe-only
         id: build-exe-only
         uses: ok-oldking/pyappify-action@master
@@ -96,7 +105,7 @@ jobs:
       #          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.7.12
 
       - name: Upload unsigned EXE artifact
-        if: env.SIGN_BUILD == 'true'
+        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
         id: upload-unsigned-artifact
         uses: actions/upload-artifact@v4
         with:
@@ -104,7 +113,7 @@ jobs:
           path: ${{ steps.build-exe-only.outputs.exe-path }}
 
       - name: Sign EXE
-        if: env.SIGN_BUILD == 'true'
+        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
@@ -118,12 +127,12 @@ jobs:
           output-artifact-directory: ${{ steps.build-exe-only.outputs.exe-folder }}
 
       - name: pyappify build-setup-exe
-        if: env.SIGN_BUILD == 'true'
+        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
         id: build-setup-exe
         uses: ok-oldking/pyappify-action@master
 
       - name: Upload unsigned setup EXE artifact
-        if: env.SIGN_BUILD == 'true'
+        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
         id: upload-unsigned-setup-artifact
         uses: actions/upload-artifact@v4
         with:
@@ -146,7 +155,7 @@ jobs:
 
       - name: Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
+        if: steps.release-version.outputs.is_release == 'true' && startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -166,7 +175,7 @@ jobs:
           files: pyappify_dist/*
 
       - name: Trigger MirrorChyanUploading
-        if: startsWith(github.ref, 'refs/tags/')
+        if: steps.release-version.outputs.is_release == 'true' && startsWith(github.ref, 'refs/tags/')
         shell: bash
         run: |
           gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_uploading
