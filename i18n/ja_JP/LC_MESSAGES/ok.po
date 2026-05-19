@@ -704,3 +704,45 @@ msgstr ""
 
 msgid "Farm"
 msgstr ""
+
+msgid "Multi Account Daily Task"
+msgstr "マルチアカウントデイリータスク"
+
+msgid "Automatically switch accounts and run Daily Task for each account"
+msgstr "アカウントを自動で切り替え、各アカウントでデイリータスクを実行します"
+
+msgid "Completed"
+msgstr "完了"
+
+msgid "All Accounts"
+msgstr "すべてのアカウント"
+
+msgid "Switching back to login screen"
+msgstr "ログイン画面に戻っています"
+
+msgid "Back at login screen"
+msgstr "ログイン画面に戻りました"
+
+msgid "Current account: {account}"
+msgstr "現在のアカウント: {account}"
+
+msgid "Click next account: {account}"
+msgstr "次のアカウントをクリック: {account}"
+
+msgid "Selected account: {selected}, displayed account: {displayed}"
+msgstr "選択したアカウント: {selected}、表示中のアカウント: {displayed}"
+
+msgid "Confirmed selected account: {account}"
+msgstr "選択アカウントを確認しました: {account}"
+
+msgid "Account display does not match, retrying ({attempt}/{max_retries})"
+msgstr "表示中のアカウントが一致しません。再試行中 ({attempt}/{max_retries})"
+
+msgid "Account selection failed after {max_retries} retries; {account} is still not displayed. Continuing login attempt"
+msgstr "アカウント選択に {max_retries} 回失敗しました。{account} がまだ表示されていません。ログインを続行します"
+
+msgid "Failed to switch account"
+msgstr "アカウント切り替えに失敗しました"
+
+msgid "Login successful"
+msgstr "ログイン成功"

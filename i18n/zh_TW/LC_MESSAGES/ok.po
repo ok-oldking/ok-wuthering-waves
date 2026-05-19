@@ -747,4 +747,46 @@ msgstr "符合條件後暫停"
 msgid "When a success occurs, send notification and pause task"
 msgstr "當強化出符合條件的聲骸並鎖定後，發送通知並暫停任務"
 
+msgid "Multi Account Daily Task"
+msgstr "多帳號一條龍"
+
+msgid "Automatically switch accounts and run Daily Task for each account"
+msgstr "自動切換多帳號，並為每個帳號執行每日一條龍任務"
+
+msgid "Completed"
+msgstr "已完成"
+
+msgid "All Accounts"
+msgstr "全部帳號"
+
+msgid "Switching back to login screen"
+msgstr "正在返回登入畫面"
+
+msgid "Back at login screen"
+msgstr "已返回登入畫面"
+
+msgid "Current account: {account}"
+msgstr "目前帳號：{account}"
+
+msgid "Click next account: {account}"
+msgstr "點擊下一個帳號：{account}"
+
+msgid "Selected account: {selected}, displayed account: {displayed}"
+msgstr "已選擇帳號：{selected}，目前顯示帳號：{displayed}"
+
+msgid "Confirmed selected account: {account}"
+msgstr "已確認選中帳號：{account}"
+
+msgid "Account display does not match, retrying ({attempt}/{max_retries})"
+msgstr "帳號顯示不一致，正在重試（{attempt}/{max_retries}）"
+
+msgid "Account selection failed after {max_retries} retries; {account} is still not displayed. Continuing login attempt"
+msgstr "帳號選擇失敗，已重試 {max_retries} 次仍未顯示 {account}，繼續嘗試登入"
+
+msgid "Failed to switch account"
+msgstr "切換帳號失敗"
+
+msgid "Login successful"
+msgstr "登入成功"
+
 

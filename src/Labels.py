@@ -143,6 +143,7 @@ class Labels(str, Enum):
     echo_not_dropped = 'echo_not_dropped'
     echo_not_locked = 'echo_not_locked'
     edge_levitator = 'edge_levitator'
+    esc_setting = 'esc_setting'
     f_break = 'f_break'
     f_break_full = 'f_break_full'
     fast_travel_custom = 'fast_travel_custom'

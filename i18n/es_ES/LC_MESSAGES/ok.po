@@ -704,3 +704,45 @@ msgstr ""
 
 msgid "Farm"
 msgstr ""
+
+msgid "Multi Account Daily Task"
+msgstr "Tarea diaria multi cuenta"
+
+msgid "Automatically switch accounts and run Daily Task for each account"
+msgstr "Cambiar cuentas automáticamente y ejecutar la Tarea Diaria para cada cuenta"
+
+msgid "Completed"
+msgstr "Completado"
+
+msgid "All Accounts"
+msgstr "Todas las cuentas"
+
+msgid "Switching back to login screen"
+msgstr "Volviendo a la pantalla de inicio de sesión"
+
+msgid "Back at login screen"
+msgstr "De vuelta en la pantalla de inicio de sesión"
+
+msgid "Current account: {account}"
+msgstr "Cuenta actual: {account}"
+
+msgid "Click next account: {account}"
+msgstr "Hacer clic en la siguiente cuenta: {account}"
+
+msgid "Selected account: {selected}, displayed account: {displayed}"
+msgstr "Cuenta seleccionada: {selected}, cuenta mostrada: {displayed}"
+
+msgid "Confirmed selected account: {account}"
+msgstr "Cuenta seleccionada confirmada: {account}"
+
+msgid "Account display does not match, retrying ({attempt}/{max_retries})"
+msgstr "La cuenta mostrada no coincide, reintentando ({attempt}/{max_retries})"
+
+msgid "Account selection failed after {max_retries} retries; {account} is still not displayed. Continuing login attempt"
+msgstr "La selección de cuenta falló tras {max_retries} reintentos; {account} aún no se muestra. Se continuará con el intento de inicio de sesión"
+
+msgid "Failed to switch account"
+msgstr "No se pudo cambiar de cuenta"
+
+msgid "Login successful"
+msgstr "Inicio de sesión correcto"

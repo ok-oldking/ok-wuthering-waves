@@ -704,3 +704,45 @@ msgstr "던전"
 
 msgid "Farm"
 msgstr "파밍"
+
+msgid "Multi Account Daily Task"
+msgstr "다중 계정 일일 임무"
+
+msgid "Automatically switch accounts and run Daily Task for each account"
+msgstr "계정을 자동으로 전환하고 각 계정에서 일일 임무를 실행합니다"
+
+msgid "Completed"
+msgstr "완료"
+
+msgid "All Accounts"
+msgstr "모든 계정"
+
+msgid "Switching back to login screen"
+msgstr "로그인 화면으로 돌아가는 중"
+
+msgid "Back at login screen"
+msgstr "로그인 화면으로 돌아왔습니다"
+
+msgid "Current account: {account}"
+msgstr "현재 계정: {account}"
+
+msgid "Click next account: {account}"
+msgstr "다음 계정 클릭: {account}"
+
+msgid "Selected account: {selected}, displayed account: {displayed}"
+msgstr "선택한 계정: {selected}, 표시된 계정: {displayed}"
+
+msgid "Confirmed selected account: {account}"
+msgstr "선택한 계정 확인됨: {account}"
+
+msgid "Account display does not match, retrying ({attempt}/{max_retries})"
+msgstr "표시된 계정이 일치하지 않아 재시도 중 ({attempt}/{max_retries})"
+
+msgid "Account selection failed after {max_retries} retries; {account} is still not displayed. Continuing login attempt"
+msgstr "계정 선택이 {max_retries}회 재시도 후 실패했습니다. {account}이(가) 아직 표시되지 않습니다. 로그인을 계속 시도합니다"
+
+msgid "Failed to switch account"
+msgstr "계정 전환 실패"
+
+msgid "Login successful"
+msgstr "로그인 성공"
