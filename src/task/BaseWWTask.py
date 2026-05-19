@@ -330,7 +330,7 @@ class BaseWWTask(BaseTask):
         return self.find_one('treasure_icon', box=self.box_of_screen(0.18, 0.1, 0.82, 0.81), threshold=0.8,
                              target_height=720)
 
-    def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1, move=True, down_time=0.01, after_sleep=0,
+    def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1, move=False, down_time=0.01, after_sleep=0,
               key="left"):
         if x == -1 and y == -1:
             x = self.width_of_screen(0.5)

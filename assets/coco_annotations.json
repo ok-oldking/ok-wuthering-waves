@@ -1164,6 +1164,11 @@
             "id": 230,
             "name": "message_dialog",
             "supercategory": ""
+        },
+        {
+            "id": 231,
+            "name": "account_close",
+            "supercategory": ""
         }
     ],
     "images": [
@@ -3401,6 +3406,19 @@
                 36
             ],
             "area": 1800,
+            "iscrowd": 0
+        },
+        {
+            "id": 87,
+            "image_id": 241,
+            "category_id": 231,
+            "bbox": [
+                1307,
+                359,
+                53,
+                60
+            ],
+            "area": 3180,
             "iscrowd": 0
         },
         {

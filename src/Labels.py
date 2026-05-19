@@ -8,6 +8,7 @@ class Labels(str, Enum):
     Augusta_lib2 = 'Augusta_lib2'
     absorb_en_US = 'absorb_en_US'
     absorb_zh_CN = 'absorb_zh_CN'
+    account_close = 'account_close'
     account_drop_down = 'account_drop_down'
     aemeath_e1 = 'aemeath_e1'
     aemeath_e2 = 'aemeath_e2'
