@@ -3,6 +3,7 @@ import re
 from qfluentwidgets import FluentIcon
 
 from ok import Logger
+from ok.util.print_hwnd import print_hwnd_tree
 from src.task.DailyTask import DailyTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
@@ -19,7 +20,6 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         self.group_name = "Daily"
         self.group_icon = FluentIcon.CALENDAR
         self.icon = FluentIcon.PEOPLE
-        self.supported_languages = ["zh_CN"]
         self.description = "多账号自动切换，依次执行每日一条龙任务"
         self.default_config = {
             '账号列表': '',
@@ -154,19 +154,19 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         try:
             pattern = self._make_masked_pattern(suffix)
             self.log_info(f'正在选择账号：****{suffix}')
-            max_retries = 3
+            max_retries = 5
             for attempt in range(1, max_retries + 1):
                 self.ensure_in_front()
-                self.update_capture({
-                    'windows': {
-                        'interaction': 'Pynput',
-                        'capture_method': 'ForegroundBitBlt',
-                    }
-                })
+                # self.update_capture({
+                #     'windows': {
+                #         'interaction': 'Pynput',
+                #         'capture_method': 'ForegroundBitBlt',
+                #     }
+                # })
                 self.sleep(1)
                 drop_down = self.find_one('account_drop_down', horizontal_variance=0.2, vertical_variance=0.2)
                 if drop_down:
-                    self.click(drop_down, after_sleep=1)
+                    self.click(drop_down, after_sleep=3)
                 self.wait_until(
                     lambda: self._click_account_in_list(pattern),
                     time_out=10, raise_if_not_found=True
@@ -187,13 +187,13 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             else:
                 self._click_center_offset(0, 95, after_sleep=3)
             self._logged_in = False
-            self.update_capture({
-                'windows': {
-                    'interaction': 'PostMessage',
-                    'capture_method': ['WGC', 'BitBlt_RenderFull'],
-                }
-            })
-            self.ensure_main(time_out=180)
+            # self.update_capture({
+            #     'windows': {
+            #         'interaction': 'PostMessage',
+            #         'capture_method': ['WGC', 'BitBlt_RenderFull'],
+            #     }
+            # })
+            # self.ensure_main(time_out=180)
             self.log_info(f'登录成功：****{suffix}')
         finally:
             if mouse_reset_was_enabled:
