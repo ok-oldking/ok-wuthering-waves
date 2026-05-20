@@ -15,6 +15,7 @@ from src.scene.WWScene import WWScene
 logger = Logger.get_logger(__name__)
 number_re = re.compile(r'(\d+)')
 stamina_re = re.compile(r'(\d+)/(\d+)')
+LOGIN_TEXTS = ["登录", 'Login', '登入']
 f_white_color = {
     'r': (235, 255),  # Red range
     'g': (235, 255),  # Green range
@@ -704,7 +705,7 @@ class BaseWWTask(BaseTask):
             texts = self.ocr(log=self.debug)
 
             if login := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7),
-                                        match=["登录", 'Login', '登入']):
+                                        match=LOGIN_TEXTS):
                 if not self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match="+86"):
                     self.click(login, after_sleep=1)
                     self.log_info('点击登录按钮!')
@@ -725,7 +726,7 @@ class BaseWWTask(BaseTask):
                 return False
 
             if start := self.find_boxes(texts, boundary='bottom_right', match=["开始游戏", re.compile("进入游戏")]):
-                if not self.find_boxes(texts, boundary='bottom_right', match=["登录", 'Login', '登入']):
+                if not self.find_boxes(texts, boundary='bottom_right', match=LOGIN_TEXTS):
                     self.click(start)
                     self.log_info(f'点击开始游戏! {start}')
                     return False

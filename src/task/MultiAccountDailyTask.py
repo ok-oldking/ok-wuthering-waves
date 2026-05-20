@@ -6,6 +6,7 @@ from ok import Box
 from src.task.DailyTask import DailyTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
+from src.task.BaseWWTask import LOGIN_TEXTS
 from src.task.MouseResetTask import MouseResetTask
 
 account_pattern = re.compile(r'\*\*\*\*')
@@ -75,7 +76,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             self.info_set('All Accounts', self.all_accounts)
             if next_account is None and account.name not in self.done_set:
                 next_account = account.name
-                self.click(account, after_sleep=1)
+                self.click(account, after_sleep=2)
         self.log_info(self.tr('Click next account: {account}').format(account=next_account))
         return next_account
 
@@ -99,6 +100,10 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
                 drop_down = self.find_account_drop_down()
                 if drop_down:
                     self.click(drop_down, after_sleep=2)
+                if self.do_find_account_drop_down():
+                    self.log_error('click drop down no effect')
+                    self.screenshot('multi')
+                    continue
                 account = self.wait_until(
                     lambda: self._click_account_in_list(),
                     time_out=10, raise_if_not_found=True
@@ -121,11 +126,11 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             self.sleep(4)
             texts = self.ocr()
             login_btn = self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.8),
-                                        match=["登录", 'Login', '登入'])
+                                        match=LOGIN_TEXTS)
             if login_btn:
                 self.click(login_btn, after_sleep=3)
             else:
-                self.click_relative(0.502, 0.568, after_sleep=3)
+                self.click_relative(0.5, 0.568, hcenter=True, vcenter=True, after_sleep=3)
             self._logged_in = False
             # self.update_capture({
             #     'windows': {
@@ -144,8 +149,9 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         return self.wait_until(self.do_find_account_drop_down, time_out=60, settle_time=2)
 
     def do_find_account_drop_down(self) -> Box | None:
-        if self.find_one('account_close', horizontal_variance=0.05, vertical_variance=0.05):
-            drop_down = self.find_one('account_drop_down', horizontal_variance=0.05, vertical_variance=0.05)
+        texts = self.ocr()
+        if len(self.find_boxes(texts, account_pattern)) == 1 and len(self.find_boxes(texts, LOGIN_TEXTS)) == 1:
+            drop_down = self.find_boxes(texts, account_pattern)[0]
             return drop_down
         return None
 
