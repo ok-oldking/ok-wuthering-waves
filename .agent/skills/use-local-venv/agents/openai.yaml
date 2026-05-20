@@ -1,0 +1,4 @@
+interface:
+  display_name: "Use Local Venv"
+  short_description: "Prefer the repository .venv for Python commands."
+  default_prompt: "Use the repository .venv when running Python commands, falling back to global Python only when no local virtual environment exists."
