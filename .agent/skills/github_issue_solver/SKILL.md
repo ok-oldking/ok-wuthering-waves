@@ -14,7 +14,8 @@ When the user asks to solve a GitHub issue (e.g., "Solve issue #123"), follow th
 ### 1. Fetch Issue Information
 - Use the helper script `scripts/github_api.py` to get the issue details.
   ```powershell
-  python .agent/skills/github_issue_solver/scripts/github_api.py get <issue_id>
+  $Python = if (Test-Path ".\.venv\Scripts\python.exe") { ".\.venv\Scripts\python.exe" } elseif (Test-Path ".\.venv\bin\python") { ".\.venv\bin\python" } else { "python" }
+  & $Python .agent/skills/github_issue_solver/scripts/github_api.py get <issue_id>
   ```
 - Extract the title, body, and labels.
 
@@ -36,13 +37,14 @@ When the user asks to solve a GitHub issue (e.g., "Solve issue #123"), follow th
 If the user accepts the proposal:
 - **Apply Changes**: Modify the code as planned.
 - **Commit**: Commit the changes with a message like `fix: <summary> (fixes #<issue_id>)`.
+- **Python**: If the current shell does not already have `$Python`, resolve it with the same `.venv`-aware snippet from step 1 before running the helper script.
 - **Reply**: Post a comment to the issue using the helper script. The reply should be in the same language as the issue.
   ```powershell
-  python .agent/skills/github_issue_solver/scripts/github_api.py comment <issue_id> "Your comment here"
+  & $Python .agent/skills/github_issue_solver/scripts/github_api.py comment <issue_id> "Your comment here"
   ```
 - **Close**: Close the issue.
   ```powershell
-  python .agent/skills/github_issue_solver/scripts/github_api.py close <issue_id>
+  & $Python .agent/skills/github_issue_solver/scripts/github_api.py close <issue_id>
   ```
 
 ### 5. Termination (If Not Accepted)

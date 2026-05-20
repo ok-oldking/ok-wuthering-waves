@@ -3,7 +3,8 @@ description: Solve a GitHub issue by ID
 ---
 
 1. Fetch the issue details using the `github_issue_solver` skill.
-   - Use `python .agent/skills/github_issue_solver/scripts/github_api.py get <issue_id>`.
+   - Use the repository `.venv` Python if it exists: `.\.venv\Scripts\python.exe .agent/skills/github_issue_solver/scripts/github_api.py get <issue_id>`.
+   - Fall back to `python .agent/skills/github_issue_solver/scripts/github_api.py get <issue_id>` only when no local `.venv` interpreter exists.
 2. Analyze the issue and the codebase.
 3. Present the proposed solution or reply to the user.
 4. **MANDATORY**: Wait for user approval before proceeding.
