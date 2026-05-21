@@ -14,8 +14,8 @@ class Encore(BaseChar):
     def still_in_liberation(self):
         return self.time_elapsed_accounting_for_freeze(self.liberation_time) < 9.5
 
-    def switch_out(self):
-        super().switch_out()
+    def switch_out(self, con_full=False):
+        super().switch_out(con_full=con_full)
         self.last_resonance = 0
 
     def do_perform(self):

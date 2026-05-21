@@ -90,7 +90,7 @@ class Augusta(BaseChar):
     def check_ascendancy(self):
         return False
 
-    def liberation_available(self):
+    def liberation_available(self, check_color=True):
         return self.current_liberation() > 0 and bool(self.task.find_one('Augusta_lib1', threshold=0.5))
 
     def check_majesty(self):

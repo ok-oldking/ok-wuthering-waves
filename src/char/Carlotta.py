@@ -67,7 +67,7 @@ class Carlotta(BaseChar):
         else:
             return self.click_liberation()
 
-    def click_liberation(self):
+    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0.1):
         self.logger.debug('click_liberation start')
         start = time.time()
         last_click = 0
@@ -113,7 +113,7 @@ class Carlotta(BaseChar):
         return clicked
 
     def click_resonance(self, post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0,
-                        check_cd=False):
+                        check_cd=False, time_out=0):
         clicked = False
         self.logger.debug(f'click_resonance start')
         last_click = 0
@@ -123,7 +123,7 @@ class Carlotta(BaseChar):
         start = time.time()
         last = start
         while True:
-            if time.time() - start > 10:
+            if time.time() - start > (time_out or 10):
                 self.task.in_liberation = False
                 self.alert_skill_failed()
                 break

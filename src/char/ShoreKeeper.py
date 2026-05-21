@@ -25,11 +25,11 @@ class ShoreKeeper(BaseChar):
         self.heavy_click_forte(self.is_mouse_forte_full)
         self.switch_next_char()
 
-    def switch_next_char(self, *args):
+    def switch_next_char(self, *args, **kwargs):
         if self.is_con_full():
             self.outrotime = time.time()
             self.dodge_count = 5
-        return super().switch_next_char(*args)
+        return super().switch_next_char(*args, **kwargs)
 
     def auto_dodge(self, condition):
         clicked = False

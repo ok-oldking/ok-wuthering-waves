@@ -98,7 +98,7 @@ class Camellya(BaseChar):
         self.click_echo()
         self.switch_next_char()
 
-    def click_echo(self, *args):
+    def click_echo(self, *args, **kwargs):
         if self.echo_available():
             self.send_echo_key()
             return True

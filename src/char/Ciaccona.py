@@ -147,10 +147,10 @@ class Ciaccona(BaseChar):
         self.logger.info(f'Frequncy analysis with forte {forte}')
         return forte
 
-    def switch_next_char(self, *args):
+    def switch_next_char(self, *args, **kwargs):
         if self.is_con_full():
             self.outrotime = time.time()
-        return super().switch_next_char(*args)
+        return super().switch_next_char(*args, **kwargs)
 
     def in_outro(self):
         return self.time_elapsed_accounting_for_freeze(self.outrotime) < 30

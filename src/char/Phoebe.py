@@ -298,12 +298,12 @@ class Phoebe(BaseChar):
             return State.SUCCESS
         return State.UNAVAILABLE
 
-    def switch_next_char(self, *args):
+    def switch_next_char(self, *args, **kwargs):
         if self.is_con_full():
             if self.attribute == 2:
                 self.click_echo()
                 self.state["outro"] += 1
-        return super().switch_next_char(*args)
+        return super().switch_next_char(*args, **kwargs)
 
     def check_middle_star(self):
         if self.star_available:
