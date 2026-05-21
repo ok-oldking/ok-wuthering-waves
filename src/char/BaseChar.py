@@ -710,6 +710,9 @@ class BaseChar:
         while self.time_elapsed_accounting_for_freeze(self.last_perform) < 1.1:
             self.task.click(interval=0.1)
 
+    def need_fast_perform(self):
+        return self.time_elapsed_accounting_for_freeze(self.last_perform) <= 1
+
     def wait_switch_cd(self):
         since_last_switch = self.time_elapsed_accounting_for_freeze(self.last_perform)
         if since_last_switch <= 1:

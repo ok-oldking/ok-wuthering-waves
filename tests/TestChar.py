@@ -85,6 +85,11 @@ class TestChar(TaskTestCase):
         self.assertEqual(combat._choose_switch_target(current, False), sub_dps)
         current.last_perform = 0
 
+        current.last_perform = time.time()
+        self.assertTrue(current.need_fast_perform())
+        current.last_perform = 0
+        self.assertFalse(current.need_fast_perform())
+
         current.set_char_type(CharType.MAIN_DPS)
         healer.last_buff_time = -1
         self.assertEqual(combat._choose_switch_target(current, True), healer)
