@@ -2,6 +2,9 @@ import time
 import unittest
 from config import config
 from ok.test.TaskTestCase import TaskTestCase
+from src.Labels import Labels
+from src.char.BaseChar import BaseChar, CharType
+from src.char.CharFactory import _get_char_type, char_dict
 from src.task.AutoCombatTask import AutoCombatTask
 
 config['debug'] = True
@@ -14,6 +17,18 @@ def return_true():
 class TestChar(TaskTestCase):
     task_class = AutoCombatTask
     config = config
+
+    def test_char_type_config(self):
+        class Task:
+            char_config = {}
+
+        task = Task()
+        self.assertEqual(BaseChar(None, 0).char_type, CharType.MAIN_DPS)
+        self.assertEqual(char_dict[Labels.char_mortefi]['char_type'], CharType.SUB_DPS)
+        self.assertEqual(_get_char_type(task, char_dict[Labels.char_iuno]), CharType.SUB_DPS)
+
+        task.char_config = {'Iuno C6': True}
+        self.assertEqual(_get_char_type(task, char_dict[Labels.char_iuno]), CharType.MAIN_DPS)
 
     def test_aemeath_lib(self):
         self.task.do_reset_to_false()

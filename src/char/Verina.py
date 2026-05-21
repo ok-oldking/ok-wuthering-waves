@@ -48,7 +48,7 @@ class Verina(Healer):
         return forte
 
     def do_get_switch_priority(self, current_char, has_intro=False, target_low_con=False):
-        if isinstance(current_char, Healer):
+        if current_char and current_char.is_healer:
             return Priority.MIN
         if self.last_res > 0 and self.time_elapsed_accounting_for_freeze(self.last_res) < self.res_cd:
             return Priority.MIN

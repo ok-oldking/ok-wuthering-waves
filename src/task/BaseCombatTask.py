@@ -12,7 +12,6 @@ from src import text_white_color
 from src.char import BaseChar
 from src.char.BaseChar import Priority, dot_color  # noqa
 from src.char.CharFactory import get_char_by_pos
-from src.char.Healer import Healer
 from src.combat.CombatCheck import CombatCheck
 from src.task.BaseWWTask import isolate_white_text_to_black, binarize_for_matching
 
@@ -495,7 +494,7 @@ class BaseCombatTask(CombatCheck):
     def switch_healer(self):
         if self.config.get('Switch to Healer after Combat'):
             current_char = self.get_current_char()
-            if current_char and not isinstance(current_char, Healer):
+            if current_char and not current_char.is_healer:
                 current_char.switch_other_char()
 
     def sleep_check(self):
@@ -573,12 +572,9 @@ class BaseCombatTask(CombatCheck):
                 self.chars = self.chars[:2]
             logger.info(f'team size changed to 2')
 
-        healer_count = 0
         for char in self.chars:
             if char is not None:
                 char.reset_state()
-                if isinstance(char, Healer):
-                    healer_count += 1
                 if char.index == current_index:
                     char.is_current_char = True
                 else:

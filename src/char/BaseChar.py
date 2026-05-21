@@ -24,11 +24,10 @@ class Priority(IntEnum):
     FAST_SWITCH = MAX - 100  # 快速切换优先级 (例如应对特殊机制)
 
 
-class Role(StrEnum):
+class CharType(StrEnum):
     """定义角色定位枚举。"""
-    DEFAULT = 'Default'  # 默认/未知定位
-    SUB_DPS = 'Sub DPS'  # 副输出
-    MAIN_DPS = 'Main DPS'  # 主输出
+    MAIN_DPS = 'MainDps'  # 主输出
+    SUB_DPS = 'SubDps'  # 副输出
     HEALER = 'Healer'  # 治疗者
 
 
@@ -41,14 +40,15 @@ class Elements(IntEnum):
     HAVOC = 5
 
 
-role_values = [role for role in Role]  # 角色定位枚举值的列表
+Role = CharType
+role_values = [role for role in CharType]  # 角色定位枚举值的列表
 
 
 class BaseChar:
     """角色基类，定义了游戏角色的通用属性和行为。"""
 
     def __init__(self, task, index, res_cd=20, echo_cd=20, liberation_cd=25, char_name=None, confidence=1,
-                 ring_index=-1):
+                 ring_index=-1, char_type=CharType.MAIN_DPS):
         """初始化角色基础属性。
 
         Args:
@@ -85,9 +85,30 @@ class BaseChar:
         self.intro_motion_freeze_duration = 0.9
         self.last_outro_time = -1
         self.confidence = confidence
+        self.set_char_type(char_type)
         self.logger = Logger.get_logger(self.name)
         self.check_f_on_switch = True
         self.cycle_start_time = 0.0
+
+    def set_char_type(self, char_type=CharType.MAIN_DPS):
+        """设置角色定位，默认为主输出。"""
+        self.char_type = CharType(char_type or CharType.MAIN_DPS)
+
+    @property
+    def type(self):
+        return self.char_type
+
+    @property
+    def is_healer(self):
+        return self.char_type == CharType.HEALER
+
+    @property
+    def is_main_dps(self):
+        return self.char_type == CharType.MAIN_DPS
+
+    @property
+    def is_sub_dps(self):
+        return self.char_type == CharType.SUB_DPS
 
     def cycle_start(self):
         self.cycle_start_time = time.time()
@@ -611,6 +632,8 @@ class BaseChar:
         Returns:
             int: 基础优先级数值。
         """
+        if self.is_healer:
+            return self.do_get_healer_switch_priority(current_char, has_intro, target_low_con)
         priority = self.priority
         if self.count_liberation_priority() and self.liberation_available():
             priority += self.count_liberation_priority()
@@ -624,6 +647,22 @@ class BaseChar:
             priority += Priority.SKILL_AVAILABLE
         priority += self.count_base_priority()
         return priority
+
+    def do_get_healer_switch_priority(self, current_char, has_intro=False, target_low_con=False):
+        if current_char and current_char.is_healer:
+            self.logger.debug(
+                f'Healer do_get_switch_priority Healer to Healer set to MIN')
+            return Priority.MIN
+        elif self.time_elapsed_accounting_for_freeze(self.last_perform) > 20:
+            self.logger.debug(
+                f'Healer do_get_switch_priority 20 seconds since last switch')
+            return Priority.SKILL_AVAILABLE * 2
+        elif not has_intro and self.liberation_available() and self.resonance_available() and self.echo_available():
+            self.logger.debug(
+                f'Healer do_get_switch_priority everything available')
+            return Priority.SKILL_AVAILABLE * 2
+        else:
+            return Priority.BASE_MINUS_1
 
     def count_base_priority(self):
         """计算角色的基础优先级值。"""
@@ -894,10 +933,9 @@ class BaseChar:
         return False
 
     def switch_other_char(self):
-        from src.char.Healer import Healer
         target_index = (self.index + 1) % len(self.task.chars)
         for char in self.task.chars:
-            if char and isinstance(char, Healer) and char.index != self.index:
+            if char and char.is_healer and char.index != self.index:
                 target_index = char.index
                 break
         next_char = str(target_index + 1)

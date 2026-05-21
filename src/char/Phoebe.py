@@ -5,7 +5,6 @@ import math
 from enum import Enum
 
 from src.char.BaseChar import BaseChar, Priority, forte_white_color
-from src.char.Healer import Healer
 from ok import color_range_to_bound
 
 
@@ -312,7 +311,7 @@ class Phoebe(BaseChar):
         if self.attribute == 2:
             if self.get_zani_state() == 1 and not self.is_action_complete():
                 return 10000
-            if has_intro and self.get_zani_state() != 1 and isinstance(current_char, Healer):
+            if has_intro and self.get_zani_state() != 1 and current_char and current_char.is_healer:
                 return 10000
         if not has_intro and self.last_outro_time > 0 and self.time_elapsed_accounting_for_freeze(self.last_outro_time,
                                                                                                   intro_motion_freeze=True) < 4.5:
