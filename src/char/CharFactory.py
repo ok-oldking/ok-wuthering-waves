@@ -14,6 +14,7 @@ from src.char.Chisa import Chisa
 from src.char.Chixia import Chixia
 from src.char.Ciaccona import Ciaccona
 from src.char.Danjin import Danjin
+from src.char.Denia import Denia
 from src.char.Douling import Douling
 from src.char.Encore import Encore
 from src.char.Galbrena import Galbrena
@@ -92,6 +93,8 @@ _char_dict_raw = {
                            'ring_index': Elements.WIND},
     Labels.char_chisa: {'cls': Chisa, 'res_cd': 10, 'echo_cd': 20, 'liberation_cd': 25,
                         'ring_index': Elements.HAVOC},
+    Labels.char_denia: {'cls': Denia, 'res_cd': 20, 'echo_cd': 20, 'liberation_cd': 25,
+                        'ring_index': Elements.FIRE},
     Labels.char_douling: {'cls': Douling, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25,
                           'ring_index': Elements.ELECTRIC},
     Labels.char_linnai: {'cls': Linnai, 'res_cd': 15, 'echo_cd': 25, 'liberation_cd': 25,
