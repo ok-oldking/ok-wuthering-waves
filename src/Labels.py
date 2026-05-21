@@ -75,6 +75,7 @@ class Labels(str, Enum):
     char_chixia = 'char_chixia'
     char_chouyuan = 'char_chouyuan'
     char_ciaccona = 'char_ciaccona'
+    char_daniya = 'char_daniya'
     char_danjin = 'char_danjin'
     char_douling = 'char_douling'
     char_encore = 'char_encore'
