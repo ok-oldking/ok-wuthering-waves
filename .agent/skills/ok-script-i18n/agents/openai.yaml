@@ -1,0 +1,4 @@
+interface:
+  display_name: "OK Script i18n"
+  short_description: "Sync ok-script task gettext translations"
+  default_prompt: "Use $ok-script-i18n to add or sync ok-script task translations."

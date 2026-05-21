@@ -1,0 +1,4 @@
+interface:
+  display_name: "OK Script Tasks"
+  short_description: "Create and modify ok-script task classes"
+  default_prompt: "Use $ok-script-tasks to create or update an ok-script task."
