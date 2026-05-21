@@ -14,7 +14,7 @@ class Augusta(BaseChar):
         time_out = switch_time
         if self.has_intro:
             self.continues_normal_attack(1.13)
-            if self.check_outro() in {'char_iuno'}:
+            if self.has_sub_dps_intro and self.check_outro() in {'char_iuno'}:
                 time_out = 14
         if self.flying():
             self.wait_down()
@@ -53,7 +53,7 @@ class Augusta(BaseChar):
                 self.logger.debug('Augusta performs single liberation')
                 if self.task.wait_until(lambda: not self.liberation_available(), post_action=self.send_liberation_key,
                                         time_out=2):
-                    self.update_liberation_cd()
+                    self.record_liberation_use()
                     if time_out < 14:
                         return self.switch_next_char()
             self.click()
@@ -109,9 +109,6 @@ class Augusta(BaseChar):
         for i, char in enumerate(self.task.chars):
             if isinstance(char, ShoreKeeper):
                 return char.auto_dodge(condition=self.flying)
-
-    def count_echo_priority(self):
-        return 0
 
     def on_combat_end(self, chars):
         next_char = str((self.index + 1) % len(chars) + 1)

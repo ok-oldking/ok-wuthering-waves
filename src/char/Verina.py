@@ -2,11 +2,11 @@ import time
 import cv2
 import numpy as np
 
-from src.char.Healer import Healer, Priority
+from src.char.BaseChar import BaseChar
 from ok import color_range_to_bound
 
 
-class Verina(Healer):
+class Verina(BaseChar):
     def judge_frequncy_and_amplitude(self, gray, min_freq, max_freq, min_amp):
         height, width = gray.shape[:]
         if height == 0 or width < 64 or not np.array_equal(np.unique(gray), [0, 255]):
@@ -47,21 +47,6 @@ class Verina(Healer):
         self.logger.info(f'Frequncy analysis with forte {forte}')
         return forte
 
-    def do_get_switch_priority(self, current_char, has_intro=False, target_low_con=False):
-        if current_char and current_char.is_healer:
-            return Priority.MIN
-        if self.last_res > 0 and self.time_elapsed_accounting_for_freeze(self.last_res) < self.res_cd:
-            return Priority.MIN
-            
-        time_elapsed = self.time_elapsed_accounting_for_freeze(self.last_perform)
-        
-        if time_elapsed >= 18:
-            return Priority.SKILL_AVAILABLE * 2
-        if has_intro and time_elapsed >= 12:
-            return Priority.SKILL_AVAILABLE
-            
-        return Priority.MIN
-
     def _force_cast_resonance(self):
         clicked_res = False
         res_clicked_time = 0
@@ -78,7 +63,7 @@ class Verina(Healer):
             if self.task.has_cd('resonance'):
                 clicked_res = True
                 res_clicked_time = time.time()
-                self.update_res_cd()
+                self.record_resonance_use()
                 break
             
             if self.is_con_full():

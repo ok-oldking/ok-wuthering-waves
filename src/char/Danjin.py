@@ -6,9 +6,6 @@ class Danjin(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def count_resonance_priority(self):
-        return 0
-
     def do_perform(self):
         liberated = self.click_liberation()
         if liberated:

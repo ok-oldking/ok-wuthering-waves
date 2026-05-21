@@ -1,13 +1,12 @@
 import time
 
-from src.char.BaseChar import BaseChar, Priority
+from src.char.BaseChar import BaseChar
 
 
 class Iuno(BaseChar):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.priority = Priority.BASE + 1
         self.last_heavy = 0
 
     def do_perform(self):

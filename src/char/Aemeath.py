@@ -1,6 +1,6 @@
 import time
 
-from src.char.BaseChar import BaseChar, Priority
+from src.char.BaseChar import BaseChar
 
 
 class Aemeath(BaseChar):
@@ -16,7 +16,7 @@ class Aemeath(BaseChar):
         self.intro_time = -1
         if self.has_intro:
             self.task.wait_until(self.enhance_e_available, post_action=self.click_with_interval,
-                                     time_out=3.5)
+                                 time_out=3.5)
             if self.check_outro() in {'char_linnai', 'char_lupa'}:
                 self.intro_time = 14
             if self.check_outro() in {'chang_changli', 'char_changli2'}:
@@ -30,31 +30,23 @@ class Aemeath(BaseChar):
         if self.click_liberation(wait_if_cd_ready=0):
             self.f_break()
             return True
-            
+
     def continue_in_intro(self):
         return self.time_elapsed_accounting_for_freeze(self.last_liber) < 30 and \
-             self.time_elapsed_accounting_for_freeze(self.last_perform) < self.intro_time
+            self.time_elapsed_accounting_for_freeze(self.last_perform) < self.intro_time
 
     def perform_everything(self):
         start = time.time()
         self.human_heavy = False
-        self.should_wait = self.has_intro
-        while self.time_elapsed_accounting_for_freeze(start) < 2.2 or (
-                self.should_wait and self.time_elapsed_accounting_for_freeze(start) < 10):
+        self.should_wait = self.has_sub_dps_intro
+        while self.time_elapsed_accounting_for_freeze(start) < 1.4 or (
+                self.should_wait and self.time_elapsed_accounting_for_freeze(start) < 3):
             self.cycle_start()
             if self.handle_heavy():
                 self.should_wait = True
                 start = time.time()
                 self.task.next_frame()
                 continue
-            elif self.lib():
-                self.last_liber = time.time()
-                self.should_wait = True
-                start = time.time()
-                if self.is_human():
-                    self.switch_mech()
-                    self.last_liber = -1
-                    return
             elif self.enhance_e_available():
                 if self.click_resonance(has_animation=True, send_click=True, animation_min_duration=0.5, time_out=1.5):
                     self.should_wait = False
@@ -68,6 +60,14 @@ class Aemeath(BaseChar):
                 else:
                     self.click(after_sleep=0.01)
                     return
+            elif self.lib():
+                self.last_liber = time.time()
+                self.should_wait = True
+                start = time.time()
+                if self.is_human():
+                    self.switch_mech()
+                    self.last_liber = -1
+                    return
             else:
                 self.switch_mech()
                 self.click()
@@ -78,8 +78,9 @@ class Aemeath(BaseChar):
         return 0 < cd < 1.5 or self.liberation_available()
 
     def enhance_e_available(self):
-        return (self.task.find_one('aemeath_e1', threshold=0.7) or self.task.find_one('aemeath_e2',
-                                                                                      threshold=0.7)) and not self.is_human()
+        return self.has_long_action() or (
+                (self.task.find_one('aemeath_e1', threshold=0.7) or self.task.find_one('aemeath_e2',
+                                                                                       threshold=0.7)) and not self.is_human())
 
     def switch_mech(self):
         start = time.time()
@@ -102,14 +103,6 @@ class Aemeath(BaseChar):
         while self.has_long_action():
             self.heavy_wait_highlight_down()
             return True
-
-    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if has_intro:
-            self.logger.info(
-                f'set priority as high because has_intro {has_intro}')
-            return Priority.FAST_SWITCH + 1
-        else:
-            return super().do_get_switch_priority(current_char, has_intro, target_low_con)
 
     def on_combat_end(self, chars):
         self.switch_other_char()

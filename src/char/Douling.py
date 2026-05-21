@@ -1,9 +1,9 @@
 import time
 
-from src.char.Healer import Healer
+from src.char.BaseChar import BaseChar
 
 
-class Douling(Healer):
+class Douling(BaseChar):
 
     def do_perform(self):
         if self.has_intro:

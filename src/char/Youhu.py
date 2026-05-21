@@ -1,8 +1,7 @@
-from src.char.Healer import Healer
 from src.char.BaseChar import BaseChar
 
 
-class Youhu(Healer):
+class Youhu(BaseChar):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

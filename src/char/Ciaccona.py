@@ -2,7 +2,7 @@ import time
 import cv2
 import numpy as np
 from ok import color_range_to_bound
-from src.char.BaseChar import BaseChar, Priority
+from src.char.BaseChar import BaseChar
 
 
 class Ciaccona(BaseChar):
@@ -62,17 +62,6 @@ class Ciaccona(BaseChar):
         if not self.in_liberation and self.current_echo() > 0.25:
             self.click_echo()
         self.switch_next_char()
-
-    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.attribute == 2 and self.in_liberation and self.time_elapsed_accounting_for_freeze(
-                self.last_liberation) < 20:
-            return Priority.MIN
-        if self.attribute == 3:
-            self.logger.debug(f'ciaccona cond: {self.cartethyia.is_cartethyia}')
-        if self.attribute == 3 and self.in_liberation and (
-                self.time_elapsed_accounting_for_freeze(self.last_liberation) < 8 or not self.cartethyia.is_cartethyia):
-            return Priority.MIN
-        return super().do_get_switch_priority(current_char, has_intro)
 
     def click_jump_with_click(self, delay=0.1):
         start = time.time()

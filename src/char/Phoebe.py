@@ -4,7 +4,7 @@ import numpy as np
 import math
 from enum import Enum
 
-from src.char.BaseChar import BaseChar, Priority, forte_white_color
+from src.char.BaseChar import BaseChar, forte_white_color
 from ok import color_range_to_bound
 
 
@@ -304,21 +304,6 @@ class Phoebe(BaseChar):
                 self.click_echo()
                 self.state["outro"] += 1
         return super().switch_next_char(*args)
-
-    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.attribute == 0:
-            self.decide_teammate()
-        if self.attribute == 2:
-            if self.get_zani_state() == 1 and not self.is_action_complete():
-                return 10000
-            if has_intro and self.get_zani_state() != 1 and current_char and current_char.is_healer:
-                return 10000
-        if not has_intro and self.last_outro_time > 0 and self.time_elapsed_accounting_for_freeze(self.last_outro_time,
-                                                                                                  intro_motion_freeze=True) < 4.5:
-            self.logger.info(f'performing outro, Priority {Priority.MIN}')
-            return Priority.MIN
-        else:
-            return super().do_get_switch_priority(current_char, has_intro)
 
     def check_middle_star(self):
         if self.star_available:

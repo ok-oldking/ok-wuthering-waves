@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import math
 
-from src.char.BaseChar import BaseChar, Priority, forte_white_color
+from src.char.BaseChar import BaseChar, forte_white_color
 from ok import color_range_to_bound
 
 class State(Enum):
@@ -39,9 +39,6 @@ class Zani(BaseChar):
         self.blazes_threshold = -1
         self.chair_time = -1
         super().reset_state()
-
-    def count_forte_priority(self):
-        return 1
 
     def do_perform(self):
         if self.blazes_threshold == -1:
@@ -489,14 +486,6 @@ class Zani(BaseChar):
         if liber_time_check:
             kwargs['condition2'] = lambda: self.liberation_time_left() < 1.7
         self.wait_until(**kwargs)
-
-    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.in_liberation:
-            return Priority.MAX
-        elif has_intro and self.crisis_time_left() > 0:
-            return -10000
-        else:
-            return super().do_get_switch_priority(current_char, has_intro)
 
     def wait_switch(self):
         if self.has_intro and self.nightfall_time_left() > 0:

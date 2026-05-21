@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 from ok import color_range_to_bound
-from src.char.BaseChar import BaseChar, Priority
+from src.char.BaseChar import BaseChar
 
 
 class Carlotta(BaseChar):
@@ -58,16 +58,6 @@ class Carlotta(BaseChar):
         self.continues_normal_attack(0.31)
         self.switch_next_char()
 
-    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.press_w == -1:
-            self.decide_teammate()
-        if has_intro and self.check_outro() in {'char_zhezhi'}:
-            return Priority.MAX
-        if self.char_zhezhi is not None and self.forte == 0:
-            return Priority.FAST_SWITCH + 1
-        else:
-            return super().do_get_switch_priority(current_char, has_intro)
-
     def click_liberation_1(self):
         if self.press_w == 1:
             self.task.send_key_down(key='w')
@@ -115,7 +105,7 @@ class Carlotta(BaseChar):
             self.task.next_frame()
         duration = time.time() - start
         self.add_freeze_duration(start, duration)
-        self.update_liberation_cd()
+        self.record_liberation_use()
         self.task.in_liberation = False
         self._liberation_available = False
         if clicked:
@@ -155,7 +145,7 @@ class Carlotta(BaseChar):
                     if resonance_click_time == 0:
                         clicked = True
                         resonance_click_time = now
-                        self.update_res_cd()
+                        self.record_resonance_use()
                     last_op = 'resonance'
                     self.send_resonance_key()
                     if has_animation:  # sleep if there will be an animation like Jinhsi

@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 from ok import color_range_to_bound
-from src.char.BaseChar import BaseChar, Priority
+from src.char.BaseChar import BaseChar
 
 
 class Lupa(BaseChar):
@@ -76,13 +76,6 @@ class Lupa(BaseChar):
 
     def still_in_liberation(self):
         return self.time_elapsed_accounting_for_freeze(self.last_liberation) < 12
-
-    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.still_in_liberation():
-            return Priority.MAX
-        if has_intro and current_char.char_name in {'chang_changli'}:
-            return Priority.MAX
-        return super().do_get_switch_priority(current_char, has_intro)
 
     def click_jump_with_click(self, delay=0.1):
         start = time.time()

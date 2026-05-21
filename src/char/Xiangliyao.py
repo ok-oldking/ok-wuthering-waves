@@ -23,11 +23,5 @@ class Xiangliyao(BaseChar):
             self.click_resonance(send_click=True)
         self.switch_next_char()
 
-    def count_liberation_priority(self):
-        return 40
-
-    def count_base_priority(self):
-        return super().count_base_priority() + 100 if self.still_in_liberation() and self.resonance_available() else 0
-
     def still_in_liberation(self):
         return self.time_elapsed_accounting_for_freeze(self.liberation_time) < 25

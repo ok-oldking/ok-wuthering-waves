@@ -11,7 +11,7 @@ class Qiuyuan(BaseChar):
             self.wait_down()            
         start = time.time()
         timeout = lambda: time.time() - start < 1.2
-        if self.has_intro:
+        if self.has_sub_dps_intro:
             timeout = lambda: time.time() - start < 4
         while timeout():        
             self.click_echo(time_out=0)

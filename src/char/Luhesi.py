@@ -1,6 +1,6 @@
 import time
 
-from src.char.BaseChar import BaseChar, Priority
+from src.char.BaseChar import BaseChar
 
 
 class Luhesi(BaseChar):
@@ -23,7 +23,7 @@ class Luhesi(BaseChar):
 
     def perform_everything(self):
         self.continues_normal_attack(1.1)
-        if not self.has_intro:
+        if not self.has_sub_dps_intro:
             self.send_resonance_key(post_sleep=0.1)
             return
         else:
@@ -87,10 +87,3 @@ class Luhesi(BaseChar):
         
     def detect_elbow_strike(self, ready):
         return ready and not self.available('echo', check_color=True)
-        
-    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        """24秒疑似吃的系统时间"""
-        if time.time() - self.last_intro > 24 and has_intro:
-            return Priority.MAX
-        else:
-            return super().do_get_switch_priority(current_char, has_intro)

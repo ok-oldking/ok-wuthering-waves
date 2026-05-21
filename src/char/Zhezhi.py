@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 from ok import color_range_to_bound
-from src.char.BaseChar import BaseChar, Priority, text_white_color
+from src.char.BaseChar import BaseChar, text_white_color
 
 
 class Zhezhi(BaseChar):
@@ -63,15 +63,6 @@ class Zhezhi(BaseChar):
             self.check_combat()
             self.task.next_frame()
         self.task.mouse_up()
-
-    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.char_carlotta is not None and self.char_carlotta.get_ready():
-            return Priority.MAX - 1
-        if self.char_carlotta is not None and self.forte == 0:
-            return Priority.FAST_SWITCH
-        if self.char_carlotta is not None and has_intro and self.forte < 3:
-            return Priority.FAST_SWITCH
-        return super().do_get_switch_priority(current_char, has_intro)
 
     def con_lock(self):
         return self.char_carlotta.get_ready() or self.get_current_con() < 0.6 or (

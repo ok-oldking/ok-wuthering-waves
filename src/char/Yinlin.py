@@ -18,15 +18,3 @@ class Yinlin(BaseChar):
         else:
             self.heavy_attack()
         self.switch_next_char()
-
-    def count_base_priority(self):
-        return 2
-
-    def count_forte_priority(self):
-        return 20
-
-    def count_liberation_priority(self):
-        return 0
-
-    def count_echo_priority(self):
-        return 1

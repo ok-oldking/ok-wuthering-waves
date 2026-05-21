@@ -1,6 +1,6 @@
 import time
 
-from src.char.BaseChar import BaseChar, Priority
+from src.char.BaseChar import BaseChar
 
 
 class Phrolova(BaseChar):
@@ -19,7 +19,7 @@ class Phrolova(BaseChar):
         self.sp = False
         if self.has_intro:
             self.res_ready = False
-            if self.check_outro() in {'char_cantarella'}:
+            if self.has_sub_dps_intro and self.check_outro() in {'char_cantarella'}:
                 perform_under_outro = True
             self.continues_normal_attack(1.7)
             self.continues_right_click(0.1)
@@ -69,15 +69,6 @@ class Phrolova(BaseChar):
             self.check_combat()
             self.task.next_frame()
         self.switch_next_char()
-
-    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if self.time_elapsed_accounting_for_freeze(
-                self.last_liberation) > 14 and has_intro and current_char.char_name in {'char_cantarella'}:
-            return Priority.MAX
-        self.logger.debug(f'Phrolova last_liberation {self.time_elapsed_accounting_for_freeze(self.last_liberation)}')
-        if self.time_elapsed_accounting_for_freeze(self.last_liberation) < 24:
-            return Priority.MIN
-        return Priority.FAST_SWITCH
 
     def resonance_available(self):
         if self.sp:

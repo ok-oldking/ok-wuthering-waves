@@ -10,7 +10,7 @@ from ok import color_range_to_bound
 from ok import safe_get
 from src import text_white_color
 from src.char import BaseChar
-from src.char.BaseChar import Priority, dot_color  # noqa
+from src.char.BaseChar import dot_color  # noqa
 from src.char.CharFactory import get_char_by_pos
 from src.combat.CombatCheck import CombatCheck
 from src.task.BaseWWTask import isolate_white_text_to_black, binarize_for_matching
@@ -312,6 +312,80 @@ class BaseCombatTask(CombatCheck):
                         return True
                 total_index += 1
 
+    def _oldest_switch_target(self, chars):
+        chars = [char for char in chars if char is not None]
+        if not chars:
+            return None
+        return min(chars, key=lambda char: (char.last_switch_in_time, char.index))
+
+    def _switch_rule_3_target(self, candidates, allow_healer=True):
+        healers_without_buff = [
+            char for char in candidates
+            if allow_healer and char.is_healer and char.buff_time > 0 and not char.has_buff()
+        ]
+        if healers_without_buff:
+            return self._oldest_switch_target(healers_without_buff)
+
+        sub_dps_without_buff = [
+            char for char in candidates
+            if char.is_sub_dps and char.buff_time > 0 and not char.has_buff()
+        ]
+        if sub_dps_without_buff:
+            return self._oldest_switch_target(sub_dps_without_buff)
+
+        main_dps = [char for char in candidates if char.is_main_dps]
+        if main_dps:
+            return self._oldest_switch_target(main_dps)
+
+        return self._oldest_switch_target(candidates)
+
+    def _main_dps_all_buffers_buffed_target(self, candidates):
+        non_main_buffers = [char for char in candidates if not char.is_main_dps and char.buff_time > 0]
+        if not non_main_buffers or any(not char.has_buff() for char in non_main_buffers):
+            return None
+
+        main_dps = [char for char in candidates if char.is_main_dps]
+        if main_dps:
+            return self._oldest_switch_target(main_dps)
+
+        sub_dps = [char for char in candidates if char.is_sub_dps]
+        if sub_dps:
+            return self._oldest_switch_target(sub_dps)
+
+        return None
+
+    def _has_switch_cd(self, current_char):
+        return current_char.time_elapsed_accounting_for_freeze(current_char.last_perform) <= 1
+
+    def _choose_switch_target(self, current_char, has_intro):
+        candidates = [char for char in self.chars if char is not None and char != current_char]
+        if not candidates:
+            return current_char
+
+        main_dps = [char for char in candidates if char.is_main_dps]
+        if (current_char.is_sub_dps or current_char.is_healer) and main_dps and not self._has_switch_cd(current_char):
+            return self._oldest_switch_target(main_dps)
+
+        if has_intro and current_char.is_sub_dps:
+            return self._oldest_switch_target(main_dps) or self._oldest_switch_target(
+                [char for char in candidates if not char.is_healer]) or self._oldest_switch_target(candidates)
+
+        if has_intro and not current_char.is_main_dps:
+            candidates = [char for char in candidates if not char.is_healer]
+            if not candidates:
+                return current_char
+
+        if current_char.is_main_dps:
+            target = self._main_dps_all_buffers_buffed_target(candidates)
+            if target:
+                return target
+
+        return self._switch_rule_3_target(candidates, allow_healer=not has_intro or current_char.is_main_dps)
+
+    def _apply_intro_flags(self, current_char, switch_to, has_intro):
+        switch_to.has_intro = has_intro
+        switch_to.has_sub_dps_intro = has_intro and current_char.is_sub_dps
+
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
         """切换到下一个最优角色。
 
@@ -321,8 +395,6 @@ class BaseCombatTask(CombatCheck):
             free_intro (bool, optional): 是否强制认为拥有入场技 (通常在协奏值满时)。默认为 False。
             target_low_con (bool, optional): 是否优先切换到协奏值较低的角色。默认为 False。
         """
-        max_priority = Priority.MIN
-        switch_to = current_char
         has_intro = free_intro
         current_con = 0
         self.update_lib_portrait_icon()
@@ -335,33 +407,17 @@ class BaseCombatTask(CombatCheck):
                 current_con = current_char.get_current_con()
             if current_con == 1:
                 has_intro = True
-        low_con = 200
 
-        for i, char in enumerate(self.chars):
-            if char == current_char:
-                priority = Priority.CURRENT_CHAR
-            else:
-                priority = char.get_switch_priority(current_char, has_intro, target_low_con)
-                logger.debug(
-                    f'switch_next_char priority: {char} {priority} {char.current_con} target_low_con {target_low_con}')
-            if target_low_con:
-                if char.current_con < low_con and char != current_char:
-                    low_con = char.current_con
-                    switch_to = char
-            elif priority == max_priority:
-                if char.last_perform < switch_to.last_perform:
-                    logger.debug(f'switch priority equal, determine by last perform')
-                    switch_to = char
-            elif priority > max_priority:
-                max_priority = priority
-                switch_to = char
-        if switch_to == current_char:
+        switch_to = self._choose_switch_target(current_char, has_intro)
+        if not switch_to or switch_to == current_char:
             logger.warning(f"{current_char} can't find next char to switch to, performing too fast add a normal attack")
             current_char.continues_normal_attack(0.2)
-            return current_char.switch_next_char()
-        switch_to.has_intro = has_intro
+            return
+        self._apply_intro_flags(current_char, switch_to, has_intro)
         logger.info(
-            f'switch_next_char {current_char} -> {switch_to} has_intro {switch_to.has_intro} current_con {current_con}')
+            f'switch_next_char {current_char}({current_char.char_type}) -> {switch_to}({switch_to.char_type}) '
+            f'has_intro {switch_to.has_intro} has_sub_dps_intro {switch_to.has_sub_dps_intro} '
+            f'current_con {current_con}')
         # if self.debug:
         #     self.screenshot(f'switch_next_char_{current_con}')
         from src.char.ShoreKeeper import ShoreKeeper
@@ -376,7 +432,7 @@ class BaseCombatTask(CombatCheck):
             if current_index == current_char.index:
                 self.update_lib_portrait_icon()
                 if not switch_to.has_intro:
-                    switch_to.has_intro = current_char.is_con_full()
+                    self._apply_intro_flags(current_char, switch_to, current_char.is_con_full())
 
             if now - last_click > 0.1:
                 self.send_key(switch_to.index + 1)
@@ -403,8 +459,9 @@ class BaseCombatTask(CombatCheck):
                     self.raise_not_in_combat('failed switch chars')
             else:
                 self.in_liberation = False
-                current_char.switch_out()
+                current_char.switch_out(con_full=has_intro)
                 switch_to.is_current_char = True
+                switch_to.last_switch_in_time = time.time()
                 if has_intro:
                     current_time = time.time()
                     self.add_freeze_duration(current_time, switch_to.intro_motion_freeze_duration, -100)

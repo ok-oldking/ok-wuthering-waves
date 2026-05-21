@@ -91,5 +91,3 @@ class Hiyuki(BaseChar):
         self.logger.info(f'hold_liberation end {time.time() - start}')
         return True
         
-    def count_liberation_priority(self):
-        return 50

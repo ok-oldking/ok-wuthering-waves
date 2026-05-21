@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 from ok import color_range_to_bound
-from src.char.BaseChar import BaseChar, Priority, forte_white_color
+from src.char.BaseChar import BaseChar, forte_white_color
 
 
 class Changli(BaseChar):
@@ -116,7 +116,7 @@ class Changli(BaseChar):
                 self.send_liberation_key()
                 if not clicked:
                     clicked = True
-                    self.update_liberation_cd()
+                    self.record_liberation_use()
                 last_click = now
             if time.time() - start > timeout:
                 self.task.raise_not_in_combat('too long clicking a liberation')
@@ -135,7 +135,7 @@ class Changli(BaseChar):
             self.task.in_liberation = True
             if not clicked:
                 clicked = True
-                self.update_liberation_cd()
+                self.record_liberation_use()
             if send_click:
                 self.click(interval=0.1)
             if time.time() - start > 1.5 and not hold:
@@ -155,11 +155,6 @@ class Changli(BaseChar):
         self.task.mouse_up()
         self.check_combat()
         return clicked
-
-    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        if has_intro and current_char.char_name in {'char_brant'}:
-            return Priority.MAX
-        return super().do_get_switch_priority(current_char, has_intro)
 
     def flick_resonance(self, time_out=0.2, send_click=True):
         if send_click and self.resonance_available():

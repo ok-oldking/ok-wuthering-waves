@@ -1,6 +1,6 @@
 import time
 
-from src.char.BaseChar import BaseChar, forte_white_color, Priority
+from src.char.BaseChar import BaseChar, forte_white_color
 
 class Linnai(BaseChar):
     def __init__(self, *args, **kwargs):
@@ -73,14 +73,6 @@ class Linnai(BaseChar):
 #    def combo_limit(self):
 #        return self.time_elapsed_accounting_for_freeze(self.last_heavy) < 20
 
-    def do_get_switch_priority(self, current_char: BaseChar, has_intro=False, target_low_con=False):
-        self.decide_teammate()
-        if self.attribute == 2 and has_intro and current_char.char_name in {'char_moning'}:
-            return Priority.MAX
-        if not has_intro and current_char.char_name in {'char_aemeath'}:
-            return Priority.FAST_SWITCH + 1
-        return super().do_get_switch_priority(current_char, has_intro)
-        
     def decide_teammate(self):
         from src.char.Mornye import Mornye
         if self.attribute > 0:
