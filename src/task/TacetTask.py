@@ -67,7 +67,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             if total < self.stamina_once:
                 return self.not_enough_stamina()
 
-            self.click_relative(0.18, 0.48, after_sleep=1)
+            self.open_boss_book('wuyin')
             index = config.get('Which Tacet Suppression to Farm', 1) - 1
             self.teleport_to_tacet(index)
             self.wait_click_travel()

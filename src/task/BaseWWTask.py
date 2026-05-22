@@ -933,6 +933,11 @@ class BaseWWTask(BaseTask):
         self.send_key_up('alt')
         self.sleep(0.5)
 
+    def open_boss_book(self, name, after_sleep=1):
+        self.log_info(f'open_boss_book {name}')
+        self.wait_click_feature(f'book_{name}', vertical_variance=0.05, after_sleep=after_sleep,
+                                raise_if_not_found=False)
+
     def openF2Book(self, feature="gray_book_all_monsters", opened=False):
         if hasattr(self, 'reset_to_false'):
             self.reset_to_false('opening book')

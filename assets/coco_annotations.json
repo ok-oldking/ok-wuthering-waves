@@ -1179,6 +1179,36 @@
             "id": 233,
             "name": "char_denia",
             "supercategory": ""
+        },
+        {
+            "id": 234,
+            "name": "book_moni",
+            "supercategory": ""
+        },
+        {
+            "id": 235,
+            "name": "book_qiangdi",
+            "supercategory": ""
+        },
+        {
+            "id": 236,
+            "name": "book_zhange",
+            "supercategory": ""
+        },
+        {
+            "id": 237,
+            "name": "book_mengyan",
+            "supercategory": ""
+        },
+        {
+            "id": 238,
+            "name": "book_canxiang",
+            "supercategory": ""
+        },
+        {
+            "id": 239,
+            "name": "book_wuyin",
+            "supercategory": ""
         }
     ],
     "images": [
@@ -2214,6 +2244,12 @@
         {
             "id": 243,
             "file_name": "images/34.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 244,
+            "file_name": "images/33.png",
             "width": 1920,
             "height": 1080
         }
@@ -3588,6 +3624,84 @@
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
+        },
+        {
+            "id": 98,
+            "image_id": 231,
+            "category_id": 234,
+            "bbox": [
+                211,
+                272,
+                55,
+                61
+            ],
+            "area": 3355,
+            "iscrowd": 0
+        },
+        {
+            "id": 99,
+            "image_id": 231,
+            "category_id": 235,
+            "bbox": [
+                200,
+                384,
+                70,
+                61
+            ],
+            "area": 4270,
+            "iscrowd": 0
+        },
+        {
+            "id": 100,
+            "image_id": 231,
+            "category_id": 236,
+            "bbox": [
+                205,
+                610,
+                63,
+                65
+            ],
+            "area": 4095,
+            "iscrowd": 0
+        },
+        {
+            "id": 101,
+            "image_id": 231,
+            "category_id": 237,
+            "bbox": [
+                203,
+                722,
+                71,
+                69
+            ],
+            "area": 4899,
+            "iscrowd": 0
+        },
+        {
+            "id": 102,
+            "image_id": 231,
+            "category_id": 238,
+            "bbox": [
+                203,
+                833,
+                69,
+                67
+            ],
+            "area": 4623,
+            "iscrowd": 0
+        },
+        {
+            "id": 103,
+            "image_id": 244,
+            "category_id": 239,
+            "bbox": [
+                209,
+                493,
+                63,
+                70
+            ],
+            "area": 4410,
+            "iscrowd": 0
         },
         {
             "id": 106,
