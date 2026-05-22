@@ -789,4 +789,37 @@ msgstr "切換帳號失敗"
 msgid "Login successful"
 msgstr "登入成功"
 
+msgid "Teleport to Boss"
+msgstr "傳送至Boss"
+
+msgid "Boss Level"
+msgstr "Boss等級"
+
+msgid "Teleport to Boss in F2 Menu"
+msgstr "在F2選單中傳送至Boss"
+
+msgid "Choose the Lowest that Drop a Echo"
+msgstr "選擇會掉落聲骸的最低等級"
+
+msgid "No"
+msgstr "否"
+
+msgid "Weekly Challenge"
+msgstr "週常挑戰"
+
+msgid "Boss Challenge"
+msgstr "Boss挑戰"
+
+msgid "Which Weekly Boss to Teleport"
+msgstr "傳送到第幾個週常Boss"
+
+msgid "Which Boss Challenge to Teleport"
+msgstr "傳送到第幾個Boss挑戰"
+
+msgid "For Example, Denia, From Top to Bottom, Starting with 1"
+msgstr "例如德尼亞，從上到下，從1開始"
+
+msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
+msgstr "例如無銘探索者，從上到下，從1開始"
+
 

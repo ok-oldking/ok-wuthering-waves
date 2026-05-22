@@ -746,3 +746,36 @@ msgstr "No se pudo cambiar de cuenta"
 
 msgid "Login successful"
 msgstr "Inicio de sesión correcto"
+
+msgid "Teleport to Boss"
+msgstr "Teletransportar al jefe"
+
+msgid "Boss Level"
+msgstr "Nivel del jefe"
+
+msgid "Teleport to Boss in F2 Menu"
+msgstr "Teletransportar al jefe desde el menu F2"
+
+msgid "Choose the Lowest that Drop a Echo"
+msgstr "Elige el nivel mas bajo que suelte un eco"
+
+msgid "No"
+msgstr "No"
+
+msgid "Weekly Challenge"
+msgstr "Desafio semanal"
+
+msgid "Boss Challenge"
+msgstr "Desafio de jefe"
+
+msgid "Which Weekly Boss to Teleport"
+msgstr "Jefe semanal al que teletransportar"
+
+msgid "Which Boss Challenge to Teleport"
+msgstr "Desafio de jefe al que teletransportar"
+
+msgid "For Example, Denia, From Top to Bottom, Starting with 1"
+msgstr "Por ejemplo, Denia, de arriba a abajo, empezando en 1"
+
+msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
+msgstr "Por ejemplo, Nameless Explorer, de arriba a abajo, empezando en 1"

@@ -746,3 +746,36 @@ msgstr "アカウント切り替えに失敗しました"
 
 msgid "Login successful"
 msgstr "ログイン成功"
+
+msgid "Teleport to Boss"
+msgstr "ボスへテレポート"
+
+msgid "Boss Level"
+msgstr "ボスレベル"
+
+msgid "Teleport to Boss in F2 Menu"
+msgstr "F2メニューでボスへテレポート"
+
+msgid "Choose the Lowest that Drop a Echo"
+msgstr "音骸がドロップする最低レベルを選択"
+
+msgid "No"
+msgstr "いいえ"
+
+msgid "Weekly Challenge"
+msgstr "週間チャレンジ"
+
+msgid "Boss Challenge"
+msgstr "ボスチャレンジ"
+
+msgid "Which Weekly Boss to Teleport"
+msgstr "テレポートする週間ボス"
+
+msgid "Which Boss Challenge to Teleport"
+msgstr "テレポートするボスチャレンジ"
+
+msgid "For Example, Denia, From Top to Bottom, Starting with 1"
+msgstr "例: Denia。上から下へ、1から開始"
+
+msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
+msgstr "例: Nameless Explorer。上から下へ、1から開始"

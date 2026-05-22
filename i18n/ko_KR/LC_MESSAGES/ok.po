@@ -746,3 +746,36 @@ msgstr "계정 전환 실패"
 
 msgid "Login successful"
 msgstr "로그인 성공"
+
+msgid "Teleport to Boss"
+msgstr "보스로 텔레포트"
+
+msgid "Boss Level"
+msgstr "보스 레벨"
+
+msgid "Teleport to Boss in F2 Menu"
+msgstr "F2 메뉴에서 보스로 텔레포트"
+
+msgid "Choose the Lowest that Drop a Echo"
+msgstr "에코가 드롭되는 가장 낮은 레벨 선택"
+
+msgid "No"
+msgstr "아니요"
+
+msgid "Weekly Challenge"
+msgstr "주간 도전"
+
+msgid "Boss Challenge"
+msgstr "보스 도전"
+
+msgid "Which Weekly Boss to Teleport"
+msgstr "텔레포트할 주간 보스 번호"
+
+msgid "Which Boss Challenge to Teleport"
+msgstr "텔레포트할 보스 도전 번호"
+
+msgid "For Example, Denia, From Top to Bottom, Starting with 1"
+msgstr "예: Denia, 위에서 아래로, 1부터 시작"
+
+msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
+msgstr "예: Nameless Explorer, 위에서 아래로, 1부터 시작"

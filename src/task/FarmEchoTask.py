@@ -22,26 +22,45 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.group_name = "Farm"
         self.group_icon = FluentIcon.SYNC
         self.default_config.update({
+            'Teleport to Boss': 'No',
+            'Boss Level': "80",
             'Boss': 'Other',
             'Repeat Farm Count': 10000,
             'Combat Wait Time': 0,
             'Echo Pickup Method': 'Walk',
             'Use Liberation': True,
             'Switch to Healer after Combat': True,
+            'Which Weekly Boss to Teleport': 1,
+            'Which Boss Challenge to Teleport': 1,
         })
         self.config_description.update({
             'Boss': 'Select boss profile (includes Combat Wait Time)',
+            'Teleport to Boss': 'Teleport to Boss in F2 Menu',
+            'Boss Level': "Choose the Lowest that Drop a Echo",
             'Combat Wait Time': 'Wait time before each combat (seconds), overrides Boss profile if set',
             'Use Liberation': 'Do not use Liberation to Save Time',
             'Switch to Healer after Combat': 'Better Chance to Keep Character Alive',
+            'Which Weekly Boss to Teleport': 'For Example, Denia, From Top to Bottom, Starting with 1',
+            'Which Boss Challenge to Teleport': 'For Example, Nameless Explorer, From Top to Bottom, Starting with 1'
         })
         self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
+        self.config_type['Teleport to Boss'] = {'type': "drop_down",
+                                                'options': ['No', 'Weekly Challenge',
+                                                            'Boss Challenge'],
+                                                'sub_configs': {
+                                                    'Weekly Challenge': ['Which Weekly Boss to Teleport', 'Boss Level'],
+                                                    'Boss Challenge': ['Which Boss Challenge to Teleport',
+                                                                       'Boss Level'],
+                                                }}
+        self.config_type['Boss Level'] = {'type': "drop_down", 'options': ['50', '60', '70', '80'], }
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
         self.boss_list = ['Other', 'Hyvatia', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory',
                           'Nightmare: Hecate', 'Fenrico', 'Nameless Explorer']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
+        self.total_weekly_number = 9
+        self.total_boss_number = 20
         self.add_exit_after_config()
         self._has_treasure = False
         self._in_realm = False
@@ -51,6 +70,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.combat_wait_time = 0
         self.set_night = False
         self.bypass_end_wait = False
+        self._teleport_walk_result = None
+        self._just_entered_boss_realm = False
         self.boss_dict = {
             '伪作的神王': {'name': r'伪作的神王'},
             '异构武装': {'name': r'(异构武装|加尔古耶)', 'set_combat_wait': 5},
@@ -101,74 +122,87 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self._has_treasure = False
         self.is_revived = False
         self.init_parameters()
+        if self.teleport_to_boss_enabled():
+            self.teleport_to_configured_boss_and_prepare()
         while count < self.config.get("Repeat Farm Count", 0):
-            self.in_realm_check(60)
-            self.log_debug(f'start farming {count} {self._in_realm}')
-            if not self.is_revived:
-                self.manage_boss_interactions()
-            else:
-                self.is_revived = False
-            if not self.in_combat():
-                if self._in_realm and not self.in_world():
-                    self.send_key('esc', after_sleep=0.5)
-                    self.wait_click_feature('claim_cancel_button_hcenter_vcenter', relative_x=2,
-                                            raise_if_not_found=True,
-                                            post_action=lambda: self.send_key('esc', after_sleep=1),
-                                            settle_time=1)
-                    self.wait_in_team_and_world(time_out=120)
-                    self.sleep(1)
+            try:
+                self.in_realm_check(60)
+                self.log_debug(f'start farming {count} {self._in_realm}')
+                if not self.is_revived:
+                    self.manage_boss_interactions()
                 else:
-                    if self._has_treasure:
-                        self.wait_until(
-                            lambda: self.find_treasure_icon() or self.in_combat(target=True) or self.find_f_with_text(),
-                            time_out=5, raise_if_not_found=False)
-                    if not self.in_combat():
-                        self.log_info('not in combat try click restart')
-                        if self.walk_to_treasure_and_restart():
-                            self._has_treasure = True
-                            self.log_info('_has_treasure = True')
-                        self.scroll_and_click_buttons()
+                    self.is_revived = False
+                if self._just_entered_boss_realm:
+                    self._just_entered_boss_realm = False
+                elif not self.in_combat():
+                    if self._in_realm and not self.in_world():
+                        self.send_key('esc', after_sleep=0.5)
+                        self.wait_click_feature('claim_cancel_button_hcenter_vcenter', relative_x=2,
+                                                raise_if_not_found=True,
+                                                post_action=lambda: self.send_key('esc', after_sleep=1),
+                                                settle_time=1)
+                        self.wait_in_team_and_world(time_out=120)
+                        self.sleep(0.1)
+                    else:
+                        if self._has_treasure:
+                            self.wait_until(
+                                lambda: self.find_treasure_icon() or self.in_combat(
+                                    target=True) or self.find_f_with_text(),
+                                time_out=5, raise_if_not_found=False)
+                        if not self.in_combat():
+                            self.log_info('not in combat try click restart')
+                            if self.walk_to_treasure_and_restart():
+                                self.handle_boss_restart_after_treasure()
+                            else:
+                                self.scroll_and_click_buttons()
 
-            count += 1
-            self.log_info('start wait in combat')
-            if not self._in_realm and not self._has_treasure and not self.in_combat():
-                self.go_to_boss_minimap()
-                self.execute_treasure_hunt()
+                count += 1
+                self.log_info('start wait in combat')
+                if not self._in_realm and not self._has_treasure and not self.in_combat():
+                    self.go_to_boss_minimap()
+                    self.execute_treasure_hunt()
 
-            self.sleep(self.combat_wait_time)
-            self.log_info(f'combat_wait_time: {self.combat_wait_time}')
-            self.check_boss_name()
+                self.sleep(self.combat_wait_time)
+                self.log_info(f'combat_wait_time: {self.combat_wait_time}')
+                self.check_boss_name()
 
-            self.combat_once(wait_combat_time=5, raise_if_not_found=False)
-            if self.is_revived:
-                continue
+                self.combat_once(wait_combat_time=5, raise_if_not_found=False)
+                if self.is_revived:
+                    continue
 
-            if self.pick_echo():
-                logger.info(f'farm echo on the face')
-                dropped = True
-            elif self.config.get('Echo Pickup Method', "Yolo") == "Yolo":
-                dropped = \
-                    self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=self.yolo_time_out,
-                                        threshold=self.yolo_threshold)[0]
-                logger.info(f'farm echo yolo find {dropped}')
-            elif self.config.get('Echo Pickup Method', "Yolo") == "Run in Circle":
-                dropped = self.run_in_circle_to_find_echo(circle_count=2)
-                logger.info(f'farm echo walk_circle_find_echo {dropped}')
-            else:
-                dropped = self.walk_find_echo()
-                logger.info(f'farm echo walk_find_echo {dropped}')
-            self.incr_drop(dropped)
-            if not self.bypass_end_wait:
-                if dropped and not self._has_treasure:
-                    self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
+                if self.pick_echo():
+                    logger.info(f'farm echo on the face')
+                    dropped = True
+                elif self.config.get('Echo Pickup Method', "Yolo") == "Yolo":
+                    dropped = \
+                        self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=self.yolo_time_out,
+                                            threshold=self.yolo_threshold)[0]
+                    logger.info(f'farm echo yolo find {dropped}')
+                elif self.config.get('Echo Pickup Method', "Yolo") == "Run in Circle":
+                    dropped = self.run_in_circle_to_find_echo(circle_count=2)
+                    logger.info(f'farm echo walk_circle_find_echo {dropped}')
                 else:
-                    self.wait_until(self.in_combat, raise_if_not_found=False, time_out=1)
+                    dropped = self.walk_find_echo()
+                    logger.info(f'farm echo walk_find_echo {dropped}')
+                self.incr_drop(dropped)
+                if not self.bypass_end_wait:
+                    if dropped and not self._has_treasure:
+                        self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
+                    else:
+                        self.wait_until(self.in_combat, raise_if_not_found=False, time_out=1)
+            except TaskDisabledException:
+                raise
+            except Exception as e:
+                if self.should_reteleport_after_farm_exception():
+                    self.log_error('Farm failed after walking into boss combat, teleporting again', e)
+                    self.is_revived = False
+                    self.teleport_to_configured_boss_and_prepare()
+                    continue
+                raise
 
     def execute_treasure_hunt(self):
         if not self.in_combat() and self.find_treasure_icon() and self.walk_to_treasure_and_restart():
-            self._has_treasure = True
-            self.log_info('_has_treasure = True')
-            self.scroll_and_click_buttons()
+            self.handle_boss_restart_after_treasure()
 
     def in_realm_check(self, time_threshold):
         if not self._in_realm and time.time() - self._farm_start_time < time_threshold:
@@ -176,6 +210,121 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             if self._in_realm:
                 self.init_parameters()
                 self.log_info(f'in_realm: {self._in_realm}')
+
+    def teleport_to_boss_enabled(self):
+        return self.config.get('Teleport to Boss', 'No') != 'No'
+
+    def should_reteleport_after_farm_exception(self):
+        return self.teleport_to_boss_enabled() and self._teleport_walk_result == 'combat'
+
+    def teleport_to_configured_boss_and_prepare(self):
+        self._teleport_walk_result = None
+        try:
+            self.teleport_to_configured_boss()
+            walk_result = self.walk_after_boss_teleport()
+        except Exception as e:
+            raise RuntimeError('Teleport to boss failed') from e
+
+        self._teleport_walk_result = walk_result
+        self._has_treasure = False
+        if walk_result == 'combat':
+            self._in_realm = False
+            self.treat_as_not_in_realm = True
+        elif walk_result == 'realm':
+            self._in_realm = True
+            self.treat_as_not_in_realm = False
+        else:
+            raise RuntimeError('Teleport to boss failed')
+        self.init_parameters()
+        self.log_info(f'teleport_to_boss prepared as {walk_result}')
+
+    def teleport_to_configured_boss(self):
+        teleport_to_boss = self.config.get('Teleport to Boss', 'No')
+        self.ensure_main(time_out=180)
+        if teleport_to_boss == 'Weekly Challenge':
+            feature = 'zhange'
+            serial_number = self.config.get('Which Weekly Boss to Teleport', 1)
+            total_number = self.total_weekly_number
+        elif teleport_to_boss == 'Boss Challenge':
+            feature = 'qiangdi'
+            serial_number = self.config.get('Which Boss Challenge to Teleport', 1)
+            total_number = self.total_boss_number
+        else:
+            raise RuntimeError(f'Unknown Teleport to Boss config: {teleport_to_boss}')
+
+        self.info_set('Teleport to Boss', f'{teleport_to_boss} {serial_number - 1}')
+        gray_book_boss = self.openF2Book('gray_book_boss')
+        self.click_box(gray_book_boss, after_sleep=1)
+        self.open_boss_book(feature)
+        self.click_on_book_target(serial_number, total_number)
+        self.wait_click_travel()
+        self.wait_in_team_and_world(time_out=120)
+        self.sleep(2)
+
+    def walk_after_boss_teleport(self):
+        self.log_info('walk after boss teleport until combat or F')
+        result = self.walk_until_f_or_combat(time_out=20)
+        if result == 'combat':
+            return 'combat'
+        if result == 'f':
+            self.enter_configured_boss_realm_from_f()
+            return 'realm'
+        raise RuntimeError('Teleport to boss failed')
+
+    def walk_until_f_or_combat(self, direction='w', time_out=20):
+        self.middle_click(after_sleep=0.2)
+        self.send_key_down(direction)
+        self.sleep(0.1)
+        self.mouse_down(key='right')
+        start = time.time()
+        try:
+            while time.time() - start < time_out:
+                if self.in_combat(target=True) or self.in_combat():
+                    return 'combat'
+                if self.find_f_with_text():
+                    return 'f'
+                self.middle_click(interval=0.5)
+                self.sleep(0.02)
+        finally:
+            self.send_key_up(direction)
+            self.sleep(0.1)
+            self.mouse_up(key='right')
+        raise RuntimeError('Teleport to boss failed: can not walk to combat or F')
+
+    def enter_configured_boss_realm_from_f(self):
+        if not self.find_f_with_text():
+            raise RuntimeError('Teleport to boss failed: can not find F before entering realm')
+        self.send_key('f', after_sleep=3)
+        self.click_configured_boss_level()
+        self.sleep(1)
+        self.click(0.880, 0.911, after_sleep=2)
+        self.click(0.908, 0.919, after_sleep=5)
+        self.wait_in_team_and_world(time_out=120)
+        self._in_realm = True
+        self.treat_as_not_in_realm = False
+        self._has_treasure = False
+        self._just_entered_boss_realm = True
+        self.init_parameters()
+
+    def click_configured_boss_level(self):
+        boss_level = str(self.config.get('Boss Level', '80'))
+        level_boxes = self.wait_ocr(0.030, 0.113, 0.323, 0.660, match=re.compile(re.escape(boss_level)),
+                                    raise_if_not_found=True, time_out=10, settle_time=1)
+        if isinstance(level_boxes, list):
+            level_box = level_boxes[0] if level_boxes else None
+        else:
+            level_box = level_boxes
+        if not level_box:
+            raise RuntimeError(f'Can not find boss level {boss_level}')
+        self.click_box(level_box)
+
+    def handle_boss_restart_after_treasure(self):
+        self._has_treasure = True
+        self.log_info('_has_treasure = True')
+        if self.teleport_to_boss_enabled() and self._in_realm:
+            self.enter_configured_boss_realm_from_f()
+        else:
+            self.scroll_and_click_buttons()
 
     def manage_boss_parameters(self):
         boss = self.config.get('Boss')
@@ -518,7 +667,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         if self.aim_boss is not None:
             logger.info(f'combat with {self.aim_boss}')
         else:
-            logger.info(f'boss_string is {find_boxes_by_name(texts, [re.compile(r'(?i)^L[Vv].*')])}')
+            logger.info(f"boss_string is {find_boxes_by_name(texts, [re.compile(r'(?i)^L[Vv].*')])}")
 
 
 from ok import run_task
