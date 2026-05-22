@@ -39,8 +39,8 @@ class Aemeath(BaseChar):
         start = time.time()
         self.human_heavy = False
         self.should_wait = self.has_sub_dps_intro
-        while self.time_elapsed_accounting_for_freeze(start) < 1.4 or (
-                self.should_wait and self.time_elapsed_accounting_for_freeze(start) < 3):
+        while self.time_elapsed_accounting_for_freeze(start) < 1.6 or (
+                self.should_wait and self.time_elapsed_accounting_for_freeze(start) < 2.6):
             self.cycle_start()
             if self.handle_heavy():
                 self.should_wait = True
