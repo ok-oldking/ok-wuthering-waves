@@ -11,9 +11,11 @@ class Aemeath(BaseChar):
         self.human_heavy = False
         self.intro_time = -1
         self.last_liber = -1
+        self.last_enhance_e = -1
 
     def do_perform(self):
         self.intro_time = -1
+        self.should_wait = False
         if self.has_intro:
             self.task.wait_until(self.enhance_e_available, post_action=self.click_with_interval,
                                  time_out=3.5)
@@ -37,7 +39,9 @@ class Aemeath(BaseChar):
         start = time.time()
         self.human_heavy = False
         self.should_wait = self.has_sub_dps_intro
-        while self.time_elapsed_accounting_for_freeze(start) < 1.6 or (
+        if not self.should_wait:
+            self.should_wait = self.time_elapsed_accounting_for_freeze(self.last_enhance_e) > 6
+        while self.time_elapsed_accounting_for_freeze(start) < 1.2 or (
                 self.should_wait and self.time_elapsed_accounting_for_freeze(start) < 2.6):
             self.cycle_start()
             if self.handle_heavy():
@@ -46,8 +50,10 @@ class Aemeath(BaseChar):
                 self.task.next_frame()
                 continue
             elif self.enhance_e_available():
-                if self.click_resonance(has_animation=True, send_click=True, animation_min_duration=0.5, time_out=1.5):
+                if self.click_resonance(has_animation=True, send_click=True, animation_min_duration=0.5, time_out=1.5)[
+                    0]:
                     self.should_wait = False
+                    self.last_enhance_e = time.time()
                     self.click_echo(time_out=0)
                     self.f_break()
                 if self.has_long_action() or self.lib_cd_eminent() or self.continue_in_intro():
