@@ -44,7 +44,13 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.config_type = {
             'Which to Farm': {
                 'type': "drop_down",
-                'options': self.support_tasks
+                'options': self.support_tasks,
+                'sub_configs': {
+                    'Tacet Suppression': ['Which Tacet Suppression to Farm'],
+                    'Forgery Challenge': ['Which Forgery Challenge to Farm'],
+                    'Simulation Challenge': [
+                        'Material Selection'],
+                }
             },
             'Material Selection': {
                 'type': 'drop_down',
