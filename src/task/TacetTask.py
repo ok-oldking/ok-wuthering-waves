@@ -55,6 +55,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         else:
             must_use = 0
         self.info_incr('used stamina', 0)
+        fail_count = 0
         while True:
             self.sleep(1)
             gray_book_boss = self.openF2Book("gray_book_boss")
@@ -93,6 +94,13 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             except CharRevivedException:
                 self.log_info('farm_tacet: death recovered, re-enter from F2 book')
                 continue
+            except Exception as e:
+                fail_count += 1
+                self.log_error(f'farm_tacet: Exception, retry fail_count:{fail_count}', e)
+                if fail_count <= 3:
+                    continue
+                else:
+                    raise e
             can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
             self.info_incr('used stamina', used)
             self.sleep(4)
