@@ -63,6 +63,17 @@ class Ciaccona(BaseChar):
             self.click_echo()
         self.switch_next_char()
 
+    def can_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        if self.attribute == 2 and self.in_liberation and self.time_elapsed_accounting_for_freeze(
+                self.last_liberation) < 20:
+            return False
+        if self.attribute == 3:
+            self.logger.debug(f'ciaccona cond: {self.cartethyia.is_cartethyia}')
+        if self.attribute == 3 and self.in_liberation and (
+                self.time_elapsed_accounting_for_freeze(self.last_liberation) < 8 or not self.cartethyia.is_cartethyia):
+            return False
+        return super().can_switch(current_char, has_intro, target_low_con)
+
     def click_jump_with_click(self, delay=0.1):
         start = time.time()
         click = 1

@@ -487,6 +487,18 @@ class Zani(BaseChar):
             kwargs['condition2'] = lambda: self.liberation_time_left() < 1.7
         self.wait_until(**kwargs)
 
+    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        if self.in_liberation:
+            return True
+        return super().must_switch(current_char, has_intro, target_low_con)
+
+    def can_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        if self.in_liberation:
+            return True
+        if has_intro and self.crisis_time_left() > 0:
+            return False
+        return super().can_switch(current_char, has_intro, target_low_con)
+
     def wait_switch(self):
         if self.has_intro and self.nightfall_time_left() > 0:
             self.logger.debug(f'has_intro {self.has_intro}, wait nightfall end')

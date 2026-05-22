@@ -20,6 +20,11 @@ class Camellya(BaseChar):
         super().reset_state()
         self.waiting_for_forte_drop = False
 
+    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        if has_intro:
+            return True
+        return super().must_switch(current_char, has_intro, target_low_con)
+
     def wait_resonance_not_gray(self, timeout=5):
         start = time.time()
         while self.current_resonance() == 0:

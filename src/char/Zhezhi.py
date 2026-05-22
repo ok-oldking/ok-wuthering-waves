@@ -68,6 +68,11 @@ class Zhezhi(BaseChar):
         return self.char_carlotta.get_ready() or self.get_current_con() < 0.6 or (
                 self.is_con_full() and not self.char_carlotta.get_ready())
 
+    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        if self.char_carlotta is not None and self.char_carlotta.get_ready():
+            return True
+        return super().must_switch(current_char, has_intro, target_low_con)
+
     def do_perform_interlock(self):
         if self.has_intro:
             self.continues_normal_attack(1.3)

@@ -8,6 +8,23 @@ class ShoreKeeper(BaseChar):
         super().__init__(*args, **kwargs)
         self.outrotime = -1
         self.dodge_count = 0
+        self.attribute = 0
+
+    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        self.decide_teammate()
+        current_name = current_char.char_name if current_char else None
+        if self.attribute == 2 and has_intro and current_name in {'Augusta', 'char_augusta'}:
+            return True
+        return super().must_switch(current_char, has_intro, target_low_con)
+
+    def decide_teammate(self):
+        from src.char.Augusta import Augusta
+        if self.attribute > 0:
+            return
+        if self.task.has_char(Augusta):
+            self.attribute = 2
+        else:
+            self.attribute = 1
 
     def do_perform(self):
         if self.has_intro:
@@ -21,8 +38,8 @@ class ShoreKeeper(BaseChar):
             self.task.skip_combat_check = False
         self.click_echo(time_out=0)
         self.click_liberation()
-        self.click_resonance()
-        self.heavy_click_forte(self.is_mouse_forte_full)
+        if not self.click_resonance():
+            self.heavy_click_forte(self.is_mouse_forte_full)
         self.switch_next_char()
 
     def switch_next_char(self, *args, **kwargs):

@@ -7,6 +7,11 @@ class Cantarella(BaseChar):
         super().__init__(*args, **kwargs)
         self.last_heavy = -1
 
+    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        if has_intro and current_char and current_char.char_name in {'char_roccia', 'char_sanhua', 'char_sanhua2'}:
+            return True
+        return super().must_switch(current_char, has_intro, target_low_con)
+
     def do_perform(self):
         perform_under_outro = False
         if self.has_intro:

@@ -48,6 +48,11 @@ class Cartethyia(BaseChar):
                 self.sleep(0.2, False)
             self.logger.debug(f'on_combat_end {self.index} switch end')
 
+    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        if not self.is_cartethyia:
+            return True
+        return super().must_switch(current_char, has_intro, target_low_con)
+
     def do_perform(self):
         self.transform = False
         if self.has_intro:

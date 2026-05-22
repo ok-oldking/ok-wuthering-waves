@@ -5,6 +5,8 @@ from ok.test.TaskTestCase import TaskTestCase
 from src.Labels import Labels
 from src.char.BaseChar import BaseChar, CharType, get_default_buff_time
 from src.char.CharFactory import _get_buff_time, _get_char_type, char_dict
+from src.char.Ciaccona import Ciaccona
+from src.char.Phrolova import Phrolova
 from src.task.AutoCombatTask import AutoCombatTask
 
 config['debug'] = True
@@ -12,6 +14,16 @@ config['debug'] = True
 
 def return_true():
     return True
+
+
+class BlockedChar(BaseChar):
+    def can_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        return False
+
+
+class ForcedChar(BaseChar):
+    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        return True
 
 
 class TestChar(TaskTestCase):
@@ -83,6 +95,7 @@ class TestChar(TaskTestCase):
         healer.last_buff_time = time.time()
         sub_dps.last_buff_time = -1
         self.assertEqual(combat._choose_switch_target(current, False), sub_dps)
+        self.assertEqual(combat._choose_switch_target(current, True), main_dps)
         current.last_perform = 0
 
         current.last_perform = time.time()
@@ -92,11 +105,15 @@ class TestChar(TaskTestCase):
 
         current.set_char_type(CharType.MAIN_DPS)
         healer.last_buff_time = -1
-        self.assertEqual(combat._choose_switch_target(current, True), healer)
+        self.assertEqual(combat._choose_switch_target(current, True), main_dps)
 
         healer.last_buff_time = time.time()
         sub_dps.last_buff_time = -1
+        self.assertEqual(combat._choose_switch_target(current, True), main_dps)
+
+        combat.chars = [current, healer, sub_dps]
         self.assertEqual(combat._choose_switch_target(current, True), sub_dps)
+        combat.chars = [current, healer, sub_dps, main_dps]
 
         combat._apply_intro_flags(sub_dps, current, True)
         self.assertTrue(current.has_intro)
@@ -105,6 +122,58 @@ class TestChar(TaskTestCase):
         combat._apply_intro_flags(healer, current, True)
         self.assertTrue(current.has_intro)
         self.assertFalse(current.has_sub_dps_intro)
+
+    def test_switch_can_and_must_hooks(self):
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                if start < 0:
+                    return 10000
+                return time.time() - start
+
+        task = Task()
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        current = BaseChar(task, 0, char_type=CharType.MAIN_DPS)
+        healer = BlockedChar(task, 1, char_type=CharType.HEALER)
+        sub_dps = BaseChar(task, 2, char_type=CharType.SUB_DPS)
+        forced = ForcedChar(task, 3, char_type=CharType.SUB_DPS)
+        combat.chars = [current, healer, sub_dps, forced]
+
+        self.assertTrue(current.can_switch())
+        self.assertFalse(current.must_switch())
+        self.assertEqual(combat._choose_switch_target(current, False), forced)
+
+        combat.chars = [current, healer, sub_dps]
+        self.assertEqual(combat._choose_switch_target(current, False), sub_dps)
+
+        sub_dps = BlockedChar(task, 2, char_type=CharType.SUB_DPS)
+        combat.chars = [current, healer, sub_dps]
+        self.assertEqual(combat._choose_switch_target(current, False), current)
+
+    def test_priority_compat_hooks_for_ciaccona_and_phrolova(self):
+        class Task:
+            name = None
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                if start < 0:
+                    return 10000
+                return time.time() - start
+
+        task = Task()
+        current = BaseChar(task, 0, char_name=Labels.char_cantarella)
+
+        ciaccona = Ciaccona(task, 1)
+        ciaccona.attribute = 2
+        ciaccona.in_liberation = True
+        ciaccona.last_liberation = time.time() - 5
+        self.assertFalse(ciaccona.can_switch(current_char=current, has_intro=False))
+
+        phrolova = Phrolova(task, 2)
+        phrolova.last_liberation = time.time() - 5
+        self.assertFalse(phrolova.can_switch(current_char=current, has_intro=False))
+
+        phrolova.last_liberation = time.time() - 15
+        self.assertTrue(phrolova.must_switch(current_char=current, has_intro=True))
+        self.assertTrue(phrolova.can_switch(current_char=current, has_intro=True))
 
     def test_aemeath_lib(self):
         self.task.do_reset_to_false()

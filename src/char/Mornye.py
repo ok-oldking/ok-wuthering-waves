@@ -81,6 +81,11 @@ class Mornye(BaseChar):
 
     def combo_limit(self):
         return self.time_elapsed_accounting_for_freeze(self.last_heavy) < 23
+
+    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        if has_intro and current_char and current_char.char_name in {'char_aemeath'}:
+            return True
+        return super().must_switch(current_char, has_intro, target_low_con)
         
     def detect_elbow_strike(self, ready):
         return ready and not self.available('echo', check_color=True)

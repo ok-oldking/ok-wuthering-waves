@@ -21,8 +21,6 @@ class Aemeath(BaseChar):
                 self.intro_time = 14
             if self.check_outro() in {'chang_changli', 'char_changli2'}:
                 self.intro_time = 10
-        elif not self.liberation_available():
-            self.switch_mech()
         self.perform_everything()
         self.switch_next_char()
 
@@ -52,8 +50,6 @@ class Aemeath(BaseChar):
                     self.should_wait = False
                     self.click_echo(time_out=0)
                     self.f_break()
-                    self.switch_mech()
-                    self.click()
                 if self.has_long_action() or self.lib_cd_eminent() or self.continue_in_intro():
                     self.should_wait = True
                     start = time.time()
@@ -62,14 +58,9 @@ class Aemeath(BaseChar):
                     return
             elif self.lib():
                 self.last_liber = time.time()
-                self.should_wait = True
+                self.should_wait = False
                 start = time.time()
-                if self.is_human():
-                    self.switch_mech()
-                    self.last_liber = -1
-                    return
             else:
-                self.switch_mech()
                 self.click()
             self.cycle_sleep()
 
@@ -81,12 +72,6 @@ class Aemeath(BaseChar):
         return self.has_long_action() or (
                 (self.task.find_one('aemeath_e1', threshold=0.7) or self.task.find_one('aemeath_e2',
                                                                                        threshold=0.7)) and not self.is_human())
-
-    def switch_mech(self):
-        start = time.time()
-        while not self.liberation_available() and time.time() - start < 3 and self.is_human():
-            self.send_resonance_key()
-            self.sleep(0.1)
 
     def is_human(self):
         return self.task.find_one('aemeath_human',

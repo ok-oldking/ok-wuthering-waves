@@ -15,6 +15,11 @@ class Changli(BaseChar):
         super().reset_state()
         self.enhanced_normal = False
 
+    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        if has_intro and current_char and current_char.char_name in {'char_brant'}:
+            return True
+        return super().must_switch(current_char, has_intro, target_low_con)
+
     def do_perform(self):
         outro = False
         forte = -1

@@ -222,8 +222,8 @@ class BaseChar:
         self.wait_intro(1.2)
         self.click_echo(time_out=0)
         self.click_liberation()
-        self.click_resonance()
-        self.heavy_click_forte(self.is_mouse_forte_full)
+        if not self.click_resonance()[0]:
+            self.heavy_click_forte(self.is_mouse_forte_full)
         self.switch_next_char()
 
     def has_cd(self, box_name):
@@ -600,6 +600,14 @@ class BaseChar:
     def get_resonance_key(self):
         """获取共鸣技能按键 (代理到 task.get_resonance_key)。"""
         return self.task.get_resonance_key()
+
+    def can_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        """Whether this character is allowed as a switch target."""
+        return True
+
+    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        """Whether this character should be preferred as a switch target."""
+        return False
 
     def resonance_available(self):
         """判断共鸣技能是否可用。

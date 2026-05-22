@@ -70,6 +70,23 @@ class Phrolova(BaseChar):
             self.task.next_frame()
         self.switch_next_char()
 
+    def _cantarella_outro_ready(self, current_char, has_intro):
+        return self.time_elapsed_accounting_for_freeze(
+            self.last_liberation) > 14 and has_intro and current_char and current_char.char_name in {'char_cantarella'}
+
+    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        if self._cantarella_outro_ready(current_char, has_intro):
+            return True
+        return super().must_switch(current_char, has_intro, target_low_con)
+
+    def can_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        self.logger.debug(f'Phrolova last_liberation {self.time_elapsed_accounting_for_freeze(self.last_liberation)}')
+        if self._cantarella_outro_ready(current_char, has_intro):
+            return True
+        if self.time_elapsed_accounting_for_freeze(self.last_liberation) < 24:
+            return False
+        return super().can_switch(current_char, has_intro, target_low_con)
+
     def resonance_available(self):
         if self.sp:
             return not (self.flying() or self.has_cd('resonance'))

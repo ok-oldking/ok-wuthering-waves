@@ -357,12 +357,14 @@ class BaseCombatTask(CombatCheck):
     def _has_switch_cd(self, current_char):
         return current_char.time_elapsed_accounting_for_freeze(current_char.last_perform) <= 1
 
-    def _choose_switch_target(self, current_char, has_intro):
-        candidates = [char for char in self.chars if char is not None and char != current_char]
+    def _choose_switch_target_by_rules(self, current_char, has_intro, candidates):
         if not candidates:
             return current_char
 
         main_dps = [char for char in candidates if char.is_main_dps]
+        if has_intro and main_dps:
+            return self._oldest_switch_target(main_dps)
+
         if (current_char.is_sub_dps or current_char.is_healer) and main_dps and not self._has_switch_cd(current_char):
             return self._oldest_switch_target(main_dps)
 
@@ -381,6 +383,35 @@ class BaseCombatTask(CombatCheck):
                 return target
 
         return self._switch_rule_3_target(candidates, allow_healer=not has_intro or current_char.is_main_dps)
+
+    def _choose_switch_target(self, current_char, has_intro, target_low_con=False):
+        candidates = [char for char in self.chars if char is not None and char != current_char]
+        if not candidates:
+            return current_char
+
+        forced = []
+        blocked = []
+        for char in candidates:
+            must_switch = char.must_switch(current_char=current_char, has_intro=has_intro,
+                                           target_low_con=target_low_con)
+            can_switch = char.can_switch(current_char=current_char, has_intro=has_intro,
+                                         target_low_con=target_low_con)
+            logger.debug(f'switch_next_char hooks: {char} must_switch {must_switch} can_switch {can_switch}')
+            if must_switch is True and can_switch is False:
+                continue
+            if must_switch is True:
+                forced.append(char)
+            elif can_switch is False:
+                blocked.append(char)
+
+        if forced:
+            candidates = forced
+        else:
+            candidates = [char for char in candidates if char not in blocked]
+            if not candidates:
+                return current_char
+
+        return self._choose_switch_target_by_rules(current_char, has_intro, candidates)
 
     def _apply_intro_flags(self, current_char, switch_to, has_intro):
         switch_to.has_intro = has_intro
@@ -408,7 +439,7 @@ class BaseCombatTask(CombatCheck):
             if current_con == 1:
                 has_intro = True
 
-        switch_to = self._choose_switch_target(current_char, has_intro)
+        switch_to = self._choose_switch_target(current_char, has_intro, target_low_con=target_low_con)
         if not switch_to or switch_to == current_char:
             logger.warning(f"{current_char} can't find next char to switch to, performing too fast add a normal attack")
             current_char.continues_normal_attack(0.2)

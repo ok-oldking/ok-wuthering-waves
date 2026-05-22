@@ -77,6 +77,13 @@ class Lupa(BaseChar):
     def still_in_liberation(self):
         return self.time_elapsed_accounting_for_freeze(self.last_liberation) < 12
 
+    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        if self.still_in_liberation():
+            return True
+        if has_intro and current_char and current_char.char_name in {'chang_changli'}:
+            return True
+        return super().must_switch(current_char, has_intro, target_low_con)
+
     def click_jump_with_click(self, delay=0.1):
         start = time.time()
         click = 0

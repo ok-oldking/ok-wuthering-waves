@@ -29,6 +29,19 @@ class Jinhsi(BaseChar):
         self.has_free_intro = False
         self.incarnation_cd = False
 
+    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        if has_intro or self.incarnation or self.incarnation_cd:
+            self.logger.info(
+                f'switch priority max because has_intro {has_intro} incarnation {self.incarnation} incarnation_cd '
+                f'{self.incarnation_cd}')
+            return True
+        return super().must_switch(current_char, has_intro, target_low_con)
+
+    def can_switch(self, current_char=None, has_intro=False, target_low_con=False):
+        if has_intro or self.incarnation or self.incarnation_cd:
+            return True
+        return False
+
     def switch_next_char(self, **args):
         super().switch_next_char(free_intro=self.has_free_intro, target_low_con=True)
         self.has_free_intro = False
