@@ -96,7 +96,7 @@ class Aemeath(BaseChar):
         if self.has_intro:
             self.record_intro_liberation()
             self.continues_normal_attack(1.2)
-            if self.check_outro() in {'char_linnai', 'char_lupa'}:
+            if self.check_outro() in {'char_linnai', 'char_lupa', 'char_denia'}:
                 self.intro_time = 14
             if self.check_outro() in {'chang_changli', 'char_changli2'}:
                 self.intro_time = 10
