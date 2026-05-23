@@ -357,9 +357,42 @@ class BaseCombatTask(CombatCheck):
     def _has_switch_cd(self, current_char):
         return current_char.time_elapsed_accounting_for_freeze(current_char.last_perform) <= 1
 
+    def _target_has_switch_cd(self, char):
+        return char.time_elapsed_accounting_for_freeze(char.last_switch_time) <= 1
+
+    def _buff_remaining(self, char):
+        if char.buff_time <= 0 or not char.has_buff():
+            return 0
+        return max(0, char.buff_time - char.time_elapsed_accounting_for_freeze(char.last_buff_time))
+
+    def _lowest_buff_remaining_target(self, candidates):
+        buffers = [char for char in candidates if not char.is_main_dps and char.buff_time > 0]
+        if not buffers:
+            return None
+        return min(buffers, key=lambda char: (self._buff_remaining(char), char.last_switch_in_time, char.index))
+
+    def _unbuffed_non_main_target(self, current_char, candidates):
+        if current_char.is_main_dps or current_char.buff_time <= 0:
+            return None
+        unbuffed_non_main = [
+            char for char in candidates
+            if not char.is_main_dps and char.buff_time > 0
+            and not char.has_buff()
+        ]
+        return self._oldest_switch_target(unbuffed_non_main)
+
     def _choose_switch_target_by_rules(self, current_char, has_intro, candidates):
         if not candidates:
             return current_char
+
+        if current_char.is_main_dps:
+            lowest_buff_remaining = self._lowest_buff_remaining_target(candidates)
+            if lowest_buff_remaining:
+                return lowest_buff_remaining
+
+        unbuffed_non_main = self._unbuffed_non_main_target(current_char, candidates)
+        if unbuffed_non_main:
+            return unbuffed_non_main
 
         main_dps = [char for char in candidates if char.is_main_dps]
         if has_intro and main_dps:
@@ -377,15 +410,13 @@ class BaseCombatTask(CombatCheck):
             if not candidates:
                 return current_char
 
-        if current_char.is_main_dps:
-            target = self._main_dps_all_buffers_buffed_target(candidates)
-            if target:
-                return target
-
         return self._switch_rule_3_target(candidates, allow_healer=not has_intro or current_char.is_main_dps)
 
     def _choose_switch_target(self, current_char, has_intro, target_low_con=False):
-        candidates = [char for char in self.chars if char is not None and char != current_char]
+        candidates = [
+            char for char in self.chars
+            if char is not None and char != current_char
+        ]
         if not candidates:
             return current_char
 
@@ -410,6 +441,15 @@ class BaseCombatTask(CombatCheck):
             candidates = [char for char in candidates if char not in blocked]
             if not candidates:
                 return current_char
+
+        if has_intro:
+            main_dps = [char for char in candidates if char.is_main_dps]
+            if main_dps:
+                return self._oldest_switch_target(main_dps)
+
+        candidates = [char for char in candidates if not self._target_has_switch_cd(char)]
+        if not candidates:
+            return current_char
 
         return self._choose_switch_target_by_rules(current_char, has_intro, candidates)
 
