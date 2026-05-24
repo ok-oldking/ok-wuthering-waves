@@ -499,7 +499,6 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.click(0.89, 0.92, after_sleep=1)
             self.click(0.89, 0.92)
             self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
-            self._correct_direction_after_teleport()
             return
         self.send_key('m', after_sleep=2)
 
@@ -514,14 +513,6 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.click_box(box)
             self.wait_click_travel()
             self.wait_in_team_and_world(time_out=30)
-        self._correct_direction_after_teleport()
-
-    def _correct_direction_after_teleport(self):
-        """传送到boss后修正朝向。某些boss传送点朝向与boss方向不一致，需要额外转向。"""
-        boss = self.config.get('Boss')
-        if boss == 'Nameless Explorer':  # 无铭探索者传送到boss后需要额外向左转90度
-            self.sleep(0.5)
-            self.turn_direction('a')
 
     def click_boss_octagon(self):
         # === 1. 读取图像 ===
