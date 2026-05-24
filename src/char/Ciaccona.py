@@ -165,6 +165,12 @@ class Ciaccona(BaseChar):
 
     def in_outro(self):
         return self.time_elapsed_accounting_for_freeze(self.outrotime) < 30
+        
+    def need_fast_perform(self):
+        from src.char.Cartethyia import Cartethyia
+        if self.task.has_char(Cartethyia) and hasattr(Cartethyia, 'is_cartethyia'):
+            return Cartethyia.is_cartethyia
+        return False
 
 
 ciaccona_forte_color = {
