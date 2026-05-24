@@ -363,14 +363,14 @@ class BaseCombatTask(CombatCheck):
         ]
         return self._oldest_switch_target(unbuffed_non_main)
 
-    def _choose_intro_switch_target(self, must_targets, normal_targets, no_targets):
+    def _choose_intro_switch_target(self, must_targets, normal_targets):
         if must_targets:
             return self._oldest_switch_target(must_targets)
         for char_type in ('is_main_dps', 'is_sub_dps', 'is_healer'):
             target = self._oldest_switch_target([char for char in normal_targets if getattr(char, char_type)])
             if target:
                 return target
-        return self._oldest_switch_target(no_targets)
+        return None
 
     def _choose_switch_target_by_buff_time(self, current_char, candidates):
         if not candidates:
@@ -415,7 +415,7 @@ class BaseCombatTask(CombatCheck):
                 normal_targets.append(char)
 
         if has_intro:
-            return self._choose_intro_switch_target(must_targets, normal_targets, no_targets)
+            return self._choose_intro_switch_target(must_targets, normal_targets) or current_char
 
         if must_targets:
             candidates = must_targets

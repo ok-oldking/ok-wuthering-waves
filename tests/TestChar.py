@@ -640,7 +640,7 @@ class TestChar(TaskTestCase):
         self.assertEqual(combat._choose_switch_target(healer, False), sub_dps)
         self.assertEqual(combat._choose_switch_target(healer, True), main_dps)
 
-    def test_intro_switch_target_order_and_blocked_fallback(self):
+    def test_intro_switch_target_order_and_blocked_targets_are_respected(self):
         class Task:
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 if start < 0:
@@ -673,7 +673,7 @@ class TestChar(TaskTestCase):
 
         blocked_healer = BlockedChar(task, 1, char_type=CharType.HEALER)
         combat.chars = [current, blocked_healer, blocked_sub_dps, blocked_main_dps]
-        self.assertEqual(combat._choose_switch_target(current, True), blocked_healer)
+        self.assertEqual(combat._choose_switch_target(current, True), current)
 
     def test_priority_hooks_for_ciaccona_and_phrolova(self):
         class Task:
@@ -699,6 +699,25 @@ class TestChar(TaskTestCase):
 
         phrolova.last_liberation = time.time() - 15
         self.assertEqual(phrolova.get_switch_priority(current_char=current, has_intro=True), SwitchPriority.MUST)
+
+    def test_intro_does_not_switch_to_phrolova_during_liberation_lock(self):
+        class Task:
+            name = None
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                if start < 0:
+                    return 10000
+                return time.time() - start
+
+        task = Task()
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        current = BaseChar(task, 0, char_name='char_shorekeeper', char_type=CharType.HEALER)
+        phrolova = Phrolova(task, 1, char_type=CharType.MAIN_DPS)
+        phrolova.last_liberation = time.time() - 5
+        combat.chars = [current, phrolova]
+
+        self.assertEqual(phrolova.get_switch_priority(current_char=current, has_intro=True), SwitchPriority.NO)
+        self.assertEqual(combat._choose_switch_target(current, True), current)
 
     def test_aemeath_lib(self):
         self.task.do_reset_to_false()
