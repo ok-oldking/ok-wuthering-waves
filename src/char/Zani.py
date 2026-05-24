@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import math
 
-from src.char.BaseChar import BaseChar, forte_white_color
+from src.char.BaseChar import BaseChar, SwitchPriority, forte_white_color
 from ok import color_range_to_bound
 
 class State(Enum):
@@ -487,17 +487,12 @@ class Zani(BaseChar):
             kwargs['condition2'] = lambda: self.liberation_time_left() < 1.7
         self.wait_until(**kwargs)
 
-    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if self.in_liberation:
-            return True
-        return super().must_switch(current_char, has_intro, target_low_con)
-
-    def can_switch(self, current_char=None, has_intro=False, target_low_con=False):
-        if self.in_liberation:
-            return True
+            return SwitchPriority.MUST
         if has_intro and self.crisis_time_left() > 0:
-            return False
-        return super().can_switch(current_char, has_intro, target_low_con)
+            return SwitchPriority.NO
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def wait_switch(self):
         if self.has_intro and self.nightfall_time_left() > 0:

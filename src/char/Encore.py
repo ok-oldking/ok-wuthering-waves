@@ -1,6 +1,6 @@
 import time
 
-from src.char.BaseChar import BaseChar
+from src.char.BaseChar import BaseChar, SwitchPriority
 
 
 class Encore(BaseChar):
@@ -18,20 +18,15 @@ class Encore(BaseChar):
         super().switch_out(con_full=con_full)
         self.last_resonance = 0
 
-    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
-        if self.time_elapsed_accounting_for_freeze(self.last_heavy, True) < 4.6:
-            return False
-        if self.still_in_liberation() or self.can_resonance_step2():
-            self.logger.info(f'switch priority MAX because still in liberation')
-            return True
-        return super().must_switch(current_char, has_intro, target_low_con)
-
-    def can_switch(self, current_char=None, has_intro=False, target_low_con=False):
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         self.logger.debug(
             f'encore last heavy time {self.last_heavy} {self.time_elapsed_accounting_for_freeze(self.last_heavy, True)}')
         if self.time_elapsed_accounting_for_freeze(self.last_heavy, True) < 4.6:
-            return False
-        return super().can_switch(current_char, has_intro, target_low_con)
+            return SwitchPriority.NO
+        if self.still_in_liberation() or self.can_resonance_step2():
+            self.logger.info(f'switch priority MAX because still in liberation')
+            return SwitchPriority.MUST
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def do_perform(self):
         if self.has_intro:

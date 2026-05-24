@@ -180,7 +180,7 @@ class CombatCheck(BaseWWTask):
         try:
             return self.do_check_in_combat(target)
         except Exception as e:
-            logger.error(f'do_check_in_combat: {e}')
+            logger.error(f'do_check_in_combat:', e)
         finally:
             self.in_sleep_check = False
 

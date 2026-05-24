@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 from ok import color_range_to_bound
-from src.char.BaseChar import BaseChar, text_white_color
+from src.char.BaseChar import BaseChar, SwitchPriority, text_white_color
 
 
 class Zhezhi(BaseChar):
@@ -68,10 +68,10 @@ class Zhezhi(BaseChar):
         return self.char_carlotta.get_ready() or self.get_current_con() < 0.6 or (
                 self.is_con_full() and not self.char_carlotta.get_ready())
 
-    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if self.char_carlotta is not None and self.char_carlotta.get_ready():
-            return True
-        return super().must_switch(current_char, has_intro, target_low_con)
+            return SwitchPriority.MUST
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def do_perform_interlock(self):
         if self.has_intro:

@@ -10,7 +10,7 @@ from ok import color_range_to_bound
 from ok import safe_get
 from src import text_white_color
 from src.char import BaseChar
-from src.char.BaseChar import dot_color  # noqa
+from src.char.BaseChar import SwitchPriority, dot_color  # noqa
 from src.char.CharFactory import get_char_by_pos
 from src.combat.CombatCheck import CombatCheck
 from src.task.BaseWWTask import isolate_white_text_to_black, binarize_for_matching
@@ -339,24 +339,6 @@ class BaseCombatTask(CombatCheck):
 
         return self._oldest_switch_target(candidates)
 
-    def _main_dps_all_buffers_buffed_target(self, candidates):
-        non_main_buffers = [char for char in candidates if not char.is_main_dps and char.buff_time > 0]
-        if not non_main_buffers or any(not char.has_buff() for char in non_main_buffers):
-            return None
-
-        main_dps = [char for char in candidates if char.is_main_dps]
-        if main_dps:
-            return self._oldest_switch_target(main_dps)
-
-        sub_dps = [char for char in candidates if char.is_sub_dps]
-        if sub_dps:
-            return self._oldest_switch_target(sub_dps)
-
-        return None
-
-    def _has_switch_cd(self, current_char):
-        return current_char.time_elapsed_accounting_for_freeze(current_char.last_perform) <= 1
-
     def _target_has_switch_cd(self, char):
         return char.time_elapsed_accounting_for_freeze(char.last_switch_time) <= 1
 
@@ -381,7 +363,16 @@ class BaseCombatTask(CombatCheck):
         ]
         return self._oldest_switch_target(unbuffed_non_main)
 
-    def _choose_switch_target_by_rules(self, current_char, has_intro, candidates):
+    def _choose_intro_switch_target(self, must_targets, normal_targets, no_targets):
+        if must_targets:
+            return self._oldest_switch_target(must_targets)
+        for char_type in ('is_main_dps', 'is_sub_dps', 'is_healer'):
+            target = self._oldest_switch_target([char for char in normal_targets if getattr(char, char_type)])
+            if target:
+                return target
+        return self._oldest_switch_target(no_targets)
+
+    def _choose_switch_target_by_buff_time(self, current_char, candidates):
         if not candidates:
             return current_char
 
@@ -394,23 +385,12 @@ class BaseCombatTask(CombatCheck):
         if unbuffed_non_main:
             return unbuffed_non_main
 
-        main_dps = [char for char in candidates if char.is_main_dps]
-        if has_intro and main_dps:
-            return self._oldest_switch_target(main_dps)
+        if current_char.is_sub_dps or current_char.is_healer:
+            main_dps = [char for char in candidates if char.is_main_dps]
+            if main_dps:
+                return self._oldest_switch_target(main_dps)
 
-        if (current_char.is_sub_dps or current_char.is_healer) and main_dps and not self._has_switch_cd(current_char):
-            return self._oldest_switch_target(main_dps)
-
-        if has_intro and current_char.is_sub_dps:
-            return self._oldest_switch_target(main_dps) or self._oldest_switch_target(
-                [char for char in candidates if not char.is_healer]) or self._oldest_switch_target(candidates)
-
-        if has_intro and not current_char.is_main_dps:
-            candidates = [char for char in candidates if not char.is_healer]
-            if not candidates:
-                return current_char
-
-        return self._switch_rule_3_target(candidates, allow_healer=not has_intro or current_char.is_main_dps)
+        return self._switch_rule_3_target(candidates)
 
     def _choose_switch_target(self, current_char, has_intro, target_low_con=False):
         candidates = [
@@ -420,38 +400,35 @@ class BaseCombatTask(CombatCheck):
         if not candidates:
             return current_char
 
-        forced = []
-        blocked = []
+        must_targets = []
+        normal_targets = []
+        no_targets = []
         for char in candidates:
-            must_switch = char.must_switch(current_char=current_char, has_intro=has_intro,
-                                           target_low_con=target_low_con)
-            can_switch = char.can_switch(current_char=current_char, has_intro=has_intro,
-                                         target_low_con=target_low_con)
-            logger.debug(f'switch_next_char hooks: {char} must_switch {must_switch} can_switch {can_switch}')
-            if must_switch is True and can_switch is False:
-                continue
-            if must_switch is True:
-                forced.append(char)
-            elif can_switch is False:
-                blocked.append(char)
+            switch_priority = char.get_switch_priority(current_char=current_char, has_intro=has_intro,
+                                                        target_low_con=target_low_con)
+            logger.debug(f'switch_next_char hook: {char} priority {switch_priority}')
+            if switch_priority == SwitchPriority.MUST:
+                must_targets.append(char)
+            elif switch_priority == SwitchPriority.NO:
+                no_targets.append(char)
+            else:
+                normal_targets.append(char)
 
-        if forced:
-            candidates = forced
+        if has_intro:
+            return self._choose_intro_switch_target(must_targets, normal_targets, no_targets)
+
+        if must_targets:
+            candidates = must_targets
         else:
-            candidates = [char for char in candidates if char not in blocked]
+            candidates = normal_targets
             if not candidates:
                 return current_char
 
-        if has_intro:
-            main_dps = [char for char in candidates if char.is_main_dps]
-            if main_dps:
-                return self._oldest_switch_target(main_dps)
+        candidates_without_switch_cd = [char for char in candidates if not self._target_has_switch_cd(char)]
+        if candidates_without_switch_cd:
+            candidates = candidates_without_switch_cd
 
-        candidates = [char for char in candidates if not self._target_has_switch_cd(char)]
-        if not candidates:
-            return current_char
-
-        return self._choose_switch_target_by_rules(current_char, has_intro, candidates)
+        return self._choose_switch_target_by_buff_time(current_char, candidates)
 
     def _apply_intro_flags(self, current_char, switch_to, has_intro):
         switch_to.has_intro = has_intro
@@ -594,7 +571,7 @@ class BaseCombatTask(CombatCheck):
         Returns:
             bool: 如果在冷却中则返回 True, 否则 False。
         """
-        return self.get_cd(box_name, char_index) > 0
+        return self.get_cd(box_name, char_index) > 0.2
 
     def get_current_char(self, raise_exception=False) -> BaseChar:
         """获取当前操作的角色对象。

@@ -1,6 +1,6 @@
 import time
 
-from src.char.BaseChar import BaseChar
+from src.char.BaseChar import BaseChar, SwitchPriority
 
 
 class ShoreKeeper(BaseChar):
@@ -10,12 +10,12 @@ class ShoreKeeper(BaseChar):
         self.dodge_count = 0
         self.attribute = 0
 
-    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         self.decide_teammate()
         current_name = current_char.char_name if current_char else None
         if self.attribute == 2 and has_intro and current_name in {'Augusta', 'char_augusta'}:
-            return True
-        return super().must_switch(current_char, has_intro, target_low_con)
+            return SwitchPriority.MUST
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def decide_teammate(self):
         from src.char.Augusta import Augusta

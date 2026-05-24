@@ -3,6 +3,7 @@ import time
 from qfluentwidgets import FluentIcon
 
 from ok import TriggerTask, Logger
+from src.char.CharFactory import char_names
 from src.scene.WWScene import WWScene
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharDeadException
 
@@ -30,8 +31,22 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
             'Check Levitator': 'Toggle the levitator and verify if the character is floating',
         }
         self.op_index = 0
+        self.char_features_warmed_up = False
+
+    def warm_up_char_features(self):
+        if self.char_features_warmed_up:
+            return
+        try:
+            for char_name in char_names:
+                self.get_feature_by_name(char_name)
+        except Exception as e:
+            logger.warning(f'warm_up_char_features failed: {e}')
+            return
+        self.char_features_warmed_up = True
+        logger.info(f'warm_up_char_features loaded {len(char_names)} character templates')
 
     def run(self):
+        self.warm_up_char_features()
         ret = False
         if not self.scene.in_team(self.in_team_and_world):
             return ret

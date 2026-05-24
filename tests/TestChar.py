@@ -3,12 +3,13 @@ import unittest
 from config import config
 from ok.test.TaskTestCase import TaskTestCase
 from src.Labels import Labels
-from src.char.BaseChar import BaseChar, CharType, get_default_buff_time
-from src.char.CharFactory import _get_buff_time, _get_char_type, char_dict
+from src.char.BaseChar import BaseChar, CharType, SwitchPriority, get_default_buff_time
+from src.char.CharFactory import _get_buff_time, _get_char_type, char_dict, char_names
 from src.char.Aemeath import Aemeath
 from src.char.Chisa import Chisa
 from src.char.Ciaccona import Ciaccona
 from src.char.Phrolova import Phrolova
+from src.char.Verina import Verina
 from src.task.AutoCombatTask import AutoCombatTask
 
 config['debug'] = True
@@ -19,13 +20,13 @@ def return_true():
 
 
 class BlockedChar(BaseChar):
-    def can_switch(self, current_char=None, has_intro=False, target_low_con=False):
-        return False
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        return SwitchPriority.NO
 
 
 class ForcedChar(BaseChar):
-    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
-        return True
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        return SwitchPriority.MUST
 
 
 class TestChar(TaskTestCase):
@@ -52,6 +53,18 @@ class TestChar(TaskTestCase):
         task.char_config = {'Iuno C6': True}
         self.assertEqual(_get_char_type(task, char_dict[Labels.char_iuno]), CharType.MAIN_DPS)
         self.assertEqual(_get_buff_time(task, char_dict[Labels.char_iuno]), 0)
+
+    def test_auto_combat_warms_char_features_only_once(self):
+        task = AutoCombatTask.__new__(AutoCombatTask)
+        task.char_features_warmed_up = False
+        loaded = []
+        task.get_feature_by_name = loaded.append
+
+        task.warm_up_char_features()
+        task.warm_up_char_features()
+
+        self.assertTrue(task.char_features_warmed_up)
+        self.assertEqual(loaded, list(char_names))
 
     def test_switch_priority_rules(self):
         class Task:
@@ -157,6 +170,50 @@ class TestChar(TaskTestCase):
         self.assertGreater(chisa.last_buff_time, 0)
         self.assertEqual(chisa.actions, [('echo', {'time_out': 0}), ('switch', {})])
 
+    def test_verina_heavy_attack_has_eight_second_interval(self):
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+        class TrackingVerina(Verina):
+            def __init__(self, task):
+                super().__init__(task, 0)
+                self.heavy_count = 0
+                self.click_count = 0
+
+            def is_con_full(self):
+                return False
+
+            def click_liberation(self, **kwargs):
+                return False
+
+            def click_resonance(self, **kwargs):
+                return False, None
+
+            def click_echo(self, **kwargs):
+                return False
+
+            def is_mouse_forte_full(self):
+                return True
+
+            def heavy_attack(self, duration=0.6):
+                self.heavy_count += 1
+
+            def click(self):
+                self.click_count += 1
+
+        verina = TrackingVerina(Task())
+        self.assertFalse(verina.do_cycle())
+        self.assertEqual(verina.heavy_count, 1)
+
+        self.assertTrue(verina.do_cycle())
+        self.assertEqual(verina.heavy_count, 1)
+        self.assertEqual(verina.click_count, 1)
+
+        verina.last_heavy = time.time() - verina.HEAVY_ATTACK_INTERVAL
+        self.assertFalse(verina.do_cycle())
+        self.assertEqual(verina.heavy_count, 2)
+
     def test_chisa_support_liberation_records_buff_without_dps_sequence(self):
         class Task:
             char_config = {'Chisa DPS': False}
@@ -221,77 +278,78 @@ class TestChar(TaskTestCase):
         chisa.do_perform()
         self.assertTrue(chisa.called)
 
-    def test_aemeath_heavy_liberation_requires_ten_seconds_and_is_consumed(self):
+    def test_aemeath_stored_intro_unlocks_lib1_within_fourteen_seconds_and_is_consumed(self):
         class Task:
+            combat_start = time.time()
+
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
-                if start < 0:
-                    return 10000
                 return time.time() - start
 
-        class TrackingAemeath(Aemeath):
-            def __init__(self, task):
-                super().__init__(task, 0)
-                self.liberation_casts = 0
-                self.breaks = 0
-
-            def click_liberation(self, **kwargs):
-                self.liberation_casts += 1
-                return True
-
-            def f_break(self):
-                self.breaks += 1
-
-        aemeath = TrackingAemeath(Task())
-        aemeath.last_liber = time.time()
-        self.assertFalse(aemeath.lib())
-        self.assertEqual(aemeath.liberation_casts, 0)
-
-        aemeath.record_heavy_liberation()
-        aemeath.heavy_liberation_time = time.time() - 9.9
-        self.assertFalse(aemeath.lib())
-
-        aemeath.heavy_liberation_time = time.time() - 10
-        self.assertTrue(aemeath.lib())
-        self.assertEqual(aemeath.heavy_liberation_time, -1)
-        self.assertEqual(aemeath.liberation_casts, 1)
-        self.assertEqual(aemeath.breaks, 1)
-        self.assertGreater(aemeath.last_liber, 0)
-        self.assertFalse(aemeath.lib())
-        self.assertEqual(aemeath.liberation_casts, 1)
-
-    def test_aemeath_liberation_casts_without_trigger_after_twenty_seconds(self):
-        class Task:
-            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
-                if start < 0:
-                    return 10000
-                return time.time() - start
+            def find_one(self, template, threshold=None):
+                return False
 
         class TrackingAemeath(Aemeath):
-            def __init__(self, task):
-                super().__init__(task, 0)
-                self.liberation_casts = 0
-
             def click_liberation(self, **kwargs):
-                self.liberation_casts += 1
                 return True
 
             def f_break(self):
                 pass
 
-        aemeath = TrackingAemeath(Task())
-        aemeath.last_liber = time.time() - 19.9
+        aemeath = TrackingAemeath(Task(), 0)
+        aemeath.has_intro = True
+        aemeath.record_intro_liberation()
+        self.assertTrue(aemeath.lib())
+        self.assertEqual(aemeath.intro_liberation_time, -1)
+
+        expired = TrackingAemeath(Task(), 0)
+        expired.intro_liberation_time = time.time() - expired.INTRO_LIBERATION_DELAY - 0.1
+        self.assertFalse(expired.lib())
+
+        aemeath.last_liber = time.time() - aemeath.LIBERATION_FORCE_DURATION
+        self.assertTrue(aemeath.lib())
+
+    def test_aemeath_force_liberation_starts_at_combat_entry_and_lib2_bypasses_cooldown(self):
+        class Task:
+            def __init__(self):
+                self.combat_start = time.time()
+                self.lib2 = False
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+            def find_one(self, template, threshold=None):
+                return self.lib2 and template == 'aemeath_lib2'
+
+        class TrackingAemeath(Aemeath):
+            def click_liberation(self, **kwargs):
+                return True
+
+            def f_break(self):
+                pass
+
+        task = Task()
+        aemeath = TrackingAemeath(task, 0)
+        task.combat_start = time.time() - aemeath.LIBERATION_FORCE_DURATION + 0.1
         self.assertFalse(aemeath.lib())
 
-        aemeath.last_liber = time.time() - 20
+        task.combat_start = time.time() - aemeath.LIBERATION_FORCE_DURATION
         self.assertTrue(aemeath.lib())
-        self.assertEqual(aemeath.liberation_casts, 1)
 
-    def test_aemeath_heavy_state_persists_until_liberation_cast(self):
+        aemeath.pending_lib2 = True
+        task.lib2 = True
+        self.assertTrue(aemeath.lib())
+        self.assertFalse(aemeath.pending_lib2)
+
+    def test_aemeath_heavy_prepares_lib2_only_when_liberation_cooldown_is_ready(self):
         class Task:
+            def __init__(self):
+                self.lib2 = False
+
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
-                if start < 0:
-                    return 10000
                 return time.time() - start
+
+            def find_one(self, template, threshold=None):
+                return self.lib2 and template == 'aemeath_lib2'
 
         class TrackingAemeath(Aemeath):
             def has_long_action(self):
@@ -306,79 +364,124 @@ class TestChar(TaskTestCase):
             def f_break(self):
                 pass
 
-        aemeath = TrackingAemeath(Task(), 0)
+        task = Task()
+        aemeath = TrackingAemeath(task, 0)
         self.assertTrue(aemeath.handle_heavy())
-        self.assertGreater(aemeath.heavy_liberation_time, 0)
-
-        aemeath.switch_out()
-        self.assertGreater(aemeath.heavy_liberation_time, 0)
-
-        aemeath.reset_state()
-        self.assertGreater(aemeath.heavy_liberation_time, 0)
+        self.assertFalse(aemeath.pending_lib2)
 
         aemeath.last_liber = time.time()
-        aemeath.heavy_liberation_time = time.time() - 10
-        self.assertTrue(aemeath.lib())
-        self.assertEqual(aemeath.heavy_liberation_time, -1)
+        self.assertTrue(aemeath.handle_heavy())
+        self.assertFalse(aemeath.pending_lib2)
 
-    def test_aemeath_intro_unlocks_after_fifteen_seconds_and_is_not_consumed(self):
+        aemeath.last_liber = time.time() - aemeath.LIBERATION_COOLDOWN
+        self.assertTrue(aemeath.handle_heavy())
+        self.assertTrue(aemeath.pending_lib2)
+
+        aemeath.last_enhance_e = time.time() - 13
+        self.assertTrue(aemeath.should_wait_for_enhance_e())
+        aemeath.last_liber = time.time()
+        task.lib2 = True
+        self.assertTrue(aemeath.lib())
+        self.assertFalse(aemeath.pending_lib2)
+        self.assertFalse(aemeath.should_wait_for_enhance_e())
+
+    def test_aemeath_switch_priority_and_wait_near_lib2_cooldown(self):
         class Task:
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
-                if start < 0:
-                    return 10000
                 return time.time() - start
+
+        aemeath = Aemeath(Task(), 0)
+        self.assertFalse(aemeath.should_wait_for_lib2())
+        self.assertEqual(aemeath.get_switch_priority(), SwitchPriority.NORMAL)
+
+        aemeath.last_liber = time.time() - (
+                aemeath.LIBERATION_COOLDOWN - aemeath.LIB2_PREPARE_WINDOW - 0.1)
+        self.assertFalse(aemeath.should_wait_for_lib2())
+        self.assertEqual(aemeath.get_switch_priority(), SwitchPriority.NORMAL)
+
+        aemeath.last_liber = time.time() - (aemeath.LIBERATION_COOLDOWN - aemeath.LIB2_PREPARE_WINDOW + 0.1)
+        self.assertTrue(aemeath.should_wait_for_lib2())
+        self.assertEqual(aemeath.get_switch_priority(), SwitchPriority.MUST)
+
+        aemeath.record_heavy_liberation()
+        aemeath.last_liber = time.time()
+        self.assertEqual(aemeath.get_switch_priority(), SwitchPriority.MUST)
+
+        class NoLoopAemeath(Aemeath):
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return 100
+
+        waiting = NoLoopAemeath(Task(), 0)
+        waiting.last_liber = time.time()
+        waiting.perform_everything()
+        self.assertTrue(waiting.should_wait)
+
+        ordinary = NoLoopAemeath(Task(), 0)
+        ordinary.should_wait_for_enhance_e = lambda: False
+        ordinary.perform_everything()
+        self.assertFalse(ordinary.should_wait)
+
+        overdue = NoLoopAemeath(Task(), 0)
+        overdue.should_wait_for_enhance_e = lambda: True
+        overdue.perform_everything()
+        self.assertTrue(overdue.should_wait)
+
+    def test_aemeath_initial_lib2_cooldown_starts_at_combat_entry(self):
+        class Task:
+            def __init__(self):
+                self.combat_start = time.time()
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+        task = Task()
+        aemeath = Aemeath(task, 0)
+        self.assertGreater(aemeath.lib2_cooldown_left(), aemeath.LIB2_PREPARE_WINDOW)
+        self.assertFalse(aemeath.should_wait_for_lib2())
+        self.assertEqual(aemeath.get_switch_priority(), SwitchPriority.NORMAL)
+
+        task.combat_start = time.time() - (
+                aemeath.LIBERATION_COOLDOWN - aemeath.LIB2_PREPARE_WINDOW + 0.1)
+        self.assertTrue(aemeath.should_wait_for_lib2())
+        self.assertEqual(aemeath.get_switch_priority(), SwitchPriority.MUST)
+
+    def test_aemeath_recent_stored_intro_attempts_lib1_before_enhance_e(self):
+        class Task:
+            def find_one(self, template, threshold=None):
+                return template == 'aemeath_e1'
 
         class TrackingAemeath(Aemeath):
             def __init__(self, task):
                 super().__init__(task, 0)
-                self.liberation_casts = 0
+                self.actions = []
+                self.done = False
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return 100 if self.done else time.time() - start
 
             def click_liberation(self, **kwargs):
-                self.liberation_casts += 1
+                self.actions.append('lib1')
                 return True
+
+            def handle_heavy(self):
+                return False
+
+            def cycle_start(self):
+                pass
+
+            def cycle_sleep(self):
+                self.done = True
 
             def f_break(self):
                 pass
 
         aemeath = TrackingAemeath(Task())
-        aemeath.last_liber = time.time()
-        aemeath.record_intro_liberation()
-        aemeath.intro_liberation_time = time.time() - 14.9
-        self.assertFalse(aemeath.lib())
+        aemeath.intro_liberation_time = time.time() - aemeath.INTRO_LIBERATION_DELAY + 0.1
+        aemeath.perform_everything()
+        self.assertEqual(aemeath.actions, ['lib1'])
+        self.assertEqual(aemeath.intro_liberation_time, -1)
 
-        aemeath.intro_liberation_time = time.time() - 15
-        self.assertTrue(aemeath.lib())
-        intro_liberation_time = aemeath.intro_liberation_time
-        aemeath.last_liber = time.time()
-        self.assertTrue(aemeath.lib())
-        self.assertEqual(aemeath.intro_liberation_time, intro_liberation_time)
-        self.assertEqual(aemeath.liberation_casts, 2)
-
-    def test_aemeath_intro_records_persistent_liberation_state(self):
-        class Task:
-            def wait_until(self, *args, **kwargs):
-                return False
-
-        class TrackingAemeath(Aemeath):
-            def check_outro(self):
-                return 'null'
-
-            def perform_everything(self):
-                pass
-
-            def switch_next_char(self):
-                pass
-
-        aemeath = TrackingAemeath(Task(), 0)
-        aemeath.has_intro = True
-        aemeath.do_perform()
-        intro_liberation_time = aemeath.intro_liberation_time
-        self.assertGreater(intro_liberation_time, 0)
-
-        aemeath.reset_state()
-        self.assertEqual(aemeath.intro_liberation_time, intro_liberation_time)
-
-    def test_switch_can_and_must_hooks(self):
+    def test_switch_priority_hooks(self):
         class Task:
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 if start < 0:
@@ -393,9 +496,12 @@ class TestChar(TaskTestCase):
         forced = ForcedChar(task, 3, char_type=CharType.SUB_DPS)
         combat.chars = [current, healer, sub_dps, forced]
 
-        self.assertTrue(current.can_switch())
-        self.assertFalse(current.must_switch())
+        self.assertEqual(current.get_switch_priority(), SwitchPriority.NORMAL)
         self.assertEqual(combat._choose_switch_target(current, False), forced)
+
+        forced.last_switch_time = time.time()
+        self.assertEqual(combat._choose_switch_target(current, False), forced)
+        forced.last_switch_time = -1
 
         combat.chars = [current, healer, sub_dps]
         self.assertEqual(combat._choose_switch_target(current, False), sub_dps)
@@ -434,6 +540,24 @@ class TestChar(TaskTestCase):
 
         healer.last_buff_time = time.time()
         self.assertEqual(combat._choose_switch_target(healer, False), sub_dps)
+        self.assertEqual(combat._choose_switch_target(sub_dps, False), main_dps)
+
+    def test_non_intro_current_action_time_does_not_override_buff_rotation(self):
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                if start < 0:
+                    return 10000
+                return time.time() - start
+
+        task = Task()
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        main_dps = BaseChar(task, 0, char_type=CharType.MAIN_DPS)
+        healer = BaseChar(task, 1, char_type=CharType.HEALER)
+        sub_dps = BaseChar(task, 2, char_type=CharType.SUB_DPS)
+        combat.chars = [main_dps, healer, sub_dps]
+
+        sub_dps.last_perform = time.time()
+        healer.last_buff_time = time.time()
         self.assertEqual(combat._choose_switch_target(sub_dps, False), main_dps)
 
     def test_main_dps_prefers_lowest_buff_remaining_eligible_buffer(self):
@@ -478,6 +602,26 @@ class TestChar(TaskTestCase):
         sub_dps.last_switch_time = time.time()
         self.assertEqual(combat._choose_switch_target(healer, False), main_dps)
 
+    def test_ciaccona_can_switch_after_liberation_when_only_target_has_switch_cd(self):
+        class Task:
+            name = None
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                if start < 0:
+                    return 10000
+                return time.time() - start
+
+        task = Task()
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        ciaccona = Ciaccona(task, 0, char_type=CharType.SUB_DPS)
+        main_dps = BaseChar(task, 1, char_type=CharType.MAIN_DPS)
+        combat.chars = [ciaccona, main_dps]
+
+        ciaccona.in_liberation = True
+        ciaccona.last_liberation = time.time()
+        main_dps.last_switch_time = time.time()
+        self.assertEqual(combat._choose_switch_target(ciaccona, False), main_dps)
+
     def test_intro_switches_to_main_dps_ignoring_target_switch_cd(self):
         class Task:
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
@@ -496,7 +640,42 @@ class TestChar(TaskTestCase):
         self.assertEqual(combat._choose_switch_target(healer, False), sub_dps)
         self.assertEqual(combat._choose_switch_target(healer, True), main_dps)
 
-    def test_priority_compat_hooks_for_ciaccona_and_phrolova(self):
+    def test_intro_switch_target_order_and_blocked_fallback(self):
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                if start < 0:
+                    return 10000
+                return time.time() - start
+
+        task = Task()
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        current = BaseChar(task, 0, char_type=CharType.HEALER)
+        healer = BaseChar(task, 1, char_type=CharType.HEALER)
+        sub_dps = BaseChar(task, 2, char_type=CharType.SUB_DPS)
+        main_dps = BaseChar(task, 3, char_type=CharType.MAIN_DPS)
+        forced = ForcedChar(task, 4, char_type=CharType.HEALER)
+
+        for char in (healer, sub_dps, main_dps, forced):
+            char.last_switch_time = time.time()
+        combat.chars = [current, healer, sub_dps, main_dps, forced]
+        self.assertEqual(combat._choose_switch_target(current, True), forced)
+
+        combat.chars = [current, healer, sub_dps, main_dps]
+        self.assertEqual(combat._choose_switch_target(current, True), main_dps)
+
+        blocked_main_dps = BlockedChar(task, 3, char_type=CharType.MAIN_DPS)
+        combat.chars = [current, healer, sub_dps, blocked_main_dps]
+        self.assertEqual(combat._choose_switch_target(current, True), sub_dps)
+
+        blocked_sub_dps = BlockedChar(task, 2, char_type=CharType.SUB_DPS)
+        combat.chars = [current, healer, blocked_sub_dps, blocked_main_dps]
+        self.assertEqual(combat._choose_switch_target(current, True), healer)
+
+        blocked_healer = BlockedChar(task, 1, char_type=CharType.HEALER)
+        combat.chars = [current, blocked_healer, blocked_sub_dps, blocked_main_dps]
+        self.assertEqual(combat._choose_switch_target(current, True), blocked_healer)
+
+    def test_priority_hooks_for_ciaccona_and_phrolova(self):
         class Task:
             name = None
 
@@ -512,15 +691,14 @@ class TestChar(TaskTestCase):
         ciaccona.attribute = 2
         ciaccona.in_liberation = True
         ciaccona.last_liberation = time.time() - 5
-        self.assertFalse(ciaccona.can_switch(current_char=current, has_intro=False))
+        self.assertEqual(ciaccona.get_switch_priority(current_char=current, has_intro=False), SwitchPriority.NO)
 
         phrolova = Phrolova(task, 2)
         phrolova.last_liberation = time.time() - 5
-        self.assertFalse(phrolova.can_switch(current_char=current, has_intro=False))
+        self.assertEqual(phrolova.get_switch_priority(current_char=current, has_intro=False), SwitchPriority.NO)
 
         phrolova.last_liberation = time.time() - 15
-        self.assertTrue(phrolova.must_switch(current_char=current, has_intro=True))
-        self.assertTrue(phrolova.can_switch(current_char=current, has_intro=True))
+        self.assertEqual(phrolova.get_switch_priority(current_char=current, has_intro=True), SwitchPriority.MUST)
 
     def test_aemeath_lib(self):
         self.task.do_reset_to_false()

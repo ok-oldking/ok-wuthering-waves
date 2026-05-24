@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 from ok import color_range_to_bound
-from src.char.BaseChar import BaseChar
+from src.char.BaseChar import BaseChar, SwitchPriority
 
 
 class Carlotta(BaseChar):
@@ -165,12 +165,12 @@ class Carlotta(BaseChar):
         else:
             return not self.task.has_cd('echo', self.index)
 
-    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if self.press_w == -1:
             self.decide_teammate()
         if has_intro and current_char and current_char.char_name in {'char_zhezhi'}:
-            return True
-        return super().must_switch(current_char, has_intro, target_low_con)
+            return SwitchPriority.MUST
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def decide_teammate(self):
         from src.char.Zhezhi import Zhezhi

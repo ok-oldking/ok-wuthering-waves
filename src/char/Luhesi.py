@@ -1,6 +1,6 @@
 import time
 
-from src.char.BaseChar import BaseChar
+from src.char.BaseChar import BaseChar, SwitchPriority
 
 
 class Luhesi(BaseChar):
@@ -21,10 +21,10 @@ class Luhesi(BaseChar):
     def luhesi_lib_available(self):
         return self.available('luhesi_lib', check_cd=False) and not self.has_cd('liberation')
 
-    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if time.time() - self.last_intro > 24 and has_intro:
-            return True
-        return super().must_switch(current_char, has_intro, target_low_con)
+            return SwitchPriority.MUST
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def perform_everything(self):
         self.continues_normal_attack(1.1)

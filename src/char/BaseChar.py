@@ -18,6 +18,12 @@ class CharType(StrEnum):
     HEALER = 'Healer'  # 治疗者
 
 
+class SwitchPriority(StrEnum):
+    NORMAL = 'normal'
+    MUST = 'must'
+    NO = 'no'
+
+
 class Elements(IntEnum):
     SPECTRO = 0
     ELECTRIC = 1
@@ -85,6 +91,8 @@ class BaseChar:
         self.logger = Logger.get_logger(self.name)
         self.check_f_on_switch = True
         self.cycle_start_time = 0.0
+        self.cycle_time_out = 1.1
+        self.cycle_intro_time = 1.2
 
     def set_char_type(self, char_type=CharType.MAIN_DPS):
         """设置角色定位，默认为主输出。"""
@@ -120,14 +128,26 @@ class BaseChar:
         return self.buff_time > 0 and self.last_buff_time > 0 and (
                 self.time_elapsed_accounting_for_freeze(self.last_buff_time) < self.buff_time)
 
+    def cycle(self):
+        self.cycle_start()
+        while self.time_elapsed_accounting_for_freeze(
+                self.cycle_start_time) < self.cycle_time_out + self.cycle_intro_time:
+            if self.do_cycle():
+                self.cycle_sleep()
+                continue
+            else:
+                break
+        self.switch_next_char()
+
+    def do_cycle(self):
+        return
+
     def cycle_start(self):
         self.cycle_start_time = time.time()
 
     def cycle_sleep(self, duration=0.1):
         to_sleep = duration - (time.time() - self.cycle_start_time)
-        if to_sleep > 0.05:
-            self.check_combat()
-        self.sleep(duration - (time.time() - self.cycle_start_time))
+        self.sleep(to_sleep)
 
     def flying_based_on_resonance(self):
         if not self.has_cd('resonance') and not self.task.box_highlighted('resonance'):
@@ -601,13 +621,9 @@ class BaseChar:
         """获取共鸣技能按键 (代理到 task.get_resonance_key)。"""
         return self.task.get_resonance_key()
 
-    def can_switch(self, current_char=None, has_intro=False, target_low_con=False):
-        """Whether this character is allowed as a switch target."""
-        return True
-
-    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
-        """Whether this character should be preferred as a switch target."""
-        return False
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        """Return whether this character is a normal, required, or blocked switch target."""
+        return SwitchPriority.NORMAL
 
     def resonance_available(self):
         """判断共鸣技能是否可用。

@@ -1,6 +1,6 @@
 import time
 
-from src.char.BaseChar import BaseChar
+from src.char.BaseChar import BaseChar, SwitchPriority
 
 
 class Brant(BaseChar):
@@ -107,21 +107,15 @@ class Brant(BaseChar):
             click = 1 - click
             self.task.next_frame()
 
-    def must_switch(self, current_char=None, has_intro=False, target_low_con=False):
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         self.decide_teammate()
         if self.time_elapsed_accounting_for_freeze(self.perform_anchor, True) < 4:
-            return False
+            return SwitchPriority.NO
         if self.still_in_liberation():
-            return True
+            return SwitchPriority.MUST
         if has_intro and current_char and current_char.char_name in {'char_lupa'}:
-            return True
-        return super().must_switch(current_char, has_intro, target_low_con)
-
-    def can_switch(self, current_char=None, has_intro=False, target_low_con=False):
-        self.decide_teammate()
-        if self.time_elapsed_accounting_for_freeze(self.perform_anchor, True) < 4:
-            return False
-        return super().can_switch(current_char, has_intro, target_low_con)
+            return SwitchPriority.MUST
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def decide_teammate(self):
         if self.attribute > 0:

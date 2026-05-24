@@ -4,7 +4,7 @@ import numpy as np
 import math
 from enum import Enum
 
-from src.char.BaseChar import BaseChar, forte_white_color
+from src.char.BaseChar import BaseChar, SwitchPriority, forte_white_color
 from ok import color_range_to_bound
 
 
@@ -305,12 +305,12 @@ class Phoebe(BaseChar):
                 self.state["outro"] += 1
         return super().switch_next_char(*args, **kwargs)
 
-    def can_switch(self, current_char=None, has_intro=False, target_low_con=False):
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if not has_intro and self.last_outro_time > 0 and self.time_elapsed_accounting_for_freeze(
                 self.last_outro_time, intro_motion_freeze=True) < 4.5:
-            self.logger.info('performing outro, can_switch False')
-            return False
-        return super().can_switch(current_char, has_intro, target_low_con)
+            self.logger.info('performing outro, switch priority no')
+            return SwitchPriority.NO
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def check_middle_star(self):
         if self.star_available:
