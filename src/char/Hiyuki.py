@@ -1,15 +1,17 @@
 import time
 
-from src.char.BaseChar import BaseChar
+from src.char.BaseChar import BaseChar, SwitchPriority
 
 class Hiyuki(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.lib_permission = False
+        self.lib_permission = True
 
     def do_perform(self):
         if self.has_intro:
             self.continues_normal_attack(1)
+        if self.has_long_action2() and self.lib_permission and self.liberation_available():
+            self.hold_liberation()
         if self.has_long_action() and not self.has_cd('liberation'):
             self.perform_standard()
         if self.has_long_action2():
@@ -18,8 +20,10 @@ class Hiyuki(BaseChar):
             
             
     def perform_standard(self):        
-        start = time.time()
-        while self.has_long_action() and self.time_elapsed_accounting_for_freeze(start) < 6:
+        timeout = 6
+        if self.has_intro and self.check_outro() in {'char_linnai'}:
+            timeout = 18
+        while self.has_long_action() and self.time_elapsed_accounting_for_freeze(self.last_perform) < timeout:
             self.click_echo(time_out=0)
             if self.click_liberation():
                 self.logger.debug('hiyuki perform lib1')
@@ -39,10 +43,11 @@ class Hiyuki(BaseChar):
             
     def perform_lib(self):  
         start = time.time()
-        timeout = 18
-        if self.lib_permission:
-            timeout = 3
-        while self.has_long_action2() and self.time_elapsed_accounting_for_freeze(start) < timeout:
+        timeout = 6
+        if self.has_intro and self.check_outro() in {'char_linnai'}:
+            timeout = 18
+        while self.has_long_action2() and self.time_elapsed_accounting_for_freeze(self.last_perform) < timeout:
+            self.f_break()
             self.click_echo(time_out=0)
             self.logger.debug(f'hiyuki find mouse_forte{self.task.find_one('hiyuki_lib_forte', threshold=0.7)}')
             if self.lib_permission and self.liberation_available():
@@ -50,16 +55,21 @@ class Hiyuki(BaseChar):
                 self.logger.debug('hiyuki perform lib2')
                 return
             if self.click_resonance(send_click=False, time_out=0)[0]:
-                pass
+                if timeout == 6 and self.time_elapsed_accounting_for_freeze(start) > 2:
+                    return
+                self.continues_normal_attack(0.3)
             elif self.lib_heavy_available():
                 self.heavy_click_forte(check_fun=self.lib_heavy_available)
                 self.lib_permission = True
-                if self.liberation_available():
+                if self.task.wait_until(self.liberation_available, post_action=self.click, time_out=0.5):
                     self.hold_liberation()
                     self.logger.debug('hiyuki perform lib2')
                 return
             elif bool(self.task.find_one('hiyuki_left', threshold=0.5)):
-                self.click()
+                self.task.wait_until(lambda: not bool(self.task.find_one('hiyuki_left', threshold=0.5)),
+                 post_action=self.click, time_out=3)
+                if timeout == 6 and self.time_elapsed_accounting_for_freeze(start) > 2:
+                    return 
                 self.sleep(0.1)
             elif bool(self.task.find_one('hiyuki_right', threshold=0.5)):
                 self.task.click(key="right")
@@ -90,4 +100,8 @@ class Hiyuki(BaseChar):
         self.add_freeze_duration(start, time.time() - start)
         self.logger.info(f'hold_liberation end {time.time() - start}')
         return True
-        
+
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        if has_intro and current_char and current_char.char_name in {'char_linnai'}:
+            return SwitchPriority.MUST
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
