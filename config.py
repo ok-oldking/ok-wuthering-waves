@@ -2,9 +2,7 @@ import os
 import re
 from pathlib import Path
 
-import numpy as np
-
-from ok import ConfigOption
+from ok import Box, ConfigOption
 from src.task.process_feature import process_feature
 
 version = "dev"
@@ -15,38 +13,10 @@ def calculate_pc_exe_path(running_path):
     return str(game_exe_folder / "Wuthering Waves.exe")
 
 
-def make_bottom_right_black(frame):
-    """
-    Changes a portion of the frame's pixels at the bottom right to black.
-
-    Args:
-        frame: The input frame (NumPy array) from OpenCV.
-
-    Returns:
-        The modified frame with the bottom-right corner blackened.  Returns the original frame
-        if there's an error (e.g., invalid frame).
-    """
-    try:
-        height, width = frame.shape[:2]  # Get height and width
-
-        # Calculate the size of the black rectangle
-        black_width = int(0.13 * width)
-        black_height = int(0.025 * height)
-
-        # Calculate the starting coordinates of the rectangle
-        start_x = width - black_width
-        start_y = height - black_height
-
-        # Create a black rectangle (NumPy array of zeros)
-        black_rect = np.zeros((black_height, black_width, frame.shape[2]), dtype=frame.dtype)  # Ensure same dtype
-
-        # Replace the bottom-right portion of the frame with the black rectangle
-        frame[start_y:height, start_x:width] = black_rect
-
-        return frame
-    except Exception as e:
-        print(f"Error processing frame: {e}")
-        return frame
+def blur_area(width, height):
+    blur_width = int(0.12 * width)
+    blur_height = int(0.024 * height)
+    return Box(width * 0.879, height * 0.976, blur_width * 0.973, blur_height * 0.994)
 
 
 key_config_option = ConfigOption('Game Hotkey Config', {
@@ -65,11 +35,6 @@ char_config_option = ConfigOption('Character Config', {
     'Chisa DPS': False,
 }, description='Character Config')
 
-pick_echo_config_option = ConfigOption('Pick Echo Config', {
-    'Use OCR': True
-}, config_description={
-    'Use OCR': 'Turn on if your CPU is Powerful for more accuracy'}, description='Turn on to enable auto pick echo')
-
 monthly_card_config_option = ConfigOption('Monthly Card Config', {
     'Check Monthly Card': True,
     'Monthly Card Time': 4
@@ -82,7 +47,7 @@ config = {
     'debug': False,  # Optional, default: False
     'use_gui': True,
     'config_folder': 'configs',
-    'screenshot_processor': make_bottom_right_black,
+    'blur_area': blur_area,
     'gui_icon': 'icon.png',
     'global_configs': [key_config_option, char_config_option, pick_echo_config_option, monthly_card_config_option],
     'ocr': {
