@@ -2,7 +2,7 @@ import re
 import cv2
 from qfluentwidgets import FluentIcon
 from ok import Logger
-from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharRevivedException
+from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
@@ -57,7 +57,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         if self._capture_mode:
             self.pick_f(handle_claim=False)
             if self.has_echo_notification():
-                raise NotInCombatException
+                return self.reset_to_false(reason='echo captured')
         return True
 
     def has_echo_notification(self):
