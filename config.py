@@ -49,7 +49,7 @@ config = {
     'config_folder': 'configs',
     'blur_area': blur_area,
     'gui_icon': 'icon.png',
-    'global_configs': [key_config_option, char_config_option, pick_echo_config_option, monthly_card_config_option],
+    'global_configs': [key_config_option, char_config_option, monthly_card_config_option],
     'ocr': {
         'lib': 'onnxocr',
         'auto_simplify': True,

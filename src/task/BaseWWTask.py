@@ -29,7 +29,6 @@ class BaseWWTask(BaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.pick_echo_config = self.get_global_config('Pick Echo Config')
         self.monthly_card_config = self.get_global_config('Monthly Card Config')
         self.char_config = self.get_global_config('Character Config')
         self.key_config = self.get_global_config('Game Hotkey Config')  # 游戏热键配置
