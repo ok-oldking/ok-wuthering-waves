@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deploy"
+  short_description: "Commit changes and create release tags safely."
+  default_prompt: "Use $deploy to commit the current changes and tag a release version."
