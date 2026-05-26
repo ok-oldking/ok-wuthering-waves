@@ -76,10 +76,10 @@ class Phrolova(BaseChar):
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         self.logger.debug(f'Phrolova last_liberation {self.time_elapsed_accounting_for_freeze(self.last_liberation)}')
-        if self._cantarella_outro_ready(current_char, has_intro):
-            return SwitchPriority.MUST
         if self.time_elapsed_accounting_for_freeze(self.last_liberation) < 24:
             return SwitchPriority.NO
+        if self._cantarella_outro_ready(current_char, has_intro):
+            return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def resonance_available(self):
