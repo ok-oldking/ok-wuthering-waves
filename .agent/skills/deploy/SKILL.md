@@ -1,11 +1,11 @@
 ---
 name: deploy
-description: Commit completed repository changes and create the next annotated version tag. Use when the user asks to deploy, release, publish a version, create a release tag, run `deploy` for a stable release, `deploy beta` for a beta prerelease, or `deploy alpha`/`release alpha` for an alpha prerelease.
+description: Commit completed repository changes, create the next annotated version tag, and push the commit and tag to the publishing remote. Use when the user asks to deploy, release, publish a version, create or push a release tag, run `deploy` for a stable release, `deploy beta` for a beta prerelease, or `deploy alpha`/`release alpha` for an alpha prerelease.
 ---
 
 # Deploy
 
-Use this workflow to turn validated local changes into one commit and one annotated version tag. Do not push unless the user explicitly requests it.
+Use this workflow to turn validated local changes into one commit and one annotated version tag, then push both to the publishing remote. If the user explicitly requests a local-only deployment, stop after creating the local tag.
 
 ## Variants
 
@@ -60,15 +60,20 @@ Use `scripts/next_tag.py` to calculate tags; it ignores tags outside these forma
    git show --no-patch --decorate HEAD
    ```
 
-7. Report the commit subject and tag. Push the commit and tag only when explicitly requested:
+7. Push the commit and annotated tag to the publishing remote, typically `origin`, unless the user explicitly requested local-only operation:
 
    ```powershell
    git push origin HEAD "<calculated-tag>"
    ```
 
+   Verify that the push succeeded before reporting the deployment complete.
+
+8. Report the commit subject, tag, remote, and whether the push succeeded.
+
 ## Guardrails
 
 - Never rewrite, move, or delete an existing tag as part of deployment.
 - Never include merge commits when choosing the commit-message language.
-- Never infer a successful release from a tag alone; report local tagging separately from pushing or CI publishing.
+- Never infer a successful release from a local tag alone; report push success separately from CI publishing.
+- Do not push when the user explicitly requests a local-only commit or tag.
 - Keep stable, beta, and alpha numbering independent except that the latest stable release closes older or equal prerelease base versions.
