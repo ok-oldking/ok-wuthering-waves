@@ -832,7 +832,8 @@ class TestChar(TaskTestCase):
         self.assertEqual(phrolova.get_switch_priority(current_char=current, has_intro=False), SwitchPriority.NO)
 
         phrolova.last_liberation = time.time() - 15
-        self.assertEqual(phrolova.get_switch_priority(current_char=current, has_intro=True), SwitchPriority.NO)
+        self.assertEqual(phrolova.get_switch_priority(current_char=current, has_intro=True), SwitchPriority.MUST)
+        self.assertEqual(phrolova.get_switch_priority(current_char=current, has_intro=False), SwitchPriority.NO)
 
         phrolova.last_liberation = time.time() - 25
         self.assertEqual(phrolova.get_switch_priority(current_char=current, has_intro=True), SwitchPriority.MUST)
