@@ -49,11 +49,26 @@ class Linnai(BaseChar):
         
             if self.task.wait_until(lambda: self.click_resonance()[0],
              post_action=self.click, time_out=2):
-                self.task.wait_until(lambda: self.click_resonance()[0] or self.is_con_full(),
-                 post_action=self.click, time_out=3)
+                self.wait_after_resonance_kick()
+                second_kick = False
+
+                def click_second_resonance():
+                    nonlocal second_kick
+                    if self.is_con_full():
+                        return True
+                    second_kick = self.click_resonance()[0]
+                    return second_kick
+
+                self.task.wait_until(click_second_resonance, post_action=self.click, time_out=3)
+                if second_kick:
+                    self.wait_after_resonance_kick()
         if not self.is_con_full() and self.click_liberation():
             self.task.wait_until(self.is_con_full, post_action=self.click_with_interval, time_out=1.2) 
         return True
+
+    def wait_after_resonance_kick(self):
+        self.sleep(0.3)
+        self.wait_down()
 
     def check_res(self):
         if not self.task.in_team_and_world():

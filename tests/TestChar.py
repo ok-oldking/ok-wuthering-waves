@@ -8,6 +8,7 @@ from src.char.CharFactory import _get_buff_time, _get_char_type, char_dict, char
 from src.char.Aemeath import Aemeath
 from src.char.Chisa import Chisa
 from src.char.Ciaccona import Ciaccona
+from src.char.Linnai import Linnai
 from src.char.Phrolova import Phrolova
 from src.char.Verina import Verina
 from src.task.AutoCombatTask import AutoCombatTask
@@ -837,6 +838,54 @@ class TestChar(TaskTestCase):
 
         phrolova.last_liberation = time.time() - 25
         self.assertEqual(phrolova.get_switch_priority(current_char=current, has_intro=True), SwitchPriority.MUST)
+
+    def test_linnai_waits_after_resonance_kick(self):
+        class Task:
+            def wait_until(self, condition, post_action=None, time_out=0, **kwargs):
+                return condition()
+
+            def jump(self):
+                pass
+
+        class TestLinnai(Linnai):
+            def __init__(self):
+                super().__init__(Task(), 0)
+                self.actions = []
+                self.resonance_clicks = 0
+
+            def check_res(self):
+                return True
+
+            def is_color_full(self):
+                return True
+
+            def is_forte_full(self):
+                return False
+
+            def is_con_full(self):
+                return False
+
+            def click_resonance(self, **kwargs):
+                self.resonance_clicks += 1
+                return True, 0, False
+
+            def click_liberation(self, **kwargs):
+                return False
+
+            def click(self, *args, **kwargs):
+                pass
+
+            def sleep(self, sec, check_combat=True):
+                self.actions.append(('sleep', sec))
+
+            def wait_down(self, click=True):
+                self.actions.append(('wait_down', click))
+
+        linnai = TestLinnai()
+        self.assertTrue(linnai.perform_under_intro())
+        self.assertEqual(linnai.resonance_clicks, 2)
+        self.assertEqual(linnai.actions, [('sleep', 0.3), ('wait_down', True),
+                                          ('sleep', 0.3), ('wait_down', True)])
 
     def test_intro_does_not_switch_to_phrolova_during_liberation_lock(self):
         class Task:
