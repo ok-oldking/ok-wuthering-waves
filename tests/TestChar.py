@@ -116,9 +116,10 @@ class TestChar(TaskTestCase):
         self.assertEqual(combat._choose_switch_target(current, True), main_dps)
         current.last_perform = 0
 
-        current.last_perform = time.time()
+        forced = ForcedChar(task, 4, char_type=CharType.MAIN_DPS)
+        task.chars = [current, healer, sub_dps, main_dps, forced]
         self.assertTrue(current.need_fast_perform())
-        current.last_perform = 0
+        task.chars = [current, healer, sub_dps, main_dps]
         self.assertFalse(current.need_fast_perform())
 
         current.set_char_type(CharType.MAIN_DPS)

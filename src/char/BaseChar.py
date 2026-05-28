@@ -731,7 +731,15 @@ class BaseChar:
             self.task.click(interval=0.1)
 
     def need_fast_perform(self):
-        return self.time_elapsed_accounting_for_freeze(self.last_perform) <= 1
+        current_char = self.task.get_current_char(raise_exception=False) if hasattr(self.task, 'get_current_char') else self
+        for char in getattr(self.task, 'chars', []):
+            if char is None or char == current_char:
+                continue
+            if char.get_switch_priority(current_char=current_char, has_intro=False,
+                                        target_low_con=False) == SwitchPriority.MUST:
+                self.logger.info(f'In lock with {char}')
+                return True
+        return False
 
     def wait_switch_cd(self):
         since_last_switch = self.time_elapsed_accounting_for_freeze(self.last_perform)
