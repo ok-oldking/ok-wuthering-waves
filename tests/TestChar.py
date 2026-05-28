@@ -519,6 +519,139 @@ class TestChar(TaskTestCase):
         combat.chars = [current, blocked_main_dps, allowed_sub_dps]
         self.assertEqual(combat._choose_switch_target(current, True), allowed_sub_dps)
 
+    def test_intro_refresh_reselects_must_target_before_switch_key_is_sent(self):
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                if start < 0:
+                    return 10000
+                return time.time() - start
+
+            def get_current_con(self):
+                return 0
+
+            def is_con_full(self):
+                return True
+
+        class IntroBlockedChar(BaseChar):
+            def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+                return SwitchPriority.NO if has_intro else SwitchPriority.NORMAL
+
+        class IntroForcedChar(BaseChar):
+            def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+                return SwitchPriority.MUST if has_intro else SwitchPriority.NORMAL
+
+        task = Task()
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        current = BaseChar(task, 0, char_type=CharType.MAIN_DPS)
+        blocked = IntroBlockedChar(task, 1, char_type=CharType.HEALER)
+        forced = IntroForcedChar(task, 2, char_type=CharType.MAIN_DPS)
+        combat.chars = [current, blocked, forced]
+        actions = []
+        combat.sent_keys = []
+        combat.in_liberation = False
+        combat.update_lib_portrait_icon = lambda: None
+        combat.check_combat = lambda: None
+        combat.log_debug = lambda *args, **kwargs: None
+        combat.click = lambda: None
+        combat.sleep = lambda *args, **kwargs: None
+        combat.add_freeze_duration = lambda *args, **kwargs: None
+        current.f_break = lambda **kwargs: actions.append('f_break')
+
+        def send_key(key):
+            actions.append('switch_key')
+            combat.sent_keys.append(key)
+
+        combat.send_key = send_key
+        combat.in_team = lambda: (True, combat.sent_keys[-1] - 1 if combat.sent_keys else current.index, 3)
+
+        combat.switch_next_char(current)
+
+        self.assertEqual(combat.sent_keys, [forced.index + 1])
+        self.assertEqual(actions, ['f_break', 'switch_key'])
+        self.assertTrue(forced.has_intro)
+        self.assertGreater(current.last_outro_time, 0)
+
+    def test_intro_refresh_does_not_switch_to_newly_blocked_only_target(self):
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                if start < 0:
+                    return 10000
+                return time.time() - start
+
+            def get_current_con(self):
+                return 0
+
+            def is_con_full(self):
+                return True
+
+        class IntroBlockedChar(BaseChar):
+            def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+                return SwitchPriority.NO if has_intro else SwitchPriority.NORMAL
+
+        task = Task()
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        current = BaseChar(task, 0, char_type=CharType.MAIN_DPS)
+        blocked = IntroBlockedChar(task, 1, char_type=CharType.HEALER)
+        combat.chars = [current, blocked]
+        combat.sent_keys = []
+        combat.update_lib_portrait_icon = lambda: None
+        combat.check_combat = lambda: None
+        combat.in_team = lambda: (True, current.index, 2)
+        combat.send_key = lambda key: combat.sent_keys.append(key)
+        combat.sleep = lambda *args, **kwargs: None
+        current.f_break = lambda **kwargs: None
+        current.continues_normal_attack = lambda *args, **kwargs: None
+
+        combat.switch_next_char(current)
+
+        self.assertEqual(combat.sent_keys, [])
+
+    def test_non_intro_switch_breaks_after_success_before_switch_time_is_recorded(self):
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                if start < 0:
+                    return 10000
+                return time.time() - start
+
+            def get_current_con(self):
+                return 0
+
+            def is_con_full(self):
+                return False
+
+        task = Task()
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        current = BaseChar(task, 0, char_type=CharType.MAIN_DPS)
+        target = BaseChar(task, 1, char_type=CharType.HEALER)
+        combat.chars = [current, target]
+        actions = []
+        switched = []
+        f_break_time = []
+        combat.in_liberation = False
+        combat.update_lib_portrait_icon = lambda: None
+        combat.check_combat = lambda: None
+        combat.log_debug = lambda *args, **kwargs: None
+        combat.click = lambda: None
+        combat.sleep = lambda *args, **kwargs: None
+
+        def f_break(**kwargs):
+            actions.append('f_break')
+            f_break_time.append(time.time())
+
+        def send_key(key):
+            actions.append('switch_key')
+            switched.append(key)
+
+        current.f_break = f_break
+        combat.send_key = send_key
+        combat.in_team = lambda: (True, target.index if switched else current.index, 2)
+
+        combat.switch_next_char(current)
+
+        self.assertEqual(switched, [target.index + 1])
+        self.assertEqual(actions, ['switch_key', 'f_break'])
+        self.assertGreaterEqual(current.last_switch_time, f_break_time[0])
+
     def test_non_main_char_can_chain_to_an_unbuffed_other_buffer(self):
         class Task:
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):

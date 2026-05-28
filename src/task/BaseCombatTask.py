@@ -475,12 +475,24 @@ class BaseCombatTask(CombatCheck):
             if not (isinstance(switch_to, ShoreKeeper) and has_intro):
                 self.check_combat()
             now = time.time()
-            current_char.f_break(check_f_on_switch=True)
             _, current_index, _ = self.in_team()
             if current_index == current_char.index:
                 self.update_lib_portrait_icon()
-                if not switch_to.has_intro:
-                    self._apply_intro_flags(current_char, switch_to, current_char.is_con_full())
+                refreshed_has_intro = has_intro or current_char.is_con_full()
+                if refreshed_has_intro != has_intro:
+                    has_intro = refreshed_has_intro
+                    switch_to = self._choose_switch_target(current_char, has_intro,
+                                                           target_low_con=target_low_con)
+                    if not switch_to or switch_to == current_char:
+                        logger.warning(
+                            f"{current_char} can't find next char to switch to after intro refresh, "
+                            f"performing too fast add a normal attack")
+                        current_char.continues_normal_attack(0.2)
+                        return
+                    logger.info(f'switch_next_char refreshed target after intro became available: {switch_to}')
+                self._apply_intro_flags(current_char, switch_to, has_intro)
+                if has_intro:
+                    current_char.f_break(check_f_on_switch=True)
 
             if now - last_click > 0.1:
                 self.send_key(switch_to.index + 1)
@@ -507,6 +519,8 @@ class BaseCombatTask(CombatCheck):
                     self.raise_not_in_combat('failed switch chars')
             else:
                 self.in_liberation = False
+                if not has_intro:
+                    current_char.f_break(check_f_on_switch=True)
                 current_char.switch_out(con_full=has_intro)
                 switch_to.is_current_char = True
                 switch_to.last_switch_in_time = time.time()
