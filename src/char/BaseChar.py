@@ -96,9 +96,16 @@ class BaseChar:
 
     def set_char_type(self, char_type=CharType.MAIN_DPS):
         """设置角色定位，默认为主输出。"""
-        self.char_type = CharType(char_type or CharType.MAIN_DPS)
+        self._char_type = CharType(char_type or CharType.MAIN_DPS)
         if not self._buff_time_configured:
             self._buff_time = get_default_buff_time(self.char_type)
+
+    def get_char_type(self):
+        return self._char_type
+
+    @property
+    def char_type(self):
+        return self.get_char_type()
 
     def set_buff_time(self, buff_time=None):
         self._buff_time_configured = buff_time is not None
@@ -120,9 +127,12 @@ class BaseChar:
     def is_sub_dps(self):
         return self.char_type == CharType.SUB_DPS
 
+    def get_buff_time(self):
+        return self._buff_time
+
     @property
     def buff_time(self):
-        return self._buff_time
+        return self.get_buff_time()
 
     def has_buff(self):
         return self.buff_time > 0 and self.last_buff_time > 0 and (
