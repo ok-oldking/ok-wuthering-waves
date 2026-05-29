@@ -72,7 +72,7 @@ class Hiyuki(BaseChar):
                     return 
                 self.sleep(0.1)
             elif bool(self.task.find_one('hiyuki_right', threshold=0.5)):
-                self.task.click(key="right")
+                self.task.click(key="right", interval=1.0)
                 self.sleep(0.1)
             else:
                 self.click()           
