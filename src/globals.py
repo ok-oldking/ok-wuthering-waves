@@ -14,6 +14,7 @@ class Globals(QObject):
     def __init__(self, exit_event):
         super().__init__()
         self._yolo_model = None
+        self._position_detector = None
         self.mini_map_arrow = None
         self.logged_in = False
 
@@ -35,6 +36,14 @@ class Globals(QObject):
 
     def yolo_detect(self, image, threshold=0.6, label=-1):
         return self.yolo_model.detect(image, threshold=threshold, label=label)
+
+    @property
+    def position_detector(self):
+        if self._position_detector is None:
+            from src.utils.positionDetector import PositionDetector
+            logger.info("Initializing PositionDetector")
+            self._position_detector = PositionDetector()
+        return self._position_detector
 
 
 if __name__ == "__main__":

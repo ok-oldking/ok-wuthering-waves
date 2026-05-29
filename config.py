@@ -153,5 +153,6 @@ config = {
         ["src.task.AutoLoginTask", "AutoLoginTask"],
         ["src.task.MouseResetTask", "MouseResetTask"],
         ["src.task.FastTravelTask", "FastTravelTask"],
+        ["src.task.MapOverlayTask", "MapOverlayTask"],
     ], 'scene': ["src.scene.WWScene", "WWScene"],
 }
