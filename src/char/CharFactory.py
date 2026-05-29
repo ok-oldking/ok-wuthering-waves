@@ -131,16 +131,11 @@ char_names = char_dict.keys()
 
 
 def _get_char_type(task, info):
-    char_config = getattr(task, 'char_config', {})
-    if info.get('cls') is Iuno and char_config.get('Iuno C6'):
-        return CharType.MAIN_DPS
     return info.get('char_type', CharType.MAIN_DPS)
 
 
 def _get_buff_time(task, info):
     char_type = _get_char_type(task, info)
-    if info.get('cls') is Iuno and char_type == CharType.MAIN_DPS:
-        return get_default_buff_time(CharType.MAIN_DPS)
     return info.get('buff_time', get_default_buff_time(char_type))
 
 

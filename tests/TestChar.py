@@ -8,6 +8,7 @@ from src.char.CharFactory import _get_buff_time, _get_char_type, char_dict, char
 from src.char.Aemeath import Aemeath
 from src.char.Chisa import Chisa
 from src.char.Ciaccona import Ciaccona
+from src.char.Iuno import Iuno
 from src.char.Linnai import Linnai
 from src.char.Phrolova import Phrolova
 from src.char.Verina import Verina
@@ -52,8 +53,14 @@ class TestChar(TaskTestCase):
         self.assertEqual(_get_buff_time(task, dict(char_dict[Labels.char_mortefi], buff_time=12)), 12)
 
         task.char_config = {'Iuno C6': True}
-        self.assertEqual(_get_char_type(task, char_dict[Labels.char_iuno]), CharType.MAIN_DPS)
-        self.assertEqual(_get_buff_time(task, char_dict[Labels.char_iuno]), 0)
+        iuno = Iuno(task, 0, char_type=char_dict[Labels.char_iuno]['char_type'],
+                    buff_time=char_dict[Labels.char_iuno]['buff_time'])
+        self.assertEqual(iuno.char_type, CharType.MAIN_DPS)
+        self.assertEqual(iuno.buff_time, 0)
+
+        task.char_config = {'Iuno C6': False}
+        self.assertEqual(iuno.char_type, CharType.SUB_DPS)
+        self.assertEqual(iuno.buff_time, get_default_buff_time(CharType.SUB_DPS))
 
     def test_auto_combat_warms_char_features_only_once(self):
         task = AutoCombatTask.__new__(AutoCombatTask)

@@ -895,7 +895,7 @@ class BaseWWTask(BaseTask):
         # Function to check if a component forms a ring
 
     def find_monthly_card(self):
-        return self.find_one('monthly_card', threshold=0.8, horizontal_variance=0.05, vertical_variance=0.05)
+        return self.find_one('monthly_card', threshold=0.65, horizontal_variance=0.05, vertical_variance=0.05)
 
     def handle_monthly_card(self):
         monthly_card = self.find_monthly_card()
@@ -934,8 +934,26 @@ class BaseWWTask(BaseTask):
 
     def open_boss_book(self, name, after_sleep=1):
         self.log_info(f'open_boss_book {name}')
-        self.wait_click_feature(f'book_{name}', vertical_variance=0.05, after_sleep=after_sleep,
-                                raise_if_not_found=False)
+        x = 0.24
+        self.sleep(0.4)
+        if name == 'wuyin':
+            y = 0.49
+        elif name == 'canxiang':
+            y = 0.81
+        elif name == 'zhange':
+            y = 0.6
+        elif name == 'mengyan':
+            y = 0.7
+        elif name == 'moni':
+            y = 0.28
+        elif name == 'canxiang':
+            y = 0.81
+        elif name == 'qiangdi':
+            y = 0.39
+        else:
+            raise Exception(f'unknown_lang {name}')
+
+        self.click_relative(x, y, after_sleep=after_sleep, name=name)
 
     def openF2Book(self, feature="gray_book_all_monsters", opened=False):
         if hasattr(self, 'reset_to_false'):
