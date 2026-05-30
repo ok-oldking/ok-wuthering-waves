@@ -272,6 +272,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         raise RuntimeError('Teleport to boss failed')
 
     def walk_until_f_or_combat(self, direction='w', time_out=20):
+        if self.wait_until(lambda: self.in_combat(target=True) or self.in_combat() or self.find_f_with_text(),
+                           time_out=1.5, raise_if_not_found=False):
+            if self.in_combat(target=True) or self.in_combat():
+                return 'combat'
+            return 'f'
+
         self.middle_click(after_sleep=0.2)
         self.send_key_down(direction)
         self.sleep(0.1)
@@ -292,7 +298,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         raise RuntimeError('Teleport to boss failed: can not walk to combat or F')
 
     def enter_configured_boss_realm_from_f(self):
-        if not self.find_f_with_text():
+        if not self.wait_until(self.find_f_with_text, time_out=2, raise_if_not_found=False):
             raise RuntimeError('Teleport to boss failed: can not find F before entering realm')
         self.send_key('f', after_sleep=3)
         self.click_configured_boss_level()
