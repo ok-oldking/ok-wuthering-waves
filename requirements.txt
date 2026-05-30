@@ -9,7 +9,7 @@ ok-script==1.0.148
 OpenCC==1.2.0
 onnxocr-ppocrv5==0.0.18
     # via -r .\requirements.in
-pyappify==1.0.3
+pyappify==1.0.4
     # via ok-script
 pynput==1.8.2
 six==1.17.0
