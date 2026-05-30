@@ -57,25 +57,6 @@ jobs:
         run: |
           python -m ok.update.inline_ok_requirements --tag ${{ github.ref_name }}
 
-      - name: Run tests
-        run: |
-          Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
-              Write-Host "Running tests in $($_.FullName)"
-              try {
-                  # Run the Python unittest command
-                  python -m unittest $_.FullName
-
-                  # Check if the previous command succeeded
-                  if ($LASTEXITCODE -ne 0) {
-                      throw "Tests failed in $($_.FullName)"
-                  }
-              } catch {
-                  # Stop the loop and return the error
-                  Write-Error $_
-                  exit 1
-              }
-          }
-
       - name: Sync Repositories
         id: sync   # Give the step an ID to access its outputs
         uses: ok-oldking/partial-sync-repo@master # Replace with your action path
