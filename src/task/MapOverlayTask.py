@@ -1,12 +1,17 @@
+import json
 import math
+import os
 import time
 from collections import deque
 
+import cv2
+import numpy as np
+
 from qfluentwidgets import FluentIcon
 
-from ok import TriggerTask, Logger, og, get_path_relative_to_exe
+from ok import TriggerTask, Logger, og, get_path_relative_to_exe, Box
 from src.task.BaseWWTask import BaseWWTask
-from src.utils.MapItemOverlay import MapItemOverlay
+from src.utils.MapItemOverlay import MapItemOverlay, ITEM_COLORS
 
 logger = Logger.get_logger(__name__)
 
@@ -16,6 +21,12 @@ OUTLIER_RELATIVE_FACTOR = 2.0
 OUTLIER_FIXED_THRESHOLD = 200
 
 OVERLAY_DRAW_KEY = "map_items"
+
+MAP_DIR = get_path_relative_to_exe('assets', 'stitched')
+
+MAP_REGION_SIZE = 1000
+FRAME_CROP_SIZE = 400
+FALLBACK_MAX_FAILURES = 3
 
 
 def _parse_position(text):
@@ -30,6 +41,45 @@ def _parse_position(text):
 
 def _dist2d(a, b):
     return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+
+
+def _load_coords_dict(stitched_dir):
+    coords_dict = {}
+    for name in os.listdir(stitched_dir):
+        if not name.endswith('_coords.json'):
+            continue
+        map_id = name.replace('_coords.json', '')
+        path = os.path.join(stitched_dir, name)
+        try:
+            with open(path, 'r') as f:
+                d = json.load(f)
+            coords_dict[map_id] = d
+        except Exception:
+            logger.warning(f"Failed to load coords: {path}")
+    return coords_dict
+
+
+CONFIDENCE_THRESHOLD = 0.9
+
+BIG_MAP_COLOR_CHECKS = [
+    ((0.030, 0.094), (98, 150, 166)),
+    ((0.890, 0.059), (249, 249, 238)),
+    ((0.939, 0.931), (255, 255, 255)),
+    ((0.035, 0.891), (236, 237, 235)),
+]
+BIG_MAP_COLOR_TOLERANCE = 15
+
+
+def _filter_candidate_maps(ocr_pos, coords_dict):
+    game_x = ocr_pos[0] * 100
+    game_y = ocr_pos[1] * 100
+    candidates = []
+    for map_id, d in coords_dict.items():
+        mn = d.get('min', [0, 0])
+        mx = d.get('max', [0, 0])
+        if mn[0] <= game_x <= mx[0] and mn[1] <= game_y <= mx[1]:
+            candidates.append((map_id, d))
+    return candidates
 
 
 class MapOverlayTask(TriggerTask, BaseWWTask):
@@ -47,15 +97,24 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             'Auto map scale': True,
             'Map scale (pixels per 1000 units)': 11.45,
             'Item type filter': ['qzx_01', 'qzx_02', 'qzx_03', 'qzx_04', 'cx_0'],
+            'Map overlay fallback': False,
+            'Feature algorithm': 'SURF',
         })
         self.config_type['Item type filter'] = {'type': 'multi_selection', 'options': [
             'qzx_01', 'qzx_02', 'qzx_03', 'qzx_04', 'cx_0',
+        ]}
+        self.config_type['Feature algorithm'] = {'type': 'drop_down', 'options': [
+            'SURF', 'SIFT',
         ]}
         self._window = None
         self._last_valid = None
         self._consecutive_far = 0
         self._overlay = None
         self._overlay_registered = False
+        self._fallback_failures = 0
+        self._locked_map_id = None
+        self._engines = {}
+        self._coords_dict = None
 
     def _detections_per_second(self):
         interval = self.config.get('Detect interval (ms)')
@@ -135,26 +194,212 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         self._last_valid = filtered[-1]
         return self._last_valid
 
+    def _ensure_coords(self):
+        if self._coords_dict is not None:
+            return
+        self._coords_dict = _load_coords_dict(MAP_DIR)
+        logger.info(f"[MapFallback] loaded {len(self._coords_dict)} coords from {MAP_DIR}: {list(self._coords_dict.keys())}")
+
+    def _get_engine(self, map_id):
+        if map_id in self._engines:
+            return self._engines[map_id]
+
+        algo = self.config.get('Feature algorithm', 'SURF').upper()
+        assets_dir = get_path_relative_to_exe('src', 'match_engine', 'assets')
+        map_path = os.path.join(MAP_DIR, f"{map_id}.png")
+
+        if algo == 'SIFT':
+            from src.match_engine import SiftEngine
+            engine = SiftEngine(
+                map_id=map_id,
+                map_path=map_path,
+                assets_dir=assets_dir,
+            )
+        else:
+            from src.match_engine import SurfEngine
+            engine = SurfEngine(
+                map_id=map_id,
+                map_path=map_path,
+                assets_dir=assets_dir,
+            )
+
+        self._engines[map_id] = engine
+        return engine
+
+    def _try_map_match(self, player_pos):
+        self._ensure_coords()
+        if not self._coords_dict:
+            logger.warning("[MapFallback] no coords dict loaded")
+            return None
+
+        game_x = player_pos[0] * 100
+        game_y = player_pos[1] * 100
+
+        if self._locked_map_id is not None:
+            candidates = [(self._locked_map_id, self._coords_dict[self._locked_map_id])]
+            logger.info(f"[MapFallback] using locked map={self._locked_map_id} OCR=({player_pos[0]},{player_pos[1]})")
+        else:
+            candidates = _filter_candidate_maps(player_pos, self._coords_dict)
+            if not candidates:
+                logger.warning(f"[MapFallback] no candidate maps for game=({game_x},{game_y})")
+                return None
+            logger.info(
+                f"[MapFallback] OCR=({player_pos[0]},{player_pos[1]}) game=({game_x},{game_y}) "
+                f"candidates={[c[0] for c in candidates]}"
+            )
+
+        h, w = self.frame.shape[:2]
+        cx, cy = w // 2, h // 2
+        half = FRAME_CROP_SIZE // 2
+        cropped = self.frame[cy - half:cy + half, cx - half:cx + half]
+
+        algo = self.config.get('Feature algorithm', 'SURF')
+
+        for map_id, coords_d in candidates:
+            coords_min = coords_d.get('min', [0, 0])
+            coords_max = coords_d.get('max', [0, 0])
+
+            try:
+                engine = self._get_engine(map_id)
+            except Exception as e:
+                logger.warning(f"[MapFallback] failed to init engine for map {map_id}: {e}")
+                continue
+
+            scale = coords_d['scale'][0]
+            offset_x = coords_d['offset'][0]
+            offset_y = coords_d['offset'][1]
+            pixel_x = (game_x - offset_x) / scale
+            pixel_y = (game_y - offset_y) / scale
+
+            half_r = MAP_REGION_SIZE // 2
+            region = (int(pixel_x - half_r), int(pixel_y - half_r), MAP_REGION_SIZE, MAP_REGION_SIZE)
+
+            logger.info(
+                f"[MapFallback] trying map={map_id} "
+                f"bounds=({coords_min[0]:.0f},{coords_min[1]:.0f})~({coords_max[0]:.0f},{coords_max[1]:.0f}) "
+                f"features={engine.feature_count} "
+                f"game_to_pixel=({pixel_x:.0f},{pixel_y:.0f}) "
+                f"region=({region[0]},{region[1]},{region[2]}x{region[3]})"
+            )
+
+            try:
+                result = engine.match_array(cropped, region=region, crop_size=0)
+            except Exception as e:
+                logger.warning(f"[MapFallback] match_array error for map {map_id}: {e}")
+                continue
+
+            logger.info(
+                f"[MapFallback] map={map_id} algo={algo} "
+                f"success={result.success} matches={result.match_count} "
+                f"inliers={result.inlier_count} conf={result.confidence:.3f} "
+                f"elapsed={result.elapsed_ms:.0f}ms"
+            )
+
+            if result.success and result.center:
+                logger.info(
+                    f"[MapFallback] center_pixel=({result.center[0]:.0f},{result.center[1]:.0f})"
+                )
+            if result.success and result.game_center:
+                logger.info(
+                    f"[MapFallback] game_center=({result.game_center[0]:.0f},{result.game_center[1]:.0f})"
+                )
+
+            if result.success and result.confidence >= CONFIDENCE_THRESHOLD:
+                if self._locked_map_id is None:
+                    self._locked_map_id = map_id
+                    logger.info(f"[MapFallback] locked map_id={map_id} (conf={result.confidence:.3f} >= {CONFIDENCE_THRESHOLD})")
+                return result
+
+            logger.info(
+                f"[MapFallback] map={map_id} conf={result.confidence:.3f} < {CONFIDENCE_THRESHOLD}, trying next"
+            )
+
+        logger.warning("[MapFallback] all candidates tried, none with sufficient confidence")
+        return None
+
+    def _in_big_map(self):
+        if self.frame is None:
+            return False
+        h, w = self.frame.shape[:2]
+        matches = 0
+        for (rx, ry), (b, g, r) in BIG_MAP_COLOR_CHECKS:
+            px = int(rx * w)
+            py = int(ry * h)
+            pixel = self.frame[py, px]
+            pb, pg, pr = int(pixel[0]), int(pixel[1]), int(pixel[2])
+            if (abs(pb - b) <= BIG_MAP_COLOR_TOLERANCE and
+                    abs(pg - g) <= BIG_MAP_COLOR_TOLERANCE and
+                    abs(pr - r) <= BIG_MAP_COLOR_TOLERANCE):
+                matches += 1
+        return matches >= 3
+
     def run(self):
-        if not self.scene.in_team(self.in_team_and_world):
+
+        if self.scene.in_team(self.in_team_and_world):
+            self._fallback_failures = 0
+            if self._locked_map_id is not None:
+                logger.info(f"[MapFallback] OCR restored, unlocking map_id={self._locked_map_id}")
+                self._locked_map_id = None
+
+            start = time.time()
+            raw_position = og.my_app.position_detector.detect_position(self.frame)
+            elapsed = (time.time() - start) * 1000
+
+            if raw_position:
+                result = self._denoise(raw_position)
+                if result:
+                    if result[0] % 5 == 0:
+                        pos_text = f'{result[0]},{result[1]},{result[2]}'
+                        self.info_set('OCR check', f'position: {pos_text} took {elapsed:.0f}ms')
+
+                    if self.config.get('Overlay enabled'):
+                        self._draw_overlay(result)
+                else:
+                    logger.info("[ocr check] ocr noresult")
+            else:
+                logger.info("[ocr check] no raw_position get")
+
+            interval = self.config.get('Detect interval (ms)', 500)
+            self.sleep(interval / 1000)
             return
 
-        start = time.time()
-        raw_position = og.my_app.position_detector.detect_position(self.frame)
-        elapsed = (time.time() - start) * 1000
-
-        if raw_position:
-            result = self._denoise(raw_position)
-            if result:
-                if result[0]%5==0:
-                    pos_text = f'{result[0]},{result[1]},{result[2]}'
-                    self.info_set('OCR check', f'position: {pos_text} took {elapsed:.0f}ms')
-
-                if self.config.get('Overlay enabled'):
-                    self._draw_overlay(result)
+        if self._in_big_map():
+            if self.config.get('Map overlay fallback') and self._last_valid is not None:
+                if self._fallback_failures < FALLBACK_MAX_FAILURES:
+                    logger.info(
+                        f"[MapFallback] in big map, attempting fallback match "
+                        f"(attempt {self._fallback_failures + 1}/{FALLBACK_MAX_FAILURES})"
+                    )
+                    result = self._try_map_match(self._last_valid)
+                    if result is None or not result.success:
+                        self._fallback_failures += 1
+                        logger.warning(
+                            f"[MapFallback] match failed {self._fallback_failures}/{FALLBACK_MAX_FAILURES}"
+                        )
+                    else:
+                        logger.info("[MapFallback] match succeeded, resetting failure count")
+                        self._fallback_failures = 0
+                        if result.game_center:
+                            new_x = int(result.game_center[0] / 100)
+                            new_y = int(result.game_center[1] / 100)
+                            new_z = self._last_valid[2] if len(self._last_valid) > 2 else 0
+                            old = self._last_valid
+                            self._last_valid = (new_x, new_y, new_z)
+                            logger.info(
+                                f"[MapFallback] updated position from ({old[0]},{old[1]}) "
+                                f"to ({new_x},{new_y})"
+                            )
+                        self._draw_overlay_screen_center(self._last_valid)
                 else:
-                    self._clear_overlay()
+                    logger.warning("[MapFallback] max failures reached, waiting for OCR success")
+            else:
+                self._clear_overlay()
 
+            interval = self.config.get('Detect interval (ms)', 500)
+            self.sleep(interval * 2 / 1000)
+            return
+
+        self._clear_overlay()
         interval = self.config.get('Detect interval (ms)', 500)
         self.sleep(interval / 1000)
 
@@ -187,6 +432,43 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         draw_items = self._overlay.build_draw_items(
             player_x, player_y, minimap_box, radius, scale_per_1000, type_filter
         )
+
+        callback = MapItemOverlay.make_paint_callback(draw_items)
+        overlay_view.draw(OVERLAY_DRAW_KEY, callback, duration=1)
+        self._overlay_registered = True
+
+    def _draw_overlay_screen_center(self, player_pos):
+        overlay_view = self.get_overlay_view()
+        if overlay_view is None:
+            return
+        self._init_overlay()
+        radius = self.config.get('Search radius (world units)')
+        scale_per_1000 = self.config.get('Map scale (pixels per 1000 units)')
+        if self.config.get('Auto map scale'):
+            scale_factor = 1 - (1.25 - self.screen_width / 1600)
+            scale_per_1000 = scale_factor * 1.205 * 10
+        type_filter = self.config.get('Item type filter')
+        player_x = player_pos[0] * 100
+        player_y = player_pos[1] * 100
+
+        scale = scale_per_1000 / 1000.0
+        items = self._overlay.query_nearby(player_x, player_y, radius, type_filter)
+
+        center_x = self.screen_width // 2
+        center_y = self.screen_height // 2
+        screen_radius = min(self.screen_width, self.screen_height) // 2
+
+        draw_items = []
+        for name, type_id, ix, iy, dist in items:
+            sx, sy = self._overlay.project_to_minimap(
+                ix, iy, player_x, player_y, scale, center_x, center_y
+            )
+            dx_center = sx - center_x
+            dy_center = sy - center_y
+            if math.sqrt(dx_center ** 2 + dy_center ** 2) > screen_radius:
+                continue
+            color = ITEM_COLORS.get(type_id)
+            draw_items.append((sx, sy, name, color))
 
         callback = MapItemOverlay.make_paint_callback(draw_items)
         overlay_view.draw(OVERLAY_DRAW_KEY, callback, duration=1)
