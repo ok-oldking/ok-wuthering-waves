@@ -150,47 +150,21 @@ def desc_mat_from_slice_fast(descs):
     return mat
 
 
-def _build_npy_bytes(shape, dtype, data):
-    shape_str = "("
-    for i, s in enumerate(shape):
-        if i > 0:
-            shape_str += ", "
-        shape_str += str(s)
-    if len(shape) == 1:
-        shape_str += ","
-    shape_str += ")"
-    hdr = f"{{'descr': '{dtype}', 'fortran_order': False, 'shape': {shape_str}}}"
-    prefix = bytes([0x93, ord('N'), ord('U'), ord('M'), ord('P'), ord('Y'), 1, 0])
-    payload = hdr
-    while (len(prefix) + 2 + len(payload) + 1) % 16 != 0:
-        payload += " "
-    payload += "\n"
-    return prefix + struct.pack('<H', len(payload)) + payload.encode() + data
-
-
 def save_npz(path, kps, descs, map_h, map_w):
     num_kp = len(kps)
     desc_cols = len(descs[0]) if descs else 0
 
-    kp_data = []
-    for kp in kps:
-        kp_data.extend([kp.x, kp.y, kp.size, kp.angle, kp.response,
-                        float(kp.octave), float(kp.class_id)])
+    kp_arr = np.array([[kp.x, kp.y, kp.size, kp.angle, kp.response,
+                        float(kp.octave), float(kp.class_id)] for kp in kps],
+                      dtype=np.float32)
+    desc_arr = np.array(descs, dtype=np.float32) if descs else np.array([], dtype=np.float32)
+    size_arr = np.array([map_h, map_w], dtype=np.int32)
 
-    desc_data = []
-    for row in descs:
-        desc_data.extend(row)
-
-    num_arr = _build_npy_bytes([], '<i4', struct.pack('<i', num_kp))
-    kp_arr = _build_npy_bytes([num_kp, 7], '<f4', struct.pack(f'<{len(kp_data)}f', *kp_data))
-    desc_arr = _build_npy_bytes([num_kp, desc_cols], '<f4', struct.pack(f'<{len(desc_data)}f', *desc_data))
-    size_arr = _build_npy_bytes([2], '<i4', struct.pack('<ii', map_h, map_w))
-
-    with zipfile.ZipFile(path, 'w') as zf:
-        zf.writestr('num_keypoints.npy', num_arr)
-        zf.writestr('keypoints.npy', kp_arr)
-        zf.writestr('descriptors.npy', desc_arr)
-        zf.writestr('map_size.npy', size_arr)
+    np.savez_compressed(path,
+                        keypoints=kp_arr,
+                        descriptors=desc_arr,
+                        map_size=size_arr,
+                        num_keypoints=np.array(num_kp, dtype=np.int32))
 
 
 def _skip_npy_header(data):
@@ -201,6 +175,24 @@ def _skip_npy_header(data):
 
 
 def load_npz(path):
+    try:
+        data = np.load(path, allow_pickle=False)
+        kp_arr = data['keypoints']
+        desc_arr = data['descriptors']
+        map_h, map_w = int(data['map_size'][0]), int(data['map_size'][1])
+
+        kps = []
+        for row in kp_arr:
+            kps.append(KeyPoint(
+                x=float(row[0]), y=float(row[1]), size=float(row[2]),
+                angle=float(row[3]), response=float(row[4]),
+                octave=int(row[5]), class_id=int(row[6])
+            ))
+        descs = desc_arr.tolist()
+        return kps, descs, map_h, map_w
+    except (KeyError, ValueError):
+        pass
+
     with zipfile.ZipFile(path, 'r') as zf:
         size_data = zf.read('map_size.npy')
         size_body = _skip_npy_header(size_data)
@@ -261,3 +253,109 @@ def _prepare_test_image(src, crop_size):
             img = img[cy - half:cy + half, cx - half:cx + half].copy()
 
     return img
+
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+    import glob as _glob
+
+    def _cmd_extract(args):
+        algo = args.algo.lower()
+        os.makedirs(args.out, exist_ok=True)
+
+        if algo == "sift":
+            detector = cv2.SIFT_create()
+        else:
+            detector = cv2.xfeatures2d.SURF_create()
+
+        png_files = _glob.glob(os.path.join(args.dir, "*.png"))
+        if not png_files:
+            print(json.dumps({"error": f"no png files in {args.dir}"}))
+            sys.exit(1)
+
+        results = []
+        for png_path in sorted(png_files):
+            basename = os.path.splitext(os.path.basename(png_path))[0]
+            out_path = os.path.join(args.out, f"{basename}_{algo}.npz")
+
+            img = cv2.imread(png_path, cv2.IMREAD_GRAYSCALE)
+            if img is None:
+                print(json.dumps({"error": f"cannot read {png_path}"}), file=sys.stderr)
+                continue
+
+            h, w = img.shape[:2]
+            kps, desc = detector.detectAndCompute(img, None)
+            if not kps or desc is None:
+                print(json.dumps({"error": f"no features in {png_path}"}), file=sys.stderr)
+                continue
+
+            sel_kps, sel_descs = grid_sample(kps, desc, h, w, args.grid, args.grid, args.max_per_cell)
+            save_npz(out_path, sel_kps, sel_descs, h, w)
+
+            entry = {
+                "file": os.path.basename(png_path),
+                "out": out_path,
+                "size": [w, h],
+                "total_features": len(kps),
+                "saved_features": len(sel_kps),
+            }
+            results.append(entry)
+            print(f"  {basename}: {len(kps)} -> {len(sel_kps)} -> {out_path}")
+
+        print(json.dumps(results, indent=2))
+
+    def _cmd_match(args):
+        algo = args.algo.lower()
+
+        from .surf import SurfEngine, _load_cache, _match_flann
+        from .sift import SiftEngine, _match_bf
+
+        kps, descs, map_h, map_w = load_npz(args.features)
+        desc_mat = desc_mat_from_slice_fast(descs)
+        if algo == "surf" and not desc_mat.flags['C_CONTIGUOUS']:
+            desc_mat = np.ascontiguousarray(desc_mat)
+        cache = MapCache(kps, descs, desc_mat, map_h, map_w)
+
+        if algo == "sift":
+            cfg = cv2.SIFT_create()
+            ratio = 0.75
+            result = _match_bf(cfg, args.query, cache, ratio,
+                               crop_size=args.crop, region=None)
+        else:
+            cfg = cv2.xfeatures2d.SURF_create()
+            ratio = 0.62
+            max_dist = 0.50
+            result = _match_flann(cfg, args.query, cache, ratio, max_dist,
+                                  crop_size=args.crop, region=None)
+
+        if args.coords and os.path.exists(args.coords):
+            coords = CoordsRef.load(args.coords)
+            result.with_coords(coords)
+
+        print(json.dumps(result.to_dict(), indent=2))
+
+    parser = argparse.ArgumentParser(prog="python -m src.match_engine.common")
+    sub = parser.add_subparsers(dest="command")
+
+    ep = sub.add_parser("extract", help="extract features from PNGs in a folder")
+    ep.add_argument("--dir", required=True, help="folder containing map PNG files")
+    ep.add_argument("--out", required=True, help="output folder for .npz cache files")
+    ep.add_argument("--algo", choices=["surf", "sift"], default="surf")
+    ep.add_argument("--grid", type=int, default=100)
+    ep.add_argument("--max-per-cell", type=int, default=160)
+
+    mp = sub.add_parser("match", help="match a query image against a feature cache")
+    mp.add_argument("--query", required=True, help="query image path")
+    mp.add_argument("--features", required=True, help=".npz feature cache path")
+    mp.add_argument("--coords", default=None, help="optional _coords.json for game_center output")
+    mp.add_argument("--algo", choices=["surf", "sift"], default="surf")
+    mp.add_argument("--crop", type=int, default=0, help="center crop size (0=no crop)")
+
+    args = parser.parse_args()
+    if args.command == "extract":
+        _cmd_extract(args)
+    elif args.command == "match":
+        _cmd_match(args)
+    else:
+        parser.print_help()
