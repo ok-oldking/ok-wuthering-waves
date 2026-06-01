@@ -48,8 +48,8 @@ msgstr "ダンジョンでボス音骸を周回"
 msgid "Farm World Boss(May need to drop waypoint on Boss)"
 msgstr "フィールドボス周回 (ボスにピンを立てる必要がある場合があります)"
 
-msgid "Game Hotkey Config"
-msgstr "ゲームのホットキー設定"
+msgid "Game Hotkey"
+msgstr "ゲームのホットキー"
 
 msgid "In Game Hotkey for Skills"
 msgstr "音骸、共鳴スキル、共鳴解放"

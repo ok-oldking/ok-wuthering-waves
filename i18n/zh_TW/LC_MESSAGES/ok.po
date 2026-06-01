@@ -48,8 +48,8 @@ msgstr "刷副本Boss聲骸"
 msgid "Farm World Boss(May need to drop waypoint on Boss)"
 msgstr "刷大世界4C Boss聲骸(有些Boss需要在其上方放置信標)"
 
-msgid "Game Hotkey Config"
-msgstr "遊戲快捷鍵設定"
+msgid "Game Hotkey"
+msgstr "遊戲快捷鍵"
 
 msgid "In Game Hotkey for Skills"
 msgstr "聲骸、共鳴技能、共鳴解放"

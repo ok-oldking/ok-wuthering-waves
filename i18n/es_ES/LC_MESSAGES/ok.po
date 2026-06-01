@@ -48,8 +48,8 @@ msgstr "Farmear Ecos en Mazmorra"
 msgid "Farm World Boss(May need to drop waypoint on Boss)"
 msgstr "Farmear Jefe del Mundo (Puede ser necesario poner un punto de ruta en el Jefe)"
 
-msgid "Game Hotkey Config"
-msgstr "Configuración de Teclas Rápidas del Juego"
+msgid "Game Hotkey"
+msgstr "Teclas Rápidas del Juego"
 
 msgid "In Game Hotkey for Skills"
 msgstr "Teclas Rápidas en el Juego para Habilidades"

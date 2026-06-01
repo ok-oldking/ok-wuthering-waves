@@ -2,6 +2,8 @@ import os
 import re
 from pathlib import Path
 
+from qfluentwidgets import FluentIcon
+
 from ok import Box, ConfigOption
 from src.task.process_feature import process_feature
 
@@ -19,7 +21,7 @@ def blur_area(width, height):
     return Box(width * 0.879, height * 0.976, blur_width * 0.973, blur_height * 0.994)
 
 
-key_config_option = ConfigOption('Game Hotkey Config', {
+key_config_option = ConfigOption('Game Hotkey', {
     'Echo Key': 'q',
     'Liberation Key': 'r',
     'Resonance Key': 'e',
@@ -27,13 +29,12 @@ key_config_option = ConfigOption('Game Hotkey Config', {
     'Jump Key': 'space',
     'Dodge Key': 'lshift',
     'Wheel Key': 'tab',
-}, description='In Game Hotkey for Skills')
+}, description='In Game Hotkey for Skills', show_at_tab=True, icon=FluentIcon.GAME)
 
 char_config_option = ConfigOption('Character Config', {
     'Iuno C6': False,
-    'Verina C2': False,
     'Chisa DPS': False,
-}, description='Character Config')
+}, description='Character Config', show_at_tab=True, icon=FluentIcon.PEOPLE)
 
 monthly_card_config_option = ConfigOption('Monthly Card Config', {
     'Check Monthly Card': True,
@@ -145,7 +146,7 @@ config = {
         ["src.task.TacetTask", "TacetTask"],
         ["src.task.EnhanceEchoTask", "EnhanceEchoTask"],
         ["src.task.ChangeEchoTask", "ChangeEchoTask"],
-        ["src.task.DiagnosisTask", "DiagnosisTask"],
+        # ["src.task.DiagnosisTask", "DiagnosisTask"],
     ], 'trigger_tasks': [
         ["src.task.AutoCombatTask", "AutoCombatTask"],
         ["src.task.AutoPickTask", "AutoPickTask"],
