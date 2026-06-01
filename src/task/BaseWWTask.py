@@ -31,7 +31,7 @@ class BaseWWTask(BaseTask):
         super().__init__(*args, **kwargs)
         self.monthly_card_config = self.get_global_config('Monthly Card Config')
         self.char_config = self.get_global_config('Character Config')
-        self.key_config = self.get_global_config('Game Hotkey Config')  # 游戏热键配置
+        self.key_config = self.get_global_config('Game Hotkey')  # 游戏热键配置
         self.next_monthly_card_start = 0
         self._logged_in = False
         self.scene: WWScene | None = None
@@ -1103,10 +1103,11 @@ class BaseWWTask(BaseTask):
     def jump(self, after_sleep=0.01):
         self.send_key(self.key_config.get('Jump Key'), after_sleep=after_sleep)
 
-    def go_to_tower(self):
+    def go_to_tower(self, opened=False):
         self.log_info('go to tower')
-        self.ensure_main(time_out=80)
-        gray_book_weekly = self.openF2Book(Labels.gray_book_weekly)
+        if not opened:
+            self.ensure_main(time_out=80)
+        gray_book_weekly = self.openF2Book(Labels.gray_book_weekly, opened=opened)
         if not gray_book_weekly:
             self.log_error('go_to_tower can not find gray_book_weekly')
             return

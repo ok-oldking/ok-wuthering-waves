@@ -64,16 +64,30 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         WWOneTimeTask.run(self)
         self._logged_in = False
         self.ensure_main(time_out=180)
-        self.go_to_tower()
 
         condition1 = self.config.get('Auto Farm all Nightmare Nest')
         condition2 = self.config.get('Farm Nightmare Nest for Daily Echo')
-        if condition1 or condition2:
+
+        used_stamina, daily_reward_ready = self.open_daily()
+        need_stamina = not daily_reward_ready and used_stamina < 180
+        need_nightmare = condition1 or (
+            condition2
+            and not daily_reward_ready
+            and self.config.get('Which to Farm', self.support_tasks[0]) != self.support_tasks[0]
+        )
+
+        if need_nightmare or need_stamina:
+            self.go_to_tower(opened=True)
+
+        if need_nightmare:
             try:
+                # 劫持 NightmareNestTask.ensure_main 避免梦魇打完关书
+                self.get_task_by_class(NightmareNestTask).ensure_main = lambda *args, **kwargs: None
+
                 if condition1:
                     self.log_debug('Auto Farm all Nightmare Nest')
                     self.run_task_by_class(NightmareNestTask)
-                elif condition2 and self.config.get('Which to Farm', self.support_tasks[0]) != self.support_tasks[0]:
+                elif condition2:
                     self.log_debug('Farm Nightmare Nest for Daily Echo')
                     self.get_task_by_class(NightmareNestTask).run_capture_mode()
             except TaskDisabledException:
@@ -82,9 +96,11 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 self.log_error("NightmareNestTask Failed", e)
                 self.screenshot('NightmareNestTask')
                 self.ensure_main(time_out=180)
-        used_stamina, daily_reward_ready = self.open_daily()
-        if not daily_reward_ready and used_stamina < 180:
-            self.send_key('esc', after_sleep=1)
+            finally:
+                # 还原 ensure_main，防范实例状态污染
+                self.get_task_by_class(NightmareNestTask).__dict__.pop('ensure_main', None)
+
+        if need_stamina:
             target = self.config.get('Which to Farm', self.support_tasks[0])
             if target == self.support_tasks[0]:
                 self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina,

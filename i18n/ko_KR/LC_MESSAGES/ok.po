@@ -48,8 +48,8 @@ msgstr "던전에서 에코 파밍"
 msgid "Farm World Boss(May need to drop waypoint on Boss)"
 msgstr "월드 보스 파밍 (보스에 웨이포인트 필요할 수 있음)"
 
-msgid "Game Hotkey Config"
-msgstr "게임 단축키 설정"
+msgid "Game Hotkey"
+msgstr "게임 단축키"
 
 msgid "In Game Hotkey for Skills"
 msgstr "인게임 스킬 단축키"

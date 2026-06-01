@@ -52,6 +52,15 @@ class TestChar(TaskTestCase):
         self.assertEqual(_get_buff_time(task, char_dict[Labels.char_iuno]), get_default_buff_time(CharType.SUB_DPS))
         self.assertEqual(_get_buff_time(task, dict(char_dict[Labels.char_mortefi], buff_time=12)), 12)
 
+        chisa = Chisa(task, 0, char_type=char_dict[Labels.char_chisa]['char_type'],
+                      buff_time=char_dict[Labels.char_chisa]['buff_time'])
+        self.assertEqual(chisa.char_type, CharType.HEALER)
+        self.assertEqual(chisa.buff_time, 12)
+
+        task.char_config = {'Chisa DPS': True}
+        self.assertEqual(chisa.char_type, CharType.MAIN_DPS)
+        self.assertEqual(chisa.buff_time, get_default_buff_time(CharType.MAIN_DPS))
+
         task.char_config = {'Iuno C6': True}
         iuno = Iuno(task, 0, char_type=char_dict[Labels.char_iuno]['char_type'],
                     buff_time=char_dict[Labels.char_iuno]['buff_time'])
