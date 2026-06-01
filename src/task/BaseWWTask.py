@@ -1103,10 +1103,11 @@ class BaseWWTask(BaseTask):
     def jump(self, after_sleep=0.01):
         self.send_key(self.key_config.get('Jump Key'), after_sleep=after_sleep)
 
-    def go_to_tower(self):
+    def go_to_tower(self, opened=False):
         self.log_info('go to tower')
-        self.ensure_main(time_out=80)
-        gray_book_weekly = self.openF2Book(Labels.gray_book_weekly)
+        if not opened:
+            self.ensure_main(time_out=80)
+        gray_book_weekly = self.openF2Book(Labels.gray_book_weekly, opened=opened)
         if not gray_book_weekly:
             self.log_error('go_to_tower can not find gray_book_weekly')
             return
