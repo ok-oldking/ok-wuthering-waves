@@ -48,7 +48,18 @@ def get_default_buff_time(char_type=CharType.MAIN_DPS):
 
 
 class BaseChar:
-    """角色基类，定义了游戏角色的通用属性和行为。"""
+    """角色基类，定义了游戏角色的通用属性和行为。
+
+    AI editing guide:
+    - Character subclasses usually override ``do_perform`` for the on-field rotation.
+    - Use helper methods such as ``click_resonance``, ``click_liberation``,
+      ``click_echo``, ``heavy_attack``, ``continues_normal_attack``, and
+      ``switch_next_char`` instead of sending raw keys directly.
+    - Keep loops bounded by timeouts and call ``self.task.next_frame()`` or
+      ``self.sleep(...)`` while waiting for UI state changes.
+    - ``char_type`` and ``buff_time`` are configured by CharFactory; custom code
+      should not hard-code team role unless the character's mechanics require it.
+    """
 
     def __init__(self, task, index, char_name=None, confidence=1, ring_index=-1, char_type=CharType.MAIN_DPS,
                  buff_time=None):
@@ -193,7 +204,12 @@ class BaseChar:
         return False
 
     def perform(self):
-        """执行当前角色的主要战斗行动序列。"""
+        """执行当前角色的主要战斗行动序列。
+
+        ``perform`` is called by AutoCombatTask when this character is current.
+        Subclasses should normally customize ``do_perform`` and leave this wrapper
+        intact so timing/logging behavior remains consistent.
+        """
         self.last_perform = time.time()
         self.do_perform()
         self.logger.debug(f'set current char false {self.index}')
@@ -248,7 +264,13 @@ class BaseChar:
         self.task.click(*args, **kwargs)
 
     def do_perform(self):
-        """执行角色的标准战斗行动。"""
+        """执行角色的标准战斗行动。
+
+        This default rotation is intentionally conservative: wait for intro,
+        use echo/liberation/resonance when available, consume forte with heavy
+        attack if needed, then switch. Character-specific files replace this
+        method with their own bounded rotation logic.
+        """
         self.wait_intro(1.2)
         self.click_echo(time_out=0)
         self.click_liberation()
@@ -302,6 +324,11 @@ class BaseChar:
             post_action (callable, optional): 切换后执行的动作。默认为 None。
             free_intro (bool, optional): 是否强制认为拥有入场技。默认为 False。
             target_low_con (bool, optional): 是否优先切换到低协奏值角色。默认为 False。
+
+        Notes:
+            Call this when the character has finished its useful field time.
+            It snapshots availability, handles toolbox state, and lets the task
+            choose the best teammate according to role, intro, and priority.
         """
         self.is_forte_full()
         self.has_intro = False
@@ -521,7 +548,12 @@ class BaseChar:
         self.task.check_combat()
 
     def reset_state(self):
-        """重置角色的战斗相关状态 (如入场技标记)。"""
+        """重置角色的战斗相关状态 (如入场技标记)。
+
+        BaseCombatTask calls this after loading the team. Do not store long-term
+        combat decisions only in these fields; they are refreshed whenever the
+        team is re-read from the screen.
+        """
         self.has_intro = False
         self.has_sub_dps_intro = False
         self.current_con = 0
@@ -632,7 +664,12 @@ class BaseChar:
         return self.task.get_resonance_key()
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        """Return whether this character is a normal, required, or blocked switch target."""
+        """Return whether this character is a normal, required, or blocked switch target.
+
+        Override this for special team logic. Return ``SwitchPriority.MUST`` to
+        force a switch target, ``SwitchPriority.NO`` to block switching in, or
+        ``SwitchPriority.NORMAL`` for the default role-based selection.
+        """
         return SwitchPriority.NORMAL
 
     def resonance_available(self):

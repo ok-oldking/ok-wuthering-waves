@@ -44,6 +44,7 @@ from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
 from src.char.Zani import Zani
 from src.char.Zhezhi import Zhezhi
+from src.char.CustomCharLoader import load_custom_char_class
 
 _char_dict_raw = {
     Labels.char_yinlin: {'cls': Yinlin, 'char_type': CharType.SUB_DPS,
@@ -154,14 +155,20 @@ def get_char_by_pos(task, box, index, old_char):
     if old_char and old_char.confidence > 0.92 and old_char.char_name in char_names:
         char = task.find_one(old_char.char_name, box=box, threshold=0.6)
         if char:
-            _apply_char_config(task, old_char, char_dict.get(old_char.char_name))
+            info = char_dict.get(old_char.char_name)
+            cls = load_custom_char_class(info.get('cls'))
+            if type(old_char) is not cls:
+                return cls(task, index, char_name=old_char.char_name, confidence=char.confidence,
+                           ring_index=info.get('ring_index', -1), char_type=_get_char_type(task, info),
+                           buff_time=_get_buff_time(task, info))
+            _apply_char_config(task, old_char, info)
             return old_char
     if not char:
         char = task.find_best_match_in_box(box, char_names, threshold=0.6)
         if char:
             info = char_dict.get(char.name)
             name = char.name
-            cls = info.get('cls')
+            cls = load_custom_char_class(info.get('cls'))
             return cls(task, index, char_name=name, confidence=char.confidence, ring_index=info.get('ring_index', -1),
                        char_type=_get_char_type(task, info), buff_time=_get_buff_time(task, info))
     task.log_info(f'could not find char {index} {info} {highest_confidence}')
