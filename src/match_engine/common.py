@@ -81,6 +81,7 @@ class MatchOutput:
     center: Optional[Tuple[float, float]] = None
     corners: Optional[List[Tuple[float, float]]] = None
     game_center: Optional[Tuple[float, float]] = None
+    map_scale: float = 0.0
     elapsed_ms: float = 0.0
     H: Optional[np.ndarray] = field(default=None, repr=False)
 
@@ -103,6 +104,8 @@ class MatchOutput:
             d["corners"] = [[round(c[0], 2), round(c[1], 2)] for c in self.corners]
         if self.game_center is not None:
             d["game_center"] = [round(self.game_center[0], 1), round(self.game_center[1], 1)]
+        if self.map_scale > 0:
+            d["map_scale"] = round(self.map_scale, 4)
         return d
 
 
@@ -231,6 +234,18 @@ def compute_center(corners):
     cx = float((corners[0][0] + corners[2][0]) / 2)
     cy = float((corners[0][1] + corners[2][1]) / 2)
     return cx, cy
+
+
+def extract_scale_factor(H, cx, cy):
+    pt = np.array([[[cx, cy]]], dtype=np.float64)
+    mapped = cv2.perspectiveTransform(pt, H)
+    xp, yp = float(mapped[0, 0, 0]), float(mapped[0, 0, 1])
+    s = H[2, 0] * cx + H[2, 1] * cy + H[2, 2]
+    J = np.array([
+        [(H[0, 0] - H[2, 0] * xp) / s, (H[0, 1] - H[2, 1] * xp) / s],
+        [(H[1, 0] - H[2, 0] * yp) / s, (H[1, 1] - H[2, 1] * yp) / s],
+    ])
+    return float(np.sqrt(np.linalg.det(J)))
 
 
 def _prepare_test_image(src, crop_size):

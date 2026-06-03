@@ -19,26 +19,47 @@ class MapItemOverlay:
         self._conn = sqlite3.connect(db_path)
         self._conn.execute("PRAGMA journal_mode=WAL")
 
-    def query_nearby(self, px, py, radius, type_filter=None):
+    def query_nearby(self, px, py, radius, type_filter=None, state_id=None):
         r2 = radius * radius
         if type_filter:
             placeholders = ','.join('?' for _ in type_filter)
-            sql = f"""
-                SELECT i.name, l.type_id, l.x, l.y
-                FROM location l
-                JOIN item i ON i.id = l.item_id
-                WHERE l.type_id IN ({placeholders})
-                  AND (l.x - ?)*(l.x - ?) + (l.y - ?)*(l.y - ?) < ?
-            """
-            params = list(type_filter) + [px, px, py, py, r2]
+            if state_id is not None:
+                sql = f"""
+                    SELECT i.name, l.type_id, l.x, l.y
+                    FROM location l
+                    JOIN item i ON i.id = l.item_id
+                    WHERE l.type_id IN ({placeholders})
+                      AND l.state_id = ?
+                      AND (l.x - ?)*(l.x - ?) + (l.y - ?)*(l.y - ?) < ?
+                """
+                params = list(type_filter) + [int(state_id), px, px, py, py, r2]
+            else:
+                sql = f"""
+                    SELECT i.name, l.type_id, l.x, l.y
+                    FROM location l
+                    JOIN item i ON i.id = l.item_id
+                    WHERE l.type_id IN ({placeholders})
+                      AND (l.x - ?)*(l.x - ?) + (l.y - ?)*(l.y - ?) < ?
+                """
+                params = list(type_filter) + [px, px, py, py, r2]
         else:
-            sql = """
-                SELECT i.name, l.type_id, l.x, l.y
-                FROM location l
-                JOIN item i ON i.id = l.item_id
-                WHERE (l.x - ?)*(l.x - ?) + (l.y - ?)*(l.y - ?) < ?
-            """
-            params = [px, px, py, py, r2]
+            if state_id is not None:
+                sql = """
+                    SELECT i.name, l.type_id, l.x, l.y
+                    FROM location l
+                    JOIN item i ON i.id = l.item_id
+                    WHERE l.state_id = ?
+                      AND (l.x - ?)*(l.x - ?) + (l.y - ?)*(l.y - ?) < ?
+                """
+                params = [int(state_id), px, px, py, py, r2]
+            else:
+                sql = """
+                    SELECT i.name, l.type_id, l.x, l.y
+                    FROM location l
+                    JOIN item i ON i.id = l.item_id
+                    WHERE (l.x - ?)*(l.x - ?) + (l.y - ?)*(l.y - ?) < ?
+                """
+                params = [px, px, py, py, r2]
 
         rows = self._conn.execute(sql, params).fetchall()
         results = []

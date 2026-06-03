@@ -7,7 +7,7 @@ from typing import Tuple, Optional
 from .common import (
     KeyPoint, MapCache, MatchOutput, CoordsRef, grid_sample,
     save_npz, load_npz, desc_mat_from_slice_fast,
-    project_corners, compute_center, _prepare_test_image
+    project_corners, compute_center, extract_scale_factor, _prepare_test_image
 )
 
 
@@ -114,15 +114,16 @@ def _match_flann(cfg, test_src, cache, ratio_thresh, max_dist, crop_size, region
         corners = project_corners(H, crop_w, crop_h)
         output.center = compute_center(corners)
         output.corners = corners
+        output.map_scale = extract_scale_factor(H, crop_w / 2, crop_h / 2)
 
     return output
 
 
 class SurfEngine:
     def __init__(self, map_id, map_path, assets_dir,
-                 hessian=40, octaves=4, layers=3,
+                 hessian=40, octaves=8, layers=4,
                  extended=True, upright=True,
-                 grid=100, max_per_cell=160,
+                 grid=150, max_per_cell=200,
                  ratio=0.62, max_dist=0.50,
                  coords_path=None):
         self.map_id = map_id

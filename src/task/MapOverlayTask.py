@@ -27,6 +27,10 @@ MAP_DIR = get_path_relative_to_exe('assets', 'stitched')
 MAP_REGION_SIZE = 1000
 FRAME_CROP_SIZE = 400
 FALLBACK_MAX_FAILURES = 3
+BIG_MAP_SEARCH_MULTIPLIER = 5
+SMOOTH_WINDOW_SIZE = 3
+SMOOTH_WEIGHTS = [1, 2, 3]
+SLOW_MAP_IDS = {'8'}
 
 
 def _parse_position(text):
@@ -115,6 +119,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         self._locked_map_id = None
         self._engines = {}
         self._coords_dict = None
+        self._smooth_buffer = deque(maxlen=SMOOTH_WINDOW_SIZE)
 
     def _detections_per_second(self):
         interval = self.config.get('Detect interval (ms)')
@@ -247,6 +252,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                 f"[MapFallback] OCR=({player_pos[0]},{player_pos[1]}) game=({game_x},{game_y}) "
                 f"candidates={[c[0] for c in candidates]}"
             )
+            candidates.sort(key=lambda c: c[0] in SLOW_MAP_IDS)
 
         h, w = self.frame.shape[:2]
         cx, cy = w // 2, h // 2
@@ -304,14 +310,22 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                     f"[MapFallback] game_center=({result.game_center[0]:.0f},{result.game_center[1]:.0f})"
                 )
 
-            if result.success and result.confidence >= CONFIDENCE_THRESHOLD:
+            if result.success and result.confidence >= CONFIDENCE_THRESHOLD and result.match_count >= 10:
                 if self._locked_map_id is None:
                     self._locked_map_id = map_id
                     logger.info(f"[MapFallback] locked map_id={map_id} (conf={result.confidence:.3f} >= {CONFIDENCE_THRESHOLD})")
+                gc = result.game_center
+                gc_str = f"({gc[0]:.0f},{gc[1]:.0f})" if gc else "None"
+                logger.info(
+                    f"[MapFallback] map={map_id} map_scale={result.map_scale:.4f} "
+                    f"game_center={gc_str}"
+                )
                 return result
 
             logger.info(
-                f"[MapFallback] map={map_id} conf={result.confidence:.3f} < {CONFIDENCE_THRESHOLD}, trying next"
+                f"[MapFallback] map={map_id} rejected: "
+                f"conf={result.confidence:.3f}(need>={CONFIDENCE_THRESHOLD}) "
+                f"matches={result.match_count}(need>=10), trying next"
             )
 
         logger.warning("[MapFallback] all candidates tried, none with sufficient confidence")
@@ -337,6 +351,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
 
         if self.scene.in_team(self.in_team_and_world):
             self._fallback_failures = 0
+            self._smooth_buffer.clear()
             if self._locked_map_id is not None:
                 logger.info(f"[MapFallback] OCR restored, unlocking map_id={self._locked_map_id}")
                 self._locked_map_id = None
@@ -380,16 +395,19 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                         logger.info("[MapFallback] match succeeded, resetting failure count")
                         self._fallback_failures = 0
                         if result.game_center:
-                            new_x = int(result.game_center[0] / 100)
-                            new_y = int(result.game_center[1] / 100)
+                            self._smooth_buffer.append(result.game_center)
+                            smoothed = self._smooth_game_center()
+                            new_x = int(smoothed[0] / 100)
+                            new_y = int(smoothed[1] / 100)
                             new_z = self._last_valid[2] if len(self._last_valid) > 2 else 0
                             old = self._last_valid
                             self._last_valid = (new_x, new_y, new_z)
                             logger.info(
-                                f"[MapFallback] updated position from ({old[0]},{old[1]}) "
-                                f"to ({new_x},{new_y})"
+                                f"[MapFallback] smoothed position from ({old[0]},{old[1]}) "
+                                f"to ({new_x},{new_y}) buffer_size={len(self._smooth_buffer)}"
                             )
-                        self._draw_overlay_screen_center(self._last_valid)
+                        game_scale = self._compute_game_scale(result)
+                        self._draw_overlay_screen_center(self._last_valid, game_scale)
                 else:
                     logger.warning("[MapFallback] max failures reached, waiting for OCR success")
             else:
@@ -437,22 +455,56 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         overlay_view.draw(OVERLAY_DRAW_KEY, callback, duration=1)
         self._overlay_registered = True
 
-    def _draw_overlay_screen_center(self, player_pos):
+    def _smooth_game_center(self):
+        if not self._smooth_buffer:
+            return (0.0, 0.0)
+        if len(self._smooth_buffer) == 1:
+            return self._smooth_buffer[0]
+        n = len(self._smooth_buffer)
+        weights = SMOOTH_WEIGHTS[:n]
+        w_sum = sum(weights)
+        sx = sum(self._smooth_buffer[i][0] * weights[i] for i in range(n)) / w_sum
+        sy = sum(self._smooth_buffer[i][1] * weights[i] for i in range(n)) / w_sum
+        return (sx, sy)
+
+    def _compute_game_scale(self, result):
+        if result.map_scale <= 0 or not result.game_center:
+            return None
+        map_id = self._locked_map_id
+        if map_id is None or map_id not in self._coords_dict:
+            return None
+        coords_scale = self._coords_dict[map_id].get('scale', [1.0, 1.0])
+        game_scale = result.map_scale * coords_scale[0]
+        logger.info(
+            f"[MapFallback] game_scale={game_scale:.4f} "
+            f"(map_scale={result.map_scale:.4f} * coords_scale={coords_scale[0]:.4f})"
+        )
+        return game_scale
+
+    def _draw_overlay_screen_center(self, player_pos, game_scale=None):
         overlay_view = self.get_overlay_view()
         if overlay_view is None:
             return
         self._init_overlay()
-        radius = self.config.get('Search radius (world units)')
-        scale_per_1000 = self.config.get('Map scale (pixels per 1000 units)')
-        if self.config.get('Auto map scale'):
-            scale_factor = 1 - (1.25 - self.screen_width / 1600)
-            scale_per_1000 = scale_factor * 1.205 * 10
+        radius = self.config.get('Search radius (world units)') * BIG_MAP_SEARCH_MULTIPLIER
+        if game_scale is not None and game_scale > 0:
+            scale = 1.0 / game_scale
+            logger.info(
+                f"[MapFallback] overlay scale={scale:.6f} (game_scale={game_scale:.2f}, "
+                f"1 pixel = {game_scale:.0f} game units)"
+            )
+        else:
+            scale_per_1000 = self.config.get('Map scale (pixels per 1000 units)')
+            if self.config.get('Auto map scale'):
+                scale_factor = 1 - (1.25 - self.screen_width / 1600)
+                scale_per_1000 = scale_factor * 1.205 * 10
+            scale = scale_per_1000 / 1000.0
         type_filter = self.config.get('Item type filter')
         player_x = player_pos[0] * 100
         player_y = player_pos[1] * 100
 
-        scale = scale_per_1000 / 1000.0
-        items = self._overlay.query_nearby(player_x, player_y, radius, type_filter)
+        items = self._overlay.query_nearby(player_x, player_y, radius, type_filter,
+                                            state_id=self._locked_map_id)
 
         center_x = self.screen_width // 2
         center_y = self.screen_height // 2

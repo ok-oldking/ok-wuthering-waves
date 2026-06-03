@@ -7,7 +7,7 @@ from typing import Tuple, Optional
 from .common import (
     KeyPoint, MapCache, MatchOutput, CoordsRef, grid_sample,
     save_npz, load_npz, desc_mat_from_slice_fast,
-    project_corners, compute_center, _prepare_test_image
+    project_corners, compute_center, extract_scale_factor, _prepare_test_image
 )
 
 
@@ -112,15 +112,16 @@ def _match_bf(cfg, test_src, cache, ratio_thresh, crop_size, region):
         corners = project_corners(H, crop_w, crop_h)
         output.center = compute_center(corners)
         output.corners = corners
+        output.map_scale = extract_scale_factor(H, crop_w / 2, crop_h / 2)
 
     return output
 
 
 class SiftEngine:
     def __init__(self, map_id, map_path, assets_dir,
-                 nfeatures=0, nOctaveLayers=4, contrastThreshold=0.03,
+                 nfeatures=0, nOctaveLayers=5, contrastThreshold=0.02,
                  edgeThreshold=7, sigma=1.6,
-                 grid=100, max_per_cell=160,
+                 grid=150, max_per_cell=200,
                  ratio=0.75, coords_path=None):
         self.map_id = map_id
         self.ratio = ratio
