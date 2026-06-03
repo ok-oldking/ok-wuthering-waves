@@ -21,7 +21,9 @@ msgstr "ホットキーエラー！ホットキーの設定が正しいか確認
 msgid "Can not switch to levitator please ensure you have equipped echos!"
 msgstr "レビテートツールに切り替えられません。音骸を装備していることを確認してください！"
 
-msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
+msgid ""
+"(1-6) Important, Choose which level to farm, lower levels might not produce "
+"a echo"
 msgstr "(1-6) 重要、周回するレベルを選択してください。低レベルでは音骸がドロップしない場合があります。"
 
 msgid "Boss1"
@@ -63,7 +65,9 @@ msgstr "共鳴解放キー (デフォルトr)"
 msgid "Auto Target"
 msgstr "自動ターゲット"
 
-msgid "Turn off to enable auto combat only when manually target enemy using middle click"
+msgid ""
+"Turn off to enable auto combat only when manually target enemy using middle "
+"click"
 msgstr "オフにすると、マウスの中ボタンで手動で敵をターゲットした時のみ自動戦闘が有効になります"
 
 msgid "Repeat Farm Count"
@@ -192,10 +196,12 @@ msgstr "月パス設定"
 msgid "Monthly Card Time"
 msgstr "月パス時間"
 
-msgid "Your computer's local time when the monthly card will popup, hour in (1-24)"
+msgid ""
+"Your computer's local time when the monthly card will popup, hour in (1-24)"
 msgstr "月パスのポップアップが表示されるPCのローカル時間 (1-24時)"
 
-msgid "must be in game world and in teams, please check you game resolution is 16:9"
+msgid ""
+"must be in game world and in teams, please check you game resolution is 16:9"
 msgstr "フィールドのチーム内にいる必要があります。ゲーム解像度が16:9であることを確認してください。"
 
 msgid "Capture Frame Count"
@@ -240,7 +246,9 @@ msgstr "いいえ"
 msgid "True"
 msgstr "はい"
 
-msgid "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}"
+msgid ""
+"Can't load game hotkey, please equip echos for all characters and use A-Z as"
+" hotkeys for skills, detected key:{}"
 msgstr "ゲームのホットキーを読み込めません。全キャラクターに音骸を装備し、スキルにA-Zのキーを割り当ててください。検出されたキー：{}"
 
 msgid "Tool Key"
@@ -312,7 +320,9 @@ msgstr "ローレライ"
 msgid "click f2 to open the book"
 msgstr "F2でガイドブックを開く"
 
-msgid "Check configs to keep, click start in game world, must be in a 16:9 screen ratio"
+msgid ""
+"Check configs to keep, click start in game world, must be in a 16:9 screen "
+"ratio"
 msgstr "保持する設定にチェックを入れ、フィールドで開始してください。16:9の画面比率である必要があります。"
 
 msgid "Boss"
@@ -435,11 +445,18 @@ msgstr "音骸データドック自動合成"
 msgid "Data Merge Completed!"
 msgstr "データドック合成完了！"
 
-msgid "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
-msgstr "自動戦闘エラー：音骸を装備し、モーションブラーをオフ、ゲームをデフォルトの明るさ設定にし、ゲームの色を変更する設定（ナイトモード、グラフィックカードのフィルター等）を全てオフにしてください。"
+msgid ""
+"Auto combat error: Make sure you're equipping echos and turn off effect that"
+" changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off "
+"Motion Blur in game video options"
+msgstr ""
+"自動戦闘エラー：音骸を装備し、モーションブラーをオフ、ゲームをデフォルトの明るさ設定にし、ゲームの色を変更する設定（ナイトモード、グラフィックカードのフィルター等）を全てオフにしてください。"
 
-msgid "Auto combat error: Make sure to turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter/HDR)"
-msgstr "自動戦闘エラー：ゲームをデフォルトの明るさ設定にし、ゲームの色を変更する設定（ナイトモード、グラフィックカードのフィルター、HDR等）を全てオフにしてください。"
+msgid ""
+"Auto combat error: Make sure to turn off effect that changes the game color,"
+" (Game Gammar/Nvidia AMD Game Filter/HDR)"
+msgstr ""
+"自動戦闘エラー：ゲームをデフォルトの明るさ設定にし、ゲームの色を変更する設定（ナイトモード、グラフィックカードのフィルター、HDR等）を全てオフにしてください。"
 
 msgid "Auto Login"
 msgstr "自動ログイン"
@@ -468,7 +485,9 @@ msgstr "デイリータスク"
 msgid "Dreamless"
 msgstr "無妄者"
 
-msgid "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
+msgid ""
+"Farms the selected Tacet Suppression, until no stamina. Must be able to "
+"teleport (F2)."
 msgstr "選択した無音区を結晶波長板がなくなるまで周回します。テレポート(F2)可能である必要があります。"
 
 msgid "Login, claim monthly card, farm echo, and claim daily reward"
@@ -516,7 +535,9 @@ msgstr "戦闘後に音骸を自動収集"
 msgid "Farm Map with Star Path"
 msgstr "スターパスでマップを周回"
 
-msgid "Farm world map with a marked path of stars (diamond as the starting point), start in the map screen"
+msgid ""
+"Farm world map with a marked path of stars (diamond as the starting point), "
+"start in the map screen"
 msgstr "星マークでマークされたルートを周回します（菱形が開始地点）。マップ画面から開始してください。"
 
 msgid "Stars"
@@ -537,13 +558,15 @@ msgstr "4C音骸を周回 (フィールド/ダンジョン)"
 msgid "Combat Wait Time"
 msgstr "戦闘待機時間(秒)"
 
-msgid "Wait time before each combat(seconds), set 5 if farming Sentry Construct"
+msgid ""
+"Wait time before each combat(seconds), set 5 if farming Sentry Construct"
 msgstr "各戦闘前の待機時間(秒)。異構艤装を周回する場合は5秒に設定してください。"
 
 msgid "Simulation Challenge"
 msgstr "シミュレーション挑戦"
 
-msgid "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
+msgid ""
+"Farms the selected Simulation Challenge. Must be able to teleport (F2)."
 msgstr "選択したシミュレーション挑戦を周回します。「黎明の塔-剣闘士の肖像」にテレポート可能である必要があります。"
 
 msgid "Material Selection"
@@ -576,7 +599,8 @@ msgstr "F2リスト内の凝素領域の番号"
 msgid "not enough stamina"
 msgstr "結晶波長板が不足しています"
 
-msgid "Click skill failed, check if the keybinding is correct in ok-ww settings!"
+msgid ""
+"Click skill failed, check if the keybinding is correct in ok-ww settings!"
 msgstr "スキル発動に失敗しました。ok-wwの設定でキー割り当てが正しいか確認してください！"
 
 msgid "Change Time to Night"
@@ -738,7 +762,9 @@ msgstr "選択アカウントを確認しました: {account}"
 msgid "Account display does not match, retrying ({attempt}/{max_retries})"
 msgstr "表示中のアカウントが一致しません。再試行中 ({attempt}/{max_retries})"
 
-msgid "Account selection failed after {max_retries} retries; {account} is still not displayed. Continuing login attempt"
+msgid ""
+"Account selection failed after {max_retries} retries; {account} is still not"
+" displayed. Continuing login attempt"
 msgstr "アカウント選択に {max_retries} 回失敗しました。{account} がまだ表示されていません。ログインを続行します"
 
 msgid "Failed to switch account"
@@ -779,3 +805,128 @@ msgstr "例: Denia。上から下へ、1から開始"
 
 msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
 msgstr "例: Nameless Explorer。上から下へ、1から開始"
+
+msgid "Characters"
+msgstr "キャラクター"
+
+msgid "Character Code"
+msgstr "キャラクターコード"
+
+msgid "Use built in"
+msgstr "内蔵を使用"
+
+msgid "Use custom"
+msgstr "カスタムを使用"
+
+msgid "Ask AI"
+msgstr "AIに相談"
+
+msgid "How To"
+msgstr "使い方"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Custom code saved"
+msgstr "カスタムコードを保存しました"
+
+msgid "Unsaved changes"
+msgstr "未保存の変更"
+
+msgid "Unsaved Changes"
+msgstr "未保存の変更"
+
+msgid "Discard unsaved character code changes?"
+msgstr "未保存のキャラクターコードの変更を破棄しますか？"
+
+msgid "Saved and reloaded"
+msgstr "保存して再読み込みしました"
+
+msgid "Custom character code saved and reloaded."
+msgstr "カスタムキャラクターコードを保存して再読み込みしました。"
+
+msgid "Custom character code saved and reloaded for loaded characters."
+msgstr "読み込み済みのキャラクターにカスタムコードを保存して再読み込みしました。"
+
+msgid "Success"
+msgstr "成功"
+
+msgid "Using built in code"
+msgstr "内蔵コードを使用中"
+
+msgid "Built in character code selected."
+msgstr "内蔵キャラクターコードを選択しました。"
+
+msgid "Error"
+msgstr "エラー"
+
+msgid "Ask AI template copied. Paste it into an AI chatbot."
+msgstr "AI用テンプレートをコピーしました。AIチャットボットに貼り付けてください。"
+
+msgid "Copied"
+msgstr "コピー済み"
+
+msgid ""
+"Choose Use custom to edit a character's Python code. Use built-in mode to read and select the original code.\n"
+"\n"
+"Ask AI copies a prompt to the clipboard with the full current code at the top. Paste it into an AI chatbot, describe the change after 'I want to implement:', and ask it to return the full modified code.\n"
+"\n"
+"Paste the returned code back into this editor, review the highlighted changed lines, then click Save to apply changes."
+msgstr ""
+"カスタムを使用を選ぶと、キャラクターの Python コードを編集できます。内蔵モードでは元のコードを読み取り、選択できます。\n"
+"\n"
+"AIに相談は、現在の完全なコードを先頭に含むプロンプトをクリップボードにコピーします。AIチャットボットに貼り付け、'I want to implement:' の後に変更内容を書き、完全な修正済みコードを返すよう依頼してください。\n"
+"\n"
+"返されたコードをこのエディターに貼り付け、ハイライトされた変更行を確認してから、保存をクリックして変更を適用します。"
+
+msgid "How To Modify Character Code"
+msgstr "キャラクターコードの変更方法"
+
+msgid "Reset"
+msgstr "リセット"
+
+msgid "Reset Custom Code"
+msgstr "カスタムコードをリセット"
+
+msgid "Reset this character to built in code and remove the custom code?"
+msgstr "このキャラクターを内蔵コードに戻し、カスタムコードを削除しますか？"
+
+msgid ""
+"Custom code matches built in code. Removed custom code and switched to built"
+" in."
+msgstr "カスタムコードは内蔵コードと同じです。カスタムコードを削除し、内蔵に切り替えました。"
+
+msgid ""
+"Custom code matches built in code. Removed custom code, switched to built "
+"in, and reloaded loaded characters."
+msgstr "カスタムコードは内蔵コードと同じです。削除し、内蔵に切り替え、読み込み済みキャラクターを再読み込みしました。"
+
+msgid "Custom code reset to built in code."
+msgstr "カスタムコードを内蔵コードにリセットしました。"
+
+msgid "Custom code reset to built in code and reloaded for loaded characters."
+msgstr "カスタムコードを内蔵コードにリセットし、読み込み済みキャラクターに再読み込みしました。"
+
+msgid "Contribute Code"
+msgstr "コードを貢献"
+
+msgid "I want to implement:"
+msgstr "実装したい内容:"
+
+msgid "Please modify the full {class_name} character automation code above."
+msgstr "上記の {class_name} キャラクター自動化コード全体を修正してください。"
+
+msgid ""
+"Return only the complete modified Python code for the whole file, not a "
+"patch and not an explanation."
+msgstr "パッチや説明ではなく、ファイル全体の完全な修正済み Python コードのみを返してください。"
+
+msgid ""
+"Keep the class name as {class_name}. Preserve imports that are still needed."
+msgstr "クラス名は {class_name} のままにしてください。必要な import は残してください。"
+
+msgid ""
+"Use this BaseChar reference while reasoning about helper methods, task APIs,"
+" state, switching, cooldowns, and combat flow:"
+msgstr ""
+"ヘルパーメソッド、タスク API、状態、切り替え、クールダウン、戦闘フローを検討する際は、この BaseChar リファレンスを使用してください:"

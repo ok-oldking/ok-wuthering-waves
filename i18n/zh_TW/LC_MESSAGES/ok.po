@@ -21,7 +21,9 @@ msgstr "自動遊戲快捷鍵與軟體設定不一致！請檢查快捷鍵設定
 msgid "Can not switch to levitator please ensure you have equipped echos!"
 msgstr "無法切換工具欄至控物，請確保已裝備主聲骸，並將工具欄切換為控物！"
 
-msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
+msgid ""
+"(1-6) Important, Choose which level to farm, lower levels might not produce "
+"a echo"
 msgstr "(1-6) 重要，選擇您對應世界等級可產出聲骸的難度，由上到下為1-6"
 
 msgid "Boss1"
@@ -63,7 +65,9 @@ msgstr "共鳴解放快捷鍵(預設r)"
 msgid "Auto Target"
 msgstr "自動選取敵人"
 
-msgid "Turn off to enable auto combat only when manually target enemy using middle click"
+msgid ""
+"Turn off to enable auto combat only when manually target enemy using middle "
+"click"
 msgstr "關閉時，僅在手動使用滑鼠中鍵選取敵人後才會自動戰鬥"
 
 msgid "Repeat Farm Count"
@@ -192,10 +196,12 @@ msgstr "小月卡設定"
 msgid "Monthly Card Time"
 msgstr "月卡時間"
 
-msgid "Your computer's local time when the monthly card will popup, hour in (1-24)"
+msgid ""
+"Your computer's local time when the monthly card will popup, hour in (1-24)"
 msgstr "月卡提示彈出的時間，本地電腦時間(1-24小時制)"
 
-msgid "must be in game world and in teams, please check you game resolution is 16:9"
+msgid ""
+"must be in game world and in teams, please check you game resolution is 16:9"
 msgstr "必須在遊戲世界隊伍中，請點擊截圖測試，檢查遊戲解析度是否為16:9"
 
 msgid "Capture Frame Count"
@@ -240,7 +246,9 @@ msgstr "否"
 msgid "True"
 msgstr "是"
 
-msgid "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}"
+msgid ""
+"Can't load game hotkey, please equip echos for all characters and use A-Z as"
+" hotkeys for skills, detected key:{}"
 msgstr "偵測技能快捷鍵失敗{}，請確認已裝備聲骸，並使用A-Z字母作為遊戲快捷鍵。若確認無誤仍舊報錯，請在設定中關閉快捷鍵偵測。"
 
 msgid "Tool Key"
@@ -312,7 +320,9 @@ msgstr "羅蕾萊"
 msgid "click f2 to open the book"
 msgstr "點擊F2開啟指南"
 
-msgid "Check configs to keep, click start in game world, must be in a 16:9 screen ratio"
+msgid ""
+"Check configs to keep, click start in game world, must be in a 16:9 screen "
+"ratio"
 msgstr "必須為16:9解析度，未勾選的項目將被標記為棄置，請在遊戲世界中啟動"
 
 msgid "Boss"
@@ -435,10 +445,15 @@ msgstr "自動合成聲骸"
 msgid "Data Merge Completed!"
 msgstr "自動合成聲骸完成！"
 
-msgid "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
+msgid ""
+"Auto combat error: Make sure you're equipping echos and turn off effect that"
+" changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off "
+"Motion Blur in game video options"
 msgstr "自動戰鬥錯誤：請確認已裝備聲骸，關閉動態模糊，遊戲為預設亮度，並關閉夜間模式/顯示器進階色彩/顯卡濾鏡等所有會改變遊戲顏色的設定。"
 
-msgid "Auto combat error: Make sure to turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter/HDR)"
+msgid ""
+"Auto combat error: Make sure to turn off effect that changes the game color,"
+" (Game Gammar/Nvidia AMD Game Filter/HDR)"
 msgstr "自動戰鬥錯誤：請將遊戲設定為預設亮度，並關閉夜間模式/顯示器進階色彩/顯卡濾鏡/HDR等所有會改變遊戲顏色的設定。"
 
 msgid "Auto Login"
@@ -468,7 +483,9 @@ msgstr "每日一條龍"
 msgid "Dreamless"
 msgstr "無妄者"
 
-msgid "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
+msgid ""
+"Farms the selected Tacet Suppression, until no stamina. Must be able to "
+"teleport (F2)."
 msgstr "刷指定的無音區，直到沒有體力，需要可傳送(F2)"
 
 msgid "Login, claim monthly card, farm echo, and claim daily reward"
@@ -516,7 +533,9 @@ msgstr "戰鬥後自動拾取聲骸"
 msgid "Farm Map with Star Path"
 msgstr "標記尋路刷大世界地圖"
 
-msgid "Farm world map with a marked path of stars (diamond as the starting point), start in the map screen"
+msgid ""
+"Farm world map with a marked path of stars (diamond as the starting point), "
+"start in the map screen"
 msgstr "使用星形標記的路徑刷世界地圖（鑽石為起點），請在地圖畫面開始，工具使用鉤鎖。"
 
 msgid "Stars"
@@ -540,7 +559,8 @@ msgstr "戰鬥開始前等待時間(秒)"
 msgid "Simulation Challenge"
 msgstr "模擬領域"
 
-msgid "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
+msgid ""
+"Farms the selected Simulation Challenge. Must be able to teleport (F2)."
 msgstr "刷指定的模擬領域，需要「前往-角鬥士的肖像」可傳送"
 
 msgid "Material Selection"
@@ -573,7 +593,8 @@ msgstr "F2列表中的第幾個凝素領域"
 msgid "not enough stamina"
 msgstr "體力不足"
 
-msgid "Click skill failed, check if the keybinding is correct in ok-ww settings!"
+msgid ""
+"Click skill failed, check if the keybinding is correct in ok-ww settings!"
 msgstr "釋放技能失敗，請檢查ok-ww的按鍵設定是否正確！"
 
 msgid "Change Time to Night"
@@ -780,7 +801,9 @@ msgstr "已確認選中帳號：{account}"
 msgid "Account display does not match, retrying ({attempt}/{max_retries})"
 msgstr "帳號顯示不一致，正在重試（{attempt}/{max_retries}）"
 
-msgid "Account selection failed after {max_retries} retries; {account} is still not displayed. Continuing login attempt"
+msgid ""
+"Account selection failed after {max_retries} retries; {account} is still not"
+" displayed. Continuing login attempt"
 msgstr "帳號選擇失敗，已重試 {max_retries} 次仍未顯示 {account}，繼續嘗試登入"
 
 msgid "Failed to switch account"
@@ -822,4 +845,126 @@ msgstr "例如德尼亞，從上到下，從1開始"
 msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
 msgstr "例如無銘探索者，從上到下，從1開始"
 
+msgid "Characters"
+msgstr "角色"
 
+msgid "Character Code"
+msgstr "角色程式碼"
+
+msgid "Use built in"
+msgstr "使用內建"
+
+msgid "Use custom"
+msgstr "使用自訂"
+
+msgid "Ask AI"
+msgstr "詢問 AI"
+
+msgid "How To"
+msgstr "使用說明"
+
+msgid "Save"
+msgstr "儲存"
+
+msgid "Custom code saved"
+msgstr "已儲存自訂程式碼"
+
+msgid "Unsaved changes"
+msgstr "未儲存的變更"
+
+msgid "Unsaved Changes"
+msgstr "未儲存的變更"
+
+msgid "Discard unsaved character code changes?"
+msgstr "要放棄未儲存的角色程式碼變更嗎？"
+
+msgid "Saved and reloaded"
+msgstr "已儲存並重新載入"
+
+msgid "Custom character code saved and reloaded."
+msgstr "已儲存並重新載入自訂角色程式碼。"
+
+msgid "Custom character code saved and reloaded for loaded characters."
+msgstr "已儲存自訂角色程式碼，並已為已載入角色重新載入。"
+
+msgid "Success"
+msgstr "成功"
+
+msgid "Using built in code"
+msgstr "正在使用內建程式碼"
+
+msgid "Built in character code selected."
+msgstr "已選擇內建角色程式碼。"
+
+msgid "Error"
+msgstr "錯誤"
+
+msgid "Ask AI template copied. Paste it into an AI chatbot."
+msgstr "AI 提示模板已複製。請貼到 AI 聊天機器人中。"
+
+msgid "Copied"
+msgstr "已複製"
+
+msgid ""
+"Choose Use custom to edit a character's Python code. Use built-in mode to read and select the original code.\n"
+"\n"
+"Ask AI copies a prompt to the clipboard with the full current code at the top. Paste it into an AI chatbot, describe the change after 'I want to implement:', and ask it to return the full modified code.\n"
+"\n"
+"Paste the returned code back into this editor, review the highlighted changed lines, then click Save to apply changes."
+msgstr ""
+"選擇使用自訂來編輯角色的 Python 程式碼。內建模式可閱讀並選取原始程式碼。\n"
+"\n"
+"詢問 AI 會將提示詞複製到剪貼簿，提示詞頂部包含目前完整程式碼。將它貼到 AI 聊天機器人中，在 'I want to implement:' 後描述你想修改的內容，並要求它回傳完整修改後的程式碼。\n"
+"\n"
+"將回傳的程式碼貼回此編輯器，檢查醒目標示的變更行，然後點擊儲存以套用變更。"
+
+msgid "How To Modify Character Code"
+msgstr "如何修改角色程式碼"
+
+msgid "Reset"
+msgstr "重設"
+
+msgid "Reset Custom Code"
+msgstr "重設自訂程式碼"
+
+msgid "Reset this character to built in code and remove the custom code?"
+msgstr "要將此角色重設為內建程式碼並移除自訂程式碼嗎？"
+
+msgid ""
+"Custom code matches built in code. Removed custom code and switched to built"
+" in."
+msgstr "自訂程式碼與內建程式碼相同。已移除自訂程式碼並切換到內建。"
+
+msgid ""
+"Custom code matches built in code. Removed custom code, switched to built "
+"in, and reloaded loaded characters."
+msgstr "自訂程式碼與內建程式碼相同。已移除自訂程式碼，切換到內建，並重新載入已載入角色。"
+
+msgid "Custom code reset to built in code."
+msgstr "自訂程式碼已重設為內建程式碼。"
+
+msgid "Custom code reset to built in code and reloaded for loaded characters."
+msgstr "自訂程式碼已重設為內建程式碼，並已為已載入角色重新載入。"
+
+msgid "Contribute Code"
+msgstr "貢獻程式碼"
+
+msgid "I want to implement:"
+msgstr "我想實作："
+
+msgid "Please modify the full {class_name} character automation code above."
+msgstr "請修改上方完整的 {class_name} 角色自動化程式碼。"
+
+msgid ""
+"Return only the complete modified Python code for the whole file, not a "
+"patch and not an explanation."
+msgstr "只回傳整個檔案完整修改後的 Python 程式碼，不要回傳補丁或解釋。"
+
+msgid ""
+"Keep the class name as {class_name}. Preserve imports that are still needed."
+msgstr "保持類別名稱為 {class_name}。保留仍然需要的 import。"
+
+msgid ""
+"Use this BaseChar reference while reasoning about helper methods, task APIs,"
+" state, switching, cooldowns, and combat flow:"
+msgstr "在思考輔助方法、任務 API、狀態、切人、冷卻和戰鬥流程時，請使用這個 BaseChar 參考："
