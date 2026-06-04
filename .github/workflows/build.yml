@@ -147,7 +147,7 @@ jobs:
           organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
           project-slug: 'ok-wuthering-waves'
           signing-policy-slug: 'release-signing'
-          artifact-configuration-slug: 'zips'
+          artifact-configuration-slug: 'setupexe'
           github-artifact-id: '${{ steps.upload-unsigned-setup-artifact.outputs.artifact-id }}'
           wait-for-completion: true
           wait-for-completion-timeout-in-seconds: 60000
