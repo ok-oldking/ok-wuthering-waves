@@ -15,7 +15,7 @@ from src.scene.WWScene import WWScene
 logger = Logger.get_logger(__name__)
 number_re = re.compile(r'(\d+)')
 stamina_re = re.compile(r'(\d+)/(\d+)')
-LOGIN_TEXTS = ["登录", 'Login', '登入']
+LOGIN_TEXTS = ["登录", re.compile('Log', re.IGNORECASE), '登入']
 f_white_color = {
     'r': (235, 255),  # Red range
     'g': (235, 255),  # Green range
@@ -729,10 +729,9 @@ class BaseWWTask(BaseTask):
                     self.click(start)
                     self.log_info(f'点击开始游戏! {start}')
                     return False
-
-            if login_account := self.find_boxes(texts, match=re.compile("Windows.{0,3}Product", re.IGNORECASE)):
-                self.log_info(f'wait_login {login_account}')
-                self.click(0.5, 0.5, after_sleep=3)
+            if switch_login := self.find_one(Labels.switch_account, vertical_variance=0.1, threshold=0.7):
+                self.log_info(f'wait_login {switch_login}')
+                self.click(0.503, 0.926, after_sleep=3)
                 return False
 
     def in_team_and_world(self):

@@ -1209,6 +1209,11 @@
             "id": 239,
             "name": "book_wuyin",
             "supercategory": ""
+        },
+        {
+            "id": 240,
+            "name": "switch_account",
+            "supercategory": ""
         }
     ],
     "images": [
@@ -2246,6 +2251,12 @@
         },
         {
             "id": 245,
+            "file_name": "images/33.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 246,
             "file_name": "images/33.png",
             "width": 1920,
             "height": 1080
@@ -3797,6 +3808,19 @@
                 42
             ],
             "area": 1764,
+            "iscrowd": 0
+        },
+        {
+            "id": 111,
+            "image_id": 246,
+            "category_id": 240,
+            "bbox": [
+                1796,
+                533,
+                43,
+                42
+            ],
+            "area": 1806,
             "iscrowd": 0
         },
         {
