@@ -1,7 +1,9 @@
 import os
 import re
 from pathlib import Path
-
+# WA: set empty PATH to resolve qfluentwidgets/PySide6 access os.environ['PATH'] issue
+if 'PATH' not in os.environ:
+    os.environ['PATH'] = ""
 from qfluentwidgets import FluentIcon
 
 from ok import Box, ConfigOption
@@ -75,7 +77,7 @@ config = {
     },
     'windows': {  # required  when supporting windows game
         'top_hwnd_class': [re.compile('CAgreementDlg'), re.compile('CLoginDlg_P_'),
-                           'CefBrowserWindow', 'Chrome_RenderWidgetHostHWND',
+                           'CefBrowserWindow', 'Chrome_RenderWidgetHostHWND', '#32770',
                            re.compile('CNativeLoginDlg'), 'Static', 'ComboBox', 'ComboLBox', 'Button'
                            ],
         'calculate_pc_exe_path': calculate_pc_exe_path,
@@ -158,9 +160,9 @@ config = {
         ["src.task.MapOverlayTask", "MapOverlayTask"],
     ], 'scene': ["src.scene.WWScene", "WWScene"],
     'update_pyappify': {
-        'to_version': '1.1.3',
-        'zip_url': 'https://github.com/ok-oldking/ok-wuthering-waves/releases/download/v3.3.60/ok-ww-win32.zip',
-        'sha256': '89465b720ffcba46d5c6b71409835a9bb2d9adcf9c6f7d52d8e940a0e915446e',
+        'to_version': '1.1.6',
+        'zip_url': 'https://github.com/ok-oldking/ok-wuthering-waves/releases/download/v3.3.74/ok-ww-win32.zip',
+        'sha256': 'ee8db613a5e026a2873adb2e147490c86333092bedf3230b10be3b9c574ad3b6',
     }
 
 }

@@ -2,6 +2,7 @@ import math
 import re
 import time
 from datetime import datetime, timedelta
+from typing import List
 
 import numpy as np
 
@@ -15,7 +16,7 @@ from src.scene.WWScene import WWScene
 logger = Logger.get_logger(__name__)
 number_re = re.compile(r'(\d+)')
 stamina_re = re.compile(r'(\d+)/(\d+)')
-LOGIN_TEXTS = ["登录", 'Login', '登入']
+LOGIN_TEXTS = ["登录", re.compile('Log', re.IGNORECASE), '登入']
 f_white_color = {
     'r': (235, 255),  # Red range
     'g': (235, 255),  # Green range
@@ -729,10 +730,9 @@ class BaseWWTask(BaseTask):
                     self.click(start)
                     self.log_info(f'点击开始游戏! {start}')
                     return False
-
-            if login_account := self.find_boxes(texts, match=re.compile("Windows.{0,3}Product", re.IGNORECASE)):
-                self.log_info(f'wait_login {login_account}')
-                self.click(0.5, 0.5, after_sleep=3)
+            if switch_login := self.find_one(Labels.switch_account, vertical_variance=0.1, threshold=0.7):
+                self.log_info(f'wait_login {switch_login}')
+                self.click(0.503, 0.926, after_sleep=3)
                 return False
 
     def in_team_and_world(self):
@@ -1027,56 +1027,43 @@ class BaseWWTask(BaseTask):
                 raise Exception('must be in game world and in teams')
         return True
 
+    def _find_book_scroll_top(self):
+        box = self.box_of_screen(0.969, 0.191, 0.978, 0.271, name="bar")
+        self.draw_boxes(boxes=box, color="blue")
+        min_width = self.width_of_screen(5 / 2560)
+        min_height = self.height_of_screen(10 / 1440)
+        boxes = find_color_rectangles(self.frame, book_bar_color, min_width, min_height, threshold=0.8, box=box)
+        if not boxes:
+            return 424 / 2160
+        bar = boxes[0]
+        self.draw_boxes(boxes=bar, color="red")
+        bar_top = bar.y / self.height
+        return bar_top
+
     def click_on_book_target(self, serial_number: int, total_number: int):
-        if serial_number < 1 or serial_number > total_number:
-            raise Exception(f'Index out of range, max is {total_number}')
-        self.sleep(1)
+        self.sleep(0.5)
+        bar_bottom = 0.8806
+        bar_x = 0.9730
+        container_max_rows = 4
+        target_index = -1
 
-        # scroll region coordinates
-        scroll_x = 3737 / 3840
-        scroll_y_top = 424 / 2160
-        scroll_y_bottom = 1899 / 2160
+        bar_top = self._find_book_scroll_top()
 
-        visible_rows = 5
-        row_pitch = (1809 - 580) / 4 / 2160
-
-        # proceed button dectect region
-        top_proceed_box_y1 = 0.21
-        top_proceed_box_y2 = 0.33
-        bottom_proceed_box_y1 = 0.74
-        bottom_proceed_box_y2 = 0.88
-
-        # double drop event changes the page layout
-        min_height = self.height_of_screen(50 / 2160)
-        double = find_color_rectangles(self.frame, double_drop_color, 3, min_height,
-                                       box=self.box_of_screen(3719 / 3840, 424 / 2160, 3761 / 3840, 541 / 2160))
-        if not bool(double):
-            logger.info(f'double drop!')
-            scroll_y_top = 541 / 2160
-            visible_rows = 4
-            top_proceed_box_y1 = 0.26
-            top_proceed_box_y2 = 0.38
-
-        if serial_number <= visible_rows:
-            # the target is on the first page. no need to scroll
-            row_index = serial_number - 1
-            proceed_box_y1 = top_proceed_box_y1 + row_pitch * row_index
-            proceed_box_y2 = top_proceed_box_y2 + row_pitch * row_index
+        if serial_number <= container_max_rows:
+            target_index = serial_number - 1
         else:
-            # If scroll is required, calculate the target scrollbar y coordinate to click.
-            # We try to put the target item on the buttom.
-            target_scroll_y = scroll_y_top + serial_number * (scroll_y_bottom - scroll_y_top) / total_number
-            self.click_relative(scroll_x, target_scroll_y, after_sleep=1)
-            proceed_box_y1 = bottom_proceed_box_y1
-            proceed_box_y2 = bottom_proceed_box_y2
-
-        btns = self.find_feature('boss_proceed',
-                                 box=self.box_of_screen(0.94, proceed_box_y1, 0.97, proceed_box_y2),
-                                 threshold=0.8)
-        if not bool(btns):
+            item_h = (bar_bottom - bar_top) / total_number
+            height = item_h * serial_number
+            self.click(bar_x, bar_top + height, after_sleep=1)
+        btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
+        if btns is None:
             raise Exception("can't find boss_proceed")
-        btn = max(btns, key=lambda box: box.y)
-        self.click_box(btn.copy(x_offset=-btn.width * 2), after_sleep=1)
+        if target_index > -1:
+            target = btns[target_index]
+        else:
+            target = max(btns, key=lambda box: box.y)
+        self.draw_boxes(boxes=target, color="red")
+        self.click(target, after_sleep=1)
         self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom'], time_out=10, settle_time=0.5)
 
     def change_time_to_night(self):
@@ -1122,10 +1109,10 @@ class BaseWWTask(BaseTask):
         self.sleep(1)
 
 
-double_drop_color = {
-    'r': (180, 255),  # Red range
-    'g': (180, 255),  # Green range
-    'b': (180, 255)  # Blue range
+book_bar_color = {
+    "r": (190, 255),
+    "g": (190, 255),
+    "b": (190, 255),
 }
 
 echo_color = {

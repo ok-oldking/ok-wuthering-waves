@@ -13,8 +13,7 @@ jobs:
 
     env:
       PYTHONIOENCODING: 'UTF-8'
-      #      SIGN_BUILD: 'true'
-      SIGN_BUILD: 'false'
+      SIGN_BUILD: 'true'
 
     strategy:
       matrix:
@@ -101,8 +100,8 @@ jobs:
         id: build-exe-only
         uses: ok-oldking/pyappify-action@master
         with:
-          build_exe_only: false
-      #          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.7.12
+          #          build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
+          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.3.74
 
       - name: Upload unsigned EXE artifact
         if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
@@ -137,21 +136,22 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: setup-to-sign
-          path: pyappify_dist/ok-ww-win32-online-setup.exe
+          path: pyappify_dist/*setup.exe
+          if-no-files-found: error
 
-      #      - name: Sign setup EXE
-      #        if: env.SIGN_BUILD == 'true'
-      #        uses: signpath/github-action-submit-signing-request@v1.1
-      #        with:
-      #          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
-      #          organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
-      #          project-slug: 'ok-wuthering-waves'
-      #          signing-policy-slug: 'release-signing'
-      #          artifact-configuration-slug: "single-exe"
-      #          github-artifact-id: '${{ steps.upload-unsigned-setup-artifact.outputs.artifact-id }}'
-      #          wait-for-completion: true
-      #          wait-for-completion-timeout-in-seconds: 60000
-      #          output-artifact-directory: 'pyappify_dist'
+      - name: Sign setup EXEs
+        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
+        uses: signpath/github-action-submit-signing-request@v1.1
+        with:
+          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
+          organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
+          project-slug: 'ok-wuthering-waves'
+          signing-policy-slug: 'release-signing'
+          artifact-configuration-slug: 'setupexe'
+          github-artifact-id: '${{ steps.upload-unsigned-setup-artifact.outputs.artifact-id }}'
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 60000
+          output-artifact-directory: 'pyappify_dist'
 
       - name: Release
         uses: softprops/action-gh-release@v2

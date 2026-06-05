@@ -33,6 +33,15 @@ class CharRevivedException(CharDeadException):
     """角色已复活，用于中断当前战斗上下文并让任务重新进入。"""
     pass
 
+mismatched_names = {
+    "Douling": "Buling",
+    "Xigelika": "Sigrika",
+    "Linnai": "Lynae",
+    "Luhesi": "Luuk Herssen",
+    "Xiangliyao": "Xiangli Yao",
+    "ShoreKeeper": "Shorekeeper",
+    "HavocRover": "Rover: Havoc"
+}
 
 class BaseCombatTask(CombatCheck):
     """基础战斗任务类，封装了游戏"鸣潮"中角色自动化操作的通用逻辑。"""
@@ -700,7 +709,15 @@ class BaseCombatTask(CombatCheck):
                     char.is_current_char = False
         self.combat_start = time.time()
         if len(self.chars) >= 2:
-            self.info_set('Chars', self.chars)
+            translated_names = []
+            for c in self.chars:
+                if c is not None:
+                    class_name = c.name
+                    official_name = mismatched_names.get(class_name, class_name)
+                    # 单元测试时 self._app 为 None，此时不进行翻译，直接回传原名
+                    translated_name = self.tr(official_name) if self._app is not None else official_name
+                    translated_names.append(translated_name)
+            self.info_set('Chars', ', '.join(translated_names))
             for c in self.chars:
                 self.log_info(f'loaded chars success {c} {c.confidence}')
             return True

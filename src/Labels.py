@@ -231,6 +231,7 @@ class Labels(str, Enum):
     skip_quest_confirm = 'skip_quest_confirm'
     skip_quest_confirm_new = 'skip_quest_confirm_new'
     star = 'star'
+    switch_account = 'switch_account'
     t = 't'
     target_box_long2 = 'target_box_long2'
     target_enemy_long_inner = 'target_enemy_long_inner'
