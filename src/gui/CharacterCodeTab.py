@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QUrl
-from PySide6.QtGui import QColor, QDesktopServices, QPixmap, QTextCursor, QTextFormat
+from PySide6.QtGui import QColor, QDesktopServices, QPixmap, QTextCursor, QTextFormat, QPainter, QPainterPath
 from PySide6.QtWidgets import QApplication, QButtonGroup, QHBoxLayout, QLabel, QListWidgetItem, QSplitter, QTextEdit, QVBoxLayout, QWidget
 from qfluentwidgets import BodyLabel, FluentIcon, ListWidget, MessageBox, PlainTextEdit, PrimaryPushButton, PushButton, RadioButton
 
@@ -464,26 +464,37 @@ class CharacterCodeTab(CustomTab):
             self.logger.error(f"load char feature image index failed: {e}")
         return feature_index
 
+    def _clip_to_rounded_rect(self, pixmap, label_name):
+        scaled = pixmap.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        out = QPixmap(48, 48)
+        out.fill(Qt.transparent)
+        p = QPainter(out)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.setRenderHint(QPainter.SmoothPixmapTransform)
+        path = QPainterPath()
+        path.addRoundedRect(0, 0, 48, 48, 14, 14)
+        p.setClipPath(path)
+        p.drawPixmap((48 - scaled.width()) // 2, (48 - scaled.height()) // 2, scaled)
+        p.end()
+        self.char_feature_images[label_name] = out
+        return out
+
     def _get_char_feature_image(self, label_name):
         if not label_name:
             return None
         if label_name in self.char_feature_images:
             return self.char_feature_images[label_name]
-        image_info = self.char_feature_index.get(label_name)
-        if not image_info:
-            return None
-        image_path, bbox = image_info
-        pixmap = self.char_source_pixmaps.get(image_path)
-        if pixmap is None:
-            pixmap = QPixmap(str(image_path))
+        icon_path = Path("assets") / "char_icons" / f"{label_name}.png"
+        if icon_path.exists() and not (pixmap := QPixmap(str(icon_path))).isNull():
+            return self._clip_to_rounded_rect(pixmap, label_name)
+        if image_info := self.char_feature_index.get(label_name):
+            image_path, bbox = image_info
+            pixmap = self.char_source_pixmaps.get(image_path) or QPixmap(str(image_path))
             self.char_source_pixmaps[image_path] = pixmap
-        if pixmap.isNull():
-            return None
-        x, y, width, height = bbox
-        cropped = pixmap.copy(x, y, width, height)
-        image = cropped.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        self.char_feature_images[label_name] = image
-        return image
+            cropped = pixmap.copy(*bbox)
+            if not cropped.isNull():
+                return self._clip_to_rounded_rect(cropped, label_name)
+        return None
 
     def _label_name(self, label):
         if isinstance(label, tuple):
