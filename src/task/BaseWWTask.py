@@ -1049,7 +1049,8 @@ class BaseWWTask(BaseTask):
         min_height = self.height_of_screen(50 / 2160)
         double = find_color_rectangles(self.frame, double_drop_color, 3, min_height,
                                        box=self.box_of_screen(3719 / 3840, 424 / 2160, 3761 / 3840, 541 / 2160))
-        if not bool(double):
+        # double 用来识别右侧滚动条的顶部，找不出 box 说明有双倍（滚动条被双倍提示挤下去了）。
+        if len(double) <= 0:
             logger.info(f'double drop!')
             scroll_y_top = 541 / 2160
             visible_rows = 4
@@ -1069,9 +1070,14 @@ class BaseWWTask(BaseTask):
             proceed_box_y1 = bottom_proceed_box_y1
             proceed_box_y2 = bottom_proceed_box_y2
 
-        btns = self.find_feature('boss_proceed',
-                                 box=self.box_of_screen(0.94, proceed_box_y1, 0.97, proceed_box_y2),
-                                 threshold=0.8)
+        button_area = self.box_of_screen(0.94, proceed_box_y1, 0.97, proceed_box_y2)
+        btns = self.find_feature('boss_proceed', box=button_area, threshold=0.8)
+        
+        # 如果改动了这个函数，请使用下列代码截图验证。
+        # self.draw_boxes("find_go_button", button_area)
+        # self.screenshot(f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_BaseWWTask_ClickOnBookTarget_SN_{serial_number}_Y_{proceed_box_y1:.2f}_{proceed_box_y2:.2f}_double_{len(double) <= 0}", show_box=True)
+        # btns = None
+    
         if not bool(btns):
             raise Exception("can't find boss_proceed")
         btn = max(btns, key=lambda box: box.y)
