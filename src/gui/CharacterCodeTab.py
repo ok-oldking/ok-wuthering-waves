@@ -25,6 +25,15 @@ from src.char.CustomCharLoader import (
 
 BASE_CHAR_URL = "https://raw.githubusercontent.com/ok-oldking/ok-wuthering-waves/refs/heads/master/src/char/BaseChar.py"
 CONTRIBUTE_CHAR_URL = "https://github.com/ok-oldking/ok-wuthering-waves/edit/master/src/char/{class_name}.py"
+CHARACTER_DISPLAY_NAMES = {
+    "Douling": "Buling",
+    "Xigelika": "Sigrika",
+    "Linnai": "Lynae",
+    "Luhesi": "Luuk Herssen",
+    "Xiangliyao": "Xiangli Yao",
+    "ShoreKeeper": "Shorekeeper",
+    "HavocRover": "Rover: Havoc",
+}
 
 
 class CharacterCodeTab(CustomTab):
@@ -34,7 +43,10 @@ class CharacterCodeTab(CustomTab):
         self.current_row = -1
         self.char_by_name = {}
         self.char_label_by_cls = {}
-        self.char_feature_images = self._load_char_feature_images()
+        self.char_feature_index = self._load_char_feature_index()
+        self.char_feature_images = {}
+        self.char_source_pixmaps = {}
+        self.show_char_feature_image = False
         self.clean_code = ""
         self.loading_editor = False
         self.suppress_selection_guard = False
@@ -147,7 +159,7 @@ class CharacterCodeTab(CustomTab):
         self.char_list.clear()
         selected_row = 0
         for row, char_cls in enumerate(unique_chars):
-            label = char_cls.__name__
+            label = self._display_char_name(char_cls)
             if has_custom_char_code(char_cls):
                 label = f"* {label}"
             item = QListWidgetItem(label)
@@ -421,16 +433,18 @@ class CharacterCodeTab(CustomTab):
 
     def _update_char_image(self):
         self.char_image_label.clear()
+        if not self.show_char_feature_image:
+            return
         label_name = self.char_label_by_cls.get(self.current_char_cls)
-        pixmap = self.char_feature_images.get(label_name)
+        pixmap = self._get_char_feature_image(label_name)
         if pixmap is not None and not pixmap.isNull():
             self.char_image_label.setPixmap(pixmap)
 
-    def _load_char_feature_images(self):
-        images = {}
+    def _load_char_feature_index(self):
+        feature_index = {}
         coco_path = Path("assets") / "coco_annotations.json"
         if not coco_path.exists():
-            return images
+            return feature_index
         try:
             data = json.loads(coco_path.read_text(encoding="utf-8"))
             image_by_id = {image["id"]: image["file_name"] for image in data.get("images", [])}
@@ -442,21 +456,49 @@ class CharacterCodeTab(CustomTab):
                 image_name = image_by_id.get(annotation.get("image_id"))
                 if not image_name:
                     continue
-                image_path = coco_path.parent / image_name
-                pixmap = QPixmap(str(image_path))
-                if pixmap.isNull():
+                bbox = annotation.get("bbox", [])
+                if len(bbox) != 4:
                     continue
-                x, y, width, height = [round(value) for value in annotation.get("bbox", [])]
-                cropped = pixmap.copy(x, y, width, height)
-                images[category_name] = cropped.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                feature_index[category_name] = (coco_path.parent / image_name, tuple(round(value) for value in bbox))
         except Exception as e:
-            self.logger.error(f"load char feature images failed: {e}")
-        return images
+            self.logger.error(f"load char feature image index failed: {e}")
+        return feature_index
+
+    def _get_char_feature_image(self, label_name):
+        if not label_name:
+            return None
+        if label_name in self.char_feature_images:
+            return self.char_feature_images[label_name]
+        image_info = self.char_feature_index.get(label_name)
+        if not image_info:
+            return None
+        image_path, bbox = image_info
+        pixmap = self.char_source_pixmaps.get(image_path)
+        if pixmap is None:
+            pixmap = QPixmap(str(image_path))
+            self.char_source_pixmaps[image_path] = pixmap
+        if pixmap.isNull():
+            return None
+        x, y, width, height = bbox
+        cropped = pixmap.copy(x, y, width, height)
+        image = cropped.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.char_feature_images[label_name] = image
+        return image
 
     def _label_name(self, label):
         if isinstance(label, tuple):
             label = label[0]
         return getattr(label, "value", label)
+
+    def _display_char_name(self, char_cls):
+        display_name = CHARACTER_DISPLAY_NAMES.get(char_cls.__name__, char_cls.__name__)
+        return self.tr(display_name)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if not self.show_char_feature_image:
+            self.show_char_feature_image = True
+            self._update_char_image()
 
     def hideEvent(self, event):
         if self._has_unsaved_changes():
