@@ -27,17 +27,17 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
         }
         self.default_config = default_config
-        self.door_walk_method = {  # starts with 0
-            0: [],
+        self.door_walk_method = {  # starts with 1
             1: [],
             2: [],
             3: [],
             4: [],
             5: [],
             6: [],
-            7: [["a", 0.3]],
-            8: [["d", 0.6]],
-            9: [["a", 1.5], ["w", 3], ["a", 2.5]],
+            7: [],
+            8: [["a", 0.3]],
+            9: [["d", 0.6]],
+            10: [["a", 1.5], ["w", 3], ["a", 2.5]],
         }
         self.stamina_once = 60
 
@@ -68,13 +68,13 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                 return self.not_enough_stamina()
 
             self.open_boss_book('wuyin')
-            index = config.get('Which Tacet Suppression to Farm', 1) - 1
-            self.teleport_to_tacet(index)
+            serial_number = config.get('Which Tacet Suppression to Farm', 1)
+            self.teleport_to_tacet(serial_number)
             self.wait_click_travel()
             self.wait_in_team_and_world(time_out=120)
             self.sleep(2)
-            if self.door_walk_method.get(index) is not None:
-                for method in self.door_walk_method.get(index):
+            if self.door_walk_method.get(serial_number) is not None:
+                for method in self.door_walk_method.get(serial_number):
                     self.send_key_down(method[0])
                     self.sleep(method[1])
                     self.send_key_up(method[0])
@@ -114,8 +114,8 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         if back:
             self.back(after_sleep=1)
 
-    def teleport_to_tacet(self, index):
-        self.info_set('Teleport to Tacet Suppression', index)
-        if index >= self.total_number:
+    def teleport_to_tacet(self, serial_number):
+        self.info_set('Teleport to Tacet Suppression', serial_number)
+        if serial_number > self.total_number:
             raise IndexError(f'Index out of range, max is {self.total_number}')
-        self.click_on_book_target(index + 1, self.total_number)
+        self.click_on_book_target(serial_number, self.total_number)
