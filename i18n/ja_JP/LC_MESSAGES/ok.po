@@ -41,6 +41,9 @@ msgstr "ゲーム内のワールドで開始をクリック"
 msgid "Echo Key"
 msgstr "音骸キー (デフォルトq)"
 
+msgid "Chars"
+msgstr "キャラクター"
+
 msgid "Entrance Direction"
 msgstr "入口の方向"
 
@@ -930,3 +933,162 @@ msgid ""
 " state, switching, cooldowns, and combat flow:"
 msgstr ""
 "ヘルパーメソッド、タスク API、状態、切り替え、クールダウン、戦闘フローを検討する際は、この BaseChar リファレンスを使用してください:"
+
+msgid "Rover: Spectro"
+msgstr "漂泊者・回折"
+
+msgid "Rover: Havoc"
+msgstr "漂泊者・消滅"
+
+msgid "Rover: Aero"
+msgstr "漂泊者・気動"
+
+msgid "Verina"
+msgstr "ヴェリーナ"
+
+msgid "Encore"
+msgstr "アンコ"
+
+msgid "Calcharo"
+msgstr "カカロ"
+
+msgid "Jianxin"
+msgstr "鑑心"
+
+msgid "Lingyang"
+msgstr "凌陽"
+
+msgid "Yangyang"
+msgstr "秧秧"
+
+msgid "Chixia"
+msgstr "熾霞"
+
+msgid "Baizhi"
+msgstr "白芷"
+
+msgid "Sanhua"
+msgstr "散華"
+
+msgid "Danjin"
+msgstr "丹瑾"
+
+msgid "Mortefi"
+msgstr "モルトフィー"
+
+msgid "Taoqi"
+msgstr "桃祈"
+
+msgid "Yuanwu"
+msgstr "淵武"
+
+msgid "Aalto"
+msgstr "アールト"
+
+msgid "Jiyan"
+msgstr "忌炎"
+
+msgid "Yinlin"
+msgstr "吟霖"
+
+msgid "Jinhsi"
+msgstr "今汐"
+
+msgid "Changli"
+msgstr "長離"
+
+msgid "Zhezhi"
+msgstr "折枝"
+
+msgid "Xiangli Yao"
+msgstr "相里要"
+
+msgid "Shorekeeper"
+msgstr "ショアキーパー"
+
+msgid "Youhu"
+msgstr "釉瑚"
+
+msgid "Camellya"
+msgstr "ツバキ"
+
+msgid "Lumi"
+msgstr "灯灯"
+
+msgid "Carlotta"
+msgstr "カルロッタ"
+
+msgid "Roccia"
+msgstr "ロココ"
+
+msgid "Phoebe"
+msgstr "フィービー"
+
+msgid "Brant"
+msgstr "ブラント"
+
+msgid "Cantarella"
+msgstr "カンタレラ"
+
+msgid "Zani"
+msgstr "ザンニー"
+
+msgid "Ciaccona"
+msgstr "シャコンヌ"
+
+msgid "Cartethyia"
+msgstr "カルテジア"
+
+msgid "Lupa"
+msgstr "ルパ"
+
+msgid "Phrolova"
+msgstr "フローヴァ"
+
+msgid "Augusta"
+msgstr "オーガスタ"
+
+msgid "Iuno"
+msgstr "ユーノ"
+
+msgid "Galbrena"
+msgstr "ガルブレーナ"
+
+msgid "Qiuyuan"
+msgstr "仇遠"
+
+msgid "Chisa"
+msgstr "千咲"
+
+msgid "Buling"
+msgstr "卜霊"
+
+msgid "Lynae"
+msgstr "リンネー"
+
+msgid "Mornye"
+msgstr "モーニエ"
+
+msgid "Aemeath"
+msgstr "エイメス"
+
+msgid "Luuk Herssen"
+msgstr "リューク・ヘルセン"
+
+msgid "Sigrika"
+msgstr "シグリカ"
+
+msgid "Hiyuki"
+msgstr "緋雪"
+
+msgid "Denia"
+msgstr "ダーニャ"
+
+msgid "Lucy"
+msgstr "ルーシー"
+
+msgid "Rebecca"
+msgstr "レベッカ"
+
+msgid "Lucilla"
+msgstr "ルシラー"
