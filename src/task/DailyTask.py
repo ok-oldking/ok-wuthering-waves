@@ -71,9 +71,9 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         used_stamina, daily_reward_ready = self.open_daily()
         need_stamina = not daily_reward_ready and used_stamina < 180
         need_nightmare = condition1 or (
-            condition2
-            and not daily_reward_ready
-            and self.config.get('Which to Farm', self.support_tasks[0]) != self.support_tasks[0]
+                condition2
+                and not daily_reward_ready
+                and self.config.get('Which to Farm', self.support_tasks[0]) != self.support_tasks[0]
         )
 
         if need_nightmare or need_stamina:
@@ -171,8 +171,9 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         if total_points < 100:
             self.ensure_main(time_out=5)
             self.open_daily()
+            self.sleep(1)
             self.log_info('claim pending daily quest rewards before claiming daily chest')
-            self.click(0.87, 0.17, after_sleep=0.5)
+            self.click(0.87, 0.18, after_sleep=0.5)
             self.sleep(1)
             total_points = self.get_total_daily_points()
 
