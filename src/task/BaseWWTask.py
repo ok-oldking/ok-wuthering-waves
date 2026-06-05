@@ -1027,28 +1027,34 @@ class BaseWWTask(BaseTask):
                 raise Exception('must be in game world and in teams')
         return True
 
-    def click_on_book_target(self, serial_number: int, total_number: int):
+    def _find_book_scroll_top(self):
         box = self.box_of_screen(0.969, 0.191, 0.978, 0.271, name="bar")
         self.draw_boxes(boxes=box, color="blue")
         min_width = self.width_of_screen(5 / 2560)
         min_height = self.height_of_screen(10 / 1440)
         boxes = find_color_rectangles(self.frame, book_bar_color, min_width, min_height, threshold=0.8, box=box)
         if not boxes:
-            return
+            return 424 / 2160
         bar = boxes[0]
         self.draw_boxes(boxes=bar, color="red")
         bar_top = bar.y / self.height
+        return bar_top
+
+    def click_on_book_target(self, serial_number: int, total_number: int):
+        self.sleep(0.5)
         bar_bottom = 0.8806
         bar_x = 0.9730
         container_max_rows = 4
         target_index = -1
+
+        bar_top = self._find_book_scroll_top()
 
         if serial_number <= container_max_rows:
             target_index = serial_number - 1
         else:
             item_h = (bar_bottom - bar_top) / total_number
             height = item_h * serial_number
-            self.click(bar_x, bar_top + height)
+            self.click(bar_x, bar_top + height, after_sleep=1)
         btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
         if btns is None:
             raise Exception("can't find boss_proceed")
