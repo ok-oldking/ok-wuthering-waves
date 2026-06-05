@@ -700,7 +700,22 @@ class BaseCombatTask(CombatCheck):
                     char.is_current_char = False
         self.combat_start = time.time()
         if len(self.chars) >= 2:
-            self.info_set('Chars', self.chars)
+            mismatched_names = {
+                "Douling": "Buling",
+                "Xigelika": "Sigrika",
+                "Linnai": "Lynae",
+                "Luhesi": "Luuk Herssen",
+                "Xiangliyao": "Xiangli Yao",
+                "ShoreKeeper": "Shorekeeper",
+                "HavocRover": "Rover: Havoc"
+            }
+            translated_names = []
+            for c in self.chars:
+                if c is not None:
+                    class_name = repr(c)
+                    official_name = mismatched_names.get(class_name, class_name)
+                    translated_names.append(self.tr(official_name))
+            self.info_set('Chars', ', '.join(translated_names))
             for c in self.chars:
                 self.log_info(f'loaded chars success {c} {c.confidence}')
             return True

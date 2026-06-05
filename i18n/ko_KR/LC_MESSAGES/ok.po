@@ -41,6 +41,9 @@ msgstr "게임 월드에서 시작을 클릭하세요"
 msgid "Echo Key"
 msgstr "에코 키 (기본 Q)"
 
+msgid "Chars"
+msgstr "캐릭터"
+
 msgid "Entrance Direction"
 msgstr "입구 방향"
 
@@ -931,3 +934,162 @@ msgid ""
 "Use this BaseChar reference while reasoning about helper methods, task APIs,"
 " state, switching, cooldowns, and combat flow:"
 msgstr "헬퍼 메서드, 태스크 API, 상태, 교체, 재사용 대기시간, 전투 흐름을 판단할 때 이 BaseChar 참고를 사용하세요:"
+
+msgid "Rover: Spectro"
+msgstr "방랑자 · 회절"
+
+msgid "Rover: Havoc"
+msgstr "방랑자 · 인멸"
+
+msgid "Rover: Aero"
+msgstr "방랑자 · 기류"
+
+msgid "Verina"
+msgstr "벨리나"
+
+msgid "Encore"
+msgstr "앙코"
+
+msgid "Calcharo"
+msgstr "카카루"
+
+msgid "Jianxin"
+msgstr "감심"
+
+msgid "Lingyang"
+msgstr "능양"
+
+msgid "Yangyang"
+msgstr "양양"
+
+msgid "Chixia"
+msgstr "치샤"
+
+msgid "Baizhi"
+msgstr "설지"
+
+msgid "Sanhua"
+msgstr "산화"
+
+msgid "Danjin"
+msgstr "단근"
+
+msgid "Mortefi"
+msgstr "모르테피"
+
+msgid "Taoqi"
+msgstr "도기"
+
+msgid "Yuanwu"
+msgstr "연무"
+
+msgid "Aalto"
+msgstr "알토"
+
+msgid "Jiyan"
+msgstr "기염"
+
+msgid "Yinlin"
+msgstr "음림"
+
+msgid "Jinhsi"
+msgstr "금희"
+
+msgid "Changli"
+msgstr "장리"
+
+msgid "Zhezhi"
+msgstr "절지"
+
+msgid "Xiangli Yao"
+msgstr "상리요"
+
+msgid "Shorekeeper"
+msgstr "파수인"
+
+msgid "Youhu"
+msgstr "유호"
+
+msgid "Camellya"
+msgstr "카멜리아"
+
+msgid "Lumi"
+msgstr "루미"
+
+msgid "Carlotta"
+msgstr "카를로타"
+
+msgid "Roccia"
+msgstr "로코코"
+
+msgid "Phoebe"
+msgstr "페비"
+
+msgid "Brant"
+msgstr "브렌트"
+
+msgid "Cantarella"
+msgstr "칸타렐라"
+
+msgid "Zani"
+msgstr "젠니"
+
+msgid "Ciaccona"
+msgstr "샤콘"
+
+msgid "Cartethyia"
+msgstr "카르티시아"
+
+msgid "Lupa"
+msgstr "루파"
+
+msgid "Phrolova"
+msgstr "플로로"
+
+msgid "Augusta"
+msgstr "아우구스타"
+
+msgid "Iuno"
+msgstr "유노"
+
+msgid "Galbrena"
+msgstr "갈브레나"
+
+msgid "Qiuyuan"
+msgstr "구원"
+
+msgid "Chisa"
+msgstr "치사"
+
+msgid "Buling"
+msgstr "복링"
+
+msgid "Lynae"
+msgstr "린네"
+
+msgid "Mornye"
+msgstr "모니에"
+
+msgid "Aemeath"
+msgstr "에이메스"
+
+msgid "Luuk Herssen"
+msgstr "루크 · 헤르센"
+
+msgid "Sigrika"
+msgstr "시그리카"
+
+msgid "Hiyuki"
+msgstr "히유키"
+
+msgid "Denia"
+msgstr "데니아"
+
+msgid "Lucy"
+msgstr "루시"
+
+msgid "Rebecca"
+msgstr "레베카"
+
+msgid "Lucilla"
+msgstr "루실라"
