@@ -100,7 +100,7 @@ jobs:
         id: build-exe-only
         uses: ok-oldking/pyappify-action@master
         with:
-          build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
+          #          build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
           use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.3.74
 
       - name: Upload unsigned EXE artifact
