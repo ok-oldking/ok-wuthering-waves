@@ -1,7 +1,9 @@
 import os
 import re
 from pathlib import Path
-
+# WA: set empty PATH to resolve qfluentwidgets/PySide6 access os.environ['PATH'] issue
+if 'PATH' not in os.environ:
+    os.environ['PATH'] = ""
 from qfluentwidgets import FluentIcon
 
 from ok import Box, ConfigOption
