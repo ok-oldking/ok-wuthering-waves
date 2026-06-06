@@ -685,11 +685,12 @@ class BaseWWTask(BaseTask):
         if self.in_team_and_world():
             self._logged_in = True
             return True
-        if self.handle_monthly_card():
-            return True
         if self.wait_login():
             return True
-        if esc:
+        if self.handle_monthly_card():
+            return False
+        if esc and self._logged_in:
+            self.log_debug('main esc')
             self.back(after_sleep=2)
 
     def wait_login(self):
@@ -731,9 +732,10 @@ class BaseWWTask(BaseTask):
                     self.log_info(f'点击开始游戏! {start}')
                     return False
             if switch_login := self.find_one(Labels.switch_account, vertical_variance=0.1, threshold=0.7):
-                self.log_info(f'wait_login {switch_login}')
-                self.click(0.503, 0.926, after_sleep=3)
-                return False
+                if boxes := self.find_boxes(texts, boundary=self.box_of_screen(0.37, 0.63, 0.63, 0.99)):
+                    self.log_info(f'wait_login {switch_login} {boxes}')
+                    self.click(0.503, 0.926, after_sleep=3)
+                    return False
 
     def in_team_and_world(self):
         return self.in_team()[
