@@ -80,6 +80,12 @@ msgstr ""
 "Desactiva para habilitar el combate automático solo al apuntar manualmente a"
 " un enemigo con el clic central"
 
+msgid "Auto Start Axis on F"
+msgstr "Iniciar eje al detectar F"
+
+msgid "When not in combat, detect the F interaction icon by template only, press F, and start the auto combat or custom axis flow after combat begins."
+msgstr "Cuando no estés en combate, detecta solo el icono de interacción F por plantilla, pulsa F y empieza el combate automático o el eje personalizado al iniciar el combate."
+
 msgid "Repeat Farm Count"
 msgstr "Número de Repeticiones"
 
@@ -865,6 +871,32 @@ msgstr "Por ejemplo, Denia, de arriba a abajo, empezando en 1"
 msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
 msgstr "Por ejemplo, Nameless Explorer, de arriba a abajo, empezando en 1"
 
+msgid "Custom Axis Control"
+msgstr "Control de eje personalizado"
+
+msgid "Independent custom-axis behavior switches"
+msgstr "Interruptores independientes para el eje personalizado"
+
+msgid "Detect the F interaction icon outside combat and press F to start the combat axis"
+msgstr "Detecta el icono de interacción F fuera de combate y pulsa F para iniciar el eje de combate"
+
+msgid "Custom Axis Retry Until Success"
+msgstr "Reintentar eje personalizado hasta tener éxito"
+
+msgid "When enabled, failed custom-axis actions retry every 0.05 seconds and block the next action until success."
+msgstr "Si está activado, las acciones fallidas del eje personalizado se reintentan cada 0.05 segundos y bloquean la siguiente acción hasta tener éxito."
+
+msgid "Custom Axis Global F"
+msgstr "F global del eje personalizado"
+
+msgid "When enabled, every custom-axis action checks the same F interaction logic used by axis F actions before and after the action."
+msgstr "Si está activado, cada acción del eje personalizado comprueba la misma lógica de interacción F usada por las acciones F del eje antes y después de la acción."
+
+msgid "Axis Start Delay Seconds"
+msgstr "Segundos de espera tras F"
+
+msgid "After pressing F, wait this many seconds, then start the custom axis immediately without waiting for combat detection."
+msgstr "Tras pulsar F, espera estos segundos y luego inicia el eje personalizado inmediatamente sin esperar la detección de combate."
 msgid "Characters"
 msgstr "Personajes"
 

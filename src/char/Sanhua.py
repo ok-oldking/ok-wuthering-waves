@@ -4,9 +4,9 @@ from src.char.BaseChar import BaseChar
 
 
 class Sanhua(BaseChar):
-    def do_perform(self):
+    def _preinput_heavy_attack(self, duration=0.85):
         liber_clicked = False
-        sleep_time = 0.85
+        sleep_time = duration
         self.sleep(0.02)
         start = time.time()
         self.task.mouse_down()
@@ -26,6 +26,19 @@ class Sanhua(BaseChar):
         if sleep_time > 0:
             self.sleep(sleep_time, False)
         self.task.mouse_up()
+        return liber_clicked
+
+    def custom_axis_heavy_attack(self, duration=None):
+        self._preinput_heavy_attack(duration if duration is not None else 0.85)
+        self.sleep(0.01)
+
+    def custom_axis_liberation(self):
+        if not self.liberation_available():
+            return False
+        return self._preinput_heavy_attack(0.85)
+
+    def do_perform(self):
+        liber_clicked = self._preinput_heavy_attack(0.85)
         self.sleep(0.8)
         if liber_clicked:
             self.click_resonance(send_click=False)

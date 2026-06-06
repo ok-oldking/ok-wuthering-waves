@@ -73,6 +73,33 @@ msgid ""
 "click"
 msgstr "关闭时仅在手动鼠标中键选取敌人后才会自动战斗"
 
+msgid "Auto Start Axis on F"
+msgstr "识别F后自动开轴"
+
+msgid "When not in combat, detect the F interaction icon by template only, press F, and start the auto combat or custom axis flow after combat begins."
+msgstr "未进入战斗时，只用F图标模板识别交互；识别到后按F，进入战斗后自动开始普通战斗或自定义队伍轴流程。"
+
+msgid "Custom Axis Control"
+msgstr "自定义轴控制"
+
+msgid "Independent custom-axis behavior switches"
+msgstr "独立的自定义轴行为开关"
+
+msgid "Detect the F interaction icon outside combat and press F to start the combat axis"
+msgstr "未进入战斗时识别F交互图标并按F启动战斗轴"
+
+msgid "Custom Axis Retry Until Success"
+msgstr "轴动作失败重试到成功"
+
+msgid "When enabled, failed custom-axis actions retry every 0.05 seconds and block the next action until success."
+msgstr "开启后，自定义轴动作失败会每0.05秒重试一次，成功前不会进入下一个动作。"
+
+msgid "Custom Axis Global F"
+msgstr "轴全局F检测"
+
+msgid "When enabled, every custom-axis action checks the same F interaction logic used by axis F actions before and after the action."
+msgstr "开启后，每个自定义轴动作前后都会执行轴F动作使用的同一套F交互判断。"
+
 msgid "Repeat Farm Count"
 msgstr "刷多少次"
 
@@ -847,6 +874,12 @@ msgstr "例如德尼亚，从上到下，从1开始"
 
 msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
 msgstr "例如无铭探索者，从上到下，从1开始"
+
+msgid "Axis Start Delay Seconds"
+msgstr "F后开轴等待秒数"
+
+msgid "After pressing F, wait this many seconds, then start the custom axis immediately without waiting for combat detection."
+msgstr "按F后等待这个秒数，然后不等待战斗检测，立即开始自定义轴。"
 
 msgid "Characters"
 msgstr "角色"

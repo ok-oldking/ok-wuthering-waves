@@ -326,6 +326,40 @@ class TestChar(TaskTestCase):
         aemeath.last_liber = time.time() - aemeath.LIBERATION_FORCE_DURATION
         self.assertTrue(aemeath.lib())
 
+    def test_aemeath_custom_axis_records_intro_and_uses_visible_lib1(self):
+        class Task:
+            combat_start = time.time()
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+            def find_one(self, template, threshold=None):
+                return False
+
+        class TrackingAemeath(Aemeath):
+            def __init__(self, task):
+                super().__init__(task, 0)
+                self.clicked = 0
+
+            def liberation_available(self, check_color=True):
+                return True
+
+            def click_liberation(self, **kwargs):
+                self.clicked += 1
+                return True
+
+            def f_break(self):
+                pass
+
+        aemeath = TrackingAemeath(Task())
+        self.assertFalse(aemeath.can_cast_lib1())
+        self.assertTrue(aemeath.custom_axis_liberation())
+        self.assertEqual(aemeath.clicked, 1)
+
+        intro = TrackingAemeath(Task())
+        intro.custom_axis_on_switch_in(has_intro=True)
+        self.assertTrue(intro.intro_lib1_ready())
+
     def test_aemeath_force_liberation_starts_at_combat_entry_and_lib2_bypasses_cooldown(self):
         class Task:
             def __init__(self):
@@ -497,7 +531,236 @@ class TestChar(TaskTestCase):
         aemeath.intro_liberation_time = time.time() - aemeath.INTRO_LIBERATION_DELAY + 0.1
         aemeath.perform_everything()
         self.assertEqual(aemeath.actions, ['lib1'])
+
+    def test_aemeath_custom_axis_states_use_character_specific_checks(self):
+        class Task:
+            def __init__(self):
+                self.combat_start = time.time()
+                self.templates = set()
+                self.mouse_events = []
+                self.frames = 0
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+            def find_one(self, template, threshold=None):
+                return template in self.templates
+
+            def mouse_down(self):
+                self.mouse_events.append('down')
+
+            def mouse_up(self):
+                self.mouse_events.append('up')
+
+            def next_frame(self):
+                self.frames += 1
+
+        task = Task()
+        aemeath = Aemeath(task, 0)
+        task.templates.add('aemeath_e1')
+        self.assertEqual(aemeath.custom_axis_state_value('技能'), 1)
+        self.assertEqual(aemeath.custom_axis_state_value('e_cd'), 0)
+
+        task.templates.clear()
+        task.templates.add('aemeath_lib2')
+        aemeath.pending_lib2 = True
+        self.assertEqual(aemeath.custom_axis_state_value('大招'), 1)
+        self.assertEqual(aemeath.custom_axis_state_value('lib2_ready'), 1)
+        self.assertEqual(aemeath.custom_axis_state_value('wait_lib2'), 1)
+        self.assertEqual(aemeath.custom_axis_state_value('重击'), 0)
+
+        class TrackingAemeath(Aemeath):
+            def has_long_action(self):
+                return True
+
+            def heavy_wait_highlight_down(self):
+                return True
+
+        heavy = TrackingAemeath(task, 0)
+        heavy.last_liber = time.time() - heavy.LIBERATION_COOLDOWN
+        self.assertEqual(heavy.custom_axis_state_value('重击'), 1)
+        self.assertTrue(heavy.custom_axis_heavy_attack(0.8))
+        self.assertTrue(heavy.pending_lib2)
         self.assertEqual(aemeath.intro_liberation_time, -1)
+
+    def test_aemeath_custom_axis_e_does_not_preclick_attack(self):
+        class Task:
+            def __init__(self):
+                self.combat_start = time.time()
+                self.clicks = 0
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+            def find_one(self, template, threshold=None):
+                return False
+
+            def click(self, *args, **kwargs):
+                self.clicks += 1
+
+        class TrackingAemeath(Aemeath):
+            def __init__(self, task):
+                super().__init__(task, 0)
+                self.resonance_calls = []
+
+            def enhance_e_available(self):
+                return True
+
+            def click_resonance(self, **kwargs):
+                self.resonance_calls.append(kwargs)
+                if kwargs.get("send_click", True):
+                    self.task.click()
+                return True, None, None
+
+        task = Task()
+        aemeath = TrackingAemeath(task)
+
+        self.assertTrue(aemeath.custom_axis_resonance(timeout=0.5))
+        self.assertEqual(task.clicks, 0)
+        self.assertFalse(aemeath.resonance_calls[0]["send_click"])
+
+    def test_aemeath_custom_axis_role_flow_auto_attacks_until_lib2_finishes(self):
+        class Task:
+            def __init__(self):
+                self.combat_start = time.time()
+                self.frames = 0
+                self.clicks = 0
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return self.frames * 0.1
+
+            def find_one(self, template, threshold=None):
+                return False
+
+            def next_frame(self):
+                self.frames += 1
+
+            def click(self, *args, **kwargs):
+                self.clicks += 1
+
+        class TrackingAemeath(Aemeath):
+            def __init__(self, task):
+                super().__init__(task, 0)
+                self.lib_calls = 0
+
+            def handle_heavy(self):
+                return False
+
+            def enhance_e_available(self):
+                return False
+
+            def lib(self):
+                self.lib_calls += 1
+                if self.lib_calls == 2:
+                    self.record_liberation(True)
+                    return True
+                return False
+
+        task = Task()
+        aemeath = TrackingAemeath(task)
+
+        self.assertTrue(aemeath.custom_axis_role_flow())
+        self.assertEqual(aemeath.lib_calls, 2)
+        self.assertGreaterEqual(task.clicks, 1)
+        self.assertFalse(aemeath.pending_lib2)
+
+    def test_aemeath_custom_axis_role_flow_can_cast_visible_lib2_immediately(self):
+        class Task:
+            def __init__(self):
+                self.combat_start = time.time()
+                self.templates = {'aemeath_lib2'}
+                self.frames = 0
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return self.frames * 0.1
+
+            def find_one(self, template, threshold=None):
+                return template in self.templates
+
+            def next_frame(self):
+                self.frames += 1
+
+        class TrackingAemeath(Aemeath):
+            def __init__(self, task):
+                super().__init__(task, 0)
+                self.clicked = 0
+                self.perform_calls = 0
+
+            def click_liberation(self, **kwargs):
+                self.clicked += 1
+                return True
+
+            def perform_everything(self):
+                self.perform_calls += 1
+
+            def f_break(self):
+                pass
+
+        aemeath = TrackingAemeath(Task())
+
+        self.assertTrue(aemeath.custom_axis_role_flow())
+        self.assertEqual(aemeath.clicked, 1)
+        self.assertEqual(aemeath.perform_calls, 0)
+        self.assertGreater(aemeath.last_liber, 0)
+
+    def test_aemeath_custom_axis_role_flow_enhance_e_does_not_preclick_attack(self):
+        class Task:
+            def __init__(self):
+                self.combat_start = time.time()
+                self.frames = 0
+                self.clicks = 0
+                self.actions = []
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return self.frames * 0.1
+
+            def find_one(self, template, threshold=None):
+                return False
+
+            def next_frame(self):
+                self.frames += 1
+
+            def click(self, *args, **kwargs):
+                self.clicks += 1
+                self.actions.append('attack')
+
+        class TrackingAemeath(Aemeath):
+            CUSTOM_AXIS_ROLE_FLOW_TIMEOUT = 0.2
+
+            def __init__(self, task):
+                super().__init__(task, 0)
+                self.resonance_calls = []
+                self.echo_calls = 0
+
+            def handle_heavy(self):
+                return False
+
+            def enhance_e_available(self):
+                return not self.resonance_calls
+
+            def click_resonance(self, **kwargs):
+                self.resonance_calls.append(kwargs)
+                self.task.actions.append('resonance')
+                return True, None, None
+
+            def click_echo(self, *args, **kwargs):
+                self.echo_calls += 1
+                return True
+
+            def f_break(self):
+                pass
+
+            def lib(self):
+                return False
+
+        task = Task()
+        aemeath = TrackingAemeath(task)
+
+        self.assertFalse(aemeath.custom_axis_role_flow())
+        self.assertEqual(task.actions[0], 'resonance')
+        self.assertGreaterEqual(task.clicks, 1)
+        self.assertFalse(aemeath.resonance_calls[0]["send_click"])
+        self.assertEqual(aemeath.echo_calls, 1)
 
     def test_switch_priority_hooks(self):
         class Task:
@@ -570,7 +833,7 @@ class TestChar(TaskTestCase):
         combat.update_lib_portrait_icon = lambda: None
         combat.check_combat = lambda: None
         combat.log_debug = lambda *args, **kwargs: None
-        combat.click = lambda: None
+        combat.click = lambda: actions.append('click')
         combat.sleep = lambda *args, **kwargs: None
         combat.add_freeze_duration = lambda *args, **kwargs: None
         current.f_break = lambda **kwargs: actions.append('f_break')
@@ -649,7 +912,7 @@ class TestChar(TaskTestCase):
         combat.update_lib_portrait_icon = lambda: None
         combat.check_combat = lambda: None
         combat.log_debug = lambda *args, **kwargs: None
-        combat.click = lambda: None
+        combat.click = lambda: actions.append('click')
         combat.sleep = lambda *args, **kwargs: None
 
         def f_break(**kwargs):

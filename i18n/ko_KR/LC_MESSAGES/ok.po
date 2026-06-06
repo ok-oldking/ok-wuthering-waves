@@ -73,6 +73,12 @@ msgid ""
 "click"
 msgstr "끄면 마우스 휠 클릭으로 적을 수동 지정했을 때에만 자동 전투가 작동합니다"
 
+msgid "Auto Start Axis on F"
+msgstr "F 감지 후 축 자동 시작"
+
+msgid "When not in combat, detect the F interaction icon by template only, press F, and start the auto combat or custom axis flow after combat begins."
+msgstr "전투 중이 아닐 때 F 상호작용 아이콘만 템플릿으로 감지해 F를 누르고, 전투가 시작되면 일반 전투 또는 커스텀 축 흐름을 시작합니다."
+
 msgid "Repeat Farm Count"
 msgstr "반복 파밍 횟수"
 
@@ -811,6 +817,32 @@ msgstr "예: Denia, 위에서 아래로, 1부터 시작"
 msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
 msgstr "예: Nameless Explorer, 위에서 아래로, 1부터 시작"
 
+msgid "Custom Axis Control"
+msgstr "커스텀 축 제어"
+
+msgid "Independent custom-axis behavior switches"
+msgstr "독립적인 커스텀 축 동작 스위치"
+
+msgid "Detect the F interaction icon outside combat and press F to start the combat axis"
+msgstr "전투 밖에서 F 상호작용 아이콘을 감지하고 F를 눌러 전투 축을 시작합니다"
+
+msgid "Custom Axis Retry Until Success"
+msgstr "성공할 때까지 커스텀 축 동작 재시도"
+
+msgid "When enabled, failed custom-axis actions retry every 0.05 seconds and block the next action until success."
+msgstr "활성화하면 실패한 커스텀 축 동작을 0.05초마다 재시도하며, 성공할 때까지 다음 동작으로 넘어가지 않습니다."
+
+msgid "Custom Axis Global F"
+msgstr "커스텀 축 전역 F 감지"
+
+msgid "When enabled, every custom-axis action checks the same F interaction logic used by axis F actions before and after the action."
+msgstr "활성화하면 모든 커스텀 축 동작 전후에 축의 F 동작과 동일한 F 상호작용 판단을 실행합니다."
+
+msgid "Axis Start Delay Seconds"
+msgstr "F 후 축 시작 대기 시간(초)"
+
+msgid "After pressing F, wait this many seconds, then start the custom axis immediately without waiting for combat detection."
+msgstr "F를 누른 뒤 이 시간만큼 기다린 후, 전투 감지를 기다리지 않고 즉시 커스텀 축을 시작합니다."
 msgid "Characters"
 msgstr "캐릭터"
 

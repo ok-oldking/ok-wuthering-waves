@@ -15,10 +15,14 @@ class Camellya(BaseChar):
         self.forte_drop_timestamp = 0
         self.forte_diff_buffer = []
         self.last_forte = 0
+        self.last_crimson_bud_stacks = 0.0
+        self.last_crimson_bud_stack_time = -1
 
     def reset_state(self):
         super().reset_state()
         self.waiting_for_forte_drop = False
+        self.last_crimson_bud_stacks = 0.0
+        self.last_crimson_bud_stack_time = -1
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if has_intro:
@@ -154,7 +158,38 @@ class Camellya(BaseChar):
         while self.ephemeral_ready():
             self.send_resonance_key()
             self.sleep(0.1)
+        self.record_crimson_bud_stacks(0)
         self.sleep(1.1)
+
+    def custom_axis_state_value(self, state):
+        if state in {'buff', 'bud', 'buds', 'stack', 'stacks', 'crimson_bud', 'crimson_buds',
+                     '层', '层数', '花蕾', '红椿蕊'}:
+            return self.get_crimson_bud_stacks()
+        return None
+
+    def record_crimson_bud_stacks(self, stacks):
+        self.last_crimson_bud_stacks = max(0.0, min(10.0, float(stacks)))
+        self.last_crimson_bud_stack_time = time.time() if self.last_crimson_bud_stacks > 0 else -1
+
+    def get_crimson_bud_stacks(self):
+        if not self.is_current_char:
+            return self._cached_crimson_bud_stacks()
+        if self.task.find_one('camellya_budding', threshold=0.7):
+            self.record_crimson_bud_stacks(0)
+            return 0
+        forte = self.get_forte()
+        if forte < 0:
+            return self._cached_crimson_bud_stacks()
+        stacks = (1.0 - max(0.0, min(1.0, float(forte)))) * 10
+        if stacks > self.last_crimson_bud_stacks:
+            self.record_crimson_bud_stacks(stacks)
+        return self._cached_crimson_bud_stacks()
+
+    def _cached_crimson_bud_stacks(self):
+        if self.last_crimson_bud_stack_time > 0 and self.time_elapsed_accounting_for_freeze(
+                self.last_crimson_bud_stack_time) > 15:
+            self.record_crimson_bud_stacks(0)
+        return self.last_crimson_bud_stacks
 
     def get_forte(self, budding=False):
         box = self.task.box_of_screen_scaled(3840, 2160, 1630, 2002, 2176, 2004, name='camellya_forte', hcenter=True)

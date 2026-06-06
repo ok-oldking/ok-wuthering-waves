@@ -811,7 +811,9 @@ class BaseChar:
             if until_con_full and self.is_con_full():
                 return
             self.task.click()
-            self.sleep(interval)
+            remaining = duration - (time.time() - start)
+            if remaining > 0:
+                self.sleep(min(interval, remaining))
         self.sleep(after_sleep)
 
     def continues_click(self, key, duration, interval=0.1):

@@ -52,8 +52,11 @@ config = {
     'config_folder': 'configs',
     'blur_area': blur_area,
     'gui_icon': 'icon.png',
-    'global_configs': [key_config_option, char_config_option, monthly_card_config_option],
-    'custom_tabs': [["src.gui.CharacterCodeTab", "CharacterCodeTab"]],
+    'global_configs': [
+        key_config_option,
+        char_config_option,
+        monthly_card_config_option,
+    ],
     'ocr': {
         'lib': 'onnxocr',
         'auto_simplify': True,
@@ -138,6 +141,10 @@ config = {
     'launcher_log_file': 'logs/launcher.log',
     'launcher_error_log_file': 'logs/launcher_error.log',
     'version': version,
+    'custom_tabs': [
+        ["src.gui.CharacterCodeTab", "CharacterCodeTab"],
+        ["src.ui.CombatAxisTab", "CombatAxisTab"],
+    ],
     'onetime_tasks': [  # tasks to execute
         ["src.task.DailyTask", "DailyTask"],
         ["src.task.MultiAccountDailyTask", "MultiAccountDailyTask"],
@@ -151,7 +158,10 @@ config = {
         ["src.task.ChangeEchoTask", "ChangeEchoTask"],
         # ["src.task.DiagnosisTask", "DiagnosisTask"],
     ], 'trigger_tasks': [
-        ["src.task.AutoCombatTask", "AutoCombatTask"],
+        ["src.task.AutoStartAxisFTask", "AutoStartAxisFTask"],
+        ["src.task.CustomAxisRetryTask", "CustomAxisRetryTask"],
+        ["src.task.CustomAxisGlobalFTask", "CustomAxisGlobalFTask"],
+        ["src.task.TeamAxisAutoCombatTask", "TeamAxisAutoCombatTask"],
         ["src.task.AutoPickTask", "AutoPickTask"],
         ["src.task.SkipDialogTask", "AutoDialogTask"],
         ["src.task.AutoLoginTask", "AutoLoginTask"],

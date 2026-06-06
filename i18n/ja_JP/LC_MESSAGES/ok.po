@@ -73,6 +73,12 @@ msgid ""
 "click"
 msgstr "オフにすると、マウスの中ボタンで手動で敵をターゲットした時のみ自動戦闘が有効になります"
 
+msgid "Auto Start Axis on F"
+msgstr "F検出で軸を自動開始"
+
+msgid "When not in combat, detect the F interaction icon by template only, press F, and start the auto combat or custom axis flow after combat begins."
+msgstr "非戦闘中にFインタラクションアイコンだけをテンプレート検出し、Fを押します。戦闘開始後に通常戦闘またはカスタム軸を開始します。"
+
 msgid "Repeat Farm Count"
 msgstr "周回数"
 
@@ -809,6 +815,32 @@ msgstr "例: Denia。上から下へ、1から開始"
 msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
 msgstr "例: Nameless Explorer。上から下へ、1から開始"
 
+msgid "Custom Axis Control"
+msgstr "カスタム軸制御"
+
+msgid "Independent custom-axis behavior switches"
+msgstr "独立したカスタム軸動作スイッチ"
+
+msgid "Detect the F interaction icon outside combat and press F to start the combat axis"
+msgstr "戦闘外でFインタラクションアイコンを検出し、Fを押して戦闘軸を開始します"
+
+msgid "Custom Axis Retry Until Success"
+msgstr "成功するまでカスタム軸動作を再試行"
+
+msgid "When enabled, failed custom-axis actions retry every 0.05 seconds and block the next action until success."
+msgstr "有効にすると、失敗したカスタム軸動作を0.05秒ごとに再試行し、成功するまで次の動作に進みません。"
+
+msgid "Custom Axis Global F"
+msgstr "カスタム軸グローバルF検出"
+
+msgid "When enabled, every custom-axis action checks the same F interaction logic used by axis F actions before and after the action."
+msgstr "有効にすると、すべてのカスタム軸動作の前後で、軸のF動作と同じFインタラクション判定を実行します。"
+
+msgid "Axis Start Delay Seconds"
+msgstr "F後に軸を開始する待機秒数"
+
+msgid "After pressing F, wait this many seconds, then start the custom axis immediately without waiting for combat detection."
+msgstr "Fを押した後、この秒数だけ待機し、戦闘検出を待たずにすぐカスタム軸を開始します。"
 msgid "Characters"
 msgstr "キャラクター"
 
