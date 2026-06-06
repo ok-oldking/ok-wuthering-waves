@@ -112,7 +112,7 @@ jobs:
           build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
 
       - name: Upload unsigned EXE artifact
-        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
+        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
         id: upload-unsigned-artifact
         uses: actions/upload-artifact@v4
         with:
