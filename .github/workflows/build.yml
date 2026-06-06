@@ -14,6 +14,7 @@ jobs:
     env:
       PYTHONIOENCODING: 'UTF-8'
       SIGN_BUILD: 'true'
+      USE_RELEASE: 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.3.74'
 
     strategy:
       matrix:
@@ -96,12 +97,19 @@ jobs:
           "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           Write-Host "Release version: $isRelease"
 
-      - name: pyappify build-exe-only
+      - name: pyappify build-exe-only use_release
         id: build-exe-only
         uses: ok-oldking/pyappify-action@master
+        if: env.USE_RELEASE != ''
         with:
-          #          build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
-          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.3.74
+          use_release: ${{ env.USE_RELEASE }}
+
+      - name: pyappify build-exe-only build_exe_only
+        id: build-exe-only
+        uses: ok-oldking/pyappify-action@master
+        if: env.USE_RELEASE == ''
+        with:
+          build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
 
       - name: Upload unsigned EXE artifact
         if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
