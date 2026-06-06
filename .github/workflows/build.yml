@@ -98,13 +98,13 @@ jobs:
           Write-Host "Release version: $isRelease"
 
       - name: pyappify build-exe-only use_release
-        id: build-exe-only
+        id: build-exe-only-use_release
         uses: ok-oldking/pyappify-action@master
         if: env.USE_RELEASE != ''
         with:
           use_release: ${{ env.USE_RELEASE }}
 
-      - name: pyappify build-exe-only build_exe_only
+      - name: pyappify build-exe-only
         id: build-exe-only
         uses: ok-oldking/pyappify-action@master
         if: env.USE_RELEASE == ''
