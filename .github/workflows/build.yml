@@ -120,7 +120,7 @@ jobs:
           path: ${{ steps.build-exe-only.outputs.exe-path }}
 
       - name: Sign EXE
-        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
+        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
