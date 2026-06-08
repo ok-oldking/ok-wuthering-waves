@@ -76,9 +76,6 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 and self.config.get('Which to Farm', self.support_tasks[0]) != self.support_tasks[0]
         )
 
-        if need_nightmare or need_stamina:
-            self.go_to_tower(opened=True)
-
         if need_nightmare:
             try:
                 # 劫持 NightmareNestTask.ensure_main 避免梦魇打完关书

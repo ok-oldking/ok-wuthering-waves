@@ -1214,6 +1214,16 @@
             "id": 240,
             "name": "switch_account",
             "supercategory": ""
+        },
+        {
+            "id": 241,
+            "name": "char_rebecca",
+            "supercategory": ""
+        },
+        {
+            "id": 243,
+            "name": "char_lucy",
+            "supercategory": ""
         }
     ],
     "images": [
@@ -1835,7 +1845,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/35.png",
+            "file_name": "images/36.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -1862,7 +1872,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/36.png",
+            "file_name": "images/37.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -1871,7 +1881,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/37.png",
+            "file_name": "images/38.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -1988,7 +1998,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/38.png",
+            "file_name": "images/39.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -2227,7 +2237,7 @@
         },
         {
             "id": 241,
-            "file_name": "images/39.png",
+            "file_name": "images/40.png",
             "width": 2048,
             "height": 1152
         },
@@ -2258,6 +2268,12 @@
         {
             "id": 246,
             "file_name": "images/33.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 247,
+            "file_name": "images/35.png",
             "width": 1920,
             "height": 1080
         }
@@ -3821,6 +3837,32 @@
                 42
             ],
             "area": 1806,
+            "iscrowd": 0
+        },
+        {
+            "id": 112,
+            "image_id": 247,
+            "category_id": 243,
+            "bbox": [
+                1783,
+                226,
+                30,
+                38
+            ],
+            "area": 1140,
+            "iscrowd": 0
+        },
+        {
+            "id": 113,
+            "image_id": 247,
+            "category_id": 241,
+            "bbox": [
+                1776,
+                365,
+                41,
+                40
+            ],
+            "area": 1640,
             "iscrowd": 0
         },
         {
