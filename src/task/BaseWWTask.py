@@ -1091,7 +1091,6 @@ class BaseWWTask(BaseTask):
         self.send_key(self.key_config.get('Jump Key'), after_sleep=after_sleep)
 
     def go_to_tower(self, opened=False):
-        breakpoint()
         self.log_info('go to tower')
         if not opened:
             self.ensure_main(time_out=80)
