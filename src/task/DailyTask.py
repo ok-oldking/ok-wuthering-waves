@@ -164,20 +164,9 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def claim_daily(self):
         self.info_set('current task', 'claim daily')
-        total_points = self.get_total_daily_points()
-        if total_points < 100:
-            self.ensure_main(time_out=5)
-            self.open_daily()
-            self.sleep(1)
-            self.log_info('claim pending daily quest rewards before claiming daily chest')
-            self.click(0.87, 0.18, after_sleep=0.5)
-            self.sleep(1)
-            total_points = self.get_total_daily_points()
-
-        self.info_set('daily points', total_points)
-        if total_points < 100:
-            raise Exception("Can't complete daily task, may need to increase stamina manually!")
-
+        if not self.find_one('boss_proceed', box=self.box_of_screen(0.803, 0.189, 0.960, 0.312)):
+            self.log_info('no_boss_proceed, click claim')
+            self.click(0.881, 0.237, after_sleep=2)
         self.click_daily_reward_box(100)
         self.ensure_main(time_out=10)
 
