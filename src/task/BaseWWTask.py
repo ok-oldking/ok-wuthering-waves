@@ -938,20 +938,18 @@ class BaseWWTask(BaseTask):
         self.log_info(f'open_boss_book {name}')
         x = 0.24
         self.sleep(0.4)
-        if name == 'wuyin':
-            y = 0.49
-        elif name == 'canxiang':
-            y = 0.81
-        elif name == 'zhange':
-            y = 0.6
-        elif name == 'mengyan':
-            y = 0.7
-        elif name == 'moni':
+        if name == 'lingyu':
             y = 0.28
-        elif name == 'canxiang':
-            y = 0.81
-        elif name == 'qiangdi':
+        elif name == 'moni':
             y = 0.39
+        elif name == 'qiangdi':
+            y = 0.49
+        elif name == 'wuyin':
+            y = 0.6
+        elif name == 'zhange':
+            y = 0.7
+        elif name == 'mengyan':
+            y = 0.81
         else:
             raise Exception(f'unknown_lang {name}')
 
@@ -1093,6 +1091,7 @@ class BaseWWTask(BaseTask):
         self.send_key(self.key_config.get('Jump Key'), after_sleep=after_sleep)
 
     def go_to_tower(self, opened=False):
+        breakpoint()
         self.log_info('go to tower')
         if not opened:
             self.ensure_main(time_out=80)
