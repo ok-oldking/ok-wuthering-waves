@@ -34,8 +34,15 @@ class BaseWWTask(BaseTask):
         self.char_config = self.get_global_config('Character Config')
         self.key_config = self.get_global_config('Game Hotkey')  # 游戏热键配置
         self.next_monthly_card_start = 0
-        self._logged_in = False
         self.scene: WWScene | None = None
+
+    @property
+    def logged_in(self):
+        return og.my_app.logged_in
+
+    @logged_in.setter
+    def logged_in(self, value):
+        og.my_app.logged_in = value
 
     def is_open_world_auto_combat(self):
         from src.task.AutoCombatTask import AutoCombatTask
@@ -674,7 +681,7 @@ class BaseWWTask(BaseTask):
 
     def ensure_main(self, esc=True, time_out=30):
         self.info_set('current task', f'wait main esc={esc}')
-        if not self._logged_in:
+        if not self.logged_in:
             time_out = 600
         if not self.wait_until(lambda: self.is_main(esc=esc), time_out=time_out, raise_if_not_found=False):
             raise Exception('Please start in game world and in team!')
@@ -683,20 +690,20 @@ class BaseWWTask(BaseTask):
 
     def is_main(self, esc=True):
         if self.in_team_and_world():
-            self._logged_in = True
+            self.logged_in = True
             return True
         if self.wait_login():
             return True
         if self.handle_monthly_card():
             return False
-        if esc and self._logged_in:
+        if esc and self.logged_in:
             self.log_debug('main esc')
             self.back(after_sleep=2)
 
     def wait_login(self):
-        if not self._logged_in:
+        if not self.logged_in:
             if self.in_team_and_world():
-                self._logged_in = True
+                self.logged_in = True
                 return True
             self.handle_monthly_card()
             if login_close := self.find_one('login_close', horizontal_variance=0.15, vertical_variance=0.1):
@@ -889,7 +896,7 @@ class BaseWWTask(BaseTask):
             else:
                 exist_count += 1
         if exist_count == 2 or exist_count == 1:
-            self._logged_in = True
+            self.logged_in = True
             return True, current, exist_count + 1
         else:
             return False, -1, exist_count + 1
@@ -949,35 +956,32 @@ class BaseWWTask(BaseTask):
         elif name == 'zhange':
             y = 0.7
         elif name == 'mengyan':
-            y = 0.81
+            y = 0.86
         elif name == 'canxiang':
-            # 点击滚轮翻页
-            for _ in range(3):
-                self.click_relative(685 / 1920, 955 / 1080, after_sleep=after_sleep)
-            y = 0.81
+            self.click_relative(0.355, 0.876, after_sleep=after_sleep)
+            y = 0.86
         else:
             raise Exception(f'unknown_lang {name}')
         self.click_relative(x, y, after_sleep=after_sleep, name=name)
 
-    def openF2Book(self, feature="gray_book_all_monsters", opened=False):
+    def openF2Book(self, feature="gray_book_all_monsters"):
         if hasattr(self, 'reset_to_false'):
             self.reset_to_false('opening book')
-        if not opened:
-            self.log_info('click f2 to open the book')
-            if self.in_team_and_world():
-                self.log_info('send mouse key to open the book')
-                self.send_key_down('alt')
-                self.sleep(0.05)
-                self.click_relative(0.77, 0.05)
-                self.sleep(0.02)
-                self.send_key_up('alt')
-                self.sleep(3)
-            if self.in_team_and_world():
-                self.send_key('f2', after_sleep=3)
-                self.log_info('send f2 key to open the book failed, use f2')
-
+        self.ensure_main()
+        self.log_info('click f2 to open the book')
+        if self.in_team_and_world():
+            self.send_key('f2', after_sleep=4)
+            self.log_info('send f2 key to open')
+        if self.in_team_and_world():
+            self.log_info('send f2 key mouse key to open the book')
+            self.send_key_down('alt')
+            self.sleep(0.05)
+            self.click_relative(0.77, 0.05)
+            self.sleep(0.02)
+            self.send_key_up('alt')
+            self.sleep(4)
         gray_book_boss = self.wait_book(feature)
-        self.sleep(0.8)
+        self.sleep(1.2)
         if not gray_book_boss:
             self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
             raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")

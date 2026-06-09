@@ -1181,31 +1181,6 @@
             "supercategory": ""
         },
         {
-            "id": 234,
-            "name": "book_moni",
-            "supercategory": ""
-        },
-        {
-            "id": 235,
-            "name": "book_qiangdi",
-            "supercategory": ""
-        },
-        {
-            "id": 236,
-            "name": "book_zhange",
-            "supercategory": ""
-        },
-        {
-            "id": 237,
-            "name": "book_mengyan",
-            "supercategory": ""
-        },
-        {
-            "id": 238,
-            "name": "book_canxiang",
-            "supercategory": ""
-        },
-        {
             "id": 239,
             "name": "book_wuyin",
             "supercategory": ""
@@ -2177,13 +2152,13 @@
         },
         {
             "id": 231,
-            "file_name": "images/33.png",
+            "file_name": "images/35.png",
             "width": 1920,
             "height": 1080
         },
         {
             "id": 232,
-            "file_name": "images/34.png",
+            "file_name": "images/33.png",
             "width": 1920,
             "height": 1080
         },
@@ -2249,7 +2224,7 @@
         },
         {
             "id": 243,
-            "file_name": "images/34.png",
+            "file_name": "images/33.png",
             "width": 1920,
             "height": 1080
         },
@@ -2273,7 +2248,7 @@
         },
         {
             "id": 247,
-            "file_name": "images/35.png",
+            "file_name": "images/34.png",
             "width": 1920,
             "height": 1080
         }
@@ -2398,12 +2373,12 @@
             "image_id": 231,
             "category_id": 149,
             "bbox": [
-                1809,
-                260,
-                29,
+                1781,
+                404,
+                33,
                 60
             ],
-            "area": 1740,
+            "area": 1980,
             "iscrowd": 0
         },
         {
@@ -3051,8 +3026,8 @@
             "image_id": 232,
             "category_id": 150,
             "bbox": [
-                10,
-                110,
+                14,
+                115,
                 131,
                 812
             ],
@@ -3648,71 +3623,6 @@
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
-        },
-        {
-            "id": 98,
-            "image_id": 231,
-            "category_id": 234,
-            "bbox": [
-                211,
-                272,
-                55,
-                61
-            ],
-            "area": 3355,
-            "iscrowd": 0
-        },
-        {
-            "id": 99,
-            "image_id": 231,
-            "category_id": 235,
-            "bbox": [
-                200,
-                384,
-                70,
-                61
-            ],
-            "area": 4270,
-            "iscrowd": 0
-        },
-        {
-            "id": 100,
-            "image_id": 231,
-            "category_id": 236,
-            "bbox": [
-                205,
-                610,
-                63,
-                65
-            ],
-            "area": 4095,
-            "iscrowd": 0
-        },
-        {
-            "id": 101,
-            "image_id": 231,
-            "category_id": 237,
-            "bbox": [
-                203,
-                722,
-                71,
-                69
-            ],
-            "area": 4899,
-            "iscrowd": 0
-        },
-        {
-            "id": 102,
-            "image_id": 231,
-            "category_id": 238,
-            "bbox": [
-                203,
-                833,
-                69,
-                67
-            ],
-            "area": 4623,
-            "iscrowd": 0
         },
         {
             "id": 103,

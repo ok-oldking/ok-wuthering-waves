@@ -62,7 +62,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def run(self):
         WWOneTimeTask.run(self)
-        self._logged_in = False
+        self.logged_in = False
         self.ensure_main(time_out=180)
 
         condition1 = self.config.get('Auto Farm all Nightmare Nest')

@@ -131,7 +131,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
                 self.click(login_btn, after_sleep=3)
             else:
                 self.click_relative(0.5, 0.568, hcenter=True, vcenter=True, after_sleep=3)
-            self._logged_in = False
+            self.logged_in = False
             # self.update_capture({
             #     'windows': {
             #         'interaction': 'PostMessage',
