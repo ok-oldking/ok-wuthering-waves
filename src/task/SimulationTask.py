@@ -50,7 +50,7 @@ class SimulationTask(DomainTask):
         self.info_set('Teleport to Simulation Challenge', selection)
         self.click_relative(0.980, 0.875, after_sleep=1)
         btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.94, 0.26, 0.97, 0.88), threshold=0.8)
-        if btns is None:
+        if btns is None or len(btns) <= 0:
             raise Exception("can't find boss_proceed")
         top_btn = min(btns, key=lambda box: box.y)
         self.click_box(top_btn, after_sleep=1)
