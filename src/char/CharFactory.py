@@ -25,6 +25,7 @@ from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
 from src.char.Jiyan import Jiyan
 from src.char.Linnai import Linnai
+from src.char.Lucy import Lucy
 from src.char.Luhesi import Luhesi
 from src.char.Lupa import Lupa
 from src.char.Mortefi import Mortefi
@@ -32,6 +33,7 @@ from src.char.Mornye import Mornye
 from src.char.Phoebe import Phoebe
 from src.char.Phrolova import Phrolova
 from src.char.Qiuyuan import Qiuyuan
+from src.char.Rebecca import Rebecca
 from src.char.Roccia import Roccia
 from src.char.Sanhua import Sanhua
 from src.char.ShoreKeeper import ShoreKeeper
@@ -116,6 +118,8 @@ _char_dict_raw = {
     Labels.char_xigelika: {'cls': Xigelika, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.WIND},
     Labels.char_luhesi: {'cls': Luhesi, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
     Labels.char_hiyuki: {'cls': Hiyuki, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.ICE},
+    Labels.char_lucy: {'cls': Lucy, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
+    Labels.char_rebecca: {'cls': Rebecca, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ELECTRIC},
 }
 
 char_dict = {}

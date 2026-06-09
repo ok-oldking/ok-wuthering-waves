@@ -10,7 +10,9 @@ from src.char.Chisa import Chisa
 from src.char.Ciaccona import Ciaccona
 from src.char.Iuno import Iuno
 from src.char.Linnai import Linnai
+from src.char.Lucy import Lucy
 from src.char.Phrolova import Phrolova
+from src.char.Rebecca import Rebecca
 from src.char.Verina import Verina
 from src.task.AutoCombatTask import AutoCombatTask
 
@@ -48,6 +50,10 @@ class TestChar(TaskTestCase):
         self.assertEqual(char_dict[Labels.char_mortefi]['char_type'], CharType.SUB_DPS)
         self.assertEqual(char_dict[Labels.char_mortefi]['buff_time'], get_default_buff_time(CharType.SUB_DPS))
         self.assertEqual(char_dict[Labels.char_chisa]['buff_time'], 12)
+        self.assertEqual(char_dict[Labels.char_lucy]['cls'], Lucy)
+        self.assertEqual(char_dict[Labels.char_lucy]['char_type'], CharType.MAIN_DPS)
+        self.assertEqual(char_dict[Labels.char_rebecca]['cls'], Rebecca)
+        self.assertEqual(char_dict[Labels.char_rebecca]['char_type'], CharType.SUB_DPS)
         self.assertEqual(_get_char_type(task, char_dict[Labels.char_iuno]), CharType.SUB_DPS)
         self.assertEqual(_get_buff_time(task, char_dict[Labels.char_iuno]), get_default_buff_time(CharType.SUB_DPS))
         self.assertEqual(_get_buff_time(task, dict(char_dict[Labels.char_mortefi], buff_time=12)), 12)

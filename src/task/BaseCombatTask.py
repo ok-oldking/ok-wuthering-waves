@@ -33,6 +33,7 @@ class CharRevivedException(CharDeadException):
     """角色已复活，用于中断当前战斗上下文并让任务重新进入。"""
     pass
 
+
 mismatched_names = {
     "Douling": "Buling",
     "Xigelika": "Sigrika",
@@ -42,6 +43,7 @@ mismatched_names = {
     "ShoreKeeper": "Shorekeeper",
     "HavocRover": "Rover: Havoc"
 }
+
 
 class BaseCombatTask(CombatCheck):
     """基础战斗任务类，封装了游戏"鸣潮"中角色自动化操作的通用逻辑。"""
@@ -193,7 +195,6 @@ class BaseCombatTask(CombatCheck):
 
     def revive_at_tower_and_heal(self):
         """Use the weekly entrance as a stable anchor, then teleport to heal."""
-        self.go_to_tower()
         self.teleport_to_heal()
 
     def teleport_to_heal(self):
@@ -368,7 +369,7 @@ class BaseCombatTask(CombatCheck):
         unbuffed_non_main = [
             char for char in candidates
             if not char.is_main_dps and char.buff_time > 0
-            and not char.has_buff()
+               and not char.has_buff()
         ]
         return self._oldest_switch_target(unbuffed_non_main)
 
@@ -414,7 +415,7 @@ class BaseCombatTask(CombatCheck):
         no_targets = []
         for char in candidates:
             switch_priority = char.get_switch_priority(current_char=current_char, has_intro=has_intro,
-                                                        target_low_con=target_low_con)
+                                                       target_low_con=target_low_con)
             logger.debug(f'switch_next_char hook: {char} priority {switch_priority}')
             if switch_priority == SwitchPriority.MUST:
                 must_targets.append(char)

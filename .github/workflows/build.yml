@@ -14,6 +14,7 @@ jobs:
     env:
       PYTHONIOENCODING: 'UTF-8'
       SIGN_BUILD: 'true'
+      BUILD_EXE: 'false'
       USE_RELEASE: 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.3.74'
 
     strategy:
@@ -90,6 +91,7 @@ jobs:
 
       - name: Check release version
         id: release-version
+        if: env.BUILD_EXE == 'true'
         shell: pwsh
         run: |
           $tag = "${{ github.ref_name }}"
@@ -100,19 +102,19 @@ jobs:
       - name: pyappify build-exe-only use_release
         id: build-exe-only-use_release
         uses: ok-oldking/pyappify-action@master
-        if: env.USE_RELEASE != ''
+        if: env.BUILD_EXE == 'true' && env.USE_RELEASE != ''
         with:
           use_release: ${{ env.USE_RELEASE }}
 
       - name: pyappify build-exe-only
         id: build-exe-only
         uses: ok-oldking/pyappify-action@master
-        if: env.USE_RELEASE == ''
+        if: env.BUILD_EXE == 'true' && env.USE_RELEASE == ''
         with:
           build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
 
       - name: Upload unsigned EXE artifact
-        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
         id: upload-unsigned-artifact
         uses: actions/upload-artifact@v4
         with:
@@ -120,7 +122,7 @@ jobs:
           path: ${{ steps.build-exe-only.outputs.exe-path }}
 
       - name: Sign EXE
-        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
@@ -134,12 +136,12 @@ jobs:
           output-artifact-directory: ${{ steps.build-exe-only.outputs.exe-folder }}
 
       - name: pyappify build-setup-exe
-        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
         id: build-setup-exe
         uses: ok-oldking/pyappify-action@master
 
       - name: Upload unsigned setup EXE artifact
-        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
         id: upload-unsigned-setup-artifact
         uses: actions/upload-artifact@v4
         with:
@@ -148,7 +150,7 @@ jobs:
           if-no-files-found: error
 
       - name: Sign setup EXEs
-        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
@@ -163,7 +165,7 @@ jobs:
 
       - name: Release
         uses: softprops/action-gh-release@v2
-        if: steps.release-version.outputs.is_release == 'true' && startsWith(github.ref, 'refs/tags/')
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -183,7 +185,7 @@ jobs:
           files: pyappify_dist/*
 
       - name: Trigger MirrorChyanUploading
-        if: steps.release-version.outputs.is_release == 'true' && startsWith(github.ref, 'refs/tags/')
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && startsWith(github.ref, 'refs/tags/')
         shell: bash
         run: |
           gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_uploading

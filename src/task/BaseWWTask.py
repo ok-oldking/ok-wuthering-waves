@@ -34,8 +34,15 @@ class BaseWWTask(BaseTask):
         self.char_config = self.get_global_config('Character Config')
         self.key_config = self.get_global_config('Game Hotkey')  # 游戏热键配置
         self.next_monthly_card_start = 0
-        self._logged_in = False
         self.scene: WWScene | None = None
+
+    @property
+    def logged_in(self):
+        return og.my_app.logged_in
+
+    @logged_in.setter
+    def logged_in(self, value):
+        og.my_app.logged_in = value
 
     def is_open_world_auto_combat(self):
         from src.task.AutoCombatTask import AutoCombatTask
@@ -674,7 +681,7 @@ class BaseWWTask(BaseTask):
 
     def ensure_main(self, esc=True, time_out=30):
         self.info_set('current task', f'wait main esc={esc}')
-        if not self._logged_in:
+        if not self.logged_in:
             time_out = 600
         if not self.wait_until(lambda: self.is_main(esc=esc), time_out=time_out, raise_if_not_found=False):
             raise Exception('Please start in game world and in team!')
@@ -683,19 +690,20 @@ class BaseWWTask(BaseTask):
 
     def is_main(self, esc=True):
         if self.in_team_and_world():
-            self._logged_in = True
-            return True
-        if self.handle_monthly_card():
+            self.logged_in = True
             return True
         if self.wait_login():
             return True
-        if esc:
+        if self.handle_monthly_card():
+            return False
+        if esc and self.logged_in:
+            self.log_debug('main esc')
             self.back(after_sleep=2)
 
     def wait_login(self):
-        if not self._logged_in:
+        if not self.logged_in:
             if self.in_team_and_world():
-                self._logged_in = True
+                self.logged_in = True
                 return True
             self.handle_monthly_card()
             if login_close := self.find_one('login_close', horizontal_variance=0.15, vertical_variance=0.1):
@@ -731,9 +739,10 @@ class BaseWWTask(BaseTask):
                     self.log_info(f'点击开始游戏! {start}')
                     return False
             if switch_login := self.find_one(Labels.switch_account, vertical_variance=0.1, threshold=0.7):
-                self.log_info(f'wait_login {switch_login}')
-                self.click(0.503, 0.926, after_sleep=3)
-                return False
+                if boxes := self.find_boxes(texts, boundary=self.box_of_screen(0.37, 0.63, 0.63, 0.99)):
+                    self.log_info(f'wait_login {switch_login} {boxes}')
+                    self.click(0.503, 0.926, after_sleep=3)
+                    return False
 
     def in_team_and_world(self):
         return self.in_team()[
@@ -887,7 +896,7 @@ class BaseWWTask(BaseTask):
             else:
                 exist_count += 1
         if exist_count == 2 or exist_count == 1:
-            self._logged_in = True
+            self.logged_in = True
             return True, current, exist_count + 1
         else:
             return False, -1, exist_count + 1
@@ -932,51 +941,50 @@ class BaseWWTask(BaseTask):
         self.send_key_up('alt')
         self.sleep(0.5)
 
-    def open_boss_book(self, name, after_sleep=1):
+    def open_boss_book(self, name, after_sleep=2):
         self.log_info(f'open_boss_book {name}')
         x = 0.24
         self.sleep(0.4)
-        if name == 'wuyin':
-            y = 0.49
-        elif name == 'canxiang':
-            y = 0.81
-        elif name == 'zhange':
-            y = 0.6
-        elif name == 'mengyan':
-            y = 0.7
-        elif name == 'moni':
+        if name == 'ningsu':
             y = 0.28
-        elif name == 'canxiang':
-            y = 0.81
-        elif name == 'qiangdi':
+        elif name == 'moni':
             y = 0.39
+        elif name == 'qiangdi':
+            y = 0.49
+        elif name == 'wuyin':
+            y = 0.6
+        elif name == 'zhange':
+            y = 0.7
+        elif name == 'mengyan':
+            y = 0.86
+        elif name == 'canxiang':
+            self.click_relative(0.355, 0.876, after_sleep=after_sleep)
+            y = 0.86
         else:
             raise Exception(f'unknown_lang {name}')
-
         self.click_relative(x, y, after_sleep=after_sleep, name=name)
 
-    def openF2Book(self, feature="gray_book_all_monsters", opened=False):
+    def openF2Book(self, feature="gray_book_all_monsters"):
         if hasattr(self, 'reset_to_false'):
             self.reset_to_false('opening book')
-        if not opened:
-            self.log_info('click f2 to open the book')
-            if self.in_team_and_world():
-                self.log_info('send mouse key to open the book')
-                self.send_key_down('alt')
-                self.sleep(0.05)
-                self.click_relative(0.77, 0.05)
-                self.sleep(0.02)
-                self.send_key_up('alt')
-                self.sleep(3)
-            if self.in_team_and_world():
-                self.send_key('f2', after_sleep=3)
-                self.log_info('send f2 key to open the book failed, use f2')
-
+        self.ensure_main()
+        self.log_info('click f2 to open the book')
+        if self.in_team_and_world():
+            self.send_key('f2', after_sleep=4)
+            self.log_info('send f2 key to open')
+        if self.in_team_and_world():
+            self.log_info('send f2 key mouse key to open the book')
+            self.send_key_down('alt')
+            self.sleep(0.05)
+            self.click_relative(0.77, 0.05)
+            self.sleep(0.02)
+            self.send_key_up('alt')
+            self.sleep(4)
         gray_book_boss = self.wait_book(feature)
-        self.sleep(0.8)
         if not gray_book_boss:
             self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
             raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")
+        self.sleep(2)
         return gray_book_boss
 
     def click_traval_button(self):
@@ -1056,7 +1064,7 @@ class BaseWWTask(BaseTask):
             height = item_h * serial_number
             self.click(bar_x, bar_top + height, after_sleep=1)
         btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
-        if btns is None:
+        if not btns:
             raise Exception("can't find boss_proceed")
         if target_index > -1:
             target = btns[target_index]
@@ -1089,24 +1097,6 @@ class BaseWWTask(BaseTask):
 
     def jump(self, after_sleep=0.01):
         self.send_key(self.key_config.get('Jump Key'), after_sleep=after_sleep)
-
-    def go_to_tower(self, opened=False):
-        self.log_info('go to tower')
-        if not opened:
-            self.ensure_main(time_out=80)
-        gray_book_weekly = self.openF2Book(Labels.gray_book_weekly, opened=opened)
-        if not gray_book_weekly:
-            self.log_error('go_to_tower can not find gray_book_weekly')
-            return
-        self.click_box(gray_book_weekly, after_sleep=3)
-        btn = self.find_one(Labels.boss_proceed, box=self.box_of_screen(0.91, 0.3, 0.95, 0.41), threshold=0.8)
-        if btn is None:
-            self.ensure_main(time_out=20)
-            return
-        self.click_box(btn, after_sleep=1)
-        self.wait_click_travel()
-        self.wait_in_team_and_world(time_out=120)
-        self.sleep(1)
 
 
 book_bar_color = {

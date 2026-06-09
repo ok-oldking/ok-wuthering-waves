@@ -62,7 +62,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def run(self):
         WWOneTimeTask.run(self)
-        self._logged_in = False
+        self.logged_in = False
         self.ensure_main(time_out=180)
 
         condition1 = self.config.get('Auto Farm all Nightmare Nest')
@@ -75,9 +75,6 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 and not daily_reward_ready
                 and self.config.get('Which to Farm', self.support_tasks[0]) != self.support_tasks[0]
         )
-
-        if need_nightmare or need_stamina:
-            self.go_to_tower(opened=True)
 
         if need_nightmare:
             try:
@@ -167,27 +164,14 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def claim_daily(self):
         self.info_set('current task', 'claim daily')
-        total_points = self.get_total_daily_points()
-        if total_points < 100:
-            self.ensure_main(time_out=5)
-            self.open_daily()
-            self.sleep(1)
-            self.log_info('claim pending daily quest rewards before claiming daily chest')
-            self.click(0.87, 0.18, after_sleep=0.5)
-            self.sleep(1)
-            total_points = self.get_total_daily_points()
-
-        self.info_set('daily points', total_points)
-        if total_points < 100:
-            raise Exception("Can't complete daily task, may need to increase stamina manually!")
-
-        self.click_daily_reward_box(100)
+        self.openF2Book('gray_book_quest')
+        if not self.find_one('boss_proceed', box=self.box_of_screen(0.803, 0.189, 0.960, 0.312)):
+            self.log_info('no_boss_proceed, click claim')
+            # Click [Guidebook] in [Terminal] interface
+            self.click(0.885, 0.250, after_sleep=2)
+        self.log_info(f'claim daily reward via  coordinate')
+        self.click(0.930, 0.882, after_sleep=1)
         self.ensure_main(time_out=10)
-
-    def click_daily_reward_box(self, reward_points):
-        self.log_info(f'claim daily reward {reward_points} via fallback coordinate')
-        self.click(0.93, 0.88, after_sleep=1)
-        return False
 
     def claim_mail(self):
         self.info_set('current task', 'claim mail')
