@@ -166,6 +166,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.info_set('current task', 'claim daily')
         if not self.find_one('boss_proceed', box=self.box_of_screen(0.803, 0.189, 0.960, 0.312)):
             self.log_info('no_boss_proceed, click claim')
+            # Click [Guidebook] in [Terminal] interface
             self.click(1270 / 2560, 1050 / 1440, after_sleep=2)
         self.click_daily_reward_box(100)
         self.ensure_main(time_out=10)
