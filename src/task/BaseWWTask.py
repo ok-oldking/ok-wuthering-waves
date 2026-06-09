@@ -981,10 +981,10 @@ class BaseWWTask(BaseTask):
             self.send_key_up('alt')
             self.sleep(4)
         gray_book_boss = self.wait_book(feature)
-        self.sleep(1.2)
         if not gray_book_boss:
             self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
             raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")
+        self.sleep(2)
         return gray_book_boss
 
     def click_traval_button(self):
