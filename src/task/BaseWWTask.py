@@ -1060,7 +1060,7 @@ class BaseWWTask(BaseTask):
             height = item_h * serial_number
             self.click(bar_x, bar_top + height, after_sleep=1)
         btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
-        if btns is None:
+        if not btns:
             raise Exception("can't find boss_proceed")
         if target_index > -1:
             target = btns[target_index]
