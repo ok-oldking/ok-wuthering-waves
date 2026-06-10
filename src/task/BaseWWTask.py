@@ -693,12 +693,13 @@ class BaseWWTask(BaseTask):
             self.logged_in = True
             return True
         if self.wait_login():
-            return True
+            return False
         if self.handle_monthly_card():
             return False
-        if esc and self.logged_in:
+        if esc:
             self.log_debug('main esc')
             self.back(after_sleep=2)
+            return False
 
     def wait_login(self):
         if not self.logged_in:
