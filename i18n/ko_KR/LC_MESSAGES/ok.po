@@ -21,9 +21,7 @@ msgstr "단축키 오류! 단축키 설정이 올바른지 확인해주세요!"
 msgid "Can not switch to levitator please ensure you have equipped echos!"
 msgstr "레비테이터로 전환할 수 없습니다. 에코를 장착했는지 확인하세요!"
 
-msgid ""
-"(1-6) Important, Choose which level to farm, lower levels might not produce "
-"a echo"
+msgid "(1-6) Important, Choose which level to farm, lower levels might not produce a echo"
 msgstr "(1-6) 중요: 파밍할 레벨을 선택하세요. 낮은 레벨에서는 에코가 나오지 않을 수 있습니다."
 
 msgid "Boss1"
@@ -68,9 +66,7 @@ msgstr "공명 해방 키 (기본 r)"
 msgid "Auto Target"
 msgstr "자동 타겟팅"
 
-msgid ""
-"Turn off to enable auto combat only when manually target enemy using middle "
-"click"
+msgid "Turn off to enable auto combat only when manually target enemy using middle click"
 msgstr "끄면 마우스 휠 클릭으로 적을 수동 지정했을 때에만 자동 전투가 작동합니다"
 
 msgid "Repeat Farm Count"
@@ -199,12 +195,10 @@ msgstr "월정액 카드 설정"
 msgid "Monthly Card Time"
 msgstr "월정액 시간"
 
-msgid ""
-"Your computer's local time when the monthly card will popup, hour in (1-24)"
+msgid "Your computer's local time when the monthly card will popup, hour in (1-24)"
 msgstr "월정액 팝업이 표시될 현지 시간 (1~24시)"
 
-msgid ""
-"must be in game world and in teams, please check you game resolution is 16:9"
+msgid "must be in game world and in teams, please check you game resolution is 16:9"
 msgstr "게임 월드의 팀 상태여야 합니다. 게임 해상도가 16:9인지 확인하세요"
 
 msgid "Capture Frame Count"
@@ -249,9 +243,7 @@ msgstr "아니요"
 msgid "True"
 msgstr "예"
 
-msgid ""
-"Can't load game hotkey, please equip echos for all characters and use A-Z as"
-" hotkeys for skills, detected key:{}"
+msgid "Can't load game hotkey, please equip echos for all characters and use A-Z as hotkeys for skills, detected key:{}"
 msgstr "게임 단축키를 불러올 수 없습니다. 모든 캐릭터에 에코를 장착하고 스킬 단축키를 A-Z로 설정하세요. 감지된 키: {}"
 
 msgid "Tool Key"
@@ -323,9 +315,7 @@ msgstr "로렐라이"
 msgid "click f2 to open the book"
 msgstr "F2를 눌러 도감을 여세요"
 
-msgid ""
-"Check configs to keep, click start in game world, must be in a 16:9 screen "
-"ratio"
+msgid "Check configs to keep, click start in game world, must be in a 16:9 screen ratio"
 msgstr "유지할 설정을 확인한 뒤 게임 월드에서 시작을 클릭하세요. 화면 비율은 16:9여야 합니다"
 
 msgid "Boss"
@@ -448,17 +438,10 @@ msgstr "자동 에코 데이터 합성"
 msgid "Data Merge Completed!"
 msgstr "데이터 합성 완료!"
 
-msgid ""
-"Auto combat error: Make sure you're equipping echos and turn off effect that"
-" changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off "
-"Motion Blur in game video options"
-msgstr ""
-"자동 전투 오류: 에코를 장착하고 게임 색상을 바꾸는 효과(게임 감마/NVIDIA/AMD 게임 필터)를 끄고, 비디오 옵션에서 모션 "
-"블러를 꺼주세요."
+msgid "Auto combat error: Make sure you're equipping echos and turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off Motion Blur in game video options"
+msgstr "자동 전투 오류: 에코를 장착하고 게임 색상을 바꾸는 효과(게임 감마/NVIDIA/AMD 게임 필터)를 끄고, 비디오 옵션에서 모션 블러를 꺼주세요."
 
-msgid ""
-"Auto combat error: Make sure to turn off effect that changes the game color,"
-" (Game Gammar/Nvidia AMD Game Filter/HDR)"
+msgid "Auto combat error: Make sure to turn off effect that changes the game color, (Game Gammar/Nvidia AMD Game Filter/HDR)"
 msgstr "자동 전투 오류: 게임 색상을 바꾸는 효과(게임 감마/NVIDIA/AMD 게임 필터/HDR)를 꺼주세요."
 
 msgid "Auto Login"
@@ -488,9 +471,7 @@ msgstr "일일 임무"
 msgid "Dreamless"
 msgstr "무망자"
 
-msgid ""
-"Farms the selected Tacet Suppression, until no stamina. Must be able to "
-"teleport (F2)."
+msgid "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
 msgstr "선택한 무음구역을 스태미나가 소진될 때까지 파밍합니다. 텔레포트(F2)가 가능해야 합니다."
 
 msgid "Login, claim monthly card, farm echo, and claim daily reward"
@@ -538,9 +519,7 @@ msgstr "전투 후 자동 에코 줍기"
 msgid "Farm Map with Star Path"
 msgstr "별 경로로 맵 파밍"
 
-msgid ""
-"Farm world map with a marked path of stars (diamond as the starting point), "
-"start in the map screen"
+msgid "Farm world map with a marked path of stars (diamond as the starting point), start in the map screen"
 msgstr "별로 표시한 경로를 따라 월드 맵을 파밍합니다. 시작점은 다이아몬드이며, 지도 화면에서 시작하세요."
 
 msgid "Stars"
@@ -561,15 +540,13 @@ msgstr "던전/월드에서 4코스트 에코 파밍"
 msgid "Combat Wait Time"
 msgstr "전투 대기 시간 (초)"
 
-msgid ""
-"Wait time before each combat(seconds), set 5 if farming Sentry Construct"
+msgid "Wait time before each combat(seconds), set 5 if farming Sentry Construct"
 msgstr "각 전투 전 대기 시간(초). 이성 무장 파밍 시 5로 설정하세요."
 
 msgid "Simulation Challenge"
 msgstr "시뮬레이션 영역"
 
-msgid ""
-"Farms the selected Simulation Challenge. Must be able to teleport (F2)."
+msgid "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
 msgstr "선택한 시뮬레이션 영역을 파밍합니다. 텔레포트(F2)가 가능해야 합니다."
 
 msgid "Material Selection"
@@ -602,8 +579,7 @@ msgstr "F2 목록에서 몇 번째 응소의 영역인지."
 msgid "not enough stamina"
 msgstr "스태미나 부족"
 
-msgid ""
-"Click skill failed, check if the keybinding is correct in ok-ww settings!"
+msgid "Click skill failed, check if the keybinding is correct in ok-ww settings!"
 msgstr "스킬 사용 실패, ok-ww 설정에서 키 바인딩이 올바른지 확인하세요!"
 
 msgid "Change Time to Night"
@@ -765,12 +741,8 @@ msgstr "선택한 계정 확인됨: {account}"
 msgid "Account display does not match, retrying ({attempt}/{max_retries})"
 msgstr "표시된 계정이 일치하지 않아 재시도 중 ({attempt}/{max_retries})"
 
-msgid ""
-"Account selection failed after {max_retries} retries; {account} is still not"
-" displayed. Continuing login attempt"
-msgstr ""
-"계정 선택이 {max_retries}회 재시도 후 실패했습니다. {account}이(가) 아직 표시되지 않습니다. 로그인을 계속 "
-"시도합니다"
+msgid "Account selection failed after {max_retries} retries; {account} is still not displayed. Continuing login attempt"
+msgstr "계정 선택이 {max_retries}회 재시도 후 실패했습니다. {account}이(가) 아직 표시되지 않습니다. 로그인을 계속 시도합니다"
 
 msgid "Failed to switch account"
 msgstr "계정 전환 실패"
@@ -896,14 +868,10 @@ msgstr "사용자 지정 코드 초기화"
 msgid "Reset this character to built in code and remove the custom code?"
 msgstr "이 캐릭터를 기본 제공 코드로 초기화하고 사용자 지정 코드를 제거하시겠습니까?"
 
-msgid ""
-"Custom code matches built in code. Removed custom code and switched to built"
-" in."
+msgid "Custom code matches built in code. Removed custom code and switched to built in."
 msgstr "사용자 지정 코드가 기본 제공 코드와 같습니다. 사용자 지정 코드를 제거하고 기본 제공으로 전환했습니다."
 
-msgid ""
-"Custom code matches built in code. Removed custom code, switched to built "
-"in, and reloaded loaded characters."
+msgid "Custom code matches built in code. Removed custom code, switched to built in, and reloaded loaded characters."
 msgstr "사용자 지정 코드가 기본 제공 코드와 같습니다. 제거하고 기본 제공으로 전환했으며, 로드된 캐릭터를 다시 불러왔습니다."
 
 msgid "Custom code reset to built in code."
@@ -921,18 +889,13 @@ msgstr "구현하고 싶은 내용:"
 msgid "Please modify the full {class_name} character automation code above."
 msgstr "위의 {class_name} 캐릭터 자동화 코드 전체를 수정해 주세요."
 
-msgid ""
-"Return only the complete modified Python code for the whole file, not a "
-"patch and not an explanation."
+msgid "Return only the complete modified Python code for the whole file, not a patch and not an explanation."
 msgstr "패치나 설명이 아닌, 파일 전체의 완전히 수정된 Python 코드만 반환해 주세요."
 
-msgid ""
-"Keep the class name as {class_name}. Preserve imports that are still needed."
+msgid "Keep the class name as {class_name}. Preserve imports that are still needed."
 msgstr "클래스 이름은 {class_name}로 유지하고, 아직 필요한 import는 보존해 주세요."
 
-msgid ""
-"Use this BaseChar reference while reasoning about helper methods, task APIs,"
-" state, switching, cooldowns, and combat flow:"
+msgid "Use this BaseChar reference while reasoning about helper methods, task APIs, state, switching, cooldowns, and combat flow:"
 msgstr "헬퍼 메서드, 태스크 API, 상태, 교체, 재사용 대기시간, 전투 흐름을 판단할 때 이 BaseChar 참고를 사용하세요:"
 
 msgid "Rover: Spectro"
@@ -1093,3 +1056,132 @@ msgstr "레베카"
 
 msgid "Lucilla"
 msgstr "루실라"
+
+msgid "50"
+msgstr ""
+
+msgid "60"
+msgstr ""
+
+msgid "70"
+msgstr ""
+
+msgid "80"
+msgstr ""
+
+msgid "Auto"
+msgstr ""
+
+msgid "Auto Resize Game Window"
+msgstr ""
+
+msgid "Basic Options"
+msgstr ""
+
+msgid "Better Chance to Keep Character Alive"
+msgstr ""
+
+msgid "Blur"
+msgstr ""
+
+msgid "Blur Algorithm"
+msgstr ""
+
+msgid "Blur Game UID etc to enhance OLED life"
+msgstr ""
+
+msgid "Blur Interval"
+msgstr ""
+
+msgid "Dodge Key"
+msgstr ""
+
+msgid "Enable Blur"
+msgstr ""
+
+msgid "Exit After Task"
+msgstr ""
+
+msgid "Exit App when Game Exits"
+msgstr ""
+
+msgid "Exit the Game and the App after Successfully Executing the Task"
+msgstr ""
+
+msgid "F10"
+msgstr ""
+
+msgid "F11"
+msgstr ""
+
+msgid "F12"
+msgstr ""
+
+msgid "F9"
+msgstr ""
+
+msgid "Farm 1 Echo from Nightmare Nest to complete Daily Task when needed."
+msgstr ""
+
+msgid "Farm Nightmare Nest for Daily Echo"
+msgstr ""
+
+msgid "HotKey"
+msgstr ""
+
+msgid "Increase Delay between Trigger Tasks to Reduce CPU/GPU Usage(Milliseconds)"
+msgstr ""
+
+msgid "Inpaint"
+msgstr ""
+
+msgid "Jump Key"
+msgstr ""
+
+msgid "Kill Launcher after Start"
+msgstr ""
+
+msgid "Launch with DX11"
+msgstr ""
+
+msgid "Method used to obscure configured areas"
+msgstr ""
+
+msgid "Minimize Window to System Tray when Closing"
+msgstr ""
+
+msgid "Nightmare Purification"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "Operation"
+msgstr ""
+
+msgid "Seconds between processed overlay updates"
+msgstr ""
+
+msgid "Start/Stop"
+msgstr ""
+
+msgid "Switch to Healer after Combat"
+msgstr ""
+
+msgid "Tacet Discord Nest"
+msgstr ""
+
+msgid "Trigger Interval"
+msgstr ""
+
+msgid "Use DirectML"
+msgstr ""
+
+msgid "Use GPU to Improve Performance"
+msgstr ""
+
+msgid "Wheel Key"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
