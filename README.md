@@ -12,138 +12,99 @@
   </h1> 
   
   <p>
-    一个基于图像识别的鸣潮自动化程序，支持后台运行，基于 <a href="https://github.com/ok-oldking/ok-script">ok-script</a> 开发。
-    <br />
+    涓€涓熀浜庡浘鍍忚瘑鍒殑楦ｆ疆鑷姩鍖栫▼搴忥紝鏀寔鍚庡彴杩愯锛屽熀浜?<a href="https://github.com/ok-oldking/ok-script">ok-script</a> 寮€鍙戙€?    <br />
     An image-recognition-based automation tool for Wuthering Waves, with background mode support, developed with <a href="https://github.com/ok-oldking/ok-script">ok-script</a>.
   </p>
   
-  <p><i>通过 Windows 接口模拟用户进行操作，无内存读取、无文件修改</i></p>
+  <p><i>閫氳繃 Windows 鎺ュ彛妯℃嫙鐢ㄦ埛杩涜鎿嶄綔锛屾棤鍐呭瓨璇诲彇銆佹棤鏂囦欢淇敼</i></p>
 </div>
 
 <!-- Badges -->
 <div align="center">
   
-![平台](https://img.shields.io/badge/platform-Windows-blue)
+![骞冲彴](https://img.shields.io/badge/platform-Windows-blue)
 [![GitHub release](https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
-[![总下载量](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
+[![鎬讳笅杞介噺](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
 [![Discord](https://img.shields.io/discord/296598043787132928?color=5865f2&label=%20Discord)](https://discord.gg/vVyCatEBgA)
 
 </div>
 
-### [English Readme](README_en.md) | 中文说明
+### [English Readme](README_en.md) | 涓枃璇存槑
 
-**演示与教程:** [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/h6P1KWjdnB4)
+**婕旂ず涓庢暀绋?** [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/h6P1KWjdnB4)
 
 ---
 
-## ⚠️ 免责声明
+## 鈿狅笍 鍏嶈矗澹版槑
 
-本软件为外部辅助工具，旨在自动化《鸣潮》的部分游戏流程。它完全通过模拟常规用户界面与游戏交互，遵循相关法律法规。本项目旨在简化用户的重复性操作，不会破坏游戏平衡或提供不公平优势，也绝不会修改任何游戏文件或数据。
+鏈蒋浠朵负澶栭儴杈呭姪宸ュ叿锛屾棬鍦ㄨ嚜鍔ㄥ寲銆婇福娼€嬬殑閮ㄥ垎娓告垙娴佺▼銆傚畠瀹屽叏閫氳繃妯℃嫙甯歌鐢ㄦ埛鐣岄潰涓庢父鎴忎氦浜掞紝閬靛惊鐩稿叧娉曞緥娉曡銆傛湰椤圭洰鏃ㄥ湪绠€鍖栫敤鎴风殑閲嶅鎬ф搷浣滐紝涓嶄細鐮村潖娓告垙骞宠　鎴栨彁渚涗笉鍏钩浼樺娍锛屼篃缁濅笉浼氫慨鏀逛换浣曟父鎴忔枃浠舵垨鏁版嵁銆?
+鏈蒋浠跺紑婧愩€佸厤璐癸紝浠呬緵涓汉瀛︿範涓庝氦娴佷娇鐢紝璇峰嬁鐢ㄤ簬浠讳綍鍟嗕笟鎴栬惀鍒╂€х洰鐨勩€傚紑鍙戣€呭洟闃熸嫢鏈夋湰椤圭洰鐨勬渶缁堣В閲婃潈銆傚洜浣跨敤鏈蒋浠惰€屼骇鐢熺殑浠讳綍闂锛屽潎涓庢湰椤圭洰鍙婂紑鍙戣€呮棤鍏炽€?
+璇锋敞鎰忥紝鏍规嵁搴撴礇瀹樻柟鐨勩€婇福娼€嬪叕骞宠繍钀ュ０鏄庯細
+> 涓ョ鍒╃敤浠讳綍绗笁鏂瑰伐鍏风牬鍧忔父鎴忎綋楠屻€?> 鎴戜滑灏嗕弗鍘夋墦鍑讳娇鐢ㄥ鎸傘€佸姞閫熷櫒銆佷綔寮婅蒋浠躲€佸畯鑴氭湰绛夎繚瑙勫伐鍏风殑琛屼负锛岃繖浜涜涓哄寘鎷絾涓嶉檺浜庤嚜鍔ㄦ寕鏈恒€佹妧鑳藉姞閫熴€佹棤鏁屾ā寮忋€佺灛绉汇€佷慨鏀规父鎴忔暟鎹瓑鎿嶄綔銆?> 涓€缁忔煡璇侊紝鎴戜滑灏嗚杩濊鎯呭喌鍜屾鏁帮紝閲囧彇鍖呮嫭浣嗕笉闄愪簬鎵ｉ櫎杩濊鏀剁泭銆佸喕缁撴垨姘镐箙灏佺娓告垙璐﹀彿绛夋帾鏂姐€?
+**浣跨敤鏈蒋浠跺嵆琛ㄧず鎮ㄥ凡闃呰銆佺悊瑙ｅ苟鍚屾剰浠ヤ笂澹版槑锛屽苟鑷効鎵挎媴涓€鍒囨綔鍦ㄩ闄┿€?*
 
-本软件开源、免费，仅供个人学习与交流使用，请勿用于任何商业或营利性目的。开发者团队拥有本项目的最终解释权。因使用本软件而产生的任何问题，均与本项目及开发者无关。
+## 馃殌 蹇€熷紑濮?
+1.  **涓嬭浇瀹夎鍖?*锛氫粠涓嬫柟鐨勨€滀笅杞芥笭閬撯€濅腑閫夋嫨涓€涓紝涓嬭浇鏈€鏂扮殑 `ok-ww-win32-China-setup.exe` 瀹夎鏂囦欢銆?2.  **瀹夎绋嬪簭**锛氬弻鍑?`ok-ww-win32-China-setup.exe` 鏂囦欢锛屽苟鎸夌収瀹夎鍚戝鐨勬彁绀哄畬鎴愬畨瑁呫€?3.  **杩愯绋嬪簭**锛氬畨瑁呭畬鎴愬悗锛屼粠妗岄潰蹇嵎鏂瑰紡鎴栧紑濮嬭彍鍗曞惎鍔?`ok-ww` 鍗冲彲銆?
+## 馃摜 涓嬭浇娓犻亾
 
-请注意，根据库洛官方的《鸣潮》公平运营声明：
-> 严禁利用任何第三方工具破坏游戏体验。
-> 我们将严厉打击使用外挂、加速器、作弊软件、宏脚本等违规工具的行为，这些行为包括但不限于自动挂机、技能加速、无敌模式、瞬移、修改游戏数据等操作。
-> 一经查证，我们将视违规情况和次数，采取包括但不限于扣除违规收益、冻结或永久封禁游戏账号等措施。
+*   **[GitHub](https://github.com/ok-oldking/ok-wuthering-waves/releases)**: 瀹樻柟鍙戝竷椤碉紝鍏ㄧ悆璁块棶閫熷害蹇€傦紙**璇蜂笅杞?`setup.exe` 瀹夎鍖咃紝鑰屼笉鏄?`Source Code` 婧愮爜鍘嬬缉鍖?*锛?*   **[Mirror閰盷(https://mirrorchyan.com/zh/projects?rid=okww&source=ok-ww-readme)**: 鍥藉唴闀滃儚锛屼笅杞藉彲鑳介渶瑕佽喘涔板叾骞冲彴鐨?CD-KEY銆?*   **[鐧惧害缃戠洏](https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww)**: 鍏嶈垂涓嬭浇
+*   **[澶稿厠缃戠洏](https://pan.quark.cn/s/418018ddf7a0)**: 鍏嶈垂涓嬭浇
 
-**使用本软件即表示您已阅读、理解并同意以上声明，并自愿承担一切潜在风险。**
-
-## 🚀 快速开始
-
-1.  **下载安装包**：从下方的“下载渠道”中选择一个，下载最新的 `ok-ww-win32-China-setup.exe` 安装文件。
-2.  **安装程序**：双击 `ok-ww-win32-China-setup.exe` 文件，并按照安装向导的提示完成安装。
-3.  **运行程序**：安装完成后，从桌面快捷方式或开始菜单启动 `ok-ww` 即可。
-
-## 📥 下载渠道
-
-*   **[GitHub](https://github.com/ok-oldking/ok-wuthering-waves/releases)**: 官方发布页，全球访问速度快。（**请下载 `setup.exe` 安装包，而不是 `Source Code` 源码压缩包**）
-*   **[Mirror酱](https://mirrorchyan.com/zh/projects?rid=okww&source=ok-ww-readme)**: 国内镜像，下载可能需要购买其平台的 CD-KEY。
-*   **[百度网盘](https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww)**: 免费下载
-*   **[夸克网盘](https://pan.quark.cn/s/418018ddf7a0)**: 免费下载
-
-## ✨ 主要功能
+## 鉁?涓昏鍔熻兘
 <img width="1774" height="1182" alt="QQ_1762960844719" src="https://github.com/user-attachments/assets/c5eb0145-0d45-44f9-85b3-184de0ef20bf" />
 
-*   **高分辨率支持**: 流畅运行于 4K 及以下所有 16:9 分辨率（最低 1600x900）。部分功能兼容 21:9 等超宽屏。
-*   **后台模式**: 支持游戏窗口最小化或被遮挡时在后台运行，不影响您使用电脑。
-*   **智能识别**: 全角色自动识别，无需手动配置技能序列，一键启动。
-*   **自动静音**: 在后台运行时，可自动将游戏静音。
+*   **楂樺垎杈ㄧ巼鏀寔**: 娴佺晠杩愯浜?4K 鍙婁互涓嬫墍鏈?16:9 鍒嗚鲸鐜囷紙鏈€浣?1600x900锛夈€傞儴鍒嗗姛鑳藉吋瀹?21:9 绛夎秴瀹藉睆銆?*   **鍚庡彴妯″紡**: 鏀寔娓告垙绐楀彛鏈€灏忓寲鎴栬閬尅鏃跺湪鍚庡彴杩愯锛屼笉褰卞搷鎮ㄤ娇鐢ㄧ數鑴戙€?*   **鏅鸿兘璇嗗埆**: 鍏ㄨ鑹茶嚜鍔ㄨ瘑鍒紝鏃犻渶鎵嬪姩閰嶇疆鎶€鑳藉簭鍒楋紝涓€閿惎鍔ㄣ€?*   **鑷姩闈欓煶**: 鍦ㄥ悗鍙拌繍琛屾椂锛屽彲鑷姩灏嗘父鎴忛潤闊炽€?
+## 馃敡 鐤戦毦瑙ｇ瓟 (Troubleshooting)
 
-## 🔧 疑难解答 (Troubleshooting)
-
-如果遇到问题，请在提问前按以下步骤逐一排查：
-
-1.  **安装路径**：请确保软件安装在**纯英文路径**下（例如 `D:\Games\ok-ww`），不要安装在 `C:\Program Files` 或包含中文字符的文件夹中。
-2.  **杀毒软件**：将软件的安装目录添加到您的杀毒软件（包括 Windows Defender）的**信任区或白名单**中，以防文件被误删或拦截。
-3.  **显示设置**：
-    *   关闭所有显卡滤镜（如 NVIDIA Game Filter）和锐化功能。
-    *   使用游戏默认的亮度设置。
-    *   关闭任何在游戏画面上显示信息的叠加层（如 MSI Afterburner、Fraps 等显示的帧率）。
-4.  **自定义按键**：如果您修改了游戏内的默认按键，请务必在 `ok-ww` 的设置中进行同步配置。仅支持设置中列出的按键。
-5.  **软件版本**：检查并确保您使用的是最新版本的 `ok-ww`。
-6.  **游戏性能**：请确保游戏能稳定在 **60 FPS** 运行。如果帧率不稳定，请尝试降低游戏画质或分辨率。
-7.  **游戏断线**：如频繁遇到与服务器断开连接的问题，可以尝试先手动打开游戏运行5分钟后再启动本工具，或在断线后直接重新登录，不要退出游戏。
-8.  **寻求帮助**：如果以上步骤都无法解决您的问题，请通过社区渠道提交详细的错误报告。
-9.  **关闭自动奔跑**：游戏设置里关闭自动奔跑。
-
+濡傛灉閬囧埌闂锛岃鍦ㄦ彁闂墠鎸変互涓嬫楠ら€愪竴鎺掓煡锛?
+1.  **瀹夎璺緞**锛氳纭繚杞欢瀹夎鍦?*绾嫳鏂囪矾寰?*涓嬶紙渚嬪 `D:\Games\ok-ww`锛夛紝涓嶈瀹夎鍦?`C:\Program Files` 鎴栧寘鍚腑鏂囧瓧绗︾殑鏂囦欢澶逛腑銆?2.  **鏉€姣掕蒋浠?*锛氬皢杞欢鐨勫畨瑁呯洰褰曟坊鍔犲埌鎮ㄧ殑鏉€姣掕蒋浠讹紙鍖呮嫭 Windows Defender锛夌殑**淇′换鍖烘垨鐧藉悕鍗?*涓紝浠ラ槻鏂囦欢琚鍒犳垨鎷︽埅銆?3.  **鏄剧ず璁剧疆**锛?    *   鍏抽棴鎵€鏈夋樉鍗℃护闀滐紙濡?NVIDIA Game Filter锛夊拰閿愬寲鍔熻兘銆?    *   浣跨敤娓告垙榛樿鐨勪寒搴﹁缃€?    *   鍏抽棴浠讳綍鍦ㄦ父鎴忕敾闈笂鏄剧ず淇℃伅鐨勫彔鍔犲眰锛堝 MSI Afterburner銆丗raps 绛夋樉绀虹殑甯х巼锛夈€?4.  **鑷畾涔夋寜閿?*锛氬鏋滄偍淇敼浜嗘父鎴忓唴鐨勯粯璁ゆ寜閿紝璇峰姟蹇呭湪 `ok-ww` 鐨勮缃腑杩涜鍚屾閰嶇疆銆備粎鏀寔璁剧疆涓垪鍑虹殑鎸夐敭銆?5.  **杞欢鐗堟湰**锛氭鏌ュ苟纭繚鎮ㄤ娇鐢ㄧ殑鏄渶鏂扮増鏈殑 `ok-ww`銆?6.  **娓告垙鎬ц兘**锛氳纭繚娓告垙鑳界ǔ瀹氬湪 **60 FPS** 杩愯銆傚鏋滃抚鐜囦笉绋冲畾锛岃灏濊瘯闄嶄綆娓告垙鐢昏川鎴栧垎杈ㄧ巼銆?7.  **娓告垙鏂嚎**锛氬棰戠箒閬囧埌涓庢湇鍔″櫒鏂紑杩炴帴鐨勯棶棰橈紝鍙互灏濊瘯鍏堟墜鍔ㄦ墦寮€娓告垙杩愯5鍒嗛挓鍚庡啀鍚姩鏈伐鍏凤紝鎴栧湪鏂嚎鍚庣洿鎺ラ噸鏂扮櫥褰曪紝涓嶈閫€鍑烘父鎴忋€?8.  **瀵绘眰甯姪**锛氬鏋滀互涓婃楠ら兘鏃犳硶瑙ｅ喅鎮ㄧ殑闂锛岃閫氳繃绀惧尯娓犻亾鎻愪氦璇︾粏鐨勯敊璇姤鍛娿€?9.  **鍏抽棴鑷姩濂旇窇**锛氭父鎴忚缃噷鍏抽棴鑷姩濂旇窇銆?
 ---
 
-## 💻 开发者专区
+## 馃捇 寮€鍙戣€呬笓鍖?
+### 浠庢簮鐮佽繍琛?(Python)
 
-### 从源码运行 (Python)
-
-本项目仅支持 Python 3.12 版本。
-
+鏈」鐩粎鏀寔 Python 3.12 鐗堟湰銆?
 ```bash
-# 安装或更新依赖
-pip install -r requirements.txt --upgrade
+# 瀹夎鎴栨洿鏂颁緷璧?pip install -r requirements.txt --upgrade
 
-# 运行 Release 版本
+# 杩愯 Release 鐗堟湰
 python main.py
 
-# 运行 Debug 版本
+# 杩愯 Debug 鐗堟湰
 python main_debug.py
 ```
 
-### 命令行参数
-
-您可以通过命令行参数实现自动化启动。
-
+### 鍛戒护琛屽弬鏁?
+鎮ㄥ彲浠ラ€氳繃鍛戒护琛屽弬鏁板疄鐜拌嚜鍔ㄥ寲鍚姩銆?
 ```bash
-# 示例：启动后自动执行第一个任务（一条龙），并在任务完成后退出程序
-ok-ww.exe -t 1 -e
+# 绀轰緥锛氬惎鍔ㄥ悗鑷姩鎵ц绗竴涓换鍔★紙涓€鏉￠緳锛夛紝骞跺湪浠诲姟瀹屾垚鍚庨€€鍑虹▼搴?ok-ww.exe -t 1 -e
 ```
 
-*   `-t` 或 `--task`: 启动后自动执行第 N 个任务。`1` 代表任务列表中的第一个。
-*   `-e` 或 `--exit`: 任务执行完毕后自动退出程序。
+*   `-t` 鎴?`--task`: 鍚姩鍚庤嚜鍔ㄦ墽琛岀 N 涓换鍔°€俙1` 浠ｈ〃浠诲姟鍒楄〃涓殑绗竴涓€?*   `-e` 鎴?`--exit`: 浠诲姟鎵ц瀹屾瘯鍚庤嚜鍔ㄩ€€鍑虹▼搴忋€?
+## 馃挰 鍔犲叆鎴戜滑
 
-## 💬 加入我们
+*   **QQ 浜ゆ祦缇?*: `462079653` (鍏ョ兢绛旀: `鑰佺帇鍚屽OK`)
+*   **QQ 棰戦亾**: [鐐瑰嚮鍔犲叆](https://pd.qq.com/s/djmm6l44y) (缇ゆ弧鎴栬幏鍙栨渶鏂拌祫璁?
+*   **寮€鍙戣€呯兢**: `926858895` ( **娉ㄦ剰**: 姝ょ兢浠呴潰鍚戞湁寮€鍙戣兘鍔涖€佸笇鏈涘弬涓庤础鐚殑寮€鍙戣€咃紝鍏ョ兢鍓嶈纭繚鎮ㄥ凡鑳藉浠庢簮鐮佹垚鍔熻繍琛岄」鐩€?
 
-*   **QQ 交流群**: `462079653` (入群答案: `老王同学OK`)
-*   **QQ 频道**: [点击加入](https://pd.qq.com/s/djmm6l44y) (群满或获取最新资讯)
-*   **开发者群**: `926858895` ( **注意**: 此群仅面向有开发能力、希望参与贡献的开发者，入群前请确保您已能够从源码成功运行项目。)
+鏈」鐩熀浜?[ok-script](https://github.com/ok-oldking/ok-script) 妗嗘灦寮€鍙戯紝鏍稿績浠ｇ爜浠呯害 3000 琛?(Python)锛岀畝鍗曟槗缁存姢銆傛杩庢湁鍏磋叮鐨勫紑鍙戣€呬娇鐢?[ok-script](https://github.com/ok-oldking/ok-script) 寮€鍙戞偍鑷繁鐨勮嚜鍔ㄥ寲椤圭洰銆?
+## 馃敆 浣跨敤ok-script鐨勯」鐩細
 
-本项目基于 [ok-script](https://github.com/ok-oldking/ok-script) 框架开发，核心代码仅约 3000 行 (Python)，简单易维护。欢迎有兴趣的开发者使用 [ok-script](https://github.com/ok-oldking/ok-script) 开发您自己的自动化项目。
-
-## 🔗 使用ok-script的项目：
-
-* 鸣潮 [https://github.com/ok-oldking/ok-wuthering-wave](https://github.com/ok-oldking/ok-wuthering-waves)
-* 原神(停止维护,
-  但是后台过剧情可用) [https://github.com/ok-oldking/ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact)
-* 少前2 [https://github.com/ok-oldking/ok-gf2](https://github.com/ok-oldking/ok-gf2)
-* 星铁 [https://github.com/Shasnow/ok-starrailassistant](https://github.com/Shasnow/ok-starrailassistant)
-* 星痕共鸣 [https://github.com/Sanheiii/ok-star-resonance](https://github.com/Sanheiii/ok-star-resonance)
-* 二重螺旋 [https://github.com/BnanZ0/ok-duet-night-abyss](https://github.com/BnanZ0/ok-duet-night-abyss)
-* 白荆回廊(停止更新) [https://github.com/ok-oldking/ok-baijing](https://github.com/ok-oldking/ok-baijing)
+* 楦ｆ疆 [https://github.com/ok-oldking/ok-wuthering-wave](https://github.com/ok-oldking/ok-wuthering-waves)
+* 鍘熺(鍋滄缁存姢,
+  浣嗘槸鍚庡彴杩囧墽鎯呭彲鐢? [https://github.com/ok-oldking/ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact)
+* 灏戝墠2 [https://github.com/ok-oldking/ok-gf2](https://github.com/ok-oldking/ok-gf2)
+* 鏄熼搧 [https://github.com/Shasnow/ok-starrailassistant](https://github.com/Shasnow/ok-starrailassistant)
+* 鏄熺棔鍏遍福 [https://github.com/Sanheiii/ok-star-resonance](https://github.com/Sanheiii/ok-star-resonance)
+* 浜岄噸铻烘棆 [https://github.com/BnanZ0/ok-duet-night-abyss](https://github.com/BnanZ0/ok-duet-night-abyss)
+* 鐧借崋鍥炲粖(鍋滄鏇存柊) [https://github.com/ok-oldking/ok-baijing](https://github.com/ok-oldking/ok-baijing)
 
 
-## ❤️ 赞助与致谢
+## 鉂わ笍 璧炲姪涓庤嚧璋?
+### 璧炲姪鍟?(Sponsors)
+*   **EXE 绛惧悕**: Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
 
-### 赞助商 (Sponsors)
-*   **EXE 签名**: Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
-
-### 致谢
+### 鑷磋阿
 *   [lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss)
 *   [ok-oldking/OnnxOCR](https://github.com/ok-oldking/OnnxOCR)
 *   [zhiyiYo/PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
