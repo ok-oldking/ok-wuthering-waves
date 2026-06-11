@@ -3,8 +3,7 @@ import re
 from qfluentwidgets import FluentIcon
 
 from ok import Logger, TaskDisabledException
-from src.Labels import Labels
-from src.task.BaseWWTask import number_re, stamina_re
+from src.task.BaseWWTask import number_re
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.ForgeryTask import ForgeryTask
 from src.task.NightmareNestTask import NightmareNestTask
