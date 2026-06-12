@@ -12,6 +12,37 @@ from src.task.process_feature import process_feature
 version = "dev"
 
 
+def _force_static_ocr_shapes():
+    """Compile the OCR models with static input shapes.
+
+    ok-script only forwards use_npu/use_openvino to ONNXPaddleOcr, and on
+    machines without an NPU the OpenVINO CPU plugin compiles the models with
+    fully dynamic shapes. The plugin caches compiled kernels per distinct
+    input shape and never evicts them; game OCR feeds it a new shape on
+    nearly every call, growing the process ~6MB per OCR call without bound.
+    Static compilation uses the same letterbox path as the NPU mode and
+    keeps memory flat. Must run before ok-script's DefaultOCRInit thread,
+    which is why it lives in config.py (main.py imports config first).
+    """
+    try:
+        from onnxocr.onnx_paddleocr import ONNXPaddleOcr
+    except ImportError:
+        return
+    if getattr(ONNXPaddleOcr, '_ok_ww_static_shape_patch', False):
+        return
+    original_init = ONNXPaddleOcr.__init__
+
+    def patched_init(self, *args, **kwargs):
+        kwargs.setdefault('force_static_shape', True)
+        original_init(self, *args, **kwargs)
+
+    ONNXPaddleOcr.__init__ = patched_init
+    ONNXPaddleOcr._ok_ww_static_shape_patch = True
+
+
+_force_static_ocr_shapes()
+
+
 def calculate_pc_exe_path(running_path):
     game_exe_folder = Path(running_path).parents[3]
     return str(game_exe_folder / "Wuthering Waves.exe")
