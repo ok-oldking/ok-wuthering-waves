@@ -286,7 +286,23 @@ class CombatCheck(BaseWWTask):
                 else:
                     self.sleep(1)
                     return self.has_target(double_check=True)
-        return best and best.name == has_name
+        return self.is_locked_target(best)
+
+    def is_locked_target(self, icon_box):
+        """Classify a matched target icon as locked-on by its gold compass ring.
+
+        The has_target/no_target templates are the same skull shape differing
+        only in ring color (gold vs gray), so template confidence alone decides
+        by ~0.01-0.03 margins and flips under combat VFX. The ring color is the
+        reliable signal: on the fixture set, locked icons measure >=4.8% gold
+        pixels in the matched box, everything else <=1.4%.
+        """
+        if not icon_box:
+            return False
+        gold = self.calculate_color_percentage(target_enemy_color_yellow, icon_box)
+        locked = gold > 0.03
+        self.log_debug(f'is_locked_target {icon_box} gold={gold:.3f} locked={locked}')
+        return locked
 
     def target_enemy(self, wait=True):
         if not wait:
