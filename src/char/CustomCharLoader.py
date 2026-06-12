@@ -12,6 +12,7 @@ CUSTOM_CHAR_FOLDER = "custom_chars"
 CUSTOM_CHAR_MODES_FILE = "custom_chars.json"
 
 _custom_class_cache = {}
+_modes_cache = {}
 
 
 def get_custom_char_folder(create=False):
@@ -21,13 +22,13 @@ def get_custom_char_folder(create=False):
     return folder
 
 
-def get_custom_char_modes_file():
-    return get_custom_char_folder(create=True) / CUSTOM_CHAR_MODES_FILE
+def get_custom_char_modes_file(create=False):
+    return get_custom_char_folder(create=create) / CUSTOM_CHAR_MODES_FILE
 
 
-def get_custom_char_file(char_cls_or_name):
+def get_custom_char_file(char_cls_or_name, create=False):
     class_name = _get_class_name(char_cls_or_name)
-    return get_custom_char_folder(create=True) / f"{class_name}.py"
+    return get_custom_char_folder(create=create) / f"{class_name}.py"
 
 
 def _get_class_name(char_cls_or_name):
@@ -37,20 +38,37 @@ def _get_class_name(char_cls_or_name):
 
 
 def load_custom_char_modes():
+    """Return the parsed custom-char modes mapping.
+
+    Cached and invalidated by file mtime/size so repeated calls on the hot
+    path (get_char_by_pos -> load_custom_char_class -> is_custom_char_enabled,
+    run per character on every load_chars) don't re-read and re-parse the JSON
+    each time. The returned dict is shared; callers must not mutate it.
+    """
     path = get_custom_char_modes_file()
-    if not path.exists():
+    try:
+        stat = path.stat()
+    except OSError:
         return {}
+    key = str(path)
+    cached = _modes_cache.get(key)
+    if cached and cached[0] == stat.st_mtime_ns and cached[1] == stat.st_size:
+        return cached[2]
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except Exception as e:
         logger.error(f"load custom char modes failed: {e}")
         return {}
-    return data if isinstance(data, dict) else {}
+    if not isinstance(data, dict):
+        data = {}
+    _modes_cache[key] = (stat.st_mtime_ns, stat.st_size, data)
+    return data
 
 
 def save_custom_char_modes(modes):
-    path = get_custom_char_modes_file()
+    path = get_custom_char_modes_file(create=True)
     path.write_text(json.dumps(modes, ensure_ascii=False, indent=2), encoding="utf-8")
+    _modes_cache.pop(str(path), None)
 
 
 def is_custom_char_enabled(char_cls_or_name):
@@ -60,8 +78,11 @@ def is_custom_char_enabled(char_cls_or_name):
 
 def set_custom_char_enabled(char_cls_or_name, enabled):
     class_name = _get_class_name(char_cls_or_name)
-    modes = load_custom_char_modes()
-    modes.setdefault(class_name, {})["use_custom"] = bool(enabled)
+    # copy: load_custom_char_modes() may return the shared cached dict
+    modes = dict(load_custom_char_modes())
+    entry = dict(modes.get(class_name, {}))
+    entry["use_custom"] = bool(enabled)
+    modes[class_name] = entry
     save_custom_char_modes(modes)
     clear_custom_char_cache(class_name)
 
@@ -92,7 +113,7 @@ def read_custom_or_builtin_char_code(char_cls):
 
 
 def save_custom_char_code(char_cls, code, use_custom=True):
-    path = get_custom_char_file(char_cls)
+    path = get_custom_char_file(char_cls, create=True)
     old_code = path.read_text(encoding="utf-8") if path.exists() else None
     old_enabled = is_custom_char_enabled(char_cls)
     compile(code, str(path), "exec")
@@ -115,6 +136,7 @@ def save_custom_char_code(char_cls, code, use_custom=True):
 def clear_custom_char_cache(char_cls_or_name=None):
     if char_cls_or_name is None:
         _custom_class_cache.clear()
+        _modes_cache.clear()
     else:
         _custom_class_cache.pop(_get_class_name(char_cls_or_name), None)
 

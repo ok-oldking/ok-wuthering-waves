@@ -1011,9 +1011,10 @@ class BaseCombatTask(CombatCheck):
 
     def update_lib_portrait_icon(self):
         # self.ensure_con_lib_boxes()
-        for i in range(len(self.chars)):
+        for i, char in enumerate(self.chars):
             char_index = i + 1
-            char = self.chars[i]
+            if char is None:
+                continue
             if not char.is_current_char and char.ring_index >= 0 and not char._liberation_available:
                 box = self.get_box_by_name("lib_mark_char_{}".format(char_index))
                 match = self.find_one(lib_ready_templates[char.ring_index], box=box, threshold=0.8)

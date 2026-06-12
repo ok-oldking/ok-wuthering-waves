@@ -196,7 +196,7 @@ class BaseChar:
         Returns:
             str: 角色类名字符串。
         """
-        return f"{self.__class__.__name__}"
+        return self.__class__.__name__
 
     def __eq__(self, other):
         """比较两个角色对象是否相同 (基于名称和索引)。"""
@@ -896,10 +896,10 @@ class BaseChar:
             return 'null'
         time = 0
         outro = 'null'
-        for i, char in enumerate(self.task.chars):
-            if char == self:
-                pass
-            elif char.last_switch_time > time:
+        for char in self.task.chars:
+            if char is None or char == self:
+                continue
+            if char.last_switch_time > time:
                 time = char.last_switch_time
                 outro = char.char_name
         self.logger.info(f'erned outro from {outro}')
