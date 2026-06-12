@@ -17,6 +17,8 @@ class AutoPickTask(TriggerTask, BaseWWTask):
         self.name = "Auto Pick"
         self.description = "Auto Pick Flowers in Game World"
         self.icon = FluentIcon.SHOPPING_CART
+        self.last_pick_attempt_time = 0
+        self.last_pick_still_visible_log = 0
         self.default_config.update({
             '_enabled': True,
             'Pick Up White List': ['吸收', 'Absorb'],
@@ -26,16 +28,35 @@ class AutoPickTask(TriggerTask, BaseWWTask):
     def send_fs(self):
         # if self.debug:
         #     self.screenshot('pick_up', show_box=True)
-        self.send_key('f')
+        if self.send_key('f') is False:
+            return False
         self.sleep(0.2)
-        self.send_key('f')
+        if self.send_key('f') is False:
+            return False
         self.sleep(0.2)
-        self.send_key('f')
+        if self.send_key('f') is False:
+            return False
         self.sleep(0.2)
+        return True
+
+    def pick_prompt_still_visible(self):
+        self.next_frame()
+        return self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box, threshold=0.8)
+
+    def after_pick_attempt(self):
+        if self.pick_prompt_still_visible():
+            now = time.time()
+            if now - self.last_pick_still_visible_log > 2:
+                self.last_pick_still_visible_log = now
+                logger.info('AutoPick input sent but pickup prompt is still visible; not marking success')
+            return False
+        return True
 
     def run(self):
         if not self.scene.in_team(self.in_team_and_world):
             return
+        if time.time() - self.last_pick_attempt_time < 2:
+            return False
         start = time.time()
         while time.time() - start < 1:
             f = self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box,
@@ -62,14 +83,18 @@ class AutoPickTask(TriggerTask, BaseWWTask):
                     f = self.find_f_with_text(self.config.get('Pick Up White List'))
                     if f:
                         logger.info(f'found Pick Up White List {f}')
-                        self.send_fs()
-                        return True
+                        self.last_pick_attempt_time = time.time()
+                        if not self.send_fs():
+                            return False
+                        return self.after_pick_attempt()
             else:
                 if self.config.get('Pick Up Black List'):
                     f = self.find_f_with_text(self.config.get('Pick Up Black List'))
                     if f:
                         logger.info(f'found Pick Up Black List: {f}')
                         return False
-                self.send_fs()
-                return True
+                self.last_pick_attempt_time = time.time()
+                if not self.send_fs():
+                    return False
+                return self.after_pick_attempt()
             self.next_frame()

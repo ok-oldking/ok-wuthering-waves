@@ -20,6 +20,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         self.description = "Enable auto combat in Abyss, Game World etc"
         self.icon = FluentIcon.CALORIES
         self.last_is_click = False
+        self.last_wait_log_time = 0
         self.default_config.update({
             'Auto Target': True,
             'Use Liberation': True,
@@ -49,6 +50,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         self.warm_up_char_features()
         ret = False
         if not self.scene.in_team(self.in_team_and_world):
+            self.log_waiting('waiting for team HUD')
             return ret
         self.use_liberation = self.config.get('Use Liberation')
         if not self.use_liberation and not self.in_world():  # 仅大世界生效
@@ -66,7 +68,15 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                 break
         if ret:
             self.combat_end()
+        else:
+            self.log_waiting('waiting for target or enemy health bar')
         return ret
+
+    def log_waiting(self, reason):
+        now = time.time()
+        if now - self.last_wait_log_time > 5:
+            self.last_wait_log_time = now
+            self.log_info(f'Auto Combat {reason}')
 
     def realm_perform(self):
         if not self.last_is_click:

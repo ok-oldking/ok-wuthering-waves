@@ -1,6 +1,6 @@
 import math
 
-import win32api
+from src.compat import win32api
 from qfluentwidgets import FluentIcon
 
 from ok import TriggerTask, Logger
