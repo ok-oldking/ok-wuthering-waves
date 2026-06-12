@@ -50,7 +50,8 @@ def _build_region_cache(cache, region):
     return MapCache(sub_kps, sub_descs, sub_mat, cache.h, cache.w)
 
 
-def _match_flann(cfg, test_src, cache, ratio_thresh, max_dist, crop_size, region):
+def _match_flann(cfg, test_src, cache, ratio_thresh, max_dist, crop_size, region,
+                 constrained=False):
     start = time.time()
     img = _prepare_test_image(test_src, crop_size)
     if img is None:
@@ -90,15 +91,25 @@ def _match_flann(cfg, test_src, cache, ratio_thresh, max_dist, crop_size, region
 
     H = None
     inlier_count = 0
-    if len(good) >= 4:
+    min_matches = 2 if constrained else 4
+    if len(good) >= min_matches:
         src_pts = np.array([[test_kps[q].x, test_kps[q].y] for q, _, _ in good],
                            dtype=np.float64).reshape(-1, 1, 2)
         dst_pts = np.array([[match_cache.kps[t].x, match_cache.kps[t].y] for _, t, _ in good],
                            dtype=np.float64).reshape(-1, 1, 2)
-        H, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 3.0,
-                                     maxIters=2000, confidence=0.995)
-        if mask is not None:
-            inlier_count = int(mask.sum())
+        if constrained:
+            M, inliers = cv2.estimateAffinePartial2D(
+                src_pts, dst_pts, method=cv2.RANSAC,
+                ransacReprojThreshold=3.0, maxIters=2000, confidence=0.995)
+            if M is not None:
+                H = np.eye(3, dtype=np.float64)
+                H[:2, :] = M
+                inlier_count = int(inliers.sum())
+        else:
+            H, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 3.0,
+                                         maxIters=2000, confidence=0.995)
+            if mask is not None:
+                inlier_count = int(mask.sum())
 
     elapsed = time.time() - start
     output = MatchOutput(
@@ -161,17 +172,19 @@ class SurfEngine:
     def map_size(self):
         return self.cache.w, self.cache.h
 
-    def match(self, test_path, region=None, crop_size=None):
+    def match(self, test_path, region=None, crop_size=None, constrained=False):
         cs = crop_size if crop_size is not None else self.crop_size
         result = _match_flann(self.cfg, test_path, self.cache,
-                              self.ratio, self.max_dist, cs, region)
+                              self.ratio, self.max_dist, cs, region,
+                              constrained=constrained)
         if self.coords is not None:
             result.with_coords(self.coords)
         return result
 
-    def match_array(self, test_img, region=None, crop_size=0):
+    def match_array(self, test_img, region=None, crop_size=0, constrained=False):
         result = _match_flann(self.cfg, test_img, self.cache,
-                              self.ratio, self.max_dist, crop_size, region)
+                              self.ratio, self.max_dist, crop_size, region,
+                              constrained=constrained)
         if self.coords is not None:
             result.with_coords(self.coords)
         return result
