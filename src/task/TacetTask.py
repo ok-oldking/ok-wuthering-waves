@@ -79,20 +79,25 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                     self.sleep(method[1])
                     self.send_key_up(method[0])
                     self.sleep(0.05)
-                in_combat = self.run_until(self.in_combat, 'w', time_out=5, running=True,
-                                           target=False, post_walk=1)
+                reached_tacet = self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w',
+                                               time_out=5, running=True, target=False, post_walk=1)
 
-                if not in_combat:
-                    in_combat = self.run_until(self.in_combat, 'w', time_out=5, running=True,
-                                               target=True, post_walk=1)
-                    if not in_combat:
+                if not reached_tacet:
+                    reached_tacet = self.run_until(lambda: self.in_combat() or self.find_treasure_icon(), 'w',
+                                                   time_out=5, running=True, target=True, post_walk=1)
+                    if not reached_tacet:
                         raise Exception('Tacet can not walk to combat')
+                treasure_ready = not self.in_combat() and self.find_treasure_icon()
             else:
                 self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
                 self.pick_f(handle_claim=False)
+                treasure_ready = False
             try:
-                self.combat_once()
-                self.sleep(3)
+                if treasure_ready:
+                    self.log_info('farm_tacet: treasure already found, skip combat')
+                else:
+                    self.combat_once()
+                    self.sleep(3)
                 self.walk_to_treasure()
                 self.pick_f(handle_claim=False)
             except CharRevivedException:
