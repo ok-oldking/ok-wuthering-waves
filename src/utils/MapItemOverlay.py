@@ -1,7 +1,8 @@
 import math
+import os
 import sqlite3
 
-from PySide6.QtGui import QColor, QFont, QPen
+from PySide6.QtGui import QColor, QFont, QPen, QPixmap
 
 ITEM_COLORS = {
     'qzx_01': QColor(255, 165, 0),
@@ -12,12 +13,29 @@ ITEM_COLORS = {
 }
 FALLBACK_COLOR = QColor(255, 255, 255)
 
+ICON_SIZE = 30
+
+ITEM_PIXMAPS = {}
+
+
+def _load_item_pixmaps(assets_dir):
+    if ITEM_PIXMAPS:
+        return
+    for type_id in ('qzx_01', 'qzx_02', 'qzx_03', 'qzx_04'):
+        img_path = os.path.join(assets_dir, f'{type_id}.png')
+        if os.path.exists(img_path):
+            pixmap = QPixmap(img_path)
+            if not pixmap.isNull():
+                ITEM_PIXMAPS[type_id] = pixmap.scaled(ICON_SIZE, ICON_SIZE)
+
 
 class MapItemOverlay:
 
     def __init__(self, db_path):
         self._conn = sqlite3.connect(db_path)
         self._conn.execute("PRAGMA journal_mode=WAL")
+        assets_dir = os.path.dirname(db_path)
+        _load_item_pixmaps(assets_dir)
 
     def query_nearby(self, px, py, radius, type_filter=None, state_id=None):
         r2 = radius * radius
@@ -99,8 +117,9 @@ class MapItemOverlay:
             if math.sqrt(dx_center ** 2 + dy_center ** 2) > minimap_radius:
                 continue
 
+            pixmap = ITEM_PIXMAPS.get(type_id)
             color = ITEM_COLORS.get(type_id, FALLBACK_COLOR)
-            draw_items.append((sx, sy, name, color))
+            draw_items.append((sx, sy, pixmap, name, color))
 
         return draw_items
 
@@ -108,12 +127,16 @@ class MapItemOverlay:
     def make_paint_callback(draw_items):
         def paint(painter, view):
             font = QFont("Arial", 8)
-            for sx, sy, name, color in draw_items:
-                painter.setPen(QPen(color, 2))
-                painter.setBrush(color)
-                painter.drawEllipse(sx - 3, sy - 3, 6, 6)
-                painter.setFont(font)
-                painter.drawText(sx + 5, sy - 5, name[:4])
+            half = ICON_SIZE // 2
+            for sx, sy, pixmap, name, color in draw_items:
+                if pixmap is not None:
+                    painter.drawPixmap(sx - half, sy - half, pixmap)
+                else:
+                    painter.setPen(QPen(color, 2))
+                    painter.setBrush(color)
+                    painter.drawEllipse(sx - 3, sy - 3, 6, 6)
+                    painter.setFont(font)
+                    painter.drawText(sx + 5, sy - 5, name[:4])
 
         return paint
 

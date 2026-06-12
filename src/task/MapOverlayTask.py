@@ -11,7 +11,7 @@ from qfluentwidgets import FluentIcon
 
 from ok import TriggerTask, Logger, og, get_path_relative_to_exe, Box
 from src.task.BaseWWTask import BaseWWTask
-from src.utils.MapItemOverlay import MapItemOverlay, ITEM_COLORS
+from src.utils.MapItemOverlay import MapItemOverlay, ITEM_COLORS, ITEM_PIXMAPS
 
 logger = Logger.get_logger(__name__)
 
@@ -26,10 +26,8 @@ MAP_DIR = get_path_relative_to_exe('assets', 'stitched')
 
 MAP_REGION_SIZE = 1000
 FRAME_CROP_SIZE = 400
-FALLBACK_MAX_FAILURES = 3
-BIG_MAP_SEARCH_MULTIPLIER = 5
-SMOOTH_WINDOW_SIZE = 3
-SMOOTH_WEIGHTS = [1, 2, 3]
+FALLBACK_MAX_FAILURES = 4
+BIG_MAP_SEARCH_MULTIPLIER = 10
 SLOW_MAP_IDS = {'8'}
 
 
@@ -48,22 +46,17 @@ def _dist2d(a, b):
 
 
 def _load_coords_dict(stitched_dir):
-    coords_dict = {}
-    for name in os.listdir(stitched_dir):
-        if not name.endswith('_coords.json'):
-            continue
-        map_id = name.replace('_coords.json', '')
-        path = os.path.join(stitched_dir, name)
-        try:
-            with open(path, 'r') as f:
-                d = json.load(f)
-            coords_dict[map_id] = d
-        except Exception:
-            logger.warning(f"Failed to load coords: {path}")
+    coords_path = os.path.join(stitched_dir, 'map_coords.json')
+    try:
+        with open(coords_path, 'r', encoding='utf-8') as f:
+            coords_dict = json.load(f)
+    except Exception:
+        logger.warning(f"Failed to load coords: {coords_path}")
+        coords_dict = {}
     return coords_dict
 
 
-CONFIDENCE_THRESHOLD = 0.9
+CONFIDENCE_THRESHOLD = 0.8
 
 BIG_MAP_COLOR_CHECKS = [
     ((0.030, 0.094), (98, 150, 166)),
@@ -108,7 +101,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             'qzx_01', 'qzx_02', 'qzx_03', 'qzx_04', 'cx_0',
         ]}
         self.config_type['Feature algorithm'] = {'type': 'drop_down', 'options': [
-            'SURF', 'SIFT',
+            'SURF', 'SIFT', 'SIFTGZ',
         ]}
         self._window = None
         self._last_valid = None
@@ -117,9 +110,10 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         self._overlay_registered = False
         self._fallback_failures = 0
         self._locked_map_id = None
+        self._last_match_scale = None
         self._engines = {}
         self._coords_dict = None
-        self._smooth_buffer = deque(maxlen=SMOOTH_WINDOW_SIZE)
+        self._engine_settings = None
 
     def _detections_per_second(self):
         interval = self.config.get('Detect interval (ms)')
@@ -205,33 +199,96 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         self._coords_dict = _load_coords_dict(MAP_DIR)
         logger.info(f"[MapFallback] loaded {len(self._coords_dict)} coords from {MAP_DIR}: {list(self._coords_dict.keys())}")
 
+    def _load_engine_settings(self):
+        if self._engine_settings is not None:
+            return self._engine_settings
+        settings_path = os.path.join(MAP_DIR, 'setting.json')
+        try:
+            with open(settings_path, 'r', encoding='utf-8') as f:
+                self._engine_settings = json.load(f)
+        except Exception as e:
+            logger.warning(f"[MapFallback] failed to load setting.json: {e}")
+            self._engine_settings = {}
+        return self._engine_settings
+
+    def _resolve_engine_kwargs(self, algo, map_id):
+        from src.match_engine.params import ParamSet, params_to_engine_kwargs
+
+        settings = self._load_engine_settings()
+        algo_key = algo.lower()
+        algo_cfg = settings.get(algo_key, {})
+
+        param_name = None
+        maps_cfg = algo_cfg.get('maps', {})
+        if map_id in maps_cfg:
+            param_name = maps_cfg[map_id]
+        elif 'default' in algo_cfg:
+            param_name = algo_cfg['default']
+
+        if param_name:
+            try:
+                ps = ParamSet.from_name(param_name)
+                kwargs = params_to_engine_kwargs(ps)
+                logger.info(f"[MapFallback] setting.json resolved {algo_key}/{map_id} → {param_name}")
+                return kwargs
+            except Exception as e:
+                logger.warning(f"[MapFallback] failed to parse param name {param_name!r}: {e}")
+
+        return None
+
     def _get_engine(self, map_id):
         if map_id in self._engines:
             return self._engines[map_id]
 
         algo = self.config.get('Feature algorithm', 'SURF').upper()
-        assets_dir = get_path_relative_to_exe('src', 'match_engine', 'assets')
+        algo_lower = algo.lower()
+        npz_path = os.path.join(MAP_DIR, f"{map_id}_{algo_lower}.npz")
         map_path = os.path.join(MAP_DIR, f"{map_id}.png")
+
+        if not os.path.exists(npz_path) and not os.path.exists(map_path):
+            logger.warning(f"[MapFallback] no npz cache or png for map {map_id}")
+            return None
+
+        kwargs = self._resolve_engine_kwargs(algo, map_id) or {}
+        dummy_coords = os.path.join(MAP_DIR, f"__no_coords_{map_id}")
 
         if algo == 'SIFT':
             from src.match_engine import SiftEngine
-            engine = SiftEngine(
-                map_id=map_id,
-                map_path=map_path,
-                assets_dir=assets_dir,
-            )
+            engine = SiftEngine(map_id=map_id, map_path=map_path,
+                                assets_dir=MAP_DIR,
+                                coords_path=dummy_coords, **kwargs)
+        elif algo == 'SIFTGZ':
+            from src.match_engine import SiftGzEngine
+            engine = SiftGzEngine(map_id=map_id, map_path=map_path,
+                                  assets_dir=MAP_DIR,
+                                  coords_path=dummy_coords, **kwargs)
         else:
             from src.match_engine import SurfEngine
-            engine = SurfEngine(
-                map_id=map_id,
-                map_path=map_path,
-                assets_dir=assets_dir,
-            )
+            engine = SurfEngine(map_id=map_id, map_path=map_path,
+                                assets_dir=MAP_DIR,
+                                coords_path=dummy_coords, **kwargs)
 
+        self._attach_coords(engine, map_id)
         self._engines[map_id] = engine
         return engine
 
-    def _try_map_match(self, player_pos):
+    def _attach_coords(self, engine, map_id):
+        from src.match_engine.common import CoordsRef
+        self._ensure_coords()
+        d = self._coords_dict.get(map_id)
+        if d is None:
+            return
+        try:
+            engine.coords = CoordsRef(
+                offset=(float(d['offset'][0]), float(d['offset'][1])),
+                scale=(float(d['scale'][0]), float(d['scale'][1])),
+                min_xy=(float(d.get('min', [0, 0])[0]), float(d.get('min', [0, 0])[1])),
+                max_xy=(float(d.get('max', [0, 0])[0]), float(d.get('max', [0, 0])[1])),
+            )
+        except Exception as e:
+            logger.warning(f"[MapFallback] failed to load coords for map {map_id}: {e}")
+
+    def _try_map_match(self, player_pos, full_map=False, crop_size=FRAME_CROP_SIZE):
         self._ensure_coords()
         if not self._coords_dict:
             logger.warning("[MapFallback] no coords dict loaded")
@@ -240,7 +297,10 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         game_x = player_pos[0] * 100
         game_y = player_pos[1] * 100
 
-        if self._locked_map_id is not None:
+        if full_map and self._locked_map_id is None:
+            candidates = list(self._coords_dict.items())
+            logger.info(f"[MapFallback] full-map all candidates={[c[0] for c in candidates]}")
+        elif self._locked_map_id is not None:
             candidates = [(self._locked_map_id, self._coords_dict[self._locked_map_id])]
             logger.info(f"[MapFallback] using locked map={self._locked_map_id} OCR=({player_pos[0]},{player_pos[1]})")
         else:
@@ -256,7 +316,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
 
         h, w = self.frame.shape[:2]
         cx, cy = w // 2, h // 2
-        half = FRAME_CROP_SIZE // 2
+        half = crop_size // 2
         cropped = self.frame[cy - half:cy + half, cx - half:cx + half]
 
         algo = self.config.get('Feature algorithm', 'SURF')
@@ -271,21 +331,26 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                 logger.warning(f"[MapFallback] failed to init engine for map {map_id}: {e}")
                 continue
 
-            scale = coords_d['scale'][0]
-            offset_x = coords_d['offset'][0]
-            offset_y = coords_d['offset'][1]
-            pixel_x = (game_x - offset_x) / scale
-            pixel_y = (game_y - offset_y) / scale
+            if full_map:
+                region = None
+            else:
+                scale = coords_d['scale'][0]
+                offset_x = coords_d['offset'][0]
+                offset_y = coords_d['offset'][1]
+                pixel_x = (game_x - offset_x) / scale
+                pixel_y = (game_y - offset_y) / scale
 
-            half_r = MAP_REGION_SIZE // 2
-            region = (int(pixel_x - half_r), int(pixel_y - half_r), MAP_REGION_SIZE, MAP_REGION_SIZE)
+                region_size = MAP_REGION_SIZE
+                if self._last_match_scale is not None and self._last_match_scale > 1:
+                    region_size = max(MAP_REGION_SIZE, int(MAP_REGION_SIZE * self._last_match_scale))
+                half_r = region_size // 2
+                region = (int(pixel_x - half_r), int(pixel_y - half_r), region_size, region_size)
 
             logger.info(
                 f"[MapFallback] trying map={map_id} "
                 f"bounds=({coords_min[0]:.0f},{coords_min[1]:.0f})~({coords_max[0]:.0f},{coords_max[1]:.0f}) "
                 f"features={engine.feature_count} "
-                f"game_to_pixel=({pixel_x:.0f},{pixel_y:.0f}) "
-                f"region=({region[0]},{region[1]},{region[2]}x{region[3]})"
+                f"{'full-map' if full_map else f'region=({region[0]},{region[1]},{region[2]}x{region[3]})'}"
             )
 
             try:
@@ -351,10 +416,10 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
 
         if self.scene.in_team(self.in_team_and_world):
             self._fallback_failures = 0
-            self._smooth_buffer.clear()
             if self._locked_map_id is not None:
                 logger.info(f"[MapFallback] OCR restored, unlocking map_id={self._locked_map_id}")
                 self._locked_map_id = None
+            self._last_match_scale = None
 
             start = time.time()
             raw_position = og.my_app.position_detector.detect_position(self.frame)
@@ -380,36 +445,50 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
 
         if self._in_big_map():
             if self.config.get('Map overlay fallback') and self._last_valid is not None:
-                if self._fallback_failures < FALLBACK_MAX_FAILURES:
-                    logger.info(
-                        f"[MapFallback] in big map, attempting fallback match "
-                        f"(attempt {self._fallback_failures + 1}/{FALLBACK_MAX_FAILURES})"
+                attempt = self._fallback_failures + 1
+                is_third = (self._fallback_failures == 2)
+                is_fourth = (self._fallback_failures == 3)
+
+                use_full_map = is_third or is_fourth
+                if is_fourth and self._locked_map_id is not None:
+                    logger.info(f"[MapFallback] attempt {attempt}/{FALLBACK_MAX_FAILURES}, unlocking map_id={self._locked_map_id} for full-map all")
+                    self._locked_map_id = None
+
+                crop_size = FRAME_CROP_SIZE + 100 * self._fallback_failures
+
+                logger.info(
+                    f"[MapFallback] in big map, attempting fallback match "
+                    f"(attempt {attempt}/{FALLBACK_MAX_FAILURES}"
+                    f"{', full-map' if use_full_map else ''}, crop={crop_size})"
+                )
+                result = self._try_map_match(self._last_valid, full_map=use_full_map, crop_size=crop_size)
+                if result is None or not result.success:
+                    self._fallback_failures += 1
+                    logger.warning(
+                        f"[MapFallback] match failed {self._fallback_failures}/{FALLBACK_MAX_FAILURES}"
                     )
-                    result = self._try_map_match(self._last_valid)
-                    if result is None or not result.success:
-                        self._fallback_failures += 1
-                        logger.warning(
-                            f"[MapFallback] match failed {self._fallback_failures}/{FALLBACK_MAX_FAILURES}"
-                        )
-                    else:
-                        logger.info("[MapFallback] match succeeded, resetting failure count")
-                        self._fallback_failures = 0
-                        if result.game_center:
-                            self._smooth_buffer.append(result.game_center)
-                            smoothed = self._smooth_game_center()
-                            new_x = int(smoothed[0] / 100)
-                            new_y = int(smoothed[1] / 100)
-                            new_z = self._last_valid[2] if len(self._last_valid) > 2 else 0
-                            old = self._last_valid
-                            self._last_valid = (new_x, new_y, new_z)
-                            logger.info(
-                                f"[MapFallback] smoothed position from ({old[0]},{old[1]}) "
-                                f"to ({new_x},{new_y}) buffer_size={len(self._smooth_buffer)}"
-                            )
-                        game_scale = self._compute_game_scale(result)
-                        self._draw_overlay_screen_center(self._last_valid, game_scale)
                 else:
-                    logger.warning("[MapFallback] max failures reached, waiting for OCR success")
+                    logger.info("[MapFallback] match succeeded, resetting failure count")
+                    self._last_match_scale = result.map_scale
+                    self._fallback_failures = 0
+                    if result.game_center:
+                        new_x = int(result.game_center[0] / 100)
+                        new_y = int(result.game_center[1] / 100)
+                        new_z = self._last_valid[2] if len(self._last_valid) > 2 else 0
+                        old = self._last_valid
+                        self._last_valid = (new_x, new_y, new_z)
+                        logger.info(
+                            f"[MapFallback] position from ({old[0]},{old[1]}) "
+                            f"to ({new_x},{new_y})"
+                        )
+                    game_scale = self._compute_game_scale(result)
+                    self._draw_overlay_screen_center(self._last_valid, game_scale)
+
+                if self._fallback_failures >= FALLBACK_MAX_FAILURES:
+                    logger.warning("[MapFallback] max failures reached, sleeping 2s then resetting")
+                    self._locked_map_id = None
+                    self._fallback_failures = 0
+                    self.sleep(2)
             else:
                 self._clear_overlay()
 
@@ -424,7 +503,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
     def _init_overlay(self):
         if self._overlay is not None:
             return
-        db_path = get_path_relative_to_exe('pick', 'map_items.db')
+        db_path = os.path.join(MAP_DIR, 'map_items.db')
         self._overlay = MapItemOverlay(db_path)
 
     def _draw_overlay(self, player_pos):
@@ -454,18 +533,6 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         callback = MapItemOverlay.make_paint_callback(draw_items)
         overlay_view.draw(OVERLAY_DRAW_KEY, callback, duration=1)
         self._overlay_registered = True
-
-    def _smooth_game_center(self):
-        if not self._smooth_buffer:
-            return (0.0, 0.0)
-        if len(self._smooth_buffer) == 1:
-            return self._smooth_buffer[0]
-        n = len(self._smooth_buffer)
-        weights = SMOOTH_WEIGHTS[:n]
-        w_sum = sum(weights)
-        sx = sum(self._smooth_buffer[i][0] * weights[i] for i in range(n)) / w_sum
-        sy = sum(self._smooth_buffer[i][1] * weights[i] for i in range(n)) / w_sum
-        return (sx, sy)
 
     def _compute_game_scale(self, result):
         if result.map_scale <= 0 or not result.game_center:
@@ -519,8 +586,9 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             dy_center = sy - center_y
             if math.sqrt(dx_center ** 2 + dy_center ** 2) > screen_radius:
                 continue
+            pixmap = ITEM_PIXMAPS.get(type_id)
             color = ITEM_COLORS.get(type_id)
-            draw_items.append((sx, sy, name, color))
+            draw_items.append((sx, sy, pixmap, name, color))
 
         callback = MapItemOverlay.make_paint_callback(draw_items)
         overlay_view.draw(OVERLAY_DRAW_KEY, callback, duration=1)

@@ -274,49 +274,158 @@ if __name__ == "__main__":
     import argparse
     import sys
     import glob as _glob
+    from .params import ParamSet, SURF, SIFT, SIFTGZ, SurfParams, SiftParams, SiftGzParams
+
+    def _load_json(path):
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+
+    def _save_json(path, data):
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+
+    def _merge_setting_json(out_dir, algo, param_set_name):
+        path = os.path.join(out_dir, "setting.json")
+        data = _load_json(path) if os.path.exists(path) else {}
+        if algo not in data:
+            data[algo] = {}
+        data[algo]["default"] = param_set_name
+        _save_json(path, data)
+
+    def _build_default_ps(algo, grid, mpc):
+        if algo == SURF:
+            return ParamSet(algo=SURF, params=SurfParams(
+                hessian=40, octaves=8, layers=4,
+                extended=True, upright=True,
+                grid=grid, max_per_cell=mpc,
+                ratio=0.62, max_dist=0.50,
+            ))
+        if algo == SIFT:
+            return ParamSet(algo=SIFT, params=SiftParams(
+                contrast_threshold=0.02, edge_threshold=7,
+                n_octave_layers=5, sigma=1.6,
+                grid=grid, max_per_cell=mpc, ratio=0.75,
+            ))
+        if algo == SIFTGZ:
+            return ParamSet(algo=SIFTGZ, params=SiftGzParams(
+                contrast_threshold=0.02, edge_threshold=7,
+                n_octave_layers=2, sigma=1.6,
+                grid=grid, max_per_cell=mpc, ratio=0.75,
+                downscale=1, tile_size=14800, tile_overlap=512,
+                black_thresh=5, edge_margin=8, min_dist=4.0,
+            ))
+        raise ValueError(f"unknown algo: {algo}")
+
+    def _extract_one(png_path, out_path, ps):
+        algo = ps.algo
+        p = ps.params
+        if algo == SIFTGZ:
+            from .siftgz import _extract as siftgz_extract
+            cfg = cv2.SIFT_create(
+                0, p.n_octave_layers, p.contrast_threshold,
+                p.edge_threshold, p.sigma,
+            )
+            kps, descs, h, w = siftgz_extract(
+                cfg, png_path, out_path, p.grid, p.max_per_cell,
+                downscale=p.downscale, tile_size=p.tile_size,
+                tile_overlap=p.tile_overlap, black_thresh=p.black_thresh,
+                edge_margin=p.edge_margin, min_dist=p.min_dist,
+            )
+            return len(kps), h, w
+        if algo == SURF:
+            cfg = cv2.xfeatures2d.SURF_create(
+                p.hessian, p.octaves, p.layers, p.extended, p.upright,
+            )
+        else:
+            cfg = cv2.SIFT_create(
+                0, p.n_octave_layers, p.contrast_threshold,
+                p.edge_threshold, p.sigma,
+            )
+        img = cv2.imread(png_path, cv2.IMREAD_GRAYSCALE)
+        if img is None:
+            raise ValueError(f"cannot read: {png_path}")
+        h, w = img.shape[:2]
+        kps, desc = cfg.detectAndCompute(img, None)
+        if not kps or desc is None:
+            raise ValueError(f"no features: {png_path}")
+        sel_kps, sel_descs = grid_sample(kps, desc, h, w, p.grid, p.grid, p.max_per_cell)
+        save_npz(out_path, sel_kps, sel_descs, h, w)
+        return len(sel_kps), h, w
 
     def _cmd_extract(args):
-        algo = args.algo.lower()
         os.makedirs(args.out, exist_ok=True)
+        setting_path = getattr(args, 'setting', None)
+        param_set_name_arg = getattr(args, 'param_set', None)
 
-        if algo == "sift":
-            detector = cv2.SIFT_create()
-        else:
-            detector = cv2.xfeatures2d.SURF_create()
+        if setting_path and param_set_name_arg:
+            print(json.dumps({"error": "--setting and --param-set cannot be used together"}))
+            sys.exit(1)
 
         png_files = _glob.glob(os.path.join(args.dir, "*.png"))
         if not png_files:
             print(json.dumps({"error": f"no png files in {args.dir}"}))
             sys.exit(1)
 
+        tasks = []
+        if setting_path:
+            if not os.path.exists(setting_path):
+                print(json.dumps({"error": f"setting file not found: {setting_path}"}))
+                sys.exit(1)
+            setting = _load_json(setting_path)
+            for algo_key, algo_cfg in setting.items():
+                default_name = algo_cfg.get("default")
+                if not default_name:
+                    continue
+                maps_cfg = algo_cfg.get("maps", {})
+                for png_path in sorted(png_files):
+                    basename = os.path.splitext(os.path.basename(png_path))[0]
+                    ps_name = maps_cfg.get(basename, default_name)
+                    ps = ParamSet.from_name(ps_name)
+                    out_path = os.path.join(args.out, f"{basename}_{algo_key}.npz")
+                    tasks.append((png_path, out_path, ps, ps_name))
+        elif param_set_name_arg:
+            ps = ParamSet.from_name(param_set_name_arg)
+            for png_path in sorted(png_files):
+                basename = os.path.splitext(os.path.basename(png_path))[0]
+                out_path = os.path.join(args.out, f"{basename}_{ps.algo}.npz")
+                tasks.append((png_path, out_path, ps, param_set_name_arg))
+        else:
+            algo = args.algo.lower()
+            ps = _build_default_ps(algo, args.grid, args.max_per_cell)
+            for png_path in sorted(png_files):
+                basename = os.path.splitext(os.path.basename(png_path))[0]
+                out_path = os.path.join(args.out, f"{basename}_{algo}.npz")
+                tasks.append((png_path, out_path, ps, ps.name))
+
         results = []
-        for png_path in sorted(png_files):
+        seen_algos = set()
+        for png_path, out_path, ps, ps_name in tasks:
             basename = os.path.splitext(os.path.basename(png_path))[0]
-            out_path = os.path.join(args.out, f"{basename}_{algo}.npz")
-
-            img = cv2.imread(png_path, cv2.IMREAD_GRAYSCALE)
-            if img is None:
-                print(json.dumps({"error": f"cannot read {png_path}"}), file=sys.stderr)
-                continue
-
-            h, w = img.shape[:2]
-            kps, desc = detector.detectAndCompute(img, None)
-            if not kps or desc is None:
-                print(json.dumps({"error": f"no features in {png_path}"}), file=sys.stderr)
-                continue
-
-            sel_kps, sel_descs = grid_sample(kps, desc, h, w, args.grid, args.grid, args.max_per_cell)
-            save_npz(out_path, sel_kps, sel_descs, h, w)
-
-            entry = {
-                "file": os.path.basename(png_path),
-                "out": out_path,
-                "size": [w, h],
-                "total_features": len(kps),
-                "saved_features": len(sel_kps),
-            }
-            results.append(entry)
-            print(f"  {basename}: {len(kps)} -> {len(sel_kps)} -> {out_path}")
+            try:
+                total, h, w = _extract_one(png_path, out_path, ps)
+                entry = {
+                    "file": os.path.basename(png_path),
+                    "out": out_path,
+                    "algo": ps.algo,
+                    "param_set": ps_name,
+                    "size": [w, h],
+                    "saved_features": total,
+                }
+                results.append(entry)
+                print(f"  {basename} [{ps.algo}]: {total} features -> {out_path}")
+                if not setting_path and ps.algo not in seen_algos:
+                    _merge_setting_json(args.out, ps.algo, ps_name)
+                    seen_algos.add(ps.algo)
+            except Exception as e:
+                entry = {
+                    "file": os.path.basename(png_path),
+                    "out": out_path,
+                    "algo": ps.algo,
+                    "param_set": ps_name,
+                    "error": str(e),
+                }
+                results.append(entry)
+                print(f"  {basename} [{ps.algo}]: ERROR: {e}", file=sys.stderr)
 
         print(json.dumps(results, indent=2))
 
@@ -332,7 +441,7 @@ if __name__ == "__main__":
             desc_mat = np.ascontiguousarray(desc_mat)
         cache = MapCache(kps, descs, desc_mat, map_h, map_w)
 
-        if algo == "sift":
+        if algo in ("sift", "siftgz"):
             cfg = cv2.SIFT_create()
             ratio = 0.75
             result = _match_bf(cfg, args.query, cache, ratio,
@@ -356,7 +465,12 @@ if __name__ == "__main__":
     ep = sub.add_parser("extract", help="extract features from PNGs in a folder")
     ep.add_argument("--dir", required=True, help="folder containing map PNG files")
     ep.add_argument("--out", required=True, help="output folder for .npz cache files")
-    ep.add_argument("--algo", choices=["surf", "sift"], default="surf")
+    ep.add_argument("--algo", choices=["surf", "sift", "siftgz"], default="surf",
+                    help="algorithm (default: surf)")
+    ep.add_argument("--param-set", default=None,
+                    help="full param set name, algo auto-detected from name prefix")
+    ep.add_argument("--setting", default=None,
+                    help="path to setting.json describing algorithms and params")
     ep.add_argument("--grid", type=int, default=100)
     ep.add_argument("--max-per-cell", type=int, default=160)
 
@@ -364,7 +478,7 @@ if __name__ == "__main__":
     mp.add_argument("--query", required=True, help="query image path")
     mp.add_argument("--features", required=True, help=".npz feature cache path")
     mp.add_argument("--coords", default=None, help="optional _coords.json for game_center output")
-    mp.add_argument("--algo", choices=["surf", "sift"], default="surf")
+    mp.add_argument("--algo", choices=["surf", "sift", "siftgz"], default="surf")
     mp.add_argument("--crop", type=int, default=0, help="center crop size (0=no crop)")
 
     args = parser.parse_args()
