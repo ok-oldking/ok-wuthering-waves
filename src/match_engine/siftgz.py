@@ -1,0 +1,393 @@
+import cv2
+import numpy as np
+import time
+import os
+from typing import Tuple, Optional
+
+from .common import (
+    KeyPoint, MapCache, MatchOutput, CoordsRef,
+    save_npz, load_npz, desc_mat_from_slice_fast,
+    project_corners, compute_center, extract_scale_factor, _prepare_test_image,
+)
+
+
+def _compute_tile_positions(img_h, img_w, tile_size, overlap):
+    step = tile_size - overlap
+    positions = []
+    y = 0
+    while y < img_h:
+        x = 0
+        while x < img_w:
+            tw = min(tile_size, img_w - x)
+            th = min(tile_size, img_h - y)
+            positions.append((x, y, tw, th))
+            x += step
+        y += step
+    return positions
+
+
+def _make_tile_mask(gray, x, y, tw, th, edge_margin, black_thresh):
+    if gray is None:
+        return None
+    tile = gray[y:y + th, x:x + tw]
+    if tile.size == 0:
+        return None
+    mask = np.ones((th, tw), dtype=np.uint8) * 255
+    if black_thresh >= 0:
+        mask[tile <= black_thresh] = 0
+    if edge_margin > 0:
+        mask[:edge_margin, :] = 0
+        mask[-edge_margin:, :] = 0
+        mask[:, :edge_margin] = 0
+        mask[:, -edge_margin:] = 0
+    if cv2.countNonZero(mask) < 100:
+        return None
+    return mask
+
+
+def _merge_and_dedup(all_kps, all_descs, min_dist, prefer_large=True):
+    if not all_kps:
+        return [], np.array([], dtype=np.float32)
+
+    if prefer_large:
+        order = sorted(range(len(all_kps)), key=lambda i: -all_kps[i].size)
+    else:
+        order = sorted(range(len(all_kps)), key=lambda i: -all_kps[i].response)
+    cell_size = max(min_dist, 8.0)
+    min_dist_sq = min_dist * min_dist
+    grid = {}
+    keep = []
+
+    for idx in order:
+        kpx, kpy = all_kps[idx].pt
+        cx = int(kpx / cell_size)
+        cy = int(kpy / cell_size)
+
+        too_close = False
+        for gx in range(cx - 1, cx + 2):
+            for gy in range(cy - 1, cy + 2):
+                for ki in grid.get((gx, gy), ()):
+                    okp = all_kps[ki]
+                    ex = okp.pt[0] - kpx
+                    ey = okp.pt[1] - kpy
+                    if ex * ex + ey * ey < min_dist_sq:
+                        too_close = True
+                        break
+                if too_close:
+                    break
+            if too_close:
+                break
+
+        if not too_close:
+            keep.append(idx)
+            key = (cx, cy)
+            if key in grid:
+                grid[key].append(idx)
+            else:
+                grid[key] = [idx]
+
+    merged_kps = [all_kps[i] for i in keep]
+    merged_descs = np.array([all_descs[i] for i in keep], dtype=np.float32)
+    return merged_kps, merged_descs
+
+
+def _extract(cfg, map_path, out_path, grid, mpc,
+             downscale=1, tile_size=0, tile_overlap=512,
+             black_thresh=5, edge_margin=8, min_dist=2.0):
+    img = cv2.imread(map_path, cv2.IMREAD_GRAYSCALE)
+    if img is None:
+        raise ValueError(f"cannot read: {map_path}")
+    orig_h, orig_w = img.shape[:2]
+
+    if downscale > 1:
+        small = cv2.resize(
+            img, None,
+            fx=1.0 / downscale, fy=1.0 / downscale,
+            interpolation=cv2.INTER_AREA,
+        )
+        del img
+        img = small
+
+    h, w = img.shape[:2]
+    sf = float(downscale)
+    use_tile = tile_size > 0 and max(h, w) > tile_size
+
+    if use_tile:
+        all_kps, all_descs = _extract_tiled(
+            cfg, img, tile_size, tile_overlap,
+            black_thresh, edge_margin, min_dist,
+        )
+    else:
+        mask = _make_whole_mask(img, black_thresh, edge_margin)
+        all_kps, all_descs = cfg.detectAndCompute(img, mask)
+        if not all_kps or all_descs is None:
+            raise ValueError(f"no features: {map_path}")
+        all_descs = [all_descs[i] for i in range(len(all_kps))]
+
+    del img
+
+    if sf > 1.0:
+        for kp in all_kps:
+            kp.pt = (kp.pt[0] * sf, kp.pt[1] * sf)
+            kp.size *= sf
+
+    grid_h = int(np.ceil(orig_h * grid / max(orig_h, 1)))
+    grid_w = int(np.ceil(orig_w * grid / max(orig_w, 1)))
+    if grid_h < 1:
+        grid_h = grid
+    if grid_w < 1:
+        grid_w = grid
+
+    sel_kps, sel_descs = _grid_sample_kps(
+        all_kps, all_descs, orig_h, orig_w, grid_h, grid_w, mpc,
+    )
+    save_npz(out_path, sel_kps, sel_descs, orig_h, orig_w)
+    return sel_kps, sel_descs, orig_h, orig_w
+
+
+def _make_whole_mask(gray, black_thresh, edge_margin):
+    h, w = gray.shape[:2]
+    mask = np.ones((h, w), dtype=np.uint8) * 255
+    if black_thresh >= 0:
+        mask[gray <= black_thresh] = 0
+    if edge_margin > 0:
+        mask[:edge_margin, :] = 0
+        mask[-edge_margin:, :] = 0
+        mask[:, :edge_margin] = 0
+        mask[:, -edge_margin:] = 0
+    if cv2.countNonZero(mask) < 100:
+        return None
+    return mask
+
+
+def _extract_tiled(cfg, img, tile_size, overlap, black_thresh, edge_margin, min_dist=2.0):
+    h, w = img.shape[:2]
+    positions = _compute_tile_positions(h, w, tile_size, overlap)
+    all_kps = []
+    all_descs_list = []
+    for (x, y, tw, th) in positions:
+        tile = img[y:y + th, x:x + tw]
+        mask = _make_tile_mask(img, x, y, tw, th, edge_margin, black_thresh)
+        kps, desc = cfg.detectAndCompute(tile, mask)
+        if not kps or desc is None:
+            continue
+        for i, kp in enumerate(kps):
+            kp.pt = (kp.pt[0] + x, kp.pt[1] + y)
+        all_kps.extend(kps)
+        for i in range(len(kps)):
+            all_descs_list.append(desc[i])
+        del tile, kps, desc
+
+    if not all_kps:
+        return [], np.array([], dtype=np.float32)
+
+    merged_kps, merged_descs = _merge_and_dedup(all_kps, all_descs_list, min_dist)
+    return merged_kps, merged_descs
+
+
+def _grid_sample_kps(kps, descs_list, rows, cols, grid_rows, grid_cols, max_per_cell):
+    cell_h = rows / grid_rows
+    cell_w = cols / grid_cols
+
+    order = sorted(range(len(kps)), key=lambda i: -kps[i].response)
+
+    buckets = [[[] for _ in range(grid_cols)] for _ in range(grid_rows)]
+    for idx in order:
+        kp = kps[idx]
+        c = int(kp.pt[0] / cell_w)
+        r = int(kp.pt[1] / cell_h)
+        if 0 <= c < grid_cols and 0 <= r < grid_rows:
+            buckets[r][c].append(idx)
+
+    selected = []
+    for r in range(grid_rows):
+        for c in range(grid_cols):
+            selected.extend(buckets[r][c][:max_per_cell])
+
+    out_kps = []
+    out_descs = []
+    for idx in selected:
+        kp = kps[idx]
+        out_kps.append(KeyPoint(
+            x=kp.pt[0], y=kp.pt[1], size=kp.size,
+            angle=kp.angle, response=kp.response,
+            octave=kp.octave, class_id=kp.class_id,
+        ))
+        out_descs.append(descs_list[idx].tolist())
+
+    return out_kps, out_descs
+
+
+def _load_cache(npz_path):
+    kps, descs, h, w = load_npz(npz_path)
+    desc_mat = desc_mat_from_slice_fast(descs)
+    return MapCache(kps, descs, desc_mat, h, w)
+
+
+def _build_region_cache(cache, region):
+    x, y, rw, rh = region
+    mask = []
+    for i, kp in enumerate(cache.kps):
+        if x <= kp.x <= x + rw and y <= kp.y <= y + rh:
+            mask.append(i)
+
+    if len(mask) < 4:
+        return None
+
+    sub_kps = [cache.kps[i] for i in mask]
+    sub_descs = [cache.descs[i] for i in mask]
+    sub_mat = np.array(sub_descs, dtype=np.float32)
+    return MapCache(sub_kps, sub_descs, sub_mat, cache.h, cache.w)
+
+
+def _match_bf(cfg, test_src, cache, ratio_thresh, crop_size, region,
+              constrained=False):
+    start = time.time()
+    img = _prepare_test_image(test_src, crop_size)
+    if img is None:
+        return MatchOutput(success=False, match_count=0, inlier_count=0,
+                           confidence=0.0, elapsed_ms=(time.time() - start) * 1000)
+
+    crop_w = img.shape[1]
+    crop_h = img.shape[0]
+
+    kps, desc = cfg.detectAndCompute(img, None)
+    if not kps or desc is None:
+        return MatchOutput(success=False, match_count=0, inlier_count=0,
+                           confidence=0.0, elapsed_ms=(time.time() - start) * 1000)
+
+    test_kps = [KeyPoint(
+        kp.pt[0], kp.pt[1], kp.size, kp.angle,
+        kp.response, kp.octave, kp.class_id
+    ) for kp in kps]
+
+    match_cache = cache
+    if region is not None:
+        match_cache = _build_region_cache(cache, region)
+        if match_cache is None:
+            return MatchOutput(success=False, match_count=0, inlier_count=0,
+                               confidence=0.0, elapsed_ms=(time.time() - start) * 1000)
+
+    matcher = cv2.BFMatcher(cv2.NORM_L2)
+    knn = matcher.knnMatch(desc, match_cache.desc_mat, 2)
+
+    good = []
+    for pair in knn:
+        if len(pair) < 2:
+            continue
+        m, n = pair
+        if m.distance < ratio_thresh * n.distance:
+            good.append((m.queryIdx, m.trainIdx, m.distance))
+
+    H = None
+    inlier_count = 0
+    min_matches = 2 if constrained else 4
+    if len(good) >= min_matches:
+        src_pts = np.array([[test_kps[q].x, test_kps[q].y] for q, _, _ in good],
+                           dtype=np.float64).reshape(-1, 1, 2)
+        dst_pts = np.array([[match_cache.kps[t].x, match_cache.kps[t].y] for _, t, _ in good],
+                           dtype=np.float64).reshape(-1, 1, 2)
+        if constrained:
+            M, inliers = cv2.estimateAffinePartial2D(
+                src_pts, dst_pts, method=cv2.RANSAC,
+                ransacReprojThreshold=3.0, maxIters=2000, confidence=0.995)
+            if M is not None:
+                H = np.eye(3, dtype=np.float64)
+                H[:2, :] = M
+                inlier_count = int(inliers.sum())
+        else:
+            H, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 3.0,
+                                         maxIters=2000, confidence=0.995)
+            if mask is not None:
+                inlier_count = int(mask.sum())
+
+    elapsed = time.time() - start
+    output = MatchOutput(
+        success=H is not None and inlier_count > 0,
+        match_count=len(good),
+        inlier_count=inlier_count,
+        confidence=inlier_count / max(len(good), 1),
+        H=H,
+        elapsed_ms=elapsed * 1000,
+    )
+
+    if output.success:
+        corners = project_corners(H, crop_w, crop_h)
+        output.center = compute_center(corners)
+        output.corners = corners
+        output.map_scale = extract_scale_factor(H, crop_w / 2, crop_h / 2)
+
+    return output
+
+
+class SiftGzEngine:
+    def __init__(self, map_id, map_path, assets_dir,
+                 nfeatures=0, nOctaveLayers=2, contrastThreshold=0.02,
+                 edgeThreshold=7, sigma=1.6,
+                 grid=75, max_per_cell=100,
+                 ratio=0.75, coords_path=None,
+                 downscale=1, tile_size=14800, tile_overlap=512,
+                 black_thresh=5, edge_margin=8, min_dist=4.0):
+        self.map_id = map_id
+        self.ratio = ratio
+        self.grid = grid
+        self.mpc = max_per_cell
+        self.crop_size = 350
+        self.downscale = downscale
+        self.tile_size = tile_size
+        self.tile_overlap = tile_overlap
+
+        npz_path = os.path.join(assets_dir, f"{map_id}_siftgz.npz")
+        self.cfg = cv2.SIFT_create(
+            nfeatures, nOctaveLayers, contrastThreshold,
+            edgeThreshold, sigma)
+
+        if os.path.exists(npz_path):
+            self.cache = _load_cache(npz_path)
+        else:
+            os.makedirs(assets_dir, exist_ok=True)
+            kps, descs, h, w = _extract(
+                self.cfg, map_path, npz_path, grid, max_per_cell,
+                downscale=downscale,
+                tile_size=tile_size,
+                tile_overlap=tile_overlap,
+                black_thresh=black_thresh,
+                edge_margin=edge_margin,
+                min_dist=min_dist,
+            )
+            desc_mat = desc_mat_from_slice_fast(descs)
+            self.cache = MapCache(kps, descs, desc_mat, h, w)
+
+        self.coords = None
+        if coords_path and os.path.exists(coords_path):
+            self.coords = CoordsRef.load(coords_path)
+        elif coords_path is None:
+            alt = os.path.join(os.path.dirname(os.path.abspath(map_path)),
+                               f"{map_id}_coords.json")
+            if os.path.exists(alt):
+                self.coords = CoordsRef.load(alt)
+
+    @property
+    def feature_count(self):
+        return len(self.cache.kps)
+
+    @property
+    def map_size(self):
+        return self.cache.w, self.cache.h
+
+    def match(self, test_path, region=None, crop_size=None, constrained=False):
+        cs = crop_size if crop_size is not None else self.crop_size
+        result = _match_bf(self.cfg, test_path, self.cache,
+                           self.ratio, cs, region,
+                           constrained=constrained)
+        if self.coords is not None:
+            result.with_coords(self.coords)
+        return result
+
+    def match_array(self, test_img, region=None, crop_size=0, constrained=False):
+        result = _match_bf(self.cfg, test_img, self.cache,
+                           self.ratio, crop_size, region,
+                           constrained=constrained)
+        if self.coords is not None:
+            result.with_coords(self.coords)
+        return result
