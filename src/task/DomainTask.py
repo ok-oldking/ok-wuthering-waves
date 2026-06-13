@@ -19,24 +19,10 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         self.group_icon = FluentIcon.HOME
 
     def revive_action(self):
-        """副本内死亡恢复：关闭弹窗 → 退出副本 → 传周本入口 → 传最近传送点。"""
+        """副本内死亡恢复：关闭弹窗 → 退出副本 → 传最近传送点回血。"""
 
-        # ① 关闭复活弹窗：优先点击弹窗按钮（避免 ESC 注入不生效），失败再回退 ESC
-        closed_by_click = False
-        if self.wait_click_feature('cancel_button_hcenter_vcenter',
-                                   raise_if_not_found=False,
-                                   time_out=1.2,
-                                   click_after_delay=0.2,
-                                   threshold=0.7):
-            closed_by_click = True
-        else:
-            btn_dialog_close = self.find_one('btn_dialog_close', threshold=0.8)
-            if btn_dialog_close:
-                self.click(btn_dialog_close, move_back=True)
-                closed_by_click = True
-        if not closed_by_click:
-            self.send_key('esc', after_sleep=2)
-            self.sleep(1)
+        # ① 关闭复活弹窗 (点按钮优先, esc 兜底, 与 BaseCombatTask 共用)
+        self.close_revive_popup()
 
         # ② 打开退出菜单
         self.send_key('esc')
