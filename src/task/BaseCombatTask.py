@@ -182,10 +182,34 @@ class BaseCombatTask(CombatCheck):
         else:
             return 0
 
+    def close_revive_popup(self):
+        """关闭角色死亡弹窗。
+
+        优先点击弹窗按钮 (避免 ESC 注入偶发不生效)，依次尝试:
+        cancel_button → btn_dialog_close → 最后回退 ESC。
+        供 BaseCombatTask 与 DomainTask 的死亡恢复共用, 保证关弹窗稳定。
+
+        Returns:
+            bool: True 表示通过点击按钮关闭, False 表示回退到了 ESC。
+        """
+        if self.wait_click_feature('cancel_button_hcenter_vcenter',
+                                   raise_if_not_found=False,
+                                   time_out=1.2,
+                                   click_after_delay=0.2,
+                                   threshold=0.7):
+            return True
+        btn_dialog_close = self.find_one('btn_dialog_close', threshold=0.8)
+        if btn_dialog_close:
+            self.click(btn_dialog_close, move_back=True)
+            return True
+        self.send_key('esc', after_sleep=2)
+        self.sleep(1)
+        return False
+
     def revive_action(self):
-        """角色死亡恢复：关闭弹窗 → 传周本入口 → 传最近传送点回血。"""
+        """角色死亡恢复：关闭弹窗 → 传最近传送点回血。"""
         try:
-            self.send_key('esc', after_sleep=2)  # ① 关闭复活弹窗
+            self.close_revive_popup()  # ① 关闭复活弹窗 (点按钮优先, esc 兜底)
             self.revive_at_tower_and_heal()
             logger.info(f'revive_action success')
             return True
@@ -194,16 +218,40 @@ class BaseCombatTask(CombatCheck):
             return False
 
     def revive_at_tower_and_heal(self):
-        """Use the weekly entrance as a stable anchor, then teleport to heal."""
-        self.teleport_to_heal()
+        """搜索无冠者→探测打开地图→找最近传送点回血。
+
+        不再依赖已被移除的 go_to_tower。改用 F2 图鉴搜索"无冠者"后点"探测"，
+        游戏会把地图定位到固定位置，从该位置寻找传送点回血，结果稳定可复现。
+        前提：调用前已回到大世界 (副本内死亡需先退本)。
+        """
+        # 退本后可能仍在加载黑屏, 给足超时等待真正回到大世界 (原 go_to_tower 用 80s)
+        self.ensure_main(time_out=120)
+        # ① F2 图鉴 → 全部怪物 → 搜索"无冠者"
+        gray_book = self.openF2Book("gray_book_all_monsters")
+        self.click_box(gray_book, after_sleep=1)
+        self.click(0.13, 0.14, after_sleep=0.5)        # 搜索图标
+        self.input_text("无冠者")
+        self.sleep(0.3)
+        self.click(0.20, 0.14, after_sleep=0.3)         # 点搜索框确保焦点
+        self.send_key('enter', after_sleep=0.5)          # 回车确认搜索, 刷新结果列表
+        self.click(0.13, 0.24, after_sleep=0.5)         # 选中第一条结果
+        # ② 点"探测"——打开地图并定位到无冠者位置 (点两次, 与 teleport_to_nearest_boss 一致)
+        self.click(0.89, 0.92, after_sleep=1)
+        self.click(0.89, 0.92, after_sleep=1)
+        # ③ 在已打开的地图上找最近传送点回血
+        self._travel_to_nearest_waypoint()
 
     def teleport_to_heal(self):
-        """传送回城治疗。"""
+        """按 M 开图, 就近找传送点回血 (供 FarmEchoTask 在 boss 点使用)。"""
         self.ensure_main(time_out=10)
         self.log_info('click m to open the map')
         start = time.time()
         while self.in_team_and_world() and time.time() - start < 20:
             self.send_key('m', after_sleep=2)
+        self._travel_to_nearest_waypoint()
+
+    def _travel_to_nearest_waypoint(self):
+        """在已打开的地图界面上, 找最近传送点并传送, 等回到大世界。"""
         self.sleep(2)
         teleport = self.find_best_match_in_box(self.box_of_screen(0.1, 0.1, 0.9, 0.9),
                                                ['map_way_point', 'map_way_point_big'], 0.6)
