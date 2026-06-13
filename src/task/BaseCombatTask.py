@@ -21,17 +21,14 @@ cd_regex = re.compile(r'\d{1,2}\.\d')
 
 class NotInCombatException(Exception):
     """未处于战斗状态异常。"""
-    pass
 
 
 class CharDeadException(NotInCombatException):
     """角色死亡异常。"""
-    pass
 
 
 class CharRevivedException(CharDeadException):
     """角色已复活，用于中断当前战斗上下文并让任务重新进入。"""
-    pass
 
 
 mismatched_names = {
@@ -72,8 +69,6 @@ class BaseCombatTask(CombatCheck):
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']  # 角色文本标识符列表
         self.mouse_pos = None  # 当前鼠标位置
         self.combat_start = 0  # 战斗开始时间戳
-
-        self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.add_text_fix({'Ｅ': 'e'})
         self.use_liberation = True
 

@@ -1,10 +1,8 @@
 import os.path
-from os import path
 
-import cv2
-from PySide6.QtCore import Signal, QObject
+from PySide6.QtCore import QObject
 
-from ok import Config, Logger, get_path_relative_to_exe, og
+from ok import Logger, get_path_relative_to_exe, og
 
 logger = Logger.get_logger(__name__)
 

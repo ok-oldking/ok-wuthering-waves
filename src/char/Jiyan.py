@@ -13,7 +13,6 @@ class Jiyan(BaseChar):
             while time.time() - start < 12:
                 if self.click_resonance()[0]:
                     self.task.middle_click_relative(0.5, 0.5)
-                    pass
                 self.normal_attack()
             return self.switch_next_char()
         i = 0

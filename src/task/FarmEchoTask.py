@@ -104,7 +104,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.use_liberation = self.config.get('Use Liberation')
         try:
             return self.do_run()
-        except TaskDisabledException as e:
+        except TaskDisabledException:
             pass
         except Exception as e:
             logger.error('farm 4c error, try handle monthly card', e)
@@ -548,7 +548,6 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         trapezoid_scaled[:, 0, 1] = (trapezoid[:, 0, 1] * scale_y).astype(np.int32)
 
         # 定义匹配阈值
-        best_mat = None
         best_match = None
         best_ratio = 0
 
@@ -558,12 +557,11 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             for dx in range(-10, 11, 2):
                 for dy in range(-10, 11, 2):
                     shifted = trapezoid_scaled + [x + dx, y + dy]
-                    area_i, mat_i = cv2.intersectConvexConvex(cnt.astype(np.float32), shifted.astype(np.float32))
+                    area_i, _ = cv2.intersectConvexConvex(cnt.astype(np.float32), shifted.astype(np.float32))
                     ratio = area_i / cv2.contourArea(trapezoid_scaled)
                     if ratio > best_ratio:
                         best_ratio = ratio
                         best_match = cnt
-                        best_mat = mat_i
 
         # # 画出匹配到的轮廓
         # if best_match is not None:

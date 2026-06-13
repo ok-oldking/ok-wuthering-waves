@@ -2,9 +2,8 @@ import time
 
 from qfluentwidgets import FluentIcon
 
-from ok import FindFeature, Logger
+from ok import Logger
 from ok import TriggerTask
-from src.scene.WWScene import WWScene
 from src.task.BaseWWTask import BaseWWTask, f_white_color
 
 logger = Logger.get_logger(__name__)
@@ -51,9 +50,6 @@ class AutoPickTask(TriggerTask, BaseWWTask):
                                    y_offset=-f.height,
                                    name='search_dialog')
 
-            text_area = dialog_search.copy(x_offset=dialog_search.width, width_offset=f.width * 6,
-                                           height_offset=0,
-                                           y_offset=0)
             dialog_3_dots = self.find_feature('dialog_3_dots', box=dialog_search,
                                               threshold=0.6)
 

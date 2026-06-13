@@ -3,8 +3,8 @@ import time
 
 import win32api
 
-from ok import find_boxes_by_name, Logger, calculate_color_percentage
-from ok import find_color_rectangles, get_mask_in_color_range, is_pure_black
+from ok import Logger
+from ok import find_color_rectangles
 from src import text_white_color
 from src.Labels import Labels
 from src.char.Roccia import Roccia
@@ -19,13 +19,10 @@ class CombatCheck(BaseWWTask):
         super().__init__(*args, **kwargs)
         self._in_combat = False
         self.skip_combat_check = False
-        self.boss_lv_template = None
-        self.boss_lv_mask = None
-        self._in_liberation = False  # return True
+        self._in_liberation = False
         self.has_count_down = False
         self.sleep_check_interval = 0.4
         self.last_out_of_combat_time = 0
-        self.boss_lv_box = None
         self.boss_health_box = None
         self.boss_health = None
         self.last_break_check_time = 0
@@ -63,13 +60,10 @@ class CombatCheck(BaseWWTask):
     def do_reset_to_false(self):
         self.cds = {}
         self._in_combat = False
-        self.boss_lv_mask = None
         self.esc_count = 0
-        self.boss_lv_template = None
-        self.in_liberation = False  # return True
+        self.in_liberation = False
         self.has_count_down = False
         self.last_out_of_combat_time = 0
-        self.boss_lv_box = None
         self.boss_health = None
         self.boss_health_box = None
         self.last_in_realm_not_combat = 0
@@ -349,26 +343,7 @@ class CombatCheck(BaseWWTask):
     def check_health_bar(self):
         return self.has_health_bar() or self.is_boss()
 
-    def keep_boss_text_white(self):
-        cropped = self.boss_lv_box.crop_frame(self.frame)
-        mask, area = get_mask_in_color_range(cropped, boss_white_text_color)
-        if area / mask.shape[0] * mask.shape[1] < 0.05:
-            mask, area = get_mask_in_color_range(cropped, boss_orange_text_color)
-            if area / mask.shape[0] * mask.shape[1] < 0.05:
-                mask, area = get_mask_in_color_range(cropped,
-                                                     boss_red_text_color)
-                if area / mask.shape[0] * mask.shape[1] < 0.05:
-                    logger.error(f'keep_boss_text_white cant find text with the correct color')
-                    return None, 0
-        return cropped, mask
-
-
 count_down_re = re.compile(r'\d\d')
-
-
-def keep_only_white(frame):
-    frame[frame != 255] = 0
-    return frame
 
 
 target_enemy_color_yellow = {
@@ -383,38 +358,8 @@ enemy_health_color_red = {
     'b': (55, 76)  # Blue range
 }  # 207,75,60
 
-enemy_health_color_black = {
-    'r': (10, 55),  # Red range
-    'g': (28, 50),  # Green range
-    'b': (18, 70)  # Blue range
-}
-
-boss_white_text_color = {
-    'r': (200, 255),  # Red range
-    'g': (200, 255),  # Green range
-    'b': (200, 255)  # Blue range
-}
-
-boss_orange_text_color = {
-    'r': (218, 218),  # Red range
-    'g': (178, 178),  # Green range
-    'b': (68, 68)  # Blue range
-}
-
-boss_red_text_color = {
-    'r': (200, 230),  # Red range
-    'g': (70, 90),  # Green range
-    'b': (60, 80)  # Blue range
-}
-
 boss_health_color = {
     'r': (245, 255),  # Red range
     'g': (30, 185),  # Green range
     'b': (4, 75)  # Blue range
-}
-
-aim_color = {
-    'r': (150, 213),  # Red range
-    'g': (148, 185),  # Green range
-    'b': (22, 62)  # Blue range
 }

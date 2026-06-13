@@ -21,7 +21,6 @@ class Changli(BaseChar):
         return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def do_perform(self):
-        outro = False
         forte = -1
         self.check_f_on_switch = True
         if self.has_intro:

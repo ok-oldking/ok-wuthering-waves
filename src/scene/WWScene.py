@@ -1,4 +1,3 @@
-from qfluentwidgets import FluentIcon
 
 from ok import Logger, BaseScene
 

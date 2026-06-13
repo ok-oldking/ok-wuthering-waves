@@ -183,10 +183,3 @@ def get_char_by_pos(task, box, index, old_char):
         task.screenshot(f'could not find char {index}')
     return BaseChar(task, index, char_name="unknown")
 
-
-def is_float(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
