@@ -87,10 +87,10 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         self.description = "Get player position and display nearby high value items"
         self.icon = FluentIcon.GLOBE
         self.default_config.update({
-            '_enabled': False,
+            '_enabled': True,
             'Detect interval (ms)': 100,
             '_Overlay enabled': True,
-            '_Search radius (world units)': 5000,
+            '_Search radius (world units)': 10000,
             '_Auto map scale': True,
             '_Map scale (pixels per 1000 units)': 11.45,
             'World map overlay': True,
