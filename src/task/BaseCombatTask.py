@@ -148,11 +148,19 @@ class BaseCombatTask(CombatCheck):
             self.next_frame()
         logger.info(f'send_key_and_wait_animation timed out {key}')
 
+    cd_cache_seconds = 1.0  # how long one OCR reading of the cd bar stays valid
+
     def refresh_cd(self):
         if self.scene.cd_refreshed:
             return
         index = self.get_current_char().index
         cds = self.cds.get(index)
+        if cds is not None and time.time() - cds.get('time', 0) < self.cd_cache_seconds:
+            # a recent reading is still valid: get_cd counts it down with
+            # time_elapsed_accounting_for_freeze, and casting a skill calls
+            # invalidate_cd, so re-running OCR every frame buys nothing
+            self.scene.cd_refreshed = True
+            return
         if cds is None:
             cds = {}
             self.cds[index] = cds
@@ -171,6 +179,20 @@ class BaseCombatTask(CombatCheck):
                 cds['echo'] = cd
         self.scene.cd_refreshed = True
         self.log_debug(f'cd refreshed: {cds} {time.time() - cds["time"]}')
+
+    def invalidate_cd(self, char_index=None):
+        """Drop the cached cd reading so the next query re-reads the UI.
+
+        Called after sending a skill key: the cached reading predates the cast
+        and would otherwise report the skill as still available for up to
+        cd_cache_seconds.
+        """
+        if char_index is None:
+            char = self.get_current_char()
+            char_index = char.index if char else None
+        if char_index is not None:
+            self.cds.pop(char_index, None)
+        self.scene.cd_refreshed = False
 
     def get_cd(self, box_name, char_index=None):
         self.refresh_cd()
