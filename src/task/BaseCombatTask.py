@@ -548,7 +548,16 @@ class BaseCombatTask(CombatCheck):
             if not (isinstance(switch_to, ShoreKeeper) and has_intro):
                 self.check_combat()
             now = time.time()
-            _, current_index, _ = self.in_team()
+            in_team, current_index, _ = self.in_team()
+            if not in_team:
+                # the team UI can drop out for a few frames (liberation flash,
+                # intro VFX); keep waiting instead of aborting combat on the
+                # first missed frame, and don't click into unknown screens
+                if now - start > self.switch_char_time_out:
+                    logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
+                    self.raise_not_in_combat(f'not in_team while switching')
+                self.next_frame()
+                continue
             if current_index == current_char.index:
                 self.update_lib_portrait_icon()
                 refreshed_has_intro = has_intro or current_char.is_con_full()
@@ -574,17 +583,11 @@ class BaseCombatTask(CombatCheck):
                 self.log_debug('switch not detected, send click')
                 self.click()
                 self.sleep(0.001)
-            in_team, current_index, size = self.in_team()
-            if not in_team:
-                logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                # if self.debug:
-                #     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                self.raise_not_in_combat(f'not in_team while switching')
-                if now - start > self.switch_char_time_out:
-                    self.raise_not_in_combat(
-                        f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
-                self.next_frame()
-                continue
+                # re-check right after the key so a successful switch is
+                # detected in the same iteration without waiting a frame
+                in_team, new_index, _ = self.in_team()
+                if in_team:
+                    current_index = new_index
             if current_index != switch_to.index:
                 if now - start > 10:
                     if self.debug:
