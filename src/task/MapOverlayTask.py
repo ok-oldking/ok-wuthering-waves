@@ -117,6 +117,9 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         self._in_team_failures = 0
         self._minimap_match_counter = 0
         self._recheck_counter = 0
+        self._minimap_match_scale = None
+        self._lock_ocr_pos = None
+        self._second_check_done = False
 
     def _detections_per_second(self):
         interval = self.config.get('Detect interval (ms)')
@@ -190,6 +193,9 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             if self._locked_map_id is not None:
                 logger.info(f"[MapFallback] teleport detected, unlocking map_id={self._locked_map_id}")
                 self._locked_map_id = None
+                self._minimap_match_scale = None
+                self._lock_ocr_pos = None
+                self._second_check_done = False
             return pos
 
         if self._consecutive_far > 0:
@@ -424,13 +430,78 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             return None
 
         candidates = _filter_candidate_maps(player_pos, self._coords_dict)
-        if len(candidates) != 1:
+        if not candidates:
             return None
 
-        map_id, coords_d = candidates[0]
-        engine = self._get_engine(map_id)
+        matched = []
+        for map_id, coords_d in candidates:
+            engine = self._get_engine(map_id)
+            if engine is None:
+                continue
+
+            game_x = player_pos[0] * 100
+            game_y = player_pos[1] * 100
+            scale = coords_d['scale'][0]
+            offset_x = coords_d['offset'][0]
+            offset_y = coords_d['offset'][1]
+            pixel_x = (game_x - offset_x) / scale
+            pixel_y = (game_y - offset_y) / scale
+
+            region_size = MAP_REGION_SIZE
+            half_r = region_size // 2
+            region = (int(pixel_x - half_r), int(pixel_y - half_r), region_size, region_size)
+
+            try:
+                result = engine.match_array(gray, region=region, crop_size=0, constrained=True)
+            except Exception as e:
+                logger.warning(f"[MinimapMatch] match error for map {map_id}: {e}")
+                continue
+
+            logger.info(
+                f"[MinimapMatch] map={map_id} conf={result.confidence:.3f} "
+                f"matches={result.match_count} inliers={result.inlier_count}"
+            )
+
+            if result.success and result.confidence >= CONFIDENCE_THRESHOLD and result.match_count >= 10:
+                matched.append((map_id, result.map_scale))
+
+        if len(matched) == 1:
+            return matched[0]
+        if len(matched) > 1:
+            logger.info(f"[MinimapMatch] ambiguous: {len(matched)} maps matched {[m[0] for m in matched]}")
+        return None
+
+    def _verify_locked_map(self, player_pos):
+        if self._locked_map_id is None:
+            return False
+
+        minimap_box = self.get_box_by_name('box_minimap')
+        if minimap_box is None:
+            return False
+
+        x, y, w, h = minimap_box.x, minimap_box.y, minimap_box.width, minimap_box.height
+        if x < 0 or y < 0 or x + w > self.frame.shape[1] or y + h > self.frame.shape[0]:
+            return False
+
+        minimap_img = self.frame[y:y + h, x:x + w]
+        center = (w // 2, h // 2)
+        radius = min(w, h) // 2
+        mask = np.zeros((h, w), dtype=np.uint8)
+        cv2.circle(mask, center, radius, 255, -1)
+        masked = cv2.bitwise_and(minimap_img, minimap_img, mask=mask)
+        gray = cv2.cvtColor(masked, cv2.COLOR_BGR2GRAY)
+
+        self._ensure_coords()
+        if not self._coords_dict:
+            return False
+
+        coords_d = self._coords_dict.get(self._locked_map_id)
+        if coords_d is None:
+            return False
+
+        engine = self._get_engine(self._locked_map_id)
         if engine is None:
-            return None
+            return False
 
         game_x = player_pos[0] * 100
         game_y = player_pos[1] * 100
@@ -447,18 +518,18 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         try:
             result = engine.match_array(gray, region=region, crop_size=0, constrained=True)
         except Exception as e:
-            logger.warning(f"[MinimapMatch] match error for map {map_id}: {e}")
-            return None
+            logger.warning(f"[MinimapVerify] match error for map {self._locked_map_id}: {e}")
+            return False
 
         logger.info(
-            f"[MinimapMatch] map={map_id} conf={result.confidence:.3f} "
+            f"[MinimapVerify] map={self._locked_map_id} conf={result.confidence:.3f} "
             f"matches={result.match_count} inliers={result.inlier_count}"
         )
 
         if result.success and result.confidence >= CONFIDENCE_THRESHOLD and result.match_count >= 10:
-            return map_id
-
-        return None
+            self._minimap_match_scale = result.map_scale
+            return True
+        return False
 
     def _in_big_map(self):
         if self.frame is None:
@@ -490,27 +561,53 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             if raw_position:
                 result = self._denoise(raw_position)
                 if result:
-                    if result[0] % 5 == 0:
+                    if result[0] % 10 == 0:
                         pos_text = f'{result[0]},{result[1]},{result[2]}'
                         self.info_set('OCR check', f'position: {pos_text} took {elapsed:.0f}ms')
 
                     self._recheck_counter += 1
                     interval = self.config.get('Detect interval (ms)', 500)
                     recheck_interval = math.ceil(30 * 1000 / interval)
-                    if self._recheck_counter >= recheck_interval:
-                        if self._locked_map_id is not None:
-                            logger.info(f"[MinimapMatch] recheck triggered, unlocking map_id={self._locked_map_id}")
+
+                    if self._locked_map_id is not None and self._recheck_counter >= recheck_interval:
+                        self._recheck_counter = 0
+                        if self._verify_locked_map(result):
+                            logger.info(f"[MinimapVerify] recheck passed, map_id={self._locked_map_id}")
+                        else:
+                            logger.info(f"[MinimapVerify] recheck failed, unlocking map_id={self._locked_map_id}")
                             self._locked_map_id = None
+                            self._minimap_match_scale = None
+                            self._lock_ocr_pos = None
+                            self._second_check_done = False
+                    elif self._locked_map_id is None:
                         self._recheck_counter = 0
 
                     match_interval = max(1, math.ceil(1000 / interval))
                     self._minimap_match_counter += 1
+
                     if self._locked_map_id is None and self._minimap_match_counter >= match_interval:
                         self._minimap_match_counter = 0
-                        matched_id = self._match_minimap_map_id(result)
-                        if matched_id:
-                            self._locked_map_id = matched_id
-                            logger.info(f"[MinimapMatch] locked map_id={matched_id}")
+                        match_result = self._match_minimap_map_id(result)
+                        if match_result:
+                            self._locked_map_id, self._minimap_match_scale = match_result
+                            self._lock_ocr_pos = (result[0], result[1])
+                            self._second_check_done = False
+                            logger.info(f"[MinimapMatch] locked map_id={self._locked_map_id} map_scale={self._minimap_match_scale:.4f}")
+
+                    if self._locked_map_id is not None and not self._second_check_done and self._lock_ocr_pos is not None:
+                        dx = abs(result[0] - self._lock_ocr_pos[0])
+                        dy = abs(result[1] - self._lock_ocr_pos[1])
+                        if dx + dy >= 20:
+                            if self._verify_locked_map(result):
+                                self._second_check_done = True
+                                self._lock_ocr_pos = (result[0], result[1])
+                                logger.info(f"[MinimapVerify] second check passed, map_id={self._locked_map_id}")
+                            else:
+                                logger.info(f"[MinimapVerify] second check failed, unlocking map_id={self._locked_map_id}")
+                                self._locked_map_id = None
+                                self._minimap_match_scale = None
+                                self._lock_ocr_pos = None
+                                self._second_check_done = False
 
                     if self.config.get('_Overlay enabled'):
                         self._draw_overlay(result, state_id=self._locked_map_id)
@@ -533,6 +630,9 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                 if is_fourth and self._locked_map_id is not None:
                     logger.info(f"[MapFallback] attempt {attempt}/{FALLBACK_MAX_FAILURES}, unlocking map_id={self._locked_map_id} for full-map all")
                     self._locked_map_id = None
+                    self._minimap_match_scale = None
+                    self._lock_ocr_pos = None
+                    self._second_check_done = False
 
                 crop_size = FRAME_CROP_SIZE + 100 * self._fallback_failures
 
@@ -567,6 +667,9 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                 if self._fallback_failures >= FALLBACK_MAX_FAILURES:
                     logger.warning("[MapFallback] max failures reached, sleeping 2s then resetting")
                     self._locked_map_id = None
+                    self._minimap_match_scale = None
+                    self._lock_ocr_pos = None
+                    self._second_check_done = False
                     self._fallback_failures = 0
                     self.sleep(2)
             else:
@@ -581,6 +684,9 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         if self._in_team_failures >= 5 and self._locked_map_id is not None:
             logger.info(f"[MinimapMatch] in_team failed {self._in_team_failures} times, unlocking map_id={self._locked_map_id}")
             self._locked_map_id = None
+            self._minimap_match_scale = None
+            self._lock_ocr_pos = None
+            self._second_check_done = False
         interval = self.config.get('Detect interval (ms)', 500)
         self.sleep(interval / 1000)
 
@@ -589,6 +695,14 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             return
         db_path = os.path.join(MAP_DIR, 'map_items.db')
         self._overlay = MapItemOverlay(db_path)
+
+    def _get_default_scale_per_1000(self):
+        if self.config.get('_Auto map scale'):
+            scale_factor = 1 - (1.25 - self.screen_width / 1600)
+            return scale_factor * 1.205 * 10
+        return self.config.get('_Map scale (pixels per 1000 units)')
+
+    _scale_log_counter = 0
 
     def _draw_overlay(self, player_pos, state_id=None):
         overlay_view = self.get_overlay_view()
@@ -601,11 +715,31 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         if minimap_box is None:
             return
 
-        radius = self.config.get('_Search radius (world units)')
-        scale_per_1000 = self.config.get('_Map scale (pixels per 1000 units)')
-        if self.config.get('_Auto map scale'):
-            scale_factor = 1 - (1.25 - self.screen_width / 1600)
-            scale_per_1000 = scale_factor * 1.205 * 10
+        minimap_r = min(minimap_box.width, minimap_box.height) // 2
+        if self._minimap_match_scale is not None and self._locked_map_id is not None:
+            self._ensure_coords()
+            coords_d = self._coords_dict.get(self._locked_map_id) if self._coords_dict else None
+            if coords_d:
+                coords_scale = coords_d.get('scale', [1.0, 1.0])[0]
+                game_scale = self._minimap_match_scale * coords_scale
+                scale_per_1000 = 1000.0 / game_scale if game_scale > 0 else 0
+            else:
+                scale_per_1000 = self._get_default_scale_per_1000()
+        else:
+            scale_per_1000 = self._get_default_scale_per_1000()
+
+        scale = scale_per_1000 / 1000.0
+        radius = minimap_r / scale if scale > 0 else self.config.get('_Search radius (world units)')
+
+        self._scale_log_counter += 1
+        if self._scale_log_counter <= 3 or self._scale_log_counter % 50 == 0:
+            logger.info(
+                f"[OverlayScale] map_id={self._locked_map_id} "
+                f"scale_per_1000={scale_per_1000:.4f} "
+                f"minimap_r={minimap_r} "
+                f"search_radius={radius:.0f}"
+            )
+
         type_filter = self.config.get('Item type filter')
         player_x = player_pos[0] * 100
         player_y = player_pos[1] * 100
@@ -646,10 +780,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                 f"1 pixel = {game_scale:.0f} game units)"
             )
         else:
-            scale_per_1000 = self.config.get('_Map scale (pixels per 1000 units)')
-            if self.config.get('_Auto map scale'):
-                scale_factor = 1 - (1.25 - self.screen_width / 1600)
-                scale_per_1000 = scale_factor * 1.205 * 10
+            scale_per_1000 = self._get_default_scale_per_1000()
             scale = scale_per_1000 / 1000.0
         type_filter = self.config.get('Item type filter')
         player_x = player_pos[0] * 100
