@@ -5,7 +5,7 @@ from decimal import Decimal, ROUND_UP, ROUND_DOWN
 import cv2
 import numpy as np
 
-from ok import Logger, Config
+from ok import Box, Logger, Config
 from ok import color_range_to_bound
 from ok import safe_get
 from src import text_white_color
@@ -614,8 +614,21 @@ class BaseCombatTask(CombatCheck):
                              frame_processor=binarize_for_matching)
 
     def find_e_forte(self):
-        return self.find_one('e_forte', horizontal_variance=0.025, threshold=0.6,
-                             frame_processor=binarize_for_matching)
+        box = self.find_one('e_forte', horizontal_variance=0.025, threshold=0.6,
+                            frame_processor=binarize_for_matching)
+        if not box:
+            return None
+        # The utility-wheel prompt renders an E keycap in the same screen slot,
+        # flanked by a slash and a mouse icon whose middle button is highlighted
+        # yellow; the forte prompt is a bare E. Reject the wheel context via the
+        # yellow neighbor (measured: wheel fixtures >=0.07, bare forte E 0.000).
+        neighbor = Box(box.x + int(box.width * 1.8), box.y - int(box.height * 0.3),
+                       int(box.width * 1.6), int(box.height * 1.6), name='e_forte_neighbor')
+        yellow = self.calculate_color_percentage(wheel_mouse_yellow, neighbor)
+        if yellow > 0.04:
+            self.log_debug(f'find_e_forte rejected wheel prompt, yellow={yellow:.3f}')
+            return None
+        return box
 
     def get_liberation_key(self):
         """获取共鸣解放技能的按键。
@@ -1028,6 +1041,12 @@ white_color = {  # 用于检测UI元素可用状态的白色颜色范围。
     'r': (253, 255),  # Red range
     'g': (253, 255),  # Green range
     'b': (253, 255)  # Blue range
+}
+
+wheel_mouse_yellow = {  # 工具轮盘提示中鼠标中键图标的黄色高亮。
+    'r': (200, 255),
+    'g': (150, 230),
+    'b': (0, 110)
 }
 
 con_colors = [  # 不同角色属性的协奏值能量环的颜色范围列表。

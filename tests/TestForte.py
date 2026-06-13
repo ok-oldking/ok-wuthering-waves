@@ -46,6 +46,21 @@ class TestForte(TaskTestCase):
         self.task.load_chars()
         self.assertIsNotNone(self.task.find_mouse_forte())
 
+    def test_e_forte_source_frame(self):
+        # annotation source frame of the e_forte template: positive by construction
+        self.task.do_reset_to_false()
+        self.set_image('assets/images/31.png')
+        self.assertIsNotNone(self.task.find_e_forte())
+
+    def test_e_forte_rejects_wheel_prompt(self):
+        # the utility-wheel prompt renders an E keycap in the same screen slot,
+        # flanked by a yellow-highlighted mouse icon; it must not count as forte
+        for image in ('tests/images/echo.png', 'tests/images/mini_map.png',
+                      'tests/images/con_full2.png'):
+            self.task.do_reset_to_false()
+            self.set_image(image)
+            self.assertIsNone(self.task.find_e_forte(), image)
+
 
 if __name__ == '__main__':
     unittest.main()
