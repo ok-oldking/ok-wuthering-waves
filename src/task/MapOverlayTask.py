@@ -83,24 +83,24 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "Map Overlay"
-        self.description = "Continuously detect and report player position"
+        self.name = "High-value items display"
+        self.description = "Get player position and display nearby high value items"
         self.icon = FluentIcon.GLOBE
         self.default_config.update({
             '_enabled': False,
             'Detect interval (ms)': 100,
-            'Overlay enabled': False,
-            'Search radius (world units)': 5000,
-            'Auto map scale': True,
-            'Map scale (pixels per 1000 units)': 11.45,
-            'Item type filter': ['qzx_01', 'qzx_02', 'qzx_03', 'qzx_04', 'cx_0'],
-            'Map overlay fallback': False,
-            'Feature algorithm': 'SURF',
+            '_Overlay enabled': True,
+            '_Search radius (world units)': 5000,
+            '_Auto map scale': True,
+            '_Map scale (pixels per 1000 units)': 11.45,
+            'World map overlay': True,
+            'Item type filter': ['qzx_01', 'qzx_02', 'qzx_03', 'qzx_04'],
+            '_Feature algorithm': 'SIFTGZ',
         })
         self.config_type['Item type filter'] = {'type': 'multi_selection', 'options': [
-            'qzx_01', 'qzx_02', 'qzx_03', 'qzx_04', 'cx_0',
+            'qzx_01', 'qzx_02', 'qzx_03', 'qzx_04',
         ]}
-        self.config_type['Feature algorithm'] = {'type': 'drop_down', 'options': [
+        self.config_type['_Feature algorithm'] = {'type': 'drop_down', 'options': [
             'SURF', 'SIFT', 'SIFTGZ',
         ]}
         self._window = None
@@ -114,6 +114,9 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         self._engines = {}
         self._coords_dict = None
         self._engine_settings = None
+        self._in_team_failures = 0
+        self._minimap_match_counter = 0
+        self._recheck_counter = 0
 
     def _detections_per_second(self):
         interval = self.config.get('Detect interval (ms)')
@@ -184,6 +187,9 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             self._window.append(pos)
             self._last_valid = pos
             self._consecutive_far = 0
+            if self._locked_map_id is not None:
+                logger.info(f"[MapFallback] teleport detected, unlocking map_id={self._locked_map_id}")
+                self._locked_map_id = None
             return pos
 
         if self._consecutive_far > 0:
@@ -240,7 +246,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         if map_id in self._engines:
             return self._engines[map_id]
 
-        algo = self.config.get('Feature algorithm', 'SURF').upper()
+        algo = self.config.get('_Feature algorithm', 'SIFTGZ').upper()
         algo_lower = algo.lower()
         npz_path = os.path.join(MAP_DIR, f"{map_id}_{algo_lower}.npz")
         map_path = os.path.join(MAP_DIR, f"{map_id}.png")
@@ -319,7 +325,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         half = crop_size // 2
         cropped = self.frame[cy - half:cy + half, cx - half:cx + half]
 
-        algo = self.config.get('Feature algorithm', 'SURF')
+        algo = self.config.get('_Feature algorithm', 'SIFTGZ')
 
         for map_id, coords_d in candidates:
             coords_min = coords_d.get('min', [0, 0])
@@ -396,6 +402,64 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         logger.warning("[MapFallback] all candidates tried, none with sufficient confidence")
         return None
 
+    def _match_minimap_map_id(self, player_pos):
+        minimap_box = self.get_box_by_name('box_minimap')
+        if minimap_box is None:
+            return None
+
+        x, y, w, h = minimap_box.x, minimap_box.y, minimap_box.width, minimap_box.height
+        if x < 0 or y < 0 or x + w > self.frame.shape[1] or y + h > self.frame.shape[0]:
+            return None
+
+        minimap_img = self.frame[y:y + h, x:x + w]
+        center = (w // 2, h // 2)
+        radius = min(w, h) // 2
+        mask = np.zeros((h, w), dtype=np.uint8)
+        cv2.circle(mask, center, radius, 255, -1)
+        masked = cv2.bitwise_and(minimap_img, minimap_img, mask=mask)
+        gray = cv2.cvtColor(masked, cv2.COLOR_BGR2GRAY)
+
+        self._ensure_coords()
+        if not self._coords_dict:
+            return None
+
+        candidates = _filter_candidate_maps(player_pos, self._coords_dict)
+        if len(candidates) != 1:
+            return None
+
+        map_id, coords_d = candidates[0]
+        engine = self._get_engine(map_id)
+        if engine is None:
+            return None
+
+        game_x = player_pos[0] * 100
+        game_y = player_pos[1] * 100
+        scale = coords_d['scale'][0]
+        offset_x = coords_d['offset'][0]
+        offset_y = coords_d['offset'][1]
+        pixel_x = (game_x - offset_x) / scale
+        pixel_y = (game_y - offset_y) / scale
+
+        region_size = MAP_REGION_SIZE
+        half_r = region_size // 2
+        region = (int(pixel_x - half_r), int(pixel_y - half_r), region_size, region_size)
+
+        try:
+            result = engine.match_array(gray, region=region, crop_size=0, constrained=True)
+        except Exception as e:
+            logger.warning(f"[MinimapMatch] match error for map {map_id}: {e}")
+            return None
+
+        logger.info(
+            f"[MinimapMatch] map={map_id} conf={result.confidence:.3f} "
+            f"matches={result.match_count} inliers={result.inlier_count}"
+        )
+
+        if result.success and result.confidence >= CONFIDENCE_THRESHOLD and result.match_count >= 10:
+            return map_id
+
+        return None
+
     def _in_big_map(self):
         if self.frame is None:
             return False
@@ -416,9 +480,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
 
         if self.scene.in_team(self.in_team_and_world):
             self._fallback_failures = 0
-            if self._locked_map_id is not None:
-                logger.info(f"[MapFallback] OCR restored, unlocking map_id={self._locked_map_id}")
-                self._locked_map_id = None
+            self._in_team_failures = 0
             self._last_match_scale = None
 
             start = time.time()
@@ -432,8 +494,26 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                         pos_text = f'{result[0]},{result[1]},{result[2]}'
                         self.info_set('OCR check', f'position: {pos_text} took {elapsed:.0f}ms')
 
-                    if self.config.get('Overlay enabled'):
-                        self._draw_overlay(result)
+                    self._recheck_counter += 1
+                    interval = self.config.get('Detect interval (ms)', 500)
+                    recheck_interval = math.ceil(30 * 1000 / interval)
+                    if self._recheck_counter >= recheck_interval:
+                        if self._locked_map_id is not None:
+                            logger.info(f"[MinimapMatch] recheck triggered, unlocking map_id={self._locked_map_id}")
+                            self._locked_map_id = None
+                        self._recheck_counter = 0
+
+                    match_interval = max(1, math.ceil(1000 / interval))
+                    self._minimap_match_counter += 1
+                    if self._locked_map_id is None and self._minimap_match_counter >= match_interval:
+                        self._minimap_match_counter = 0
+                        matched_id = self._match_minimap_map_id(result)
+                        if matched_id:
+                            self._locked_map_id = matched_id
+                            logger.info(f"[MinimapMatch] locked map_id={matched_id}")
+
+                    if self.config.get('_Overlay enabled'):
+                        self._draw_overlay(result, state_id=self._locked_map_id)
                 else:
                     logger.info("[ocr check] ocr noresult")
             else:
@@ -444,7 +524,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             return
 
         if self._in_big_map():
-            if self.config.get('Map overlay fallback') and self._last_valid is not None:
+            if self.config.get('World map overlay') and self._last_valid is not None:
                 attempt = self._fallback_failures + 1
                 is_third = (self._fallback_failures == 2)
                 is_fourth = (self._fallback_failures == 3)
@@ -497,6 +577,10 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             return
 
         self._clear_overlay()
+        self._in_team_failures += 1
+        if self._in_team_failures >= 5 and self._locked_map_id is not None:
+            logger.info(f"[MinimapMatch] in_team failed {self._in_team_failures} times, unlocking map_id={self._locked_map_id}")
+            self._locked_map_id = None
         interval = self.config.get('Detect interval (ms)', 500)
         self.sleep(interval / 1000)
 
@@ -506,7 +590,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         db_path = os.path.join(MAP_DIR, 'map_items.db')
         self._overlay = MapItemOverlay(db_path)
 
-    def _draw_overlay(self, player_pos):
+    def _draw_overlay(self, player_pos, state_id=None):
         overlay_view = self.get_overlay_view()
         if overlay_view is None:
             return
@@ -517,9 +601,9 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         if minimap_box is None:
             return
 
-        radius = self.config.get('Search radius (world units)')
-        scale_per_1000 = self.config.get('Map scale (pixels per 1000 units)')
-        if self.config.get('Auto map scale'):
+        radius = self.config.get('_Search radius (world units)')
+        scale_per_1000 = self.config.get('_Map scale (pixels per 1000 units)')
+        if self.config.get('_Auto map scale'):
             scale_factor = 1 - (1.25 - self.screen_width / 1600)
             scale_per_1000 = scale_factor * 1.205 * 10
         type_filter = self.config.get('Item type filter')
@@ -527,7 +611,8 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         player_y = player_pos[1] * 100
 
         draw_items = self._overlay.build_draw_items(
-            player_x, player_y, minimap_box, radius, scale_per_1000, type_filter
+            player_x, player_y, minimap_box, radius, scale_per_1000, type_filter,
+            state_id=state_id
         )
 
         callback = MapItemOverlay.make_paint_callback(draw_items)
@@ -553,7 +638,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         if overlay_view is None:
             return
         self._init_overlay()
-        radius = self.config.get('Search radius (world units)') * BIG_MAP_SEARCH_MULTIPLIER
+        radius = self.config.get('_Search radius (world units)') * BIG_MAP_SEARCH_MULTIPLIER
         if game_scale is not None and game_scale > 0:
             scale = 1.0 / game_scale
             logger.info(
@@ -561,8 +646,8 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                 f"1 pixel = {game_scale:.0f} game units)"
             )
         else:
-            scale_per_1000 = self.config.get('Map scale (pixels per 1000 units)')
-            if self.config.get('Auto map scale'):
+            scale_per_1000 = self.config.get('_Map scale (pixels per 1000 units)')
+            if self.config.get('_Auto map scale'):
                 scale_factor = 1 - (1.25 - self.screen_width / 1600)
                 scale_per_1000 = scale_factor * 1.205 * 10
             scale = scale_per_1000 / 1000.0

@@ -96,9 +96,9 @@ class MapItemOverlay:
 
         return int(px), int(py)
 
-    def build_draw_items(self, player_x, player_y, minimap_box, radius, scale_per_1000, type_filter=None):
+    def build_draw_items(self, player_x, player_y, minimap_box, radius, scale_per_1000, type_filter=None, state_id=None):
         scale = scale_per_1000 / 1000.0
-        items = self.query_nearby(player_x, player_y, radius, type_filter)
+        items = self.query_nearby(player_x, player_y, radius, type_filter, state_id=state_id)
 
         minimap_center_x = minimap_box.x + minimap_box.width/2
         minimap_center_y = minimap_box.y + minimap_box.height/2

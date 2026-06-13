@@ -1092,3 +1092,27 @@ msgstr "レベッカ"
 
 msgid "Lucilla"
 msgstr "ルシラー"
+
+msgid "High-value items display"
+msgstr "高価値アイテム表示"
+
+msgid "Get player position and display nearby high value items"
+msgstr "プレイヤーの位置を取得し、近くの高価値アイテムを表示する"
+
+msgid "Detect interval (ms)"
+msgstr "検出間隔(ミリ秒)"
+
+msgid "World map overlay"
+msgstr "ワールドマップオーバーレイ"
+
+msgid "Item type filter"
+msgstr "アイテムタイプフィルター"
+
+msgid "SURF"
+msgstr "SURF"
+
+msgid "SIFT"
+msgstr "SIFT"
+
+msgid "SIFTGZ"
+msgstr "SIFTGZ"
