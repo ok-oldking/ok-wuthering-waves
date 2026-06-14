@@ -179,20 +179,20 @@ def _skip_npy_header(data):
 
 def load_npz(path):
     try:
-        data = np.load(path, allow_pickle=False)
-        kp_arr = data['keypoints']
-        desc_arr = data['descriptors']
-        map_h, map_w = int(data['map_size'][0]), int(data['map_size'][1])
+        with np.load(path, allow_pickle=False) as data:
+            kp_arr = data['keypoints']
+            desc_arr = data['descriptors']
+            map_h, map_w = int(data['map_size'][0]), int(data['map_size'][1])
 
-        kps = []
-        for row in kp_arr:
-            kps.append(KeyPoint(
-                x=float(row[0]), y=float(row[1]), size=float(row[2]),
-                angle=float(row[3]), response=float(row[4]),
-                octave=int(row[5]), class_id=int(row[6])
-            ))
-        descs = desc_arr.tolist()
-        return kps, descs, map_h, map_w
+            kps = []
+            for row in kp_arr:
+                kps.append(KeyPoint(
+                    x=float(row[0]), y=float(row[1]), size=float(row[2]),
+                    angle=float(row[3]), response=float(row[4]),
+                    octave=int(row[5]), class_id=int(row[6])
+                ))
+            descs = desc_arr.tolist()
+            return kps, descs, map_h, map_w
     except (KeyError, ValueError):
         pass
 
@@ -268,6 +268,47 @@ def _prepare_test_image(src, crop_size):
             img = img[cy - half:cy + half, cx - half:cx + half].copy()
 
     return img
+
+
+def _failed_match(elapsed_ms):
+    return MatchOutput(success=False, match_count=0, inlier_count=0,
+                       confidence=0.0, elapsed_ms=elapsed_ms)
+
+
+def _filter_knn_matches(knn, ratio_thresh):
+    good = []
+    for pair in knn:
+        if len(pair) < 2:
+            continue
+        m, n = pair
+        if m.distance < ratio_thresh * n.distance:
+            good.append((m.queryIdx, m.trainIdx, m.distance))
+    return good
+
+
+def _estimate_homography(good, test_kps, match_cache, constrained):
+    if not good:
+        return None, 0
+    min_matches = 2 if constrained else 4
+    if len(good) < min_matches:
+        return None, 0
+    src_pts = np.array([[test_kps[q].x, test_kps[q].y] for q, _, _ in good],
+                       dtype=np.float64).reshape(-1, 1, 2)
+    dst_pts = np.array([[match_cache.kps[t].x, match_cache.kps[t].y] for _, t, _ in good],
+                       dtype=np.float64).reshape(-1, 1, 2)
+    if constrained:
+        M, inliers = cv2.estimateAffinePartial2D(
+            src_pts, dst_pts, method=cv2.RANSAC,
+            ransacReprojThreshold=3.0, maxIters=2000, confidence=0.995)
+        if M is None:
+            return None, 0
+        H = np.eye(3, dtype=np.float64)
+        H[:2, :] = M
+        return H, int(inliers.sum())
+    H, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 3.0,
+                                 maxIters=2000, confidence=0.995)
+    inlier_count = int(mask.sum()) if mask is not None else 0
+    return H, inlier_count
 
 
 if __name__ == "__main__":
@@ -358,18 +399,18 @@ if __name__ == "__main__":
         param_set_name_arg = getattr(args, 'param_set', None)
 
         if setting_path and param_set_name_arg:
-            print(json.dumps({"error": "--setting and --param-set cannot be used together"}))
+            print(json.dumps({"error": "--setting and --param-set cannot be used together"}), file=sys.stderr)
             sys.exit(1)
 
         png_files = _glob.glob(os.path.join(args.dir, "*.png"))
         if not png_files:
-            print(json.dumps({"error": f"no png files in {args.dir}"}))
+            print(json.dumps({"error": f"no png files in {args.dir}"}), file=sys.stderr)
             sys.exit(1)
 
         tasks = []
         if setting_path:
             if not os.path.exists(setting_path):
-                print(json.dumps({"error": f"setting file not found: {setting_path}"}))
+                print(json.dumps({"error": f"setting file not found: {setting_path}"}), file=sys.stderr)
                 sys.exit(1)
             setting = _load_json(setting_path)
             for algo_key, algo_cfg in setting.items():
@@ -412,7 +453,7 @@ if __name__ == "__main__":
                     "saved_features": total,
                 }
                 results.append(entry)
-                print(f"  {basename} [{ps.algo}]: {total} features -> {out_path}")
+                print(f"  {basename} [{ps.algo}]: {total} features -> {out_path}", file=sys.stderr)
                 if not setting_path and ps.algo not in seen_algos:
                     _merge_setting_json(args.out, ps.algo, ps_name)
                     seen_algos.add(ps.algo)

@@ -7,7 +7,8 @@ from typing import Tuple, Optional
 from .common import (
     KeyPoint, MapCache, MatchOutput, CoordsRef, grid_sample,
     save_npz, load_npz, desc_mat_from_slice_fast,
-    project_corners, compute_center, extract_scale_factor, _prepare_test_image
+    project_corners, compute_center, extract_scale_factor, _prepare_test_image,
+    _failed_match, _filter_knn_matches, _estimate_homography,
 )
 
 
@@ -53,16 +54,14 @@ def _match_bf(cfg, test_src, cache, ratio_thresh, crop_size, region,
     start = time.time()
     img = _prepare_test_image(test_src, crop_size)
     if img is None:
-        return MatchOutput(success=False, match_count=0, inlier_count=0,
-                           confidence=0.0, elapsed_ms=(time.time() - start) * 1000)
+        return _failed_match((time.time() - start) * 1000)
 
     crop_w = img.shape[1]
     crop_h = img.shape[0]
 
     kps, desc = cfg.detectAndCompute(img, None)
     if not kps or desc is None:
-        return MatchOutput(success=False, match_count=0, inlier_count=0,
-                           confidence=0.0, elapsed_ms=(time.time() - start) * 1000)
+        return _failed_match((time.time() - start) * 1000)
 
     test_kps = [KeyPoint(
         kp.pt[0], kp.pt[1], kp.size, kp.angle,
@@ -73,41 +72,13 @@ def _match_bf(cfg, test_src, cache, ratio_thresh, crop_size, region,
     if region is not None:
         match_cache = _build_region_cache(cache, region)
         if match_cache is None:
-            return MatchOutput(success=False, match_count=0, inlier_count=0,
-                               confidence=0.0, elapsed_ms=(time.time() - start) * 1000)
+            return _failed_match((time.time() - start) * 1000)
 
     matcher = cv2.BFMatcher(cv2.NORM_L2)
     knn = matcher.knnMatch(desc, match_cache.desc_mat, 2)
+    good = _filter_knn_matches(knn, ratio_thresh)
 
-    good = []
-    for pair in knn:
-        if len(pair) < 2:
-            continue
-        m, n = pair
-        if m.distance < ratio_thresh * n.distance:
-            good.append((m.queryIdx, m.trainIdx, m.distance))
-
-    H = None
-    inlier_count = 0
-    min_matches = 2 if constrained else 4
-    if len(good) >= min_matches:
-        src_pts = np.array([[test_kps[q].x, test_kps[q].y] for q, _, _ in good],
-                           dtype=np.float64).reshape(-1, 1, 2)
-        dst_pts = np.array([[match_cache.kps[t].x, match_cache.kps[t].y] for _, t, _ in good],
-                           dtype=np.float64).reshape(-1, 1, 2)
-        if constrained:
-            M, inliers = cv2.estimateAffinePartial2D(
-                src_pts, dst_pts, method=cv2.RANSAC,
-                ransacReprojThreshold=3.0, maxIters=2000, confidence=0.995)
-            if M is not None:
-                H = np.eye(3, dtype=np.float64)
-                H[:2, :] = M
-                inlier_count = int(inliers.sum())
-        else:
-            H, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 3.0,
-                                         maxIters=2000, confidence=0.995)
-            if mask is not None:
-                inlier_count = int(mask.sum())
+    H, inlier_count = _estimate_homography(good, test_kps, match_cache, constrained)
 
     elapsed = time.time() - start
     output = MatchOutput(
