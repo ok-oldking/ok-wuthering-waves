@@ -508,6 +508,35 @@ class TestChar(TaskTestCase):
         self.assertEqual(aemeath.actions, ['lib1'])
         self.assertEqual(aemeath.intro_liberation_time, -1)
 
+    def test_aemeath_enhance_e_only_sends_one_resonance_key(self):
+        class Task:
+            def __init__(self):
+                self.keys = []
+                self.skip_combat_check = False
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+            def find_one(self, template, threshold=None):
+                return template == 'aemeath_e1'
+
+            def get_resonance_key(self):
+                return 'e'
+
+            def send_key(self, key, interval=-1, down_time=0.01, after_sleep=0):
+                self.keys.append(key)
+
+            def sleep(self, sec):
+                pass
+
+        aemeath = Aemeath(Task(), 0)
+        self.assertTrue(aemeath.click_enhance_e_once())
+        aemeath.record_enhance_e()
+        self.assertEqual(aemeath.task.keys, ['e'])
+
+        self.assertFalse(aemeath.click_enhance_e_once())
+        self.assertEqual(aemeath.task.keys, ['e'])
+
     def test_switch_priority_hooks(self):
         class Task:
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
@@ -890,6 +919,9 @@ class TestChar(TaskTestCase):
             def is_con_full(self):
                 return False
 
+            def get_current_con(self):
+                return 0
+
             def click_resonance(self, **kwargs):
                 self.resonance_clicks += 1
                 return True, 0, False
@@ -911,6 +943,59 @@ class TestChar(TaskTestCase):
         self.assertEqual(linnai.resonance_clicks, 2)
         self.assertEqual(linnai.actions, [('sleep', 0.3), ('wait_down', True),
                                           ('sleep', 0.3), ('wait_down', True)])
+
+    def test_linnai_switches_without_attack_when_con_ready(self):
+        class Task:
+            pass
+
+        class TestLinnai(Linnai):
+            def __init__(self):
+                super().__init__(Task(), 0)
+                self.has_intro = True
+                self.clicks = 0
+                self.switches = 0
+
+            def get_current_con(self):
+                return 1
+
+            def click(self, *args, **kwargs):
+                self.clicks += 1
+
+            def switch_next_char(self, *args, **kwargs):
+                self.switches += 1
+
+        linnai = TestLinnai()
+        linnai.do_perform()
+        self.assertEqual(linnai.clicks, 0)
+        self.assertEqual(linnai.switches, 1)
+
+    def test_linnai_intro_attack_stops_when_con_full(self):
+        class Task:
+            pass
+
+        class TestLinnai(Linnai):
+            def __init__(self):
+                super().__init__(Task(), 0)
+                self.has_intro = True
+                self.normal_attack_until_con_full = False
+                self.switches = 0
+
+            def get_current_con(self):
+                return 0
+
+            def check_res(self):
+                return True
+
+            def continues_normal_attack(self, duration, **kwargs):
+                self.normal_attack_until_con_full = kwargs.get('until_con_full', False)
+
+            def switch_next_char(self, *args, **kwargs):
+                self.switches += 1
+
+        linnai = TestLinnai()
+        linnai.do_perform()
+        self.assertTrue(linnai.normal_attack_until_con_full)
+        self.assertEqual(linnai.switches, 1)
 
     def test_intro_does_not_switch_to_phrolova_during_liberation_lock(self):
         class Task:
