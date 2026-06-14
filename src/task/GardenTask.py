@@ -39,7 +39,7 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
         self.click(0.927, 0.893, after_sleep=1)
         current = self.ocr(0.102, 0.793, 0.284, 0.956, match=re.compile('6000'))
         self.log_info(f"Garden current: {current}")
-        if current and False:
+        if current:
             self.log_info('乐园任务完成, 已达到上限', notify=True)
             return
         else:
