@@ -13,7 +13,6 @@ class Hiyuki(BaseChar):
         """角色切出时重置状态"""
         super().switch_out(con_full)
         self.lib2_count = 0
-        self.lib_permission = True  # 切出时重置
 
     def do_perform(self):
         if self.has_intro:
@@ -28,7 +27,6 @@ class Hiyuki(BaseChar):
 
             elif self.lib_permission and self.liberation_available():
                 if self.hold_liberation():
-                    self.lib_permission = False
                     self.sleep(0.5)
                     self.switch_next_char()
                     return
@@ -50,7 +48,6 @@ class Hiyuki(BaseChar):
             if self.liberation_available():
                 if self.click_liberation():
                     self.logger.debug('hiyuki perform lib1')
-                    self.lib_permission = False
                     return
 
             if self.is_mouse_forte_full():
@@ -59,7 +56,6 @@ class Hiyuki(BaseChar):
                 self.task.wait_until(self.liberation_available, post_action=self.click_with_interval, time_out=self.time_out)
                 if self.click_liberation():
                     self.logger.debug('hiyuki perform lib1')
-                    self.lib_permission = False
                     return
             else:
                 self.click(interval=0.1)
@@ -93,7 +89,6 @@ class Hiyuki(BaseChar):
                 self.continues_normal_attack(0.3)
             elif self.lib_heavy_available():
                 self.heavy_click_forte(check_fun=self.lib_heavy_available)
-                self.lib_permission = True
                 if self.task.wait_until(self.liberation_available, post_action=self.click, time_out=0.5):
                     if self.hold_liberation():
                         self.logger.debug('hiyuki perform lib2 (after heavy)')
