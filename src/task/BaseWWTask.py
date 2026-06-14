@@ -959,7 +959,7 @@ class BaseWWTask(BaseTask):
         elif name == 'mengyan':
             y = 0.86
         elif name == 'canxiang':
-            self.click_relative(0.355, 0.876, after_sleep=after_sleep)
+            self.click_relative(0.356, 0.882, after_sleep=after_sleep)
             y = 0.86
         else:
             raise Exception(f'unknown_lang {name}')
