@@ -253,8 +253,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             raise RuntimeError(f'Unknown Teleport to Boss config: {teleport_to_boss}')
 
         self.info_set('Teleport to Boss', f'{teleport_to_boss} {serial_number - 1}')
-        gray_book_boss = self.openF2Book('gray_book_boss')
-        self.click_box(gray_book_boss, after_sleep=1)
+        self.openF2Book('gray_book_boss')
         self.open_boss_book(feature)
         self.click_on_book_target(serial_number, total_number)
         self.wait_click_travel()
@@ -496,8 +495,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         if self.aim_boss is not None:
             self.log_info(f'teleport_to_nearest_boss {self.aim_boss}')
             self.ensure_main(time_out=180)
-            gray_book_boss = self.openF2Book("gray_book_all_monsters")
-            self.click_box(gray_book_boss, after_sleep=1)
+            self.openF2Book("gray_book_all_monsters")
             self.click(0.13, 0.14, after_sleep=0.5)
             self.input_text(self.aim_boss)
             self.click(0.39, 0.13, after_sleep=0.5)

@@ -959,7 +959,7 @@ class BaseWWTask(BaseTask):
         elif name == 'mengyan':
             y = 0.86
         elif name == 'canxiang':
-            self.click_relative(0.355, 0.876, after_sleep=after_sleep)
+            self.click_relative(0.356, 0.882, after_sleep=after_sleep)
             y = 0.86
         else:
             raise Exception(f'unknown_lang {name}')
@@ -986,6 +986,7 @@ class BaseWWTask(BaseTask):
             self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
             raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")
         self.sleep(2)
+        self.click_box(gray_book_boss, after_sleep=1.5)
         return gray_book_boss
 
     def click_traval_button(self):
