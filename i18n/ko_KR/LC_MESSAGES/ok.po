@@ -1093,3 +1093,9 @@ msgstr "레베카"
 
 msgid "Lucilla"
 msgstr "루실라"
+
+msgid "自动周常乐园"
+msgstr "자동 주간 정원"
+
+msgid "Detect and click garden actions until the task is stopped."
+msgstr "작업이 중지될 때까지 정원 동작을 감지하고 클릭합니다."

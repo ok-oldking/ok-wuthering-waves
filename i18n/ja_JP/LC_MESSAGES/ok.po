@@ -1092,3 +1092,9 @@ msgstr "レベッカ"
 
 msgid "Lucilla"
 msgstr "ルシラー"
+
+msgid "自动周常乐园"
+msgstr "自動週間ガーデン"
+
+msgid "Detect and click garden actions until the task is stopped."
+msgstr "タスクが停止するまでガーデン操作を検出してクリックします。"

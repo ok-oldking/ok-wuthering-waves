@@ -98,8 +98,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.sleep(1)
 
     def get_nest_to_go(self):
-        gray_book_boss = self.openF2Book("gray_book_boss")
-        self.click_box(gray_book_boss, after_sleep=1)
+        self.openF2Book("gray_book_boss")
 
         while self.queues:
             self.queues[0]()

@@ -50,8 +50,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             self.ensure_main()
 
     def open_F2_book_and_get_stamina(self):
-        gray_book_boss = self.openF2Book('gray_book_boss')
-        self.click_box(gray_book_boss, after_sleep=1)
+        self.openF2Book('gray_book_boss')
         return self.get_stamina()
 
     def farm_domain_with_recovery_loop(self, must_use, teleport_into_domain_once, max_recovery_retries=3):

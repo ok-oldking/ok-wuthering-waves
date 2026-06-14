@@ -136,8 +136,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def open_daily(self):
         self.log_info('open_daily')
-        gray_book_quest = self.openF2Book("gray_book_quest")
-        self.click_box(gray_book_quest, after_sleep=1.5)
+        self.openF2Book("gray_book_quest")
         self.click(0.17, 0.12, after_sleep=1)
         progress = self.ocr(0.1, 0.1, 0.5, 0.75, match=re.compile(r'^(\d+)/180$'))
         if not progress:

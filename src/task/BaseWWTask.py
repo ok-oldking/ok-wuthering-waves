@@ -986,6 +986,7 @@ class BaseWWTask(BaseTask):
             self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
             raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")
         self.sleep(2)
+        self.click_box(gray_book_boss, after_sleep=1.5)
         return gray_book_boss
 
     def click_traval_button(self):

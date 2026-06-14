@@ -1130,3 +1130,9 @@ msgstr "麗貝卡"
 
 msgid "Lucilla"
 msgstr "洛瑟菈"
+
+msgid "自动周常乐园"
+msgstr "自動週常樂園"
+
+msgid "Detect and click garden actions until the task is stopped."
+msgstr "自動偵測並點擊樂園操作，直到任務停止。"

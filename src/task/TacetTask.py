@@ -58,8 +58,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         fail_count = 0
         while True:
             self.sleep(1)
-            gray_book_boss = self.openF2Book("gray_book_boss")
-            self.click_box(gray_book_boss, after_sleep=1)
+            self.openF2Book("gray_book_boss")
             current, back_up, total = self.get_stamina()
             if current == -1:
                 self.click_relative(0.04, 0.4, after_sleep=1)

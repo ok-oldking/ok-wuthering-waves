@@ -1006,3 +1006,9 @@ msgstr ""
 "Usa esta referencia de BaseChar para razonar sobre m?todos auxiliares, API "
 "de tareas, estado, cambios de personaje, tiempos de recarga y flujo de "
 "combate:"
+
+msgid "自动周常乐园"
+msgstr "Jardín semanal automático"
+
+msgid "Detect and click garden actions until the task is stopped."
+msgstr "Detecta y hace clic en acciones del jardín hasta que se detenga la tarea."
