@@ -77,6 +77,16 @@ jobs:
               }
           }
 
+      - name: Check release version
+        id: release-version
+        if: env.BUILD_EXE == 'true'
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $isRelease = $tag -match '^v?\d+\.\d+\.\d+$'
+          "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          Write-Host "Release version: $isRelease"
+
       - name: Sync Repositories
         id: sync   # Give the step an ID to access its outputs
         uses: ok-oldking/partial-sync-repo@master # Replace with your action path
@@ -89,27 +99,17 @@ jobs:
           gitignore_file: '.update_repo_gitignore'
           show_author: true
 
-      - name: Check release version
-        id: release-version
-        if: env.BUILD_EXE == 'true'
-        shell: pwsh
-        run: |
-          $tag = "${{ github.ref_name }}"
-          $isRelease = $tag -match '^v?\d+\.\d+\.\d+$'
-          "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
-          Write-Host "Release version: $isRelease"
-
       - name: pyappify build-exe-only use_release
         id: build-exe-only-use_release
         uses: ok-oldking/pyappify-action@master
-        if: env.BUILD_EXE == 'true' && env.USE_RELEASE != ''
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.USE_RELEASE != ''
         with:
           use_release: ${{ env.USE_RELEASE }}
 
       - name: pyappify build-exe-only
         id: build-exe-only
         uses: ok-oldking/pyappify-action@master
-        if: env.BUILD_EXE == 'true' && env.USE_RELEASE == ''
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.USE_RELEASE == ''
         with:
           build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
 

@@ -189,12 +189,16 @@ class CharacterCodeTab(CustomTab):
 
         self.current_char_cls = char_cls
         self.current_row = row
-        enabled = is_custom_char_enabled(char_cls)
-        self.custom_radio.setChecked(enabled)
-        self.builtin_radio.setChecked(not enabled)
+        enabled = has_custom_char_code(char_cls) and is_custom_char_enabled(char_cls)
+        self.suppress_mode_guard = True
+        try:
+            self.custom_radio.setChecked(enabled)
+            self.builtin_radio.setChecked(not enabled)
+        finally:
+            self.suppress_mode_guard = False
         self._update_char_image()
         self._load_editor_code()
-        self.status_label.setText(str(has_custom_char_code(char_cls) and self.tr("Custom code saved") or ""))
+        self._update_mode_status()
 
     def _sync_editor_state(self):
         self.editor.setReadOnly(self.builtin_radio.isChecked())
@@ -216,7 +220,28 @@ class CharacterCodeTab(CustomTab):
                 self.suppress_mode_guard = False
                 self._sync_editor_state()
                 return
+        self._save_current_mode()
         self._load_editor_code()
+        self._update_mode_status()
+
+    def _save_current_mode(self):
+        if self.current_char_cls is None:
+            return
+        if self.custom_radio.isChecked():
+            if has_custom_char_code(self.current_char_cls):
+                set_custom_char_enabled(self.current_char_cls, True)
+            return
+        set_custom_char_enabled(self.current_char_cls, False)
+
+    def _update_mode_status(self):
+        if self.current_char_cls is None:
+            self.status_label.setText("")
+        elif self.custom_radio.isChecked() and has_custom_char_code(self.current_char_cls):
+            self.status_label.setText(self.tr("Custom code saved"))
+        elif self.builtin_radio.isChecked() and has_custom_char_code(self.current_char_cls):
+            self.status_label.setText(self.tr("Using built in code"))
+        else:
+            self.status_label.setText("")
 
     def _load_editor_code(self):
         if self.current_char_cls is None:
@@ -239,7 +264,7 @@ class CharacterCodeTab(CustomTab):
         self.status_label.setText(self.tr("Unsaved changes") if self._has_unsaved_changes() else "")
 
     def _has_unsaved_changes(self):
-        return self.custom_radio.isChecked() and self.editor.toPlainText() != self.clean_code
+        return not self.editor.isReadOnly() and self.editor.toPlainText() != self.clean_code
 
     def _confirm_discard_changes(self):
         box = MessageBox(
