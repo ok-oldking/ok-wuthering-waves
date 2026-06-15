@@ -741,6 +741,12 @@ msgstr "使用梦魇巢穴获取日常声骸"
 msgid "Farm 1 Echo from Nightmare Nest to complete Daily Task when needed."
 msgstr "必要时，前往梦魇巢穴获取声骸完成日常"
 
+msgid "Continue Farm After Daily"
+msgstr "完成日常后继续刷取体力"
+
+msgid "After completing daily activity, continue farming stamina until depleted."
+msgstr "在完成日常任务活跃度之后仍然刷取体力直到体力耗尽"
+
 msgid "F10"
 msgstr ""
 
