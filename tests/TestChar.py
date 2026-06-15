@@ -14,7 +14,9 @@ from src.char.Lucilla import Lucilla
 from src.char.Lucy import Lucy
 from src.char.Phrolova import Phrolova
 from src.char.Rebecca import Rebecca
+from src.char.ShoreKeeper import ShoreKeeper
 from src.char.Verina import Verina
+from src.task.BaseCombatTask import NotInCombatException
 from src.task.AutoCombatTask import AutoCombatTask
 
 config['debug'] = True
@@ -930,6 +932,88 @@ class TestChar(TaskTestCase):
 
         self.assertEqual(phrolova.get_switch_priority(current_char=current, has_intro=True), SwitchPriority.NO)
         self.assertEqual(combat._choose_switch_target(current, True), current)
+
+    def test_phrolova_nightmare_nest_does_not_cancel_liberation(self):
+        class Task:
+            name = "Nightmare Nest Task"
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                if start < 0:
+                    return 10000
+                return time.time() - start
+
+        class TestPhrolova(Phrolova):
+            def __init__(self):
+                super().__init__(Task(), 0)
+                self.actions = []
+
+            def flying(self):
+                return False
+
+            def liberation_available(self, check_color=True):
+                return True
+
+            def click_liberation(self, **kwargs):
+                self.actions.append(('liberation', kwargs))
+                return True
+
+            def continues_click(self, key, duration, interval=0.1):
+                self.actions.append(('continues_click', key, duration))
+
+            def switch_next_char(self, *args, **kwargs):
+                self.actions.append(('switch', {}))
+
+        phrolova = TestPhrolova()
+        phrolova.do_perform()
+
+        self.assertEqual(phrolova.actions, [
+            ('liberation', {'wait_if_cd_ready': 0}),
+            ('switch', {}),
+        ])
+
+    def test_check_combat_respects_skip_flag(self):
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        combat._in_combat = True
+        combat.skip_combat_check = True
+        combat.in_combat = lambda: False
+
+        def raise_not_in_combat(message):
+            raise NotInCombatException(message)
+
+        combat.raise_not_in_combat = raise_not_in_combat
+
+        combat.check_combat()
+
+    def test_shorekeeper_intro_restores_skip_flag_on_error(self):
+        class Task:
+            skip_combat_check = False
+            name = None
+
+            def in_team_and_world(self):
+                return False
+
+            def wait_in_team_and_world(self, **kwargs):
+                raise RuntimeError('intro wait failed')
+
+        shorekeeper = ShoreKeeper(Task(), 0)
+        shorekeeper.has_intro = True
+
+        with self.assertRaises(RuntimeError):
+            shorekeeper.do_perform()
+
+        self.assertFalse(shorekeeper.task.skip_combat_check)
+
+    def test_shorekeeper_skips_combat_check_during_intro_or_airborne(self):
+        class Task:
+            has_lavitator = False
+
+        shorekeeper = ShoreKeeper(Task(), 0)
+        shorekeeper.has_intro = True
+        self.assertTrue(shorekeeper.skip_combat_check())
+
+        shorekeeper.has_intro = False
+        shorekeeper.flying = lambda: True
+        self.assertTrue(shorekeeper.skip_combat_check())
 
     def test_aemeath_lib(self):
         self.task.do_reset_to_false()

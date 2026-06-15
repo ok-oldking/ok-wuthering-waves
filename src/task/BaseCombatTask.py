@@ -691,6 +691,8 @@ class BaseCombatTask(CombatCheck):
 
     def check_combat(self):
         """检查当前是否处于战斗状态, 如果不是则抛出异常。"""
+        if self.skip_combat_check:
+            return
         if self._in_combat and not self.in_combat():
             # if self.debug:
             #     self.screenshot('not_in_combat_calling_check_combat')

@@ -2232,13 +2232,13 @@
         },
         {
             "id": 231,
-            "file_name": "images/35.png",
+            "file_name": "images/33.png",
             "width": 1920,
             "height": 1080
         },
         {
             "id": 232,
-            "file_name": "images/33.png",
+            "file_name": "images/34.png",
             "width": 1920,
             "height": 1080
         },
@@ -4006,12 +4006,12 @@
             "image_id": 256,
             "category_id": 242,
             "bbox": [
-                1513,
-                913,
-                75,
-                77
+                1614,
+                963,
+                20,
+                49
             ],
-            "area": 5775,
+            "area": 980,
             "iscrowd": 0
         },
         {

@@ -1122,3 +1122,9 @@ msgstr "SIFT"
 
 msgid "SIFTGZ"
 msgstr "SIFTGZ"
+
+msgid "Check Weekly Garden"
+msgstr "ウィークリーガーデンを確認"
+
+msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
+msgstr "デイリー報酬の受取後、ウィークリーガーデンの進捗を確認し、6000ポイント未達ならガーデンタスクを実行します。"

@@ -12,6 +12,7 @@ logger = Logger.get_logger(__name__)
 
 
 class GardenTask(WWOneTimeTask, BaseWWTask):
+    GARDEN_TARGET_POINTS = re.compile('6000')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -32,18 +33,11 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
     def run(self):
         WWOneTimeTask.run(self)
         self.ensure_main()
-        self.openF2Book('gray_book_quest')
-        self.sleep(1)
-        self.click(0.343, 0.129, after_sleep=1)
-        self.click(0.927, 0.893, after_sleep=2)
-        self.click(0.927, 0.893, after_sleep=1)
-        current = self.ocr(0.102, 0.793, 0.284, 0.956, match=re.compile('6000'))
-        self.log_info(f"Garden current: {current}")
-        if current:
+        self.open_garden_weekly_page()
+        if self.is_weekly_garden_completed():
             self.log_info('乐园任务完成, 已达到上限', notify=True)
             return
-        else:
-            self.click(0.246, 0.486, after_sleep=1)
+        self.click(0.246, 0.486, after_sleep=1)
         while True:
             target = self.find_best_garden_feature()
             self.sleep(0.2)
@@ -75,15 +69,30 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
                     self.log_info('garden end {}'.format(texts))
                     if self.is_garden_done(texts):
                         self.click(garden_back, after_sleep=1)
+                        self.wait_book('gray_book_quest', time_out=30)
+                        self.click(0.927, 0.893, after_sleep=2)
+                        self.click(0.927, 0.893, after_sleep=1)
                         break
                     else:
                         self.click(garden_restart, after_sleep=1)
                 self.sleep(0.2)
         self.log_info('乐园任务完成, 已达到上限', notify=True)
 
+    def open_garden_weekly_page(self):
+        self.openF2Book('gray_book_quest')
+        self.sleep(1)
+        self.click(0.343, 0.129, after_sleep=1)
+        self.click(0.927, 0.893, after_sleep=2)
+        self.click(0.927, 0.893, after_sleep=1)
+
+    def is_weekly_garden_completed(self):
+        current = self.ocr(0.102, 0.793, 0.284, 0.956, match=self.GARDEN_TARGET_POINTS)
+        self.log_info(f"Garden current: {current}")
+        return bool(current)
+
     def is_garden_done(self, texts):
         text = " ".join(str(getattr(box, "name", box)) for box in texts)
-        return text.count("6000") != 1
+        return text.count(self.GARDEN_TARGET_POINTS.pattern) != 1
 
     def find_best_garden_feature(self):
         matches = []
