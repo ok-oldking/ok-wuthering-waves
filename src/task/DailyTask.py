@@ -6,6 +6,7 @@ from ok import Logger, TaskDisabledException
 from src.task.BaseWWTask import number_re
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.ForgeryTask import ForgeryTask
+from src.task.GardenTask import GardenTask
 from src.task.NightmareNestTask import NightmareNestTask
 from src.task.TacetTask import TacetTask
 from src.task.SimulationTask import SimulationTask
@@ -32,12 +33,15 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Material Selection': 'Shell Credit',
             'Auto Farm all Nightmare Nest': False,
             'Farm Nightmare Nest for Daily Echo': True,
+            'Check Weekly Garden': True,
         }
         self.config_description = {
             'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
-            'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.'
+            'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.',
+            'Check Weekly Garden': 'After claiming daily rewards, check weekly Garden progress and run Garden Task '
+                                   'if 6000 points has not been reached.'
         }
         material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type = {
@@ -114,7 +118,28 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.claim_mail()
         self.sleep(1)
         self.claim_battle_pass()
+        self.check_weekly_garden()
         self.log_info('Task completed', notify=True)
+
+    def check_weekly_garden(self):
+        if not self.config.get('Check Weekly Garden', True):
+            return
+        self.info_set('current task', 'check weekly garden')
+        self.log_info('check weekly garden')
+        try:
+            garden_task = self.get_task_by_class(GardenTask)
+            garden_task.open_garden_weekly_page()
+            if garden_task.is_weekly_garden_completed():
+                self.log_info('weekly garden already completed')
+                return
+            self.log_info('weekly garden not completed, run GardenTask')
+            self.run_task_by_class(GardenTask)
+        except TaskDisabledException:
+            raise
+        except Exception as e:
+            self.log_error("GardenTask Failed", e)
+            self.screenshot('GardenTask')
+            self.ensure_main(time_out=180)
 
     def claim_battle_pass(self):
         self.log_info('battle pass')

@@ -1099,3 +1099,9 @@ msgstr "자동 주간 정원"
 
 msgid "Detect and click garden actions until the task is stopped."
 msgstr "작업이 중지될 때까지 정원 동작을 감지하고 클릭합니다."
+
+msgid "Check Weekly Garden"
+msgstr "주간 정원 확인"
+
+msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
+msgstr "일일 보상을 수령한 뒤 주간 정원 진행도를 확인하고, 6000점에 도달하지 않았으면 정원 임무를 실행합니다."

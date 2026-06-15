@@ -1136,3 +1136,9 @@ msgstr "自动周常乐园"
 
 msgid "Detect and click garden actions until the task is stopped."
 msgstr "自动检测并点击乐园操作，直到任务停止。"
+
+msgid "Check Weekly Garden"
+msgstr "检查每周乐园"
+
+msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
+msgstr "领取日常奖励后检查每周乐园进度；如果尚未达到 6000 点，则运行乐园任务。"
