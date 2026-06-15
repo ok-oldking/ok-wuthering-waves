@@ -784,7 +784,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             return
         self._init_overlay()
         radius = self.config.get('_Search radius (world units)') * BIG_MAP_SEARCH_MULTIPLIER
-        if game_scale is not None and 0.01 < game_scale < 5:
+        if game_scale is not None and 0.01 < game_scale:
             scale = 1.0 / game_scale
         else:
             scale_per_1000 = self._get_default_scale_per_1000()
