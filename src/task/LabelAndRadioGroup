@@ -1,0 +1,55 @@
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QButtonGroup
+from qfluentwidgets import RadioButton
+
+from ok.gui.tasks.ConfigLabelAndWidget import ConfigLabelAndWidget
+
+
+class LabelAndRadioGroup(ConfigLabelAndWidget):
+    def __init__(self, config_desc, options, config, key: str):
+        super().__init__(config_desc, config, key)
+        
+        self.key = key
+        self.options = options
+        self.suppress_guard = False
+
+        self.radio_container = QWidget()
+        self.radio_layout = QHBoxLayout(self.radio_container)
+        self.radio_layout.setContentsMargins(0, 0, 0, 0)
+        self.radio_layout.setSpacing(16)  
+
+        self.button_group = QButtonGroup(self)
+        self.buttons = []
+
+        current_val = self.config.get(self.key)
+
+        for opt in options:
+            btn = RadioButton(opt)
+            self.button_group.addButton(btn)
+            self.radio_layout.addWidget(btn)
+            
+            btn.toggled.connect(self._on_toggled)
+            self.buttons.append(btn)
+
+            if opt == current_val:
+                btn.setChecked(True)
+
+        self.radio_layout.addStretch(1)
+
+        self.add_widget(self.radio_container, stretch=1)
+
+    def _on_toggled(self):
+        if self.suppress_guard:
+            return
+        for i, btn in enumerate(self.buttons):
+            if btn.isChecked():
+                self.update_config(self.options[i])
+                break
+
+    def update_value(self):
+        self.suppress_guard = True
+        current_val = self.config.get(self.key)
+        for i, opt in enumerate(self.options):
+            if opt == current_val:
+                self.buttons[i].setChecked(True)
+                break
+        self.suppress_guard = False
