@@ -9,15 +9,10 @@ class Lucilla(BaseChar):
     机制: 长按 E 或蓄力重击各攒 1 格回路能量, 攒满 3 格大招可用; 放大招后变身进入特殊形态
     (技能栏/大招图标消失, 视觉信号全失效), 固定时长输出后变回原建模, 再切人。
     """
-    # 单次长按/蓄力时长 (秒): 长按 E 或蓄力重击各攒 1 格回路能量.
     HOLD_TIME: float = 1.4
-    # 大招变身动画时长 (秒): 这段不可操作, 普攻无效, 先等过去
     LIBERATION_ANIMATION_TIME: float = 3.0
-    # 变身后按住左键输出的时长 (秒): 变身期间无可靠 UI 信号标记结束, 只能用固定时长
     LIBERATION_HEAVY_TIME: float = 6.8
-    # 攒能量阶段的整体上限 (秒), 防止攒不满时死循环
     CHARGE_TIME_OUT: float = 8.5
-    # 能量已满但解放仍在 CD 时, CD 超过此秒数则放弃继续攒(避免溢出浪费), 直接切人
     LIBERATION_CD_SKIP: float = 1.5
 
     def do_perform(self):
@@ -65,12 +60,10 @@ class Lucilla(BaseChar):
                 self.dodge()
         else:
             if self.hold_heavy_attack(self.HOLD_TIME):
-            # 长按动作成功后再向左闪避(规避敌人攻击), 不打断刚完成的长按.
                 self.dodge()
 
     def dodge(self):
         """向左闪避(规避敌人攻击). 只在长按动作完整结束后由 charge_once 调用, 故不会打断长按."""
-        # 向左闪避: 按住 a 发闪避键再松开, 使闪避朝左.
         self.task.send_key_down('a')
         try:
             self.task.send_key(self.task.key_config['Dodge Key'], after_sleep=0.05)
