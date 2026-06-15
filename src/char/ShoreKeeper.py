@@ -17,6 +17,9 @@ class ShoreKeeper(BaseChar):
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
 
+    def skip_combat_check(self):
+        return self.has_intro or self.flying()
+
     def decide_teammate(self):
         from src.char.Augusta import Augusta
         if self.attribute > 0:
@@ -29,13 +32,15 @@ class ShoreKeeper(BaseChar):
     def do_perform(self):
         if self.has_intro:
             self.task.skip_combat_check = True
-            self.logger.debug('ShoreKeeper wait intro animation')
-            time.sleep(0.1)
-            if not self.task.in_team_and_world():
-                self.task.wait_in_team_and_world(time_out=4, raise_if_not_found=False)
-            else:
-                self.continues_normal_attack(1.2)
-            self.task.skip_combat_check = False
+            try:
+                self.logger.debug('ShoreKeeper wait intro animation')
+                time.sleep(0.1)
+                if not self.task.in_team_and_world():
+                    self.task.wait_in_team_and_world(time_out=4, raise_if_not_found=False)
+                else:
+                    self.continues_normal_attack(1.2)
+            finally:
+                self.task.skip_combat_check = False
         self.click_echo(time_out=0)
         self.click_liberation()
         if not self.click_resonance():
