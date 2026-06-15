@@ -168,6 +168,8 @@ class Cartethyia(BaseChar):
             start = time.time()
             while True:
                 self.task.jump(after_sleep=0.1)
+                if self.echo_available():
+                    self.click_echo(time_out=0)
                 self.task.click(after_sleep=0.1)
                 if not self.is_mid_air_attack_available():
                     self.sleep(0.4)
@@ -179,6 +181,8 @@ class Cartethyia(BaseChar):
             start = time.time()
             while time.time() - start < 0.8:
                 self.task.jump(after_sleep=0.1)
+                if self.echo_available():
+                    self.click_echo(time_out=0)
                 self.task.click(after_sleep=0.1)
         self.try_mid_air_attack_once = False
 
