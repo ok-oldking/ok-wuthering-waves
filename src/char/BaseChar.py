@@ -948,6 +948,10 @@ class BaseChar:
         """是否有长动作条"""
         return self.task.find_one(self.task.get_target_names()[0], box='target_box_long2', threshold=0.6)
 
+    def has_short_action(self):
+        """是否有短动作条"""
+        return self.task.find_one('target_box_short', threshold=0.6)
+
     def f_break(self, check_f_on_switch=False):
         """使用F进行击破
            若self.check_f_on_switch为False则不在切走前自动按F,须在逻辑中手动添加。

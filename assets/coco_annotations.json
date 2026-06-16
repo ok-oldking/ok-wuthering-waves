@@ -1279,6 +1279,11 @@
             "id": 253,
             "name": "garden_start_game",
             "supercategory": ""
+        },
+        {
+            "id": 254,
+            "name": "target_box_short",
+            "supercategory": ""
         }
     ],
     "images": [
@@ -4218,6 +4223,19 @@
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
+        },
+        {
+            "id": 131,
+            "image_id": 252,
+            "category_id": 254,
+            "bbox": [
+                1526,
+                956,
+                40,
+                38
+            ],
+            "area": 1520,
+            "iscrowd": 0
         },
         {
             "id": 132,
