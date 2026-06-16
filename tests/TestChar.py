@@ -204,22 +204,36 @@ class TestChar(TaskTestCase):
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 return time.time() - start
 
+            def wait_until(self, condition, time_out=0, **kwargs):
+                return condition()
+
+            def in_team(self):
+                return True, None
+
+            def sleep(self, sec):
+                pass
+
+            def jump(self, after_sleep=0.01):
+                pass
+
         class TrackingVerina(Verina):
             def __init__(self, task):
                 super().__init__(task, 0)
                 self.heavy_count = 0
-                self.click_count = 0
 
             def is_con_full(self):
                 return False
 
-            def click_liberation(self, **kwargs):
+            def continues_normal_attack(self, duration, **kwargs):
+                pass
+
+            def resonance_available(self):
                 return False
 
-            def click_resonance(self, **kwargs):
-                return False, None
+            def liberation_available(self):
+                return False
 
-            def click_echo(self, **kwargs):
+            def echo_available(self):
                 return False
 
             def is_mouse_forte_full(self):
@@ -228,19 +242,15 @@ class TestChar(TaskTestCase):
             def heavy_attack(self, duration=0.6):
                 self.heavy_count += 1
 
-            def click(self):
-                self.click_count += 1
-
         verina = TrackingVerina(Task())
-        self.assertFalse(verina.do_cycle())
+        verina.perform_combat()
         self.assertEqual(verina.heavy_count, 1)
 
-        self.assertTrue(verina.do_cycle())
+        verina.perform_combat()
         self.assertEqual(verina.heavy_count, 1)
-        self.assertEqual(verina.click_count, 1)
 
         verina.last_heavy = time.time() - verina.HEAVY_ATTACK_INTERVAL
-        self.assertFalse(verina.do_cycle())
+        verina.perform_combat()
         self.assertEqual(verina.heavy_count, 2)
 
     def test_chisa_support_liberation_records_buff_without_dps_sequence(self):
@@ -349,12 +359,18 @@ class TestChar(TaskTestCase):
             def find_one(self, template, threshold=None):
                 return self.lib2 and template == 'aemeath_lib2'
 
+            def check_combat(self):
+                pass
+
         class TrackingAemeath(Aemeath):
             def click_liberation(self, **kwargs):
                 return True
 
             def f_break(self):
                 pass
+
+            def _execute_post_lib2_combo(self):
+                self.check_combat()
 
         task = Task()
         aemeath = TrackingAemeath(task, 0)
@@ -380,6 +396,9 @@ class TestChar(TaskTestCase):
             def find_one(self, template, threshold=None):
                 return self.lib2 and template == 'aemeath_lib2'
 
+            def check_combat(self):
+                pass
+
         class TrackingAemeath(Aemeath):
             def has_long_action(self):
                 return True
@@ -392,6 +411,10 @@ class TestChar(TaskTestCase):
 
             def f_break(self):
                 pass
+
+            def _execute_post_lib2_combo(self):
+                self.check_combat()
+                self.record_enhance_e()
 
         task = Task()
         aemeath = TrackingAemeath(task, 0)
