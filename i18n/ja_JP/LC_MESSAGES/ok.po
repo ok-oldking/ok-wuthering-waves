@@ -1104,3 +1104,66 @@ msgstr "ウィークリーガーデンを確認"
 
 msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
 msgstr "デイリー報酬の受取後、ウィークリーガーデンの進捗を確認し、6000ポイント未達ならガーデンタスクを実行します。"
+
+msgid "Complete Daily 180"
+msgstr "デイリー180活力まで"
+
+msgid "Finish Planned Claims"
+msgstr "予定回数を完了"
+
+msgid "Farm Goal"
+msgstr "周回目標"
+
+msgid "Tacet Suppression Runs"
+msgstr "無音区の報酬受取回数"
+
+msgid "Forgery Challenge Runs"
+msgstr "凝素領域の報酬受取回数"
+
+msgid "Simulation Challenge Runs"
+msgstr "模擬領域の報酬受取回数"
+
+msgid ""
+"Select one or more tasks to rotate through for daily stamina spending. Runs "
+"mean reward claims. The task auto-uses double rewards when possible. If "
+"planned claims are not enough, the last selected task continues until daily "
+"stamina is complete."
+msgstr ""
+"活力消費用に周回するタスクを選択します。\n"
+"回数は報酬受取回数です。"
+
+msgid ""
+"Choose whether to stop after daily stamina reaches 180, or continue until "
+"all planned reward claims are consumed."
+msgstr ""
+"デイリー180活力で停止するか、\n"
+"予定回数まで続行するかを選択します。"
+
+msgid ""
+"How many reward claims to plan for Tacet Suppression during daily rotation. "
+"Even numbers are compressed into double-reward runs automatically."
+msgstr ""
+"日課周回で無音区報酬を受け取る予定回数。\n"
+"偶数は自動で2倍受取にまとめます。"
+
+msgid ""
+"How many reward claims to plan for Forgery Challenge during daily rotation. "
+"Even numbers are compressed into double-reward runs automatically."
+msgstr ""
+"日課周回で凝素領域報酬を受け取る予定回数。\n"
+"偶数は自動で2倍受取にまとめます。"
+
+msgid ""
+"How many reward claims to plan for Simulation Challenge during daily "
+"rotation. Even numbers are compressed into double-reward runs automatically."
+msgstr ""
+"日課周回で模擬領域報酬を受け取る予定回数。\n"
+"偶数は自動で2倍受取にまとめます。"
+
+msgid "Stop at daily 180, or finish every planned reward claim."
+msgstr ""
+"デイリー180活力で停止、\n"
+"または予定回数まで続行。"
+
+msgid "None"
+msgstr "なし"

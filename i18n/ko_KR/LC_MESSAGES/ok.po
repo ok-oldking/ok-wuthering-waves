@@ -1105,3 +1105,66 @@ msgstr "주간 정원 확인"
 
 msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
 msgstr "일일 보상을 수령한 뒤 주간 정원 진행도를 확인하고, 6000점에 도달하지 않았으면 정원 임무를 실행합니다."
+
+msgid "Complete Daily 180"
+msgstr "일일 180 활력 완료"
+
+msgid "Finish Planned Claims"
+msgstr "계획 보상 횟수 완료"
+
+msgid "Farm Goal"
+msgstr "파밍 목표"
+
+msgid "Tacet Suppression Runs"
+msgstr "무음 구역 보상 횟수"
+
+msgid "Forgery Challenge Runs"
+msgstr "응소 영역 보상 횟수"
+
+msgid "Simulation Challenge Runs"
+msgstr "시뮬레이션 보상 횟수"
+
+msgid ""
+"Select one or more tasks to rotate through for daily stamina spending. Runs "
+"mean reward claims. The task auto-uses double rewards when possible. If "
+"planned claims are not enough, the last selected task continues until daily "
+"stamina is complete."
+msgstr ""
+"일일 활력 소모에 사용할 작업을 선택합니다.\n"
+"횟수는 보상 수령 횟수입니다."
+
+msgid ""
+"Choose whether to stop after daily stamina reaches 180, or continue until "
+"all planned reward claims are consumed."
+msgstr ""
+"일일 180 활력 달성 후 중지할지,\n"
+"계획한 보상 횟수까지 계속할지 선택합니다."
+
+msgid ""
+"How many reward claims to plan for Tacet Suppression during daily rotation. "
+"Even numbers are compressed into double-reward runs automatically."
+msgstr ""
+"일일 순환 중 무음 구역 보상을 받을 횟수입니다.\n"
+"짝수는 자동으로 2배 보상으로 합쳐집니다."
+
+msgid ""
+"How many reward claims to plan for Forgery Challenge during daily rotation. "
+"Even numbers are compressed into double-reward runs automatically."
+msgstr ""
+"일일 순환 중 응소 영역 보상을 받을 횟수입니다.\n"
+"짝수는 자동으로 2배 보상으로 합쳐집니다."
+
+msgid ""
+"How many reward claims to plan for Simulation Challenge during daily "
+"rotation. Even numbers are compressed into double-reward runs automatically."
+msgstr ""
+"일일 순환 중 시뮬레이션 보상을 받을 횟수입니다.\n"
+"짝수는 자동으로 2배 보상으로 합쳐집니다."
+
+msgid "Stop at daily 180, or finish every planned reward claim."
+msgstr ""
+"일일 180 활력 후 중지하거나,\n"
+"계획 보상 횟수까지 진행합니다."
+
+msgid "None"
+msgstr "없음"

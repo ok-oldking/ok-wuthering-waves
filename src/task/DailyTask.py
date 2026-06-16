@@ -34,12 +34,12 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.default_config = {
             'Which to Farm': [self.support_tasks[0]],
             'Which Tacet Suppression to Farm': 1,  # starts with 1
-            'Which Forgery Challenge to Farm': 1,  # starts with 1
-            'Material Selection': 'Shell Credit',
-            'Farm Goal': self.DAILY_PRIORITY_MODE,
             'Tacet Suppression Runs': 3,
+            'Which Forgery Challenge to Farm': 1,  # starts with 1
             'Forgery Challenge Runs': 5,
+            'Material Selection': 'Shell Credit',
             'Simulation Challenge Runs': 5,
+            'Farm Goal': self.DAILY_PRIORITY_MODE,
             'Auto Farm all Nightmare Nest': False,
             'Farm Nightmare Nest for Daily Echo': True,
             'Check Weekly Garden': True,
@@ -50,10 +50,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
-            'Farm Goal': 'Choose whether to stop after daily stamina reaches 180, or continue until all planned reward claims are consumed.',
-            'Tacet Suppression Runs': 'How many reward claims to plan for Tacet Suppression during daily rotation. Even numbers are compressed into double-reward runs automatically.',
-            'Forgery Challenge Runs': 'How many reward claims to plan for Forgery Challenge during daily rotation. Even numbers are compressed into double-reward runs automatically.',
-            'Simulation Challenge Runs': 'How many reward claims to plan for Simulation Challenge during daily rotation. Even numbers are compressed into double-reward runs automatically.',
+            'Farm Goal': 'Stop at daily 180, or finish every planned reward claim.',
             'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.',
             'Check Weekly Garden': 'After claiming daily rewards, check weekly Garden progress and run Garden Task '
                                    'if 6000 points has not been reached.',
@@ -64,6 +61,11 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Which to Farm': {
                 'type': "multi_selection",
                 'options': self.support_tasks,
+                'sub_configs': {
+                    self.TACET_TASK: ['Which Tacet Suppression to Farm', 'Tacet Suppression Runs'],
+                    self.FORGERY_TASK: ['Which Forgery Challenge to Farm', 'Forgery Challenge Runs'],
+                    self.SIMULATION_TASK: ['Material Selection', 'Simulation Challenge Runs'],
+                },
             },
             'Material Selection': {
                 'type': 'drop_down',
@@ -73,6 +75,9 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 'type': 'drop_down',
                 'options': [self.DAILY_PRIORITY_MODE, self.CLAIM_PRIORITY_MODE],
             },
+            'Tacet Suppression Runs': {'min': 0},
+            'Forgery Challenge Runs': {'min': 0},
+            'Simulation Challenge Runs': {'min': 0},
         }
         self.add_exit_after_config()
         self.description = "Login, claim monthly card, farm echo, and claim daily reward"

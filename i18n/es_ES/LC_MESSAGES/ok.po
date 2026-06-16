@@ -1018,3 +1018,66 @@ msgstr "Comprobar jardín semanal"
 
 msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
 msgstr "Después de reclamar las recompensas diarias, comprueba el progreso del jardín semanal y ejecuta la tarea de jardín si no se han alcanzado 6000 puntos."
+
+msgid "Complete Daily 180"
+msgstr "Completar 180 diarios"
+
+msgid "Finish Planned Claims"
+msgstr "Completar cobros planeados"
+
+msgid "Farm Goal"
+msgstr "Objetivo de farmeo"
+
+msgid "Tacet Suppression Runs"
+msgstr "Cobros de Supresion Tacet"
+
+msgid "Forgery Challenge Runs"
+msgstr "Cobros de Forja"
+
+msgid "Simulation Challenge Runs"
+msgstr "Cobros de Simulacion"
+
+msgid ""
+"Select one or more tasks to rotate through for daily stamina spending. Runs "
+"mean reward claims. The task auto-uses double rewards when possible. If "
+"planned claims are not enough, the last selected task continues until daily "
+"stamina is complete."
+msgstr ""
+"Elige tareas para gastar stamina diaria.\n"
+"Las veces son cobros de recompensa."
+
+msgid ""
+"Choose whether to stop after daily stamina reaches 180, or continue until "
+"all planned reward claims are consumed."
+msgstr ""
+"Elige si parar al llegar a 180 de stamina diaria\n"
+" o seguir hasta terminar los cobros."
+
+msgid ""
+"How many reward claims to plan for Tacet Suppression during daily rotation. "
+"Even numbers are compressed into double-reward runs automatically."
+msgstr ""
+"Cobros planeados para Supresion Tacet.\n"
+"Los numeros pares se agrupan como doble recompensa."
+
+msgid ""
+"How many reward claims to plan for Forgery Challenge during daily rotation. "
+"Even numbers are compressed into double-reward runs automatically."
+msgstr ""
+"Cobros planeados para Forja.\n"
+"Los numeros pares se agrupan como doble recompensa."
+
+msgid ""
+"How many reward claims to plan for Simulation Challenge during daily "
+"rotation. Even numbers are compressed into double-reward runs automatically."
+msgstr ""
+"Cobros planeados para Simulacion.\n"
+"Los numeros pares se agrupan como doble recompensa."
+
+msgid "Stop at daily 180, or finish every planned reward claim."
+msgstr ""
+"Para al llegar a 180 diarios,\n"
+"o termina los cobros planeados."
+
+msgid "None"
+msgstr "Ninguno"

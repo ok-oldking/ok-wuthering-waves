@@ -1148,3 +1148,66 @@ msgstr "检查每周乐园"
 
 msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
 msgstr "领取日常奖励后检查每周乐园进度；如果尚未达到 6000 点，则运行乐园任务。"
+
+msgid "Complete Daily 180"
+msgstr "完成每日180体力"
+
+msgid "Finish Planned Claims"
+msgstr "刷完计划次数"
+
+msgid "Farm Goal"
+msgstr "刷取目标"
+
+msgid "Tacet Suppression Runs"
+msgstr "无音区领取次数"
+
+msgid "Forgery Challenge Runs"
+msgstr "凝素领域领取次数"
+
+msgid "Simulation Challenge Runs"
+msgstr "模拟领域领取次数"
+
+msgid ""
+"Select one or more tasks to rotate through for daily stamina spending. Runs "
+"mean reward claims. The task auto-uses double rewards when possible. If "
+"planned claims are not enough, the last selected task continues until daily "
+"stamina is complete."
+msgstr ""
+"选择要轮流刷取的日常体力任务。\n"
+"次数表示领取奖励次数；可双倍领取时会自动合并。"
+
+msgid ""
+"Choose whether to stop after daily stamina reaches 180, or continue until "
+"all planned reward claims are consumed."
+msgstr ""
+"选择完成每日180体力后停止，\n"
+"或继续刷完计划领取次数。"
+
+msgid ""
+"How many reward claims to plan for Tacet Suppression during daily rotation. "
+"Even numbers are compressed into double-reward runs automatically."
+msgstr ""
+"日常轮刷中计划领取无音区奖励的次数。\n"
+"偶数会自动合并为双倍领取。"
+
+msgid ""
+"How many reward claims to plan for Forgery Challenge during daily rotation. "
+"Even numbers are compressed into double-reward runs automatically."
+msgstr ""
+"日常轮刷中计划领取凝素领域奖励的次数。\n"
+"偶数会自动合并为双倍领取。"
+
+msgid ""
+"How many reward claims to plan for Simulation Challenge during daily "
+"rotation. Even numbers are compressed into double-reward runs automatically."
+msgstr ""
+"日常轮刷中计划领取模拟领域奖励的次数。\n"
+"偶数会自动合并为双倍领取。"
+
+msgid "Stop at daily 180, or finish every planned reward claim."
+msgstr ""
+"每日180体力后停止，\n"
+"或刷完计划领取次数。"
+
+msgid "None"
+msgstr "无"
