@@ -59,7 +59,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type = {
             'Which to Farm': {
-                'type': "multi_selection",
+                'type': "multi_selection_dropdown",
                 'options': self.support_tasks,
                 'sub_configs': {
                     self.TACET_TASK: ['Which Tacet Suppression to Farm', 'Tacet Suppression Runs'],
