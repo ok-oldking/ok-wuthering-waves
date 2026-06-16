@@ -90,6 +90,7 @@ class BaseChar:
         self.full_ring_area = 0
         self.last_perform = 0
         self.current_con = 0
+        self.con_at_switch_out = 0  # 离场时的协奏能量快照, 供切人优先级评分参考(后台能量屏幕读不到)
         self.has_tool_box = False
         self.intro_motion_freeze_duration = 0.9
         self.last_outro_time = -1
@@ -303,6 +304,8 @@ class BaseChar:
 
     def switch_out(self, con_full=False):
         """角色被切换下场时的状态更新。"""
+        # 离场能量快照(在下方 current_con 可能被清0前记录), 供切人优先级评分参考.
+        self.con_at_switch_out = 1 if con_full else self.current_con
         self.last_switch_time = time.time()
         self.is_current_char = False
         self.has_intro = False
@@ -943,14 +946,14 @@ class BaseChar:
     def has_long_action(self):
         """是否有长动作条"""
         return self.task.find_one(self.task.get_target_names()[0], box='box_target_enemy_long', threshold=0.6)
-
-    def has_long_action2(self):
-        """是否有长动作条"""
-        return self.task.find_one(self.task.get_target_names()[0], box='target_box_long2', threshold=0.6)
-
+    
     def has_short_action(self):
         """是否有短动作条"""
         return self.task.find_one('target_box_short', threshold=0.6)
+        
+    def has_long_action2(self):
+        """是否有长动作条"""
+        return self.task.find_one(self.task.get_target_names()[0], box='target_box_long2', threshold=0.6)
 
     def f_break(self, check_f_on_switch=False):
         """使用F进行击破
