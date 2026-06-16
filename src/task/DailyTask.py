@@ -34,6 +34,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Auto Farm all Nightmare Nest': False,
             'Farm Nightmare Nest for Daily Echo': True,
             'Check Weekly Garden': True,
+            'Continue Farm After Daily': False,
         }
         self.config_description = {
             'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
@@ -41,7 +42,8 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
             'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.',
             'Check Weekly Garden': 'After claiming daily rewards, check weekly Garden progress and run Garden Task '
-                                   'if 6000 points has not been reached.'
+                                   'if 6000 points has not been reached.',
+            'Continue Farm After Daily': 'After completing daily activity, continue farming stamina until depleted.'
         }
         material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type = {
@@ -100,16 +102,20 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 # 还原 ensure_main，防范实例状态污染
                 self.get_task_by_class(NightmareNestTask).__dict__.pop('ensure_main', None)
 
-        if need_stamina:
+        continue_farm = self.config.get('Continue Farm After Daily', False)
+
+        if need_stamina or continue_farm:
             target = self.config.get('Which to Farm', self.support_tasks[0])
+            # continue_farm=True → daily=False（刷到体力耗尽）；否则 daily=True（仅刷到日常所需）
+            use_daily = not continue_farm
             if target == self.support_tasks[0]:
-                self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina,
+                self.get_task_by_class(TacetTask).farm_tacet(daily=use_daily, used_stamina=used_stamina,
                                                              config=self.config)
             elif target == self.support_tasks[1]:
-                self.get_task_by_class(ForgeryTask).farm_forgery(daily=True, used_stamina=used_stamina,
+                self.get_task_by_class(ForgeryTask).farm_forgery(daily=use_daily, used_stamina=used_stamina,
                                                                  config=self.config)
             else:
-                self.get_task_by_class(SimulationTask).farm_simulation(daily=True, used_stamina=used_stamina,
+                self.get_task_by_class(SimulationTask).farm_simulation(daily=use_daily, used_stamina=used_stamina,
                                                                        config=self.config)
             self.sleep(4)
 
