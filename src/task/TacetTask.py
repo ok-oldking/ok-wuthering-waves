@@ -47,16 +47,22 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.wait_in_team_and_world(esc=True)
         self.farm_tacet()
 
-    def farm_tacet(self, daily=False, used_stamina=0, config=None):
+    def farm_tacet(self, daily=False, used_stamina=0, config=None, must_use=None, max_claims=None,
+                   allow_double=True):
         if config is None:
             config = self.config
-        if daily:
-            must_use = 180 - used_stamina
-        else:
-            must_use = 0
+        if must_use is None:
+            if daily:
+                must_use = 180 - used_stamina
+            else:
+                must_use = 0
         self.info_incr('used stamina', 0)
         fail_count = 0
+        total_used = 0
+        total_claims = 0
         while True:
+            if max_claims is not None and total_claims >= max_claims:
+                return total_used
             self.sleep(1)
             self.openF2Book("gray_book_boss")
             current, back_up, total = self.get_stamina()
@@ -64,7 +70,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                 self.click_relative(0.04, 0.4, after_sleep=1)
                 current, back_up, total = self.get_stamina()
             if total < self.stamina_once:
-                return self.not_enough_stamina()
+                return self.not_enough_stamina(used=total_used)
 
             self.open_boss_book('wuyin')
             index = config.get('Which Tacet Suppression to Farm', 1) - 1
@@ -109,18 +115,27 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                     continue
                 else:
                     raise e
-            can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
+            can_continue, used = self.use_stamina(
+                once=self.stamina_once,
+                must_use=must_use,
+                allow_double=allow_double,
+            )
             self.info_incr('used stamina', used)
+            total_used += used
+            total_claims += max(1, used // self.stamina_once)
             self.sleep(4)
             self.click(0.51, 0.84, after_sleep=3)
             if not can_continue:
-                return self.not_enough_stamina()
+                return self.not_enough_stamina(used=total_used)
             must_use -= used
+            if max_claims is not None and total_claims >= max_claims:
+                return total_used
 
-    def not_enough_stamina(self, back=True):
+    def not_enough_stamina(self, back=True, used=0):
         self.log_info(f"used all stamina")
         if back:
             self.back(after_sleep=1)
+        return used
 
     def teleport_to_tacet(self, index):
         self.info_set('Teleport to Tacet Suppression', index)

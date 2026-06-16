@@ -417,15 +417,15 @@ class BaseWWTask(BaseTask):
         self.info_set('back_up_stamina', back_up)
         return current, back_up, current + back_up
 
-    def use_stamina(self, once, must_use=0):
+    def use_stamina(self, once, must_use=0, allow_double=True):
         self.sleep(1)
         current, back_up, total = self.get_stamina()
         y = 0.62
-        if current >= once * 2:
+        if allow_double and current >= once * 2:
             used = once * 2
             x = 0.67
             logger.info(f"当前体力大于等于双倍, {current} >= {once * 2}")
-        elif must_use > once and total >= once * 2:
+        elif allow_double and must_use > once and total >= once * 2:
             used = once * 2
             x = 0.67
             logger.info(f"当前加备用大于日常剩余所需, 使用双倍, {must_use} >= {once} and {total} >= {once * 2}")

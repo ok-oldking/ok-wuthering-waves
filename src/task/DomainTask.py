@@ -53,30 +53,42 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         self.openF2Book('gray_book_boss')
         return self.get_stamina()
 
-    def farm_domain_with_recovery_loop(self, must_use, teleport_into_domain_once, max_recovery_retries=3):
+    def farm_domain_with_recovery_loop(self, must_use, teleport_into_domain_once, max_recovery_retries=3,
+                                       max_claims=None, allow_double=True):
         """包装副本刷取循环：死亡恢复后自动从 F2 重新进入，并限制重试次数。"""
         recovery_retries = 0
+        total_used = 0
+        total_claims = 0
         while True:
+            if max_claims is not None and total_claims >= max_claims:
+                return total_used
             current, _, total = self.open_F2_book_and_get_stamina()
-            if total < self.stamina_once or total < must_use or (must_use == 0 and current < self.stamina_once):
+            not_enough_for_target = max_claims is None and total < must_use
+            if total < self.stamina_once or not_enough_for_target or (must_use == 0 and current < self.stamina_once):
                 self.log_info('not enough stamina', notify=True)
                 self.back()
-                return
+                return total_used
             teleport_into_domain_once()
             self.sleep(1)
-            finished, must_use = self.farm_in_domain(must_use=must_use)
+            finished, must_use, used, claims = self.farm_in_domain(
+                must_use=must_use,
+                max_claims=None if max_claims is None else max_claims - total_claims,
+                allow_double=allow_double,
+            )
+            total_used += used
+            total_claims += claims
             if finished:
-                return
+                return total_used
             recovery_retries += 1
             if recovery_retries >= max_recovery_retries:
                 self.log_info(f'farm_domain: exceeded recovery retries ({max_recovery_retries}), stop farming',
                               notify=True)
                 self.make_sure_in_world()
-                return
+                return total_used
             self.log_info('farm_domain: death recovered, re-enter from F2 book')
             self.sleep(1)
 
-    def farm_in_domain(self, must_use=0):
+    def farm_in_domain(self, must_use=0, max_claims=None, allow_double=True):
         """刷本循环；返回 (是否整段正常结束, 剩余 must_use)。
 
         第二项在死亡提前退出时仍会带上本局内已扣过的额度，供外层恢复循环继续传参。
@@ -84,7 +96,11 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         if self.stamina_once <= 0:
             raise RuntimeError('"self.stamina_once" must be override')
         self.info_incr('used stamina', 0)
+        total_used = 0
+        total_claims = 0
         while True:
+            if max_claims is not None and total_claims >= max_claims:
+                break
             self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
             self.pick_f()
             try:
@@ -95,13 +111,19 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             except (NotInCombatException, CharDeadException):
                 self.log_info('farm_in_domain: death recovered, exiting domain')
                 self.make_sure_in_world()
-                return False, must_use
-            can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
+                return False, must_use, total_used, total_claims
+            can_continue, used = self.use_stamina(
+                once=self.stamina_once,
+                must_use=must_use,
+                allow_double=allow_double,
+            )
             self.info_incr('used stamina', used)
             must_use -= used
+            total_used += used
+            total_claims += max(1, used // self.stamina_once)
             self.sleep(4)
-            if not can_continue:
-                self.log_info("used all stamina")
+            if not can_continue or (max_claims is not None and total_claims >= max_claims):
+                self.log_info("used all stamina or reached claim target")
                 break
             self.click(0.68, 0.84, after_sleep=1)  # farm again
             if confirm := self.wait_feature(
@@ -121,4 +143,4 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         #
         self.click(0.42, 0.84, after_sleep=2)  # back to world
         self.make_sure_in_world()
-        return True, must_use
+        return True, must_use, total_used, total_claims
