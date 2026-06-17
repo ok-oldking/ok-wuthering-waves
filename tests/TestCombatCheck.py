@@ -2,6 +2,7 @@ import time
 import unittest
 from config import config
 from ok.test.TaskTestCase import TaskTestCase
+from src.char.BaseChar import BaseChar
 from src.task.AutoCombatTask import AutoCombatTask
 
 config['debug'] = True
@@ -55,6 +56,11 @@ class TestCombatCheck(TaskTestCase):
         self.set_image('ok_templates/browser_in_combat.png')
         in_combat = self.task.in_combat()
         self.assertTrue(in_combat)
+
+    def test_target_box_short(self):
+        self.set_image('ok_templates/25.png')
+        self.assertTrue(self.task.has_target())
+        self.assertTrue(BaseChar(self.task, 0).has_short_action())
 
 
 if __name__ == '__main__':

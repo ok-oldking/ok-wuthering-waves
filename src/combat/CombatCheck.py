@@ -262,6 +262,8 @@ class CombatCheck(BaseWWTask):
         if not best:
             best = self.find_best_match_in_box(self.get_box_by_name('target_box_long2'), [has_name, no_name],
                                                threshold=threshold)
+        if not best and self.find_one('target_box_short', threshold=threshold):
+            return True
 
         if not best:
             best = self.find_best_match_in_box(self.get_box_by_name(has_name).scale(1.1, 2.0),

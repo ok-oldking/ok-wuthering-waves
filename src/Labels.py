@@ -247,6 +247,7 @@ class Labels(str, Enum):
     switch_account = 'switch_account'
     t = 't'
     target_box_long2 = 'target_box_long2'
+    target_box_short = 'target_box_short'
     target_enemy_long_inner = 'target_enemy_long_inner'
     target_enemy_white = 'target_enemy_white'
     teleport_port = 'teleport_port'
