@@ -22,6 +22,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.group_name = "Echo"
         self.group_icon = FluentIcon.SYNC
         self.default_config.update({
+            'Advanced Skill Material Mode': False,
             'Teleport to Boss': 'No',
             'Boss Level': "80",
             'Boss': 'Other',
@@ -34,6 +35,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Which Boss Challenge to Teleport': 1,
         })
         self.config_description.update({
+            'Advanced Skill Material Mode': 'If enabled, execute ONLY when all of the following conditions are met: (1) option "Teleport to Boss" is set to "Weekly Challenge"; (2) Advanced Skill Material claim count has not reached the weekly limit; (3) stamina is sufficient to complete all remaining claims. At this time, option "Repeat Farm Count" will be ignored and total count will be set to the remaining Advanced Skill Material claim count.',
             'Boss': 'Select boss profile (includes Combat Wait Time)',
             'Teleport to Boss': 'Teleport to Boss in F2 Menu',
             'Boss Level': "Choose the Lowest that Drop a Echo",
@@ -79,6 +81,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             '罗蕾莱': {'name': r'(罗蕾莱|夜之女皇)', 'set_night': True},
         }
         self.is_revived = False
+        self.stamina_once = 60
 
     def on_combat_check(self):
         if not self._in_realm:
@@ -114,6 +117,22 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 raise
 
     def do_run(self):
+        advanced_skill_material_mode = self.config.get('Advanced Skill Material Mode', False)
+        total_count = self.config.get("Repeat Farm Count", 0)
+        if advanced_skill_material_mode:
+            if self.config.get('Teleport to Boss', 'No') != 'Weekly Challenge':
+                self.log_info(f'advanced skill material mode: STOPPED since option "Teleport to Boss" is not "Weekly Challenge"')
+                return
+            c, stamina_enough = self.get_advanced_skill_material_weekly_count()
+            if stamina_enough:
+                total_count = c
+                self.log_info(f'advanced skill material mode: will execute {total_count} time(s) and use {total_count * self.stamina_once} stamina')
+            else:
+                if c > 0:
+                    self.log_info(f'advanced skill material mode: STOPPED since not enough stamina even {c} time(s) available')
+                else:
+                    self.log_info(f'advanced skill material mode: STOPPED since {c} time(s) available')
+                return
         count = 0
         self._in_realm = self.in_realm()
         self.manage_boss_parameters()
@@ -124,7 +143,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.init_parameters()
         if self.teleport_to_boss_enabled():
             self.teleport_to_configured_boss_and_prepare()
-        while count < self.config.get("Repeat Farm Count", 0):
+        while count < total_count:
             try:
                 self.in_realm_check(60)
                 self.log_debug(f'start farming {count} {self._in_realm}')
@@ -190,6 +209,13 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                         self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
                     else:
                         self.wait_until(self.in_combat, raise_if_not_found=False, time_out=1)
+                if advanced_skill_material_mode:
+                    self.walk_to_treasure()
+                    self.pick_f(handle_claim=False)
+                    self.sleep(1)
+                    self.click(0.67, 0.62, after_sleep=1) # 领取
+                    self.sleep(4)
+                    self.click(0.68, 0.84, after_sleep=1) # 重新挑战
             except TaskDisabledException:
                 raise
             except Exception as e:
@@ -675,6 +701,21 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         else:
             logger.info(f"boss_string is {find_boxes_by_name(texts, [re.compile(r'(?i)^L[Vv].*')])}")
 
+    def get_advanced_skill_material_weekly_count(self):
+        self.openF2Book('gray_book_boss')
+        self.open_boss_book('zhange')
+        #
+        count_re = re.compile(r'(\d)\s*/\s*(\d)')
+        count_boxes = self.ocr(0.36, 0.12, 0.96, 0.18, match=count_re)
+        remaining = 0
+        for count_box in count_boxes:
+            if match := count_re.search(count_box.name):
+                remaining = int(match.group(1))
+                break
+        #
+        _, _, total_stamina = self.get_stamina()
+        self.ensure_main()
+        return remaining, (remaining > 0) and (total_stamina >= remaining * self.stamina_once)
 
 from ok import run_task
 from config import config
