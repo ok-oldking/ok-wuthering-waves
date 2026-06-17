@@ -47,6 +47,14 @@ mismatched_names = {
 
 class BaseCombatTask(CombatCheck):
     """基础战斗任务类，封装了游戏"鸣潮"中角色自动化操作的通用逻辑。"""
+
+    # 协奏满切人优先级评分的可调参数.
+    SWITCH_TYPE_BASE_SCORES = (100, 60, 20)  # 轮转链上 第1/2/3 顺位的类型基分(主导量级)
+    SWITCH_CD_WEIGHT = 30                     # 大招CD加分权重(微调量级)
+    SWITCH_CON_WEIGHT = 30                    # 能量快照加分权重(微调量级)
+    SWITCH_CD_REF = 25.0                      # 大招CD参考满值(秒), 用于归一化CD加分，鸣潮大部分角色大招CD25秒左右
+    SWITCH_ROTATE_SCORE_TOLERANCE = 12.0      # 分数接近时按最久未上场轮换; 小于类型基分差, 不破坏类型链
+
     hot_key_verified = False  # 热键是否已验证
     con_full_size = None  # 不同角色协奏值充满时的大小记录
     freeze_durations = []  # 记录冻结/卡肉的持续时间
@@ -354,8 +362,8 @@ class BaseCombatTask(CombatCheck):
             current_char.click_echo(time_out=0)
   
             for _ in range(3):
-                 current_char.normal_attack()
-                 self.sleep(0.25)
+                current_char.normal_attack()
+                self.sleep(0.25)
 
             current_char.send_resonance_key(post_sleep=0.1)
             self.sleep(0.15)
@@ -461,12 +469,6 @@ class BaseCombatTask(CombatCheck):
         ]
         return self._oldest_switch_target(unbuffed_non_main)
 
-    # 协奏满切人优先级评分的可调参数.
-    SWITCH_TYPE_BASE_SCORES = (100, 60, 20)  # 轮转链上 第1/2/3 顺位的类型基分(主导量级)
-    SWITCH_CD_WEIGHT = 30                     # 大招CD加分权重(微调量级)
-    SWITCH_CON_WEIGHT = 30                    # 能量快照加分权重(微调量级)
-    SWITCH_CD_REF = 25.0                      # 大招CD参考满值(秒), 用于归一化CD加分，鸣潮大部分角色大招CD25秒左右
-    SWITCH_ROTATE_SCORE_TOLERANCE = 12.0      # 分数接近时按最久未上场轮换; 小于类型基分差, 不破坏类型链
 
     def _switch_type_chain(self, current_char):
         """按当前角色类型给出"下家类型轮转链": 辅->副->主->辅。链首=最该切到的类型。"""
@@ -491,7 +493,7 @@ class BaseCombatTask(CombatCheck):
         cd = self.get_cd('liberation', target.index)
         cd_score = self.SWITCH_CD_WEIGHT * max(0.0, 1 - max(0.0, cd) / self.SWITCH_CD_REF)
         # 能量快照加分: 离场能量越高越优先(快满的先上去满).
-        # getattr 个别角色缺失时降级为 0.
+        # getattr 容错: 个别角色实例(或部署副本未同步 BaseChar)可能无此属性, 缺失时降级为 0.
         con_score = self.SWITCH_CON_WEIGHT * getattr(target, 'con_at_switch_out', 0)
         return base + cd_score + con_score
 
@@ -508,8 +510,9 @@ class BaseCombatTask(CombatCheck):
             for char in normal_targets
         ]
         best_char, best_score = max(scored_targets, key=lambda cs: cs[1])
-        # 轮换只在与最高分角色"同类型"内生效: 跨类型(不同定位)不进轮换组
-        # 同类型多人(2辅助/2副C/3主C)按最久未上场轮换.
+        # 轮换只在与最高分角色"同类型"内生效: 跨类型(不同定位)不进轮换组, 避免能量/CD加分把跨定位
+        # 分差压进容差、导致真·最高分被按 index/last_switch_in 的轮换挤掉(开局 last_switch_in 全=-1
+        # 时尤其会退化成按 index 误选). 同类型多人(2辅助/2副C/3主C)才按最久未上场轮换.
         close_targets = [
             char for char, score in scored_targets
             if char.char_type == best_char.char_type
