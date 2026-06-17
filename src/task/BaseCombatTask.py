@@ -868,7 +868,7 @@ class BaseCombatTask(CombatCheck):
             cartethyia = self.has_char_by_name('Cartethyia')
             if rover and cartethyia:
                 rover.set_char_type(CharType.HEALER)
-                self.log_info(f'Detected Rover and Cartethyia, set Rover as HEALER')
+                self.log_info('Detected Rover and Cartethyia, set Rover as HEALER')
             translated_names = []
             for c in self.chars:
                 if c is not None:
