@@ -289,11 +289,11 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                 result.append((prop.name, "0"))
         return result
 
-    # ---------- 属性标准化（查表法） ----------
+    # ---------- 属性标准化（查表法，低复杂度版） ----------
     PROP_MAP = [
         ('暴击伤害', '暴击伤害', False, True),
         ('暴击', '暴击', True, False),
-        ('攻击', None, False, False),   # 需根据值判断百分比
+        ('攻击', None, False, False),
         ('生命', None, False, False),
         ('防御', None, False, False),
         ('效率', '共鸣效率', False, False),
@@ -305,19 +305,12 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
     def _normalize_prop(self, raw_name, val_str):
         for keyword, standard, is_crit_rate, is_crit_dmg in self.PROP_MAP:
-            if keyword in raw_name:
-                if standard is not None:
-                    return standard, is_crit_rate, is_crit_dmg
-                # 处理需要动态后缀的属性
-                suffix = '百分比' if ('%' in val_str or '％' in val_str) else ''
-                if keyword == '攻击':
-                    return f'攻击{suffix}', is_crit_rate, is_crit_dmg
-                if keyword == '生命':
-                    return f'生命{suffix}', is_crit_rate, is_crit_dmg
-                if keyword == '防御':
-                    return f'防御{suffix}', is_crit_rate, is_crit_dmg
-                # 理论上不会到这里
-        # 没有匹配的，返回原始值
+            if keyword not in raw_name:
+                continue
+            if standard is not None:
+                return standard, is_crit_rate, is_crit_dmg
+            suffix = '百分比' if ('%' in val_str or '％' in val_str) else ''
+            return f'{keyword}{suffix}', is_crit_rate, is_crit_dmg
         return raw_name, False, False
 
     def find_add_mat(self):
