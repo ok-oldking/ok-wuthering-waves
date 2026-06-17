@@ -1,4 +1,3 @@
-# EnhanceEchoTask.py
 import re
 import time
 import os
@@ -29,6 +28,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         self.fail_reason = ""
         self.supported_languages = ["zh_CN", "zh_TW"]
 
+        # 属性选项列表
         self.all_props = [
             '暴击伤害', '暴击', '共鸣效率', '攻击百分比', '生命百分比', '防御百分比',
             '普攻伤害加成', '重击伤害加成',
@@ -36,7 +36,9 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             '攻击', '生命', '防御'
         ]
 
+        # 升级：加入‘方案选择’初始默认数据，并置于最顶层
         self.default_config.update({
+            '方案选择': '经典双爆方案',
             '必须词条': ['暴击', '暴击伤害'],
             '可选词条': ['攻击百分比'],
             '可选词条数量 >=': 3,
@@ -47,7 +49,14 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             'Pause after Success': True,
         })
 
-        # 配置类型定义
+        # 升级：配置类型定义定义（指定方案总控类型及联动管理的8大KEY值）
+        self.config_type["方案选择"] = {
+            'type': 'preset_manager',
+            'linked_keys': [
+                '必须词条', '可选词条', '可选词条数量 >=', '前置检查',
+                '暴击数值 >=', '爆伤数值 >=', '双爆总计 >=', 'Pause after Success'
+            ]
+        }
         self.config_type["必须词条"] = {
             'type': 'multi_selection',
             'options': self.all_props
@@ -69,7 +78,9 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             'options': ['12.6%', '13.8%', '15%', '16.2%', '17.4%', '18.6%', '19.8%', '21%']
         }
 
+        # 升级：添加说明
         self.config_description = {
+            '方案选择': '保存或切换用户自定义的整套强化要求过滤方案。',
             '必须词条': '剩余孔位无法凑齐已选项，或满级时未凑齐，均丢弃。',
             '可选词条': '声骸满级时，需凑齐符合数量的任意词条，否则丢弃。',
             '可选词条数量 >=': '若剩余孔位无法凑齐该数量，则提前丢弃。',
