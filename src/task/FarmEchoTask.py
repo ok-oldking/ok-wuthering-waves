@@ -35,7 +35,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Which Boss Challenge to Teleport': 1,
         })
         self.config_description.update({
-            'Advanced Skill Material Mode': 'If enabled, execute ONLY when all of the following conditions are met: (1) option "Teleport to Boss" is set to "Weekly Challenge"; (2) Advanced Skill Material claim count has not reached the weekly limit; (3) stamina is sufficient to complete all remaining claims. At this time, option "Repeat Farm Count" will be ignored and total count will be set to the remaining Advanced Skill Material claim count.',
+            'Advanced Skill Material Mode': 'If enabled, execute ONLY when all of the following conditions are met: (1) option "Teleport to Boss" is set to "Weekly Challenge"; (2) Advanced Skill Material claim count has not reached the weekly limit; (3) stamina is sufficient to farm once. At this time, option "Repeat Farm Count" will be ignored and total count will be determined by weekly limit and stamina remaining.',
             'Boss': 'Select boss profile (includes Combat Wait Time)',
             'Teleport to Boss': 'Teleport to Boss in F2 Menu',
             'Boss Level': "Choose the Lowest that Drop a Echo",
@@ -123,15 +123,15 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             if self.config.get('Teleport to Boss', 'No') != 'Weekly Challenge':
                 self.log_info(f'advanced skill material mode: STOPPED since option "Teleport to Boss" is not "Weekly Challenge"')
                 return
-            c, stamina_enough = self.get_advanced_skill_material_weekly_count()
-            if stamina_enough:
+            r, c = self.get_advanced_skill_material_weekly_count()
+            if c > 0:
                 total_count = c
                 self.log_info(f'advanced skill material mode: will execute {total_count} time(s) and use {total_count * self.stamina_once} stamina')
             else:
-                if c > 0:
-                    self.log_info(f'advanced skill material mode: STOPPED since not enough stamina even {c} time(s) available')
+                if r > 0:
+                    self.log_info(f'advanced skill material mode: STOPPED since not enough stamina even {r} time(s) available, please retry with at least {self.stamina_once} stamina')
                 else:
-                    self.log_info(f'advanced skill material mode: STOPPED since {c} time(s) available')
+                    self.log_info(f'advanced skill material mode: STOPPED since {r} time(s) available, please retry next week')
                 return
         count = 0
         self._in_realm = self.in_realm()
@@ -745,8 +745,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 break
         #
         _, _, total_stamina = self.get_stamina()
+        can_farm = min(remaining, total_stamina // self.stamina_once)
         self.ensure_main()
-        return remaining, (remaining > 0) and (total_stamina >= remaining * self.stamina_once)
+        return remaining, can_farm
 
 from ok import run_task
 from config import config
