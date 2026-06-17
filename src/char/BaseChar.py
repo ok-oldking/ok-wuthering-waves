@@ -303,7 +303,13 @@ class BaseChar:
         return percent == 0 or not self.has_cd(box_name)
 
     def switch_out(self, con_full=False):
-        """角色被切换下场时的状态更新。"""
+        """角色被切换下场时的状态更新。
+
+           离场快照 con_at_switch_out 取自缓存的 current_con, 依赖调用方在切人前(干净帧)
+           已调过 get_current_con() 刷新——切人流程 switch_next_char 已保证. 此处不主动刷新,
+           因 switch_out 在切人过渡帧执行, 现刷新会读到陈旧/错误的协奏环值(见 plan §7.3/7.12),
+           反而不如循环前的缓存准; 且 con_full 路径直接记 1, 无需读 current_con.
+        """
         # 离场能量快照(在下方 current_con 可能被清0前记录), 供切人优先级评分参考.
         self.con_at_switch_out = 1 if con_full else self.current_con
         self.last_switch_time = time.time()
@@ -946,7 +952,7 @@ class BaseChar:
     def has_long_action(self):
         """是否有长动作条"""
         return self.task.find_one(self.task.get_target_names()[0], box='box_target_enemy_long', threshold=0.6)
-    
+
     def has_long_action2(self):
         """是否有长动作条"""
         return self.task.find_one(self.task.get_target_names()[0], box='target_box_long2', threshold=0.6)

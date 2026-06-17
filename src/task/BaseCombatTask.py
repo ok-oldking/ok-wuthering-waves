@@ -11,8 +11,6 @@ from ok import safe_get
 from src import text_white_color
 from src.char import BaseChar
 from src.char.BaseChar import SwitchPriority, dot_color, CharType  # noqa
-from src.char.HavocRover import HavocRover
-from src.char.Cartethyia import Cartethyia
 from src.char.CharFactory import get_char_by_pos
 from src.combat.CombatCheck import CombatCheck
 from src.task.BaseWWTask import isolate_white_text_to_black, binarize_for_matching
@@ -827,6 +825,15 @@ class BaseCombatTask(CombatCheck):
             if isinstance(char, char_cls):
                 return char
 
+    def has_char_by_name(self, name):
+        """按角色类名字符串查找队伍中的角色, 命中返回该角色, 否则 None。
+
+        用于基础任务类需按角色判断时避免直接 import 具体角色子类(防循环导入)。
+        """
+        for char in self.chars:
+            if char is not None and char.name == name:
+                return char
+
     def load_chars(self):
         """加载队伍中的角色信息。"""
         self.load_hotkey()
@@ -857,8 +864,8 @@ class BaseCombatTask(CombatCheck):
                     char.is_current_char = False
         self.combat_start = time.time()
         if len(self.chars) >= 2:
-            rover = self.has_char(HavocRover)
-            cartethyia = self.has_char(Cartethyia)
+            rover = self.has_char_by_name('HavocRover')
+            cartethyia = self.has_char_by_name('Cartethyia')
             if rover and cartethyia:
                 rover.set_char_type(CharType.HEALER)
                 self.log_info(f'Detected Rover and Cartethyia, set Rover as HEALER')
