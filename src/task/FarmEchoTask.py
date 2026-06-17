@@ -210,12 +210,43 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     else:
                         self.wait_until(self.in_combat, raise_if_not_found=False, time_out=1)
                 if advanced_skill_material_mode:
+                    # similar as "farm_in_domain"
                     self.walk_to_treasure()
                     self.pick_f(handle_claim=False)
                     self.sleep(1)
-                    self.click(0.67, 0.62, after_sleep=1) # 领取
+                    # similar as "use_stamina"
+                    x = 0.67; y = 0.62
+                    self.click(x, y, after_sleep=1)
+                    if self.wait_feature('gem_add_stamina', horizontal_variance=0.4, vertical_variance=0.05,
+                                        time_out=2):  # 看是否需要使用备用体力
+                        self.click(0.70, 0.71, after_sleep=1)  # 点击确认
+                        self.click(0.70, 0.71, after_sleep=1)
+                        self.back(after_sleep=1)
+                        self.click(x, y, after_sleep=1)
+                    # similar as "farm_in_domain"
                     self.sleep(4)
-                    self.click(0.68, 0.84, after_sleep=1) # 重新挑战
+                    # find button "farm again"
+                    # - in world, 1 button, click center
+                    # - in domain, 2 buttons, click right
+                    btns = self.find_feature('gray_button_challenge', self.box_of_screen(0, 0.75, 1, 1))
+                    if not btns:
+                        raise Exception("cannot find button to continue")
+                    else:
+                        target = max(btns, key=lambda box: box.x)
+                    self.click(target, after_sleep=1)
+                    # similar as "farm_in_domain"
+                    if confirm := self.wait_feature(
+                            ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
+                            raise_if_not_found=False,
+                            threshold=0.6,
+                            time_out=2):
+                        self.click(0.49, 0.55, after_sleep=0.5)  # 点击不再提醒
+                        self.click(confirm, after_sleep=0.5)
+                        self.wait_click_feature(
+                            ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
+                            relative_x=-1, raise_if_not_found=False,
+                            threshold=0.6,
+                            time_out=1)
             except TaskDisabledException:
                 raise
             except Exception as e:
