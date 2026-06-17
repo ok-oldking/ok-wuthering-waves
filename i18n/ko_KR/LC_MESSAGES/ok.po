@@ -807,8 +807,8 @@ msgstr "위에서 아래로, 1부터 시작"
 msgid "Advanced Skill Material Mode"
 msgstr "고급 스킬 재료 모드"
 
-msgid "If enabled, execute ONLY when all of the following conditions are met: (1) option \"Teleport to Boss\" is set to \"Weekly Challenge\"; (2) Advanced Skill Material claim count has not reached the weekly limit; (3) stamina is sufficient to complete all remaining claims. At this time, option \"Repeat Farm Count\" will be ignored and total count will be set to the remaining Advanced Skill Material claim count."
-msgstr "활성화하면 다음 세 조건이 모두 충족될 때만 실행합니다: (1) \"Teleport to Boss\" 옵션이 \"Weekly Challenge\"로 설정됨 (2) 고급 스킬 재료 수령 횟수가 주간 한도에 도달하지 않음 (3) 남은 횟수를 모두 완료할 만큼 스태미나가 충분함. 이때 \"Repeat Farm Count\" 옵션은 무시되며, 총 횟수는 고급 스킬 재료의 남은 수령 횟수로 설정됩니다."
+msgid "If enabled, execute ONLY when all of the following conditions are met: (1) option \"Teleport to Boss\" is set to \"Weekly Challenge\"; (2) Advanced Skill Material claim count has not reached the weekly limit; (3) stamina is sufficient to farm once. At this time, option \"Repeat Farm Count\" will be ignored and total count will be determined by weekly limit and stamina remaining."
+msgstr "활성화하면 다음 세 조건이 모두 충족될 때만 실행합니다: (1) \"Teleport to Boss\" 옵션이 \"Weekly Challenge\"로 설정됨 (2) 고급 스킬 재료 수령 횟수가 주간 한도에 도달하지 않음 (3) 한 번 파밍할 만큼 스태미나가 충분함. 이때 \"Repeat Farm Count\" 옵션은 무시되며, 총 횟수는 주간 한도와 남은 스태미나에 따라 결정됩니다."
 
 msgid "Characters"
 msgstr "캐릭터"
