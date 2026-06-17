@@ -1,3 +1,4 @@
+# EnhanceEchoTask.py
 import re
 import time
 import os
@@ -28,7 +29,6 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         self.fail_reason = ""
         self.supported_languages = ["zh_CN", "zh_TW"]
 
-        # 属性选项列表
         self.all_props = [
             '暴击伤害', '暴击', '共鸣效率', '攻击百分比', '生命百分比', '防御百分比',
             '普攻伤害加成', '重击伤害加成',
@@ -36,7 +36,6 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             '攻击', '生命', '防御'
         ]
 
-        # 升级：加入‘方案选择’初始默认数据，并置于最顶层
         self.default_config.update({
             '方案选择': '经典双爆方案',
             '必须词条': ['暴击', '暴击伤害'],
@@ -49,7 +48,6 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             'Pause after Success': True,
         })
 
-        # 升级：配置类型定义定义（指定方案总控类型及联动管理的8大KEY值）
         self.config_type["方案选择"] = {
             'type': 'preset_manager',
             'linked_keys': [
@@ -78,7 +76,6 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             'options': ['12.6%', '13.8%', '15%', '16.2%', '17.4%', '18.6%', '19.8%', '21%']
         }
 
-        # 升级：添加说明
         self.config_description = {
             '方案选择': '保存或切换用户自定义的整套强化要求过滤方案。',
             '必须词条': '剩余孔位无法凑齐已选项，或满级时未凑齐，均丢弃。',
@@ -258,7 +255,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                 total = cr + cd / 2
                 if total < total_threshold:
                     self.fail_reason = f'双爆合计{total:.1f} < {total_threshold}'
-                    self.log_info(f'双爆合计不达标')
+                    self.log_info('双爆合计不达标')
                     return False
 
         # ---- 必须词条剩余孔位预测 ----
@@ -266,16 +263,16 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         if required_total > 0:
             appeared = sum(1 for s in parsed if s['in_required'])
             if remaining_slots < required_total - appeared:
-                self.fail_reason = f'剩余孔位不足凑齐必须词条'
-                self.log_info(f'必须词条无法凑齐')
+                self.fail_reason = '剩余孔位不足凑齐必须词条'
+                self.log_info('必须词条无法凑齐')
                 return False
 
         # ---- 可选词条数量预测 ----
         opt_target = self.config.get('可选词条数量 >=')
         current_opt = sum(1 for s in parsed if s['in_optional'])
         if current_opt + remaining_slots < opt_target:
-            self.fail_reason = f'可选词条数量不足'
-            self.log_info(f'可选词条预测不达标')
+            self.fail_reason = '可选词条数量不足'
+            self.log_info('可选词条预测不达标')
             return False
 
         return True
@@ -285,41 +282,43 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         result = []
         for prop in properties:
             if unmatched:
-                closest = min(unmatched, key=lambda v: abs(prop.y - v.y))
+                closest = min(unmatched, key=lambda v, p=prop: abs(p.y - v.y))
                 result.append((prop.name, closest.name))
                 unmatched.remove(closest)
             else:
                 result.append((prop.name, "0"))
         return result
 
-    def _normalize_prop(self, raw_name, val_str):
-        p = raw_name
-        is_crit_rate = False
-        is_crit_dmg = False
+    # ---------- 属性标准化（查表法） ----------
+    PROP_MAP = [
+        ('暴击伤害', '暴击伤害', False, True),
+        ('暴击', '暴击', True, False),
+        ('攻击', None, False, False),   # 需根据值判断百分比
+        ('生命', None, False, False),
+        ('防御', None, False, False),
+        ('效率', '共鸣效率', False, False),
+        ('普攻', '普攻伤害加成', False, False),
+        ('重击', '重击伤害加成', False, False),
+        ('解放', '共鸣解放伤害加成', False, False),
+        ('技能', '共鸣技能伤害加成', False, False),
+    ]
 
-        if '暴击伤害' in p:
-            p = '暴击伤害'
-            is_crit_dmg = True
-        elif '暴击' in p:
-            p = '暴击'
-            is_crit_rate = True
-        elif '攻击' in p:
-            p = '攻击' + ('百分比' if '%' in val_str or '％' in val_str else '')
-        elif '生命' in p:
-            p = '生命' + ('百分比' if '%' in val_str or '％' in val_str else '')
-        elif '防御' in p:
-            p = '防御' + ('百分比' if '%' in val_str or '％' in val_str else '')
-        elif '效率' in p:
-            p = '共鸣效率'
-        elif '普攻' in p:
-            p = '普攻伤害加成'
-        elif '重击' in p:
-            p = '重击伤害加成'
-        elif '解放' in p:
-            p = '共鸣解放伤害加成'
-        elif '技能' in p:
-            p = '共鸣技能伤害加成'
-        return p, is_crit_rate, is_crit_dmg
+    def _normalize_prop(self, raw_name, val_str):
+        for keyword, standard, is_crit_rate, is_crit_dmg in self.PROP_MAP:
+            if keyword in raw_name:
+                if standard is not None:
+                    return standard, is_crit_rate, is_crit_dmg
+                # 处理需要动态后缀的属性
+                suffix = '百分比' if ('%' in val_str or '％' in val_str) else ''
+                if keyword == '攻击':
+                    return f'攻击{suffix}', is_crit_rate, is_crit_dmg
+                if keyword == '生命':
+                    return f'生命{suffix}', is_crit_rate, is_crit_dmg
+                if keyword == '防御':
+                    return f'防御{suffix}', is_crit_rate, is_crit_dmg
+                # 理论上不会到这里
+        # 没有匹配的，返回原始值
+        return raw_name, False, False
 
     def find_add_mat(self):
         return self.wait_ocr(0.09, 0.6, 0.38, 0.86, match=['阶段放入'], time_out=1)
@@ -373,7 +372,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             if drop_status.name == 'echo_not_locked':
                 self.send_key('c', after_sleep=1)
             else:
-                self.log_info('成功弃置!')
+                self.log_info('成功上锁!')
                 success = True
                 break
         if not success:
