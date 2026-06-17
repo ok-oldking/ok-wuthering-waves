@@ -852,6 +852,12 @@ msgstr "传送到第几个Boss挑战"
 msgid "From Top to Bottom, Starting with 1"
 msgstr "从上到下，从1开始"
 
+msgid "Advanced Skill Material Mode"
+msgstr "高级技能材料模式"
+
+msgid "If enabled, execute ONLY when all of the following conditions are met: (1) option \"Teleport to Boss\" is set to \"Weekly Challenge\"; (2) Advanced Skill Material claim count has not reached the weekly limit; (3) stamina is sufficient to complete all remaining claims. At this time, option \"Repeat Farm Count\" will be ignored and total count will be set to the remaining Advanced Skill Material claim count."
+msgstr "如果启用，只会在下列三个条件均满足时执行：(1) 选项\"传送至Boss\"为\"战歌重奏\" (2) 高级技能材料 获取次数尚未达到每周上限 (3) 体力足够刷完剩余次数。此时，选项\"刷多少次\"将会被无视，按照 高级技能材料 剩余获取次数执行。"
+
 msgid "Characters"
 msgstr "角色"
 
