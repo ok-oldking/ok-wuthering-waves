@@ -1284,6 +1284,16 @@
             "id": 254,
             "name": "target_box_short",
             "supercategory": ""
+        },
+        {
+            "id": 255,
+            "name": "garden_continue_last",
+            "supercategory": ""
+        },
+        {
+            "id": 256,
+            "name": "garden_unpause",
+            "supercategory": ""
         }
     ],
     "images": [
@@ -1905,7 +1915,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/37.png",
+            "file_name": "images/38.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -1932,7 +1942,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/38.png",
+            "file_name": "images/39.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -1941,7 +1951,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/39.png",
+            "file_name": "images/40.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -2058,7 +2068,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/40.png",
+            "file_name": "images/41.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -2297,7 +2307,7 @@
         },
         {
             "id": 241,
-            "file_name": "images/41.png",
+            "file_name": "images/42.png",
             "width": 2048,
             "height": 1152
         },
@@ -2400,6 +2410,18 @@
         {
             "id": 263,
             "file_name": "images/34.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 265,
+            "file_name": "images/33.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 266,
+            "file_name": "images/37.png",
             "width": 1920,
             "height": 1080
         }
@@ -4253,6 +4275,19 @@
             "segmentation": []
         },
         {
+            "id": 133,
+            "image_id": 266,
+            "category_id": 255,
+            "bbox": [
+                1357,
+                626,
+                138,
+                107
+            ],
+            "area": 14766,
+            "iscrowd": 0
+        },
+        {
             "id": 134,
             "image_id": 68,
             "category_id": 207,
@@ -4266,6 +4301,19 @@
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
+        },
+        {
+            "id": 135,
+            "image_id": 265,
+            "category_id": 256,
+            "bbox": [
+                1360,
+                455,
+                68,
+                78
+            ],
+            "area": 5304,
+            "iscrowd": 0
         },
         {
             "id": 136,
