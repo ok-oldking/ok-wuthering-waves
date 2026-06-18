@@ -969,10 +969,11 @@ class BaseWWTask(BaseTask):
         if hasattr(self, 'reset_to_false'):
             self.reset_to_false('opening book')
         self.ensure_main()
-        self.log_info('click f2 to open the book')
+        book_key = self.key_config.get('Guidebook Key', self.key_config.get('索拉指南', 'f2'))
+        self.log_info(f'click {book_key} to open the book')
         if self.in_team_and_world():
-            self.send_key('f2', after_sleep=4)
-            self.log_info('send f2 key to open')
+            self.send_key(book_key, after_sleep=4)
+            self.log_info(f'send {book_key} key to open')
         if self.in_team_and_world():
             self.log_info('send f2 key mouse key to open the book')
             self.send_key_down('alt')

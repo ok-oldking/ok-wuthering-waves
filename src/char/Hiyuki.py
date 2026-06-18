@@ -7,7 +7,7 @@ class Hiyuki(BaseChar):
         self.lib_permission = True
         # 记录 Lib2 居合判定的次数
         self.lib2_count = 0
-        self.time_out = 12.5
+        self.time_out = 14.5
 
     def switch_out(self, con_full=False):
         """角色切出时重置状态"""
@@ -17,6 +17,9 @@ class Hiyuki(BaseChar):
     def do_perform(self):
         if self.has_intro:
             self.continues_normal_attack(1)
+
+        if self.has_long_action() and not self.has_cd('liberation'):
+            self.perform_standard()
 
         if self.has_long_action2():
             lib_success = self.perform_lib()
@@ -30,9 +33,6 @@ class Hiyuki(BaseChar):
                     self.sleep(0.5)
                     self.switch_next_char()
                     return
-
-        if self.has_long_action() and not self.has_cd('liberation'):
-            self.perform_standard()
 
         self.switch_next_char()
 
@@ -69,13 +69,13 @@ class Hiyuki(BaseChar):
 
         is_timeout = False
 
-        while self.has_long_action2() and self.time_elapsed_accounting_for_freeze(self.last_perform) < timeout:
+        while self.has_long_action2() and self.time_elapsed_accounting_for_freeze(start) < timeout:
             self.f_break()
             self.click_echo(time_out=0)
             self.logger.debug(f"hiyuki find mouse_forte{self.task.find_one('hiyuki_lib_forte', threshold=0.7)}")
 
             # 终结技释放判定 (最高优先级，确保满足条件时立刻执行)
-            is_timeout = self.time_elapsed_accounting_for_freeze(self.last_perform) >= timeout - 0.5
+            is_timeout = self.time_elapsed_accounting_for_freeze(start) >= timeout - 0.5
             if self.lib_permission and self.liberation_available() and (self.lib2_count >= 4 or is_timeout):
                 if self.hold_liberation():
                     self.logger.info(f'hiyuki perform lib2 after heavy (count: {self.lib2_count}, timeout: {is_timeout})')
