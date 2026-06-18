@@ -1,11 +1,21 @@
 import re
 import cv2
+from dataclasses import dataclass
+
 from qfluentwidgets import FluentIcon
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
+TRAVEL_FEATURES = ['fast_travel_custom', 'gray_teleport', 'remove_custom']
+CONFIRM_FEATURES = ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter']
+
+
+@dataclass
+class NestTarget:
+    box: object
+    cache_key: str
 
 
 class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
@@ -25,6 +35,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.queues = []
         self._capture_success = False
         self._capture_mode = False
+        self._unreachable_nests = set()
         self.default_config.update({'Which to Farm': ['Nightmare Purification', 'Tacet Discord Nest']})
         self.config_type['Which to Farm'] = {'type': "multi_selection",
                                              'options': ['Nightmare Purification', 'Tacet Discord Nest']}
@@ -32,6 +43,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def run(self):
         self._capture_mode = False
         self._capture_success = False
+        self._unreachable_nests.clear()
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=30)
         self._init_queue()
@@ -43,6 +55,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def run_capture_mode(self):
         self._capture_mode = True
         self._capture_success = False
+        self._unreachable_nests.clear()
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=30)
         self._init_queue()
@@ -68,9 +81,10 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         return self._capture_success
 
     def combat_nest(self, nest):
-        self.click(nest, after_sleep=2)
-        self.wait_click_travel()
-        self.wait_in_team_and_world(time_out=30, raise_if_not_found=False)
+        target_box = nest.box if isinstance(nest, NestTarget) else nest
+        self.click(target_box, after_sleep=2)
+        if not self._travel_to_nest_or_skip(nest):
+            return
         self.sleep(1)
         while self.find_f_with_text():
             self.send_key('f', after_sleep=1)
@@ -96,6 +110,34 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self.log_info(f'farm echo walk find true')
         self._capture_success = dropped
         self.sleep(1)
+
+    def _travel_to_nest_or_skip(self, nest):
+        travel = self.wait_until(self._find_travel_button, raise_if_not_found=False, time_out=1)
+        if travel:
+            self.click(travel, after_sleep=1)
+            if confirm := self._find_first_feature(CONFIRM_FEATURES, threshold=0.6):
+                self.click(confirm, after_sleep=1)
+
+        button_still_visible = travel and self.find_one(travel.name, threshold=0.7)
+        if travel and not button_still_visible and self.wait_in_team_and_world(
+                time_out=30, raise_if_not_found=False):
+            return True
+
+        if isinstance(nest, NestTarget):
+            self._unreachable_nests.add(nest.cache_key)
+            self.log_info(f'nightmare nest unreachable, skip this run: {nest.cache_key}')
+        else:
+            self.log_info('nightmare nest unreachable, skip this run')
+        self.back(after_sleep=1)
+        return False
+
+    def _find_travel_button(self):
+        return self._find_first_feature(TRAVEL_FEATURES, threshold=0.7)
+
+    def _find_first_feature(self, feature_names, threshold):
+        for feature_name in feature_names:
+            if feature := self.find_one(feature_name, threshold=threshold):
+                return feature
 
     def get_nest_to_go(self):
         self.openF2Book("gray_book_boss")
@@ -135,12 +177,24 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 numerator = match.group(1)
                 denominator = match.group(2)
                 if numerator != denominator and denominator in ['24', '36', '48']:
+                    cache_key = self._make_nest_cache_key(count_box, denominator)
+                    if cache_key in self._unreachable_nests:
+                        self.log_info(f'skip cached unreachable nightmare nest: {cache_key}')
+                        continue
                     self.log_info(f'{count_box} is not complete')
                     count_box.x = self.width_of_screen(0.9)
                     count_box.y -= count_box.height * 0.9
                     count_box.height = 1
                     count_box.width = 1
-                    return count_box
+                    return NestTarget(count_box, cache_key)
+
+    def _make_nest_cache_key(self, count_box, denominator):
+        action_name = self.queues[0].__name__ if self.queues else 'unknown'
+        screen_height = max(self.height_of_screen(1), 1)
+        row_y = (count_box.y + count_box.height / 2) / screen_height
+        row_slot = round(row_y / 0.02)
+        # 使用粗粒度行槽位，避免 OCR 坐标轻微抖动导致同一目标被重复点击。
+        return f'{action_name}:{denominator}:{row_slot}'
 
 
 def convert_image_to_negative(img):
