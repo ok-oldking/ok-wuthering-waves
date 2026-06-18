@@ -1148,3 +1148,6 @@ msgstr "檢查每週樂園"
 
 msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
 msgstr "領取每日獎勵後檢查每週樂園進度；若尚未達到 6000 點，則執行樂園任務。"
+
+msgid "Guidebook Key"
+msgstr "索拉指南"
