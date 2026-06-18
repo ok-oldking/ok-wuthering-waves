@@ -9,10 +9,14 @@ class Lucilla(BaseChar):
     机制: 长按 E 或蓄力重击各攒 1 格回路能量, 攒满 3 格大招可用; 放大招后变身进入特殊形态
     (技能栏/大招图标消失, 视觉信号全失效), 固定时长输出后变回原建模, 再切人。
     """
+    # 单次长按/蓄力时长 (秒): 长按 E 或蓄力重击各攒 1 格回路能量.
     HOLD_TIME: float = 1.4
+    # 大招变身动画时长 (秒): 这段不可操作, 普攻无效, 先等过去
     LIBERATION_ANIMATION_TIME: float = 3.0
-    LIBERATION_HEAVY_TIME: float = 6.8
-    CHARGE_TIME_OUT: float = 8.5
+    # 变身后重击时长 (秒)
+    LIBERATION_HEAVY_TIME: float = 5.8
+    # 攒能量阶段的整体上限 (秒), 防止攒不满时死循环
+    CHARGE_TIME_OUT: float = 5.5
     LIBERATION_CD_SKIP: float = 1.5
 
     def do_perform(self):
@@ -49,26 +53,12 @@ class Lucilla(BaseChar):
         return False
 
     def charge_once(self):
-        """攒 1 格回路能量: E 可用优先长按 E、否则蓄力重击, 长按动作完整结束后再闪避.
-
-        闪避放在长按动作**之后**(而非之前): 长按完整结束才闪, 闪避绝不会打断正在进行的长按;
-        闪避也作为本格与下一格长按之间的过渡/规避. 两个长按内部 sleep 均 check_combat=False,
-        长按动作内部 sleep 均 check_combat=False, 不会被战斗误判打断, 且已推进帧重置 scene.cd_refreshed, 故攒完读 CD/能量即为最新值.
+        """攒 1 格回路能量: E 可用优先长按 E、否则蓄力重击.
         """
         if self.resonance_available():
-            if self.hold_resonance(self.HOLD_TIME):
-                self.dodge()
+            self.hold_resonance(self.HOLD_TIME)
         else:
-            if self.hold_heavy_attack(self.HOLD_TIME):
-                self.dodge()
-
-    def dodge(self):
-        """向左闪避(规避敌人攻击). 只在长按动作完整结束后由 charge_once 调用, 故不会打断长按."""
-        self.task.send_key_down('a')
-        try:
-            self.task.send_key(self.task.key_config['Dodge Key'], after_sleep=0.05)
-        finally:
-            self.task.send_key_up('a')
+            self.heavy_attack(self.HOLD_TIME)
 
     def try_liberation(self):
         """大招就绪则放招(顺带先放声骸), 返回是否放出。"""
@@ -108,26 +98,10 @@ class Lucilla(BaseChar):
         self.logger.info('Lucilla perform lib')
 
         self.sleep(self.LIBERATION_ANIMATION_TIME, check_combat=False)
-        self.task.mouse_down()
-        try:
-            self.sleep(self.LIBERATION_HEAVY_TIME, check_combat=False)
-        finally:
-            self.task.mouse_up()
+        if not self.has_short_action():
+            self.heavy_attack(self.LIBERATION_HEAVY_TIME)
 
-        self.task.wait_until(lambda: self.task.in_team()[0], time_out=3.0)
         self.logger.info('Lucilla perform lib end')
-
-    def hold_heavy_attack(self, duration):
-        """按住左键蓄力重击一段时间 (攒 1 格回路能量)。
-
-        不用 BaseChar.heavy_attack: 它内部 sleep(duration) 默认带战斗检查, 蓄力期间某帧
-        in_combat() 误判就抛 NotInCombatException 打断蓄力. 这里 check_combat=False 保证不被打断.
-        """
-        self.task.mouse_down()
-        try:
-            self.sleep(duration, check_combat=False)
-        finally:
-            self.task.mouse_up()
 
     def hold_resonance(self, duration):
         """长按共鸣技能键一段时间 (攒 1 格回路能量)。"""
@@ -140,3 +114,4 @@ class Lucilla(BaseChar):
         finally:
             self.task.send_key_up(self.get_resonance_key())
         self.record_resonance_use()
+        
