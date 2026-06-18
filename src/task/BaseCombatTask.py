@@ -10,7 +10,7 @@ from ok import color_range_to_bound
 from ok import safe_get
 from src import text_white_color
 from src.char import BaseChar
-from src.char.BaseChar import SwitchPriority, dot_color, CharType  # noqa
+from src.char.BaseChar import SwitchPriority, dot_color  # noqa
 from src.char.CharFactory import get_char_by_pos
 from src.combat.CombatCheck import CombatCheck
 from src.task.BaseWWTask import isolate_white_text_to_black, binarize_for_matching
@@ -33,6 +33,7 @@ class CharRevivedException(CharDeadException):
     """角色已复活，用于中断当前战斗上下文并让任务重新进入。"""
     pass
 
+
 mismatched_names = {
     "Douling": "Buling",
     "Xigelika": "Sigrika",
@@ -43,16 +44,9 @@ mismatched_names = {
     "HavocRover": "Rover: Havoc"
 }
 
+
 class BaseCombatTask(CombatCheck):
     """基础战斗任务类，封装了游戏"鸣潮"中角色自动化操作的通用逻辑。"""
-
-    # 协奏满切人优先级评分的可调参数.
-    SWITCH_TYPE_BASE_SCORES = (100, 60, 20)  # 轮转链上 第1/2/3 顺位的类型基分(主导量级)
-    SWITCH_CD_WEIGHT = 30                     # 大招CD加分权重(微调量级)
-    SWITCH_CON_WEIGHT = 30                    # 能量快照加分权重(微调量级)
-    SWITCH_CD_REF = 25.0                      # 大招CD参考满值(秒), 用于归一化CD加分，鸣潮大部分角色大招CD25秒左右
-    SWITCH_ROTATE_SCORE_TOLERANCE = 12.0      # 分数接近时按最久未上场轮换; 小于类型基分差, 不破坏类型链
-
     hot_key_verified = False  # 热键是否已验证
     con_full_size = None  # 不同角色协奏值充满时的大小记录
     freeze_durations = []  # 记录冻结/卡肉的持续时间
@@ -78,7 +72,6 @@ class BaseCombatTask(CombatCheck):
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']  # 角色文本标识符列表
         self.mouse_pos = None  # 当前鼠标位置
         self.combat_start = 0  # 战斗开始时间戳
-        self.combat_start_action_done = False
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.add_text_fix({'Ｅ': 'e'})
@@ -328,45 +321,6 @@ class BaseCombatTask(CombatCheck):
             current = 0
         return current
 
-    def do_reset_to_false(self):
-        self.combat_start_action_done = False
-        return super().do_reset_to_false()
-
-    def do_check_in_combat(self, target):
-        res = super().do_check_in_combat(target)
-        if self._in_combat and not self.combat_start_action_done:
-            self.perform_combat_start_action()
-        return res
-    
-    # 主C 3A 接E起手开始循环
-    def perform_combat_start_action(self):
-        current_char = self.get_current_char()
-        if not current_char:
-            return
-        
-        self.combat_start_action_done = True
-
-        if not current_char.is_main_dps:
-            return
-
-        healer = None
-        for char in self.chars:
-            if char and char.is_healer and not self.has_cd('liberation', char.index):
-                healer = char
-                break
-
-        if healer:
-            logger.info(f'战斗开始动作: {current_char} 普攻3次 + 共鸣 -> 切换辅助 {healer}')
-            current_char.click_echo(time_out=0)
-  
-            for _ in range(3):
-                current_char.normal_attack()
-                self.sleep(0.25)
-
-            current_char.send_resonance_key(post_sleep=0.1)
-            self.sleep(0.15)
-            self.switch_next_char(current_char, free_intro=True)
-
     def combat_once(self, wait_combat_time=200, raise_if_not_found=True):
         """执行一次完整的战斗流程。
 
@@ -463,60 +417,18 @@ class BaseCombatTask(CombatCheck):
         unbuffed_non_main = [
             char for char in candidates
             if not char.is_main_dps and char.buff_time > 0
-            and not char.has_buff()
+               and not char.has_buff()
         ]
         return self._oldest_switch_target(unbuffed_non_main)
 
-
-    def _switch_type_chain(self, current_char):
-        """按当前角色类型给出"下家类型轮转链": 辅->副->主->辅。链首=最该切到的类型。"""
-        from src.char.BaseChar import CharType
-        if current_char.is_healer:
-            return (CharType.SUB_DPS, CharType.MAIN_DPS, CharType.HEALER)
-        if current_char.is_sub_dps:
-            return (CharType.MAIN_DPS, CharType.HEALER, CharType.SUB_DPS)
-        # MAIN_DPS 或其他
-        return (CharType.HEALER, CharType.SUB_DPS, CharType.MAIN_DPS)
-
-    def _switch_score(self, current_char, target):
-        """协奏满切人时给后台角色打分: 类型基分(主导) + 大招CD加分 + 能量快照加分。"""
-        chain = self._switch_type_chain(current_char)
-        # 类型基分: target 类型在轮转链中的位置越靠前分越高; 不在链中(异常)给 0.
-        base = 0
-        for i, t in enumerate(chain):
-            if target.char_type == t:
-                base = self.SWITCH_TYPE_BASE_SCORES[i] if i < len(self.SWITCH_TYPE_BASE_SCORES) else 0
-                break
-        # 大招CD加分: 后台估算CD越短(越就绪)加越多, 连续.
-        cd = self.get_cd('liberation', target.index)
-        cd_score = self.SWITCH_CD_WEIGHT * max(0.0, 1 - max(0.0, cd) / self.SWITCH_CD_REF)
-        # 能量快照加分: 离场能量越高越优先(快满的先上去满).
-        # getattr 容错: 个别角色实例(或部署副本未同步 BaseChar)可能无此属性, 缺失时降级为 0.
-        con_score = self.SWITCH_CON_WEIGHT * getattr(target, 'con_at_switch_out', 0)
-        return base + cd_score + con_score
-
-    def _choose_intro_switch_target(self, current_char, must_targets, normal_targets):
+    def _choose_intro_switch_target(self, must_targets, normal_targets):
         if must_targets:
             return self._oldest_switch_target(must_targets)
-        if not normal_targets:
-            return None
-        # 先按原评分体系找最高分; 若候选分数接近, 再按最久未上场轮换。
-        # 这样重复定位(2辅助/2副C/3主C)不会长期偏向同一个角色,
-        # 但分差明显时仍由类型链、CD、协奏快照决定最优目标。
-        scored_targets = [
-            (char, self._switch_score(current_char, char))
-            for char in normal_targets
-        ]
-        best_char, best_score = max(scored_targets, key=lambda cs: cs[1])
-        # 轮换只在与最高分角色"同类型"内生效: 跨类型(不同定位)不进轮换组, 避免能量/CD加分把跨定位
-        # 分差压进容差、导致真·最高分被按 index/last_switch_in 的轮换挤掉(开局 last_switch_in 全=-1
-        # 时尤其会退化成按 index 误选). 同类型多人(2辅助/2副C/3主C)才按最久未上场轮换.
-        close_targets = [
-            char for char, score in scored_targets
-            if char.char_type == best_char.char_type
-            and best_score - score <= self.SWITCH_ROTATE_SCORE_TOLERANCE
-        ]
-        return self._oldest_switch_target(close_targets)
+        for char_type in ('is_main_dps', 'is_sub_dps', 'is_healer'):
+            target = self._oldest_switch_target([char for char in normal_targets if getattr(char, char_type)])
+            if target:
+                return target
+        return None
 
     def _choose_switch_target_by_buff_time(self, current_char, candidates):
         if not candidates:
@@ -551,7 +463,7 @@ class BaseCombatTask(CombatCheck):
         no_targets = []
         for char in candidates:
             switch_priority = char.get_switch_priority(current_char=current_char, has_intro=has_intro,
-                                                        target_low_con=target_low_con)
+                                                       target_low_con=target_low_con)
             logger.debug(f'switch_next_char hook: {char} priority {switch_priority}')
             if switch_priority == SwitchPriority.MUST:
                 must_targets.append(char)
@@ -561,7 +473,7 @@ class BaseCombatTask(CombatCheck):
                 normal_targets.append(char)
 
         if has_intro:
-            return self._choose_intro_switch_target(current_char, must_targets, normal_targets) or current_char
+            return self._choose_intro_switch_target(must_targets, normal_targets) or current_char
 
         if must_targets:
             candidates = must_targets
@@ -599,14 +511,7 @@ class BaseCombatTask(CombatCheck):
                 self.sleep(0.05)
                 self.next_frame()
                 current_con = current_char.get_current_con()
-            con_full = current_con == 1 or current_char.is_con_full()
-            # 协奏 >90% 但未满: 不切人, 让当前角色继续打到满(满了才有入场技, 别浪费快到手的协奏).
-            # 仅在 90%~100% 区间生效; <90% 不受影响, 照常走下方切人逻辑.
-            if not con_full and 0.9 < current_con < 1:
-                logger.info(f'switch_next_char current_con {current_con:.2f} >90%, keep performing to fill con')
-                current_char.continues_normal_attack(0.4)
-                return
-            if con_full:
+            if current_con == 1:
                 has_intro = True
 
         switch_to = self._choose_switch_target(current_char, has_intro, target_low_con=target_low_con)
@@ -825,15 +730,6 @@ class BaseCombatTask(CombatCheck):
             if isinstance(char, char_cls):
                 return char
 
-    def has_char_by_name(self, name):
-        """按角色类名字符串查找队伍中的角色, 命中返回该角色, 否则 None。
-
-        用于基础任务类需按角色判断时避免直接 import 具体角色子类(防循环导入)。
-        """
-        for char in self.chars:
-            if char is not None and char.name == name:
-                return char
-
     def load_chars(self):
         """加载队伍中的角色信息。"""
         self.load_hotkey()
@@ -864,11 +760,6 @@ class BaseCombatTask(CombatCheck):
                     char.is_current_char = False
         self.combat_start = time.time()
         if len(self.chars) >= 2:
-            rover = self.has_char_by_name('HavocRover')
-            cartethyia = self.has_char_by_name('Cartethyia')
-            if rover and cartethyia:
-                rover.set_char_type(CharType.HEALER)
-                self.log_info('Detected Rover and Cartethyia, set Rover as HEALER')
             translated_names = []
             for c in self.chars:
                 if c is not None:

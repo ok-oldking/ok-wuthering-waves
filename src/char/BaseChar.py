@@ -90,7 +90,6 @@ class BaseChar:
         self.full_ring_area = 0
         self.last_perform = 0
         self.current_con = 0
-        self.con_at_switch_out = 0  # 离场时的协奏能量快照, 供切人优先级评分参考(后台能量屏幕读不到)
         self.has_tool_box = False
         self.intro_motion_freeze_duration = 0.9
         self.last_outro_time = -1
@@ -303,15 +302,7 @@ class BaseChar:
         return percent == 0 or not self.has_cd(box_name)
 
     def switch_out(self, con_full=False):
-        """角色被切换下场时的状态更新。
-
-           离场快照 con_at_switch_out 取自缓存的 current_con, 依赖调用方在切人前(干净帧)
-           已调过 get_current_con() 刷新——切人流程 switch_next_char 已保证. 此处不主动刷新,
-           因 switch_out 在切人过渡帧执行, 现刷新会读到陈旧/错误的协奏环值,
-           反而不如循环前的缓存准; 且 con_full 路径直接记 1, 无需读 current_con.
-        """
-        # 离场能量快照(在下方 current_con 可能被清0前记录), 供切人优先级评分参考.
-        self.con_at_switch_out = 1 if con_full else self.current_con
+        """角色被切换下场时的状态更新。"""
         self.last_switch_time = time.time()
         self.is_current_char = False
         self.has_intro = False
