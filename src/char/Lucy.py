@@ -48,7 +48,6 @@ class Lucy(BaseChar):
         self.f_break()
         if self.liberation_available():
             self.perform_liberation()
-            return True
 
         return True
 
