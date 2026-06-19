@@ -8,7 +8,8 @@ import onnxruntime as ort  # Added onnxruntime
 import cv2
 import numpy as np
 
-from ok import Logger, Box, sort_boxes, og  # Assuming these are available
+from ok import Logger, sort_boxes, og  # Assuming these are available
+from src.yolo_common import postprocess
 
 logger = Logger.get_logger(__name__)
 
@@ -26,11 +27,7 @@ class OnnxYolo8Detect:  # Renamed class
         # These will be the target dimensions for the letterbox function.
         self.preprocess_target_h = model_h
         self.preprocess_target_w = model_w
-        # self.model_size was in original code, kept for structural similarity if it was used elsewhere.
-        # It stored (width, height).
-        self.model_size = (model_w, model_h)
         self.iou_threshold = iou_thres
-        # self.openfile_name_model = weights # Redundant with self.weights
 
         # --- ONNX Runtime Initialization ---
         options = ort.SessionOptions()
@@ -112,7 +109,7 @@ class OnnxYolo8Detect:  # Renamed class
         # Use preprocess_target_h and preprocess_target_w for letterboxing
         img_letterboxed, pad = self.letterbox(img_rgb, (self.preprocess_target_h, self.preprocess_target_w))
 
-        image_data = np.array(img_letterboxed) / 255.0
+        image_data = np.array(img_letterboxed, dtype=np.float32) / 255.0
         image_data = np.transpose(image_data, (2, 0, 1))  # Channel first HWC to CHW
         image_data = np.expand_dims(image_data, axis=0).astype(np.float32)
 
@@ -122,14 +119,6 @@ class OnnxYolo8Detect:  # Renamed class
         """
         Perform post-processing on the model's output.
         """
-        # outputs_from_model is a list from session.run(), take the first element.
-        processed_outputs = np.transpose(np.squeeze(outputs_from_model[0]))
-        rows = processed_outputs.shape[0]
-
-        boxes = []
-        scores = []
-        class_ids = []
-
         # The 'gain' calculation below replicates the logic from the original OpenVINO-based code.
         # In the original code, self.input_width stored model height, and self.input_height stored model width.
         # The gain was calculated as: min(variable_storing_width / original_image_height, variable_storing_height / original_image_width).
@@ -141,49 +130,8 @@ class OnnxYolo8Detect:  # Renamed class
         # However, to adhere to "do not fix bugs", the original logic is replicated.
         gain = min(self.preprocess_target_w / orig_shape[0], self.preprocess_target_h / orig_shape[1])
 
-        # Adjust detections for padding
-        # padding is (pad_top, pad_left)
-        # processed_outputs[:, 0] are x-centers, processed_outputs[:, 1] are y-centers
-        processed_outputs[:, 0] -= padding[1]  # Adjust x-coordinates by left padding
-        processed_outputs[:, 1] -= padding[0]  # Adjust y-coordinates by top padding
-
-        for i in range(rows):
-            classes_scores = processed_outputs[i][4:]
-            max_score = np.amax(classes_scores)
-            class_id = np.argmax(classes_scores)
-
-            if max_score >= confidence_threshold and (label == -1 or label == class_id):
-                x, y, w, h = processed_outputs[i][0], processed_outputs[i][1], processed_outputs[i][2], \
-                    processed_outputs[i][3]
-
-                left = int((x - w / 2) / gain)
-                top = int((y - h / 2) / gain)
-                width = int(w / gain)
-                height = int(h / gain)
-
-                class_ids.append(class_id)
-                scores.append(max_score)
-                boxes.append([left, top, width, height])
-
-        indices = cv2.dnn.NMSBoxes(boxes, scores, confidence_threshold, self.iou_threshold)
-
-        results = []
-        # Check if indices is not an empty tuple, which can happen if NMSBoxes returns nothing.
-        if len(indices) > 0:
-            # In OpenCV 4.x NMSBoxes returns a 2D array if more than one box, 1D if one.
-            # Flatten in case it's [[0], [1]] etc.
-            if isinstance(indices, tuple):  # Should not happen with current cv2 versions but defensive
-                indices_flat = np.array(indices).flatten()
-            else:  # numpy array
-                indices_flat = indices.flatten()
-
-            for i in indices_flat:
-                box = boxes[i]
-                box_obj = Box(box[0], box[1], box[2], box[3])
-                box_obj.name = self.dic_labels.get(int(class_ids[i]), 'unknown')
-                box_obj.confidence = scores[i]
-                results.append(box_obj)
-        return results
+        return postprocess(outputs_from_model, padding, gain, confidence_threshold, label,
+                           self.iou_threshold, self.dic_labels)
 
     def detect(self, image, threshold=0.5, label=-1):
         '''
