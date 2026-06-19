@@ -34,6 +34,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             '双爆总计>=': 13.8,
             '首条双爆>=': 6.9,
             '有效词条>=': 3,
+            '提前锁定副词条数': 5,
             '第一条必须为有效词条': True,
             '有效词条': ['暴击', '暴击伤害', '攻击百分比'],
             'Pause after Success': True,
@@ -50,6 +51,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             '双爆总计>=': '当声骸同时存在暴击和爆伤时，需要满足 暴击 + (爆伤/2) >= 此数值',
             '首条双爆>=': '仅检查第一条出现的暴击或暴击伤害是否满足条件, 爆伤/2',
             '有效词条>=': '声骸满级时需达到的有效词条数量，若剩余孔位无法凑齐该数量，则停止强化并丢弃',
+            '提前锁定副词条数': '当声骸的副词条数量达到此值且仍符合条件时，提前上锁保留并停止继续强化。每 5 级解锁一条副词条，所以 5 = 强化至满级(+25)，与原行为相同；例如设为 3 可在出现 3 条副词条(约 +15)时就保留，省下后续的调谐材料，留待手动决定是否继续。范围 1-5。',
             '第一条必须为有效词条': '如果开启，第一个副词条必须在有效词条列表中且符合数值要求，否则直接丢弃',
             '有效词条': '定义哪些属性被视为有效',
             'Pause after Success': 'When a success occurs, send notification and pause task',
@@ -141,7 +143,8 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                     self.trash_and_esc()
                     break
 
-                if len(properties) >= 5:
+                lock_at = max(1, min(5, int(self.config.get('提前锁定副词条数', 5) or 5)))
+                if len(properties) >= lock_at:
                     self.lock_and_esc()
                     break
 
