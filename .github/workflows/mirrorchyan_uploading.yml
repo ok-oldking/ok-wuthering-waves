@@ -3,6 +3,9 @@ name: mirrorchyan_uploading
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
 
   mirrorchyan:
