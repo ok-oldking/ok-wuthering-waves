@@ -45,6 +45,9 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                                                     '共鸣效率', '普攻伤害加成',
                                                     '重击伤害加成', '共鸣解放伤害加成',
                                                     '共鸣技能伤害加成']}
+        # Substat count maxes out at 5 (one unlocked per +5 levels); bound the
+        # spin box to the meaningful 1-5 range instead of the unbounded default.
+        self.config_type['提前锁定副词条数'] = {'min': 1, 'max': 5}
         self.config_description = {
             '必须有双爆': '如果开启，声骸最终必须同时拥有暴击和暴击伤害。如果剩余孔位不足以凑齐双爆，则丢弃',
             '双爆出现之前必须全有效词条': '开启后，在暴击或暴击伤害词条出现之前，前面的所有词条必须都在有效词条列表中',
