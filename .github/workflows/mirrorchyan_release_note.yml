@@ -5,6 +5,9 @@ on:
   release:
     types: [edited]
 
+permissions:
+  contents: read
+
 jobs:
   mirrorchyan_release_note:
     runs-on: macos-latest

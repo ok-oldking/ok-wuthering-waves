@@ -141,4 +141,4 @@ class OpenVinoYolo8Detect:
             return sort_boxes(boxes)
         except Exception as e:
             logger.error(f'OpenVINO yolo detect error: {e}')
-            return
+            return []
