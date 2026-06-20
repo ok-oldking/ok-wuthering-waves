@@ -16,6 +16,10 @@ logger = Logger.get_logger(__name__)
 number_pattern = re.compile(r"^[\d.%％ ]+$")
 property_pattern = re.compile(r"[\u4e00-\u9fff]{2,}")
 
+# Config key for the early-lock substat-count option; referenced in several
+# places (default value, spin-box bounds, description, runtime check).
+EARLY_LOCK_COUNT_KEY = '提前锁定副词条数'
+
 
 class EnhanceEchoTask(BaseWWTask, FindFeature):
 
@@ -34,7 +38,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             '双爆总计>=': 13.8,
             '首条双爆>=': 6.9,
             '有效词条>=': 3,
-            '提前锁定副词条数': 5,
+            EARLY_LOCK_COUNT_KEY: 5,
             '第一条必须为有效词条': True,
             '有效词条': ['暴击', '暴击伤害', '攻击百分比'],
             'Pause after Success': True,
@@ -47,14 +51,14 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                                                     '共鸣技能伤害加成']}
         # Substat count maxes out at 5 (one unlocked per +5 levels); bound the
         # spin box to the meaningful 1-5 range instead of the unbounded default.
-        self.config_type['提前锁定副词条数'] = {'min': 1, 'max': 5}
+        self.config_type[EARLY_LOCK_COUNT_KEY] = {'min': 1, 'max': 5}
         self.config_description = {
             '必须有双爆': '如果开启，声骸最终必须同时拥有暴击和暴击伤害。如果剩余孔位不足以凑齐双爆，则丢弃',
             '双爆出现之前必须全有效词条': '开启后，在暴击或暴击伤害词条出现之前，前面的所有词条必须都在有效词条列表中',
             '双爆总计>=': '当声骸同时存在暴击和爆伤时，需要满足 暴击 + (爆伤/2) >= 此数值',
             '首条双爆>=': '仅检查第一条出现的暴击或暴击伤害是否满足条件, 爆伤/2',
             '有效词条>=': '声骸满级时需达到的有效词条数量，若剩余孔位无法凑齐该数量，则停止强化并丢弃',
-            '提前锁定副词条数': '当声骸的副词条数量达到此值且仍符合条件时，提前上锁保留并停止继续强化。每 5 级解锁一条副词条，所以 5 = 强化至满级(+25)，与原行为相同；例如设为 3 可在出现 3 条副词条(约 +15)时就保留，省下后续的调谐材料，留待手动决定是否继续。范围 1-5。',
+            EARLY_LOCK_COUNT_KEY: '当声骸的副词条数量达到此值且仍符合条件时，提前上锁保留并停止继续强化。每 5 级解锁一条副词条，所以 5 = 强化至满级(+25)，与原行为相同；例如设为 3 可在出现 3 条副词条(约 +15)时就保留，省下后续的调谐材料，留待手动决定是否继续。范围 1-5。',
             '第一条必须为有效词条': '如果开启，第一个副词条必须在有效词条列表中且符合数值要求，否则直接丢弃',
             '有效词条': '定义哪些属性被视为有效',
             'Pause after Success': 'When a success occurs, send notification and pause task',
@@ -146,7 +150,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                     self.trash_and_esc()
                     break
 
-                lock_at = max(1, min(5, int(self.config.get('提前锁定副词条数', 5) or 5)))
+                lock_at = max(1, min(5, int(self.config.get(EARLY_LOCK_COUNT_KEY, 5) or 5)))
                 if len(properties) >= lock_at:
                     self.lock_and_esc()
                     break
