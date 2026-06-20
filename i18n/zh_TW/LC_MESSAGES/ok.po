@@ -649,7 +649,7 @@ msgid "Yes if Farming Nightmare: Hecate"
 msgstr "刷夢魘·赫卡忒請選是"
 
 msgid "Auto Farm all Nightmare Nest"
-msgstr "自动刷所有梦魇巢穴"
+msgstr "自動刷所有夢魘巢穴"
 
 msgid "Other"
 msgstr "其它"
@@ -679,7 +679,7 @@ msgid "Nightmare: Hecate"
 msgstr "夢魘·赫卡忒"
 
 msgid "Hyvatia"
-msgstr "海维夏"
+msgstr "海維夏"
 
 msgid "Character Config"
 msgstr "角色設置"
@@ -706,7 +706,7 @@ msgid "Auto Click Fast Travel in Map"
 msgstr "地圖中自動點擊快速旅行"
 
 msgid "Target enemy failed, please disable Nvidia/AMD Filter or Sharpening!"
-msgstr "选择目标失败!请关闭显卡滤镜和锐化!"
+msgstr "選擇目標失敗!請關閉顯示卡濾鏡和銳化!"
 
 msgid "Check Levitator"
 msgstr ""
@@ -721,19 +721,19 @@ msgid "Daily"
 msgstr "周常日常"
 
 msgid "Dungeon"
-msgstr "副本任务"
+msgstr "副本任務"
 
 msgid "Farm"
-msgstr "4C任务"
+msgstr "4C任務"
 
 msgid "Jump Key"
-msgstr "跳跃键"
+msgstr "跳躍鍵"
 
 msgid "Dodge Key"
-msgstr "闪避键"
+msgstr "閃避鍵"
 
 msgid "Wheel Key"
-msgstr "轮盘键"
+msgstr "輪盤鍵"
 
 msgid "Farm Nightmare Nest for Daily Echo"
 msgstr "使用夢魘巢穴獲取日常聲骸"
@@ -744,7 +744,8 @@ msgstr "必要時，前往夢魘巢穴取得聲骸完成日常"
 msgid "Continue Farm After Daily"
 msgstr "完成日常後繼續刷取體力"
 
-msgid "After completing daily activity, continue farming stamina until depleted."
+msgid ""
+"After completing daily activity, continue farming stamina until depleted."
 msgstr "在完成日常任務活躍度之後仍然刷取體力直到體力耗盡"
 
 msgid "F10"
@@ -1146,8 +1147,97 @@ msgstr "自動偵測並點擊樂園操作，直到任務停止。"
 msgid "Check Weekly Garden"
 msgstr "檢查每週樂園"
 
-msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
+msgid ""
+"After claiming daily rewards, check weekly Garden progress and run Garden "
+"Task if 6000 points has not been reached."
 msgstr "領取每日獎勵後檢查每週樂園進度；若尚未達到 6000 點，則執行樂園任務。"
 
 msgid "Guidebook Key"
 msgstr "索拉指南"
+
+msgid "吸收"
+msgstr "吸收"
+
+msgid "开始合成"
+msgstr "開始合成"
+
+msgid "领取奖励"
+msgstr "領取獎勵"
+
+msgid "合成台"
+msgstr "合成臺"
+
+msgid "批量修改声骸主属性(仅支持简中游戏语言)"
+msgstr "批次修改聲骸主屬性(僅支援簡中游戲語言)"
+
+msgid "点击B进入背包, 在过滤器中选择需要修改主属性的声骸, 并按照等级从0排序后开始."
+msgstr "點擊B進入背包, 在過濾器中選擇需要修改主屬性的聲骸, 並按照等級從0排序後開始."
+
+msgid "目标属性"
+msgstr "目標屬性"
+
+msgid "攻击"
+msgstr "攻擊"
+
+msgid "批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
+msgstr "批次強化聲骸(遊戲與okww語言必須為簡體/繁體中文)"
+
+msgid "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按照等级从0排序后开始."
+msgstr "點擊B進入背包, 在過濾器中選擇需要強化的聲骸, 並按照等級從0排序後開始."
+
+msgid "必须有双爆"
+msgstr "必須有雙爆"
+
+msgid "双爆出现之前必须全有效词条"
+msgstr "雙爆出現之前必須全有效詞條"
+
+msgid "双爆总计>="
+msgstr "雙爆總計>="
+
+msgid "首条双爆>="
+msgstr "首條雙爆>="
+
+msgid "有效词条>="
+msgstr "有效詞條>="
+
+msgid "第一条必须为有效词条"
+msgstr "第一條必須為有效詞條"
+
+msgid "有效词条"
+msgstr "有效詞條"
+
+msgid "暴击"
+msgstr "暴擊"
+
+msgid "暴击伤害"
+msgstr "暴擊傷害"
+
+msgid "攻击百分比"
+msgstr "攻擊百分比"
+
+msgid "如果开启，声骸最终必须同时拥有暴击和暴击伤害。如果剩余孔位不足以凑齐双爆，则丢弃"
+msgstr "如果開啟，聲骸最終必須同時擁有暴擊和暴擊傷害。如果剩餘孔位不足以湊齊雙爆，則丟棄"
+
+msgid "开启后，在暴击或暴击伤害词条出现之前，前面的所有词条必须都在有效词条列表中"
+msgstr "開啟後，在暴擊或暴擊傷害詞條出現之前，前面的所有詞條必須都在有效詞條列表中"
+
+msgid "当声骸同时存在暴击和爆伤时，需要满足 暴击 + (爆伤/2) >= 此数值"
+msgstr "當聲骸同時存在暴擊和爆傷時，需要滿足 暴擊 + (爆傷/2) >= 此數值"
+
+msgid "仅检查第一条出现的暴击或暴击伤害是否满足条件, 爆伤/2"
+msgstr "僅檢查第一條出現的暴擊或暴擊傷害是否滿足條件, 爆傷/2"
+
+msgid "声骸满级时需达到的有效词条数量，若剩余孔位无法凑齐该数量，则停止强化并丢弃"
+msgstr "聲骸滿級時需達到的有效詞條數量，若剩餘孔位無法湊齊該數量，則停止強化並丟棄"
+
+msgid "如果开启，第一个副词条必须在有效词条列表中且符合数值要求，否则直接丢弃"
+msgstr "如果開啟，第一個副詞條必須在有效詞條列表中且符合數值要求，否則直接丟棄"
+
+msgid "定义哪些属性被视为有效"
+msgstr "定義哪些屬性被視為有效"
+
+msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
+msgstr "遊戲與okww語言必須為簡體/繁體中文,必須16:9解析度,使用1600x900以上解析度, 勾選需要的, 沒勾的都會自動合成"
+
+msgid "数据坞五合一"
+msgstr "資料塢五合一"
