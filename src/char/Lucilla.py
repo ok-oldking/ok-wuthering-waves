@@ -16,7 +16,7 @@ class Lucilla(BaseChar):
     # 变身后重击时长 (秒)
     LIBERATION_HEAVY_TIME: float = 5.8
     # 攒能量阶段的整体上限 (秒), 防止攒不满时死循环
-    CHARGE_TIME_OUT: float = 5.5
+    CHARGE_TIME_OUT: float = 7.2
     LIBERATION_CD_SKIP: float = 1.5
 
     def do_perform(self):
