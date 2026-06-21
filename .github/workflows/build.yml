@@ -60,8 +60,10 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: inline_ok_requirements
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          python -m ok.update.inline_ok_requirements --tag ${{ github.ref_name }}
+          python -m ok.update.inline_ok_requirements --tag "$env:RELEASE_TAG"
 
       - name: Run tests
         env:
@@ -112,8 +114,10 @@ jobs:
         id: release-version
         if: env.BUILD_EXE == 'true'
         shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          $tag = "${{ github.ref_name }}"
+          $tag = $env:RELEASE_TAG
           $isRelease = $tag -match '^v?\d+\.\d+\.\d+$'
           "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           Write-Host "Release version: $isRelease"
