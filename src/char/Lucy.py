@@ -1,60 +1,92 @@
 import time
-
 from src.char.BaseChar import BaseChar
 
 class Lucy(BaseChar):
-    FORTE_TIMEOUT = 8.0  # 攒能量防卡死超时
-    NORMAL_ATTACK_DURATION = 1.0
-    HEAVY_ATTACK_TAP = 1.2
-    LIB_HOLD_DURATION = 2.8
+    FORTE_TIMEOUT = 6.2
     LIB_CD_WAIT = 1.5
+    NORMAL_ATTACK_DURATION = 0.1
+    HEAVY_ATTACK_DURATION = 0.8
+    CLICK_INTERVAL = 0.1
+    ENHANCED_HEAVY_INTERVAL = 0.5
+    LIB_CLICK_COUNT = 11 #包含冗余点击
 
     def do_perform(self):
-        if self.perform_standard():
-            return self.switch_next_char()
-        if self.perform_combat():
+        if not self.is_forte_full():
+            self.perform_standard()
+            
+        if self.is_forte_full():
+            self.perform_combat()
+            
+        if self.perform_liberation():
             return self.switch_next_char()
 
     def perform_standard(self):
+        """标准攒能量流程"""
         if self.is_forte_full():
-            self.logger.info("Lucy forte already full, skip to combat.")
+            self.logger.info("Lucy forte is already full, skip standard build-up.")
             return False
 
         start_time = time.time()
         while not self.is_forte_full():
-            # 防卡死机制
+            # 防卡死超时机制
             if time.time() - start_time > self.FORTE_TIMEOUT:
-                self.logger.warning("Lucy failed to full forte, timeout reached.")
-                return False  # 超时未满，返回 False 防止卡死，直接进入切人环节
+                self.logger.warning("Lucy failed to fill forte, timeout reached.")
+                break
                 
             if self.resonance_available():
                 self.click_resonance()
-            self.heavy_attack(self.HEAVY_ATTACK_TAP)    
+                
+            self.heavy_attack(self.HEAVY_ATTACK_DURATION)  
+            
             if self.resonance_available():
                 self.click_resonance()
-            
-            if self.is_forte_full():
-                break
-            self.continues_normal_attack(self.NORMAL_ATTACK_DURATION)
-            self.f_break()
 
+        self.continues_normal_attack(self.NORMAL_ATTACK_DURATION)
+        return True
+
+    def perform_combat(self):
+        """满能量倾泻输出流程"""
+        if not self.is_forte_full():
+            self.logger.info("Lucy forte not full, skip combat.")
+            return False
+            
+        self.f_break()
+        if self.echo_available():
+            self.click_echo(time_out=0)
+            
+        self.perform_enhanced_heavy()
+        self.continues_normal_attack(self.NORMAL_ATTACK_DURATION)
         return True
     
-    def perform_combat(self):
-        # 2次重击
-        self.heavy_attack(self.HEAVY_ATTACK_TAP)
-        self.continues_normal_attack(0.1)
-        self.heavy_attack(self.HEAVY_ATTACK_TAP)
+    def perform_liberation(self):
+        """大招释放及后续连击流程"""
+        if self.resonance_available():
+            self.click_resonance()
+        if self.echo_available():
+            self.click_echo(time_out=0)   
         self.f_break()
+        self.perform_enhanced_heavy()
+        
         if self.liberation_available():
-            self.perform_liberation()
-
+            self.click_liberation(send_click=True, wait_if_cd_ready=self.LIB_CD_WAIT)
+            self.record_liberation_use()
+            self.logger.info('Lucy perform lib: Started')
+            
+            for _ in range(self.LIB_CLICK_COUNT):
+                self.click()
+                self.sleep(self.CLICK_INTERVAL, check_combat=False)
+                
+            self.logger.info('Lucy perform lib: Ended')
+            
+        self.logger.debug("Liberation not available, skipping.")
         return True
 
-    def perform_liberation(self):
-        self.click_liberation(send_click=True,wait_if_cd_ready=self.LIB_CD_WAIT)
-        self.record_liberation_use()
-        self.logger.info('Lucy perform lib')
-        for _ in range(11):
-            self.click()
-        self.logger.info('Lucy perform lib end')
+    def perform_enhanced_heavy(self):
+        """强化重击执行逻辑"""
+        if self.is_mouse_forte_full():
+            self.heavy_attack(self.HEAVY_ATTACK_DURATION)
+            self.logger.info('Lucy perform enhanced heavy attack 1')
+            self.sleep(self.ENHANCED_HEAVY_INTERVAL, check_combat=False)
+            
+            self.heavy_attack(self.HEAVY_ATTACK_DURATION)
+            self.logger.info('Lucy perform enhanced heavy attack 2')
