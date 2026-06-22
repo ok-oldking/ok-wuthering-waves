@@ -712,6 +712,10 @@ class BaseCombatTask(CombatCheck):
             self.key_config[key] = best.name
             self.log_info(f'set_key {key} to {best.name}')
 
+    def has_short_action(self):
+        """是否有短动作条"""
+        return self.find_one(self.get_target_names()[0], box='target_box_short', threshold=0.6)
+
     def load_hotkey(self, force=False):
         """加载或自动设置游戏内技能热键。
 
@@ -721,10 +725,11 @@ class BaseCombatTask(CombatCheck):
         if not self.hot_key_verified or force:
             self.hot_key_verified = True
             scale = 1.2
-            # self.set_key('Resonance Key', self.get_box_by_name('e').scale(scale))
-            self.set_key('Echo Key', self.get_box_by_name('r').scale(scale))
-            self.set_key('Liberation Key', self.get_box_by_name('q').scale(scale))
-            # self.set_key('Tool Key', self.get_box_by_name('t').scale(scale))
+            if not self.has_short_action():
+                # self.set_key('Resonance Key', self.get_box_by_name('e').scale(scale))
+                self.set_key('Echo Key', self.get_box_by_name('r').scale(scale))
+                self.set_key('Liberation Key', self.get_box_by_name('q').scale(scale))
+                # self.set_key('Tool Key', self.get_box_by_name('t').scale(scale))
 
             self.info_set('Liberation Key', self.get_liberation_key())
             # self.info_set('Resonance Key', self.get_resonance_key())

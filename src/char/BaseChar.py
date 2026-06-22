@@ -951,6 +951,8 @@ class BaseChar:
 
     def has_short_action(self):
         """是否有短动作条"""
+        if hasattr(self.task, 'has_short_action'):
+            return self.task.has_short_action()
         return self.task.find_one(self.task.get_target_names()[0], box='target_box_short', threshold=0.6)
 
     def f_break(self, check_f_on_switch=False):
