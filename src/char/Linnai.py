@@ -3,6 +3,10 @@ import time
 from src.char.BaseChar import BaseChar, SwitchPriority, forte_white_color
 
 class Linnai(BaseChar):
+    RES_CHECK_THRESHOLD = 0.6
+    INTRO_RES_WAIT = 1.0
+    AEMEATH_INTRO_RES_WAIT = 1.6
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last_heavy = 0
@@ -42,7 +46,7 @@ class Linnai(BaseChar):
         return self.switch_next_char()
             
     def perform_under_intro(self):
-        if not self.check_res():
+        if not self.wait_for_accelerate_ready():
             self.logger.debug(f'Linnai fails entering accelerate mode!')
             return False
         self.task.wait_until(lambda: self.is_color_full() or self.is_con_full(), post_action=self.click,
@@ -73,12 +77,42 @@ class Linnai(BaseChar):
         self.sleep(0.3)
         self.wait_down()
 
+    def wait_for_accelerate_ready(self):
+        """等待琳奈入场后的目标状态稳定，避免特效遮挡导致一帧误判。"""
+        if self.check_res():
+            return True
+        time_out = self.INTRO_RES_WAIT
+        if self.has_intro and self.check_outro() in {'char_aemeath'}:
+            time_out = self.AEMEATH_INTRO_RES_WAIT
+        return self.task.wait_until(self.check_res, post_action=self.click_with_interval, time_out=time_out)
+
+    def get_target_names(self):
+        if hasattr(self.task, 'get_target_names'):
+            return self.task.get_target_names()
+        return 'has_target', 'no_target'
+
+    def find_target_status_in_box(self, box_name):
+        try:
+            box = self.task.get_box_by_name(box_name)
+            return self.task.find_best_match_in_box(box, list(self.get_target_names()),
+                                                    threshold=self.RES_CHECK_THRESHOLD)
+        except Exception as e:
+            self.logger.debug(f'Linnai check res skipped {box_name}: {e}')
+            return None
+
     def check_res(self):
         if not self.task.in_team_and_world():
             return False
-        best = self.task.find_best_match_in_box(self.task.get_box_by_name('target_box_long2'),
-                                               ['has_target', 'no_target'],
-                                               threshold=0.6)
+
+        best = self.find_target_status_in_box('target_box_long2')
+        if not best:
+            best = self.find_target_status_in_box('box_target_enemy_long')
+        if not best:
+            try:
+                best = self.task.find_one('target_box_short', threshold=self.RES_CHECK_THRESHOLD)
+            except Exception as e:
+                self.logger.debug(f'Linnai check res skipped target_box_short: {e}')
+                best = None
         self.logger.debug(f'check res {best}')
         return best
 
