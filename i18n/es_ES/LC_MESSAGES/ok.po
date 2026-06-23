@@ -603,12 +603,6 @@ msgstr "Farmear Eco 4C en Mazmorra/Mundo"
 msgid "Combat Wait Time"
 msgstr "Tiempo de Espera de Combate (seg)"
 
-msgid ""
-"Wait time before each combat(seconds), set 5 if farming Sentry Construct"
-msgstr ""
-"Tiempo de espera antes de cada combate (segundos), establece 5 si farmeas "
-"Constructo Centinela"
-
 msgid "Simulation Challenge"
 msgstr "Desafío de Simulación"
 
