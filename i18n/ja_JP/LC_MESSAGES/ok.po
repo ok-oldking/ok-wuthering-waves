@@ -561,10 +561,6 @@ msgstr "4C音骸を周回 (フィールド/ダンジョン)"
 msgid "Combat Wait Time"
 msgstr "戦闘待機時間(秒)"
 
-msgid ""
-"Wait time before each combat(seconds), set 5 if farming Sentry Construct"
-msgstr "各戦闘前の待機時間(秒)。異構艤装を周回する場合は5秒に設定してください。"
-
 msgid "Simulation Challenge"
 msgstr "シミュレーション挑戦"
 
