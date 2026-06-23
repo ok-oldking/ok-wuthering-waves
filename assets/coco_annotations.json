@@ -1294,6 +1294,11 @@
             "id": 256,
             "name": "garden_unpause",
             "supercategory": ""
+        },
+        {
+            "id": 257,
+            "name": "garden_continue_game",
+            "supercategory": ""
         }
     ],
     "images": [
@@ -1374,6 +1379,12 @@
             "width": 3840,
             "date_captured": null,
             "id": 16
+        },
+        {
+            "id": 18,
+            "file_name": "images/38.png",
+            "width": 1920,
+            "height": 1080
         },
         {
             "license": 0,
@@ -1915,7 +1926,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/38.png",
+            "file_name": "images/39.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -1942,7 +1953,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/39.png",
+            "file_name": "images/40.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -1951,7 +1962,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/40.png",
+            "file_name": "images/41.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -2068,7 +2079,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/41.png",
+            "file_name": "images/42.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -2307,7 +2318,7 @@
         },
         {
             "id": 241,
-            "file_name": "images/42.png",
+            "file_name": "images/43.png",
             "width": 2048,
             "height": 1152
         },
@@ -4072,12 +4083,12 @@
             "image_id": 259,
             "category_id": 246,
             "bbox": [
-                763,
+                767,
                 284,
-                37,
-                37
+                28,
+                90
             ],
-            "area": 1369,
+            "area": 2520,
             "iscrowd": 0
         },
         {
@@ -4085,12 +4096,12 @@
             "image_id": 259,
             "category_id": 247,
             "bbox": [
-                1260,
-                653,
-                46,
-                53
+                1555,
+                628,
+                86,
+                102
             ],
-            "area": 2438,
+            "area": 8772,
             "iscrowd": 0
         },
         {
@@ -4329,6 +4340,19 @@
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
+        },
+        {
+            "id": 137,
+            "image_id": 18,
+            "category_id": 257,
+            "bbox": [
+                1345,
+                622,
+                97,
+                114
+            ],
+            "area": 11058,
+            "iscrowd": 0
         },
         {
             "id": 138,
