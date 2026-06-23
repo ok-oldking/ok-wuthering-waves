@@ -217,26 +217,34 @@ class BaseCombatTask(CombatCheck):
             logger.error(f'revive_action failed', e)
             return False
 
-    def revive_at_tower_and_heal(self):
-        """搜索无冠者→探测打开地图→找最近传送点回血。
+    def get_revive_search_boss_name(self):
+        revive_search_names = {
+            'zh_CN': '无冠者',
+            'zh_TW': '無冠者',
+            'en_US': 'Crownless',
+        }
+        return revive_search_names.get(self.game_lang, '无冠者')
 
-        不再依赖已被移除的 go_to_tower。改用 F2 图鉴搜索"无冠者"后点"探测"，
+    def revive_at_tower_and_heal(self):
+        """搜索对应语言的无冠者/Crownless→探测打开地图→找最近传送点回血。
+
+        不再依赖已被移除的 go_to_tower。改用 F2 图鉴搜索对应语言的目标名称后点"探测"，
         游戏会把地图定位到固定位置，从该位置寻找传送点回血，结果稳定可复现。
         只点一次"探测"，等待地图打开后再操作，防止二次点击误触地图上的传送图标。
         前提：调用前已回到大世界 (副本内死亡需先退本)。
         """
         # 退本后可能仍在加载黑屏, 给足超时等待真正回到大世界 (原 go_to_tower 用 80s)
         self.ensure_main(time_out=120)
-        # ① F2 图鉴 → 全部怪物 → 搜索"无冠者"
+        # ① F2 图鉴 → 全部怪物 → 搜索对应语言的无冠者
         gray_book = self.openF2Book("gray_book_all_monsters")
         self.click_box(gray_book, after_sleep=1)
         self.click(0.13, 0.14, after_sleep=0.5)        # 搜索图标
-        self.input_text("无冠者")
+        self.input_text(self.get_revive_search_boss_name())
         self.sleep(0.3)
         self.click(0.20, 0.14, after_sleep=0.3)         # 点搜索框确保焦点
         self.send_key('enter', after_sleep=0.5)          # 回车确认搜索, 刷新结果列表
         self.click(0.13, 0.24, after_sleep=0.5)         # 选中第一条结果
-        # ② 点"探测"打开地图并定位到无冠者 (只点一次, 避免地图打开后误触传送点)
+        # ② 点"探测"打开地图并定位到目标 boss (只点一次, 避免地图打开后误触传送点)
         self.click(0.89, 0.92, after_sleep=1)
         # ③ 等待地图打开 (检测地图传送点), 若未打开则补点一次兜底
         if not self.wait_until(lambda: self.find_best_match_in_box(
