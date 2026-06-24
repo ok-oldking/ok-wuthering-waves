@@ -561,10 +561,6 @@ msgstr "던전/월드에서 4코스트 에코 파밍"
 msgid "Combat Wait Time"
 msgstr "전투 대기 시간 (초)"
 
-msgid ""
-"Wait time before each combat(seconds), set 5 if farming Sentry Construct"
-msgstr "각 전투 전 대기 시간(초). 이성 무장 파밍 시 5로 설정하세요."
-
 msgid "Simulation Challenge"
 msgstr "시뮬레이션 영역"
 
