@@ -8,6 +8,7 @@ class Aemeath(BaseChar):
     LIBERATION_FORCE_DURATION = 30
     LIB2_PREPARE_WINDOW = 8
     INTRO_LIBERATION_DELAY = 14
+    MORNYE_NAMES = {'char_moning', 'char_moning_new'}  # Mornye 在 CharFactory 注册的两个头像标签
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -309,6 +310,11 @@ class Aemeath(BaseChar):
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if self.should_wait_for_lib2():
+            # Mornye 离场且队里有 Linnai 时让位: Linnai 要吃 Mornye 协奏入场, 优先级最高, Aemeath 此刻
+            # 不抢 MUST(否则两者都 MUST、按"最久未上场"决胜会切到 Aemeath). lib2 顺延到下次轮到 Aemeath.
+            from src.char.Linnai import Linnai
+            if current_char and current_char.char_name in self.MORNYE_NAMES and self.task.has_char(Linnai):
+                return super().get_switch_priority(current_char, has_intro, target_low_con)
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
 
