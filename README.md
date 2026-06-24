@@ -100,6 +100,10 @@ python main.py
 python main_debug.py
 ```
 
+### 使用 VSCode 进行开发调试
+
+https://github.com/ok-oldking/ok-wuthering-waves/discussions/934
+
 ### 命令行参数
 
 您可以通过命令行参数实现自动化启动。

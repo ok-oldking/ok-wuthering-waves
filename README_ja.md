@@ -92,6 +92,10 @@ python main.py
 python main_debug.py
 ```
 
+### VSCode での開発とデバッグ
+
+https://github-com.translate.goog/ok-oldking/ok-wuthering-waves/discussions/934?_x_tr_sl=zh-CN&_x_tr_tl=ja
+
 ### コマンドライン引数
 
 コマンドライン引数を使用して自動起動できます。

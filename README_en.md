@@ -92,6 +92,10 @@ python main.py
 python main_debug.py
 ```
 
+### Development and Debugging with VSCode
+
+https://github-com.translate.goog/ok-oldking/ok-wuthering-waves/discussions/934?_x_tr_sl=zh-CN&_x_tr_tl=en
+
 ### Command-Line Arguments
 
 You can use command-line arguments for automated startup.
