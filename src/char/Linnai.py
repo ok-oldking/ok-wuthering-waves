@@ -1,49 +1,43 @@
-import time
-
 from src.char.BaseChar import BaseChar, SwitchPriority, forte_white_color
 
 class Linnai(BaseChar):
     RES_CHECK_THRESHOLD = 0.6
     INTRO_RES_WAIT = 1.0
     AEMEATH_INTRO_RES_WAIT = 1.6
+    MORNYE_NAMES = {'char_moning', 'char_moning_new'}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last_heavy = 0
 
     def do_perform(self):
-        if self.has_intro:
-            if self.check_res():
-                self.continues_normal_attack(1.33)
-            else:
-                self.continues_normal_attack(1)
-                self.click_echo(time_out=0)
-                if not self.is_con_full():
-                    self.click_liberation()
-                if not self.is_mouse_forte_full():
-                    self.click_resonance()   
-                self.task.wait_until(self.is_mouse_forte_full, post_action=self.click, time_out=2)
-                self.task.mouse_down() 
-                if self.task.wait_until(lambda: not self.is_mouse_forte_full(), time_out=5):
-                    self.task.mouse_up()
-                    self.sleep(0.4)                 
-                    self.perform_under_intro()
-                else:
-                    self.task.mouse_up()
-                
-        else: 
-            self.click_echo(time_out=0)
-            if self.perform_under_intro():
-                pass
-            elif self.flying():
-                self.continues_normal_attack(0.1)
-            elif not self.is_con_full() and self.click_liberation():
-                self.continues_normal_attack(0.5)
-            self.click_resonance()
-            
+        if self.has_intro and self.check_res():
+            self.continues_normal_attack(1.33)
+        else:
+            self.charge_heavy()
         if self.liberation_available():
             self.click_liberation()
         return self.switch_next_char()
+
+    def charge_heavy(self):
+        """攒满回路后蓄力重击; 攒满即放, 放完接 perform_under_intro。
+
+        无论是否协奏入场都执行: Mornye 不满协奏切来时(has_intro=False)也要蓄力, 故不再用 has_intro 门控.
+        """
+        self.continues_normal_attack(1)
+        self.click_echo(time_out=0)
+        if not self.is_con_full():
+            self.click_liberation()
+        if not self.is_mouse_forte_full():
+            self.click_resonance()
+        self.task.wait_until(self.is_mouse_forte_full, post_action=self.click, time_out=2)
+        self.task.mouse_down()
+        if self.task.wait_until(lambda: not self.is_mouse_forte_full(), time_out=5):
+            self.task.mouse_up()
+            self.sleep(0.4)
+            self.perform_under_intro()
+        else:
+            self.task.mouse_up()
             
     def perform_under_intro(self):
         if not self.wait_for_accelerate_ready():
@@ -126,6 +120,7 @@ class Linnai(BaseChar):
         self.switch_other_char()
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        if has_intro and current_char and current_char.char_name in {'char_moning'}:
+        # Mornye 离场就强制切 Linnai
+        if current_char and current_char.char_name in self.MORNYE_NAMES:
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)

@@ -8,6 +8,8 @@ class Aemeath(BaseChar):
     LIBERATION_FORCE_DURATION = 30
     LIB2_PREPARE_WINDOW = 8
     INTRO_LIBERATION_DELAY = 14
+    MORNYE_NAMES = {'char_moning', 'char_moning_new'}
+    POST_LIB2_COMBO_TIME_OUT = 1.5  # lib2 收尾连招(3A+E)的硬时间上限(秒), 防卡死/异常
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -171,26 +173,34 @@ class Aemeath(BaseChar):
             )
 
     def _execute_post_lib2_combo(self):
-        """
-        lib2 释放后的强制收尾连招：3次普攻 + 共鸣技能(E)
+        """lib2 释放后的强制收尾连招: 3次普攻 + 共鸣技能(E)。
+
+        整段受 POST_LIB2_COMBO_TIME_OUT(1.5s) 硬上限保护, 防止收尾卡死/异常拖住战斗循环。
         """
         self.logger.info('Aemeath [post-lib2 combo] starting: 3 Normal Attacks -> Resonance (E)')
-        
-        # 1. 执行 3 次普攻
-        for i in range(3):
-            self.check_combat()  # 每次攻击前检查战斗状态，防止超时或脱战导致的死循环
+        start = time.time()
+
+        # 最多 3 次普攻; 每次前检查战斗状态与时间预算, 超时即停.
+        for _ in range(3):
+            if time.time() - start >= self.POST_LIB2_COMBO_TIME_OUT:
+                self.logger.info('Aemeath [post-lib2 combo] time budget reached during attacks, stopping')
+                return
+            self.check_combat()
             self.normal_attack()
-            self.sleep(0.25)      # 普攻间隔，可根据 Aemeath 实际动作帧长微调
-            
+            self.sleep(0.35)
+
         self.check_combat()
-        
-        # 2. 检查并释放 E 技能 (优先检查增强E，若无则检查基础E是否可用)
+
+        remaining = self.POST_LIB2_COMBO_TIME_OUT - (time.time() - start)
+        if remaining <= 0:
+            self.logger.info('Aemeath [post-lib2 combo] no time budget left for E, skipping')
+            return
         e_available = self.enhance_e_available() or not self.task.has_cd('resonance')
-        
         if e_available:
             self.logger.info('Aemeath [post-lib2 combo] E available, casting resonance')
-            self.click_resonance(has_animation=True, send_click=True, animation_min_duration=0.5, time_out=1.5)
-            self.record_enhance_e()  # 同步更新状态机，记录E释放时间
+            self.click_resonance(has_animation=True, send_click=True,
+                                 animation_min_duration=0.5, time_out=remaining)
+            self.record_enhance_e()
         else:
             self.logger.info('Aemeath [post-lib2 combo] E not available, skipping')
 
@@ -309,6 +319,11 @@ class Aemeath(BaseChar):
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if self.should_wait_for_lib2():
+            # Mornye 离场且队里有 Linnai 时让位: Linnai 要吃 Mornye 协奏入场, 优先级最高, Aemeath 此刻
+            # 不抢 MUST(否则两者都 MUST、按"最久未上场"决胜会切到 Aemeath). lib2 顺延到下次轮到 Aemeath.
+            from src.char.Linnai import Linnai
+            if current_char and current_char.char_name in self.MORNYE_NAMES and self.task.has_char(Linnai):
+                return super().get_switch_priority(current_char, has_intro, target_low_con)
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
 
