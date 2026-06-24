@@ -159,6 +159,7 @@ class Labels(str, Enum):
     forte_cartethyia_sword2 = 'forte_cartethyia_sword2'
     forte_cartethyia_sword3 = 'forte_cartethyia_sword3'
     garden_confirm = 'garden_confirm'
+    garden_continue_game = 'garden_continue_game'
     garden_continue_last = 'garden_continue_last'
     garden_get_confirm_gray = 'garden_get_confirm_gray'
     garden_get_gold = 'garden_get_gold'
