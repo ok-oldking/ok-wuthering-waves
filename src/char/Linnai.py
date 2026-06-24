@@ -120,9 +120,6 @@ class Linnai(BaseChar):
         self.switch_other_char()
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        # Mornye 离场就强制切 Linnai(优先级最高, 不要求 has_intro): Mornye 不满协奏离场时也切 Linnai,
-        # 由 charge_heavy 保证照样蓄力. Linnai 离场时 current!=Mornye 不自锁; Aemeath 在 Mornye 离场时
-        # 会让位(见 Aemeath.get_switch_priority), 故 Linnai 必赢 MUST 决胜.
         if current_char and current_char.char_name in self.MORNYE_NAMES:
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
