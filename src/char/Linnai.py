@@ -4,7 +4,7 @@ class Linnai(BaseChar):
     RES_CHECK_THRESHOLD = 0.6
     INTRO_RES_WAIT = 1.0
     AEMEATH_INTRO_RES_WAIT = 1.6
-    MORNYE_NAMES = {'char_moning', 'char_moning_new'}  # Mornye 在 CharFactory 注册的两个头像标签
+    MORNYE_NAMES = {'char_moning', 'char_moning_new'}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
