@@ -55,6 +55,7 @@ class TestChar(TaskTestCase):
         self.assertEqual(char_dict[Labels.char_chisa]['buff_time'], 12)
         self.assertEqual(char_dict[Labels.char_lucilla]['cls'], Lucilla)
         self.assertEqual(char_dict[Labels.char_lucilla]['char_type'], CharType.SUB_DPS)
+        self.assertTrue(char_dict[Labels.char_lucilla]['target_box_short_combat_check'])
         self.assertEqual(char_dict[Labels.char_lucy]['cls'], Lucy)
         self.assertEqual(char_dict[Labels.char_lucy]['char_type'], CharType.MAIN_DPS)
         self.assertEqual(char_dict[Labels.char_rebecca]['cls'], Rebecca)

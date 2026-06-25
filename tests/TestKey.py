@@ -10,6 +10,16 @@ class TestKey(TaskTestCase):
     task_class = AutoCombatTask
     config = config
 
+    def setUp(self):
+        self._key_config_before_test = dict(self.task.key_config)
+        self._set_key_before_test = self.task.set_key
+
+    def tearDown(self):
+        self.task.key_config.clear()
+        self.task.key_config.update(self._key_config_before_test)
+        self.task.set_key = self._set_key_before_test
+        super().tearDown()
+
     def test_key1(self):
         self.task.do_reset_to_false()
         self.task.key_config['Resonance Key'] = 'a'
