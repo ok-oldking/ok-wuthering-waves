@@ -756,6 +756,7 @@ class BaseCombatTask(CombatCheck):
         in_team, current_index, count = self.in_team()
         if not in_team:
             return
+        previous_char_identity = self._char_identity(self.chars)
         # self.log_info('load chars')
         self.chars[0] = get_char_by_pos(self, self.get_box_by_name('box_char_1'), 0, safe_get(self.chars, 0))
         self.chars[1] = get_char_by_pos(self, self.get_box_by_name('box_char_2'), 1, safe_get(self.chars, 1))
@@ -769,7 +770,7 @@ class BaseCombatTask(CombatCheck):
         else:
             if len(self.chars) == 3:
                 self.chars = self.chars[:2]
-            logger.info(f'team size changed to 2')
+                logger.info(f'team size changed to 2')
 
         for char in self.chars:
             if char is not None:
@@ -780,18 +781,23 @@ class BaseCombatTask(CombatCheck):
                     char.is_current_char = False
         self.combat_start = time.time()
         if len(self.chars) >= 2:
-            translated_names = []
-            for c in self.chars:
-                if c is not None:
-                    class_name = c.name
-                    official_name = mismatched_names.get(class_name, class_name)
-                    # 单元测试时 self._app 为 None，此时不进行翻译，直接回传原名
-                    translated_name = self.tr(official_name) if self._app is not None else official_name
-                    translated_names.append(translated_name)
-            self.info_set('Chars', ', '.join(translated_names))
-            for c in self.chars:
-                self.log_info(f'loaded chars success {c} {c.confidence}')
+            if self._char_identity(self.chars) != previous_char_identity:
+                translated_names = []
+                for c in self.chars:
+                    if c is not None:
+                        class_name = c.name
+                        official_name = mismatched_names.get(class_name, class_name)
+                        # 单元测试时 self._app 为 None，此时不进行翻译，直接回传原名
+                        translated_name = self.tr(official_name) if self._app is not None else official_name
+                        translated_names.append(translated_name)
+                self.info_set('Chars', ', '.join(translated_names))
+                for c in self.chars:
+                    self.log_info(f'loaded chars success {c} {c.confidence}')
             return True
+
+    @staticmethod
+    def _char_identity(chars):
+        return tuple((char.char_name, char.name) if char is not None else None for char in chars)
 
     @staticmethod
     def should_update(the_char, old_char):
