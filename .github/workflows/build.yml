@@ -17,7 +17,7 @@ jobs:
 
     env:
       PYTHONIOENCODING: 'UTF-8'
-      SIGN_BUILD: 'true'
+      SIGN_BUILD: 'false'
       BUILD_EXE: 'true'
       USE_RELEASE: 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.3.74'
 
@@ -175,16 +175,16 @@ jobs:
         id: build-setup-exe
         uses: ok-oldking/pyappify-action@master
 
-      - name: Upload unsigned setup EXE artifact
+      - name: Upload unsigned China setup EXE artifact
         if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
         id: upload-unsigned-setup-artifact
         uses: actions/upload-artifact@v4
         with:
           name: setup-to-sign
-          path: pyappify_dist/*setup.exe
+          path: pyappify_dist/ok-ww-win32-China-setup.exe
           if-no-files-found: error
 
-      - name: Sign setup EXEs
+      - name: Sign China setup EXE
         if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
@@ -220,7 +220,7 @@ jobs:
           files: pyappify_dist/*
 
       - name: Trigger MirrorChyanUploading
-        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && startsWith(github.ref, 'refs/tags/')
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true' && startsWith(github.ref, 'refs/tags/')
         shell: bash
         run: |
           gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_uploading

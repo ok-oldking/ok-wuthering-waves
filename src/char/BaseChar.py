@@ -104,6 +104,7 @@ class BaseChar:
         self.cycle_start_time = 0.0
         self.cycle_time_out = 1.1
         self.cycle_intro_time = 1.2
+        self.target_box_short_combat_check = False
 
     def set_char_type(self, char_type=CharType.MAIN_DPS):
         """设置角色定位，默认为主输出。"""

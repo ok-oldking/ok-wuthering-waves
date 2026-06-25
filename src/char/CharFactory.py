@@ -119,7 +119,8 @@ _char_dict_raw = {
     Labels.char_xigelika: {'cls': Xigelika, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.WIND},
     Labels.char_luhesi: {'cls': Luhesi, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
     Labels.char_hiyuki: {'cls': Hiyuki, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.ICE},
-    Labels.char_lucilla: {'cls': Lucilla, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ICE},
+    Labels.char_lucilla: {'cls': Lucilla, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ICE,
+                          'target_box_short_combat_check': True},
     Labels.char_lucy: {'cls': Lucy, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
     Labels.char_rebecca: {'cls': Rebecca, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ELECTRIC},
 }
@@ -150,6 +151,7 @@ def _apply_char_config(task, char, info):
     if char and info:
         char.set_char_type(_get_char_type(task, info))
         char.set_buff_time(_get_buff_time(task, info))
+        char.target_box_short_combat_check = info.get('target_box_short_combat_check', False)
     return char
 
 
@@ -164,9 +166,11 @@ def get_char_by_pos(task, box, index, old_char):
             info = char_dict.get(old_char.char_name)
             cls = load_custom_char_class(info.get('cls'))
             if type(old_char) is not cls:
-                return cls(task, index, char_name=old_char.char_name, confidence=char.confidence,
-                           ring_index=info.get('ring_index', -1), char_type=_get_char_type(task, info),
-                           buff_time=_get_buff_time(task, info))
+                return _apply_char_config(task, cls(task, index, char_name=old_char.char_name,
+                                                    confidence=char.confidence,
+                                                    ring_index=info.get('ring_index', -1),
+                                                    char_type=_get_char_type(task, info),
+                                                    buff_time=_get_buff_time(task, info)), info)
             _apply_char_config(task, old_char, info)
             return old_char
     if not char:
@@ -175,8 +179,10 @@ def get_char_by_pos(task, box, index, old_char):
             info = char_dict.get(char.name)
             name = char.name
             cls = load_custom_char_class(info.get('cls'))
-            return cls(task, index, char_name=name, confidence=char.confidence, ring_index=info.get('ring_index', -1),
-                       char_type=_get_char_type(task, info), buff_time=_get_buff_time(task, info))
+            return _apply_char_config(task, cls(task, index, char_name=name, confidence=char.confidence,
+                                                ring_index=info.get('ring_index', -1),
+                                                char_type=_get_char_type(task, info),
+                                                buff_time=_get_buff_time(task, info)), info)
     task.log_info(f'could not find char {index} {info} {highest_confidence}')
     if old_char:
         return old_char
