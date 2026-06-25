@@ -55,6 +55,7 @@ class TestChar(TaskTestCase):
         self.assertEqual(char_dict[Labels.char_chisa]['buff_time'], 12)
         self.assertEqual(char_dict[Labels.char_lucilla]['cls'], Lucilla)
         self.assertEqual(char_dict[Labels.char_lucilla]['char_type'], CharType.SUB_DPS)
+        self.assertTrue(char_dict[Labels.char_lucilla]['target_box_short_combat_check'])
         self.assertEqual(char_dict[Labels.char_lucy]['cls'], Lucy)
         self.assertEqual(char_dict[Labels.char_lucy]['char_type'], CharType.MAIN_DPS)
         self.assertEqual(char_dict[Labels.char_rebecca]['cls'], Rebecca)
@@ -93,6 +94,59 @@ class TestChar(TaskTestCase):
 
         self.assertTrue(task.char_features_warmed_up)
         self.assertEqual(loaded, list(char_names))
+
+    def test_load_chars_reports_only_when_team_changes(self):
+        from importlib import import_module
+
+        base_combat_task_module = import_module('src.task.BaseCombatTask')
+        original_get_char_by_pos = base_combat_task_module.get_char_by_pos
+
+        class CharA(BaseChar):
+            pass
+
+        class CharB(BaseChar):
+            pass
+
+        class CharC(BaseChar):
+            pass
+
+        class CharD(BaseChar):
+            pass
+
+        task = AutoCombatTask.__new__(AutoCombatTask)
+        task.chars = [None, None, None]
+        task.load_hotkey = lambda: None
+        task.in_team = lambda: (True, 0, 3)
+        task.get_box_by_name = lambda name: name
+        task._app = None
+        task.tr = lambda text: text
+        info_sets = []
+        logs = []
+        task.info_set = lambda key, value: info_sets.append((key, value))
+        task.log_info = logs.append
+        team = [(CharA, 'char_a'), (CharB, 'char_b'), (CharC, 'char_c')]
+
+        def get_char_by_pos(task_arg, box, index, old_char):
+            char_cls, char_name = team[index]
+            return char_cls(task_arg, index, char_name=char_name, confidence=0.9)
+
+        base_combat_task_module.get_char_by_pos = get_char_by_pos
+        try:
+            self.assertTrue(task.load_chars())
+            self.assertEqual(info_sets, [('Chars', 'CharA, CharB, CharC')])
+            self.assertEqual(len(logs), 3)
+
+            self.assertTrue(task.load_chars())
+            self.assertEqual(len(info_sets), 1)
+            self.assertEqual(len(logs), 3)
+
+            team[1] = (CharD, 'char_d')
+            self.assertTrue(task.load_chars())
+            self.assertEqual(info_sets[-1], ('Chars', 'CharA, CharD, CharC'))
+            self.assertEqual(len(info_sets), 2)
+            self.assertEqual(len(logs), 6)
+        finally:
+            base_combat_task_module.get_char_by_pos = original_get_char_by_pos
 
     def test_switch_priority_rules(self):
         class Task:

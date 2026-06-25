@@ -157,6 +157,7 @@ class CombatCheck(BaseWWTask):
             return self.reset_to_false(reason='target enemy failed')
         else:
             from src.task.AutoCombatTask import AutoCombatTask
+            chars_loaded = self.load_chars()
             has_target = self.has_target()
             if not has_target and target:
                 self.log_debug('try target')
@@ -172,7 +173,7 @@ class CombatCheck(BaseWWTask):
                     return False
                 self.has_lavitator = self.find_one('edge_levitator', threshold=0.65)
                 self.log_info(f'enter combat {self.has_lavitator}')
-                self._in_combat = self.load_chars()
+                self._in_combat = chars_loaded or self.load_chars()
                 return self._in_combat
 
     def in_combat(self, target=False):
@@ -249,6 +250,11 @@ class CombatCheck(BaseWWTask):
             no_name += '_169'
         return has_name, no_name
 
+    def allow_target_box_short_combat_check(self):
+        if hasattr(self, 'get_current_char') and (current_char := self.get_current_char(raise_exception=False)):
+            return getattr(current_char, 'target_box_short_combat_check', False)
+        return False
+
     def has_target(self, double_check=False):
         threshold = 0.6
         has_name, no_name = self.get_target_names()
@@ -262,8 +268,8 @@ class CombatCheck(BaseWWTask):
         if not best:
             best = self.find_best_match_in_box(self.get_box_by_name('target_box_long2'), [has_name, no_name],
                                                threshold=threshold)
-        if not best and self.find_best_match_in_box(self.get_box_by_name('target_box_short'), [has_name, no_name],
-                                                    threshold=threshold):
+        if not best and self.allow_target_box_short_combat_check() and self.find_best_match_in_box(
+                self.get_box_by_name('target_box_short'), [has_name, no_name], threshold=threshold):
             return True
 
         if not best:
