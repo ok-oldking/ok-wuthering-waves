@@ -144,6 +144,6 @@ class Hiyuki(BaseChar):
         return True
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        if has_intro and current_char and current_char.char_name in {'char_linnai'}:
+        if has_intro and current_char and (current_char.char_name in {'char_linnai'} or current_char.char_name in {'char_lucilla'}):
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
