@@ -16,7 +16,7 @@ class Hiyuki(BaseChar):
     POST_RES_NORMAL_ATTACK_TIME: float = 0.3
     # 放完大招后、切人前的 settle (秒)
     POST_LIB_SETTLE: float = 0.5
-    # 居合计数达此值才放 lib2
+    # 居合计数达此值才放 lib2 二命以下改为3
     LIB2_KENDO_COUNT: int = 4
     # lib2 CD 等待时间 (秒)
     HOLD_LIB_CD_WAIT: float = 1.5
