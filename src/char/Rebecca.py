@@ -7,6 +7,7 @@ class Rebecca(BaseChar):
     HEAVY_ATTACK_DURATION = 1.5
     LIB_HOLD_DURATION = 5.2
     LIB_CD_WAIT = 1.5
+    LIB_ENTER_DURATION = 0.8
     DODGE_INTERVAL = 4.0         # 闪避最小间隔（秒）
 
     def __init__(self, *args, **kwargs):
@@ -77,7 +78,6 @@ class Rebecca(BaseChar):
         if self.echo_available():
             self.click_echo(time_out=0)
         if self.has_long_action2() and self.liberation_available():
-            self.click_liberation(wait_if_cd_ready=self.LIB_CD_WAIT)
             self.perform_hmg_mode()
             
     def perform_enhanced_heavy(self):
@@ -85,13 +85,18 @@ class Rebecca(BaseChar):
             self.heavy_attack(0.5)
 
     def perform_hmg_mode(self):
+        enter_start = time.time()
+        while time.time() - enter_start < self.LIB_ENTER_DURATION:
+            self.send_liberation_key()
+            self.sleep(0.1, check_combat=False)
+        self.record_liberation_use()
+
         start = time.time()
-        last_liberation = start
-        while self.time_elapsed_accounting_for_freeze(start) < self.LIB_HOLD_DURATION:
+        last_liberation = time.time()
+        while time.time() - start < self.LIB_HOLD_DURATION:
             self.click(interval=0.08)
             now = time.time()
             if now - last_liberation > 0.9:
                 self.send_liberation_key()
                 last_liberation = now
-            self.check_combat()
-            self.task.next_frame()
+            self.sleep(0.01, check_combat=False)
