@@ -2,12 +2,30 @@ import time
 from src.char.BaseChar import BaseChar, SwitchPriority
 
 class Hiyuki(BaseChar):
+    # 在场/阶段总超时 (秒)
+    FIELD_TIME_OUT: float = 15.0
+    # Linnai BUFF 时长 (秒)
+    LINNAI_FIELD_TIME_OUT: float = 18.0
+    # hold_liberation 长按的总超时 (秒)
+    HOLD_LIB_TIME_OUT: float = 8.0
+    # 解放 CD ≤ 此值 (秒) 才进 perform_standard
+    STANDARD_LIB_CD_MAX: float = 3.5
+    # 入场起手普攻时长 (秒)
+    INTRO_NORMAL_ATTACK_TIME: float = 1.0
+    # 共鸣后接的普攻时长 (秒)
+    POST_RES_NORMAL_ATTACK_TIME: float = 0.3
+    # 放完大招后、切人前的 settle (秒)
+    POST_LIB_SETTLE: float = 0.5
+    # 居合计数达此值才放 lib2
+    LIB2_KENDO_COUNT: int = 4
+    # lib2 CD 等待时间 (秒)
+    HOLD_LIB_CD_WAIT: float = 1.5
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.lib_permission = True
         # 记录 Lib2 居合判定的次数
         self.lib2_count = 0
-        self.time_out = 14.5
 
     def switch_out(self, con_full=False):
         """角色切出时重置状态"""
@@ -16,30 +34,30 @@ class Hiyuki(BaseChar):
 
     def do_perform(self):
         if self.has_intro:
-            self.continues_normal_attack(1)
+            self.continues_normal_attack(self.INTRO_NORMAL_ATTACK_TIME)
 
-        if self.has_long_action() and self.task.get_cd('liberation') <= 3.5:
+        if self.has_long_action() and self.task.get_cd('liberation') <= self.STANDARD_LIB_CD_MAX:
             self.perform_standard()
 
         if self.has_long_action2():
             lib_success = self.perform_lib()
             if lib_success:
-                self.sleep(0.5)
+                self.sleep(self.POST_LIB_SETTLE)
                 self.switch_next_char()
-                return  
+                return
 
             elif self.lib_permission and self.liberation_available():
                 if self.hold_liberation():
-                    self.sleep(0.5)
+                    self.sleep(self.POST_LIB_SETTLE)
                     self.switch_next_char()
                     return
 
         self.switch_next_char()
 
     def perform_standard(self):
-        timeout = self.time_out
+        timeout = self.FIELD_TIME_OUT
         if self.has_intro and self.check_outro() in {'char_linnai'}:
-            timeout = 18.0
+            timeout = self.LINNAI_FIELD_TIME_OUT
 
         while self.has_long_action() and self.time_elapsed_accounting_for_freeze(self.last_perform) < timeout:
             self.click_echo(time_out=0)
@@ -53,7 +71,7 @@ class Hiyuki(BaseChar):
             if self.is_mouse_forte_full():
                 self.task.click(key="right")
                 self.heavy_click_forte(check_fun=self.is_mouse_forte_full)
-                self.task.wait_until(self.liberation_available, post_action=self.click_with_interval, time_out=self.time_out)
+                self.task.wait_until(self.liberation_available, post_action=self.click_with_interval, time_out=self.FIELD_TIME_OUT)
                 if self.click_liberation():
                     self.logger.debug('hiyuki perform lib1')
                     return
@@ -63,9 +81,9 @@ class Hiyuki(BaseChar):
 
     def perform_lib(self):
         start = time.time()
-        timeout = self.time_out
+        timeout = self.FIELD_TIME_OUT
         if self.has_intro and self.check_outro() in {'char_linnai'}:
-            timeout = 18.0
+            timeout = self.LINNAI_FIELD_TIME_OUT
 
         is_timeout = False
 
@@ -78,7 +96,7 @@ class Hiyuki(BaseChar):
             self.logger.debug(f"hiyuki find mouse_forte: {lib_heavy_avail}")
 
             is_timeout = self.time_elapsed_accounting_for_freeze(start) >= timeout - 0.5
-            if self.lib_permission and self.liberation_available() and (self.lib2_count >= 4 or is_timeout):
+            if self.lib_permission and self.liberation_available() and (self.lib2_count >= self.LIB2_KENDO_COUNT or is_timeout):
                 if self.hold_liberation():
                     self.logger.info(f'hiyuki perform lib2 after heavy (count: {self.lib2_count}, timeout: {is_timeout})')
                     self.lib2_count = 0
@@ -89,7 +107,7 @@ class Hiyuki(BaseChar):
             if res_resonance and res_resonance[0]:
                 if is_timeout:
                     break
-                self.continues_normal_attack(0.3)
+                self.continues_normal_attack(self.POST_RES_NORMAL_ATTACK_TIME)
             elif self.lib_heavy_available():
                 if is_timeout:
                     break
@@ -134,7 +152,7 @@ class Hiyuki(BaseChar):
         last_click = 0
         self.logger.debug('hold_liberation start')
         start = time.time()
-        while self.task.in_team()[0] and (self.liberation_available() or self.task.get_cd('liberation') <= 1.5) and time.time() - start < 8.0:
+        while self.task.in_team()[0] and (self.liberation_available() or self.task.get_cd('liberation') <= self.HOLD_LIB_CD_WAIT) and time.time() - start < self.HOLD_LIB_TIME_OUT:
             if time.time() - start > last_click:
                 self.task.send_key_down(self.get_liberation_key())
                 last_click += 0.2
