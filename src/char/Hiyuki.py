@@ -8,7 +8,7 @@ class Hiyuki(BaseChar):
     LINNAI_FIELD_TIME_OUT: float = 18.0
     # hold_liberation 长按的总超时 (秒)
     HOLD_LIB_TIME_OUT: float = 8.0
-    # 解放 CD ≤ 此值 (秒) 才进 perform_standard
+    # lib1 CD ≤ 此值 (秒) 才进 perform_standard
     STANDARD_LIB_CD_MAX: float = 3.5
     # 入场起手普攻时长 (秒)
     INTRO_NORMAL_ATTACK_TIME: float = 1.0
