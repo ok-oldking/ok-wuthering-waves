@@ -18,7 +18,7 @@ class Hiyuki(BaseChar):
         if self.has_intro:
             self.continues_normal_attack(1)
 
-        if self.has_long_action() and not self.has_cd('liberation'):
+        if self.has_long_action() and self.task.get_cd('liberation') <= 3.5:
             self.perform_standard()
 
         if self.has_long_action2():
@@ -72,9 +72,11 @@ class Hiyuki(BaseChar):
         while self.has_long_action2() and self.time_elapsed_accounting_for_freeze(start) < timeout:
             self.f_break()
             self.click_echo(time_out=0)
-            self.logger.debug(f"hiyuki find mouse_forte{self.task.find_one('hiyuki_lib_forte', threshold=0.7)}")
+            
+            # 优化图像识别日志和复用
+            lib_heavy_avail = self.lib_heavy_available()
+            self.logger.debug(f"hiyuki find mouse_forte: {lib_heavy_avail}")
 
-            # 终结技释放判定 (最高优先级，确保满足条件时立刻执行)
             is_timeout = self.time_elapsed_accounting_for_freeze(start) >= timeout - 0.5
             if self.lib_permission and self.liberation_available() and (self.lib2_count >= 4 or is_timeout):
                 if self.hold_liberation():
@@ -82,12 +84,15 @@ class Hiyuki(BaseChar):
                     self.lib2_count = 0
                     return True
 
-            # 提高共鸣技能释放优先级
-            if self.click_resonance(send_click=False, time_out=0)[0]:
+            # 注意确认 click_resonance 的返回值类型，防止 TypeError
+            res_resonance = self.click_resonance(send_click=False, time_out=0)
+            if res_resonance and res_resonance[0]:
                 if is_timeout:
                     break
                 self.continues_normal_attack(0.3)
             elif self.lib_heavy_available():
+                if is_timeout:
+                    break
                 self.heavy_click_forte(check_fun=self.lib_heavy_available)
                 if self.task.wait_until(self.liberation_available, post_action=self.click, time_out=0.5):
                     if self.hold_liberation():
@@ -111,7 +116,7 @@ class Hiyuki(BaseChar):
 
             self.sleep(0.05)
         
-        # 循环外的兜底判定 (防止循环退出时大招刚好就绪)
+        # 循环外的兜底判定
         if self.lib_permission and self.liberation_available():
             if self.hold_liberation():
                 self.logger.warning('hiyuki perform lib2 (final fallback)')
@@ -129,12 +134,11 @@ class Hiyuki(BaseChar):
         last_click = 0
         self.logger.debug('hold_liberation start')
         start = time.time()
-        while self.task.in_team()[0] and self.liberation_available() and time.time() - start < 8.0:
+        while self.task.in_team()[0] and (self.liberation_available() or self.task.get_cd('liberation') <= 1.5) and time.time() - start < 8.0:
             if time.time() - start > last_click:
                 self.task.send_key_down(self.get_liberation_key())
                 last_click += 0.2
-            if self.task.in_team()[0]:
-                self.sleep(0.05)
+            self.sleep(0.05)
         self.task.in_liberation = True
         self.task.send_key_up(self.get_liberation_key())
         self.task.wait_until(lambda: self.task.in_team()[0], time_out=3)
@@ -144,6 +148,6 @@ class Hiyuki(BaseChar):
         return True
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        if has_intro and current_char and (current_char.char_name in {'char_linnai'} or current_char.char_name in {'char_lucilla'}):
+        if has_intro and current_char and current_char.char_name in {'char_linnai', 'char_lucilla'}:
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
