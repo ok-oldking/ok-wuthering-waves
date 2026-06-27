@@ -95,19 +95,31 @@ class ShoreKeeper(BaseChar):
             # with the least concerto banked. Spend them here too (each is
             # frame-checked and a no-op when on cooldown), mirroring sk_open.
             self.click_liberation()
-            if not self.click_resonance()[0]:
-                self.heavy_click_forte(self.is_mouse_forte_full)
+            self._spend_skill_and_forte()
         elif beat.name in ('sk_intro', 'sk_loop'):
             # 10 / 16. super intro, build concerto, outro
             if beat.intro:
                 self._intro_wait()
             self.click_echo(time_out=0)
             self.click_liberation()
-            if not self.click_resonance()[0]:
-                self.heavy_click_forte(self.is_mouse_forte_full)
+            self._spend_skill_and_forte()
         else:  # defensive: unknown beat
             self.click_echo(time_out=0)
             self.click_liberation()
+            self._spend_skill_and_forte()
+
+    def _spend_skill_and_forte(self):
+        """Spend BOTH skill and forte for concerto, not either/or.
+
+        ShoreKeeper is a low-damage healer, so her held forte is one of her
+        biggest concerto sources. The previous ``skill OR forte`` (only used
+        forte if the skill failed to fire) meant forte was skipped on every beat
+        where the skill landed, leaving her short of a full ring for the outro.
+        heavy_click_forte no-ops when the forte gauge is not charged, so spending
+        both is safe and adds no dead time.
+        """
+        self.click_resonance()
+        self.heavy_click_forte(self.is_mouse_forte_full)
 
     def switch_next_char(self, *args, **kwargs):
         if self.is_con_full():
