@@ -68,13 +68,11 @@ Beat = namedtuple('Beat', ['name', 'char', 'intro', 'outro'])
 #     9  Aug  intro, ha, lib (griffin), skill, ha, 2nd lib, [ba123 ha], echo, outro
 #    10  Sk   super intro, build concerto, outro
 #
-#   Loop (repeats):
-#    11  Aug  intro, ha
-#    12  Iuno skill, echo, dash, skill
-#    13  Aug  skill, ha
-#    14  Iuno jump, lib, skill, ba1234, skill, ba, ha, outro
-#    15  Aug  ha, lib (griffin), skill, ha, 2nd lib, ba123, ha, echo, outro
-#    16  Sk   super intro, build concerto, outro  -> back to 11
+#   Loop (repeats): ShoreKeeper hands off to Iuno, never straight to Augusta,
+#   so Augusta only performs her damage rotation AFTER Iuno's outro buffs her.
+#    11  Iuno jump, lib, skill, ba1234, skill, ba, ha, outro   (buffs Augusta)
+#    12  Aug  ha, lib (griffin), skill, ha, 2nd lib, ba123, ha, echo, outro  (buffed)
+#    13  Sk   super intro, build concerto, outro  -> back to 11 (Iuno)
 #
 # ``intro`` of beat N always equals ``outro`` of beat N-1 (with loop wraparound),
 # i.e. an outro on one beat hands the next beat its intro.
@@ -90,12 +88,9 @@ BEATS = [
     Beat('iuno_burst',  'Iuno',        intro=True,  outro=True),
     Beat('aug_burst',   'Augusta',     intro=True,  outro=True),
     Beat('sk_intro',    'ShoreKeeper', intro=True,  outro=True),
-    # loop
-    Beat('aug_loop1',   'Augusta',     intro=True,  outro=False),
-    Beat('iuno_loop1',  'Iuno',        intro=False, outro=False),
-    Beat('aug_loop2',   'Augusta',     intro=False, outro=False),
-    Beat('iuno_burst2', 'Iuno',        intro=False, outro=True),
-    Beat('aug_burst2',  'Augusta',     intro=True,  outro=True),
+    # loop: Iuno (buff) -> Augusta (buffed damage) -> ShoreKeeper -> Iuno ...
+    Beat('iuno_loop',   'Iuno',        intro=True,  outro=True),
+    Beat('aug_loop',    'Augusta',     intro=True,  outro=True),
     Beat('sk_loop',     'ShoreKeeper', intro=True,  outro=True),
 ]
 

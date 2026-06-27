@@ -40,7 +40,8 @@ EXPECTED_OPENER = [
     'Augusta', 'Iuno', 'ShoreKeeper', 'Iuno', 'Augusta', 'Iuno',
     'ShoreKeeper', 'Iuno', 'Augusta', 'ShoreKeeper',
 ]
-EXPECTED_LOOP = ['Augusta', 'Iuno', 'Augusta', 'Iuno', 'Augusta', 'ShoreKeeper']
+# loop: ShoreKeeper -> Iuno (buff) -> Augusta (buffed damage) -> ShoreKeeper ...
+EXPECTED_LOOP = ['Iuno', 'Augusta', 'ShoreKeeper']
 
 
 class TestStrictRotation(unittest.TestCase):
@@ -122,9 +123,36 @@ class TestStrictRotation(unittest.TestCase):
 
     def test_resync_wraps_through_loop(self):
         rot = StrictRotation(FakeTask(target_team()))
-        rot.index = len(BEATS) - 1  # sk_loop; next Augusta is loop start
+        rot.index = len(BEATS) - 1  # sk_loop; loop start is Iuno, then Augusta
         self.assertTrue(rot.resync('Augusta'))
-        self.assertEqual(rot.index, LOOP_START)
+        self.assertEqual(rot.current_beat().char, 'Augusta')
+        self.assertEqual(rot.index, LOOP_START + 1)
+
+    def test_shorekeeper_always_hands_off_to_iuno(self):
+        # Augusta must never immediately follow ShoreKeeper: SK -> Iuno so Iuno
+        # buffs Augusta before her damage rotation.
+        n = len(BEATS)
+        for i in range(n):
+            if BEATS[i].char != 'ShoreKeeper':
+                continue
+            nxt = BEATS[i + 1] if i + 1 < n else BEATS[LOOP_START]
+            self.assertEqual(nxt.char, 'Iuno',
+                             f'ShoreKeeper beat {BEATS[i].name} must hand off to Iuno, '
+                             f'not {nxt.char}')
+
+    def test_every_augusta_follows_iuno(self):
+        # Augusta should only act after an Iuno beat (so she is buffed).
+        n = len(BEATS)
+        for i in range(n):
+            if BEATS[i].char != 'Augusta':
+                continue
+            if i == 0:
+                continue  # opener lead-in, no preceding beat
+            prev = BEATS[i - 1]
+            # opener has setup Augusta beats; enforce the invariant in the loop
+            if i >= LOOP_START:
+                self.assertEqual(prev.char, 'Iuno',
+                                 f'loop Augusta beat {BEATS[i].name} must follow Iuno')
 
     def test_maybe_reset_on_new_combat(self):
         task = FakeTask(target_team(), combat_start=100)

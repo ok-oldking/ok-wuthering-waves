@@ -47,21 +47,15 @@ class Iuno(BaseChar):
 
     def perform_beat(self, beat):
         """Execute one strict-rotation beat (see src/combat/StrictRotation.py)."""
-        from src.combat.StrictRotation import dash
         if beat.name in ('iuno_open1', 'iuno_open2'):
             # 2 / 4. skill
             self.click_resonance()
         elif beat.name == 'iuno_open3':
             # 6. echo
             self.click_echo()
-        elif beat.name == 'iuno_loop1':
-            # 12. skill, echo, dash, skill
-            self.click_resonance()
-            self.click_echo()
-            dash(self)
-            self.click_resonance()
-        elif beat.name in ('iuno_burst', 'iuno_burst2'):
-            # 8 / 14. (intro) jump-cancel, lib, skill, ba1234, skill, ba, ha, outro
+        elif beat.name in ('iuno_burst', 'iuno_loop'):
+            # opener 8 / loop: (intro) jump-cancel, lib, skill, ba1234, skill,
+            # ba, ha, outro -- the two skill casts buff Augusta on the outro.
             if beat.intro:
                 self.wait_down()
             self._iuno_burst()

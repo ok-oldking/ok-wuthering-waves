@@ -39,18 +39,12 @@ class Augusta(BaseChar):
         elif beat.name == 'aug_open2':
             # 5. ha
             self._heavy_or_prowess()
-        elif beat.name == 'aug_loop1':
-            # 11. intro, ha
-            self._heavy_or_prowess()
-        elif beat.name == 'aug_loop2':
-            # 13. skill, ha
-            self.click_resonance()
-            self._heavy_or_prowess()
         elif beat.name == 'aug_burst':
-            # 9. intro, ha, lib (griffin), skill, ha, 2nd lib, echo, outro
+            # opener 9. intro, ha, lib (griffin), skill, ha, 2nd lib, echo, outro
             self._augusta_burst(with_basics=False)
-        elif beat.name == 'aug_burst2':
-            # 15. ha, lib (griffin), skill, ha, 2nd lib, ba123, ha, echo, outro
+        elif beat.name == 'aug_loop':
+            # loop. intro (Iuno-buffed), ha, lib (griffin), skill, ha, 2nd lib,
+            # ba123, ha, echo, outro -- her full damage, only after Iuno's buff.
             self._augusta_burst(with_basics=True)
         else:  # defensive: unknown beat -> conservative damage
             self.click_resonance()
