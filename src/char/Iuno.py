@@ -45,22 +45,16 @@ class Iuno(BaseChar):
                 return SwitchPriority.NO
         return super().get_switch_priority(current_char, has_intro, target_low_con)
 
-    def perform_beat(self, beat):
-        """Execute one strict-rotation beat (see src/combat/StrictRotation.py)."""
-        if beat.name in ('iuno_open1', 'iuno_open2'):
-            # 2 / 4. skill
-            self.click_resonance()
-        elif beat.name == 'iuno_open3':
-            # 6. echo
-            self.click_echo()
-        elif beat.name in ('iuno_burst', 'iuno_loop'):
-            # opener 8 / loop: (intro) jump-cancel, lib, skill, ba1234, skill,
-            # ba, ha, outro -- the two skill casts buff Augusta on the outro.
-            if beat.intro:
-                self.wait_down()
-            self._iuno_burst()
-        else:  # defensive: unknown beat
-            self.do_everything()
+    def perform_stage(self):
+        """Stage 2: Iuno's buff burst (see src/combat/StrictRotation.py).
+
+        jump-cancel, lib, skill, ba1234, skill, ba, ha -- the two skill casts apply
+        Iuno's buffs, transferred to Augusta when the coordinator gates the outro on
+        full concerto and switches.
+        """
+        if self.has_intro:
+            self.wait_down()
+        self._iuno_burst()
 
     def jump_cancel(self):
         """Jump-cancel Iuno's recovery/intro while the jump prompt is shown."""
@@ -93,18 +87,8 @@ class Iuno(BaseChar):
             self.last_heavy = time.time()
         else:
             heavy(self)
-        # Top off concerto to full before returning. StrictRotation.run_current
-        # calls switch_next_char immediately after this beat, and the swap is
-        # only promoted to a sub-dps OUTRO (which is what transfers Iuno's buffs
-        # to Augusta) when the on-screen ring reads exactly full at that moment.
-        # Iuno's burst ends on a heavy whose concerto/ring-fill has not finished
-        # registering a frame later, so the ring reads <1 and the swap is demoted
-        # to a plain switch (no buff). Hold here, clicking basic attacks, until
-        # the ring is full. Bounded at 1.2s and exits the instant it reads full,
-        # so it cannot reintroduce the open-ended busy-wait the rotation rejects;
-        # mirrors the proven src/char/Linnai.py top-off.
-        if not self.is_con_full():
-            self.task.wait_until(self.is_con_full, post_action=self.click_with_interval, time_out=1.2)
+        # Concerto is topped off + the outro gated centrally by
+        # StrictRotation.run_current, so the burst itself does not wait here.
 
     def do_everything(self, time_out=1.5, force_complete=False):
         if self.has_intro:
