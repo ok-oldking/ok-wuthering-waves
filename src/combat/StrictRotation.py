@@ -168,8 +168,7 @@ class StrictRotation:
             self.task.wait_until(char.is_con_full, post_action=char.click_with_interval,
                                  time_out=STAGE_GATE_TIME_OUT)
         if char.is_con_full():
-            self.advance()
-            char.switch_next_char()
+            self._advance_and_switch(char)
             return True
 
         # Outro not fulfilled this attempt. Redo the stage -- but give up after
@@ -180,12 +179,31 @@ class StrictRotation:
         if self.attempts >= MAX_STAGE_ATTEMPTS:
             logger.warning(f'StrictRotation stage {char.name}: outro not fulfilled after '
                            f'{self.attempts} attempts; giving up and switching anyway')
-            self.advance()
-            char.switch_next_char()
+            self._advance_and_switch(char)
             return True
+        # The intro animation only plays on the first beat after a swap-in; clear
+        # the intro flags so perform_stage does not re-run its intro wait
+        # (_intro_wait / wait_down) on every redo beat.
+        char.has_intro = False
+        char.has_sub_dps_intro = False
         logger.info(f'StrictRotation stage {char.name}: outro not fulfilled '
                     f'(attempt {self.attempts}/{MAX_STAGE_ATTEMPTS}); redoing stage')
         return True
+
+    def _advance_and_switch(self, char):
+        """Advance the stage and switch to the next character.
+
+        advance() must run before switch_next_char so priority_for marks the next
+        stage's character MUST. If the swap aborts (e.g. combat ended raises), undo
+        the advance so the stage is not left half-advanced; resync/maybe_reset will
+        re-place it on recovery.
+        """
+        self.advance()
+        try:
+            char.switch_next_char()
+        except Exception:
+            self.stage = (self.stage - 1) % len(STAGES)
+            raise
 
 
 def get_strict_rotation(task):

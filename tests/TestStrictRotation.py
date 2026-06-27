@@ -164,6 +164,43 @@ class TestStrictRotation(unittest.TestCase):
         self.assertEqual(rot.stage, 1)             # advanced to next stage
         self.assertEqual(rot.attempts, 0)          # counter reset for new stage
 
+    def test_run_current_clears_intro_flags_on_redo(self):
+        # The intro wait must only run on the first beat after a swap-in; on a
+        # redo (gate failed, no switch) the intro flags must be cleared.
+        task = FakeTask(target_team())
+        rot = StrictRotation(task)
+        rot.maybe_reset()
+        sk = task.chars[2]
+        wire_char(sk, task, con_full=False)
+        sk.has_intro = True
+        sk.has_sub_dps_intro = True
+        rot.stage = 0
+        rot.run_current(sk)            # gate fails -> redo branch
+        self.assertFalse(sk.has_intro)
+        self.assertFalse(sk.has_sub_dps_intro)
+        self.assertEqual(rot.stage, 0)  # still on the stage
+
+    def test_advance_and_switch_undoes_advance_on_abort(self):
+        # If the swap aborts (e.g. combat ended), the stage must not be left
+        # half-advanced.
+        task = FakeTask(target_team())
+        rot = StrictRotation(task)
+        rot.maybe_reset()
+        sk = task.chars[2]
+        sk.task = task
+        sk.perform_stage = lambda: None
+        sk.is_con_full = lambda: True
+        sk.click_with_interval = lambda *a, **k: None
+
+        def boom(*a, **k):
+            raise RuntimeError('combat ended mid-swap')
+
+        sk.switch_next_char = boom
+        rot.stage = 0
+        with self.assertRaises(RuntimeError):
+            rot.run_current(sk)
+        self.assertEqual(rot.stage, 0)  # advance was undone
+
     def test_run_current_inactive_returns_false_no_perform(self):
         task = FakeTask(team('Augusta', 'Iuno', 'Verina'))
         rot = StrictRotation(task)
