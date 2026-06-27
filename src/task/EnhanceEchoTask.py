@@ -8,7 +8,6 @@ from qfluentwidgets import FluentIcon
 from ok import FindFeature, Logger
 from ok.feature.Box import get_bounding_box
 from ok.util.file import clear_folder
-from src.scene.WWScene import WWScene
 from src.task.BaseWWTask import BaseWWTask
 
 logger = Logger.get_logger(__name__)

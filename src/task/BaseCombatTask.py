@@ -5,7 +5,7 @@ from decimal import Decimal, ROUND_UP, ROUND_DOWN
 import cv2
 import numpy as np
 
-from ok import Logger, Config
+from ok import Box, Logger, Config
 from ok import color_range_to_bound
 from ok import safe_get
 from src import text_white_color
@@ -21,17 +21,14 @@ cd_regex = re.compile(r'\d{1,2}\.\d')
 
 class NotInCombatException(Exception):
     """未处于战斗状态异常。"""
-    pass
 
 
 class CharDeadException(NotInCombatException):
     """角色死亡异常。"""
-    pass
 
 
 class CharRevivedException(CharDeadException):
     """角色已复活，用于中断当前战斗上下文并让任务重新进入。"""
-    pass
 
 
 mismatched_names = {
@@ -72,8 +69,6 @@ class BaseCombatTask(CombatCheck):
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']  # 角色文本标识符列表
         self.mouse_pos = None  # 当前鼠标位置
         self.combat_start = 0  # 战斗开始时间戳
-
-        self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.add_text_fix({'Ｅ': 'e'})
         self.use_liberation = True
 
@@ -148,11 +143,19 @@ class BaseCombatTask(CombatCheck):
             self.next_frame()
         logger.info(f'send_key_and_wait_animation timed out {key}')
 
+    cd_cache_seconds = 1.0  # how long one OCR reading of the cd bar stays valid
+
     def refresh_cd(self):
         if self.scene.cd_refreshed:
             return
         index = self.get_current_char().index
         cds = self.cds.get(index)
+        if cds is not None and time.time() - cds.get('time', 0) < self.cd_cache_seconds:
+            # a recent reading is still valid: get_cd counts it down with
+            # time_elapsed_accounting_for_freeze, and casting a skill calls
+            # invalidate_cd, so re-running OCR every frame buys nothing
+            self.scene.cd_refreshed = True
+            return
         if cds is None:
             cds = {}
             self.cds[index] = cds
@@ -171,6 +174,20 @@ class BaseCombatTask(CombatCheck):
                 cds['echo'] = cd
         self.scene.cd_refreshed = True
         self.log_debug(f'cd refreshed: {cds} {time.time() - cds["time"]}')
+
+    def invalidate_cd(self, char_index=None):
+        """Drop the cached cd reading so the next query re-reads the UI.
+
+        Called after sending a skill key: the cached reading predates the cast
+        and would otherwise report the skill as still available for up to
+        cd_cache_seconds.
+        """
+        if char_index is None:
+            char = self.get_current_char()
+            char_index = char.index if char else None
+        if char_index is not None:
+            self.cds.pop(char_index, None)
+        self.scene.cd_refreshed = False
 
     def get_cd(self, box_name, char_index=None):
         self.refresh_cd()
@@ -548,7 +565,16 @@ class BaseCombatTask(CombatCheck):
             if not (isinstance(switch_to, ShoreKeeper) and has_intro):
                 self.check_combat()
             now = time.time()
-            _, current_index, _ = self.in_team()
+            in_team, current_index, _ = self.in_team()
+            if not in_team:
+                # the team UI can drop out for a few frames (liberation flash,
+                # intro VFX); keep waiting instead of aborting combat on the
+                # first missed frame, and don't click into unknown screens
+                if now - start > self.switch_char_time_out:
+                    logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
+                    self.raise_not_in_combat(f'not in_team while switching')
+                self.next_frame()
+                continue
             if current_index == current_char.index:
                 self.update_lib_portrait_icon()
                 refreshed_has_intro = has_intro or current_char.is_con_full()
@@ -574,17 +600,11 @@ class BaseCombatTask(CombatCheck):
                 self.log_debug('switch not detected, send click')
                 self.click()
                 self.sleep(0.001)
-            in_team, current_index, size = self.in_team()
-            if not in_team:
-                logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                # if self.debug:
-                #     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                self.raise_not_in_combat(f'not in_team while switching')
-                if now - start > self.switch_char_time_out:
-                    self.raise_not_in_combat(
-                        f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
-                self.next_frame()
-                continue
+                # re-check right after the key so a successful switch is
+                # detected in the same iteration without waiting a frame
+                in_team, new_index, _ = self.in_team()
+                if in_team:
+                    current_index = new_index
             if current_index != switch_to.index:
                 if now - start > 10:
                     if self.debug:
@@ -614,8 +634,21 @@ class BaseCombatTask(CombatCheck):
                              frame_processor=binarize_for_matching)
 
     def find_e_forte(self):
-        return self.find_one('e_forte', horizontal_variance=0.025, threshold=0.6,
-                             frame_processor=binarize_for_matching)
+        box = self.find_one('e_forte', horizontal_variance=0.025, threshold=0.6,
+                            frame_processor=binarize_for_matching)
+        if not box:
+            return None
+        # The utility-wheel prompt renders an E keycap in the same screen slot,
+        # flanked by a slash and a mouse icon whose middle button is highlighted
+        # yellow; the forte prompt is a bare E. Reject the wheel context via the
+        # yellow neighbor (measured: wheel fixtures >=0.07, bare forte E 0.000).
+        neighbor = Box(box.x + int(box.width * 1.8), box.y - int(box.height * 0.3),
+                       int(box.width * 1.6), int(box.height * 1.6), name='e_forte_neighbor')
+        yellow = self.calculate_color_percentage(wheel_mouse_yellow, neighbor)
+        if yellow > 0.04:
+            self.log_debug(f'find_e_forte rejected wheel prompt, yellow={yellow:.3f}')
+            return None
+        return box
 
     def get_liberation_key(self):
         """获取共鸣解放技能的按键。
@@ -1011,9 +1044,10 @@ class BaseCombatTask(CombatCheck):
 
     def update_lib_portrait_icon(self):
         # self.ensure_con_lib_boxes()
-        for i in range(len(self.chars)):
+        for i, char in enumerate(self.chars):
             char_index = i + 1
-            char = self.chars[i]
+            if char is None:
+                continue
             if not char.is_current_char and char.ring_index >= 0 and not char._liberation_available:
                 box = self.get_box_by_name("lib_mark_char_{}".format(char_index))
                 match = self.find_one(lib_ready_templates[char.ring_index], box=box, threshold=0.8)
@@ -1027,6 +1061,12 @@ white_color = {  # 用于检测UI元素可用状态的白色颜色范围。
     'r': (253, 255),  # Red range
     'g': (253, 255),  # Green range
     'b': (253, 255)  # Blue range
+}
+
+wheel_mouse_yellow = {  # 工具轮盘提示中鼠标中键图标的黄色高亮。
+    'r': (200, 255),
+    'g': (150, 230),
+    'b': (0, 110)
 }
 
 con_colors = [  # 不同角色属性的协奏值能量环的颜色范围列表。

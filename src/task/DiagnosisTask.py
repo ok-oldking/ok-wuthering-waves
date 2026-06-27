@@ -3,7 +3,10 @@ import time
 from qfluentwidgets import FluentIcon
 
 from src.task.BaseCombatTask import BaseCombatTask
+from ok import Logger
 from src.task.WWOneTimeTask import WWOneTimeTask
+
+logger = Logger.get_logger(__name__)
 
 
 class DiagnosisTask(WWOneTimeTask, BaseCombatTask):

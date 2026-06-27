@@ -155,45 +155,31 @@ def _apply_char_config(task, char, info):
     return char
 
 
+def _new_char(task, index, cls, char_name, confidence, info):
+    return cls(task, index, char_name=char_name, confidence=confidence,
+               ring_index=info.get('ring_index', -1), char_type=_get_char_type(task, info),
+               buff_time=_get_buff_time(task, info))
+
+
 def get_char_by_pos(task, box, index, old_char):
-    highest_confidence = 0
-    info = None
-    name = "unknown"
-    char = None
     if old_char and old_char.confidence > 0.92 and old_char.char_name in char_names:
         char = task.find_one(old_char.char_name, box=box, threshold=0.6)
         if char:
             info = char_dict.get(old_char.char_name)
             cls = load_custom_char_class(info.get('cls'))
             if type(old_char) is not cls:
-                return _apply_char_config(task, cls(task, index, char_name=old_char.char_name,
-                                                    confidence=char.confidence,
-                                                    ring_index=info.get('ring_index', -1),
-                                                    char_type=_get_char_type(task, info),
-                                                    buff_time=_get_buff_time(task, info)), info)
+                return _new_char(task, index, cls, old_char.char_name, char.confidence, info)
             _apply_char_config(task, old_char, info)
             return old_char
-    if not char:
-        char = task.find_best_match_in_box(box, char_names, threshold=0.6)
-        if char:
-            info = char_dict.get(char.name)
-            name = char.name
-            cls = load_custom_char_class(info.get('cls'))
-            return _apply_char_config(task, cls(task, index, char_name=name, confidence=char.confidence,
-                                                ring_index=info.get('ring_index', -1),
-                                                char_type=_get_char_type(task, info),
-                                                buff_time=_get_buff_time(task, info)), info)
-    task.log_info(f'could not find char {index} {info} {highest_confidence}')
+    char = task.find_best_match_in_box(box, char_names, threshold=0.6)
+    if char:
+        info = char_dict.get(char.name)
+        cls = load_custom_char_class(info.get('cls'))
+        return _new_char(task, index, cls, char.name, char.confidence, info)
+    task.log_info(f'could not find char {index}')
     if old_char:
         return old_char
     if task.debug:
         task.screenshot(f'could not find char {index}')
-    return BaseChar(task, index, char_name=name)
+    return BaseChar(task, index, char_name="unknown")
 
-
-def is_float(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False

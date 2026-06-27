@@ -1,8 +1,6 @@
-import cv2
-import numpy as np
 
 import re
-from ok import find_boxes_by_name, find_boxes_within_boundary, Logger
+from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask
 
 logger = Logger.get_logger(__name__)

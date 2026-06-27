@@ -2,11 +2,10 @@ import math
 import re
 import time
 from datetime import datetime, timedelta
-from typing import List
 
 import numpy as np
 
-from ok import BaseTask, Logger, find_boxes_by_name, og, find_color_rectangles, mask_white
+from ok import BaseTask, Logger, og, find_color_rectangles
 from ok import CannotFindException
 import cv2
 
@@ -325,7 +324,6 @@ class BaseWWTask(BaseTask):
         delta_x = center_x - location_x
         delta_y = center_y - location_y
         # Determine dominant direction based on vector magnitude
-        direction = None
         if (abs(delta_x) > abs(delta_y) or (not current_direction and abs(delta_x) > 0.05 * screen_height)
                 or abs(delta_x) > 0.15 * screen_height):
             # More horizontal movement needed
@@ -769,7 +767,6 @@ class BaseWWTask(BaseTask):
         max_conf = 0
         max_angle = 0
         max_target = None
-        max_mat = None
         (h, w) = arrow_template.mat.shape[:2]
         # self.log_debug(f'turn_east h:{h} w:{w}')
         center = (w // 2, h // 2)

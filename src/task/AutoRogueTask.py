@@ -48,7 +48,7 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
         WWOneTimeTask.run(self)
         try:
             return self.do_run()
-        except TaskDisabledException as e:
+        except TaskDisabledException:
             pass
         except Exception as e:
             logger.error('farm 4c error, try handle monthly card', e)
@@ -240,7 +240,6 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
             self.middle_click(interval=1, after_sleep=0.2)
             self.sleep(1)
             i += 1
-        timeout = 6
         if i >= 4:
             self.send_key_down('w')
             self.wait_until(self.find_f_with_text, time_out=2)

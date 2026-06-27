@@ -124,6 +124,22 @@ class TestCombatCheck(TaskTestCase):
         self.assertTrue(task.do_check_in_combat(False))
         self.assertEqual(order, ['load_chars', ('has_target', True)])
 
+    def test_has_target_locked_fixtures(self):
+        for image in ('tests/images/aemeath_lib.png', 'tests/images/combat_has_cd.png',
+                      'tests/images/luhesi_lib_in_cd.png'):
+            self.set_image(image)
+            self.task.esc_count = 1  # skip the bear-echo esc branch
+            self.assertTrue(self.task.has_target(), image)
+
+    def test_has_target_rejects_unlocked_matches(self):
+        # skull-shaped template matches without the gold lock ring must not count;
+        # 33_forte_2 was a false positive before gold-ring verification
+        for image in ('tests/images/33_forte_2.png', 'tests/images/confirm_highlight.png',
+                      'tests/images/in_combat3.png'):
+            self.set_image(image)
+            self.task.esc_count = 1
+            self.assertFalse(self.task.has_target(), image)
+
 
 if __name__ == '__main__':
     unittest.main()

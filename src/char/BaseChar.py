@@ -196,7 +196,7 @@ class BaseChar:
         Returns:
             str: 角色类名字符串。
         """
-        return f"{self.__class__.__name__}"
+        return self.__class__.__name__
 
     def __eq__(self, other):
         """比较两个角色对象是否相同 (基于名称和索引)。"""
@@ -442,6 +442,7 @@ class BaseChar:
             down_time (float, optional): 按键按下的持续时间。默认为 0.01。
         """
         self._resonance_available = False
+        self.task.invalidate_cd(self.index)
         self.task.send_key(self.get_resonance_key(), interval=interval, down_time=down_time, after_sleep=post_sleep)
 
     def send_echo_key(self, after_sleep=0, interval=-1, down_time=0.01):
@@ -453,6 +454,7 @@ class BaseChar:
             down_time (float, optional): 按键按下的持续时间。默认为 0.01。
         """
         self._echo_available = False
+        self.task.invalidate_cd(self.index)
         self.task.send_key(self.get_echo_key(), interval=interval, down_time=down_time, after_sleep=after_sleep)
 
     def heavy_click_forte(self, check_fun=None):
@@ -476,6 +478,7 @@ class BaseChar:
             down_time (float, optional): 按键按下的持续时间。默认为 0.01。
         """
         self._liberation_available = False
+        self.task.invalidate_cd(self.index)
         self.task.send_key(self.get_liberation_key(), interval=interval, down_time=down_time, after_sleep=after_sleep)
 
     def record_resonance_use(self):
@@ -896,10 +899,10 @@ class BaseChar:
             return 'null'
         time = 0
         outro = 'null'
-        for i, char in enumerate(self.task.chars):
-            if char == self:
-                pass
-            elif char.last_switch_time > time:
+        for char in self.task.chars:
+            if char is None or char == self:
+                continue
+            if char.last_switch_time > time:
                 time = char.last_switch_time
                 outro = char.char_name
         self.logger.info(f'erned outro from {outro}')

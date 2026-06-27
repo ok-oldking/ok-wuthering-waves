@@ -4,7 +4,6 @@ from qfluentwidgets import FluentIcon
 
 from ok import TriggerTask, Logger
 from src.char.CharFactory import char_names
-from src.scene.WWScene import WWScene
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharDeadException
 
 logger = Logger.get_logger(__name__)

@@ -1,9 +1,8 @@
-import re
 import time
 
 from ok import Logger
 
-from src.task.BaseWWTask import BaseWWTask, convert_bw, convert_dialog_icon
+from src.task.BaseWWTask import BaseWWTask, convert_dialog_icon
 
 logger = Logger.get_logger(__name__)
 
