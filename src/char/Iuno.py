@@ -84,7 +84,12 @@ class Iuno(BaseChar):
         """
         from src.combat.StrictRotation import basic_attacks, heavy
         self.jump_cancel()
-        self.click_liberation(wait_if_cd_ready=0)
+        # wait_if_cd_ready=0.5: the burst is a single lib attempt, so give a
+        # finishing-cooldown liberation a brief chance to come up and fire instead
+        # of skipping it for the whole burst. (If lib is genuinely not ready -- not
+        # enough energy, or the lit icon is not being captured -- it still no-ops;
+        # for the latter, use the WGC capture method, not BitBlt.)
+        self.click_liberation(wait_if_cd_ready=0.5)
         self.send_resonance_key(post_sleep=0.1)          # skill -> buff 1
         basic_attacks(self, 4)                           # ba1234
         # let the skill come back up so the second cast actually lands (buff 2)
