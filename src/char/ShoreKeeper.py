@@ -66,21 +66,47 @@ class ShoreKeeper(BaseChar):
         finally:
             self.task.skip_combat_check = False
 
-    def perform_stage(self):
-        """Stage 1: ShoreKeeper heals and builds concerto (see StrictRotation.py).
+    def perform_beat(self, beat):
+        """Execute one strict-rotation beat (see src/combat/StrictRotation.py).
 
-        echo, lib, ba1234, then skill + forte. Echo first because it is her main
-        concerto source (her basics generate almost none). The coordinator gates
-        the outro on full concerto before switching to Iuno, so she redoes this
-        kit until her outro (and its buff) fires.
+        Each beat spends ShoreKeeper's full concerto-building kit (echo, lib,
+        skill, forte) so the ring is naturally full by the outro swap -- there is
+        no busy-wait top-off, which would stall and break the rotation.
         """
-        from src.combat.StrictRotation import basic_attacks
-        if self.has_intro:
-            self._intro_wait()
-        self.click_echo(time_out=0)
-        self.click_liberation()
-        basic_attacks(self, 4)  # ba1234 after liberation
-        self._spend_skill_and_forte()
+        from src.combat.StrictRotation import basic_attacks, heavy
+        if beat.name == 'sk_open':
+            # 3. echo, ba123, lib, ba12, ha, skill
+            # Echo first: it is ShoreKeeper's main concerto source (her basic
+            # attacks generate almost none), so without it she never builds the
+            # concerto needed to outro and apply her outro buff. time_out=0 only
+            # fires when the echo is off cooldown, so it is safe to always call.
+            self.click_echo(time_out=0)
+            basic_attacks(self, 3)
+            self.click_liberation()
+            basic_attacks(self, 2)
+            heavy(self)
+            self.click_resonance()
+        elif beat.name == 'sk_open2':
+            # 7. echo, ba12345, ha, outro
+            self.click_echo(time_out=0)
+            basic_attacks(self, 5)
+            heavy(self)
+            # sk_open2 alone omitted lib+skill, so it entered the central top-off
+            # with the least concerto banked. Spend them here too (each is
+            # frame-checked and a no-op when on cooldown), mirroring sk_open.
+            self.click_liberation()
+            self._spend_skill_and_forte()
+        elif beat.name in ('sk_intro', 'sk_loop'):
+            # 10 / 16. super intro, build concerto, outro
+            if beat.intro:
+                self._intro_wait()
+            self.click_echo(time_out=0)
+            self.click_liberation()
+            self._spend_skill_and_forte()
+        else:  # defensive: unknown beat
+            self.click_echo(time_out=0)
+            self.click_liberation()
+            self._spend_skill_and_forte()
 
     def _spend_skill_and_forte(self):
         """Spend BOTH skill and forte for concerto, not either/or.

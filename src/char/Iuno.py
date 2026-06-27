@@ -45,16 +45,28 @@ class Iuno(BaseChar):
                 return SwitchPriority.NO
         return super().get_switch_priority(current_char, has_intro, target_low_con)
 
-    def perform_stage(self):
-        """Stage 2: Iuno's buff burst (see src/combat/StrictRotation.py).
-
-        jump-cancel, lib, skill, ba1234, skill, ba, ha -- the two skill casts apply
-        Iuno's buffs, transferred to Augusta when the coordinator gates the outro on
-        full concerto and switches.
-        """
-        if self.has_intro:
-            self.wait_down()
-        self._iuno_burst()
+    def perform_beat(self, beat):
+        """Execute one strict-rotation beat (see src/combat/StrictRotation.py)."""
+        from src.combat.StrictRotation import dash
+        if beat.name in ('iuno_open1', 'iuno_open2'):
+            # 2 / 4. skill
+            self.click_resonance()
+        elif beat.name == 'iuno_open3':
+            # 6. echo
+            self.click_echo()
+        elif beat.name == 'iuno_loop1':
+            # 12. skill, echo, dash, skill
+            self.click_resonance()
+            self.click_echo()
+            dash(self)
+            self.click_resonance()
+        elif beat.name in ('iuno_burst', 'iuno_burst2'):
+            # 8 / 14. (intro) jump-cancel, lib, skill, ba1234, skill, ba, ha, outro
+            if beat.intro:
+                self.wait_down()
+            self._iuno_burst()
+        else:  # defensive: unknown beat
+            self.do_everything()
 
     def jump_cancel(self):
         """Jump-cancel Iuno's recovery/intro while the jump prompt is shown."""
@@ -75,11 +87,8 @@ class Iuno(BaseChar):
         self.click_liberation(wait_if_cd_ready=0)
         self.send_resonance_key(post_sleep=0.1)          # skill -> buff 1
         basic_attacks(self, 4)                           # ba1234
-        # let the skill come back up so the second cast actually lands (buff 2).
-        # Capped at 2s (not 1s): when the skill CD slightly exceeds 1s the 1s
-        # wait timed out and the unconditional send below fired into cooldown,
-        # silently dropping Iuno's second buff.
-        self.task.wait_until(self.resonance_available, time_out=2)
+        # let the skill come back up so the second cast actually lands (buff 2)
+        self.task.wait_until(self.resonance_available, time_out=1)
         self.send_resonance_key(post_sleep=0.1)          # skill -> buff 2
         basic_attacks(self, 1)                           # ba
         if self.task.find_feature("iuno_heavy", box="box_extra_action", threshold=0.6):
@@ -87,8 +96,6 @@ class Iuno(BaseChar):
             self.last_heavy = time.time()
         else:
             heavy(self)
-        # Concerto is topped off + the outro gated centrally by
-        # StrictRotation.run_current, so the burst itself does not wait here.
 
     def do_everything(self, time_out=1.5, force_complete=False):
         if self.has_intro:

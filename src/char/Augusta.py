@@ -28,16 +28,33 @@ class Augusta(BaseChar):
                 return SwitchPriority.NO
         return super().get_switch_priority(current_char, has_intro, target_low_con)
 
-    def perform_stage(self):
-        """Stage 3: Augusta's full damage rotation (see src/combat/StrictRotation.py).
-
-        Runs only after Iuno's outro has buffed her. ha, lib (griffin), skill, ha,
-        2nd lib, ba123, ha, echo. The coordinator then gates the outro on full
-        concerto before switching to ShoreKeeper.
-        """
-        if self.has_intro:
+    def perform_beat(self, beat):
+        """Execute one strict-rotation beat (see src/combat/StrictRotation.py)."""
+        from src.combat.StrictRotation import heavy
+        if beat.intro:
             self.wait_down()
-        self._augusta_burst(with_basics=True)
+        if beat.name == 'aug_open':
+            # 1. skill
+            self.click_resonance()
+        elif beat.name == 'aug_open2':
+            # 5. ha
+            self._heavy_or_prowess()
+        elif beat.name == 'aug_loop1':
+            # 11. intro, ha
+            self._heavy_or_prowess()
+        elif beat.name == 'aug_loop2':
+            # 13. skill, ha
+            self.click_resonance()
+            self._heavy_or_prowess()
+        elif beat.name == 'aug_burst':
+            # 9. intro, ha, lib (griffin), skill, ha, 2nd lib, echo, outro
+            self._augusta_burst(with_basics=False)
+        elif beat.name == 'aug_burst2':
+            # 15. ha, lib (griffin), skill, ha, 2nd lib, ba123, ha, echo, outro
+            self._augusta_burst(with_basics=True)
+        else:  # defensive: unknown beat -> conservative damage
+            self.click_resonance()
+            heavy(self)
 
     def _heavy_or_prowess(self):
         from src.combat.StrictRotation import heavy
