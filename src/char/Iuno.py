@@ -64,11 +64,38 @@ class Iuno(BaseChar):
             # 8 / 14. (intro) jump-cancel, lib, skill, ba1234, skill, ba, ha, outro
             if beat.intro:
                 self.wait_down()
-            # force_complete so the no-intro burst (step 14) still fires lib/
-            # skill/heavy after the jump instead of switch-cancelling early.
-            self.do_everything(force_complete=True)
+            self._iuno_burst()
         else:  # defensive: unknown beat
             self.do_everything()
+
+    def jump_cancel(self):
+        """Jump-cancel Iuno's recovery/intro while the jump prompt is shown."""
+        while self.task.find_feature("iuno_jump", box="box_extra_action", threshold=0.6):
+            self.task.jump(after_sleep=0.1)
+
+    def _iuno_burst(self):
+        """Explicit burst: jump-cancel, lib, skill, ba1234, skill, ba, ha.
+
+        The two skill casts are the point: each cast applies one of Iuno's buffs
+        to the next character (Augusta), so both must fire before the outro. The
+        generic do_everything returns right after Iuno's special heavy and does
+        not guarantee the second skill cast, which left Augusta with only one of
+        Iuno's two buffs.
+        """
+        from src.combat.StrictRotation import basic_attacks, heavy
+        self.jump_cancel()
+        self.click_liberation(wait_if_cd_ready=0)
+        self.send_resonance_key(post_sleep=0.1)          # skill -> buff 1
+        basic_attacks(self, 4)                           # ba1234
+        # let the skill come back up so the second cast actually lands (buff 2)
+        self.task.wait_until(self.resonance_available, time_out=1)
+        self.send_resonance_key(post_sleep=0.1)          # skill -> buff 2
+        basic_attacks(self, 1)                           # ba
+        if self.task.find_feature("iuno_heavy", box="box_extra_action", threshold=0.6):
+            self.heavy_attack()                          # ha (special heavy)
+            self.last_heavy = time.time()
+        else:
+            heavy(self)
 
     def do_everything(self, time_out=1.5, force_complete=False):
         if self.has_intro:
