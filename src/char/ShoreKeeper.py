@@ -69,8 +69,9 @@ class ShoreKeeper(BaseChar):
     def perform_beat(self, beat):
         """Execute one strict-rotation beat (see src/combat/StrictRotation.py).
 
-        Concerto for outro beats is topped off centrally by run_current, so
-        these only need to spend the kit (intro/echo/lib/skill/forte).
+        Each beat spends ShoreKeeper's full concerto-building kit (echo, lib,
+        skill, forte) so the ring is naturally full by the outro swap -- there is
+        no busy-wait top-off, which would stall and break the rotation.
         """
         from src.combat.StrictRotation import basic_attacks, heavy
         if beat.name == 'sk_open':
@@ -107,19 +108,6 @@ class ShoreKeeper(BaseChar):
         else:  # defensive: unknown beat
             self.click_echo(time_out=0)
             self.click_liberation()
-
-    def build_concerto_kwargs(self):
-        """Top-off params for the strict-rotation outro (see build_concerto).
-
-        Forte is ShoreKeeper's reserve concerto source and may still be charged
-        right after an outro beat spends echo/skill, so hand the top-off her forte
-        check. is_mouse_forte_full is the exact check she already uses for forte in
-        _do_perform_default and sk_intro/sk_loop. A slightly larger cap gives the
-        ring more on-field time to reach exactly full (the swap only fires the
-        outro buff at full); the loop returns the instant it fills, so the bigger
-        cap is only ever spent in the worst case.
-        """
-        return {'forte_check': self.is_mouse_forte_full, 'time_out': 3.5}
 
     def switch_next_char(self, *args, **kwargs):
         if self.is_con_full():
