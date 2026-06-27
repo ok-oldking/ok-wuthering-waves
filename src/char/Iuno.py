@@ -90,15 +90,18 @@ class Iuno(BaseChar):
         # enough energy, or the lit icon is not being captured -- it still no-ops;
         # for the latter, use the WGC capture method, not BitBlt.)
         self.click_liberation(wait_if_cd_ready=0.5)
-        self.send_resonance_key(post_sleep=0.1)          # skill -> buff 1
-        # safe animation cancel: jump-cancel the ba1234 recovery into the 2nd
-        # skill. Iuno's kit is jump/air-native, so this does not mis-fire an
-        # aerial attack, and the hit lands before the jump (settle in safe_cancel).
-        basic_attacks(self, 4, cancel=True)              # ba1234 (jump-cancelled)
+        # Each skill cast applies one of Iuno's buffs, and the buff only registers
+        # once the cast's animation resolves -- so do NOT animation-cancel around
+        # the skills. post_sleep=0.4 lets buff 1 land before the basics; the basics
+        # are NOT jump-cancelled because the jump puts Iuno airborne and the 2nd
+        # skill would then cast in the air, where it does not apply the buff (this
+        # was dropping buff 2). Keep her grounded through both skill casts.
+        self.send_resonance_key(post_sleep=0.4)          # skill -> buff 1
+        basic_attacks(self, 4)                            # ba1234 (no cancel)
         # let the skill come back up so the second cast actually lands (buff 2)
         self.task.wait_until(self.resonance_available, time_out=1)
-        self.send_resonance_key(post_sleep=0.1)          # skill -> buff 2
-        basic_attacks(self, 1)                           # ba
+        self.send_resonance_key(post_sleep=0.4)          # skill -> buff 2
+        basic_attacks(self, 1)                            # ba
         if self.task.find_feature("iuno_heavy", box="box_extra_action", threshold=0.6):
             self.heavy_attack()                          # ha (special heavy)
             self.last_heavy = time.time()
