@@ -75,7 +75,7 @@ class ShoreKeeper(BaseChar):
         """
         from src.combat.StrictRotation import basic_attacks, heavy
         if beat.name == 'sk_open':
-            # 3. echo, ba123, lib, ba12, ha, skill
+            # 3. echo, ba123, lib, ba1234, ha, skill
             # Echo first: it is ShoreKeeper's main concerto source (her basic
             # attacks generate almost none), so without it she never builds the
             # concerto needed to outro and apply her outro buff. time_out=0 only
@@ -83,7 +83,7 @@ class ShoreKeeper(BaseChar):
             self.click_echo(time_out=0)
             basic_attacks(self, 3)
             self.click_liberation()
-            basic_attacks(self, 2)
+            basic_attacks(self, 4)  # ba1234 after liberation
             heavy(self)
             self.click_resonance()
         elif beat.name == 'sk_open2':
@@ -95,6 +95,7 @@ class ShoreKeeper(BaseChar):
             # with the least concerto banked. Spend them here too (each is
             # frame-checked and a no-op when on cooldown), mirroring sk_open.
             self.click_liberation()
+            basic_attacks(self, 4)  # ba1234 after liberation
             self._spend_skill_and_forte()
         elif beat.name in ('sk_intro', 'sk_loop'):
             # 10 / 16. super intro, build concerto, outro
@@ -102,10 +103,12 @@ class ShoreKeeper(BaseChar):
                 self._intro_wait()
             self.click_echo(time_out=0)
             self.click_liberation()
+            basic_attacks(self, 4)  # ba1234 after liberation
             self._spend_skill_and_forte()
         else:  # defensive: unknown beat
             self.click_echo(time_out=0)
             self.click_liberation()
+            basic_attacks(self, 4)  # ba1234 after liberation
             self._spend_skill_and_forte()
 
     def _spend_skill_and_forte(self):
