@@ -90,21 +90,19 @@ class Iuno(BaseChar):
         # enough energy, or the lit icon is not being captured -- it still no-ops;
         # for the latter, use the WGC capture method, not BitBlt.)
         self.click_liberation(wait_if_cd_ready=0.5)
-        # Each skill cast applies one of Iuno's buffs, and the buff only registers
-        # once the cast's animation resolves -- so do NOT animation-cancel around
-        # the skills (the basics are NOT jump-cancelled: a jump puts Iuno airborne
-        # and the 2nd skill would cast in the air, where it drops its buff). Use
-        # click_resonance (the same call the other Iuno beats use) rather than a
-        # bare key send so the cast is actually registered, and check it fired:
-        # both casts must land or the outro carries only one of the two buffs and
-        # Augusta comes in under-buffed.
-        cast1 = self.click_resonance(post_sleep=0.4)      # skill -> buff 1
+        # Iuno's skill has TWO charges, so both casts are available back-to-back --
+        # no cooldown wait is needed between them. Each cast applies one of Iuno's
+        # buffs, and the buff only registers once the cast resolves, so: (1) do NOT
+        # animation-cancel around the skills -- a jump puts Iuno airborne and the
+        # air-cast drops its buff; (2) use click_resonance (the registered cast the
+        # other Iuno beats use) rather than a bare key send, and check both fired.
+        # Both must land or the outro carries only one buff and Augusta comes in
+        # under-buffed.
+        cast1 = self.click_resonance(post_sleep=0.4)      # skill charge 1 -> buff 1
         basic_attacks(self, 4)                            # ba1234 (no cancel)
-        # Wait up to 2s for the skill to come back (2nd charge / cooldown) so the
-        # 2nd cast actually lands buff 2; 1s was often too short, so the 2nd skill
-        # no-op'd on cooldown and only buff 1 transferred.
-        ready2 = self.task.wait_until(self.resonance_available, time_out=2)
-        cast2 = self.click_resonance(post_sleep=0.4)      # skill -> buff 2
+        # 2nd charge should already be available; verify briefly before casting.
+        ready2 = self.task.wait_until(self.resonance_available, time_out=0.5)
+        cast2 = self.click_resonance(post_sleep=0.4)      # skill charge 2 -> buff 2
         self.logger.info(
             f'Iuno burst skills: cast1={bool(cast1[0])} 2nd_ready={bool(ready2)} '
             f'cast2={bool(cast2[0])}')
