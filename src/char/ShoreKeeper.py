@@ -74,14 +74,20 @@ class ShoreKeeper(BaseChar):
         """
         from src.combat.StrictRotation import basic_attacks, heavy
         if beat.name == 'sk_open':
-            # 3. ba123, lib, ba12, ha, skill
+            # 3. echo, ba123, lib, ba12, ha, skill
+            # Echo first: it is ShoreKeeper's main concerto source (her basic
+            # attacks generate almost none), so without it she never builds the
+            # concerto needed to outro and apply her outro buff. time_out=0 only
+            # fires when the echo is off cooldown, so it is safe to always call.
+            self.click_echo(time_out=0)
             basic_attacks(self, 3)
             self.click_liberation()
             basic_attacks(self, 2)
             heavy(self)
             self.click_resonance()
         elif beat.name == 'sk_open2':
-            # 7. ba12345, ha, outro
+            # 7. echo, ba12345, ha, outro
+            self.click_echo(time_out=0)
             basic_attacks(self, 5)
             heavy(self)
         elif beat.name in ('sk_intro', 'sk_loop'):
