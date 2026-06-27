@@ -168,7 +168,8 @@ class TestStrictRotation(unittest.TestCase):
         sk.switch_next_char = lambda *a, **k: events.append(('switch', a, k))
         rot.index = 6  # sk_open2, outro=True
         self.assertTrue(rot.run_current(sk))
-        self.assertEqual(events, [('beat', 'sk_open2'), ('switch', (), {})])
+        # con never reached full -> plain swap (free_intro=False), no faked outro
+        self.assertEqual(events, [('beat', 'sk_open2'), ('switch', (), {'free_intro': False})])
         self.assertEqual(len(task.wait_until_calls), 1)  # bounded top-off ran
         self.assertEqual(rot.index, 7)  # still advanced (strict sequence)
 
@@ -184,7 +185,8 @@ class TestStrictRotation(unittest.TestCase):
         rot.index = 6  # sk_open2, outro=True
         self.assertTrue(rot.run_current(sk))
         self.assertEqual(task.wait_until_calls, [])  # no wait needed
-        self.assertEqual(events, [('beat', 'sk_open2'), ('switch', (), {})])
+        # already full -> force the outro path (free_intro=True)
+        self.assertEqual(events, [('beat', 'sk_open2'), ('switch', (), {'free_intro': True})])
 
     def test_run_current_non_outro_beat_switches_plain(self):
         task = FakeTask(target_team())
@@ -197,7 +199,8 @@ class TestStrictRotation(unittest.TestCase):
         aug.switch_next_char = lambda *a, **k: events.append(('switch', a, k))
         rot.index = 0  # aug_open, outro=False
         self.assertTrue(rot.run_current(aug))
-        self.assertEqual(events, [('beat', 'aug_open'), ('switch', (), {})])
+        # non-outro -> plain swap, free_intro=False
+        self.assertEqual(events, [('beat', 'aug_open'), ('switch', (), {'free_intro': False})])
 
     def test_run_current_resets_to_opener_on_first_call(self):
         # _last_combat_start starts unset, so the first run_current rewinds to

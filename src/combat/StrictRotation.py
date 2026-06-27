@@ -256,11 +256,19 @@ class StrictRotation:
         # as a real outro that transfers the buff. The top-off is bounded by
         # OUTRO_TOPOFF_TIME_OUT and exits the instant the ring is full, so it
         # cannot stall the rotation; non-outro beats switch immediately.
-        if beat.outro and not char.is_con_full():
-            self.task.wait_until(char.is_con_full, post_action=lambda: build_concerto(char),
-                                 time_out=OUTRO_TOPOFF_TIME_OUT)
+        outro_ready = False
+        if beat.outro:
+            outro_ready = char.is_con_full() or bool(self.task.wait_until(
+                char.is_con_full, post_action=lambda: build_concerto(char),
+                time_out=OUTRO_TOPOFF_TIME_OUT))
+            logger.info(f'StrictRotation outro beat {beat.name}: con_full={outro_ready}')
         self.advance()
-        char.switch_next_char()
+        # When concerto is confirmed full, force the outro path (free_intro=True)
+        # instead of letting switch_next_char re-read the ring -- that second read
+        # can flicker to 0.99 and silently downgrade the swap to a plain swap,
+        # dropping the outro buff transfer/timing even though the ring is full.
+        # Gated on outro_ready so a not-actually-full ring never fakes an outro.
+        char.switch_next_char(free_intro=outro_ready)
         return True
 
 
