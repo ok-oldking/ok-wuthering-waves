@@ -121,6 +121,7 @@ class StrictRotation:
         self.task = task
         self.index = 0
         self._last_combat_start = None
+        self._last_inactive_state = None  # dedup for the inactive-reason log
 
     # --- team / enablement -------------------------------------------------
     def team_names(self):
@@ -141,6 +142,28 @@ class StrictRotation:
 
     def is_active(self):
         return self.config_enabled() and self.team_matches()
+
+    def _diagnose_inactive(self):
+        """Log, once per state change, exactly why the strict rotation is off.
+
+        Avoids per-frame spam by remembering the last (config, team) state. The
+        switch-priority hook printing ``normal`` (instead of ``must``/``no``) is
+        the symptom of this; this names the cause.
+        """
+        names = self.team_names()
+        state = (self.config_enabled(), frozenset(names))
+        if state == self._last_inactive_state:
+            return
+        self._last_inactive_state = state
+        if names == set(TEAM):
+            logger.warning(
+                f"StrictRotation INACTIVE for team {sorted(names)}: config "
+                f"'{CONFIG_KEY}' is OFF -- enable it in the Character Config tab to run "
+                f"the scripted rotation (otherwise the reactive engine is used)")
+        else:
+            logger.info(
+                f"StrictRotation inactive: on-field team {sorted(names)} != "
+                f"required {sorted(TEAM)}")
 
     # --- beat bookkeeping --------------------------------------------------
     def maybe_reset(self):
@@ -201,9 +224,11 @@ class StrictRotation:
         Returns True if the beat was handled (the caller should return), or False
         to fall back to the character's default rotation.
         """
-        # Gate first so the coordinator stays fully inert (no logs, no state
-        # writes) for non-target teams and when the toggle is off.
+        # Gate first so the coordinator stays inert for non-target teams and when
+        # the toggle is off. Log the reason once per state change so it is obvious
+        # in the debug log WHY the strict rotation is (not) running.
         if not self.is_active():
+            self._diagnose_inactive()
             return False
         self.maybe_reset()
         beat = self.current_beat()
