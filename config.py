@@ -68,6 +68,7 @@ key_config_option = ConfigOption('Game Hotkey', {
 char_config_option = ConfigOption('Character Config', {
     'Iuno C6': False,
     'Chisa DPS': False,
+    'Augusta Iuno SK Strict Rotation': True,
 }, description='Character Config', show_at_tab=True, icon=FluentIcon.PEOPLE)
 
 monthly_card_config_option = ConfigOption('Monthly Card Config', {

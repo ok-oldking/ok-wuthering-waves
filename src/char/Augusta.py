@@ -11,6 +11,72 @@ switch_time = 3
 
 class Augusta(BaseChar):
     def do_perform(self):
+        from src.combat.StrictRotation import get_strict_rotation
+        if get_strict_rotation(self.task).run_current(self):
+            return
+        self._do_perform_default()
+
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        from src.combat.StrictRotation import get_strict_rotation, MUST, NO
+        from src.char.BaseChar import SwitchPriority
+        rot = get_strict_rotation(self.task)
+        if rot.is_active():
+            priority = rot.priority_for(self.name)
+            if priority == MUST:
+                return SwitchPriority.MUST
+            if priority == NO:
+                return SwitchPriority.NO
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
+
+    def perform_beat(self, beat):
+        """Execute one strict-rotation beat (see src/combat/StrictRotation.py)."""
+        from src.combat.StrictRotation import heavy
+        if beat.intro:
+            self.wait_down()
+        if beat.name == 'aug_open':
+            # 1. skill
+            self.click_resonance()
+        elif beat.name == 'aug_open2':
+            # 5. ha
+            self._heavy_or_prowess()
+        elif beat.name == 'aug_loop1':
+            # 11. intro, ha
+            self._heavy_or_prowess()
+        elif beat.name == 'aug_loop2':
+            # 13. skill, ha
+            self.click_resonance()
+            self._heavy_or_prowess()
+        elif beat.name == 'aug_burst':
+            # 9. intro, ha, lib (griffin), skill, ha, 2nd lib, echo, outro
+            self._augusta_burst(with_basics=False)
+        elif beat.name == 'aug_burst2':
+            # 15. ha, lib (griffin), skill, ha, 2nd lib, ba123, ha, echo, outro
+            self._augusta_burst(with_basics=True)
+        else:  # defensive: unknown beat -> conservative damage
+            self.click_resonance()
+            heavy(self)
+
+    def _heavy_or_prowess(self):
+        from src.combat.StrictRotation import heavy
+        if self.check_prowess():
+            self.perform_prowess()
+        else:
+            heavy(self)
+
+    def _augusta_burst(self, with_basics):
+        from src.combat.StrictRotation import heavy, basic_attacks
+        self._heavy_or_prowess()                 # ha
+        self.click_liberation()                  # lib -> summons griffin
+        self.click_resonance()                   # skill
+        self._heavy_or_prowess()                 # ha
+        if self.check_majesty():                 # 2nd lib (majesty recast)
+            self.perform_majesty()
+        if with_basics:
+            basic_attacks(self, 3)               # ba123
+            heavy(self)                          # ha
+        self.send_echo_key()                     # echo
+
+    def _do_perform_default(self):
         time_out = switch_time
         if self.has_intro:
             self.continues_normal_attack(1.13)
