@@ -104,10 +104,12 @@ BEATS = [
 LOOP_START = 10
 
 # Before an OUTRO beat hands off, briefly top concerto off to full so the swap is
-# read as a coordinated outro (which transfers the character's buff). Bounded and
-# exits the instant the ring is full, so the rotation still advances every beat --
-# it never stays/redoes a beat (strict sequence).
-OUTRO_TOPOFF_TIME_OUT = 1.5
+# read as a coordinated outro (which transfers the character's buff). The top-off
+# now builds concerto with real actions (lib/echo/skill, see build_concerto), so
+# allow enough time for one of those to animate and land -- but it still exits the
+# instant the ring is full, so the rotation advances every beat (strict sequence)
+# and a quick fill returns immediately; the bound only caps the worst case.
+OUTRO_TOPOFF_TIME_OUT = 2.5
 
 
 class StrictRotation:
@@ -255,7 +257,7 @@ class StrictRotation:
         # OUTRO_TOPOFF_TIME_OUT and exits the instant the ring is full, so it
         # cannot stall the rotation; non-outro beats switch immediately.
         if beat.outro and not char.is_con_full():
-            self.task.wait_until(char.is_con_full, post_action=char.click_with_interval,
+            self.task.wait_until(char.is_con_full, post_action=lambda: build_concerto(char),
                                  time_out=OUTRO_TOPOFF_TIME_OUT)
         self.advance()
         char.switch_next_char()
@@ -341,3 +343,25 @@ def heavy(char, cancel=False):
     char.heavy_attack()
     if cancel:
         safe_cancel(char)
+
+
+def build_concerto(char):
+    """Outro top-off action: do something that actually builds concerto.
+
+    Basic attacks generate concerto slowly, so polling with plain clicks leaves a
+    character a few percent short of full at the outro -- and the outro only fires
+    at exactly full, so it never transfers the buff. Escalate to the actions that
+    generate the bulk of concerto, in descending yield: liberation, then echo,
+    then skill, falling back to a basic attack only when nothing else is ready.
+    Each is frame-checked/CD-guarded, so as the big sources go on cooldown this
+    naturally walks down to the next available one.
+    """
+    if char.liberation_available() and char.click_liberation(wait_if_cd_ready=0):
+        return
+    if char.echo_available():
+        char.click_echo(time_out=0)
+        return
+    if char.resonance_available():
+        char.send_resonance_key(post_sleep=0.1)
+        return
+    char.click()

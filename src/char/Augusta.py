@@ -106,7 +106,7 @@ class Augusta(BaseChar):
         timeout = lambda: time.time() - start < time_out + 3
         while timeout():
             self.cycle_start()
-            if self.check_majesty():
+            if self.check_majesty() and self.buff_stacks_full():
                 self.logger.debug('Augusta performs majesty')
                 if self.perform_majesty():
                     self.send_echo_key()
@@ -128,7 +128,7 @@ class Augusta(BaseChar):
                         if time.time() - start > time_out and not self.flying():
                             return self.switch_next_char()
                 else:
-                    if self.check_majesty():
+                    if self.check_majesty() and self.buff_stacks_full():
                         self.wait_down()
                         if self.perform_majesty():
                             self.send_echo_key()
