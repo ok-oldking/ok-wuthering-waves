@@ -10,6 +10,7 @@ import unittest
 
 from src.combat.StrictRotation import (
     StrictRotation, BEATS, LOOP_START, TEAM, MUST, NO, NORMAL, get_strict_rotation,
+    build_concerto,
 )
 
 
@@ -157,9 +158,11 @@ class TestStrictRotation(unittest.TestCase):
         rot.maybe_reset()  # sync combat tracking so run_current won't rewind
         sk = task.chars[2]
         events = []
-        con_checks = [False, True]  # build_concerto: not full, then full
         sk.perform_beat = lambda beat: events.append(('beat', beat.name))
-        sk.is_con_full = lambda: con_checks.pop(0) if con_checks else True
+        # concerto becomes full once a basic attack has landed (no skills here)
+        sk.is_con_full = lambda: ('click',) in events
+        sk.echo_available = lambda: False  # force the basic-attack fallback path
+        sk.resonance_available = lambda: False
         sk.task = task
         sk.sleep = lambda *a, **k: None
         task.click = lambda *a, **k: events.append(('click',))
@@ -231,6 +234,50 @@ class TestStrictRotation(unittest.TestCase):
         with self.assertRaises(ValueError):
             rot.run_current(aug)
         self.assertEqual(rot.index, 1)
+
+    def test_build_concerto_prefers_echo_and_skill_over_basics(self):
+        # A healer's basics barely build concerto; build_concerto should recast
+        # echo/skill when available rather than only basic-attacking.
+        task = FakeTask(target_team())
+        sk = task.chars[2]
+        calls = []
+        sk.echo_available = lambda: True
+        sk.click_echo = lambda time_out=1: calls.append('echo') or True
+        sk.resonance_available = lambda: True
+        sk.click_resonance = lambda *a, **k: calls.append('skill') or (True, 0, False)
+        # concerto fills once the skill has been recast (strong source)
+        sk.is_con_full = lambda: 'skill' in calls
+        sk.task = task
+        sk.sleep = lambda *a, **k: None
+        task.click = lambda *a, **k: calls.append('basic')
+        self.assertTrue(build_concerto(sk))
+        self.assertIn('echo', calls)
+        self.assertIn('skill', calls)
+        self.assertNotIn('basic', calls)  # strong sources fired, no basic fallback
+
+    def test_build_concerto_falls_back_to_basics_when_skills_unavailable(self):
+        task = FakeTask(target_team())
+        sk = task.chars[2]
+        calls = []
+        sk.echo_available = lambda: False
+        sk.resonance_available = lambda: False
+        sk.is_con_full = lambda: 'basic' in calls  # fills after one basic
+        sk.task = task
+        sk.sleep = lambda *a, **k: None
+        task.click = lambda *a, **k: calls.append('basic')
+        self.assertTrue(build_concerto(sk))
+        self.assertEqual(calls, ['basic'])
+
+    def test_build_concerto_times_out_returns_false(self):
+        task = FakeTask(target_team())
+        sk = task.chars[2]
+        sk.is_con_full = lambda: False  # never fills
+        sk.echo_available = lambda: False
+        sk.resonance_available = lambda: False
+        sk.task = task
+        sk.sleep = lambda *a, **k: None
+        task.click = lambda *a, **k: None
+        self.assertFalse(build_concerto(sk, time_out=0.05))
 
     def test_get_strict_rotation_is_cached_per_task(self):
         task = FakeTask(target_team())

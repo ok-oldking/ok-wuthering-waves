@@ -283,20 +283,33 @@ def heavy(char):
 
 
 def build_concerto(char, time_out=2.5):
-    """Basic-attack until the concerto ring is full so the next swap can outro.
+    """Drive concerto to full before an outro so the swap actually fires the outro.
 
-    Returns True if the ring reached full. A timeout (returns False) means the
-    swap falls back to a normal switch with no intro; it is logged so chronic
-    concerto-detection problems are diagnosable in field logs.
+    Prefers the character's strong concerto sources -- echo and skill -- whenever
+    they are off cooldown, and falls back to basic attacks. A healer's basic
+    attacks generate almost no concerto, so a basics-only top-off frequently
+    timed out a hair short and the outro (and its buff) was silently dropped.
+
+    Returns True if the ring reached full. A timeout (returns False, logged) does
+    not block the rotation: the swap still happens, just without the intro/outro
+    that cycle.
     """
     start = time.time()
     while time.time() - start < time_out:
         if char.is_con_full():
             return True
-        char.task.click()
-        char.sleep(0.1)
+        acted = False
+        if char.echo_available():
+            acted = bool(char.click_echo(time_out=0)) or acted
+        if not char.is_con_full() and char.resonance_available():
+            acted = bool(char.click_resonance()[0]) or acted
+        if char.is_con_full():
+            return True
+        if not acted:
+            char.task.click()
+            char.sleep(0.1)
     if char.is_con_full():
         return True
     logger.warning(f'build_concerto timed out after {time_out}s for {char.name}; '
-                   f'switching without intro')
+                   f'switching without intro/outro buff')
     return False
