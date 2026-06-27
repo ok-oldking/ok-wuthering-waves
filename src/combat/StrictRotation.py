@@ -219,7 +219,13 @@ class StrictRotation:
                 # while the ring is below full fakes an intro the game never plays:
                 # switch_out then wrongly zeroes the concerto and the burst window
                 # never lines up. (No built-in character forces free_intro either.)
-                build_concerto(char)
+                # A character may opt into extra top-off params (forte source, a
+                # larger cap) via build_concerto_kwargs; others use the defaults.
+                kwargs = {}
+                get_kwargs = getattr(char, 'build_concerto_kwargs', None)
+                if callable(get_kwargs):
+                    kwargs = get_kwargs() or {}
+                build_concerto(char, **kwargs)
         except _combat_control_exceptions():
             raise  # combat ended / char dead -> let the task loop handle it
         except Exception:
@@ -282,13 +288,21 @@ def heavy(char):
     char.heavy_attack()
 
 
-def build_concerto(char, time_out=2.5):
+def build_concerto(char, time_out=2.5, forte_check=None):
     """Drive concerto to full before an outro so the swap actually fires the outro.
 
     Prefers the character's strong concerto sources -- echo and skill -- whenever
-    they are off cooldown, and falls back to basic attacks. A healer's basic
+    they are off cooldown, optionally falls back to forte (``forte_check``), and
+    then spends the remaining time as contiguous basic attacks. A healer's basic
     attacks generate almost no concerto, so a basics-only top-off frequently
     timed out a hair short and the outro (and its buff) was silently dropped.
+
+    ``forte_check`` is opt-in per character: the outro beat usually spends echo
+    and skill, so they are on cooldown for the whole top-off, while a charged
+    forte may still be available. Pass the character's own forte check (e.g.
+    ``is_mouse_forte_full``) to let the top-off recover via forte. It defaults to
+    ``None`` so callers whose forte is a bespoke mechanic (Augusta's prowess) are
+    not driven by the wrong check.
 
     Returns True if the ring reached full. A timeout (returns False, logged) does
     not block the rotation: the swap still happens, just without the intro/outro
@@ -303,11 +317,18 @@ def build_concerto(char, time_out=2.5):
             acted = bool(char.click_echo(time_out=0)) or acted
         if not char.is_con_full() and char.resonance_available():
             acted = bool(char.click_resonance()[0]) or acted
+        # Forte may still be charged when echo/skill are spent. heavy_click_forte
+        # re-checks via forte_check and no-ops (returns None) when not full, so
+        # this is safe to attempt whenever a check is supplied.
+        if not char.is_con_full() and forte_check is not None and forte_check():
+            acted = bool(char.heavy_click_forte(forte_check)) or acted
         if char.is_con_full():
             return True
         if not acted:
-            char.task.click()
-            char.sleep(0.1)
+            # Spend the idle time as contiguous attacks that bail the instant the
+            # ring fills, instead of one sparse click per (frame-checked) loop.
+            remaining = time_out - (time.time() - start)
+            char.continues_normal_attack(min(0.5, remaining), until_con_full=True)
     if char.is_con_full():
         return True
     logger.warning(f'build_concerto timed out after {time_out}s for {char.name}; '

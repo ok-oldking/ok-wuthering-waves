@@ -161,10 +161,13 @@ class TestStrictRotation(unittest.TestCase):
         sk.perform_beat = lambda beat: events.append(('beat', beat.name))
         # concerto becomes full once a basic attack has landed (no skills here)
         sk.is_con_full = lambda: ('click',) in events
-        sk.echo_available = lambda: False  # force the basic-attack fallback path
+        sk.echo_available = lambda: False  # force the contiguous-attack fallback
         sk.resonance_available = lambda: False
         sk.task = task
         sk.sleep = lambda *a, **k: None
+        # the fallback now drives basics via continues_normal_attack, which bails
+        # the instant the ring fills.
+        sk.continues_normal_attack = lambda *a, **k: events.append(('click',))
         task.click = lambda *a, **k: events.append(('click',))
         sk.switch_next_char = lambda *a, **k: events.append(('switch', a, k))
         rot.index = 6  # sk_open2, outro=True
@@ -261,10 +264,48 @@ class TestStrictRotation(unittest.TestCase):
         calls = []
         sk.echo_available = lambda: False
         sk.resonance_available = lambda: False
-        sk.is_con_full = lambda: 'basic' in calls  # fills after one basic
+        sk.is_con_full = lambda: 'basic' in calls  # fills after one basic slice
         sk.task = task
         sk.sleep = lambda *a, **k: None
+        # the fallback drives basics through continues_normal_attack, which bails
+        # the instant the ring fills (until_con_full=True).
+        sk.continues_normal_attack = lambda *a, **k: calls.append('basic')
         task.click = lambda *a, **k: calls.append('basic')
+        self.assertTrue(build_concerto(sk))
+        self.assertEqual(calls, ['basic'])
+
+    def test_build_concerto_uses_forte_when_supplied_and_skills_on_cd(self):
+        # ShoreKeeper opts into a forte_check; when echo/skill are spent, the
+        # top-off must recover via forte rather than only basic-attacking.
+        task = FakeTask(target_team())
+        sk = task.chars[2]
+        calls = []
+        sk.echo_available = lambda: False
+        sk.resonance_available = lambda: False
+        sk.is_mouse_forte_full = lambda: 'forte' not in calls  # full until used
+        sk.heavy_click_forte = lambda fn: (calls.append('forte') or True)
+        sk.is_con_full = lambda: 'forte' in calls  # fills once forte is spent
+        sk.task = task
+        sk.sleep = lambda *a, **k: None
+        sk.continues_normal_attack = lambda *a, **k: calls.append('basic')
+        self.assertTrue(build_concerto(sk, forte_check=sk.is_mouse_forte_full))
+        self.assertIn('forte', calls)
+        self.assertNotIn('basic', calls)  # forte filled it, no basic fallback
+
+    def test_build_concerto_forte_check_default_skipped(self):
+        # No forte_check (Augusta/Iuno): the forte branch must never run, even if
+        # the char happens to expose is_mouse_forte_full/heavy_click_forte.
+        task = FakeTask(target_team())
+        sk = task.chars[2]
+        calls = []
+        sk.echo_available = lambda: False
+        sk.resonance_available = lambda: False
+        sk.is_mouse_forte_full = lambda: self.fail('forte must not be checked')
+        sk.heavy_click_forte = lambda fn: self.fail('forte must not fire')
+        sk.is_con_full = lambda: 'basic' in calls
+        sk.task = task
+        sk.sleep = lambda *a, **k: None
+        sk.continues_normal_attack = lambda *a, **k: calls.append('basic')
         self.assertTrue(build_concerto(sk))
         self.assertEqual(calls, ['basic'])
 
@@ -276,6 +317,7 @@ class TestStrictRotation(unittest.TestCase):
         sk.resonance_available = lambda: False
         sk.task = task
         sk.sleep = lambda *a, **k: None
+        sk.continues_normal_attack = lambda *a, **k: None
         task.click = lambda *a, **k: None
         self.assertFalse(build_concerto(sk, time_out=0.05))
 

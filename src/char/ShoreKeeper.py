@@ -90,6 +90,12 @@ class ShoreKeeper(BaseChar):
             self.click_echo(time_out=0)
             basic_attacks(self, 5)
             heavy(self)
+            # sk_open2 alone omitted lib+skill, so it entered the central top-off
+            # with the least concerto banked. Spend them here too (each is
+            # frame-checked and a no-op when on cooldown), mirroring sk_open.
+            self.click_liberation()
+            if not self.click_resonance()[0]:
+                self.heavy_click_forte(self.is_mouse_forte_full)
         elif beat.name in ('sk_intro', 'sk_loop'):
             # 10 / 16. super intro, build concerto, outro
             if beat.intro:
@@ -101,6 +107,19 @@ class ShoreKeeper(BaseChar):
         else:  # defensive: unknown beat
             self.click_echo(time_out=0)
             self.click_liberation()
+
+    def build_concerto_kwargs(self):
+        """Top-off params for the strict-rotation outro (see build_concerto).
+
+        Forte is ShoreKeeper's reserve concerto source and may still be charged
+        right after an outro beat spends echo/skill, so hand the top-off her forte
+        check. is_mouse_forte_full is the exact check she already uses for forte in
+        _do_perform_default and sk_intro/sk_loop. A slightly larger cap gives the
+        ring more on-field time to reach exactly full (the swap only fires the
+        outro buff at full); the loop returns the instant it fills, so the bigger
+        cap is only ever spent in the worst case.
+        """
+        return {'forte_check': self.is_mouse_forte_full, 'time_out': 3.5}
 
     def switch_next_char(self, *args, **kwargs):
         if self.is_con_full():
