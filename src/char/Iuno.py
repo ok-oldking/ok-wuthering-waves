@@ -91,7 +91,10 @@ class Iuno(BaseChar):
         # for the latter, use the WGC capture method, not BitBlt.)
         self.click_liberation(wait_if_cd_ready=0.5)
         self.send_resonance_key(post_sleep=0.1)          # skill -> buff 1
-        basic_attacks(self, 4)                           # ba1234
+        # safe animation cancel: jump-cancel the ba1234 recovery into the 2nd
+        # skill. Iuno's kit is jump/air-native, so this does not mis-fire an
+        # aerial attack, and the hit lands before the jump (settle in safe_cancel).
+        basic_attacks(self, 4, cancel=True)              # ba1234 (jump-cancelled)
         # let the skill come back up so the second cast actually lands (buff 2)
         self.task.wait_until(self.resonance_available, time_out=1)
         self.send_resonance_key(post_sleep=0.1)          # skill -> buff 2

@@ -290,22 +290,54 @@ def _combat_control_exceptions():
 # --- shared frame-checked action helpers ----------------------------------
 # Small primitives reused by the per-character ``perform_beat`` implementations.
 
-def basic_attacks(char, n, interval=0.12):
-    """Send an ``n``-hit basic-attack string (the user's ``ba123`` notation)."""
+def safe_cancel(char, settle=0.06):
+    """Cancel an action's recovery animation -- safely.
+
+    "Safe" = wait ``settle`` first so the just-performed action's active/damage
+    frames have registered (cancelling earlier would drop the hit), THEN jump to
+    interrupt the trailing recovery so the next action can start sooner. Jump is
+    used as the canceller because it costs no stamina and is the least disruptive
+    neutral action; the rotation continues normally afterwards. Do not use this
+    right before an outro -- the swap already cancels that recovery for free.
+    """
+    char.sleep(settle)
+    char.task.jump(after_sleep=0.03)
+
+
+def basic_attacks(char, n, interval=0.12, cancel=False):
+    """Send an ``n``-hit basic-attack string (the user's ``ba123`` notation).
+
+    With ``cancel=True`` the basic string's recovery is jump-cancelled once the
+    last hit has registered, speeding the transition into the next action.
+    """
     for _ in range(max(0, n)):
         char.task.click()
         char.sleep(interval)
+    if cancel and n > 0:
+        safe_cancel(char)
 
 
 def dash(char):
-    """Perform a dodge/dash (the user's ``dash`` step) via the Dodge Key."""
+    """Perform a dodge/dash (the user's ``dash`` step) via the Dodge Key.
+
+    A dodge also cancels recovery, so this doubles as the rotation's dash-cancel.
+    """
     key = char.task.key_config.get('Dodge Key', 'lshift')
     char.task.send_key(key, after_sleep=0.05)
 
 
-def heavy(char):
-    """Heavy attack, preferring the forte-charged heavy when it is available."""
+def heavy(char, cancel=False):
+    """Heavy attack, preferring the forte-charged heavy when it is available.
+
+    With ``cancel=True`` the heavy's (long) recovery is jump-cancelled once the
+    hit has registered -- the biggest single time save in the rotation. Leave it
+    False for the last heavy before an outro, where the swap cancels it anyway.
+    """
     if char.is_forte_full():
         if char.heavy_click_forte(char.is_forte_full):
+            if cancel:
+                safe_cancel(char)
             return
     char.heavy_attack()
+    if cancel:
+        safe_cancel(char)
