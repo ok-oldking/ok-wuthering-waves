@@ -32,7 +32,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         self.all_accounts.clear()
 
         self.run_task_by_class(DailyTask)
-        # self.ensure_main(time_out=100)
+        self.ensure_main(time_out=100)
         self._switch_to_login()
         detected = self._detect_current_account_from_login()
         if detected:
@@ -146,13 +146,14 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
                 mouse_reset_task.enable()
 
     def find_account_drop_down(self):
-        return self.wait_until(self.do_find_account_drop_down, time_out=60, settle_time=2)
+        return self.wait_until(self.do_find_account_drop_down, time_out=60, settle_time=2, raise_if_not_found=True)
 
     def do_find_account_drop_down(self) -> Box | None:
         texts = self.ocr()
-        if len(self.find_boxes(texts, account_pattern)) == 1 and len(self.find_boxes(texts, LOGIN_TEXTS)) == 1:
-            drop_down = self.find_boxes(texts, account_pattern)[0]
-            return drop_down
+        account_boxes = self.find_boxes(texts, account_pattern)
+        login_boxes = self.find_boxes(texts, LOGIN_TEXTS)
+        if len(account_boxes) == 1 and login_boxes:
+            return account_boxes[0]
         return None
 
 
