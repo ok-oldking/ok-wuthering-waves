@@ -48,14 +48,6 @@ CONFIG_KEY = 'Augusta Iuno SK Strict Rotation'
 # Class names of the team this rotation is written for.
 TEAM = frozenset({'Augusta', 'Iuno', 'ShoreKeeper'})
 
-# Characters that opt out of the scripted rotation. While one of these holds the
-# field the coordinator goes inert: that character performs with its own reactive
-# logic and chooses its own next swap, exactly as if the rotation were toggled
-# off. The script re-engages -- through ``resync`` -- the moment a scripted
-# character is back on field. (Iuno and ShoreKeeper are self-driven so they run
-# their full reactive rotations while Augusta stays scripted.)
-SELF_DRIVEN = frozenset({'Iuno', 'ShoreKeeper'})
-
 # A single step of the rotation.
 #   name  : unique id, dispatched on by ``<Char>.perform_beat``
 #   char  : class name of the character that must be on field for this beat
@@ -144,18 +136,6 @@ class StrictRotation:
 
     def is_active(self):
         return self.config_enabled() and self.team_matches()
-
-    def disabled_while_on(self, current_char):
-        """True when ``current_char`` (the on-field char) opts out of the script.
-
-        ``current_char`` may be a character object, a class-name string, or None.
-        The per-character switch hooks and Iuno's ``do_perform`` consult this so
-        that, while a self-driven character holds the field, the reactive engine
-        -- not the script -- decides what it does and where it swaps next. See
-        ``SELF_DRIVEN``.
-        """
-        name = getattr(current_char, 'name', current_char)
-        return name in SELF_DRIVEN
 
     # --- beat bookkeeping --------------------------------------------------
     def maybe_reset(self):

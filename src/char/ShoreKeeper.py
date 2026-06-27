@@ -13,7 +13,7 @@ class ShoreKeeper(BaseChar):
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         from src.combat.StrictRotation import get_strict_rotation, MUST, NO
         rot = get_strict_rotation(self.task)
-        if rot.is_active() and not rot.disabled_while_on(current_char):
+        if rot.is_active():
             priority = rot.priority_for(self.name)
             if priority == MUST:
                 return SwitchPriority.MUST
@@ -39,12 +39,7 @@ class ShoreKeeper(BaseChar):
 
     def do_perform(self):
         from src.combat.StrictRotation import get_strict_rotation
-        rot = get_strict_rotation(self.task)
-        # ShoreKeeper is self-driven: while she holds the field the strict
-        # rotation is switched off and she runs her own reactive rotation (which
-        # also picks her own next swap). It switches back on for Augusta, and
-        # resync realigns the beat pointer when a scripted char is next on field.
-        if not rot.disabled_while_on(self) and rot.run_current(self):
+        if get_strict_rotation(self.task).run_current(self):
             return
         self._do_perform_default()
 

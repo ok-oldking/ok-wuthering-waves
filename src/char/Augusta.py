@@ -20,7 +20,7 @@ class Augusta(BaseChar):
         from src.combat.StrictRotation import get_strict_rotation, MUST, NO
         from src.char.BaseChar import SwitchPriority
         rot = get_strict_rotation(self.task)
-        if rot.is_active() and not rot.disabled_while_on(current_char):
+        if rot.is_active():
             priority = rot.priority_for(self.name)
             if priority == MUST:
                 return SwitchPriority.MUST
