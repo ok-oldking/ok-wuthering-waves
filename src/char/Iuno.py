@@ -107,10 +107,21 @@ class Iuno(BaseChar):
             f'Iuno burst skills: cast1={bool(cast1[0])} 2nd_ready={bool(ready2)} '
             f'cast2={bool(cast2[0])}')
         basic_attacks(self, 1)                            # ba
-        if self.task.find_feature("iuno_heavy", box="box_extra_action", threshold=0.6):
-            self.heavy_attack()                          # ha (special heavy)
+        # ha: Iuno's special heavy (the extra-action prompt) applies a buff that
+        # transfers on the outro. Give the prompt a brief moment to appear after
+        # the basics build forte, then fire it -- and SETTLE afterwards so the buff
+        # registers before run_current's outro swap cancels the recovery. Without
+        # the settle the swap clips the special heavy and its buff is lost.
+        special = self.task.wait_until(
+            lambda: self.task.find_feature("iuno_heavy", box="box_extra_action", threshold=0.6),
+            time_out=0.6)
+        if special:
+            self.heavy_attack()                          # special heavy -> buff
             self.last_heavy = time.time()
+            self.sleep(0.35)
+            self.logger.info('Iuno burst: special heavy fired')
         else:
+            self.logger.info('Iuno burst: special heavy not available, generic heavy')
             heavy(self)
 
     def do_everything(self, time_out=1.5, force_complete=False):
