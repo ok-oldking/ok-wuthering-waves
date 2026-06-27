@@ -90,6 +90,25 @@ class TestScheduleSupport(unittest.TestCase):
 
         self.assertIn("ensure_main", call_names[first_daily_index + 1:switch_index])
 
+    def test_multi_account_switches_to_login_after_each_account_daily(self):
+        run_node = _class_function("src/task/MultiAccountDailyTask.py", "MultiAccountDailyTask", "run")
+        while_node = next(node for node in ast.walk(run_node) if isinstance(node, ast.While))
+
+        calls = [
+            node for node in ast.walk(while_node)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "self"
+            and node.func.attr in {"run_task_by_class", "ensure_main", "_switch_to_login"}
+        ]
+
+        call_names = [node.func.attr for node in sorted(calls, key=lambda call: call.lineno)]
+        daily_index = call_names.index("run_task_by_class")
+
+        self.assertIn("ensure_main", call_names[daily_index + 1:])
+        self.assertIn("_switch_to_login", call_names[daily_index + 1:])
+
     def test_multi_account_login_dropdown_timeout_is_not_silent(self):
         find_node = _class_function(
             "src/task/MultiAccountDailyTask.py",

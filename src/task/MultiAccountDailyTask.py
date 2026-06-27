@@ -44,6 +44,8 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             self.info_set('Completed', self.done_set)
             self.run_task_by_class(DailyTask)
             self.done_set.add(next_account)
+            self.ensure_main(time_out=100)
+            self._switch_to_login()
 
     def _click_center_offset(self, offset_x, offset_y, after_sleep=0.5):
         h, w = self.frame.shape[:2]
