@@ -20,7 +20,12 @@ class Iuno(BaseChar):
 
     def do_perform(self):
         from src.combat.StrictRotation import get_strict_rotation
-        if get_strict_rotation(self.task).run_current(self):
+        rot = get_strict_rotation(self.task)
+        # Iuno is self-driven: while she holds the field the strict rotation is
+        # switched off and she runs her own reactive rotation (which also picks
+        # her own next swap). It switches back on for Augusta / ShoreKeeper, and
+        # resync realigns the beat pointer when one of them is next on field.
+        if not rot.disabled_while_on(self) and rot.run_current(self):
             return
         self._do_perform_default()
 
@@ -33,7 +38,7 @@ class Iuno(BaseChar):
         from src.combat.StrictRotation import get_strict_rotation, MUST, NO
         from src.char.BaseChar import SwitchPriority
         rot = get_strict_rotation(self.task)
-        if rot.is_active():
+        if rot.is_active() and not rot.disabled_while_on(current_char):
             priority = rot.priority_for(self.name)
             if priority == MUST:
                 return SwitchPriority.MUST

@@ -13,7 +13,7 @@ class ShoreKeeper(BaseChar):
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         from src.combat.StrictRotation import get_strict_rotation, MUST, NO
         rot = get_strict_rotation(self.task)
-        if rot.is_active():
+        if rot.is_active() and not rot.disabled_while_on(current_char):
             priority = rot.priority_for(self.name)
             if priority == MUST:
                 return SwitchPriority.MUST
