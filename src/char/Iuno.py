@@ -92,15 +92,22 @@ class Iuno(BaseChar):
         self.click_liberation(wait_if_cd_ready=0.5)
         # Each skill cast applies one of Iuno's buffs, and the buff only registers
         # once the cast's animation resolves -- so do NOT animation-cancel around
-        # the skills. post_sleep=0.4 lets buff 1 land before the basics; the basics
-        # are NOT jump-cancelled because the jump puts Iuno airborne and the 2nd
-        # skill would then cast in the air, where it does not apply the buff (this
-        # was dropping buff 2). Keep her grounded through both skill casts.
-        self.send_resonance_key(post_sleep=0.4)          # skill -> buff 1
+        # the skills (the basics are NOT jump-cancelled: a jump puts Iuno airborne
+        # and the 2nd skill would cast in the air, where it drops its buff). Use
+        # click_resonance (the same call the other Iuno beats use) rather than a
+        # bare key send so the cast is actually registered, and check it fired:
+        # both casts must land or the outro carries only one of the two buffs and
+        # Augusta comes in under-buffed.
+        cast1 = self.click_resonance(post_sleep=0.4)      # skill -> buff 1
         basic_attacks(self, 4)                            # ba1234 (no cancel)
-        # let the skill come back up so the second cast actually lands (buff 2)
-        self.task.wait_until(self.resonance_available, time_out=1)
-        self.send_resonance_key(post_sleep=0.4)          # skill -> buff 2
+        # Wait up to 2s for the skill to come back (2nd charge / cooldown) so the
+        # 2nd cast actually lands buff 2; 1s was often too short, so the 2nd skill
+        # no-op'd on cooldown and only buff 1 transferred.
+        ready2 = self.task.wait_until(self.resonance_available, time_out=2)
+        cast2 = self.click_resonance(post_sleep=0.4)      # skill -> buff 2
+        self.logger.info(
+            f'Iuno burst skills: cast1={bool(cast1[0])} 2nd_ready={bool(ready2)} '
+            f'cast2={bool(cast2[0])}')
         basic_attacks(self, 1)                            # ba
         if self.task.find_feature("iuno_heavy", box="box_extra_action", threshold=0.6):
             self.heavy_attack()                          # ha (special heavy)
