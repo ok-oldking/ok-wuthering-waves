@@ -5,10 +5,6 @@ from src.char.BaseChar import BaseChar, CharType, get_default_buff_time
 
 class Iuno(BaseChar):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.last_heavy = 0
-
     def is_c6(self):
         return self.task and self.task.char_config.get("Iuno C6")
 
@@ -81,17 +77,20 @@ class Iuno(BaseChar):
         while self.time_elapsed_accounting_for_freeze(start) < time_out:
             cycle_start = time.time()
             heavy_success = False
-            while self.time_elapsed_accounting_for_freeze(
-                    self.last_heavy) > 20 and self.task.find_feature("iuno_heavy",
-                                                                     box="box_extra_action",
-                                                                     threshold=0.6):
-                # 特殊重击可用
+            while self.task.find_feature("iuno_heavy", box="box_extra_action",
+                                         threshold=0.6):
+                # 特殊重击可用. The game only shows this prompt while the special
+                # heavy can actually be cast, so the indicator is the authority on
+                # availability. (The old ``last_heavy > 20s`` throttle also gated
+                # this: it made the C6 second heavy impossible -- last_heavy is set
+                # to "now" right after the first heavy -- and blocked the heavy on
+                # back-to-back rotation bursts that land under 20s apart, so Iuno
+                # would switch out without ever triggering it.)
                 self.sleep(0.05)
                 self.heavy_attack()
                 self.sleep(0.05)
                 heavy_success = True
             if heavy_success:
-                self.last_heavy = time.time()
                 if not c6_performed and self.is_c6():
                     c6_performed = True
                     start = time.time()
