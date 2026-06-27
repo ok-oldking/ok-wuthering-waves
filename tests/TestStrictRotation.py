@@ -280,14 +280,15 @@ class TestStrictRotation(unittest.TestCase):
         self.assertFalse(build_concerto(sk, time_out=0.05))
 
     def test_disabled_while_on_self_driven_char(self):
-        # Iuno is self-driven: while she holds the field the coordinator goes
-        # inert so she (and the swap she makes) falls back to the reactive
-        # engine. Scripted chars do not disable the rotation.
+        # Iuno and ShoreKeeper are self-driven: while one holds the field the
+        # coordinator goes inert so that char (and the swap it makes) falls back
+        # to the reactive engine. Augusta stays scripted and does not disable it.
         rot = StrictRotation(FakeTask(target_team()))
         self.assertTrue(rot.disabled_while_on(make_char('Iuno')))
         self.assertTrue(rot.disabled_while_on('Iuno'))
+        self.assertTrue(rot.disabled_while_on(make_char('ShoreKeeper')))
+        self.assertTrue(rot.disabled_while_on('ShoreKeeper'))
         self.assertFalse(rot.disabled_while_on(make_char('Augusta')))
-        self.assertFalse(rot.disabled_while_on(make_char('ShoreKeeper')))
         self.assertFalse(rot.disabled_while_on(None))
 
     def test_get_strict_rotation_is_cached_per_task(self):

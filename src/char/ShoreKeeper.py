@@ -39,7 +39,12 @@ class ShoreKeeper(BaseChar):
 
     def do_perform(self):
         from src.combat.StrictRotation import get_strict_rotation
-        if get_strict_rotation(self.task).run_current(self):
+        rot = get_strict_rotation(self.task)
+        # ShoreKeeper is self-driven: while she holds the field the strict
+        # rotation is switched off and she runs her own reactive rotation (which
+        # also picks her own next swap). It switches back on for Augusta, and
+        # resync realigns the beat pointer when a scripted char is next on field.
+        if not rot.disabled_while_on(self) and rot.run_current(self):
             return
         self._do_perform_default()
 

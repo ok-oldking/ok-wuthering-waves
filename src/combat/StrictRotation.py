@@ -52,9 +52,9 @@ TEAM = frozenset({'Augusta', 'Iuno', 'ShoreKeeper'})
 # field the coordinator goes inert: that character performs with its own reactive
 # logic and chooses its own next swap, exactly as if the rotation were toggled
 # off. The script re-engages -- through ``resync`` -- the moment a scripted
-# character is back on field. (Iuno is self-driven so she runs her full reactive
-# rotation while Augusta / ShoreKeeper stay scripted.)
-SELF_DRIVEN = frozenset({'Iuno'})
+# character is back on field. (Iuno and ShoreKeeper are self-driven so they run
+# their full reactive rotations while Augusta stays scripted.)
+SELF_DRIVEN = frozenset({'Iuno', 'ShoreKeeper'})
 
 # A single step of the rotation.
 #   name  : unique id, dispatched on by ``<Char>.perform_beat``
