@@ -60,7 +60,7 @@ class Augusta(BaseChar):
         self.click_liberation()                  # Eternal Oath (1st liberation)
         for _ in range(3):                       # skill 1, 2, 3
             self.click_resonance()
-        self._augusta_sunborne(9)                # Sunborne x9 (forte strikes)
+        self._augusta_sunborne()                 # Sunborne forte string
         if self.check_majesty():                 # Protector (2nd liberation recast)
             self.perform_majesty()
         else:
@@ -74,20 +74,27 @@ class Augusta(BaseChar):
             self.click_liberation()
             for _ in range(3):
                 self.click_resonance()
-            self._augusta_sunborne(9)
+            self._augusta_sunborne()
             if self.check_majesty():
                 self.perform_majesty()
         else:
             self._heavy_or_prowess()             # no liberation: dump a forte/heavy
         self.send_echo_key()                     # echo
 
-    def _augusta_sunborne(self, count):
-        """Spend the Eternal Oath stance with up to ``count`` Sunborne forte
-        strikes. ``perform_prowess`` holds the forte heavy until prowess is no
-        longer available, so the stance usually drains in one or two passes;
-        the loop simply caps it and bails the moment prowess is gone."""
-        for _ in range(count):
-            if not self.check_prowess():
+    def _augusta_sunborne(self, max_holds=3):
+        """Spend the Eternal Oath stance's Sunborne forte string.
+
+        The skill casts arm Augusta's prowess window (``check_prowess``), which
+        can light up a beat *after* the cast. Waiting for it before each forte
+        hold is what makes the strikes land -- breaking on the first miss (the
+        previous behaviour) skipped the whole Sunborne dump whenever the window
+        was a frame late. ``perform_prowess`` then holds the forte heavy, which
+        channels the Sunborne string in one pass, so this only needs to re-arm a
+        couple of times. Bounded by ``max_holds`` and a 1s wait so it degrades to
+        lost damage -- never a hang -- if the window never appears. Mirrors the
+        proven wait-for-prowess pattern in ``_do_perform_default``."""
+        for _ in range(max_holds):
+            if not self.check_prowess() and not self.task.wait_until(self.check_prowess, time_out=1.0):
                 break
             if not self.perform_prowess():
                 break
