@@ -81,8 +81,11 @@ class Iuno(BaseChar):
         self.click_liberation(wait_if_cd_ready=0)
         self.send_resonance_key(post_sleep=0.1)          # skill -> buff 1
         basic_attacks(self, 4)                           # ba1234
-        # let the skill come back up so the second cast actually lands (buff 2)
-        self.task.wait_until(self.resonance_available, time_out=1)
+        # let the skill come back up so the second cast actually lands (buff 2).
+        # Capped at 2s (not 1s): when the skill CD slightly exceeds 1s the 1s
+        # wait timed out and the unconditional send below fired into cooldown,
+        # silently dropping Iuno's second buff.
+        self.task.wait_until(self.resonance_available, time_out=2)
         self.send_resonance_key(post_sleep=0.1)          # skill -> buff 2
         basic_attacks(self, 1)                           # ba
         if self.task.find_feature("iuno_heavy", box="box_extra_action", threshold=0.6):
@@ -90,6 +93,18 @@ class Iuno(BaseChar):
             self.last_heavy = time.time()
         else:
             heavy(self)
+        # Top off concerto to full before returning. StrictRotation.run_current
+        # calls switch_next_char immediately after this beat, and the swap is
+        # only promoted to a sub-dps OUTRO (which is what transfers Iuno's buffs
+        # to Augusta) when the on-screen ring reads exactly full at that moment.
+        # Iuno's burst ends on a heavy whose concerto/ring-fill has not finished
+        # registering a frame later, so the ring reads <1 and the swap is demoted
+        # to a plain switch (no buff). Hold here, clicking basic attacks, until
+        # the ring is full. Bounded at 1.2s and exits the instant it reads full,
+        # so it cannot reintroduce the open-ended busy-wait the rotation rejects;
+        # mirrors the proven src/char/Linnai.py top-off.
+        if not self.is_con_full():
+            self.task.wait_until(self.is_con_full, post_action=self.click_with_interval, time_out=1.2)
 
     def do_everything(self, time_out=1.5, force_complete=False):
         if self.has_intro:
