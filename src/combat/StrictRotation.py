@@ -205,10 +205,17 @@ class StrictRotation:
         logger.info(f'StrictRotation beat {self.index} {beat.name} ({char.name}) '
                     f'intro={beat.intro} outro={beat.outro}')
         char.perform_beat(beat)
+        if beat.outro:
+            # An outro hands the NEXT character its intro, but the game only
+            # grants an intro when this character's concerto ring is actually
+            # full. Top it off here and then switch normally so the engine
+            # detects the full ring and fires a real intro. Forcing free_intro
+            # while the ring is below full fakes an intro the game never plays:
+            # switch_out then wrongly zeroes the concerto and the burst window
+            # never lines up. (No built-in character forces free_intro either.)
+            build_concerto(char)
         self.advance()
-        # free_intro forces the concerto intro on outro beats even if the con
-        # ring reads a hair under full; non-outro beats let the engine decide.
-        char.switch_next_char(free_intro=beat.outro)
+        char.switch_next_char()
         return True
 
 

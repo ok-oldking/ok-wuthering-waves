@@ -65,8 +65,12 @@ class ShoreKeeper(BaseChar):
             self.task.skip_combat_check = False
 
     def perform_beat(self, beat):
-        """Execute one strict-rotation beat (see src/combat/StrictRotation.py)."""
-        from src.combat.StrictRotation import basic_attacks, heavy, build_concerto
+        """Execute one strict-rotation beat (see src/combat/StrictRotation.py).
+
+        Concerto for outro beats is topped off centrally by run_current, so
+        these only need to spend the kit (intro/echo/lib/skill/forte).
+        """
+        from src.combat.StrictRotation import basic_attacks, heavy
         if beat.name == 'sk_open':
             # 3. ba123, lib, ba12, ha, skill
             basic_attacks(self, 3)
@@ -78,7 +82,6 @@ class ShoreKeeper(BaseChar):
             # 7. ba12345, ha, outro
             basic_attacks(self, 5)
             heavy(self)
-            build_concerto(self)
         elif beat.name in ('sk_intro', 'sk_loop'):
             # 10 / 16. super intro, build concerto, outro
             if beat.intro:
@@ -87,11 +90,9 @@ class ShoreKeeper(BaseChar):
             self.click_liberation()
             if not self.click_resonance()[0]:
                 self.heavy_click_forte(self.is_mouse_forte_full)
-            build_concerto(self)
         else:  # defensive: unknown beat
             self.click_echo(time_out=0)
             self.click_liberation()
-            build_concerto(self)
 
     def switch_next_char(self, *args, **kwargs):
         if self.is_con_full():

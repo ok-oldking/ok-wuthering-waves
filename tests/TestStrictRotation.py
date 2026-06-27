@@ -149,17 +149,41 @@ class TestStrictRotation(unittest.TestCase):
         self.assertEqual(calls, [('perform', 'aug_open'), ('switch', False)])
         self.assertEqual(rot.index, 1)
 
-    def test_run_current_outro_beat_forces_free_intro(self):
+    def test_run_current_outro_beat_builds_concerto_then_switches_plain(self):
+        # Outro beats must NOT force an intro; they top off concerto and switch
+        # normally so the engine grants a real intro only when the ring is full.
         task = FakeTask(target_team())
         rot = StrictRotation(task)
         rot.maybe_reset()  # sync combat tracking so run_current won't rewind
         sk = task.chars[2]
-        calls = []
-        sk.perform_beat = lambda beat: None
-        sk.switch_next_char = lambda free_intro=False: calls.append(free_intro)
+        events = []
+        con_checks = [False, True]  # build_concerto: not full, then full
+        sk.perform_beat = lambda beat: events.append(('beat', beat.name))
+        sk.is_con_full = lambda: con_checks.pop(0) if con_checks else True
+        sk.task = task
+        sk.sleep = lambda *a, **k: None
+        task.click = lambda *a, **k: events.append(('click',))
+        sk.switch_next_char = lambda *a, **k: events.append(('switch', a, k))
         rot.index = 6  # sk_open2, outro=True
         self.assertTrue(rot.run_current(sk))
-        self.assertEqual(calls, [True])
+        # beat ran, concerto was topped off (one click while not full), then a
+        # plain switch with no forced free_intro.
+        self.assertEqual(events[0], ('beat', 'sk_open2'))
+        self.assertIn(('click',), events)
+        self.assertEqual(events[-1], ('switch', (), {}))
+
+    def test_run_current_non_outro_beat_does_not_build_concerto(self):
+        task = FakeTask(target_team())
+        rot = StrictRotation(task)
+        rot.maybe_reset()
+        aug = task.chars[0]
+        events = []
+        aug.perform_beat = lambda beat: events.append(('beat', beat.name))
+        aug.is_con_full = lambda: self.fail('non-outro beat must not build concerto')
+        aug.switch_next_char = lambda *a, **k: events.append(('switch', a, k))
+        rot.index = 0  # aug_open, outro=False
+        self.assertTrue(rot.run_current(aug))
+        self.assertEqual(events, [('beat', 'aug_open'), ('switch', (), {})])
 
     def test_run_current_resets_to_opener_on_first_call(self):
         # _last_combat_start starts unset, so the first run_current rewinds to
