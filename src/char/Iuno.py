@@ -23,11 +23,54 @@ class Iuno(BaseChar):
         return super().get_buff_time()
 
     def do_perform(self):
+        from src.combat.StrictRotation import get_strict_rotation
+        if get_strict_rotation(self.task).run_current(self):
+            return
+        self._do_perform_default()
+
+    def _do_perform_default(self):
         self.wait_down()
         self.do_everything()
         self.switch_next_char()
 
-    def do_everything(self, time_out=1.5):
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        from src.combat.StrictRotation import get_strict_rotation, MUST, NO
+        from src.char.BaseChar import SwitchPriority
+        rot = get_strict_rotation(self.task)
+        if rot.is_active():
+            priority = rot.priority_for(self.name)
+            if priority == MUST:
+                return SwitchPriority.MUST
+            if priority == NO:
+                return SwitchPriority.NO
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
+
+    def perform_beat(self, beat):
+        """Execute one strict-rotation beat (see src/combat/StrictRotation.py)."""
+        from src.combat.StrictRotation import dash
+        if beat.name in ('iuno_open1', 'iuno_open2'):
+            # 2 / 4. skill
+            self.click_resonance()
+        elif beat.name == 'iuno_open3':
+            # 6. echo
+            self.click_echo()
+        elif beat.name == 'iuno_loop1':
+            # 12. skill, echo, dash, skill
+            self.click_resonance()
+            self.click_echo()
+            dash(self)
+            self.click_resonance()
+        elif beat.name in ('iuno_burst', 'iuno_burst2'):
+            # 8 / 14. (intro) jump-cancel, lib, skill, ba1234, skill, ba, ha, outro
+            if beat.intro:
+                self.wait_down()
+            # force_complete so the no-intro burst (step 14) still fires lib/
+            # skill/heavy after the jump instead of switch-cancelling early.
+            self.do_everything(force_complete=True)
+        else:  # defensive: unknown beat
+            self.do_everything()
+
+    def do_everything(self, time_out=1.5, force_complete=False):
         if self.has_intro:
             time_out += 4
         start = time.time()
@@ -63,7 +106,7 @@ class Iuno(BaseChar):
                     self.task.jump(after_sleep=0.1)
                 time_out += 3
                 jumped = True
-                if self.has_intro:
+                if self.has_intro or force_complete:
                     continue
                 else:  # 没有intro, 切人取消后摇
                     return
