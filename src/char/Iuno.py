@@ -64,11 +64,13 @@ class Iuno(BaseChar):
             # 8 / 14. (intro) jump-cancel, lib, skill, ba1234, skill, ba, ha, outro
             if beat.intro:
                 self.wait_down()
-            self.do_everything()
+            # force_complete so the no-intro burst (step 14) still fires lib/
+            # skill/heavy after the jump instead of switch-cancelling early.
+            self.do_everything(force_complete=True)
         else:  # defensive: unknown beat
             self.do_everything()
 
-    def do_everything(self, time_out=1.5):
+    def do_everything(self, time_out=1.5, force_complete=False):
         if self.has_intro:
             time_out += 4
         start = time.time()
@@ -104,7 +106,7 @@ class Iuno(BaseChar):
                     self.task.jump(after_sleep=0.1)
                 time_out += 3
                 jumped = True
-                if self.has_intro:
+                if self.has_intro or force_complete:
                     continue
                 else:  # 没有intro, 切人取消后摇
                     return

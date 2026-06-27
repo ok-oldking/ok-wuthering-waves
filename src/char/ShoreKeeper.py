@@ -48,7 +48,9 @@ class ShoreKeeper(BaseChar):
             self._intro_wait()
         self.click_echo(time_out=0)
         self.click_liberation()
-        if not self.click_resonance():
+        # click_resonance returns a (clicked, duration, animated) tuple; index
+        # [0] so the forte fallback actually runs when the skill didn't fire.
+        if not self.click_resonance()[0]:
             self.heavy_click_forte(self.is_mouse_forte_full)
         self.switch_next_char()
 

@@ -205,6 +205,33 @@ class TestStrictRotation(unittest.TestCase):
         aug.switch_next_char = lambda free_intro=False: None
         self.assertFalse(rot.run_current(aug))
 
+    def test_run_current_inactive_has_no_side_effects(self):
+        # When inactive the coordinator must not mutate state or reset (no log
+        # spam / index churn for non-target teams).
+        task = FakeTask(team('Augusta', 'Iuno', 'Verina'), combat_start=5)
+        rot = StrictRotation(task)
+        rot.index = 5
+        rot._last_combat_start = 'sentinel'
+        aug = task.chars[0]
+        aug.perform_beat = lambda beat: self.fail('inactive must not run beat')
+        self.assertFalse(rot.run_current(aug))
+        self.assertEqual(rot.index, 5)
+        self.assertEqual(rot._last_combat_start, 'sentinel')
+
+    def test_run_current_advances_past_failing_beat(self):
+        # An unexpected per-beat error must advance the index (so the same beat
+        # is not retried forever) and propagate.
+        task = FakeTask(target_team())
+        rot = StrictRotation(task)
+        rot.maybe_reset()
+        aug = task.chars[0]
+        aug.perform_beat = lambda beat: (_ for _ in ()).throw(ValueError('boom'))
+        aug.switch_next_char = lambda *a, **k: self.fail('must not switch on failure')
+        rot.index = 0
+        with self.assertRaises(ValueError):
+            rot.run_current(aug)
+        self.assertEqual(rot.index, 1)
+
     def test_get_strict_rotation_is_cached_per_task(self):
         task = FakeTask(target_team())
         first = get_strict_rotation(task)

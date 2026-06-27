@@ -71,6 +71,8 @@ class Augusta(BaseChar):
         self._heavy_or_prowess()                 # ha
         if self.check_majesty():                 # 2nd lib (majesty recast)
             self.perform_majesty()
+        else:
+            self.logger.info('Augusta burst: majesty (2nd lib) not detected, skipping')
         if with_basics:
             basic_attacks(self, 3)               # ba123
             heavy(self)                          # ha

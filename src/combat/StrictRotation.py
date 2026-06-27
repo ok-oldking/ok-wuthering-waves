@@ -169,7 +169,10 @@ class StrictRotation:
                 idx = LOOP_START + ((idx - len(BEATS)) % (len(BEATS) - LOOP_START))
             if BEATS[idx].char == char_name:
                 if idx != self.index:
-                    logger.info(f'StrictRotation resync {self.index} -> {idx} for {char_name}')
+                    # surfaced at WARNING: a skip means a switch was missed or
+                    # combat started off-script, so beats were silently dropped.
+                    logger.warning(f'StrictRotation resync {self.index} -> {idx} for {char_name} '
+                                   f'(skipped {idx - self.index} beat(s))')
                 self.index = idx
                 return True
         return False
@@ -193,9 +196,11 @@ class StrictRotation:
         Returns True if the beat was handled (the caller should return), or False
         to fall back to the character's default rotation.
         """
-        self.maybe_reset()
+        # Gate first so the coordinator stays fully inert (no logs, no state
+        # writes) for non-target teams and when the toggle is off.
         if not self.is_active():
             return False
+        self.maybe_reset()
         beat = self.current_beat()
         if beat.char != char.name:
             if not self.resync(char.name):
@@ -204,16 +209,25 @@ class StrictRotation:
             beat = self.current_beat()
         logger.info(f'StrictRotation beat {self.index} {beat.name} ({char.name}) '
                     f'intro={beat.intro} outro={beat.outro}')
-        char.perform_beat(beat)
-        if beat.outro:
-            # An outro hands the NEXT character its intro, but the game only
-            # grants an intro when this character's concerto ring is actually
-            # full. Top it off here and then switch normally so the engine
-            # detects the full ring and fires a real intro. Forcing free_intro
-            # while the ring is below full fakes an intro the game never plays:
-            # switch_out then wrongly zeroes the concerto and the burst window
-            # never lines up. (No built-in character forces free_intro either.)
-            build_concerto(char)
+        try:
+            char.perform_beat(beat)
+            if beat.outro:
+                # An outro hands the NEXT character its intro, but the game only
+                # grants an intro when this character's concerto ring is actually
+                # full. Top it off here and then switch normally so the engine
+                # detects the full ring and fires a real intro. Forcing free_intro
+                # while the ring is below full fakes an intro the game never plays:
+                # switch_out then wrongly zeroes the concerto and the burst window
+                # never lines up. (No built-in character forces free_intro either.)
+                build_concerto(char)
+        except _combat_control_exceptions():
+            raise  # combat ended / char dead -> let the task loop handle it
+        except Exception:
+            # An unexpected per-beat failure must not pin the rotation on the
+            # same beat forever: advance past it, then re-raise so it is visible.
+            logger.exception(f'StrictRotation beat {beat.name} failed; advancing past it')
+            self.advance()
+            raise
         self.advance()
         char.switch_next_char()
         return True
@@ -229,6 +243,19 @@ def get_strict_rotation(task):
         except Exception:  # pragma: no cover - task may forbid attribute set in tests
             pass
     return rot
+
+
+def _combat_control_exceptions():
+    """Combat-flow exceptions that must propagate, not be swallowed as beat errors.
+
+    Imported lazily so this module stays importable without the game stack;
+    returns an empty tuple (catches nothing extra) if the import is unavailable.
+    """
+    try:
+        from src.task.BaseCombatTask import NotInCombatException, CharDeadException
+        return (NotInCombatException, CharDeadException)
+    except Exception:  # pragma: no cover - only when the game stack is absent
+        return tuple()
 
 
 # --- shared frame-checked action helpers ----------------------------------
@@ -256,11 +283,20 @@ def heavy(char):
 
 
 def build_concerto(char, time_out=2.5):
-    """Basic-attack until the concerto ring is full so the next swap can outro."""
+    """Basic-attack until the concerto ring is full so the next swap can outro.
+
+    Returns True if the ring reached full. A timeout (returns False) means the
+    swap falls back to a normal switch with no intro; it is logged so chronic
+    concerto-detection problems are diagnosable in field logs.
+    """
     start = time.time()
     while time.time() - start < time_out:
         if char.is_con_full():
             return True
         char.task.click()
         char.sleep(0.1)
-    return char.is_con_full()
+    if char.is_con_full():
+        return True
+    logger.warning(f'build_concerto timed out after {time_out}s for {char.name}; '
+                   f'switching without intro')
+    return False
