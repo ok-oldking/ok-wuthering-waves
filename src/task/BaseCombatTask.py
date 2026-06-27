@@ -941,9 +941,23 @@ class BaseCombatTask(CombatCheck):
         if percent != 1 and self.con_full_size[str(target_index)] > 0:
             percent = max_area / self.con_full_size[str(target_index)]
         if not max_is_full and percent >= 1:
-            self.logger.warning(
-                f'is_con_full not full but percent greater than 1, set to 0.99, {percent} {max_is_full}')
-            percent = 0.99
+            # The ring area is at/above the calibrated full size, but count_rings
+            # did not confirm a closed ring (a transient VFX gap, or the
+            # contour-convexity check in is_full_ring failing). That false negative
+            # capped a genuinely full ring at 0.99, and since is_con_full requires
+            # exactly 1 the outro never fired. Confirm fullness by angular coverage
+            # instead: a real full ring has ring-coloured pixels spanning the whole
+            # 360 deg annulus, whereas a partial ring leaves a large angular gap.
+            color_range = con_colors[target_index] if 0 <= target_index < len(con_colors) else con_colors[0]
+            if self.con_ring_angularly_full(cropped, color_range):
+                self.logger.info(f'is_con_full confirmed full by angular coverage ({percent:.2f})')
+                percent = 1
+                max_is_full = True
+                self.con_full_size[str(target_index)] = max_area
+            else:
+                self.logger.warning(
+                    f'is_con_full not full but percent greater than 1, set to 0.99, {percent} {max_is_full}')
+                percent = 0.99
         if percent > 1:
             self.logger.error(f'is_con_full percent greater than 1, set to 1, {percent} {max_is_full}')
             percent = 1
@@ -953,6 +967,46 @@ class BaseCombatTask(CombatCheck):
         if percent > 1:
             percent = 1
         return percent
+
+    def con_ring_angularly_full(self, cropped, color_range, sectors=72, coverage=0.93):
+        """Frame analysis: does the concerto ring span (nearly) the full circle?
+
+        Splits the annulus into ``sectors`` angular bins and reports the fraction
+        of bins that contain ring-coloured pixels. A genuinely full ring covers
+        them all; a partial ring (e.g. 130 deg) leaves a large contiguous gap. This
+        is robust to the small VFX gaps and contour-detection false negatives that
+        otherwise capped a full ring at 0.99 and stopped the outro from firing.
+
+        Args:
+            cropped (numpy.ndarray): the concerto-box crop (same one count_rings uses).
+            color_range (dict): the ring colour range for the current character.
+            sectors (int): number of angular bins around the circle.
+            coverage (float): fraction of bins that must be filled to count as full
+                (``0.93`` tolerates a few VFX-blanked sectors but rejects real partials).
+
+        Returns:
+            bool: True if the ring is angularly (nearly) complete.
+        """
+        h, w = cropped.shape[:2]
+        cx, cy = w / 2.0, h / 2.0
+        r_inner, r_outer = h * 0.35119, h * 0.42261
+        lower_bound, upper_bound = color_range_to_bound(color_range)
+        mask = cv2.inRange(cropped, lower_bound, upper_bound)
+        ys, xs = np.nonzero(mask)
+        if len(xs) == 0:
+            return False
+        dx = xs - cx
+        dy = ys - cy
+        dist = np.sqrt(dx * dx + dy * dy)
+        in_annulus = (dist >= r_inner) & (dist <= r_outer)
+        if not np.any(in_annulus):
+            return False
+        angles = np.arctan2(dy[in_annulus], dx[in_annulus])  # -pi..pi
+        bins = ((angles + np.pi) / (2 * np.pi) * sectors).astype(np.int64) % sectors
+        covered = np.unique(bins).size
+        full = covered >= sectors * coverage
+        self.log_debug(f'con_ring_angularly_full covered={covered}/{sectors} full={full}')
+        return full
 
     def count_rings(self, image, color_range, min_area):
         """在指定图像区域内计算特定颜色范围的能量环数量和状态。
