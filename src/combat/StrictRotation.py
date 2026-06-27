@@ -60,6 +60,12 @@ STAGES = ['ShoreKeeper', 'Iuno', 'Augusta']
 # if it cannot fill in time the stage simply redoes on the next perform() call.
 STAGE_GATE_TIME_OUT = 2.0
 
+# Give up the outro gate after this many failed attempts on a stage and switch
+# anyway (a plain swap, no outro buff that cycle) so a character that genuinely
+# cannot reach full concerto -- liberation on cooldown, weak generation, etc. --
+# can never stall the whole rotation on one stage.
+MAX_STAGE_ATTEMPTS = 3
+
 
 class StrictRotation:
     """Tracks the current stage and gates each stage on its outro firing.
@@ -71,6 +77,7 @@ class StrictRotation:
     def __init__(self, task):
         self.task = task
         self.stage = 0
+        self.attempts = 0  # failed outro attempts on the current stage
         self._last_combat_start = None
 
     # --- team / enablement -------------------------------------------------
@@ -100,6 +107,7 @@ class StrictRotation:
         if combat_start != self._last_combat_start:
             self._last_combat_start = combat_start
             self.stage = 0
+            self.attempts = 0
             logger.info('StrictRotation reset to stage 1 for new combat')
 
     def current_char(self):
@@ -107,6 +115,7 @@ class StrictRotation:
 
     def advance(self):
         self.stage = (self.stage + 1) % len(STAGES)
+        self.attempts = 0  # fresh stage starts with a clean attempt count
         return self.current_char()
 
     def resync(self, char_name):
@@ -116,7 +125,8 @@ class StrictRotation:
             idx = STAGES.index(char_name)
             if idx != self.stage:
                 logger.info(f'StrictRotation resync stage {self.stage} -> {idx} for {char_name}')
-            self.stage = idx
+                self.stage = idx
+                self.attempts = 0
             return True
         return False
 
@@ -161,8 +171,20 @@ class StrictRotation:
             self.advance()
             char.switch_next_char()
             return True
+
+        # Outro not fulfilled this attempt. Redo the stage -- but give up after
+        # MAX_STAGE_ATTEMPTS and switch anyway (a plain swap, no outro buff this
+        # cycle) so a character that cannot reach full concerto never stalls the
+        # whole rotation on one stage.
+        self.attempts += 1
+        if self.attempts >= MAX_STAGE_ATTEMPTS:
+            logger.warning(f'StrictRotation stage {char.name}: outro not fulfilled after '
+                           f'{self.attempts} attempts; giving up and switching anyway')
+            self.advance()
+            char.switch_next_char()
+            return True
         logger.info(f'StrictRotation stage {char.name}: outro not fulfilled '
-                    f'(concerto not full); redoing stage')
+                    f'(attempt {self.attempts}/{MAX_STAGE_ATTEMPTS}); redoing stage')
         return True
 
 

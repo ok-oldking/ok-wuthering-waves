@@ -8,7 +8,7 @@ otherwise stay on field and redo the stage).
 import unittest
 
 from src.combat.StrictRotation import (
-    StrictRotation, STAGES, TEAM, MUST, NO, NORMAL, get_strict_rotation,
+    StrictRotation, STAGES, TEAM, MUST, NO, NORMAL, MAX_STAGE_ATTEMPTS, get_strict_rotation,
 )
 
 
@@ -142,7 +142,27 @@ class TestStrictRotation(unittest.TestCase):
         self.assertTrue(rot.run_current(sk))
         self.assertEqual(events, ['perform'])      # performed but did NOT switch
         self.assertEqual(rot.stage, 0)             # stayed on the same stage (redo)
+        self.assertEqual(rot.attempts, 1)          # one failed attempt recorded
         self.assertEqual(len(task.wait_until_calls), 1)  # gate attempt was made
+
+    def test_run_current_gives_up_after_max_attempts(self):
+        # After MAX_STAGE_ATTEMPTS failed outro attempts the stage switches anyway
+        # (plain swap) so a character that can't fill concerto never stalls.
+        task = FakeTask(target_team())
+        rot = StrictRotation(task)
+        rot.maybe_reset()
+        sk = task.chars[2]
+        events = wire_char(sk, task, con_full=False)
+        rot.stage = 0
+        for _ in range(MAX_STAGE_ATTEMPTS - 1):
+            rot.run_current(sk)
+            self.assertEqual(rot.stage, 0)         # still redoing
+            self.assertEqual(events[-1], 'perform')  # no switch yet
+        # final attempt -> give up and switch
+        rot.run_current(sk)
+        self.assertEqual(events[-1], 'switch')     # switched anyway
+        self.assertEqual(rot.stage, 1)             # advanced to next stage
+        self.assertEqual(rot.attempts, 0)          # counter reset for new stage
 
     def test_run_current_inactive_returns_false_no_perform(self):
         task = FakeTask(team('Augusta', 'Iuno', 'Verina'))
