@@ -197,17 +197,32 @@ class Augusta(BaseChar):
     def buff_stacks_full(self):
         return self.buff_stacks() >= self.AUGUSTA_BUFF_STACK_TARGET
 
-    def wait_for_buff_stacks(self, time_out=3):
+    def _build_buff_stack(self):
+        """One stack-building action for the 2nd-lib wait.
+
+        Plain basic attacks barely move the buff, so a basics-only wait stalls a
+        stack short (the "stuck at 9" symptom). Augusta's forte heavy / prowess
+        builds the bulk of it, so spend that when it is up and otherwise fall back
+        to a basic attack.
+        """
+        if self.is_forte_full() and self.heavy_click_forte(self.is_forte_full):
+            return
+        if self.check_prowess() and self.perform_prowess():
+            return
+        self.click()
+
+    def wait_for_buff_stacks(self, time_out=5):
         """Build to max buff stacks before the 2nd lib, attacking while waiting.
 
         Returns True once the buff is full. Gives up (returns False) after
         ``time_out`` so a missing/unreadable badge can't stall the rotation --
-        the caller then skips the 2nd lib for this cycle.
+        the caller then skips the 2nd lib for this cycle. Still exits the instant
+        the buff reads full, so a quick build returns immediately.
         """
         if self.buff_stacks_full():
             return True
         return bool(self.task.wait_until(
-            self.buff_stacks_full, post_action=self.click, time_out=time_out))
+            self.buff_stacks_full, post_action=self._build_buff_stack, time_out=time_out))
 
     def check_prowess(self):
         long_inner_box = 'target_enemy_long_inner'
