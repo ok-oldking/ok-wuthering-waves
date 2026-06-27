@@ -55,54 +55,39 @@ TEAM = frozenset({'Augusta', 'Iuno', 'ShoreKeeper'})
 #   outro : True when this beat builds concerto to full and leaves via an outro
 Beat = namedtuple('Beat', ['name', 'char', 'intro', 'outro'])
 
-# The rotation, transcribed from the user's step list.
+# The rotation, transcribed from the user's step list. Field order is
+# ShoreKeeper -> Iuno -> Augusta; combat opens on ShoreKeeper (no intro) and
+# every character hands off through a concerto outro, so *every* beat is an
+# outro beat and the next beat is always entered on an intro.
 #
-#   Opener (played once):
-#     1  Aug  skill
-#     2  Iuno skill
-#     3  Sk   ba123 lib ba12 ha skill
-#     4  Iuno skill
-#     5  Aug  ha
-#     6  Iuno echo
-#     7  Sk   ba12345 ha outro
-#     8  Iuno intro, jump-cancel, lib, skill, ba1234, skill, ba, ha, outro
-#     9  Aug  intro, ha, lib (griffin), skill, ha, 2nd lib, [ba123 ha], echo, outro
-#    10  Sk   super intro, build concerto, outro
+#   First Rotation -- opener (played once):
+#     1  Sk   ba x5, ha, skill, ba x3, lib, ba x2, ha, echo, outro
+#     2  Iuno intro, echo, skill (cancel), lib, jump, skill, ba x3, skill, ha, outro
+#     3  Aug  intro, ha, skill, ha, lib (Eternal Oath), skill x3,
+#             Sunborne x9, Protector (2nd lib), echo, outro
 #
-#   Loop (repeats):
-#    11  Aug  intro, ha
-#    12  Iuno skill, echo, dash, skill
-#    13  Aug  skill, ha
-#    14  Iuno jump, lib, skill, ba1234, skill, ba, ha, outro
-#    15  Aug  ha, lib (griffin), skill, ha, 2nd lib, ba123, ha, echo, outro
-#    16  Sk   super intro, build concerto, outro  -> back to 11
+#   Second Rotation onward -- loop (repeats); "third rotation: do quickswaps":
+#     4  Sk   enhanced intro, ba x3, lib, ba x2, ha, skill, ba x2 (2nd cancelled by outro), outro
+#     5  Iuno intro, echo, skill (energy), jump, lib, skill, ba x3, skill, ha, outro
+#     6  Aug  intro quickswap: ha, skill, (Eternal Oath -> Sunborne -> Protector
+#             only when liberation is off cooldown), echo, outro  -> back to 4
 #
 # ``intro`` of beat N always equals ``outro`` of beat N-1 (with loop wraparound),
 # i.e. an outro on one beat hands the next beat its intro.
 BEATS = [
-    # opener
-    Beat('aug_open',    'Augusta',     intro=False, outro=False),
-    Beat('iuno_open1',  'Iuno',        intro=False, outro=False),
-    Beat('sk_open',     'ShoreKeeper', intro=False, outro=False),
-    Beat('iuno_open2',  'Iuno',        intro=False, outro=False),
-    Beat('aug_open2',   'Augusta',     intro=False, outro=False),
-    Beat('iuno_open3',  'Iuno',        intro=False, outro=False),
-    Beat('sk_open2',    'ShoreKeeper', intro=False, outro=True),
-    Beat('iuno_burst',  'Iuno',        intro=True,  outro=True),
-    Beat('aug_burst',   'Augusta',     intro=True,  outro=True),
-    Beat('sk_intro',    'ShoreKeeper', intro=True,  outro=True),
-    # loop
-    Beat('aug_loop1',   'Augusta',     intro=True,  outro=False),
-    Beat('iuno_loop1',  'Iuno',        intro=False, outro=False),
-    Beat('aug_loop2',   'Augusta',     intro=False, outro=False),
-    Beat('iuno_burst2', 'Iuno',        intro=False, outro=True),
-    Beat('aug_burst2',  'Augusta',     intro=True,  outro=True),
-    Beat('sk_loop',     'ShoreKeeper', intro=True,  outro=True),
+    # opener -- First Rotation
+    Beat('sk_r1',    'ShoreKeeper', intro=False, outro=True),
+    Beat('iuno_r1',  'Iuno',        intro=True,  outro=True),
+    Beat('aug_r1',   'Augusta',     intro=True,  outro=True),
+    # loop -- Second Rotation + Augusta quickswap
+    Beat('sk_r2',    'ShoreKeeper', intro=True,  outro=True),
+    Beat('iuno_r2',  'Iuno',        intro=True,  outro=True),
+    Beat('aug_loop', 'Augusta',     intro=True,  outro=True),
 ]
 
 # Index of the first loop beat; ``advance`` wraps here instead of to 0 so the
 # opener is never replayed mid-combat.
-LOOP_START = 10
+LOOP_START = 3
 
 
 class StrictRotation:

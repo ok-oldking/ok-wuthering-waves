@@ -46,29 +46,52 @@ class Iuno(BaseChar):
         return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def perform_beat(self, beat):
-        """Execute one strict-rotation beat (see src/combat/StrictRotation.py)."""
-        from src.combat.StrictRotation import dash
-        if beat.name in ('iuno_open1', 'iuno_open2'):
-            # 2 / 4. skill
-            self.click_resonance()
-        elif beat.name == 'iuno_open3':
-            # 6. echo
-            self.click_echo()
-        elif beat.name == 'iuno_loop1':
-            # 12. skill, echo, dash, skill
-            self.click_resonance()
-            self.click_echo()
-            dash(self)
-            self.click_resonance()
-        elif beat.name in ('iuno_burst', 'iuno_burst2'):
-            # 8 / 14. (intro) jump-cancel, lib, skill, ba1234, skill, ba, ha, outro
+        """Execute one strict-rotation beat (see src/combat/StrictRotation.py).
+
+        Both Iuno beats are the same chain; they differ only in whether her
+        liberation is cast before or after the jump:
+            R1: intro, echo, skill (cancel), lib, jump, skill, ba x3, skill, ha, outro
+            R2: intro, echo, skill (energy), jump, lib, skill, ba x3, skill, ha, outro
+        """
+        if beat.name == 'iuno_r1':
+            self._iuno_sequence(beat, lib_before_jump=True)
+        elif beat.name == 'iuno_r2':
+            self._iuno_sequence(beat, lib_before_jump=False)
+        else:  # defensive: unknown beat
             if beat.intro:
                 self.wait_down()
-            # force_complete so the no-intro burst (step 14) still fires lib/
-            # skill/heavy after the jump instead of switch-cancelling early.
             self.do_everything(force_complete=True)
-        else:  # defensive: unknown beat
-            self.do_everything()
+
+    def _iuno_sequence(self, beat, lib_before_jump):
+        from src.combat.StrictRotation import basic_attacks
+        if beat.intro:
+            self.wait_down()
+        self.click_echo()
+        self.click_resonance()          # opening skill (cancel animation / build energy)
+        if lib_before_jump:
+            self.click_liberation(wait_if_cd_ready=0)
+            self._iuno_jump()
+        else:
+            self._iuno_jump()
+            self.click_liberation(wait_if_cd_ready=0)
+        self.click_resonance()          # skill 1
+        basic_attacks(self, 3)          # basic 1, 2, 3
+        self.click_resonance()          # skill 2
+        self._iuno_heavy()              # special forte heavy
+
+    def _iuno_jump(self):
+        """Jump while Iuno's jump window is shown (drains all queued prompts)."""
+        if self.task.find_feature("iuno_jump", box="box_extra_action", threshold=0.6):
+            while self.task.find_feature("iuno_jump", box="box_extra_action", threshold=0.6):
+                self.task.jump(after_sleep=0.1)
+
+    def _iuno_heavy(self):
+        """Fire the enhanced heavy only when its indicator is up."""
+        if self.task.find_feature("iuno_heavy", box="box_extra_action", threshold=0.6):
+            self.sleep(0.05)
+            self.heavy_attack()
+            self.sleep(0.05)
+            self.last_heavy = time.time()
 
     def do_everything(self, time_out=1.5, force_complete=False):
         if self.has_intro:

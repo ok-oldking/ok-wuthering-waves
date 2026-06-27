@@ -10,7 +10,7 @@ import unittest
 
 from src.combat.StrictRotation import (
     StrictRotation, BEATS, LOOP_START, TEAM, MUST, NO, NORMAL, get_strict_rotation,
-    build_concerto,
+    build_concerto, Beat,
 )
 
 
@@ -37,11 +37,8 @@ def target_team():
     return team('Augusta', 'Iuno', 'ShoreKeeper')
 
 
-EXPECTED_OPENER = [
-    'Augusta', 'Iuno', 'ShoreKeeper', 'Iuno', 'Augusta', 'Iuno',
-    'ShoreKeeper', 'Iuno', 'Augusta', 'ShoreKeeper',
-]
-EXPECTED_LOOP = ['Augusta', 'Iuno', 'Augusta', 'Iuno', 'Augusta', 'ShoreKeeper']
+EXPECTED_OPENER = ['ShoreKeeper', 'Iuno', 'Augusta']
+EXPECTED_LOOP = ['ShoreKeeper', 'Iuno', 'Augusta']
 
 
 class TestStrictRotation(unittest.TestCase):
@@ -84,13 +81,13 @@ class TestStrictRotation(unittest.TestCase):
 
     def test_priority_must_for_current_no_for_others(self):
         rot = StrictRotation(FakeTask(target_team()))
-        rot.index = 0  # aug_open
-        self.assertEqual(rot.priority_for('Augusta'), MUST)
+        rot.index = 0  # sk_r1
+        self.assertEqual(rot.priority_for('ShoreKeeper'), MUST)
         self.assertEqual(rot.priority_for('Iuno'), NO)
-        self.assertEqual(rot.priority_for('ShoreKeeper'), NO)
-        rot.advance()  # iuno_open1
-        self.assertEqual(rot.priority_for('Iuno'), MUST)
         self.assertEqual(rot.priority_for('Augusta'), NO)
+        rot.advance()  # iuno_r1
+        self.assertEqual(rot.priority_for('Iuno'), MUST)
+        self.assertEqual(rot.priority_for('ShoreKeeper'), NO)
 
     def test_inactive_when_team_mismatch(self):
         rot = StrictRotation(FakeTask(team('Augusta', 'Iuno', 'Verina')))
@@ -116,24 +113,24 @@ class TestStrictRotation(unittest.TestCase):
 
     def test_resync_finds_nearest_future_beat(self):
         rot = StrictRotation(FakeTask(target_team()))
-        rot.index = 0  # expects Augusta, but ShoreKeeper is on field
-        self.assertTrue(rot.resync('ShoreKeeper'))
-        self.assertEqual(rot.current_beat().char, 'ShoreKeeper')
-        self.assertEqual(rot.index, 2)  # sk_open
+        rot.index = 0  # expects ShoreKeeper, but Augusta is on field
+        self.assertTrue(rot.resync('Augusta'))
+        self.assertEqual(rot.current_beat().char, 'Augusta')
+        self.assertEqual(rot.index, 2)  # aug_r1
 
     def test_resync_wraps_through_loop(self):
         rot = StrictRotation(FakeTask(target_team()))
-        rot.index = len(BEATS) - 1  # sk_loop; next Augusta is loop start
-        self.assertTrue(rot.resync('Augusta'))
+        rot.index = len(BEATS) - 1  # aug_loop; next ShoreKeeper is loop start
+        self.assertTrue(rot.resync('ShoreKeeper'))
         self.assertEqual(rot.index, LOOP_START)
 
     def test_maybe_reset_on_new_combat(self):
         task = FakeTask(target_team(), combat_start=100)
         rot = StrictRotation(task)
         rot.maybe_reset()
-        rot.index = 12
+        rot.index = 4
         rot.maybe_reset()  # same combat -> keep position
-        self.assertEqual(rot.index, 12)
+        self.assertEqual(rot.index, 4)
         task.combat_start = 200  # new combat -> rewind to opener
         rot.maybe_reset()
         self.assertEqual(rot.index, 0)
@@ -141,13 +138,15 @@ class TestStrictRotation(unittest.TestCase):
     def test_run_current_executes_and_advances(self):
         task = FakeTask(target_team())
         rot = StrictRotation(task)
-        aug = task.chars[0]
+        sk = task.chars[2]  # ShoreKeeper leads off at index 0
         calls = []
-        aug.perform_beat = lambda beat: calls.append(('perform', beat.name))
-        aug.switch_next_char = lambda free_intro=False: calls.append(('switch', free_intro))
+        sk.perform_beat = lambda beat: calls.append(('perform', beat.name))
+        sk.is_con_full = lambda: True  # outro beat: build_concerto short-circuits
+        sk.switch_next_char = lambda free_intro=False: calls.append(('switch', free_intro))
+        rot.maybe_reset()
         rot.index = 0
-        self.assertTrue(rot.run_current(aug))
-        self.assertEqual(calls, [('perform', 'aug_open'), ('switch', False)])
+        self.assertTrue(rot.run_current(sk))
+        self.assertEqual(calls, [('perform', 'sk_r1'), ('switch', False)])
         self.assertEqual(rot.index, 1)
 
     def test_run_current_outro_beat_builds_concerto_then_switches_plain(self):
@@ -167,38 +166,42 @@ class TestStrictRotation(unittest.TestCase):
         sk.sleep = lambda *a, **k: None
         task.click = lambda *a, **k: events.append(('click',))
         sk.switch_next_char = lambda *a, **k: events.append(('switch', a, k))
-        rot.index = 6  # sk_open2, outro=True
+        rot.index = 0  # sk_r1, outro=True
         self.assertTrue(rot.run_current(sk))
         # beat ran, concerto was topped off (one click while not full), then a
         # plain switch with no forced free_intro.
-        self.assertEqual(events[0], ('beat', 'sk_open2'))
+        self.assertEqual(events[0], ('beat', 'sk_r1'))
         self.assertIn(('click',), events)
         self.assertEqual(events[-1], ('switch', (), {}))
 
     def test_run_current_non_outro_beat_does_not_build_concerto(self):
+        # The engine only tops off concerto on outro beats. The shipped rotation
+        # is all-outro, so exercise the non-outro branch with a synthetic beat.
         task = FakeTask(target_team())
         rot = StrictRotation(task)
         rot.maybe_reset()
         aug = task.chars[0]
+        fake = Beat('fake_non_outro', 'Augusta', intro=False, outro=False)
+        rot.current_beat = lambda: fake
         events = []
         aug.perform_beat = lambda beat: events.append(('beat', beat.name))
         aug.is_con_full = lambda: self.fail('non-outro beat must not build concerto')
         aug.switch_next_char = lambda *a, **k: events.append(('switch', a, k))
-        rot.index = 0  # aug_open, outro=False
         self.assertTrue(rot.run_current(aug))
-        self.assertEqual(events, [('beat', 'aug_open'), ('switch', (), {})])
+        self.assertEqual(events, [('beat', 'fake_non_outro'), ('switch', (), {})])
 
     def test_run_current_resets_to_opener_on_first_call(self):
         # _last_combat_start starts unset, so the first run_current rewinds to
         # the opener even if index was nudged beforehand.
         task = FakeTask(target_team())
         rot = StrictRotation(task)
-        rot.index = 9
-        aug = task.chars[0]
-        aug.perform_beat = lambda beat: None
-        aug.switch_next_char = lambda free_intro=False: None
-        rot.run_current(aug)
-        self.assertEqual(rot.index, 1)  # ran aug_open (0) then advanced to 1
+        rot.index = 4
+        sk = task.chars[2]  # ShoreKeeper is the opener char at index 0
+        sk.perform_beat = lambda beat: None
+        sk.is_con_full = lambda: True
+        sk.switch_next_char = lambda free_intro=False: None
+        rot.run_current(sk)
+        self.assertEqual(rot.index, 1)  # reset to opener, ran sk_r1 (0), advanced to 1
 
     def test_run_current_inactive_returns_false(self):
         task = FakeTask(team('Augusta', 'Iuno', 'Verina'))
@@ -227,12 +230,12 @@ class TestStrictRotation(unittest.TestCase):
         task = FakeTask(target_team())
         rot = StrictRotation(task)
         rot.maybe_reset()
-        aug = task.chars[0]
-        aug.perform_beat = lambda beat: (_ for _ in ()).throw(ValueError('boom'))
-        aug.switch_next_char = lambda *a, **k: self.fail('must not switch on failure')
+        sk = task.chars[2]  # ShoreKeeper matches index 0 (no resync)
+        sk.perform_beat = lambda beat: (_ for _ in ()).throw(ValueError('boom'))
+        sk.switch_next_char = lambda *a, **k: self.fail('must not switch on failure')
         rot.index = 0
         with self.assertRaises(ValueError):
-            rot.run_current(aug)
+            rot.run_current(sk)
         self.assertEqual(rot.index, 1)
 
     def test_build_concerto_prefers_echo_and_skill_over_basics(self):

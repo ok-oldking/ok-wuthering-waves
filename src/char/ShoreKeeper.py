@@ -70,34 +70,37 @@ class ShoreKeeper(BaseChar):
         """Execute one strict-rotation beat (see src/combat/StrictRotation.py).
 
         Concerto for outro beats is topped off centrally by run_current, so
-        these only need to spend the kit (intro/echo/lib/skill/forte).
+        these only need to spend the kit; build_concerto recasts echo/skill
+        (and falls back to basics) to finish the ring before the swap.
         """
         from src.combat.StrictRotation import basic_attacks, heavy
-        if beat.name == 'sk_open':
-            # 3. echo, ba123, lib, ba12, ha, skill
-            # Echo first: it is ShoreKeeper's main concerto source (her basic
-            # attacks generate almost none), so without it she never builds the
-            # concerto needed to outro and apply her outro buff. time_out=0 only
-            # fires when the echo is off cooldown, so it is safe to always call.
+        if beat.intro:
+            # R2 enters on an enhanced intro handed over by Augusta's outro.
+            self._intro_wait()
+        if beat.name == 'sk_r1':
+            # First Rotation: ba x5, ha, skill, ba x3, lib, ba x2, ha, echo, outro.
+            # Combat opens on ShoreKeeper, so there is no intro to wait for here.
+            basic_attacks(self, 5)
+            heavy(self)
+            self.click_resonance()
+            basic_attacks(self, 3)
+            self.click_liberation()
+            basic_attacks(self, 2)
+            heavy(self)
+            # Echo is ShoreKeeper's main concerto source (her basics generate
+            # almost none); time_out=0 only fires when it is off cooldown.
             self.click_echo(time_out=0)
+        elif beat.name == 'sk_r2':
+            # Second Rotation: enhanced intro, ba x3, lib, ba x2, ha, skill,
+            # ba x2 (the 2nd basic is cancelled by the outro swap). Echo is held
+            # this beat on purpose so build_concerto can recast it to finish the
+            # ring for the outro (basics alone barely build her concerto).
             basic_attacks(self, 3)
             self.click_liberation()
             basic_attacks(self, 2)
             heavy(self)
             self.click_resonance()
-        elif beat.name == 'sk_open2':
-            # 7. echo, ba12345, ha, outro
-            self.click_echo(time_out=0)
-            basic_attacks(self, 5)
-            heavy(self)
-        elif beat.name in ('sk_intro', 'sk_loop'):
-            # 10 / 16. super intro, build concerto, outro
-            if beat.intro:
-                self._intro_wait()
-            self.click_echo(time_out=0)
-            self.click_liberation()
-            if not self.click_resonance()[0]:
-                self.heavy_click_forte(self.is_mouse_forte_full)
+            basic_attacks(self, 2)
         else:  # defensive: unknown beat
             self.click_echo(time_out=0)
             self.click_liberation()

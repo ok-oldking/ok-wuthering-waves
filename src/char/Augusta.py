@@ -33,25 +33,15 @@ class Augusta(BaseChar):
         from src.combat.StrictRotation import heavy
         if beat.intro:
             self.wait_down()
-        if beat.name == 'aug_open':
-            # 1. skill
-            self.click_resonance()
-        elif beat.name == 'aug_open2':
-            # 5. ha
-            self._heavy_or_prowess()
-        elif beat.name == 'aug_loop1':
-            # 11. intro, ha
-            self._heavy_or_prowess()
-        elif beat.name == 'aug_loop2':
-            # 13. skill, ha
-            self.click_resonance()
-            self._heavy_or_prowess()
-        elif beat.name == 'aug_burst':
-            # 9. intro, ha, lib (griffin), skill, ha, 2nd lib, echo, outro
-            self._augusta_burst(with_basics=False)
-        elif beat.name == 'aug_burst2':
-            # 15. ha, lib (griffin), skill, ha, 2nd lib, ba123, ha, echo, outro
-            self._augusta_burst(with_basics=True)
+        if beat.name == 'aug_r1':
+            # First Rotation: ha, skill, ha, lib (Eternal Oath), skill x3,
+            #                 Sunborne x9, Protector (2nd lib), echo, outro.
+            self._augusta_full()
+        elif beat.name == 'aug_loop':
+            # Loop quickswap: ha, skill, then the Eternal Oath -> Sunborne ->
+            # Protector burst only when the liberation is off cooldown, else a
+            # fast forte/heavy; echo, outro.
+            self._augusta_quickswap()
         else:  # defensive: unknown beat -> conservative damage
             self.click_resonance()
             heavy(self)
@@ -63,20 +53,44 @@ class Augusta(BaseChar):
         else:
             heavy(self)
 
-    def _augusta_burst(self, with_basics):
-        from src.combat.StrictRotation import heavy, basic_attacks
+    def _augusta_full(self):
         self._heavy_or_prowess()                 # ha
-        self.click_liberation()                  # lib -> summons griffin
         self.click_resonance()                   # skill
         self._heavy_or_prowess()                 # ha
-        if self.check_majesty():                 # 2nd lib (majesty recast)
+        self.click_liberation()                  # Eternal Oath (1st liberation)
+        for _ in range(3):                       # skill 1, 2, 3
+            self.click_resonance()
+        self._augusta_sunborne(9)                # Sunborne x9 (forte strikes)
+        if self.check_majesty():                 # Protector (2nd liberation recast)
             self.perform_majesty()
         else:
-            self.logger.info('Augusta burst: majesty (2nd lib) not detected, skipping')
-        if with_basics:
-            basic_attacks(self, 3)               # ba123
-            heavy(self)                          # ha
+            self.logger.info('Augusta: Protector (2nd lib) not detected, skipping')
         self.send_echo_key()                     # echo
+
+    def _augusta_quickswap(self):
+        self._heavy_or_prowess()                 # ha
+        self.click_resonance()                   # skill
+        if self.liberation_available():          # Eternal Oath only when ready
+            self.click_liberation()
+            for _ in range(3):
+                self.click_resonance()
+            self._augusta_sunborne(9)
+            if self.check_majesty():
+                self.perform_majesty()
+        else:
+            self._heavy_or_prowess()             # no liberation: dump a forte/heavy
+        self.send_echo_key()                     # echo
+
+    def _augusta_sunborne(self, count):
+        """Spend the Eternal Oath stance with up to ``count`` Sunborne forte
+        strikes. ``perform_prowess`` holds the forte heavy until prowess is no
+        longer available, so the stance usually drains in one or two passes;
+        the loop simply caps it and bails the moment prowess is gone."""
+        for _ in range(count):
+            if not self.check_prowess():
+                break
+            if not self.perform_prowess():
+                break
 
     def _do_perform_default(self):
         time_out = switch_time
