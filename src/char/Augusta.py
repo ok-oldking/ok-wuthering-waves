@@ -67,6 +67,12 @@ class Augusta(BaseChar):
         from src.combat.StrictRotation import heavy, basic_attacks
         self._heavy_or_prowess()                 # ha
         self.click_liberation()                  # lib -> summons griffin
+        # The griffin liberation leaves Augusta airborne on the levitator. Land
+        # her before the follow-up: otherwise the skill / heavy / 2nd lib fizzle
+        # in the air, the combo collapses, and the beat drops straight into the
+        # outro switch -- looking like Augusta swaps out the instant she libs.
+        if self.flying():
+            self.wait_down()
         self.click_resonance()                   # skill
         self._heavy_or_prowess()                 # ha
         if self.check_majesty():                 # 2nd lib (majesty recast)
