@@ -1,3 +1,4 @@
+import re
 import time
 
 from src.char.BaseChar import BaseChar
@@ -10,6 +11,15 @@ switch_time = 3
 
 
 class Augusta(BaseChar):
+    # Augusta's stacking buff shows a count badge that maxes at 10. The second
+    # liberation (majesty recast) must only fire at max stacks -- recasting below
+    # 10 wastes the empowered hit. The count is read by OCR over the badge; the
+    # box is in 3840x2160 reference px (auto-scaled to the live resolution) and
+    # is tunable in-game -- enable debug logging to see the value being read. If
+    # OCR can't pick up the badge, point AUGUSTA_BUFF_STACK_BOX at it.
+    AUGUSTA_BUFF_STACK_BOX = (3560, 1860, 3700, 1990)
+    AUGUSTA_BUFF_STACK_TARGET = 10
+
     def do_perform(self):
         from src.combat.StrictRotation import get_strict_rotation
         if get_strict_rotation(self.task).run_current(self):
@@ -70,7 +80,13 @@ class Augusta(BaseChar):
         self.click_resonance()                   # skill
         self._heavy_or_prowess()                 # ha
         if self.check_majesty():                 # 2nd lib (majesty recast)
-            self.perform_majesty()
+            # only recast the 2nd lib at max buff stacks; build to it first
+            if self.wait_for_buff_stacks():
+                self.perform_majesty()
+            else:
+                self.logger.info(
+                    f'Augusta burst: buff under {self.AUGUSTA_BUFF_STACK_TARGET} '
+                    f'stacks, skipping 2nd lib')
         else:
             self.logger.info('Augusta burst: majesty (2nd lib) not detected, skipping')
         if with_basics:
@@ -163,6 +179,35 @@ class Augusta(BaseChar):
 
     def check_majesty(self):
         return self.current_liberation() > 0 and bool(self.task.find_one('Augusta_lib2', threshold=0.5))
+
+    def buff_stacks(self):
+        """OCR Augusta's stacking-buff count badge (0 if it can't be read)."""
+        box = self.task.box_of_screen_scaled(
+            3840, 2160, *self.AUGUSTA_BUFF_STACK_BOX,
+            name='augusta_buff_stacks', hcenter=True)
+        stacks = 0
+        for t in self.task.ocr(box=box, match=re.compile(r'\d+')):
+            try:
+                stacks = max(stacks, int(re.sub(r'\D', '', t.name)))
+            except (ValueError, TypeError):
+                continue
+        self.logger.debug(f'Augusta buff_stacks = {stacks}')
+        return stacks
+
+    def buff_stacks_full(self):
+        return self.buff_stacks() >= self.AUGUSTA_BUFF_STACK_TARGET
+
+    def wait_for_buff_stacks(self, time_out=3):
+        """Build to max buff stacks before the 2nd lib, attacking while waiting.
+
+        Returns True once the buff is full. Gives up (returns False) after
+        ``time_out`` so a missing/unreadable badge can't stall the rotation --
+        the caller then skips the 2nd lib for this cycle.
+        """
+        if self.buff_stacks_full():
+            return True
+        return bool(self.task.wait_until(
+            self.buff_stacks_full, post_action=self.click, time_out=time_out))
 
     def check_prowess(self):
         long_inner_box = 'target_enemy_long_inner'
