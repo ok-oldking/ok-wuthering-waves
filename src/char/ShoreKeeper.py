@@ -42,8 +42,17 @@ class ShoreKeeper(BaseChar):
             self.task.skip_combat_check = False
         return self.click_liberation()
 
+    def _should_fast_intro_liberation(self):
+        from src.char.Phoebe import Phoebe
+        from src.char.Zani import Zani
+        return self.task.has_char(Phoebe) and self.task.has_char(Zani)
+
     def do_perform(self):
-        if self.has_intro and self._fast_intro_liberation():
+        if (
+                self.has_intro
+                and self._should_fast_intro_liberation()
+                and self._fast_intro_liberation()
+        ):
             return self.switch_next_char()
 
         if self.has_intro:
