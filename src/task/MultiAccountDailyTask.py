@@ -12,6 +12,12 @@ from src.task.MouseResetTask import MouseResetTask
 account_pattern = re.compile(r'\*\*\*\*')
 
 
+def normalize_account_name(account):
+    if not account:
+        return account
+    return account.lower().replace('0', 'o').replace('.con', '.com')
+
+
 class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
@@ -26,24 +32,36 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         self.all_accounts = set()
         self.support_schedule_task = True
 
+    def _mark_done(self, account):
+        normalized = normalize_account_name(account)
+        if normalized:
+            self.done_set.add(normalized)
+
+    def _is_done(self, account):
+        return normalize_account_name(account) in self.done_set
+
+    def _same_account(self, left, right):
+        return normalize_account_name(left) == normalize_account_name(right)
+
     def run(self):
         WWOneTimeTask.run(self)
         self.done_set.clear()
         self.all_accounts.clear()
 
         self.run_task_by_class(DailyTask)
-        # self.ensure_main(time_out=100)
+        self.ensure_main(time_out=100)
         self._switch_to_login()
         detected = self._detect_current_account_from_login()
-        if detected:
-            self.done_set.add(detected)
+        self._mark_done(detected)
 
         self.info_set('Completed', self.done_set)
 
         while next_account := self._select_and_login_account():
             self.info_set('Completed', self.done_set)
             self.run_task_by_class(DailyTask)
-            self.done_set.add(next_account)
+            self._mark_done(next_account)
+            self.ensure_main(time_out=100)
+            self._switch_to_login()
 
     def _click_center_offset(self, offset_x, offset_y, after_sleep=0.5):
         h, w = self.frame.shape[:2]
@@ -72,9 +90,9 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         next_account = None
         # self.screenshot('_click_account_in_list')
         for account in accounts:
-            self.all_accounts.add(account.name)
+            self.all_accounts.add(normalize_account_name(account.name))
             self.info_set('All Accounts', self.all_accounts)
-            if next_account is None and account.name not in self.done_set:
+            if next_account is None and not self._is_done(account.name):
                 next_account = account.name
                 self.click(account, after_sleep=2)
         self.log_info(self.tr('Click next account: {account}').format(account=next_account))
@@ -112,7 +130,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
                 current_account = self._detect_current_account_from_login()
                 self.log_info(self.tr('Selected account: {selected}, displayed account: {displayed}').format(
                     selected=account, displayed=current_account))
-                if account == current_account:
+                if self._same_account(account, current_account):
                     self.log_info(self.tr('Confirmed selected account: {account}').format(account=account))
                     break
                 if attempt < max_retries:
@@ -146,13 +164,14 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
                 mouse_reset_task.enable()
 
     def find_account_drop_down(self):
-        return self.wait_until(self.do_find_account_drop_down, time_out=60, settle_time=2)
+        return self.wait_until(self.do_find_account_drop_down, time_out=60, settle_time=2, raise_if_not_found=True)
 
     def do_find_account_drop_down(self) -> Box | None:
         texts = self.ocr()
-        if len(self.find_boxes(texts, account_pattern)) == 1 and len(self.find_boxes(texts, LOGIN_TEXTS)) == 1:
-            drop_down = self.find_boxes(texts, account_pattern)[0]
-            return drop_down
+        account_boxes = self.find_boxes(texts, account_pattern)
+        login_boxes = self.find_boxes(texts, LOGIN_TEXTS)
+        if len(account_boxes) == 1 and login_boxes:
+            return account_boxes[0]
         return None
 
 
