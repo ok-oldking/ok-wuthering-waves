@@ -15,6 +15,14 @@ class State(Enum):
 
 
 class Phoebe(BaseChar):
+    STARFLASH_OUTRO_TIMEOUT = 18.0
+    OUTRO_SETTLE_TIME = 0.2
+    OUTRO_SETTLE_INTERVAL = 0.03
+    OPENING_LIBERATION_WAIT_TIME = 0.25
+    OPENING_LIBERATION_WAIT_INTERVAL = 0.03
+    BOUND_STARFLASH_TIMEOUT = 2.2
+    BOUND_FORTE_CHECK_INTERVAL = 1.0
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.perform_intro = 0
@@ -26,8 +34,11 @@ class Phoebe(BaseChar):
             "enter_status": 0,
             "starflash_combo": 0,
             "liberation": 0,
-            "outro": 0
+            "outro": 0,
+            "zani_outro_ready": 0,
+            "priority_liberation_cast": 0
         }
+        self.rotation_short_resonance_used = False
 
     def reset_state(self):
         super().reset_state()
@@ -35,8 +46,19 @@ class Phoebe(BaseChar):
         self.attribute = 0
         self.star_available = False
         self.char_zani = None
+        self._ensure_zani_support_state()
 
-    def do_perform(self):
+    def _ensure_zani_support_state(self):
+        self.state.setdefault("zani_outro_ready", 0)
+        self.state.setdefault("priority_liberation_cast", 0)
+        if not hasattr(self, "rotation_short_resonance_used"):
+            self.rotation_short_resonance_used = False
+
+    def _mark_zani_outro_ready(self):
+        self._ensure_zani_support_state()
+        self.state["zani_outro_ready"] = 1
+
+    def _default_do_perform(self):
         self.last_outro_time = -1
         start = time.time()
         if self.attribute == 0:
@@ -84,6 +106,222 @@ class Phoebe(BaseChar):
             return self.switch_next_char()
         self.continues_normal_attack(0.1)
         self.switch_next_char()
+
+    def _outro_ready_now(self, reason=""):
+        if self.is_con_full():
+            if reason:
+                self.logger.info(f"Phoebe zani support outro ready: {reason}")
+            return True
+        return False
+
+    def _wait_for_outro_refresh(self, reason=""):
+        start = time.time()
+        while time.time() - start < self.OUTRO_SETTLE_TIME:
+            self.check_combat()
+            if self._outro_ready_now(reason):
+                return True
+            self.sleep(self.OUTRO_SETTLE_INTERVAL)
+        return self._outro_ready_now(reason)
+
+    def _can_cast_short_resonance(self):
+        if not self.resonance_available() or self.rotation_short_resonance_used:
+            return False
+        if self.attribute == 2 and self.confession_ready():
+            self.logger.info("skip short resonance while confession icon active")
+            return False
+        return True
+
+    def _cast_short_resonance(self, reason):
+        if not self._can_cast_short_resonance():
+            return False
+        self.rotation_short_resonance_used = True
+        self.logger.info(f"cast short resonance {reason}")
+        self.click_resonance_once()
+        self.check_combat()
+        if self._wait_for_outro_refresh(f"after {reason} short resonance settle"):
+            return True
+        return self._outro_ready_now(f"after {reason} short resonance")
+
+    def _should_prioritize_liberation(self):
+        return bool(
+            self.attribute == 2
+            and self.char_zani is not None
+            and (self.has_intro or self.get_zani_state() == 1)
+        )
+
+    def _zani_in_liberation(self):
+        return bool(self.char_zani is not None and self.get_zani_state() == 1)
+
+    def _wait_briefly_for_liberation(self, wait_time, interval):
+        if self.liberation_available():
+            return True
+        if not self.star_available:
+            return False
+        if not self._should_prioritize_liberation():
+            return False
+        start = time.time()
+        while time.time() - start < wait_time:
+            self.check_combat()
+            if self.liberation_available():
+                self.logger.info("liberation became available during wait")
+                return True
+            self.sleep(interval)
+        return self.liberation_available()
+
+    def _try_cast_priority_liberation(
+            self,
+            reason,
+            status_entered=State.UNAVAILABLE,
+            attribute_mismatch=False,
+            allow_wait=False):
+        if self.attribute != 2 or self.char_zani is None:
+            return False
+
+        if not self.star_available and status_entered != State.SUCCESS:
+            refreshed = self._refresh_confession_mode()
+            if refreshed == State.SUCCESS:
+                status_entered = refreshed
+
+        if attribute_mismatch and status_entered != State.SUCCESS:
+            return False
+        if not self.star_available:
+            return False
+
+        if not self.liberation_available():
+            if not allow_wait:
+                return False
+            if not self._wait_briefly_for_liberation(
+                    self.OPENING_LIBERATION_WAIT_TIME,
+                    self.OPENING_LIBERATION_WAIT_INTERVAL):
+                return False
+
+        if not self.liberation_available():
+            return False
+
+        self.logger.info(f"cast liberation {reason}")
+        if self.click_liberation(send_click=True):
+            self.state["priority_liberation_cast"] = 1
+            self.check_combat()
+            if self._wait_for_outro_refresh(f"after {reason} liberation settle"):
+                return True
+            return self._outro_ready_now(f"after {reason} liberation")
+        return self._outro_ready_now(f"after {reason} liberation attempt")
+
+    def _refresh_confession_mode(self):
+        if self.attribute != 2:
+            return State.UNAVAILABLE
+        result = self.absolution_or_confession()
+        if result == State.SUCCESS:
+            self.check_combat()
+        return result
+
+    def _perform_bound_heavy_combo(self, reason):
+        self.logger.info(f"bound starflash wait heavy ready {reason}")
+        condition = self.get_prayer_condition()
+        start = time.time()
+        check_forte = start
+        normal_clicks = 0
+        while not self.heavy_attack_ready():
+            if self.flying():
+                self.shorekeeper_auto_dodge()
+
+            self.click()
+            normal_clicks += 1
+            self.check_combat()
+            if self._outro_ready_now(f"after {reason} normal build"):
+                return True
+
+            if time.time() - start > self.BOUND_STARFLASH_TIMEOUT:
+                self.logger.info(f"bound starflash timeout before heavy {reason} clicks {normal_clicks}")
+                self.continues_right_click(0.05)
+                self.logger.info(f"bound starflash timeout manual heavy {reason}")
+                self.heavy_attack(0.55)
+                self.check_combat()
+                self._wait_for_outro_refresh(f"after {reason} timeout heavy")
+                return True
+
+            if time.time() - check_forte > self.BOUND_FORTE_CHECK_INTERVAL:
+                if condition() or self.judge_forte() == 0:
+                    self.logger.info(f"bound starflash still waiting for heavy {reason} clicks {normal_clicks}")
+                check_forte = time.time()
+
+            self.task.next_frame()
+
+        self.logger.info(f"bound starflash heavy ready {reason} clicks {normal_clicks}")
+        self.continues_right_click(0.05)
+        result = self.perform_heavy_attack()
+        self.check_combat()
+        self._wait_for_outro_refresh(f"after {reason} bound heavy")
+        return result
+
+    def _zani_support_rotation(self, start_time):
+        attribute_mismatch = self.check_attribute_mismatch()
+
+        if self.attribute == 2 and self.char_zani is not None:
+            if not self.star_available:
+                self._refresh_confession_mode()
+
+        wait_ui_time = 0.35 - (time.time() - start_time)
+        if wait_ui_time > 0 and self.star_available and self.judge_forte() == 0:
+            self.logger.info('wait for UI')
+            self.continues_normal_attack(wait_ui_time)
+
+        status_entered = self.absolution_or_confession()
+        self.check_combat()
+
+        self.logger.info("build con with bound heavy loop")
+        start = time.time()
+        while time.time() - start < self.STARFLASH_OUTRO_TIMEOUT:
+            self.check_combat()
+            if self._outro_ready_now("bound loop start"):
+                return self.switch_next_char()
+
+            if not self.star_available:
+                refreshed = self._refresh_confession_mode()
+                if refreshed == State.SUCCESS:
+                    status_entered = refreshed
+
+            if self._try_cast_priority_liberation(
+                    "in bound loop",
+                    status_entered=status_entered,
+                    attribute_mismatch=attribute_mismatch,
+                    allow_wait=False):
+                if self._outro_ready_now("after bound loop liberation"):
+                    return self.switch_next_char()
+
+            if self._can_cast_short_resonance():
+                if self._cast_short_resonance("before bound heavy"):
+                    return self.switch_next_char()
+
+            self._perform_bound_heavy_combo("bound loop")
+            if self._outro_ready_now("after bound heavy combo"):
+                return self.switch_next_char()
+
+        self.logger.info("bound heavy loop timeout")
+        return self.switch_next_char()
+
+    def do_perform(self):
+        self._ensure_zani_support_state()
+        self.last_outro_time = -1
+        self.rotation_short_resonance_used = False
+        start = time.time()
+
+        if self.attribute == 0:
+            self.decide_teammate()
+
+        if self.flying():
+            self.logger.info('flying')
+            self.continues_normal_attack(0.1)
+            return self.switch_next_char()
+
+        if self.attribute != 2 or self.char_zani is None:
+            return self._default_do_perform()
+
+        if self._zani_in_liberation():
+            self.logger.info("use default logic during Zani liberation")
+            return self._default_do_perform()
+
+        return self._zani_support_rotation(start)
 
     def zani_linkage(self):
         self.logger.debug('zani linkage')
@@ -299,11 +537,11 @@ class Phoebe(BaseChar):
         return State.UNAVAILABLE
 
     def switch_next_char(self, *args, **kwargs):
-        if self.is_con_full():
-            if self.attribute == 2:
-                self.click_echo()
-                self.state["outro"] += 1
-        return super().switch_next_char(*args, **kwargs)
+        if self.is_con_full() and self.attribute == 2:
+            self.click_echo()
+            self.state["outro"] += 1
+            self._mark_zani_outro_ready()
+        return BaseChar.switch_next_char(self, *args, **kwargs)
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if not has_intro and self.last_outro_time > 0 and self.time_elapsed_accounting_for_freeze(
@@ -413,8 +651,14 @@ class Phoebe(BaseChar):
                 "enter_status": 0,
                 "starflash_combo": 0,
                 "liberation": 0,
-                "outro": 0
+                "outro": 0,
+                "zani_outro_ready": 0,
+                "priority_liberation_cast": 0
             }
+        else:
+            self._ensure_zani_support_state()
+            self.state["zani_outro_ready"] = 0
+            self.state["priority_liberation_cast"] = 0
 
     def is_forte_full(self):
         if not self.star_available:
