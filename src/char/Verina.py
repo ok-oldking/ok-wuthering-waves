@@ -11,7 +11,7 @@ class Verina(BaseChar):
     JUMP_ATTACK_TIME: float = 0.5
     HEAVY_ATTACK_TIME: float = 0.7
     RECOVER_TIME: float = 0.8
-    FIELD_TIME: float = 6.0
+    FIELD_TIME: float = 6.5
     HEAVY_ATTACK_INTERVAL: float = 8.0
 
     def __init__(self, *args, **kwargs):
