@@ -811,6 +811,9 @@ msgstr "上級スキル素材モード"
 msgid "If enabled, execute ONLY when all of the following conditions are met: (1) option \"Teleport to Boss\" is set to \"Weekly Challenge\"; (2) Advanced Skill Material claim count has not reached the weekly limit; (3) stamina is sufficient to farm once. At this time, option \"Repeat Farm Count\" will be ignored and total count will be determined by weekly limit and stamina remaining."
 msgstr "有効にすると、次の3つの条件をすべて満たす場合のみ実行します：(1) オプション\"Teleport to Boss\"が\"Weekly Challenge\"に設定されている (2) 上級スキル素材の受取回数が週上限に達していない (3) 1回ファームするのに十分なスタミナがある。このとき、オプション\"Repeat Farm Count\"は無視され、実行回数は週上限と残りスタミナによって決まります。"
 
+msgid "Try to Farm Weekly-Limited Advanced Skill Material"
+msgstr "週制限付き上級スキル素材の周回を試行"
+
 msgid "Characters"
 msgstr "キャラクター"
 

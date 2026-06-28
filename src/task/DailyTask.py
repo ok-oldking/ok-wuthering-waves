@@ -27,6 +27,15 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.support_schedule_task = True
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
         self.default_config = {
+            'Try to Farm Weekly-Limited Advanced Skill Material': False,
+            'Which Weekly Boss to Teleport': 1,
+            'Boss Level': "80",
+            'Boss': 'Other',
+            'Combat Wait Time': 0,
+            'Echo Pickup Method': 'Walk',
+            'Use Liberation': True,
+            'Switch to Healer after Combat': True,
+            #
             'Which to Farm': self.support_tasks[0],
             'Which Tacet Suppression to Farm': 1,  # starts with 1
             'Which Forgery Challenge to Farm': 1,  # starts with 1
@@ -37,6 +46,13 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Continue Farm After Daily': False,
         }
         self.config_description = {
+            'Which Weekly Boss to Teleport': 'For Example, Denia, From Top to Bottom, Starting with 1',
+            'Boss Level': "Choose the Lowest that Drop a Echo",
+            'Boss': 'Select boss profile (includes Combat Wait Time)',
+            'Combat Wait Time': 'Wait time before each combat (seconds), overrides Boss profile if set',
+            'Use Liberation': 'Do not use Liberation to Save Time',
+            'Switch to Healer after Combat': 'Better Chance to Keep Character Alive',
+            #
             'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
@@ -47,6 +63,27 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         }
         material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type = {
+            'Try to Farm Weekly-Limited Advanced Skill Material': {
+                'sub_configs': {
+                    True: [
+                        'Which Weekly Boss to Teleport',
+                        'Boss Level',
+                        'Boss',
+                        'Combat Wait Time',
+                        'Echo Pickup Method',
+                        'Use Liberation',
+                        'Switch to Healer after Combat',
+                    ],
+                }
+            },
+            'Boss': {
+                'type': "drop_down",
+                'options': FarmEchoTask.boss_list,
+            },
+            'Echo Pickup Method': {
+                'type': "drop_down",
+                'options': FarmEchoTask.find_echo_method
+            },
             'Which to Farm': {
                 'type': "drop_down",
                 'options': self.support_tasks,
@@ -69,6 +106,16 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         WWOneTimeTask.run(self)
         self.logged_in = False
         self.ensure_main(time_out=180)
+
+        if self.config.get('Try to Farm Weekly-Limited Advanced Skill Material'):
+            fec_config = self.config | {
+                'Advanced Skill Material Mode': True,
+                'Teleport to Boss': 'Weekly Challenge',
+                'Repeat Farm Count': 3,  # useless
+                'Which Boss Challenge to Teleport': 1,  # useless
+            }
+            self.get_task_by_class(FarmEchoTask).run(config = fec_config)
+            self.ensure_main()
 
         condition1 = self.config.get('Auto Farm all Nightmare Nest')
         condition2 = self.config.get('Farm Nightmare Nest for Daily Echo')
