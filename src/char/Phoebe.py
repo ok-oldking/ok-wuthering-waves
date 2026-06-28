@@ -22,6 +22,7 @@ class Phoebe(BaseChar):
     OPENING_LIBERATION_WAIT_INTERVAL = 0.03
     BOUND_STARFLASH_TIMEOUT = 2.2
     BOUND_FORTE_CHECK_INTERVAL = 1.0
+    BOUND_EARLY_CANCEL_MIN_CLICKS = 24
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -152,6 +153,26 @@ class Phoebe(BaseChar):
     def _zani_in_liberation(self):
         return bool(self.char_zani is not None and self.get_zani_state() == 1)
 
+    def _zani_still_needs_liberation_followup(self):
+        if self.char_zani is None:
+            return False
+        if self.get_zani_state() == 1:
+            return True
+        if getattr(self.char_zani, "in_liberation", False):
+            return True
+        if getattr(self.char_zani, "liberation_time", -1) > 0 and self.char_zani.liberation_time_left() > 0:
+            return True
+        return False
+
+    def _should_take_shorekeeper_intro(self, current_char, has_intro):
+        if not has_intro or current_char is None:
+            return False
+        if current_char.__class__.__name__ != "ShoreKeeper":
+            return False
+        if self.attribute != 2 or self.char_zani is None:
+            return False
+        return not self._zani_still_needs_liberation_followup()
+
     def _wait_briefly_for_liberation(self, wait_time, interval):
         if self.liberation_available():
             return True
@@ -207,6 +228,21 @@ class Phoebe(BaseChar):
             return self._outro_ready_now(f"after {reason} liberation")
         return self._outro_ready_now(f"after {reason} liberation attempt")
 
+    def _try_cast_liberation_before_switch(self, reason):
+        if self.attribute != 2 or self.char_zani is None:
+            return False
+        if self.state.get("priority_liberation_cast"):
+            return False
+        if not self.liberation_available():
+            return False
+        self.logger.info(f"cast available liberation before switch {reason}")
+        if self.click_liberation(send_click=True):
+            self.state["priority_liberation_cast"] = 1
+            self.check_combat()
+            self._wait_for_outro_refresh(f"after {reason} switch liberation settle")
+            return True
+        return False
+
     def _refresh_confession_mode(self):
         if self.attribute != 2:
             return State.UNAVAILABLE
@@ -241,8 +277,23 @@ class Phoebe(BaseChar):
                 return True
 
             if time.time() - check_forte > self.BOUND_FORTE_CHECK_INTERVAL:
-                if condition() or self.judge_forte() == 0:
+                stalled_by_condition = condition()
+                forte = self.judge_forte()
+                if stalled_by_condition or forte == 0:
                     self.logger.info(f"bound starflash still waiting for heavy {reason} clicks {normal_clicks}")
+                    if normal_clicks >= self.BOUND_EARLY_CANCEL_MIN_CLICKS:
+                        self.continues_right_click(0.05)
+                        self.check_combat()
+                        self.task.next_frame()
+                        if self._outro_ready_now(f"after {reason} early cancel"):
+                            return True
+                        if self.heavy_attack_ready():
+                            result = self.perform_heavy_attack()
+                            self.check_combat()
+                            self._wait_for_outro_refresh(f"after {reason} early cancel heavy")
+                            return result
+                        self._wait_for_outro_refresh(f"after {reason} early cancel settle")
+                        return True
                 check_forte = time.time()
 
             self.task.next_frame()
@@ -537,6 +588,7 @@ class Phoebe(BaseChar):
         return State.UNAVAILABLE
 
     def switch_next_char(self, *args, **kwargs):
+        self._try_cast_liberation_before_switch("switch_next_char")
         if self.is_con_full() and self.attribute == 2:
             self.click_echo()
             self.state["outro"] += 1
@@ -544,6 +596,9 @@ class Phoebe(BaseChar):
         return BaseChar.switch_next_char(self, *args, **kwargs)
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        if self._should_take_shorekeeper_intro(current_char, has_intro):
+            self.logger.info("Phoebe v5 take ShoreKeeper intro instead of returning to Zani")
+            return SwitchPriority.MUST
         if not has_intro and self.last_outro_time > 0 and self.time_elapsed_accounting_for_freeze(
                 self.last_outro_time, intro_motion_freeze=True) < 4.5:
             self.logger.info('performing outro, switch priority no')

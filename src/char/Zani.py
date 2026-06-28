@@ -17,6 +17,18 @@ class State(Enum):
 
 
 class Zani(BaseChar):
+    INTRO_READY_WAIT = 1.3
+    AFTER_FIRST_E_WAIT = 0.02
+    AFTER_NORMAL_WAIT = 0.12
+    ENHANCED_E_READY_TIMEOUT = 2.5
+    ENHANCED_E_POLL_INTERVAL = 0.03
+    ENHANCED_E_READY_THRESHOLD = 0.05
+    ENHANCED_E_SUCCESS_MIN_DURATION = 0.35
+    LIBERATION_READY_TIMEOUT = 1.2
+    FIRST_E_READY_TIMEOUT = 0.45
+    FIRST_E_CONSUMED_TIMEOUT = 0.6
+    FIRST_E_MAX_ATTEMPTS = 2
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.intro_motion_freeze_duration = 1.42
@@ -40,7 +52,170 @@ class Zani(BaseChar):
         self.chair_time = -1
         super().reset_state()
 
-    def do_perform(self):
+    def _is_current_intro_from_phoebe(self):
+        if not (self.has_intro and self.has_sub_dps_intro):
+            return False
+        if self.char_phoebe is None:
+            return False
+        return self.check_outro() == self.char_phoebe.char_name
+
+    def _is_phoebe_char(self, char):
+        if char is None:
+            return False
+        if self.char_phoebe is not None and char == self.char_phoebe:
+            return True
+        return (
+            getattr(char, "char_name", None) == "char_phoebe"
+            or char.__class__.__name__ == "Phoebe"
+        )
+
+    def _should_resume_liberation_immediately(self):
+        return bool(
+            self.in_liberation
+            or self.state == 1
+            or self.liberation_time_left() > 0
+        )
+
+    def _press_resonance_raw(self, reason):
+        self.logger.info(f"press {reason}")
+        self.record_resonance_use()
+        self.send_resonance_key()
+        self.task.next_frame()
+
+    def _resonance_icon_ready(self):
+        return (
+            self.current_resonance() > self.ENHANCED_E_READY_THRESHOLD
+            and not self.has_cd('resonance')
+        )
+
+    def _wait_first_e_ready(self):
+        start = time.time()
+        while time.time() - start < self.FIRST_E_READY_TIMEOUT:
+            if self._resonance_icon_ready():
+                return True
+            self.sleep(self.ENHANCED_E_POLL_INTERVAL, check_combat=False)
+            self.task.next_frame()
+        return False
+
+    def _wait_first_e_consumed(self):
+        start = time.time()
+        while time.time() - start < self.FIRST_E_CONSUMED_TIMEOUT:
+            if self.has_cd('resonance') or self.current_resonance() <= 0.01:
+                return True
+            self.sleep(self.ENHANCED_E_POLL_INTERVAL, check_combat=False)
+            self.task.next_frame()
+        return False
+
+    def _cast_first_e_clean(self):
+        if not self._wait_first_e_ready():
+            return False
+        for attempt in range(1, self.FIRST_E_MAX_ATTEMPTS + 1):
+            self._press_resonance_raw(f"first E attempt {attempt}")
+            if self._wait_first_e_consumed():
+                return True
+            if not self._resonance_icon_ready():
+                return False
+        return False
+
+    def _wait_enhanced_e_icon(self):
+        self.sleep(self.AFTER_NORMAL_WAIT, check_combat=False)
+        start = time.time()
+        while time.time() - start < self.ENHANCED_E_READY_TIMEOUT:
+            if (
+                self.is_forte_full()
+                and self.current_resonance() > self.ENHANCED_E_READY_THRESHOLD
+                and not self.has_cd('resonance')
+            ):
+                return True
+            self.sleep(self.ENHANCED_E_POLL_INTERVAL, check_combat=False)
+            self.task.next_frame()
+        return False
+
+    def _cast_enhanced_e_full(self):
+        self.logger.info('cast enhanced E full')
+        start = time.time()
+        self.record_resonance_use()
+        consumed = self.wait_until(
+            lambda: not self.is_forte_full(),
+            post_action=self.send_resonance_key,
+            time_out=1
+        )
+        duration = time.time() - start
+        if not consumed and duration < self.ENHANCED_E_SUCCESS_MIN_DURATION:
+            self.logger.info(f'failed casting enhanced E, duration {duration}')
+            return False
+        self.crisis_time = time.time()
+        return True
+
+    def _pre_liberation_e_a_enhanced_e(self, reason, wait_intro_window=False):
+        self.logger.info(f'pre liberation route {reason}')
+        if wait_intro_window and self.INTRO_READY_WAIT > 0:
+            self.sleep(self.INTRO_READY_WAIT, check_combat=False)
+
+        if not self._cast_first_e_clean():
+            return False
+        self.sleep(self.AFTER_FIRST_E_WAIT, check_combat=False)
+
+        self.logger.info('normal attack once')
+        self.task.click()
+
+        if not self._wait_enhanced_e_icon():
+            return False
+        return self._cast_enhanced_e_full()
+
+    def _fast_phoebe_intro_pre_liberation(self):
+        return self._pre_liberation_e_a_enhanced_e(
+            'phoebe intro',
+            wait_intro_window=True
+        )
+
+    def _enter_liberation_followup(self):
+        self.crisis_time = -1
+        self.state = 1
+        self.in_liberation = True
+        self.liberation_time = time.time()
+        self.check_liber()
+        self.continues_right_click(0.05)
+        self.continues_normal_attack(0.15)
+        self.nightfall_combo(cancel_last_smash=True)
+        self.sleep(0.1)
+        if self.is_forte_full():
+            self.nightfall_combo()
+        return self.switch_next_char()
+
+    def _resume_liberation_branch(self):
+        self.check_liber()
+        self.in_liberation = True
+        self.state = 1
+        self.logger.info('resume liberation without intro delay')
+        if self.should_end_liberation():
+            self.click_liber2()
+        else:
+            self.nightfall_combo()
+        return self.switch_next_char()
+
+    def _click_liberation_after_enhanced_e(self):
+        if self.crisis_time > 0:
+            self.wait_crisis_protocol_end()
+            self.crisis_time = -1
+
+        self.update_blazes()
+        if not self.is_prepared():
+            self.logger.info('liberation aborted: not prepared after enhanced E')
+            return False
+
+        if self.click_liberation(wait_if_cd_ready=self.LIBERATION_READY_TIMEOUT):
+            return True
+
+        if self.crisis_time > 0:
+            self.wait_crisis_protocol_end()
+        self.update_blazes()
+        if not self.is_prepared():
+            self.logger.info('liberation retry aborted: not prepared')
+            return False
+        return self.click_liberation(wait_if_cd_ready=self.LIBERATION_READY_TIMEOUT)
+
+    def _builtin_do_perform(self):
         if self.blazes_threshold == -1:
             self.decide_teammate()
         if self.has_intro:
@@ -138,6 +313,51 @@ class Zani(BaseChar):
         if self.is_forte_full():
             self.crisis_response_protocol_combo()
         self.switch_next_char()
+
+    def do_perform(self):
+        if self.blazes_threshold == -1:
+            self.decide_teammate()
+
+        if self._should_resume_liberation_immediately():
+            return self._resume_liberation_branch()
+
+        if self._is_current_intro_from_phoebe():
+            if not self._fast_phoebe_intro_pre_liberation():
+                self.logger.info('fast phoebe intro route failed, fallback builtin')
+                return self._builtin_do_perform()
+
+            self.check_liber()
+            if self.in_liberation:
+                return self._resume_liberation_branch()
+
+            self.update_blazes()
+            if not self.is_prepared():
+                self.logger.info('fast phoebe intro route aborted: not prepared')
+                return self._builtin_do_perform()
+
+            if self._click_liberation_after_enhanced_e():
+                return self._enter_liberation_followup()
+
+            self.logger.info('fast phoebe intro route liberation failed, fallback builtin')
+            return self._builtin_do_perform()
+
+        self.update_blazes()
+        if self.is_prepared() and not self.has_cd('liberation') and not self.check_liber():
+            if not self._pre_liberation_e_a_enhanced_e(
+                'ready before builtin',
+                wait_intro_window=self.has_intro
+            ):
+                self.logger.info('pre liberation route failed before builtin')
+                return self._builtin_do_perform()
+
+            self.update_blazes()
+            if self.is_prepared() and self._click_liberation_after_enhanced_e():
+                return self._enter_liberation_followup()
+
+            self.logger.info('pre liberation route did not open liberation')
+            return self._builtin_do_perform()
+
+        return self._builtin_do_perform()
 
     def basic_attack_breakthrough_combo(self):
         if self.is_forte_full():
@@ -309,29 +529,10 @@ class Zani(BaseChar):
         return result
 
     def crisis_response_protocol_combo(self):
-        self.logger.info('perform crisis_response_protocol')
-        self.check_combat()
-        if not self.is_forte_full():
-            for _ in range(1):
-                if (result := self.basic_attack_breakthrough()) != State.DONE:
-                    break
-                if (result := self.wait_forte_full(2.2, check_forte=True)) != State.DONE:
-                    break
-                else:
-                    self.continues_right_click(0.05)
-                    self.dodge_time = time.time()
-            if result != State.FORTE_FULL and not self.is_forte_full():
-                self.logger.info('crisis_response_protocol not FORTE_FULL')
-                return False
-        start = time.time()
-        self.wait_until(lambda: not self.is_forte_full(), post_action=self.send_resonance_key, time_out=1)
-        current = time.time()
-        self.logger.debug(f'cast resonance duration {current - start}')
-        if current - start < 0.35:
-            self.logger.info(f'failed casting crisis_response_protocol, duration {current - start}')
-            return False
-        self.crisis_time = current
-        return True
+        return self._pre_liberation_e_a_enhanced_e(
+            'builtin crisis response',
+            wait_intro_window=False
+        )
 
     def get_forte(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 1628, 1997, 2183, 2003, name='zani_forte', hcenter=True)
@@ -490,6 +691,9 @@ class Zani(BaseChar):
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if self.in_liberation:
             return SwitchPriority.MUST
+        if self._is_phoebe_char(current_char) and not has_intro:
+            self.logger.info('block Phoebe non-intro switch-in')
+            return SwitchPriority.NO
         if has_intro and self.crisis_time_left() > 0:
             return SwitchPriority.NO
         return super().get_switch_priority(current_char, has_intro, target_low_con)
