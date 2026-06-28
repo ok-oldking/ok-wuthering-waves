@@ -15,6 +15,24 @@ logger = Logger.get_logger(__name__)
 class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
     owns_switch_healer_config = True
 
+    find_echo_method = [  # 查找声骸方法
+        'Yolo',
+        'Run in Circle',
+        'Walk'
+    ]
+
+    boss_list = [  # boss 配置名称
+        'Other',
+        'Hyvatia',
+        'Fallacy of No Return',
+        'Sentry Construct',
+        'Lorelei',
+        'Lioness of Glory',
+        'Nightmare: Hecate',
+        'Fenrico',
+        'Nameless Explorer',
+    ]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.description = "Click Start after Entering Dungeon or Teleporting to The Boss"
@@ -43,7 +61,6 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Which Weekly Boss to Teleport': 'From Top to Bottom, Starting with 1',
             'Which Boss Challenge to Teleport': 'From Top to Bottom, Starting with 1'
         })
-        self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Teleport to Boss'] = {'type': "drop_down",
                                                 'options': ['No', 'Weekly Challenge',
                                                             'Boss Challenge'],
@@ -54,8 +71,6 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                                 }}
         self.config_type['Boss Level'] = {'type': "drop_down", 'options': ['50', '60', '70', '80'], }
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
-        self.boss_list = ['Other', 'Hyvatia', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory',
-                          'Nightmare: Hecate', 'Fenrico', 'Nameless Explorer']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.combat_end_condition = self.find_echos
         self.total_weekly_number = 9
@@ -99,8 +114,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.is_revived = True
         return True
 
-    def run(self):
+    def run(self, config = None):
         WWOneTimeTask.run(self)
+        if config:
+            self.config = config
         self.use_liberation = self.config.get('Use Liberation')
         try:
             return self.do_run()
