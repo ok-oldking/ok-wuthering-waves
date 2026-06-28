@@ -4,6 +4,8 @@ from src.char.BaseChar import BaseChar, SwitchPriority
 
 
 class ShoreKeeper(BaseChar):
+    INTRO_READY_WAIT = 0.6
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.outrotime = -1
@@ -29,7 +31,21 @@ class ShoreKeeper(BaseChar):
         else:
             self.attribute = 1
 
+    def _fast_intro_liberation(self):
+        self.task.skip_combat_check = True
+        try:
+            self.task.wait_in_team_and_world(
+                time_out=self.INTRO_READY_WAIT,
+                raise_if_not_found=False,
+            )
+        finally:
+            self.task.skip_combat_check = False
+        return self.click_liberation()
+
     def do_perform(self):
+        if self.has_intro and self._fast_intro_liberation():
+            return self.switch_next_char()
+
         if self.has_intro:
             self.task.skip_combat_check = True
             try:
