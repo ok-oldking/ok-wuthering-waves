@@ -1,18 +1,24 @@
-'''
-Author: LK
-version:
-Date: 2026-06-22 15:46:12
-LastEditors: your name
-LastEditTime: 2026-06-28 14:43:03
-Description:
-'''
-from src.char.BaseChar import BaseChar
+from src.char.BaseChar import BaseChar, SwitchPriority
 import time
 
 
 class Denia(BaseChar):
 
+    # 成功打完 rotation 切走后，至少经过此秒数才允许切回 Denia
+    REENTRY_COOLDOWN = 20
+    # 逃生舱：当前角色站场超过此秒数时，即使 Denia 仍在冷却中也放行，
+    # 避免队友死亡/卡死导致全员 NO 软卡死
+    ESCAPE_FIELD_TIME = 15
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # 成功完成 rotation 的时刻（切走前赋值），作为切回冷却的锚点；
+        # 失败路径不赋值，故失败切走后可立即切回
+        self._last_success_time = -1
+
     def _wait_skill_ready(self, available_fn, time_out):
+        # 用 cycle_start/cycle_sleep 做 0.1s 帧节流的技能就绪轮询；
+        # 以 time_elapsed_accounting_for_freeze 计时，避免大招动画冻结时钟误判超时
         start = time.time()
         while self.time_elapsed_accounting_for_freeze(start) < time_out:
             self.cycle_start()
@@ -22,6 +28,18 @@ class Denia(BaseChar):
             self.task.click()
             self.cycle_sleep()
         return available_fn()
+
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        # 冷却期内默认返回 NO 硬阻止切回 Denia；
+        # 逃生舱：当前角色站场 > ESCAPE_FIELD_TIME 时放行，防止队伍卡死
+        if self._last_success_time >= 0 and \
+                self.time_elapsed_accounting_for_freeze(self._last_success_time) < self.REENTRY_COOLDOWN:
+            if current_char and current_char.last_switch_in_time > 0 and \
+                    self.time_elapsed_accounting_for_freeze(
+                        current_char.last_switch_in_time) > self.ESCAPE_FIELD_TIME:
+                return super().get_switch_priority(current_char, has_intro, target_low_con)
+            return SwitchPriority.NO
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def do_perform(self):
         if self.has_intro:
@@ -66,6 +84,7 @@ class Denia(BaseChar):
             if lib_success:
                 self.sleep(0.01)
 
-        # 声骸 + 切人
+        # 声骸 + 切人；记录成功完成时刻，用于切回冷却
         self.click_echo()
+        self._last_success_time = time.time()
         self.switch_next_char()
