@@ -9,19 +9,12 @@ class Lucilla(BaseChar):
     机制: 长按 E 或蓄力重击各攒 1 格回路能量, 攒满 3 格大招可用; 放大招后变身进入特殊形态
     (技能栏/大招图标消失, 视觉信号全失效), 固定时长输出后变回原建模, 再切人。
     """
-    # 单次长按/蓄力时长 (秒): 长按 E 或蓄力重击各攒 1 格回路能量.
     HOLD_TIME: float = 1.4
-    # 大招变身动画时长 (秒): 这段不可操作, 普攻无效, 先等过去
     LIBERATION_ANIMATION_TIME: float = 3.0
-    # 变身后脉冲式重击的总兜底时长 (秒): 变身靠"打完固定连招/重击次数"才结束, 而非定时.
-    # 被怪物打断会停手 -> 连招不推进 -> 变身延长. 此处作为兜底上限, 正常情况会通过 con 归零提前退出.
     LIBERATION_HEAVY_TIME: float = 15.0
-    # 单次重击脉冲时长 (秒): 每拍一次完整 mouse_down/up. 被打断时下一拍 mouse_down 自动重按恢复输出.
     HEAVY_PULSE_TIME: float = 0.6
-    # 攒能量阶段的整体上限 (秒), 防止攒不满时死循环
     CHARGE_TIME_OUT: float = 7.2
     LIBERATION_CD_SKIP: float = 1.5
-    # 切回本角色后等技能栏渲染稳定的时长 (秒): 切回首帧技能栏 UI 渲染晚, 读 liberation 会读假
     SWITCH_IN_SETTLE: float = 0.5
 
     def do_perform(self):
