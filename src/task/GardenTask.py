@@ -29,6 +29,7 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
             "garden_get_skip",
             "garden_not_interested_confirm",
         ]
+        self._is_max_speed = False
 
     def run(self):
         WWOneTimeTask.run(self)
@@ -60,6 +61,8 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
                     self.click(not_interested[-1], after_sleep=1)
                     self.click(self.get_box_by_name('garden_not_interested_confirm'), after_sleep=1)
                     continue
+                elif target.name == 'garden_next_day':
+                    self._change_speed_if_not_max_speed()
                 self.log_info(f"click {target.name} {target.confidence:.3f}")
                 self.click(target, after_sleep=1)
             else:
@@ -115,6 +118,17 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
                 return max(priority_matches, key=lambda box: box.confidence)
         return max(matches, key=lambda box: box.confidence, default=None)
 
+    def _change_speed_if_not_max_speed(self):
+        # No check after reaching MAX speed
+        if self._is_max_speed:
+            return
+        speed_box = self.box_of_screen(1226/1920, 46/1080, 1335/1920, 75/1080, hcenter=True)
+        # If speed is not max, click speed box
+        if not self.ocr(box=speed_box, match=re.compile(r"MAX")):
+            self.click(speed_box, after_sleep=1)
+        else:
+            self.log_info(f"speed is max")
+            self._is_max_speed = True
 
 if __name__ == "__main__":
     run_task(config, task=GardenTask, debug=True)
