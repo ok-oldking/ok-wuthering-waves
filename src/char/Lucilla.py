@@ -15,7 +15,7 @@ class Lucilla(BaseChar):
     LIBERATION_ANIMATION_TIME: float = 3.0
     # 变身后脉冲式重击的总兜底时长 (秒): 变身靠"打完固定连招/重击次数"才结束, 而非定时.
     # 被怪物打断会停手 -> 连招不推进 -> 变身延长. 此处作为兜底上限, 正常情况会通过 con 归零提前退出.
-    LIBERATION_HEAVY_TIME: float = 12.0
+    LIBERATION_HEAVY_TIME: float = 15.0
     # 单次重击脉冲时长 (秒): 每拍一次完整 mouse_down/up. 被打断时下一拍 mouse_down 自动重按恢复输出.
     HEAVY_PULSE_TIME: float = 0.6
     # 攒能量阶段的整体上限 (秒), 防止攒不满时死循环
