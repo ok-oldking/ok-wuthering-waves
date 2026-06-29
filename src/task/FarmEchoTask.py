@@ -131,12 +131,15 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             if self.handle_claim_button() or self.handle_monthly_card():
                 self.run()
             else:
+                if self.config.get('Advanced Skill Material Mode', False):
+                    self.domain_to_world()
                 raise
 
     def do_run(self):
         advanced_skill_material_mode = self.config.get('Advanced Skill Material Mode', False)
         total_count = self.config.get("Repeat Farm Count", 0)
         if advanced_skill_material_mode:
+            self.domain_to_world()
             if self.config.get('Teleport to Boss', 'No') != 'Weekly Challenge':
                 self.log_info(f'advanced skill material mode: STOPPED since option "Teleport to Boss" is not "Weekly Challenge"')
                 return
@@ -144,6 +147,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             if c > 0:
                 total_count = c
                 self.log_info(f'advanced skill material mode: will execute {total_count} time(s) and use {total_count * self.stamina_once} stamina')
+                self.info_set('Advanced Skill Material Mode', f'{c}')
             else:
                 if r > 0:
                     self.log_info(f'advanced skill material mode: STOPPED since not enough stamina even {r} time(s) available, please retry with at least {self.stamina_once} stamina')
@@ -227,43 +231,27 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     else:
                         self.wait_until(self.in_combat, raise_if_not_found=False, time_out=1)
                 if advanced_skill_material_mode:
-                    # similar as "farm_in_domain"
+                    # walk to treasure
                     self.walk_to_treasure()
                     self.pick_f(handle_claim=False)
                     self.sleep(1)
-                    # similar as "use_stamina"
-                    x = 0.67; y = 0.62
-                    self.click(x, y, after_sleep=1)
-                    if self.wait_feature('gem_add_stamina', horizontal_variance=0.4, vertical_variance=0.05,
-                                        time_out=2):  # 看是否需要使用备用体力
-                        self.click(0.70, 0.71, after_sleep=1)  # 点击确认
-                        self.click(0.70, 0.71, after_sleep=1)
-                        self.back(after_sleep=1)
-                        self.click(x, y, after_sleep=1)
-                    # similar as "farm_in_domain"
+                    # click right dialog button "confirm"
+                    if not self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False, time_out=3, click_after_delay=0.5, threshold=0.7):
+                        # not found, it might because the previous "self.pick_f()" got "echo" rather than "treasure"
+                        #
+                        # walk to treasure again
+                        self.walk_to_treasure()
+                        self.pick_f(handle_claim=False)
+                        if not self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False, time_out=3, click_after_delay=0.5, threshold=0.7):
+                            raise Exception("cannot find button to continue")
                     self.sleep(4)
-                    # find button "farm again"
-                    # - in world, 1 button, click center
-                    # - in domain, 2 buttons, click right
-                    btns = self.find_feature('gray_button_challenge', self.box_of_screen(0, 0.75, 1, 1))
-                    if not btns:
-                        raise Exception("cannot find button to continue")
-                    else:
-                        target = max(btns, key=lambda box: box.x)
-                    self.click(target, after_sleep=1)
-                    # similar as "farm_in_domain"
-                    if confirm := self.wait_feature(
-                            ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
-                            raise_if_not_found=False,
-                            threshold=0.6,
-                            time_out=2):
-                        self.click(0.49, 0.55, after_sleep=0.5)  # 点击不再提醒
-                        self.click(confirm, after_sleep=0.5)
-                        self.wait_click_feature(
-                            ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
-                            relative_x=-1, raise_if_not_found=False,
-                            threshold=0.6,
-                            time_out=1)
+                    if self._in_realm:  # domain
+                        if count < total_count: 
+                            self.click(x=0.37, y=0.85, after_sleep=1)  # button "exit"
+                        else:
+                            self.click(x=0.63, y=0.85, after_sleep=1)  # button "challenge again"
+                    else:  # world
+                        self.click(x=0.50, y=0.85, after_sleep=1)  # TODO: pending verification
             except TaskDisabledException:
                 raise
             except Exception as e:
@@ -273,6 +261,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.teleport_to_configured_boss_and_prepare()
                     continue
                 raise
+        if advanced_skill_material_mode:
+            self.domain_to_world()
 
     def execute_treasure_hunt(self):
         if not self.in_combat() and self.find_treasure_icon() and self.walk_to_treasure_and_restart():
@@ -738,6 +728,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         else:
             logger.info(f"boss_string is {find_boxes_by_name(texts, [re.compile(r'(?i)^L[Vv].*')])}")
 
+    def domain_to_world(self):
+        if self.in_realm():
+            self.send_key('esc', after_sleep=1)
+            self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False, time_out=3, click_after_delay=0.5, threshold=0.7, after_sleep=1)
+            self.wait_in_team_and_world(time_out=120)
+
     def get_advanced_skill_material_weekly_count(self):
         self.openF2Book('gray_book_boss')
         self.open_boss_book('zhange')
@@ -750,8 +746,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 remaining = int(match.group(1))
                 break
         #
-        _, _, total_stamina = self.get_stamina()
-        can_farm = min(remaining, total_stamina // self.stamina_once)
+        current, _, _ = self.get_stamina()
+        can_farm = min(remaining, current // self.stamina_once)
         self.ensure_main()
         return remaining, can_farm
 
