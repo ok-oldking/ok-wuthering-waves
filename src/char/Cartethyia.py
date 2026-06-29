@@ -71,7 +71,9 @@ class Cartethyia(BaseChar):
         if self.is_small():
             self.logger.info(f'is cartethyia')
             self.wait_down()
-            if self.acquire_missing_buffs():
+            should_switch = self.acquire_missing_buffs()
+            self.try_mid_air_attack()
+            if should_switch and not self.liberation_available():
                 return self.switch_next_char()
             self.check_combat()
             self.try_mid_air_attack()

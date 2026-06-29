@@ -78,7 +78,7 @@ class Phoebe(BaseChar):
             self.state["liberation"] += 1
             self.check_combat()
         if status_entered == State.SUCCESS or self.judge_forte() > 0:
-            self.starflash_combo()
+            self.starflash_combo_with_setup(status_entered == State.SUCCESS)
         if self.resonance_available():
             if self.attribute == 2:
                 self.click_resonance_once()
@@ -246,6 +246,12 @@ class Phoebe(BaseChar):
             self.continues_right_click(0.05)
         if self.perform_heavy_attack():
             self.state["starflash_combo"] += 1
+
+    def starflash_combo_with_setup(self, status_entered=False):
+        if status_entered and self.star_available and self.judge_forte() == 0:
+            self.continues_normal_attack(0.45)
+            self.continues_right_click(0.05)
+        self.starflash_combo()
 
     def perform_heavy_attack(self):
         if self.absolution_or_confession() == State.UNAVAILABLE:
