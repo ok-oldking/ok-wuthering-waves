@@ -132,6 +132,7 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
         else:
             self.log_info(f"speed is max")
             self._is_max_speed = True
+
     def _choose_first_blessing(self):
         """At Garden Entrance, choose first blessing"""
         # click blessing botton
