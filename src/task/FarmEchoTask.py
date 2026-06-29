@@ -52,7 +52,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                                     'Boss Challenge': ['Which Boss Challenge to Teleport',
                                                                        'Boss Level'],
                                                 }}
-        self.config_type['Boss Level'] = {'type': "drop_down", 'options': ['50', '60', '70', '80'], }
+        self.config_type['Boss Level'] = {'type': "drop_down", 'options': ['50', '60', '70', '80', '90'], }
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
         self.boss_list = ['Other', 'Hyvatia', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory',
                           'Nightmare: Hecate', 'Fenrico', 'Nameless Explorer']
