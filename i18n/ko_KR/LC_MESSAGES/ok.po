@@ -801,11 +801,8 @@ msgstr "텔레포트할 주간 보스 번호"
 msgid "Which Boss Challenge to Teleport"
 msgstr "텔레포트할 보스 도전 번호"
 
-msgid "For Example, Denia, From Top to Bottom, Starting with 1"
-msgstr "예: Denia, 위에서 아래로, 1부터 시작"
-
-msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
-msgstr "예: Nameless Explorer, 위에서 아래로, 1부터 시작"
+msgid "From Top to Bottom, Starting with 1"
+msgstr "위에서 아래로, 1부터 시작"
 
 msgid "Characters"
 msgstr "캐릭터"
