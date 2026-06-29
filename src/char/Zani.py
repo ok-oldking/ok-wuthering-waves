@@ -6,7 +6,7 @@ import numpy as np
 import math
 
 from src.char.BaseChar import BaseChar, SwitchPriority, forte_white_color
-from src.char.TeamRotations import advance_zpr_phase, get_zpr_phase
+from src.char.TeamRotations import advance_zpr_phase, get_zpr_phase, get_rotation_switch_priority, perform_rotation_phase
 from ok import color_range_to_bound
 
 class State(Enum):
@@ -143,17 +143,7 @@ class Zani(BaseChar):
         self.switch_next_char()
 
     def zani_phoebe_rover_rotation(self):
-        phase = get_zpr_phase(self.task)
-        if phase is None:
-            return False
-        expected_char, action = phase
-        if expected_char != self.__class__.__name__:
-            self.switch_next_char()
-            return True
-        getattr(self, action)()
-        advance_zpr_phase(self.task)
-        self.switch_next_char()
-        return True
+        return perform_rotation_phase(self, get_zpr_phase, advance_zpr_phase)
 
     def zani_e_a(self):
         self.wait_down()
@@ -551,12 +541,9 @@ class Zani(BaseChar):
         self.wait_until(**kwargs)
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        phase = get_zpr_phase(self.task)
-        if phase is not None:
-            expected_char, _ = phase
-            if expected_char == self.__class__.__name__:
-                return SwitchPriority.MUST
-            return SwitchPriority.NO
+        priority = get_rotation_switch_priority(self, get_zpr_phase)
+        if priority is not None:
+            return priority
         if self.in_liberation:
             return SwitchPriority.MUST
         if has_intro and self.crisis_time_left() > 0:

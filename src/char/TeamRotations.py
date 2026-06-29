@@ -71,6 +71,37 @@ def _find_char(task, char_cls):
     return next((char for char in getattr(task, "chars", []) if isinstance(char, char_cls)), None)
 
 
+def is_rotation_target(char, expected_char):
+    return any(cls.__name__ == expected_char for cls in char.__class__.mro())
+
+
+def perform_rotation_phase(char, phase_getter, phase_advancer, wait_down=False, wait_down_if_flying=False):
+    phase = phase_getter(char.task)
+    if phase is None:
+        return False
+    expected_char, action = phase
+    if not is_rotation_target(char, expected_char):
+        char.switch_next_char()
+        return True
+    if wait_down or (wait_down_if_flying and char.flying()):
+        char.wait_down()
+    getattr(char, action)()
+    phase_advancer(char.task)
+    char.switch_next_char()
+    return True
+
+
+def get_rotation_switch_priority(char, phase_getter):
+    phase = phase_getter(char.task)
+    if phase is None:
+        return None
+    expected_char, _ = phase
+    from src.char.BaseChar import SwitchPriority
+    if is_rotation_target(char, expected_char):
+        return SwitchPriority.MUST
+    return SwitchPriority.NO
+
+
 def is_zani_phoebe_rover_team(task):
     from src.char.BaseChar import Elements
     from src.char.HavocRover import HavocRover

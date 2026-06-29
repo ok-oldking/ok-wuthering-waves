@@ -5,7 +5,7 @@ import math
 from enum import Enum
 
 from src.char.BaseChar import BaseChar, SwitchPriority, forte_white_color
-from src.char.TeamRotations import advance_zpr_phase, get_zpr_phase
+from src.char.TeamRotations import advance_zpr_phase, get_zpr_phase, get_rotation_switch_priority, perform_rotation_phase
 from ok import color_range_to_bound
 
 
@@ -89,17 +89,7 @@ class Phoebe(BaseChar):
         self.switch_next_char()
 
     def zani_phoebe_rover_rotation(self):
-        phase = get_zpr_phase(self.task)
-        if phase is None:
-            return False
-        expected_char, action = phase
-        if expected_char != self.__class__.__name__:
-            self.switch_next_char()
-            return True
-        getattr(self, action)()
-        advance_zpr_phase(self.task)
-        self.switch_next_char()
-        return True
+        return perform_rotation_phase(self, get_zpr_phase, advance_zpr_phase)
 
     def phoebe_long_e_r_e_q(self):
         self.wait_down()
@@ -383,12 +373,9 @@ class Phoebe(BaseChar):
         return super().switch_next_char(*args, **kwargs)
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        phase = get_zpr_phase(self.task)
-        if phase is not None:
-            expected_char, _ = phase
-            if expected_char == self.__class__.__name__:
-                return SwitchPriority.MUST
-            return SwitchPriority.NO
+        priority = get_rotation_switch_priority(self, get_zpr_phase)
+        if priority is not None:
+            return priority
         if not has_intro and self.last_outro_time > 0 and self.time_elapsed_accounting_for_freeze(
                 self.last_outro_time, intro_motion_freeze=True) < 4.5:
             self.logger.info('performing outro, switch priority no')

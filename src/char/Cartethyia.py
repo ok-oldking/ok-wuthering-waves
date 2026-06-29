@@ -1,7 +1,7 @@
 import time, cv2
 import numpy as np
 from src.char.BaseChar import BaseChar, SwitchPriority, forte_white_color
-from src.char.TeamRotations import advance_cqc_phase, get_cqc_phase
+from src.char.TeamRotations import get_cqc_phase, get_rotation_switch_priority, perform_rotation_phase, advance_cqc_phase
 
 
 class Cartethyia(BaseChar):
@@ -50,12 +50,9 @@ class Cartethyia(BaseChar):
             self.logger.debug(f'on_combat_end {self.index} switch end')
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        phase = get_cqc_phase(self.task)
-        if phase is not None:
-            expected_char, _ = phase
-            if expected_char == self.__class__.__name__:
-                return SwitchPriority.MUST
-            return SwitchPriority.NO
+        priority = get_rotation_switch_priority(self, get_cqc_phase)
+        if priority is not None:
+            return priority
         if not self.is_cartethyia:
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
@@ -102,18 +99,7 @@ class Cartethyia(BaseChar):
         self.switch_next_char()
 
     def cartethyia_qiuyuan_chisa_rotation(self):
-        phase = get_cqc_phase(self.task)
-        if phase is None:
-            return False
-        expected_char, action = phase
-        if expected_char != self.__class__.__name__:
-            self.switch_next_char()
-            return True
-        self.wait_down()
-        getattr(self, action)()
-        advance_cqc_phase(self.task)
-        self.switch_next_char()
-        return True
+        return perform_rotation_phase(self, get_cqc_phase, advance_cqc_phase, wait_down=True)
 
     def cqc_cart_e_r_e_e(self):
         self.click_resonance_with_lib_big()

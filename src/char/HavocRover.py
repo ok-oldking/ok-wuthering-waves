@@ -1,6 +1,6 @@
 import time
 from src.char.BaseChar import BaseChar, Elements, SwitchPriority
-from src.char.TeamRotations import advance_zpr_phase, get_zpr_phase
+from src.char.TeamRotations import advance_zpr_phase, get_zpr_phase, get_rotation_switch_priority, perform_rotation_phase
 
 
 class HavocRover(BaseChar):
@@ -31,18 +31,7 @@ class HavocRover(BaseChar):
         self.switch_next_char()
 
     def zani_phoebe_rover_rotation(self):
-        phase = get_zpr_phase(self.task)
-        if phase is None:
-            return False
-        expected_char, action = phase
-        if expected_char != self.__class__.__name__:
-            self.switch_next_char()
-            return True
-        self.wait_down()
-        getattr(self, action)()
-        advance_zpr_phase(self.task)
-        self.switch_next_char()
-        return True
+        return perform_rotation_phase(self, get_zpr_phase, advance_zpr_phase, wait_down=True)
 
     def rover_r(self):
         self.click_echo(time_out=0)
@@ -218,10 +207,7 @@ class HavocRover(BaseChar):
             self.send_resonance_key()
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        phase = get_zpr_phase(self.task)
-        if phase is not None:
-            expected_char, _ = phase
-            if expected_char == self.__class__.__name__:
-                return SwitchPriority.MUST
-            return SwitchPriority.NO
+        priority = get_rotation_switch_priority(self, get_zpr_phase)
+        if priority is not None:
+            return priority
         return super().get_switch_priority(current_char, has_intro, target_low_con)
