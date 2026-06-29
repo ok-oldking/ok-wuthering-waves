@@ -15,6 +15,24 @@ logger = Logger.get_logger(__name__)
 
 class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
+    find_echo_method = [  # 查找声骸方法
+        'Yolo',
+        'Run in Circle',
+        'Walk'
+    ]
+
+    boss_list = [  # boss 配置名称
+        'Other',
+        'Hyvatia',
+        'Fallacy of No Return',
+        'Sentry Construct',
+        'Lorelei',
+        'Lioness of Glory',
+        'Nightmare: Hecate',
+        'Fenrico',
+        'Nameless Explorer',
+    ]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.description = "Click Start after Entering Dungeon or Teleporting to The Boss"
@@ -22,6 +40,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.group_name = "Farm"
         self.group_icon = FluentIcon.SYNC
         self.default_config.update({
+            'Advanced Skill Material Mode': False,
             'Teleport to Boss': 'No',
             'Boss Level': "80",
             'Boss': 'Other',
@@ -34,6 +53,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Which Boss Challenge to Teleport': 1,
         })
         self.config_description.update({
+            'Advanced Skill Material Mode': 'If enabled, execute ONLY when all of the following conditions are met: (1) option "Teleport to Boss" is set to "Weekly Challenge"; (2) Advanced Skill Material claim count has not reached the weekly limit; (3) stamina is sufficient to farm once. At this time, option "Repeat Farm Count" will be ignored and total count will be determined by weekly limit and stamina remaining.',
             'Boss': 'Select boss profile (includes Combat Wait Time)',
             'Teleport to Boss': 'Teleport to Boss in F2 Menu',
             'Boss Level': "Choose the Lowest that Drop a Echo",
@@ -43,7 +63,6 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Which Weekly Boss to Teleport': 'For Example, Denia, From Top to Bottom, Starting with 1',
             'Which Boss Challenge to Teleport': 'For Example, Nameless Explorer, From Top to Bottom, Starting with 1'
         })
-        self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Teleport to Boss'] = {'type': "drop_down",
                                                 'options': ['No', 'Weekly Challenge',
                                                             'Boss Challenge'],
@@ -54,8 +73,6 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                                 }}
         self.config_type['Boss Level'] = {'type': "drop_down", 'options': ['50', '60', '70', '80'], }
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
-        self.boss_list = ['Other', 'Hyvatia', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory',
-                          'Nightmare: Hecate', 'Fenrico', 'Nameless Explorer']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
@@ -79,6 +96,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             '罗蕾莱': {'name': r'(罗蕾莱|夜之女皇)', 'set_night': True},
         }
         self.is_revived = False
+        self.stamina_once = 60
 
     def on_combat_check(self):
         if not self._in_realm:
@@ -99,8 +117,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.is_revived = True
         return True
 
-    def run(self):
+    def run(self, config = None):
         WWOneTimeTask.run(self)
+        if config:
+            self.config = config
         self.use_liberation = self.config.get('Use Liberation')
         try:
             return self.do_run()
@@ -111,9 +131,29 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             if self.handle_claim_button() or self.handle_monthly_card():
                 self.run()
             else:
+                if self.config.get('Advanced Skill Material Mode', False):
+                    self.domain_to_world()
                 raise
 
     def do_run(self):
+        advanced_skill_material_mode = self.config.get('Advanced Skill Material Mode', False)
+        total_count = self.config.get("Repeat Farm Count", 0)
+        if advanced_skill_material_mode:
+            self.domain_to_world()
+            if self.config.get('Teleport to Boss', 'No') != 'Weekly Challenge':
+                self.log_info(f'advanced skill material mode: STOPPED since option "Teleport to Boss" is not "Weekly Challenge"')
+                return
+            r, c = self.get_advanced_skill_material_weekly_count()
+            if c > 0:
+                total_count = c
+                self.log_info(f'advanced skill material mode: will execute {total_count} time(s) and use {total_count * self.stamina_once} stamina')
+                self.info_set('Advanced Skill Material Mode', f'{c}')
+            else:
+                if r > 0:
+                    self.log_info(f'advanced skill material mode: STOPPED since not enough stamina even {r} time(s) available, please retry with at least {self.stamina_once} stamina')
+                else:
+                    self.log_info(f'advanced skill material mode: STOPPED since {r} time(s) available, please retry next week')
+                return
         count = 0
         self._in_realm = self.in_realm()
         self.manage_boss_parameters()
@@ -124,7 +164,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.init_parameters()
         if self.teleport_to_boss_enabled():
             self.teleport_to_configured_boss_and_prepare()
-        while count < self.config.get("Repeat Farm Count", 0):
+        while count < total_count:
             try:
                 self.in_realm_check(60)
                 self.log_debug(f'start farming {count} {self._in_realm}')
@@ -190,6 +230,28 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                         self.wait_until(self.in_combat, raise_if_not_found=False, time_out=5)
                     else:
                         self.wait_until(self.in_combat, raise_if_not_found=False, time_out=1)
+                if advanced_skill_material_mode:
+                    # walk to treasure
+                    self.walk_to_treasure()
+                    self.pick_f(handle_claim=False)
+                    self.sleep(1)
+                    # click right dialog button "confirm"
+                    if not self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False, time_out=3, click_after_delay=0.5, threshold=0.7):
+                        # not found, it might because the previous "self.pick_f()" got "echo" rather than "treasure"
+                        #
+                        # walk to treasure again
+                        self.walk_to_treasure()
+                        self.pick_f(handle_claim=False)
+                        if not self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False, time_out=3, click_after_delay=0.5, threshold=0.7):
+                            raise Exception("cannot find button to continue")
+                    self.sleep(4)
+                    if self._in_realm:  # domain
+                        if count < total_count: 
+                            self.click(x=0.37, y=0.85, after_sleep=1)  # button "exit"
+                        else:
+                            self.click(x=0.63, y=0.85, after_sleep=1)  # button "challenge again"
+                    else:  # world
+                        self.click(x=0.50, y=0.85, after_sleep=1)  # TODO: pending verification
             except TaskDisabledException:
                 raise
             except Exception as e:
@@ -199,6 +261,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.teleport_to_configured_boss_and_prepare()
                     continue
                 raise
+        if advanced_skill_material_mode:
+            self.domain_to_world()
 
     def execute_treasure_hunt(self):
         if not self.in_combat() and self.find_treasure_icon() and self.walk_to_treasure_and_restart():
@@ -664,6 +728,28 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         else:
             logger.info(f"boss_string is {find_boxes_by_name(texts, [re.compile(r'(?i)^L[Vv].*')])}")
 
+    def domain_to_world(self):
+        if self.in_realm():
+            self.send_key('esc', after_sleep=1)
+            self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False, time_out=3, click_after_delay=0.5, threshold=0.7, after_sleep=1)
+            self.wait_in_team_and_world(time_out=120)
+
+    def get_advanced_skill_material_weekly_count(self):
+        self.openF2Book('gray_book_boss')
+        self.open_boss_book('zhange')
+        #
+        count_re = re.compile(r'(\d)\s*/\s*(\d)')
+        count_boxes = self.ocr(0.36, 0.12, 0.96, 0.18, match=count_re)
+        remaining = 0
+        for count_box in count_boxes:
+            if match := count_re.search(count_box.name):
+                remaining = int(match.group(1))
+                break
+        #
+        current, _, _ = self.get_stamina()
+        can_farm = min(remaining, current // self.stamina_once)
+        self.ensure_main()
+        return remaining, can_farm
 
 from ok import run_task
 from config import config

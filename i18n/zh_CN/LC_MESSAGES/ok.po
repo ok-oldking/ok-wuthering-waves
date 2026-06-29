@@ -854,6 +854,15 @@ msgstr "例如德尼亚，从上到下，从1开始"
 msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
 msgstr "例如无铭探索者，从上到下，从1开始"
 
+msgid "Advanced Skill Material Mode"
+msgstr "高级技能材料模式"
+
+msgid "If enabled, execute ONLY when all of the following conditions are met: (1) option \"Teleport to Boss\" is set to \"Weekly Challenge\"; (2) Advanced Skill Material claim count has not reached the weekly limit; (3) stamina is sufficient to farm once. At this time, option \"Repeat Farm Count\" will be ignored and total count will be determined by weekly limit and stamina remaining."
+msgstr "如果启用，只会在下列三个条件均满足时执行：(1) 选项 \"传送至Boss\" 为 \"战歌重奏\" (2) 高级技能材料 获取次数 未达每周上限 (3) 体力至少够刷1次。此时，选项 \"刷多少次\" 将会被无视，实际刷取次数取决于 每周上限 和 剩余体力。"
+
+msgid "Try to Farm Weekly-Limited Advanced Skill Material"
+msgstr "尝试刷取（周本）高级技能材料"
+
 msgid "Characters"
 msgstr "角色"
 
