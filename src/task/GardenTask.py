@@ -62,7 +62,7 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
                     continue
                 elif target.name == 'garden_start_game':
                     # At Garden Entrance, choose blessing1
-                    self._choose_blessing1()
+                    self._choose_first_blessing()
                 self.log_info(f"click {target.name} {target.confidence:.3f}")
                 self.click(target, after_sleep=1)
             else:
@@ -118,8 +118,8 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
                 return max(priority_matches, key=lambda box: box.confidence)
         return max(matches, key=lambda box: box.confidence, default=None)
 
-    def _choose_blessing1(self):
-        """At Garden Entrance, choose blessing1"""
+    def _choose_first_blessing(self):
+        """At Garden Entrance, choose first blessing"""
         # click blessing botton
         self.click(965/1920, 860/1080, after_sleep=2)
         # choose blessing1(Add-on)
