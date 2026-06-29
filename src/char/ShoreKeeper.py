@@ -43,9 +43,18 @@ class ShoreKeeper(BaseChar):
         return self.click_liberation()
 
     def _should_fast_intro_liberation(self):
-        from src.char.Phoebe import Phoebe
-        from src.char.Zani import Zani
-        return self.task.has_char(Phoebe) and self.task.has_char(Zani)
+        has_phoebe = False
+        has_zani = False
+        for char in self.task.chars:
+            if char is None:
+                continue
+            name = getattr(char, "char_name", "")
+            cls_name = char.__class__.__name__
+            if name == "char_phoebe" or cls_name == "Phoebe":
+                has_phoebe = True
+            elif name == "char_zani" or cls_name == "Zani":
+                has_zani = True
+        return has_phoebe and has_zani
 
     def do_perform(self):
         if (

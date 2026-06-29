@@ -55,6 +55,30 @@ class Phoebe(BaseChar):
         if not hasattr(self, "rotation_short_resonance_used"):
             self.rotation_short_resonance_used = False
 
+    def _should_use_locked_zani_team_logic(self):
+        has_zani = False
+        has_shorekeeper = False
+        for char in self.task.chars:
+            if char is None:
+                continue
+            name = getattr(char, "char_name", "")
+            cls_name = char.__class__.__name__
+            if name == "char_zani" or cls_name == "Zani":
+                has_zani = True
+            elif name == "char_shorekeeper" or cls_name == "ShoreKeeper":
+                has_shorekeeper = True
+        return has_zani and has_shorekeeper
+
+    def _find_zani_char(self):
+        for char in self.task.chars:
+            if char is None:
+                continue
+            name = getattr(char, "char_name", "")
+            cls_name = char.__class__.__name__
+            if name == "char_zani" or cls_name == "Zani":
+                return char
+        return None
+
     def _mark_zani_outro_ready(self):
         self._ensure_zani_support_state()
         self.state["zani_outro_ready"] = 1
@@ -110,8 +134,15 @@ class Phoebe(BaseChar):
 
     def _outro_ready_now(self, reason=""):
         if self.is_con_full():
+            if self.attribute == 2 and self.char_zani is not None and not self.is_action_complete():
+                self.logger.info(
+                    "Phoebe custom con full but action incomplete "
+                    f"liberation={self.state.get('liberation', 0)} "
+                    f"starflash={self.state.get('starflash_combo', 0)}"
+                )
+                return False
             if reason:
-                self.logger.info(f"Phoebe zani support outro ready: {reason}")
+                self.logger.info(f"Phoebe custom outro ready: {reason}")
             return True
         return False
 
@@ -128,7 +159,7 @@ class Phoebe(BaseChar):
         if not self.resonance_available() or self.rotation_short_resonance_used:
             return False
         if self.attribute == 2 and self.confession_ready():
-            self.logger.info("skip short resonance while confession icon active")
+            self.logger.info("Phoebe custom skip short resonance while confession icon active")
             return False
         return True
 
@@ -136,7 +167,7 @@ class Phoebe(BaseChar):
         if not self._can_cast_short_resonance():
             return False
         self.rotation_short_resonance_used = True
-        self.logger.info(f"cast short resonance {reason}")
+        self.logger.info(f"Phoebe custom cast short resonance {reason}")
         self.click_resonance_once()
         self.check_combat()
         if self._wait_for_outro_refresh(f"after {reason} short resonance settle"):
@@ -169,7 +200,7 @@ class Phoebe(BaseChar):
             return False
         if current_char.__class__.__name__ != "ShoreKeeper":
             return False
-        if self.attribute != 2 or self.char_zani is None:
+        if not self._should_use_locked_zani_team_logic():
             return False
         return not self._zani_still_needs_liberation_followup()
 
@@ -184,7 +215,7 @@ class Phoebe(BaseChar):
         while time.time() - start < wait_time:
             self.check_combat()
             if self.liberation_available():
-                self.logger.info("liberation became available during wait")
+                self.logger.info("Phoebe custom liberation became available during wait")
                 return True
             self.sleep(interval)
         return self.liberation_available()
@@ -199,7 +230,7 @@ class Phoebe(BaseChar):
             return False
 
         if not self.star_available and status_entered != State.SUCCESS:
-            refreshed = self._refresh_confession_mode()
+            refreshed = self.absolution_or_confession()
             if refreshed == State.SUCCESS:
                 status_entered = refreshed
 
@@ -219,9 +250,10 @@ class Phoebe(BaseChar):
         if not self.liberation_available():
             return False
 
-        self.logger.info(f"cast liberation {reason}")
+        self.logger.info(f"Phoebe custom cast liberation {reason}")
         if self.click_liberation(send_click=True):
             self.state["priority_liberation_cast"] = 1
+            self.state["liberation"] += 1
             self.check_combat()
             if self._wait_for_outro_refresh(f"after {reason} liberation settle"):
                 return True
@@ -229,30 +261,25 @@ class Phoebe(BaseChar):
         return self._outro_ready_now(f"after {reason} liberation attempt")
 
     def _try_cast_liberation_before_switch(self, reason):
+        if not self._should_use_locked_zani_team_logic():
+            return False
         if self.attribute != 2 or self.char_zani is None:
             return False
         if self.state.get("priority_liberation_cast"):
             return False
         if not self.liberation_available():
             return False
-        self.logger.info(f"cast available liberation before switch {reason}")
+        self.logger.info(f"Phoebe custom cast available liberation before switch {reason}")
         if self.click_liberation(send_click=True):
             self.state["priority_liberation_cast"] = 1
+            self.state["liberation"] += 1
             self.check_combat()
             self._wait_for_outro_refresh(f"after {reason} switch liberation settle")
             return True
         return False
 
-    def _refresh_confession_mode(self):
-        if self.attribute != 2:
-            return State.UNAVAILABLE
-        result = self.absolution_or_confession()
-        if result == State.SUCCESS:
-            self.check_combat()
-        return result
-
     def _perform_bound_heavy_combo(self, reason):
-        self.logger.info(f"bound starflash wait heavy ready {reason}")
+        self.logger.info(f"Phoebe custom bound starflash wait heavy ready {reason}")
         condition = self.get_prayer_condition()
         start = time.time()
         check_forte = start
@@ -268,10 +295,12 @@ class Phoebe(BaseChar):
                 return True
 
             if time.time() - start > self.BOUND_STARFLASH_TIMEOUT:
-                self.logger.info(f"bound starflash timeout before heavy {reason} clicks {normal_clicks}")
+                self.logger.info(
+                    f"Phoebe custom bound starflash timeout before heavy {reason} clicks {normal_clicks}"
+                )
                 self.continues_right_click(0.05)
-                self.logger.info(f"bound starflash timeout manual heavy {reason}")
                 self.heavy_attack(0.55)
+                self.state["starflash_combo"] += 1
                 self.check_combat()
                 self._wait_for_outro_refresh(f"after {reason} timeout heavy")
                 return True
@@ -280,7 +309,9 @@ class Phoebe(BaseChar):
                 stalled_by_condition = condition()
                 forte = self.judge_forte()
                 if stalled_by_condition or forte == 0:
-                    self.logger.info(f"bound starflash still waiting for heavy {reason} clicks {normal_clicks}")
+                    self.logger.info(
+                        f"Phoebe custom bound starflash still waiting for heavy {reason} clicks {normal_clicks}"
+                    )
                     if normal_clicks >= self.BOUND_EARLY_CANCEL_MIN_CLICKS:
                         self.continues_right_click(0.05)
                         self.check_combat()
@@ -289,6 +320,8 @@ class Phoebe(BaseChar):
                             return True
                         if self.heavy_attack_ready():
                             result = self.perform_heavy_attack()
+                            if result:
+                                self.state["starflash_combo"] += 1
                             self.check_combat()
                             self._wait_for_outro_refresh(f"after {reason} early cancel heavy")
                             return result
@@ -298,9 +331,11 @@ class Phoebe(BaseChar):
 
             self.task.next_frame()
 
-        self.logger.info(f"bound starflash heavy ready {reason} clicks {normal_clicks}")
+        self.logger.info(f"Phoebe custom bound starflash heavy ready {reason} clicks {normal_clicks}")
         self.continues_right_click(0.05)
         result = self.perform_heavy_attack()
+        if result:
+            self.state["starflash_combo"] += 1
         self.check_combat()
         self._wait_for_outro_refresh(f"after {reason} bound heavy")
         return result
@@ -308,29 +343,23 @@ class Phoebe(BaseChar):
     def _zani_support_rotation(self, start_time):
         attribute_mismatch = self.check_attribute_mismatch()
 
-        if self.attribute == 2 and self.char_zani is not None:
-            if not self.star_available:
-                self._refresh_confession_mode()
+        if self.attribute == 2 and self.char_zani is not None and not self.star_available:
+            self.absolution_or_confession()
 
         wait_ui_time = 0.35 - (time.time() - start_time)
         if wait_ui_time > 0 and self.star_available and self.judge_forte() == 0:
-            self.logger.info('wait for UI')
+            self.logger.info("Phoebe custom wait for UI")
             self.continues_normal_attack(wait_ui_time)
 
         status_entered = self.absolution_or_confession()
         self.check_combat()
 
-        self.logger.info("build con with bound heavy loop")
+        self.logger.info("Phoebe custom build con with bound heavy loop")
         start = time.time()
         while time.time() - start < self.STARFLASH_OUTRO_TIMEOUT:
             self.check_combat()
             if self._outro_ready_now("bound loop start"):
                 return self.switch_next_char()
-
-            if not self.star_available:
-                refreshed = self._refresh_confession_mode()
-                if refreshed == State.SUCCESS:
-                    status_entered = refreshed
 
             if self._try_cast_priority_liberation(
                     "in bound loop",
@@ -348,11 +377,14 @@ class Phoebe(BaseChar):
             if self._outro_ready_now("after bound heavy combo"):
                 return self.switch_next_char()
 
-        self.logger.info("bound heavy loop timeout")
+        self.logger.info("Phoebe custom bound heavy loop timeout")
         return self.switch_next_char()
 
     def do_perform(self):
         self._ensure_zani_support_state()
+        if not self._should_use_locked_zani_team_logic():
+            self.logger.info("Phoebe custom exact fallback to current builtin")
+            return self._default_do_perform()
         self.last_outro_time = -1
         self.rotation_short_resonance_used = False
         start = time.time()
@@ -366,10 +398,11 @@ class Phoebe(BaseChar):
             return self.switch_next_char()
 
         if self.attribute != 2 or self.char_zani is None:
+            self.logger.info("Phoebe custom fallback to current builtin outside locked branch")
             return self._default_do_perform()
 
         if self._zani_in_liberation():
-            self.logger.info("use default logic during Zani liberation")
+            self.logger.info("Phoebe custom use builtin logic during Zani liberation")
             return self._default_do_perform()
 
         return self._zani_support_rotation(start)
@@ -597,7 +630,7 @@ class Phoebe(BaseChar):
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if self._should_take_shorekeeper_intro(current_char, has_intro):
-            self.logger.info("Phoebe v5 take ShoreKeeper intro instead of returning to Zani")
+            self.logger.info("Phoebe custom take ShoreKeeper intro instead of returning to Zani")
             return SwitchPriority.MUST
         if not has_intro and self.last_outro_time > 0 and self.time_elapsed_accounting_for_freeze(
                 self.last_outro_time, intro_motion_freeze=True) < 4.5:
@@ -625,10 +658,9 @@ class Phoebe(BaseChar):
         return False
 
     def decide_teammate(self):
-        from src.char.Zani import Zani
         from src.char.Cartethyia import Cartethyia
         from src.char.HavocRover import HavocRover
-        if char := self.task.has_char(Zani):
+        if char := self._find_zani_char():
             self.char_zani = char
             self.attribute = 2
         elif self.task.has_char(Cartethyia) and self.task.has_char(HavocRover):
