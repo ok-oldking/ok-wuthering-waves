@@ -1,5 +1,6 @@
 import time
-from src.char.BaseChar import BaseChar, Elements
+from src.char.BaseChar import BaseChar, Elements, SwitchPriority
+from src.char.TeamRotations import advance_zpr_phase, get_zpr_phase
 
 
 class HavocRover(BaseChar):
@@ -14,6 +15,8 @@ class HavocRover(BaseChar):
         self.init()
         if not self.has_intro:
             self.sleep(0.01)
+        if self.zani_phoebe_rover_rotation():
+            return
         if self.ring_index == Elements.HAVOC:
             self.intro_motion_freeze_duration = 0.64
             self.perform_havoc_routine()
@@ -26,6 +29,46 @@ class HavocRover(BaseChar):
         else:
             self.perform_basic_routine()
         self.switch_next_char()
+
+    def zani_phoebe_rover_rotation(self):
+        phase = get_zpr_phase(self.task)
+        if phase is None:
+            return False
+        expected_char, action = phase
+        if expected_char != self.__class__.__name__:
+            self.switch_next_char()
+            return True
+        self.wait_down()
+        getattr(self, action)()
+        advance_zpr_phase(self.task)
+        self.switch_next_char()
+        return True
+
+    def rover_r(self):
+        self.click_echo(time_out=0)
+
+    def rover_e(self):
+        self.click_resonance(send_click=False, time_out=0.4)
+
+    def rover_e_q(self):
+        self.click_resonance(send_click=False, time_out=0.4)
+        self.click_liberation(send_click=True)
+
+    def rover_a(self):
+        self.continues_normal_attack(0.25)
+
+    def rover_a_z_a(self):
+        self.continues_normal_attack(0.2)
+        self.spectro_routine_aftertune_combo()
+
+    def rover_a_z_a_r(self):
+        self.rover_a_z_a()
+        self.click_echo(time_out=0)
+
+    def rover_a_z_a_e_q(self):
+        self.rover_a_z_a()
+        self.click_resonance(send_click=False, time_out=0.4)
+        self.click_liberation(send_click=True)
 
     def init(self):
         if self.ring_index == -1:
@@ -173,3 +216,12 @@ class HavocRover(BaseChar):
             self.sleep(0.03)
         if self.is_forte_full():
             self.send_resonance_key()
+
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        phase = get_zpr_phase(self.task)
+        if phase is not None:
+            expected_char, _ = phase
+            if expected_char == self.__class__.__name__:
+                return SwitchPriority.MUST
+            return SwitchPriority.NO
+        return super().get_switch_priority(current_char, has_intro, target_low_con)

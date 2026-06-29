@@ -1,6 +1,7 @@
 import time, cv2
 import numpy as np
 from src.char.BaseChar import BaseChar, SwitchPriority, forte_white_color
+from src.char.TeamRotations import advance_cqc_phase, get_cqc_phase
 
 
 class Cartethyia(BaseChar):
@@ -49,12 +50,20 @@ class Cartethyia(BaseChar):
             self.logger.debug(f'on_combat_end {self.index} switch end')
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        phase = get_cqc_phase(self.task)
+        if phase is not None:
+            expected_char, _ = phase
+            if expected_char == self.__class__.__name__:
+                return SwitchPriority.MUST
+            return SwitchPriority.NO
         if not self.is_cartethyia:
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def do_perform(self):
         self.transform = False
+        if self.cartethyia_qiuyuan_chisa_rotation():
+            return
         if self.has_intro:
             self.continues_normal_attack(1.2)
         else:
@@ -89,6 +98,50 @@ class Cartethyia(BaseChar):
             self.n4_time = time.time()
         self.try_lib_big()
         self.switch_next_char()
+
+    def cartethyia_qiuyuan_chisa_rotation(self):
+        phase = get_cqc_phase(self.task)
+        if phase is None:
+            return False
+        expected_char, action = phase
+        if expected_char != self.__class__.__name__:
+            self.switch_next_char()
+            return True
+        self.wait_down()
+        getattr(self, action)()
+        advance_cqc_phase(self.task)
+        self.switch_next_char()
+        return True
+
+    def cqc_cart_e_r_e_e(self):
+        self.click_resonance_with_lib_big()
+        self.click_echo(time_out=0)
+        self.click_resonance_with_lib_big()
+        self.click_resonance_with_lib_big()
+
+    def cqc_cart_a3_a4(self):
+        self.continues_normal_attack(1.0)
+
+    def cqc_cart_a5_r1(self):
+        self.continues_normal_attack(1.2)
+        self.click_echo(time_out=0)
+
+    def cqc_cart_a3(self):
+        self.continues_normal_attack(0.7)
+
+    def cqc_cart_a4_z_q(self):
+        self.continues_normal_attack(0.9)
+        self.try_mid_air_attack(timeout=1.2)
+        self.click_liberation()
+
+    def cqc_cart_drop_a_z_e3_a_e_e_r(self):
+        self.try_mid_air_attack(timeout=1.6)
+        self.continues_normal_attack(0.25)
+        self.try_mid_air_attack(timeout=1.2)
+        for _ in range(3):
+            self.click_resonance_with_lib_big()
+            self.continues_normal_attack(0.2)
+        self.click_echo(time_out=0)
 
     def fleurdelys_n4_duration(self):
         if not self.transform and self.has_intro:

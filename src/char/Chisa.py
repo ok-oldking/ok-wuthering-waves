@@ -1,6 +1,7 @@
 import time
 
-from src.char.BaseChar import BaseChar, CharType, get_default_buff_time
+from src.char.BaseChar import BaseChar, CharType, SwitchPriority, get_default_buff_time
+from src.char.TeamRotations import advance_cqc_phase, get_cqc_phase
 
 
 class Chisa(BaseChar):
@@ -18,9 +19,59 @@ class Chisa(BaseChar):
         return super().get_buff_time()
 
     def do_perform(self):
+        if self.cartethyia_qiuyuan_chisa_rotation():
+            return
         if not self.is_dps_config():
             return self.do_fast_support()
         return self.do_dps_perform()
+
+    def cartethyia_qiuyuan_chisa_rotation(self):
+        phase = get_cqc_phase(self.task)
+        if phase is None:
+            return False
+        expected_char, action = phase
+        if expected_char != self.__class__.__name__:
+            self.switch_next_char()
+            return True
+        if self.flying():
+            self.wait_down()
+        getattr(self, action)()
+        advance_cqc_phase(self.task)
+        self.switch_next_char()
+        return True
+
+    def cqc_chisa_e(self):
+        self.click_resonance(time_out=0.5)
+
+    def cqc_chisa_a(self):
+        self.continues_normal_attack(0.25)
+
+    def cqc_chisa_a3(self):
+        self.continues_normal_attack(0.65)
+
+    def cqc_chisa_a4(self):
+        self.continues_normal_attack(0.85)
+
+    def cqc_chisa_r_e(self):
+        self.click_echo(time_out=0)
+        self.click_resonance(time_out=0.5)
+
+    def cqc_chisa_z2_dodge_a3(self):
+        if self.is_forte_full():
+            self.perform_forte()
+        else:
+            self.heavy_attack(0.45)
+        self.continues_right_click(0.05)
+        self.continues_normal_attack(0.65)
+
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        phase = get_cqc_phase(self.task)
+        if phase is not None:
+            expected_char, _ = phase
+            if expected_char == self.__class__.__name__:
+                return SwitchPriority.MUST
+            return SwitchPriority.NO
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def do_fast_support(self):
         self.check_f_on_switch = True

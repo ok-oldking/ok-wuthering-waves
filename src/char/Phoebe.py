@@ -5,6 +5,7 @@ import math
 from enum import Enum
 
 from src.char.BaseChar import BaseChar, SwitchPriority, forte_white_color
+from src.char.TeamRotations import advance_zpr_phase, get_zpr_phase
 from ok import color_range_to_bound
 
 
@@ -41,6 +42,8 @@ class Phoebe(BaseChar):
         start = time.time()
         if self.attribute == 0:
             self.decide_teammate()
+        if self.zani_phoebe_rover_rotation():
+            return
         if self.has_intro:
             self.continues_normal_attack(1.5)
         else:
@@ -84,6 +87,74 @@ class Phoebe(BaseChar):
             return self.switch_next_char()
         self.continues_normal_attack(0.1)
         self.switch_next_char()
+
+    def zani_phoebe_rover_rotation(self):
+        phase = get_zpr_phase(self.task)
+        if phase is None:
+            return False
+        expected_char, action = phase
+        if expected_char != self.__class__.__name__:
+            self.switch_next_char()
+            return True
+        getattr(self, action)()
+        advance_zpr_phase(self.task)
+        self.switch_next_char()
+        return True
+
+    def phoebe_long_e_r_e_q(self):
+        self.wait_down()
+        self.absolution_or_confession()
+        self.click_echo(time_out=0)
+        if self.attribute == 2:
+            self.click_resonance_once()
+        else:
+            self.click_resonance(send_click=False, time_out=0.4)
+        if self.click_liberation(send_click=True):
+            self.state["liberation"] += 1
+
+    def phoebe_aaa_dodge_aaa_dodge_aaa_z(self):
+        self.wait_down()
+        self.continues_normal_attack(0.45)
+        self.continues_right_click(0.05)
+        self.continues_normal_attack(0.45)
+        self.continues_right_click(0.05)
+        self.continues_normal_attack(0.45)
+        self.starflash_combo()
+
+    def phoebe_aaa(self):
+        self.wait_down()
+        self.continues_normal_attack(0.45)
+
+    def phoebe_z(self):
+        self.wait_down()
+        self.starflash_combo()
+
+    def phoebe_intro(self):
+        if self.has_intro:
+            self.continues_normal_attack(0.35)
+        else:
+            self.sleep(0.05)
+
+    def phoebe_aaa_dodge_z_dodge_aaa_f(self):
+        self.wait_down()
+        self.continues_normal_attack(0.45)
+        self.continues_right_click(0.05)
+        self.starflash_combo()
+        self.continues_right_click(0.05)
+        self.continues_normal_attack(0.45)
+        self.f_break(check_f_on_switch=True)
+
+    def phoebe_e_dodge_long_e_r_q(self):
+        self.wait_down()
+        if self.attribute == 2:
+            self.click_resonance_once()
+        else:
+            self.click_resonance(send_click=False, time_out=0.4)
+        self.continues_right_click(0.05)
+        self.absolution_or_confession()
+        self.click_echo(time_out=0)
+        if self.click_liberation(send_click=True):
+            self.state["liberation"] += 1
 
     def zani_linkage(self):
         self.logger.debug('zani linkage')
@@ -306,6 +377,12 @@ class Phoebe(BaseChar):
         return super().switch_next_char(*args, **kwargs)
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        phase = get_zpr_phase(self.task)
+        if phase is not None:
+            expected_char, _ = phase
+            if expected_char == self.__class__.__name__:
+                return SwitchPriority.MUST
+            return SwitchPriority.NO
         if not has_intro and self.last_outro_time > 0 and self.time_elapsed_accounting_for_freeze(
                 self.last_outro_time, intro_motion_freeze=True) < 4.5:
             self.logger.info('performing outro, switch priority no')

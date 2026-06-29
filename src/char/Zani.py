@@ -6,6 +6,7 @@ import numpy as np
 import math
 
 from src.char.BaseChar import BaseChar, SwitchPriority, forte_white_color
+from src.char.TeamRotations import advance_zpr_phase, get_zpr_phase
 from ok import color_range_to_bound
 
 class State(Enum):
@@ -43,6 +44,8 @@ class Zani(BaseChar):
     def do_perform(self):
         if self.blazes_threshold == -1:
             self.decide_teammate()
+        if self.zani_phoebe_rover_rotation():
+            return
         if self.has_intro:
             self.logger.info('has intro')
             self.continues_normal_attack(1.3)
@@ -138,6 +141,66 @@ class Zani(BaseChar):
         if self.is_forte_full():
             self.crisis_response_protocol_combo()
         self.switch_next_char()
+
+    def zani_phoebe_rover_rotation(self):
+        phase = get_zpr_phase(self.task)
+        if phase is None:
+            return False
+        expected_char, action = phase
+        if expected_char != self.__class__.__name__:
+            self.switch_next_char()
+            return True
+        getattr(self, action)()
+        advance_zpr_phase(self.task)
+        self.switch_next_char()
+        return True
+
+    def zani_e_a(self):
+        self.wait_down()
+        self.click_resonance(send_click=False, time_out=0.4)
+        self.continues_normal_attack(0.25)
+
+    def zani_a(self):
+        self.wait_down()
+        self.continues_normal_attack(0.25)
+
+    def zani_e(self):
+        self.wait_down()
+        self.click_resonance(send_click=False, time_out=0.4)
+
+    def zani_aa(self):
+        self.wait_down()
+        self.continues_normal_attack(0.4)
+
+    def zani_aaa(self):
+        self.wait_down()
+        if self.in_liberation:
+            self.nightfall_combo()
+        else:
+            self.continues_normal_attack(0.7)
+
+    def zani_q_r_aaa(self):
+        self.wait_down()
+        if self.click_liberation(send_click=True):
+            self.in_liberation = True
+            self.liberation_time = time.time()
+            self.state = 1
+        self.click_echo(time_out=0)
+        if self.in_liberation:
+            self.nightfall_combo(cancel_last_smash=True)
+        else:
+            self.continues_normal_attack(0.7)
+
+    def zani_e_q_r_aaa(self):
+        self.wait_down()
+        self.click_resonance(send_click=False, time_out=0.4)
+        self.zani_q_r_aaa()
+
+    def zani_r_e_a(self):
+        self.wait_down()
+        self.click_echo(time_out=0)
+        self.click_resonance(send_click=False, time_out=0.4)
+        self.continues_normal_attack(0.25)
 
     def basic_attack_breakthrough_combo(self):
         if self.is_forte_full():
@@ -488,6 +551,12 @@ class Zani(BaseChar):
         self.wait_until(**kwargs)
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        phase = get_zpr_phase(self.task)
+        if phase is not None:
+            expected_char, _ = phase
+            if expected_char == self.__class__.__name__:
+                return SwitchPriority.MUST
+            return SwitchPriority.NO
         if self.in_liberation:
             return SwitchPriority.MUST
         if has_intro and self.crisis_time_left() > 0:
