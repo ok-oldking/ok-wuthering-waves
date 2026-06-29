@@ -41,6 +41,33 @@ class ForcedChar(BaseChar):
         return SwitchPriority.MUST
 
 
+class RotationTask:
+    char_config = {}
+    has_lavitator = False
+    use_liberation = True
+
+    def __init__(self, chars=None):
+        self.chars = chars or []
+        self.sleep_calls = []
+
+    def sleep(self, sec):
+        self.sleep_calls.append(sec)
+
+    def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+        if intro_motion_freeze and start < 0:
+            return 10000
+        return 10000 if start < 0 else time.time() - start
+
+    def has_char(self, char_cls):
+        return next((char for char in self.chars if isinstance(char, char_cls)), None)
+
+
+class RotationCartethyia(Cartethyia):
+    def __init__(self, task, index):
+        BaseChar.__init__(self, task, index, ring_index=Elements.WIND)
+        self.is_cartethyia = True
+
+
 class TestChar(TaskTestCase):
     task_class = AutoCombatTask
     config = config
@@ -925,14 +952,7 @@ class TestChar(TaskTestCase):
             ensure_zani_phoebe_rover_rotation,
         )
 
-        class Task:
-            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
-                return 10000 if start < 0 else time.time() - start
-
-            def has_char(self, char_cls):
-                return next((char for char in self.chars if isinstance(char, char_cls)), None)
-
-        task = Task()
+        task = RotationTask()
         zani = Zani(task, 0)
         phoebe = Phoebe(task, 1)
         rover = HavocRover(task, 2, ring_index=Elements.SPECTRO)
@@ -949,19 +969,6 @@ class TestChar(TaskTestCase):
             ZPR_LOOP_START,
             ensure_zani_phoebe_rover_rotation,
         )
-
-        class Task:
-            has_lavitator = False
-            use_liberation = True
-
-            def sleep(self, sec):
-                pass
-
-            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
-                return 10000 if start < 0 else time.time() - start
-
-            def has_char(self, char_cls):
-                return next((char for char in self.chars if isinstance(char, char_cls)), None)
 
         class TrackingRover(HavocRover):
             def __init__(self, task, index):
@@ -989,7 +996,7 @@ class TestChar(TaskTestCase):
             def switch_next_char(self, *args, **kwargs):
                 self.actions.append(("switch", {}))
 
-        task = Task()
+        task = RotationTask()
         zani = Zani(task, 0)
         phoebe = Phoebe(task, 1)
         rover = TrackingRover(task, 2)
@@ -1009,22 +1016,8 @@ class TestChar(TaskTestCase):
     def test_cartethyia_qiuyuan_chisa_rotation_forces_scripted_target(self):
         from src.char.TeamRotations import ensure_cartethyia_qiuyuan_chisa_rotation
 
-        class Task:
-            char_config = {}
-
-            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
-                return 10000 if start < 0 else time.time() - start
-
-            def has_char(self, char_cls):
-                return next((char for char in self.chars if isinstance(char, char_cls)), None)
-
-        class TestCartethyia(Cartethyia):
-            def __init__(self, task, index):
-                BaseChar.__init__(self, task, index, ring_index=Elements.WIND)
-                self.is_cartethyia = True
-
-        task = Task()
-        cartethyia = TestCartethyia(task, 0)
+        task = RotationTask()
+        cartethyia = RotationCartethyia(task, 0)
         qiuyuan = Qiuyuan(task, 1)
         chisa = Chisa(task, 2)
         task.chars = [cartethyia, qiuyuan, chisa]
@@ -1037,20 +1030,6 @@ class TestChar(TaskTestCase):
 
     def test_cartethyia_qiuyuan_chisa_rotation_chisa_starts_with_e(self):
         from src.char.TeamRotations import ensure_cartethyia_qiuyuan_chisa_rotation
-
-        class Task:
-            char_config = {}
-
-            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
-                return 10000 if start < 0 else time.time() - start
-
-            def has_char(self, char_cls):
-                return next((char for char in self.chars if isinstance(char, char_cls)), None)
-
-        class TestCartethyia(Cartethyia):
-            def __init__(self, task, index):
-                BaseChar.__init__(self, task, index, ring_index=Elements.WIND)
-                self.is_cartethyia = True
 
         class TrackingChisa(Chisa):
             def __init__(self, task, index):
@@ -1067,8 +1046,8 @@ class TestChar(TaskTestCase):
             def switch_next_char(self, *args, **kwargs):
                 self.actions.append(("switch", {}))
 
-        task = Task()
-        cartethyia = TestCartethyia(task, 0)
+        task = RotationTask()
+        cartethyia = RotationCartethyia(task, 0)
         qiuyuan = Qiuyuan(task, 1)
         chisa = TrackingChisa(task, 2)
         task.chars = [cartethyia, qiuyuan, chisa]
