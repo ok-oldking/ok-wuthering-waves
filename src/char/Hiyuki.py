@@ -111,9 +111,12 @@ class Hiyuki(BaseChar):
             elif self.lib_heavy_available():
                 if is_timeout:
                     break
-                self.heavy_click_forte(check_fun=self.lib_heavy_available)
+                if self.has_long_action2():
+                    self.heavy_click_forte(check_fun=self.lib_heavy_available)
+                else:
+                    self.click(0.2)
                 if self.task.wait_until(self.liberation_available, post_action=self.click, time_out=0.5):
-                    if self.hold_liberation():
+                    if self.has_long_action2() and self.hold_liberation():
                         self.logger.debug('hiyuki perform lib2 (after heavy)')
                         self.lib2_count = 0
                         return True

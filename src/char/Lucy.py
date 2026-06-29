@@ -1,24 +1,23 @@
 import time
-from src.char.BaseChar import BaseChar
+from src.char.BaseChar import BaseChar, SwitchPriority
 
 class Lucy(BaseChar):
-    FORTE_TIMEOUT = 6.2
+    FORTE_TIMEOUT = 8.5
     LIB_CD_WAIT = 1.5
+    ATTACK_DURATION = 1.2
     NORMAL_ATTACK_DURATION = 0.1
-    HEAVY_ATTACK_DURATION = 0.8
+    HEAVY_ATTACK_DURATION = 0.6
     CLICK_INTERVAL = 0.1
-    ENHANCED_HEAVY_INTERVAL = 0.5
+    ENHANCED_HEAVY_INTERVAL = 0.2
     LIB_CLICK_COUNT = 11 #包含冗余点击
 
     def do_perform(self):
         if not self.is_forte_full():
-            self.perform_standard()
-            
+            self.perform_standard()  
         if self.is_forte_full():
-            self.perform_combat()
-            
-        if self.perform_liberation():
-            return self.switch_next_char()
+            self.perform_combat()       
+        self.perform_liberation()
+        return self.switch_next_char()
 
     def perform_standard(self):
         """标准攒能量流程"""
@@ -90,3 +89,8 @@ class Lucy(BaseChar):
             
             self.heavy_attack(self.HEAVY_ATTACK_DURATION)
             self.logger.info('Lucy perform enhanced heavy attack 2')
+
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        if has_intro and current_char and current_char.char_name in {'char_rebecca'}:
+            return SwitchPriority.MUST
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
