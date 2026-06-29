@@ -799,11 +799,8 @@ msgstr "テレポートする週間ボス"
 msgid "Which Boss Challenge to Teleport"
 msgstr "テレポートするボスチャレンジ"
 
-msgid "For Example, Denia, From Top to Bottom, Starting with 1"
-msgstr "例: Denia。上から下へ、1から開始"
-
-msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
-msgstr "例: Nameless Explorer。上から下へ、1から開始"
+msgid "From Top to Bottom, Starting with 1"
+msgstr "上から下へ、1から開始"
 
 msgid "Characters"
 msgstr "キャラクター"
