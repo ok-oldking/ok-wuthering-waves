@@ -15,7 +15,7 @@ class Lucilla(BaseChar):
     LIBERATION_ANIMATION_TIME: float = 3.0
     # 变身后脉冲式重击的总兜底时长 (秒): 变身靠"打完固定连招/重击次数"才结束, 而非定时.
     # 被怪物打断会停手 -> 连招不推进 -> 变身延长. 此处作为兜底上限, 正常情况会通过 con 归零提前退出.
-    LIBERATION_HEAVY_TIME: float = 10.0
+    LIBERATION_HEAVY_TIME: float = 12.0
     # 单次重击脉冲时长 (秒): 每拍一次完整 mouse_down/up. 被打断时下一拍 mouse_down 自动重按恢复输出.
     HEAVY_PULSE_TIME: float = 0.6
     # 攒能量阶段的整体上限 (秒), 防止攒不满时死循环
@@ -121,12 +121,10 @@ class Lucilla(BaseChar):
     def pulse_heavy_attack(self, total_time):
         """变身后脉冲式重击 total_time 秒: 反复 mouse_down/sleep/mouse_up.
 
-        变身靠"打完固定连招"才结束, 被怪物打断会停手中断输出. 一次性按住到底时被打断后游戏不再
-        把"持续按住"当输入, 角色站着发呆、连招不推进 -> 变身一直不结束 -> 定时切人时仍是变身态,
-        切回来还卡在变身. 改成脉冲: 每拍重新 mouse_down, 某拍被打断, 下一拍自动
-        重按恢复, 保证持续输出直到连招打完. 全程 check_combat=False(变身盲区, in_combat 不可靠, 7.2)。
+        改成脉冲: 每拍重新 mouse_down, 某拍被打断, 下一拍自动
+        重按恢复, 保证持续输出直到连招打完. 全程 check_combat=False
         
-        新增: 检测 con 归零以提前结束脉冲. 变身激活时 con 会变非零, 变身结束动画时 con 会短暂归零.
+        检测 con 归零以提前结束脉冲. 变身激活时 con 会变非零, 变身结束动画时 con 会短暂归零.
         若未检测到归零(如被连续打断), 则持续脉冲直到 total_time 兜底.
         """
         end = time.time() + total_time
