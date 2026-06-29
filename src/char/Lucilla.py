@@ -13,8 +13,11 @@ class Lucilla(BaseChar):
     HOLD_TIME: float = 1.4
     # 大招变身动画时长 (秒): 这段不可操作, 普攻无效, 先等过去
     LIBERATION_ANIMATION_TIME: float = 3.0
-    # 变身后重击时长 (秒)
-    LIBERATION_HEAVY_TIME: float = 5.8
+    # 变身后脉冲式重击的总兜底时长 (秒): 变身靠"打完固定连招/重击次数"才结束, 而非定时.
+    # 被怪物打断会停手 -> 连招不推进 -> 变身延长. 此处作为兜底上限, 正常情况会通过 con 归零提前退出.
+    LIBERATION_HEAVY_TIME: float = 10.0
+    # 单次重击脉冲时长 (秒): 每拍一次完整 mouse_down/up. 被打断时下一拍 mouse_down 自动重按恢复输出.
+    HEAVY_PULSE_TIME: float = 0.6
     # 攒能量阶段的整体上限 (秒), 防止攒不满时死循环
     CHARGE_TIME_OUT: float = 7.2
     LIBERATION_CD_SKIP: float = 1.5
@@ -110,10 +113,39 @@ class Lucilla(BaseChar):
         self.logger.info('Lucilla perform lib')
 
         self.sleep(self.LIBERATION_ANIMATION_TIME, check_combat=False)
-        if not self.has_short_action():
-            self.heavy_attack(self.LIBERATION_HEAVY_TIME)
-
+        
+        # 恢复调用脉冲重击, con 归零会在内部自动提前 break
+        self.pulse_heavy_attack(self.LIBERATION_HEAVY_TIME)
         self.logger.info('Lucilla perform lib end')
+
+    def pulse_heavy_attack(self, total_time):
+        """变身后脉冲式重击 total_time 秒: 反复 mouse_down/sleep/mouse_up.
+
+        变身靠"打完固定连招"才结束, 被怪物打断会停手中断输出. 一次性按住到底时被打断后游戏不再
+        把"持续按住"当输入, 角色站着发呆、连招不推进 -> 变身一直不结束 -> 定时切人时仍是变身态,
+        切回来还卡在变身. 改成脉冲: 每拍重新 mouse_down, 某拍被打断, 下一拍自动
+        重按恢复, 保证持续输出直到连招打完. 全程 check_combat=False(变身盲区, in_combat 不可靠, 7.2)。
+        
+        新增: 检测 con 归零以提前结束脉冲. 变身激活时 con 会变非零, 变身结束动画时 con 会短暂归零.
+        若未检测到归零(如被连续打断), 则持续脉冲直到 total_time 兜底.
+        """
+        end = time.time() + total_time
+        seen_active = False
+        while time.time() < end:
+            self.task.mouse_down()
+            try:
+                self.sleep(min(self.HEAVY_PULSE_TIME, end - time.time()), check_combat=False)
+            finally:
+                self.task.mouse_up()
+            
+            con = self.task.get_current_con()
+            if con > 0.1:
+                seen_active = True
+            elif seen_active and con < 0.05:
+                self.logger.info('Lucilla transform ended, stop pulse heavy early')
+                break
+                
+            self.sleep(0.02, check_combat=False) 
 
     def hold_resonance(self, duration):
         """长按共鸣技能键一段时间 (攒 1 格回路能量)。
