@@ -63,6 +63,9 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
                     continue
                 elif target.name == 'garden_next_day':
                     self._change_speed_if_not_max_speed()
+                elif target.name == 'garden_start_game':
+                    # At Garden Entrance, choose blessing1
+                    self._choose_first_blessing()
                 self.log_info(f"click {target.name} {target.confidence:.3f}")
                 self.click(target, after_sleep=1)
             else:
@@ -129,6 +132,14 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
         else:
             self.log_info(f"speed is max")
             self._is_max_speed = True
+    def _choose_first_blessing(self):
+        """At Garden Entrance, choose first blessing"""
+        # click blessing botton
+        self.click(965/1920, 860/1080, after_sleep=2)
+        # choose blessing1(Add-on)
+        self.click(700/1920, 666/1080, after_sleep=2)
+        # confirm
+        self.click(1600/1920, 900/1080, after_sleep=2)
 
 if __name__ == "__main__":
     run_task(config, task=GardenTask, debug=True)
