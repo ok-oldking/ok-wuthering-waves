@@ -91,7 +91,7 @@ class Lucilla(BaseChar):
         """放大招进入变身形态, 按住左键固定时长输出后切人.
 
         不调用 BaseChar.click_liberation(): 它内部 ``while not in_team()`` 在变身形态下会因
-        in_team 误判卡死到 7s 超时抛异常. 这里自己发解放键, 用 liberation_available() 变 False
+        in_team 误判卡死到超时抛异常. 这里用 liberation_available() 变 False
         (大招图标消失 = 已进入形态) 作为放出信号.
 
         """
@@ -114,7 +114,7 @@ class Lucilla(BaseChar):
     def pulse_heavy_attack(self, total_time):
         """变身后脉冲式重击 total_time 秒: 反复 mouse_down/sleep/mouse_up.
 
-        改成脉冲: 每拍重新 mouse_down, 某拍被打断, 下一拍自动
+        每拍重新 mouse_down, 某拍被打断, 下一拍自动
         重按恢复, 保证持续输出直到连招打完. 全程 check_combat=False
         
         检测 con 归零以提前结束脉冲. 变身激活时 con 会变非零, 变身结束动画时 con 会短暂归零.
