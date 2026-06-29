@@ -3,7 +3,7 @@ from src.char.BaseChar import BaseChar, SwitchPriority
 
 class Hiyuki(BaseChar):
     # 在场/阶段总超时 (秒)
-    FIELD_TIME_OUT: float = 15.0
+    FIELD_TIME_OUT: float = 16.0
     # Linnai BUFF 时长 (秒)
     LINNAI_FIELD_TIME_OUT: float = 18.0
     # hold_liberation 长按的总超时 (秒)
@@ -113,8 +113,6 @@ class Hiyuki(BaseChar):
                     break
                 if self.has_long_action2():
                     self.heavy_click_forte(check_fun=self.lib_heavy_available)
-                else:
-                    self.click(0.2)
                 if self.task.wait_until(self.liberation_available, post_action=self.click, time_out=0.5):
                     if self.has_long_action2() and self.hold_liberation():
                         self.logger.debug('hiyuki perform lib2 (after heavy)')
