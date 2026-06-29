@@ -126,7 +126,6 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
         self.click(700/1920, 666/1080, after_sleep=2)
         # confirm
         self.click(1600/1920, 900/1080, after_sleep=2)
-        
 
 if __name__ == "__main__":
     run_task(config, task=GardenTask, debug=True)
