@@ -954,6 +954,9 @@ class TestChar(TaskTestCase):
             has_lavitator = False
             use_liberation = True
 
+            def sleep(self, sec):
+                pass
+
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 return 10000 if start < 0 else time.time() - start
 
@@ -1070,6 +1073,7 @@ class TestChar(TaskTestCase):
         chisa = TrackingChisa(task, 2)
         task.chars = [cartethyia, qiuyuan, chisa]
         rotation = ensure_cartethyia_qiuyuan_chisa_rotation(task)
+        rotation["phase"] = 0
 
         chisa.do_perform()
 
