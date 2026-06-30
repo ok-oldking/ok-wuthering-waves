@@ -23,6 +23,8 @@ class Phoebe(BaseChar):
     BOUND_STARFLASH_TIMEOUT = 2.2
     BOUND_FORTE_CHECK_INTERVAL = 1.0
     BOUND_EARLY_CANCEL_MIN_CLICKS = 24
+    PLAIN_NORMAL_CON_TIMEOUT = 4.0
+    PLAIN_NORMAL_INTERVAL = 0.05
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -145,6 +147,9 @@ class Phoebe(BaseChar):
                 self.logger.info(f"Phoebe custom outro ready: {reason}")
             return True
         return False
+
+    def _is_two_heavy_requirement_done(self):
+        return self.state.get("starflash_combo", 0) >= 2
 
     def _wait_for_outro_refresh(self, reason=""):
         start = time.time()
@@ -340,6 +345,17 @@ class Phoebe(BaseChar):
         self._wait_for_outro_refresh(f"after {reason} bound heavy")
         return result
 
+    def _finish_con_with_plain_normals(self, reason):
+        self.logger.info(f"Phoebe v7 plain normal fill con {reason}")
+        start = time.time()
+        while time.time() - start < self.PLAIN_NORMAL_CON_TIMEOUT:
+            self.click(interval=self.PLAIN_NORMAL_INTERVAL)
+            self.check_combat()
+            if self._outro_ready_now(f"after {reason} plain normal"):
+                return True
+            self.task.next_frame()
+        return self._outro_ready_now(f"after {reason} plain normal timeout")
+
     def _zani_support_rotation(self, start_time):
         attribute_mismatch = self.check_attribute_mismatch()
 
@@ -360,6 +376,10 @@ class Phoebe(BaseChar):
             self.check_combat()
             if self._outro_ready_now("bound loop start"):
                 return self.switch_next_char()
+
+            if self._is_two_heavy_requirement_done() and not self.is_con_full():
+                if self._finish_con_with_plain_normals("after two heavy"):
+                    return self.switch_next_char()
 
             if self._try_cast_priority_liberation(
                     "in bound loop",
@@ -727,7 +747,7 @@ class Phoebe(BaseChar):
             return False
         self.logger.debug(
             f'state_liberation {self.state["liberation"]} state_starflash_combo {self.state["starflash_combo"]}')
-        if self.state["liberation"] >= 1 and self.state["starflash_combo"] >= 2:
+        if self.state["starflash_combo"] >= 2:
             return True
         return False
 

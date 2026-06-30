@@ -31,6 +31,10 @@ class Zani(BaseChar):
     FIRST_E_CONSUMED_TIMEOUT = 0.6
     FIRST_E_MAX_ATTEMPTS = 2
     NORMAL_ATTACK_RETRY_WAIT = 0.12
+    POST_LIBER2_EA_WAIT = 0.10
+    POST_LIBER2_SETTLE_WAIT = 0.12
+    FIRST_E_CONSUMED_STABLE_POLLS = 2
+    PRE_LIBERATION_ECHO_INTERVAL = 0.03
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -48,11 +52,15 @@ class Zani(BaseChar):
         self.dodge_time = -1
         self.attack_breakthrough_time = -1
         self.check_f_on_switch = False
+        self.opening_liberation_done = False
+        self.pending_post_liber2_ea = False
 
     def reset_state(self):
         self.char_phoebe = None
         self.blazes_threshold = -1
         self.chair_time = -1
+        self.opening_liberation_done = False
+        self.pending_post_liber2_ea = False
         super().reset_state()
 
     def _should_use_locked_phoebe_team_logic(self):
@@ -138,18 +146,25 @@ class Zani(BaseChar):
         start = time.time()
         last_percent = 0
         last_cd = False
+        stable_consumed_polls = 0
         while time.time() - start < self.FIRST_E_CONSUMED_TIMEOUT:
             last_percent = self.current_resonance()
             last_cd = self.has_cd("resonance")
-            if last_cd or last_percent <= 0.01:
+            if last_cd or last_percent <= 0.035:
+                stable_consumed_polls += 1
+            else:
+                stable_consumed_polls = 0
+            if stable_consumed_polls >= self.FIRST_E_CONSUMED_STABLE_POLLS:
                 self.logger.info(
-                    f"Zani custom first E consumed percent {last_percent:.3f} cd {last_cd}"
+                    f"Zani custom first E consumed percent {last_percent:.3f} "
+                    f"cd {last_cd} stable {stable_consumed_polls}"
                 )
                 return True
             self.sleep(self.ENHANCED_E_POLL_INTERVAL, check_combat=False)
             self.task.next_frame()
         self.logger.info(
-            f"Zani custom first E not consumed percent {last_percent:.3f} cd {last_cd}"
+            f"Zani custom first E not consumed percent {last_percent:.3f} "
+            f"cd {last_cd} stable {stable_consumed_polls}"
         )
         return False
 
@@ -260,11 +275,75 @@ class Zani(BaseChar):
             wait_intro_window=True
         )
 
+    def _wait_direct_enhanced_e_icon(self):
+        start = time.time()
+        last_percent = 0
+        last_cd = True
+        last_forte = False
+        stable_ready_polls = 0
+        while time.time() - start < self.ENHANCED_E_READY_TIMEOUT:
+            last_percent = self.current_resonance()
+            last_cd = self.has_cd("resonance")
+            last_forte = self.is_forte_full()
+            forte_ready = (
+                last_forte
+                and last_percent > self.ENHANCED_E_READY_THRESHOLD
+                and not last_cd
+            )
+            no_forte_ready = (
+                not last_forte
+                and last_percent > self.ENHANCED_E_READY_NO_FORTE_THRESHOLD
+                and not last_cd
+            )
+            if forte_ready:
+                self.logger.info(
+                    f"Zani v5 direct enhanced E ready percent {last_percent:.3f} "
+                    f"cd {last_cd} forte {last_forte}"
+                )
+                return True
+            if no_forte_ready:
+                stable_ready_polls += 1
+                if stable_ready_polls >= self.ENHANCED_E_READY_NO_FORTE_STABLE_POLLS:
+                    self.logger.info(
+                        f"Zani v5 direct enhanced E ready without forte percent {last_percent:.3f} "
+                        f"cd {last_cd} stable {stable_ready_polls}"
+                    )
+                    return True
+            else:
+                stable_ready_polls = 0
+            self.sleep(self.ENHANCED_E_POLL_INTERVAL, check_combat=False)
+            self.task.next_frame()
+        self.logger.info(
+            f"Zani v5 direct enhanced E timeout percent {last_percent:.3f} "
+            f"cd {last_cd} forte {last_forte} stable {stable_ready_polls}"
+        )
+        return False
+
+    def _post_liber2_ea_before_switch(self, reason):
+        self.logger.info(f"Zani v5 post liber2 E+A {reason}")
+        self.sleep(self.POST_LIBER2_SETTLE_WAIT, check_combat=False)
+        if not self._cast_first_e_clean():
+            self.pending_post_liber2_ea = False
+            return False
+        self.sleep(self.POST_LIBER2_EA_WAIT, check_combat=False)
+        self.task.click()
+        self.pending_post_liber2_ea = False
+        return True
+
+    def _fast_phoebe_intro_direct_enhanced_e(self):
+        self.logger.info("Zani v5 phoebe intro direct enhanced E route")
+        if self.INTRO_READY_WAIT > 0:
+            self.sleep(self.INTRO_READY_WAIT, check_combat=False)
+        if not self._wait_direct_enhanced_e_icon():
+            return False
+        return self._cast_enhanced_e_full()
+
     def _enter_liberation_followup(self):
         self.crisis_time = -1
         self.state = 1
         self.in_liberation = True
         self.liberation_time = time.time()
+        self.opening_liberation_done = True
         self.check_liber()
         self.continues_right_click(0.05)
         self.continues_normal_attack(0.15)
@@ -295,6 +374,11 @@ class Zani(BaseChar):
             self.logger.info("Zani custom liberation aborted: not prepared after enhanced E")
             return False
 
+        if self.echo_available():
+            self.logger.info("Zani v5 cast echo before liberation")
+            self.click_echo(time_out=0)
+            self.sleep(self.PRE_LIBERATION_ECHO_INTERVAL, check_combat=False)
+
         if self.click_liberation(wait_if_cd_ready=self.LIBERATION_READY_TIMEOUT):
             return True
 
@@ -304,6 +388,10 @@ class Zani(BaseChar):
         if not self.is_prepared():
             self.logger.info("Zani custom liberation retry aborted: not prepared")
             return False
+        if self.echo_available():
+            self.logger.info("Zani v5 retry cast echo before liberation")
+            self.click_echo(time_out=0)
+            self.sleep(self.PRE_LIBERATION_ECHO_INTERVAL, check_combat=False)
         return self.click_liberation(wait_if_cd_ready=self.LIBERATION_READY_TIMEOUT)
 
     def _builtin_do_perform(self):
@@ -413,13 +501,21 @@ class Zani(BaseChar):
         if self.blazes_threshold == -1:
             self.decide_teammate()
 
+        if self.pending_post_liber2_ea and not self.in_liberation and self.liberation_time_left() <= 0:
+            self._post_liber2_ea_before_switch("before perform")
+
         if self._should_resume_liberation_immediately():
             return self._resume_liberation_branch()
 
         if self._is_current_intro_from_phoebe():
-            if not self._fast_phoebe_intro_pre_liberation():
-                self.logger.info("Zani custom fast phoebe intro route failed, fallback builtin")
-                return self._builtin_do_perform()
+            if not self.opening_liberation_done:
+                if not self._fast_phoebe_intro_pre_liberation():
+                    self.logger.info("Zani v5 first phoebe intro route failed, fallback builtin")
+                    return self._builtin_do_perform()
+            else:
+                if not self._fast_phoebe_intro_direct_enhanced_e():
+                    self.logger.info("Zani v5 direct enhanced E intro route failed, fallback builtin")
+                    return self._builtin_do_perform()
 
             self.check_liber()
             if self.in_liberation:
@@ -427,17 +523,22 @@ class Zani(BaseChar):
 
             self.update_blazes()
             if not self.is_prepared():
-                self.logger.info("Zani custom fast phoebe intro route aborted: not prepared")
+                self.logger.info("Zani v5 phoebe intro route aborted: not prepared")
                 return self._builtin_do_perform()
 
             if self._click_liberation_after_enhanced_e():
                 return self._enter_liberation_followup()
 
-            self.logger.info("Zani custom fast phoebe intro route liberation failed, fallback builtin")
+            self.logger.info("Zani v5 phoebe intro route liberation failed, fallback builtin")
             return self._builtin_do_perform()
 
         self.update_blazes()
-        if self.is_prepared() and not self.has_cd('liberation') and not self.check_liber():
+        if (
+            not self.opening_liberation_done
+            and self.is_prepared()
+            and not self.has_cd('liberation')
+            and not self.check_liber()
+        ):
             if not self._pre_liberation_e_a_enhanced_e(
                 'ready before builtin',
                 wait_intro_window=self.has_intro
@@ -492,6 +593,9 @@ class Zani(BaseChar):
         self.blazes = -1
         self.liberation_time = -1
         self.state = 0
+        if self._should_use_locked_phoebe_team_logic():
+            if not self._post_liber2_ea_before_switch("after liber2"):
+                self.pending_post_liber2_ea = True
 
     def should_end_liberation(self, time_only=False):
         if self.liberation_time_left() < 1.7:
