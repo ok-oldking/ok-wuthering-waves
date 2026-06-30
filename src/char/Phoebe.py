@@ -419,19 +419,7 @@ class Phoebe(BaseChar):
     def is_forte_full(self):
         if not self.star_available:
             return super().is_forte_full()
-        elif self.attribute == 1:
-            box = self.task.box_of_screen_scaled(3840, 2160, 2286, 1992, 2306, 2018, name='forte_full', hcenter=True)
-        else:
-            box = self.task.box_of_screen_scaled(3840, 2160, 2256, 1992, 2276, 2018, name='forte_full', hcenter=True)
-        self.task.draw_boxes(box.name, box)
-        mean_val = contrast_val = 0
-        if self.task.calculate_color_percentage(forte_white_color, box) > 0.08:
-            cropped = box.crop_frame(self.task.frame)
-            gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
-            mean_val = np.mean(gray)
-            contrast_val = np.std(gray)
-            self.logger.debug(f'is_forte_full mean {mean_val} contrast {contrast_val}')
-        return mean_val > 190 and 32 < contrast_val and contrast_val < 50
+        return self.is_mouse_forte_full()
 
     def shorekeeper_auto_dodge(self):
         from src.char.ShoreKeeper import ShoreKeeper

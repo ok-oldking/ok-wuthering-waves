@@ -617,7 +617,7 @@ class BaseCombatTask(CombatCheck):
 
     def find_e_forte(self):
         return self.find_one('e_forte', horizontal_variance=0.025, threshold=0.6,
-                             frame_processor=binarize_for_matching)
+                             frame_processor=lambda img: binarize_for_matching(img, 220))
 
     def get_liberation_key(self):
         """获取共鸣解放技能的按键。
