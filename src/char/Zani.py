@@ -1,6 +1,7 @@
 import time
 from decimal import Decimal, ROUND_UP, ROUND_HALF_UP
 from enum import Enum
+from typing import Callable
 import cv2
 import numpy as np
 import math
@@ -75,7 +76,6 @@ class Zani(BaseChar):
                     self.continues_normal_attack(0.25)
                     self.sleep(0.25)
             self.crisis_time = - 1
-
         if not cast_liberation:
             self.chair_time = -1
             if (not self.has_intro and
@@ -121,7 +121,7 @@ class Zani(BaseChar):
         if cast_liberation:
             self.check_combat()
             self.update_blazes()
-            if self.click_liberation():
+            if self.click_liberation(send_click=True):
                 self.crisis_time = - 1
                 self.state = 1
                 self.in_liberation = True
@@ -392,8 +392,8 @@ class Zani(BaseChar):
             result = State.DONE
         return result
 
-    def wait_until(self, condition: callable, condition2: callable = lambda: None,
-                   post_action: callable = lambda: None, time_out: float = 0, settle_time: float = 0):
+    def wait_until(self, condition: Callable, condition2: Callable = lambda: None,
+                   post_action: Callable = lambda: None, time_out: float = 0, settle_time: float = 0):
         if time_out <= 0:
             return False
         start = time.time()

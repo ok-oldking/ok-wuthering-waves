@@ -288,9 +288,9 @@ class Phoebe(BaseChar):
                     outer_start = time.time()
                 self.task.next_frame()
             if self.attribute == 2:
-                self.logger.info(f'Enters confession status')
+                self.logger.info('Enters confession status')
             else:
-                self.logger.info(f'Enters absolution status')
+                self.logger.info('Enters absolution status')
             self.continues_right_click(0.05)
             self.star_available = True
             self.reset_action()
@@ -408,7 +408,7 @@ class Phoebe(BaseChar):
 
     def reset_action(self):
         if self.attribute == 2:
-            self.logger.info(f'reset action')
+            self.logger.info('reset action')
             self.state = {
                 "enter_status": 0,
                 "starflash_combo": 0,
@@ -431,7 +431,7 @@ class Phoebe(BaseChar):
             mean_val = np.mean(gray)
             contrast_val = np.std(gray)
             self.logger.debug(f'is_forte_full mean {mean_val} contrast {contrast_val}')
-        return mean_val > 190 and contrast_val < 50
+        return mean_val > 190 and 32 < contrast_val and contrast_val < 50
 
     def shorekeeper_auto_dodge(self):
         from src.char.ShoreKeeper import ShoreKeeper
