@@ -566,7 +566,9 @@ class BaseCombatTask(CombatCheck):
                 self._apply_intro_flags(current_char, switch_to, has_intro)
                 if has_intro:
                     current_char.f_break(check_f_on_switch=True)
-
+            if switch_to.wait_switch():
+                self.sleep(0.1)
+                continue
             if now - last_click > 0.1:
                 self.send_key(switch_to.index + 1)
                 self.sleep(0.001)

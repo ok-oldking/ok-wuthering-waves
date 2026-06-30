@@ -104,19 +104,20 @@ class Zani(BaseChar):
                             self.dodge_time = time.time()
                     if breakthrough_result == State.INTERRUPTED or result == State.INTERRUPTED:
                         self.wait_until(lambda: not self.flying(), time_out=0.6)
-                    if self.crisis_response_protocol_combo():
-                        cast_liberation = self.liberation_available()
+                    self.crisis_response_protocol_combo()
                 else:
                     self.logger.info('liberation has cd')
-                    if self.is_forte_full() and self.crisis_response_protocol_combo():
-                        cast_liberation = self.liberation_available()
-                self.logger.info(f'cast_liberation {cast_liberation}')
-                if cast_liberation:
+                    if self.is_forte_full():
+                        self.crisis_response_protocol_combo()
+                if self.liberation_available():
+                    cast_liberation = True
                     if self.blazes != 1:
                         self.wait_crisis_protocol_end()
                         self.crisis_time = - 1
                 else:
                     return self.switch_next_char()
+
+        self.logger.info(f'cast_liberation {cast_liberation}')
 
         if cast_liberation:
             self.check_combat()
