@@ -18,22 +18,9 @@ class State(Enum):
 
 class Zani(BaseChar):
     INTRO_READY_WAIT = 1.3
-    AFTER_FIRST_E_WAIT = 0.08
-    AFTER_NORMAL_WAIT = 0.12
-    ENHANCED_E_READY_TIMEOUT = 2.5
     ENHANCED_E_POLL_INTERVAL = 0.03
     ENHANCED_E_READY_THRESHOLD = 0.05
-    ENHANCED_E_READY_NO_FORTE_THRESHOLD = 0.16
-    ENHANCED_E_READY_NO_FORTE_STABLE_POLLS = 2
-    ENHANCED_E_SUCCESS_MIN_DURATION = 0.35
     LIBERATION_READY_TIMEOUT = 1.2
-    FIRST_E_READY_TIMEOUT = 0.45
-    FIRST_E_CONSUMED_TIMEOUT = 0.6
-    FIRST_E_MAX_ATTEMPTS = 2
-    NORMAL_ATTACK_RETRY_WAIT = 0.12
-    POST_LIBER2_EA_WAIT = 0.10
-    POST_LIBER2_SETTLE_WAIT = 0.12
-    FIRST_E_CONSUMED_STABLE_POLLS = 2
     PRE_LIBERATION_ECHO_INTERVAL = 0.03
 
     def __init__(self, *args, **kwargs):
@@ -63,29 +50,27 @@ class Zani(BaseChar):
         self.pending_post_liber2_ea = False
         super().reset_state()
 
-    def _should_use_locked_phoebe_team_logic(self):
-        has_phoebe = False
-        has_shorekeeper = False
-        for char in self.task.chars:
-            if char is None:
-                continue
-            name = getattr(char, "char_name", "")
-            cls_name = char.__class__.__name__
-            if name == "char_phoebe" or cls_name == "Phoebe":
-                has_phoebe = True
-            elif name == "char_shorekeeper" or cls_name == "ShoreKeeper":
-                has_shorekeeper = True
-        return has_phoebe and has_shorekeeper
+    def _is_phoebe_char(self, char):
+        if char is None:
+            return False
+        if self.char_phoebe is not None and char == self.char_phoebe:
+            return True
+        return (getattr(char, "char_name", None) == "char_phoebe"
+                or char.__class__.__name__ == "Phoebe")
 
     def _find_phoebe_char(self):
+        return next((c for c in self.task.chars if self._is_phoebe_char(c)), None)
+
+    def _should_use_locked_phoebe_team_logic(self):
+        names = set()
         for char in self.task.chars:
             if char is None:
                 continue
-            name = getattr(char, "char_name", "")
-            cls_name = char.__class__.__name__
-            if name == "char_phoebe" or cls_name == "Phoebe":
-                return char
-        return None
+            names.add(getattr(char, "char_name", ""))
+            names.add(char.__class__.__name__)
+        has_phoebe = "char_phoebe" in names or "Phoebe" in names
+        has_shorekeeper = "char_shorekeeper" in names or "ShoreKeeper" in names
+        return has_phoebe and has_shorekeeper
 
     def _is_current_intro_from_phoebe(self):
         if not (self.has_intro and self.has_sub_dps_intro):
@@ -94,23 +79,6 @@ class Zani(BaseChar):
             return False
         return self.check_outro() == self.char_phoebe.char_name
 
-    def _is_phoebe_char(self, char):
-        if char is None:
-            return False
-        if self.char_phoebe is not None and char == self.char_phoebe:
-            return True
-        return (
-            getattr(char, "char_name", None) == "char_phoebe"
-            or char.__class__.__name__ == "Phoebe"
-        )
-
-    def _should_resume_liberation_immediately(self):
-        return bool(
-            self.in_liberation
-            or self.state == 1
-            or self.liberation_time_left() > 0
-        )
-
     def _press_resonance_raw(self, reason):
         self.logger.info(f"Zani custom press {reason}")
         self.record_resonance_use()
@@ -118,60 +86,35 @@ class Zani(BaseChar):
         self.task.next_frame()
 
     def _resonance_icon_ready(self):
-        return (
-            self.current_resonance() > self.ENHANCED_E_READY_THRESHOLD
-            and not self.has_cd('resonance')
-        )
+        return self.current_resonance() > self.ENHANCED_E_READY_THRESHOLD and not self.has_cd('resonance')
 
     def _wait_first_e_ready(self):
         start = time.time()
-        last_percent = 0
-        last_cd = True
-        while time.time() - start < self.FIRST_E_READY_TIMEOUT:
-            last_percent = self.current_resonance()
-            last_cd = self.has_cd("resonance")
+        while time.time() - start < 0.45:
             if self._resonance_icon_ready():
-                self.logger.info(
-                    f"Zani custom first E ready percent {last_percent:.3f} cd {last_cd}"
-                )
                 return True
             self.sleep(self.ENHANCED_E_POLL_INTERVAL, check_combat=False)
             self.task.next_frame()
-        self.logger.info(
-            f"Zani custom first E not ready percent {last_percent:.3f} cd {last_cd}"
-        )
         return False
 
     def _wait_first_e_consumed(self):
         start = time.time()
-        last_percent = 0
-        last_cd = False
-        stable_consumed_polls = 0
-        while time.time() - start < self.FIRST_E_CONSUMED_TIMEOUT:
-            last_percent = self.current_resonance()
-            last_cd = self.has_cd("resonance")
-            if last_cd or last_percent <= 0.035:
-                stable_consumed_polls += 1
+        stable = 0
+        while time.time() - start < 0.6:
+            if self.has_cd("resonance") or self.current_resonance() <= 0.035:
+                stable += 1
             else:
-                stable_consumed_polls = 0
-            if stable_consumed_polls >= self.FIRST_E_CONSUMED_STABLE_POLLS:
-                self.logger.info(
-                    f"Zani custom first E consumed percent {last_percent:.3f} "
-                    f"cd {last_cd} stable {stable_consumed_polls}"
-                )
+                stable = 0
+            if stable >= 2:
                 return True
             self.sleep(self.ENHANCED_E_POLL_INTERVAL, check_combat=False)
             self.task.next_frame()
-        self.logger.info(
-            f"Zani custom first E not consumed percent {last_percent:.3f} "
-            f"cd {last_cd} stable {stable_consumed_polls}"
-        )
         return False
 
     def _cast_first_e_clean(self):
         if not self._wait_first_e_ready():
             return False
-        for attempt in range(1, self.FIRST_E_MAX_ATTEMPTS + 1):
+        for attempt in range(1, 3):
             self._press_resonance_raw(f"first E attempt {attempt}")
             if self._wait_first_e_consumed():
                 return True
@@ -179,62 +122,35 @@ class Zani(BaseChar):
                 return False
         return False
 
-    def _wait_enhanced_e_icon(self):
-        self.sleep(self.AFTER_NORMAL_WAIT, check_combat=False)
+    def _wait_enhanced_e_icon(self, pre_sleep=False):
+        if pre_sleep:
+            self.sleep(0.12, check_combat=False)
         start = time.time()
-        last_percent = 0
-        last_cd = True
-        last_forte = False
-        stable_ready_polls = 0
-        while time.time() - start < self.ENHANCED_E_READY_TIMEOUT:
-            last_percent = self.current_resonance()
-            last_cd = self.has_cd("resonance")
-            last_forte = self.is_forte_full()
-            forte_ready = (
-                last_forte
-                and last_percent > self.ENHANCED_E_READY_THRESHOLD
-                and not last_cd
-            )
-            no_forte_ready = (
-                not last_forte
-                and last_percent > self.ENHANCED_E_READY_NO_FORTE_THRESHOLD
-                and not last_cd
-            )
-            if forte_ready:
-                self.logger.info(
-                    f"Zani custom enhanced E ready percent {last_percent:.3f} "
-                    f"cd {last_cd} forte {last_forte}"
-                )
+        stable = 0
+        while time.time() - start < 2.5:
+            percent = self.current_resonance()
+            cd = self.has_cd("resonance")
+            forte = self.is_e_forte_full()
+            if forte and percent > self.ENHANCED_E_READY_THRESHOLD and not cd:
                 return True
-            if no_forte_ready:
-                stable_ready_polls += 1
-                if stable_ready_polls >= self.ENHANCED_E_READY_NO_FORTE_STABLE_POLLS:
-                    self.logger.info(
-                        f"Zani custom enhanced E ready without forte percent {last_percent:.3f} "
-                        f"cd {last_cd} stable {stable_ready_polls}"
-                    )
+            if not forte and percent > 0.16 and not cd:
+                stable += 1
+                if stable >= 2:
                     return True
             else:
-                stable_ready_polls = 0
+                stable = 0
             self.sleep(self.ENHANCED_E_POLL_INTERVAL, check_combat=False)
             self.task.next_frame()
-        self.logger.info(
-            f"Zani custom enhanced E timeout percent {last_percent:.3f} "
-            f"cd {last_cd} forte {last_forte} stable {stable_ready_polls}"
-        )
         return False
 
     def _cast_enhanced_e_full(self):
         self.logger.info("Zani custom cast enhanced E full")
         start = time.time()
         self.record_resonance_use()
-        consumed = self.wait_until(
-            lambda: not self.is_forte_full(),
-            post_action=self.send_resonance_key,
-            time_out=1
-        )
+        consumed = self.wait_until(lambda: not self.is_e_forte_full(),
+                                   post_action=self.send_resonance_key, time_out=1)
         duration = time.time() - start
-        if not consumed and duration < self.ENHANCED_E_SUCCESS_MIN_DURATION:
+        if not consumed and duration < 0.35:
             self.logger.info(f"Zani custom failed casting enhanced E, duration {duration}")
             return False
         self.crisis_time = time.time()
@@ -244,97 +160,41 @@ class Zani(BaseChar):
         self.logger.info(f"Zani custom pre liberation route {reason}")
         if wait_intro_window and self.INTRO_READY_WAIT > 0:
             self.sleep(self.INTRO_READY_WAIT, check_combat=False)
-
         if not self._cast_first_e_clean():
             return False
-        self.sleep(self.AFTER_FIRST_E_WAIT, check_combat=False)
-
-        self.logger.info("Zani custom normal attack once")
+        self.sleep(0.08, check_combat=False)
         self.task.click()
-
-        if not self._wait_enhanced_e_icon():
-            if self.has_cd("resonance") and not self.is_forte_full():
-                self.logger.info("Zani custom retry normal attack for enhanced E window")
-                self.sleep(self.NORMAL_ATTACK_RETRY_WAIT, check_combat=False)
+        if not self._wait_enhanced_e_icon(pre_sleep=True):
+            if self.has_cd("resonance") and not self.is_e_forte_full():
+                self.sleep(0.12, check_combat=False)
                 self.task.click()
-                if not self._wait_enhanced_e_icon():
+                if not self._wait_enhanced_e_icon(pre_sleep=True):
                     return False
             else:
                 return False
         if self._cast_enhanced_e_full():
             return True
-        if self.is_forte_full():
-            self.logger.info("Zani custom retry enhanced E after brief settle")
+        if self.is_e_forte_full():
             self.sleep(0.1, check_combat=False)
             return self._cast_enhanced_e_full()
         return False
 
-    def _fast_phoebe_intro_pre_liberation(self):
-        return self._pre_liberation_e_a_enhanced_e(
-            'phoebe intro',
-            wait_intro_window=True
-        )
-
-    def _wait_direct_enhanced_e_icon(self):
-        start = time.time()
-        last_percent = 0
-        last_cd = True
-        last_forte = False
-        stable_ready_polls = 0
-        while time.time() - start < self.ENHANCED_E_READY_TIMEOUT:
-            last_percent = self.current_resonance()
-            last_cd = self.has_cd("resonance")
-            last_forte = self.is_forte_full()
-            forte_ready = (
-                last_forte
-                and last_percent > self.ENHANCED_E_READY_THRESHOLD
-                and not last_cd
-            )
-            no_forte_ready = (
-                not last_forte
-                and last_percent > self.ENHANCED_E_READY_NO_FORTE_THRESHOLD
-                and not last_cd
-            )
-            if forte_ready:
-                self.logger.info(
-                    f"Zani v5 direct enhanced E ready percent {last_percent:.3f} "
-                    f"cd {last_cd} forte {last_forte}"
-                )
-                return True
-            if no_forte_ready:
-                stable_ready_polls += 1
-                if stable_ready_polls >= self.ENHANCED_E_READY_NO_FORTE_STABLE_POLLS:
-                    self.logger.info(
-                        f"Zani v5 direct enhanced E ready without forte percent {last_percent:.3f} "
-                        f"cd {last_cd} stable {stable_ready_polls}"
-                    )
-                    return True
-            else:
-                stable_ready_polls = 0
-            self.sleep(self.ENHANCED_E_POLL_INTERVAL, check_combat=False)
-            self.task.next_frame()
-        self.logger.info(
-            f"Zani v5 direct enhanced E timeout percent {last_percent:.3f} "
-            f"cd {last_cd} forte {last_forte} stable {stable_ready_polls}"
-        )
-        return False
-
     def _post_liber2_ea_before_switch(self, reason):
-        self.logger.info(f"Zani v5 post liber2 E+A {reason}")
-        self.sleep(self.POST_LIBER2_SETTLE_WAIT, check_combat=False)
+        self.logger.info(f"Zani v6 post liber2 E+A {reason}")
+        self.sleep(0.12, check_combat=False)
         if not self._cast_first_e_clean():
             self.pending_post_liber2_ea = False
             return False
-        self.sleep(self.POST_LIBER2_EA_WAIT, check_combat=False)
+        self.sleep(0.10, check_combat=False)
         self.task.click()
         self.pending_post_liber2_ea = False
         return True
 
     def _fast_phoebe_intro_direct_enhanced_e(self):
-        self.logger.info("Zani v5 phoebe intro direct enhanced E route")
+        self.logger.info("Zani v6 phoebe intro direct enhanced E route")
         if self.INTRO_READY_WAIT > 0:
             self.sleep(self.INTRO_READY_WAIT, check_combat=False)
-        if not self._wait_direct_enhanced_e_icon():
+        if not self._wait_enhanced_e_icon(pre_sleep=False):
             return False
         return self._cast_enhanced_e_full()
 
@@ -349,7 +209,7 @@ class Zani(BaseChar):
         self.continues_normal_attack(0.15)
         self.nightfall_combo(cancel_last_smash=True)
         self.sleep(0.1)
-        if self.is_forte_full():
+        if self.is_mouse_forte_full():
             self.nightfall_combo()
         return self.switch_next_char()
 
@@ -364,37 +224,83 @@ class Zani(BaseChar):
             self.nightfall_combo()
         return self.switch_next_char()
 
-    def _click_liberation_after_enhanced_e(self):
+    def _prepare_liberation_after_enhanced_e(self, retry=False):
         if self.crisis_time > 0:
             self.wait_crisis_protocol_end()
-            self.crisis_time = -1
-
+            if not retry:
+                self.crisis_time = -1
         self.update_blazes()
         if not self.is_prepared():
-            self.logger.info("Zani custom liberation aborted: not prepared after enhanced E")
+            message = "Zani custom liberation retry aborted: not prepared" if retry else \
+                "Zani custom liberation aborted: not prepared after enhanced E"
+            self.logger.info(message)
             return False
-
         if self.echo_available():
-            self.logger.info("Zani v5 cast echo before liberation")
             self.click_echo(time_out=0)
             self.sleep(self.PRE_LIBERATION_ECHO_INTERVAL, check_combat=False)
+        return True
 
+    def _click_liberation_after_enhanced_e(self):
+        if not self._prepare_liberation_after_enhanced_e():
+            return False
         if self.click_liberation(wait_if_cd_ready=self.LIBERATION_READY_TIMEOUT):
             return True
-
-        if self.crisis_time > 0:
-            self.wait_crisis_protocol_end()
-        self.update_blazes()
-        if not self.is_prepared():
-            self.logger.info("Zani custom liberation retry aborted: not prepared")
+        if not self._prepare_liberation_after_enhanced_e(retry=True):
             return False
-        if self.echo_available():
-            self.logger.info("Zani v5 retry cast echo before liberation")
-            self.click_echo(time_out=0)
-            self.sleep(self.PRE_LIBERATION_ECHO_INTERVAL, check_combat=False)
         return self.click_liberation(wait_if_cd_ready=self.LIBERATION_READY_TIMEOUT)
 
-    def _builtin_do_perform(self):
+    def do_perform(self):
+        use_locked_team = self._should_use_locked_phoebe_team_logic()
+        if not use_locked_team:
+            self.logger.info("Zani custom exact fallback to current builtin")
+        else:
+            if self.blazes_threshold == -1:
+                self.decide_teammate()
+
+            if self.pending_post_liber2_ea and not self.in_liberation and self.liberation_time_left() <= 0:
+                self._post_liber2_ea_before_switch("before perform")
+
+            if self.in_liberation or self.state == 1 or self.liberation_time_left() > 0:
+                return self._resume_liberation_branch()
+
+            fallback_reason = None
+            if self._is_current_intro_from_phoebe():
+                if not self.opening_liberation_done:
+                    if not self._pre_liberation_e_a_enhanced_e('phoebe intro', wait_intro_window=True):
+                        fallback_reason = "Zani v6 first phoebe intro route failed, fallback builtin"
+                elif not self._fast_phoebe_intro_direct_enhanced_e():
+                    fallback_reason = "Zani v6 direct enhanced E intro route failed, fallback builtin"
+
+                if fallback_reason is None:
+                    self.check_liber()
+                    if self.in_liberation:
+                        return self._resume_liberation_branch()
+                    self.update_blazes()
+                    if not self.is_prepared():
+                        fallback_reason = "Zani v6 phoebe intro route aborted: not prepared"
+                    elif self._click_liberation_after_enhanced_e():
+                        return self._enter_liberation_followup()
+                    else:
+                        fallback_reason = "Zani v6 phoebe intro route liberation failed, fallback builtin"
+            else:
+                self.update_blazes()
+                if (
+                    not self.opening_liberation_done
+                    and self.is_prepared()
+                    and not self.has_cd('liberation')
+                    and not self.check_liber()
+                ):
+                    if not self._pre_liberation_e_a_enhanced_e('ready before builtin', wait_intro_window=self.has_intro):
+                        fallback_reason = "Zani custom pre liberation route failed before builtin"
+                    else:
+                        self.update_blazes()
+                        if self.is_prepared() and self._click_liberation_after_enhanced_e():
+                            return self._enter_liberation_followup()
+                        fallback_reason = "Zani custom pre liberation route did not open liberation"
+
+            if fallback_reason:
+                self.logger.info(fallback_reason)
+
         if self.blazes_threshold == -1:
             self.decide_teammate()
         if self.has_intro:
@@ -462,9 +368,10 @@ class Zani(BaseChar):
                         cast_liberation = self.liberation_available()
                 else:
                     self.logger.info('liberation has cd')
-                    if self.is_forte_full() and self.crisis_response_protocol_combo():
-                        cast_liberation = self.liberation_available()
-                self.logger.info(f'cast_liberation {cast_liberation}')
+                    if self.is_e_forte_full():
+                        self.crisis_response_protocol_combo()
+                if self.liberation_available():
+                    cast_liberation = True
                 if cast_liberation:
                     if self.blazes != 1:
                         self.wait_crisis_protocol_end()
@@ -472,10 +379,12 @@ class Zani(BaseChar):
                 else:
                     return self.switch_next_char()
 
+        self.logger.info(f'cast_liberation {cast_liberation}')
+
         if cast_liberation:
             self.check_combat()
             self.update_blazes()
-            if self.click_liberation():
+            if self.click_liberation(send_click=True):
                 self.crisis_time = - 1
                 self.state = 1
                 self.in_liberation = True
@@ -485,78 +394,16 @@ class Zani(BaseChar):
                 self.continues_normal_attack(0.15)
                 self.nightfall_combo(cancel_last_smash=True)
                 self.sleep(0.1)
-                if self.is_forte_full():
+                if self.is_mouse_forte_full():
                     self.nightfall_combo()
             return self.switch_next_char()
 
-        if self.is_forte_full():
+        if self.is_e_forte_full():
             self.crisis_response_protocol_combo()
         self.switch_next_char()
 
-    def do_perform(self):
-        if not self._should_use_locked_phoebe_team_logic():
-            self.logger.info("Zani custom exact fallback to current builtin")
-            return self._builtin_do_perform()
-
-        if self.blazes_threshold == -1:
-            self.decide_teammate()
-
-        if self.pending_post_liber2_ea and not self.in_liberation and self.liberation_time_left() <= 0:
-            self._post_liber2_ea_before_switch("before perform")
-
-        if self._should_resume_liberation_immediately():
-            return self._resume_liberation_branch()
-
-        if self._is_current_intro_from_phoebe():
-            if not self.opening_liberation_done:
-                if not self._fast_phoebe_intro_pre_liberation():
-                    self.logger.info("Zani v5 first phoebe intro route failed, fallback builtin")
-                    return self._builtin_do_perform()
-            else:
-                if not self._fast_phoebe_intro_direct_enhanced_e():
-                    self.logger.info("Zani v5 direct enhanced E intro route failed, fallback builtin")
-                    return self._builtin_do_perform()
-
-            self.check_liber()
-            if self.in_liberation:
-                return self._resume_liberation_branch()
-
-            self.update_blazes()
-            if not self.is_prepared():
-                self.logger.info("Zani v5 phoebe intro route aborted: not prepared")
-                return self._builtin_do_perform()
-
-            if self._click_liberation_after_enhanced_e():
-                return self._enter_liberation_followup()
-
-            self.logger.info("Zani v5 phoebe intro route liberation failed, fallback builtin")
-            return self._builtin_do_perform()
-
-        self.update_blazes()
-        if (
-            not self.opening_liberation_done
-            and self.is_prepared()
-            and not self.has_cd('liberation')
-            and not self.check_liber()
-        ):
-            if not self._pre_liberation_e_a_enhanced_e(
-                'ready before builtin',
-                wait_intro_window=self.has_intro
-            ):
-                self.logger.info("Zani custom pre liberation route failed before builtin")
-                return self._builtin_do_perform()
-
-            self.update_blazes()
-            if self.is_prepared() and self._click_liberation_after_enhanced_e():
-                return self._enter_liberation_followup()
-
-            self.logger.info("Zani custom pre liberation route did not open liberation")
-            return self._builtin_do_perform()
-
-        return self._builtin_do_perform()
-
     def basic_attack_breakthrough_combo(self):
-        if self.is_forte_full():
+        if self.is_e_forte_full():
             return State.FORTE_FULL
         self.logger.info('basic attack - breakthrough')
         if (result := self.basic_attack_breakthrough()) != State.DONE:
@@ -606,7 +453,7 @@ class Zani(BaseChar):
         if self.wait_resonance_not_gray(send_click=True, liber_time_check=True) == State.INTERRUPTED:
             self.logger.info('Nightfall interrupted, perform liberation2')
             return True
-        if not self.is_forte_full():
+        if not self.is_mouse_forte_full():
             self.logger.info('Cannot perform another nightfall, perform liberation2')
             return True
         return False
@@ -680,7 +527,7 @@ class Zani(BaseChar):
         if total_mask_area == 0:
             return 0.0
         return match_count / total_mask_area
-    
+
     def nightfall_time_left(self):
         if self.nightfall_time <= 0:
             return 0
@@ -692,7 +539,7 @@ class Zani(BaseChar):
         return result
 
     def standard_defense_protocol_combo(self):
-        if self.is_forte_full():
+        if self.is_e_forte_full():
             return State.FORTE_FULL
         if self.resonance_available():
             self.logger.info('perform standard_defense_protocol')
@@ -731,7 +578,7 @@ class Zani(BaseChar):
         if not self._should_use_locked_phoebe_team_logic():
             self.logger.info('perform crisis_response_protocol')
             self.check_combat()
-            if not self.is_forte_full():
+            if not self.is_e_forte_full():
                 result = State.DONE
                 for _ in range(1):
                     if (result := self.basic_attack_breakthrough()) != State.DONE:
@@ -741,11 +588,11 @@ class Zani(BaseChar):
                     else:
                         self.continues_right_click(0.05)
                         self.dodge_time = time.time()
-                if result != State.FORTE_FULL and not self.is_forte_full():
+                if result != State.FORTE_FULL and not self.is_e_forte_full():
                     self.logger.info('crisis_response_protocol not FORTE_FULL')
                     return False
             start = time.time()
-            self.wait_until(lambda: not self.is_forte_full(), post_action=self.send_resonance_key, time_out=1)
+            self.wait_until(lambda: not self.is_e_forte_full(), post_action=self.send_resonance_key, time_out=1)
             current = time.time()
             self.logger.debug(f'cast resonance duration {current - start}')
             if current - start < 0.35:
@@ -753,10 +600,7 @@ class Zani(BaseChar):
                 return False
             self.crisis_time = current
             return True
-        return self._pre_liberation_e_a_enhanced_e(
-            'builtin crisis response',
-            wait_intro_window=False
-        )
+        return self._pre_liberation_e_a_enhanced_e('builtin crisis response', wait_intro_window=False)
 
     def get_forte(self):
         box = self.task.box_of_screen_scaled(3840, 2160, 1628, 1997, 2183, 2003, name='zani_forte', hcenter=True)
@@ -783,7 +627,7 @@ class Zani(BaseChar):
                 if last_value[0] > 0:
                     gap = current_value - last_value[0]
                     self.logger.info(f"check_forte gap: {gap} current_value: {current_value}")
-                    if gap < 0.01 and not self.is_forte_full():
+                    if gap < 0.01 and not self.is_e_forte_full():
                         self.continues_right_click(0.05)
                         self.dodge_time = time.time()
                         return True
@@ -798,7 +642,7 @@ class Zani(BaseChar):
         if timeout <= 0:
             return State.DONE
         kwargs = {
-            'condition': self.is_forte_full,
+            'condition': self.is_e_forte_full,
             'condition2': self.flying,
             'time_out': timeout,
             'settle_time': settle_time
@@ -842,21 +686,6 @@ class Zani(BaseChar):
             post_action()
             self.task.next_frame()
         return False
-
-    def is_forte_full(self):
-        if self.in_liberation:
-            box = self.task.box_of_screen_scaled(2560, 1440, 1527, 1335, 1544, 1352, name='forte_full', hcenter=True)
-        else:
-            box = self.task.box_of_screen_scaled(3840, 2160, 2284, 1992, 2311, 2019, name='forte_full', hcenter=True)
-        self.task.draw_boxes(box.name, box)
-        mean_val = contrast_val = 0
-        if self.task.calculate_color_percentage(forte_white_color, box) > 0.08:
-            cropped = box.crop_frame(self.task.frame)
-            gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
-            mean_val = np.mean(gray)
-            contrast_val = np.std(gray)
-            self.logger.debug(f'is_forte_full mean {mean_val} contrast {contrast_val}')
-        return mean_val > 200 and contrast_val > 40
 
     def crisis_time_left(self):
         if self.crisis_time <= 0:
@@ -912,15 +741,10 @@ class Zani(BaseChar):
         self.wait_until(**kwargs)
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        if not self._should_use_locked_phoebe_team_logic():
-            if self.in_liberation:
-                return SwitchPriority.MUST
-            if has_intro and self.crisis_time_left() > 0:
-                return SwitchPriority.NO
-            return super().get_switch_priority(current_char, has_intro, target_low_con)
         if self.in_liberation:
             return SwitchPriority.MUST
-        if self._is_phoebe_char(current_char) and not has_intro:
+        if (self._should_use_locked_phoebe_team_logic()
+                and self._is_phoebe_char(current_char) and not has_intro):
             self.logger.info("Zani custom block Phoebe non-intro switch-in")
             return SwitchPriority.NO
         if has_intro and self.crisis_time_left() > 0:
@@ -950,7 +774,6 @@ class Zani(BaseChar):
             self.blazes = -1
             self.state = 0
         return self.state
-
 
 zani_light_color = {
     'r': (245, 255),  # Red range
