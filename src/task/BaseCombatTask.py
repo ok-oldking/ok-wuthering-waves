@@ -566,7 +566,9 @@ class BaseCombatTask(CombatCheck):
                 self._apply_intro_flags(current_char, switch_to, has_intro)
                 if has_intro:
                     current_char.f_break(check_f_on_switch=True)
-
+            if switch_to.wait_switch():
+                self.sleep(0.1)
+                continue
             if now - last_click > 0.1:
                 self.send_key(switch_to.index + 1)
                 self.sleep(0.001)
@@ -615,7 +617,7 @@ class BaseCombatTask(CombatCheck):
 
     def find_e_forte(self):
         return self.find_one('e_forte', horizontal_variance=0.025, threshold=0.6,
-                             frame_processor=binarize_for_matching)
+                             frame_processor=lambda img: binarize_for_matching(img, 220))
 
     def get_liberation_key(self):
         """获取共鸣解放技能的按键。

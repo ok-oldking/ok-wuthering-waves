@@ -1,6 +1,7 @@
 import os
 import re
 from pathlib import Path
+
 # WA: set empty PATH to resolve qfluentwidgets/PySide6 access os.environ['PATH'] issue
 if 'PATH' not in os.environ:
     os.environ['PATH'] = ""
@@ -116,7 +117,7 @@ config = {
             'sponsor': 'https://afdian.com/a/ok-oldking',
             'share': 'GitHub: https://github.com/ok-oldking 百度网盘: https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww 夸克网盘: https://pan.quark.cn/s/418018ddf7a0 Mirror酱：https://mirrorchyan.com/zh/projects?source=okbilibili',
             'faq': 'https://cnb.cool/ok-oldking/ok-wuthering-waves/-/blob/main/README.md',
-            'qq_group': 'https://qm.qq.com/q/8B7ymbaBR6',
+            'qq_group': 'https://qm.qq.com/q/SUQpIpmq4',
             'qq_channel': 'https://pd.qq.com/s/djmm6l44y',
         },
     },

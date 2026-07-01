@@ -853,11 +853,8 @@ msgstr "Jefe semanal al que teletransportar"
 msgid "Which Boss Challenge to Teleport"
 msgstr "Desafio de jefe al que teletransportar"
 
-msgid "For Example, Denia, From Top to Bottom, Starting with 1"
-msgstr "Por ejemplo, Denia, de arriba a abajo, empezando en 1"
-
-msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
-msgstr "Por ejemplo, Nameless Explorer, de arriba a abajo, empezando en 1"
+msgid "From Top to Bottom, Starting with 1"
+msgstr "De arriba a abajo, empezando en 1"
 
 msgid "Characters"
 msgstr "Personajes"

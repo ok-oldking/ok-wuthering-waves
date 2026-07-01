@@ -12,3 +12,5 @@ def process_feature(feature_name, feature):
         feature.mat = convert_dialog_icon(feature.mat)
     elif feature_name == 'mouse_forte':
         feature.mat = binarize_for_matching(feature.mat)
+    elif feature_name == 'e_forte':
+        feature.mat = binarize_for_matching(feature.mat, 220)

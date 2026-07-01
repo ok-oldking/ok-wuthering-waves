@@ -1170,7 +1170,7 @@ def convert_dialog_icon(cv_image):
     return output_image
 
 
-def binarize_for_matching(image):
+def binarize_for_matching(image, threshold=244):
     """
     Converts a colored image to a binary image based on a brightness threshold.
 
@@ -1192,5 +1192,5 @@ def binarize_for_matching(image):
     # Pixels > 239 will be set to 255 (white).
     # Pixels <= 239 will be set to 0 (black).
     # cv2.THRESH_BINARY is the type of thresholding we want.
-    _, binary_image = cv2.threshold(gray_image, 244, 255, cv2.THRESH_BINARY)
+    _, binary_image = cv2.threshold(gray_image, threshold, 255, cv2.THRESH_BINARY)
     return binary_image

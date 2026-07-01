@@ -907,9 +907,9 @@ class BaseChar:
 
     def is_first_engage(self):
         """判断角色是否为触发战斗时的登场角色。"""
-        result = (0 <= self.last_perform - self.task.combat_start < 0.1)
+        result = (0 <= self.last_perform - self.task.combat_start < 0.4)
         if result:
-            self.logger.info(f'first engage')
+            self.logger.info('first engage')
         return result
 
     def wait_switch(self):
