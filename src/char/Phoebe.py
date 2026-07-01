@@ -22,17 +22,14 @@ class Phoebe(BaseChar):
         self.star_available = False
         self.char_zani = None
         self.attribute_mismatch = False
+        self.first_rotation_done = False
         self.state = {
             "enter_status": 0,
             "starflash_combo": 0,
             "liberation": 0,
             "outro": 0,
-            "zani_outro_ready": 0,
             "priority_liberation_cast": 0
         }
-        self.rotation_short_resonance_used = False
-        self.support_rotation_started_at = 0.0
-        self.plain_fill_started_at = 0.0
 
     def reset_state(self):
         super().reset_state()
@@ -40,60 +37,9 @@ class Phoebe(BaseChar):
         self.attribute = 0
         self.star_available = False
         self.char_zani = None
-        self.support_rotation_started_at = 0.0
-        self.plain_fill_started_at = 0.0
-        self._ensure_zani_support_state()
+        self.first_rotation_done = False
 
-    def _ensure_zani_support_state(self):
-        self.state.setdefault("zani_outro_ready", 0)
-        self.state.setdefault("priority_liberation_cast", 0)
-        if not hasattr(self, "rotation_short_resonance_used"):
-            self.rotation_short_resonance_used = False
-        if not hasattr(self, "support_rotation_started_at"):
-            self.support_rotation_started_at = 0.0
-        if not hasattr(self, "plain_fill_started_at"):
-            self.plain_fill_started_at = 0.0
-
-    def _begin_support_rotation(self):
-        self.support_rotation_started_at = time.time()
-        self.plain_fill_started_at = 0.0
-        # Re-detect the current prayer/star state every field entry instead of
-        # carrying the previous on-field UI state into the next rotation.
-        self.star_available = False
-        self.reset_action()
-
-    def _con_full_confirmed(self, stable_time=0.12, interval=0.03):
-        if not self.is_con_full():
-            return False
-        start = time.time()
-        while time.time() - start < stable_time:
-            self.check_combat()
-            if not self.is_con_full():
-                return False
-            self.sleep(interval)
-        return self.is_con_full()
-
-    def _is_zani_char(self, char):
-        if char is None:
-            return False
-        return (getattr(char, "char_name", None) == "char_zani"
-                or char.__class__.__name__ == "Zani")
-
-    def _find_zani_char(self):
-        return next((c for c in self.task.chars if self._is_zani_char(c)), None)
-
-    def _should_use_locked_zani_team_logic(self):
-        names = set()
-        for char in self.task.chars:
-            if char is None:
-                continue
-            names.add(getattr(char, "char_name", ""))
-            names.add(char.__class__.__name__)
-        has_zani = "char_zani" in names or "Zani" in names
-        has_shorekeeper = "char_shorekeeper" in names or "ShoreKeeper" in names
-        return has_zani and has_shorekeeper
-
-    def _default_do_perform(self):
+    def do_perform(self):
         self.last_outro_time = -1
         start = time.time()
         if self.attribute == 0:
@@ -130,288 +76,36 @@ class Phoebe(BaseChar):
                 self.click_liberation(send_click=True)
         ):
             self.state["liberation"] += 1
+            self.state["priority_liberation_cast"] = 1
             self.check_combat()
         if status_entered == State.SUCCESS or self.judge_forte() > 0:
             self.starflash_combo()
+            # support 形态且赞妮未在大招中：尽可能补足第二个重击
+            if (self.attribute == 2 and
+                    self.state["starflash_combo"] < 2 and
+                    self.get_zani_state() != 1):
+                self.logger.info('phoebe: try second starflash_combo')
+                self.starflash_combo()
         if self.resonance_available():
             if self.attribute == 2:
-                self.click_resonance_once()
+                if not self.confession_ready():
+                    self.click_resonance_once()
             else:
                 self.click_resonance()
+            self._ensure_first_rotation_con()
             return self.switch_next_char()
         self.continues_normal_attack(0.1)
+        self._ensure_first_rotation_con()
         self.switch_next_char()
 
-    def _outro_ready_now(self):
-        if self.attribute == 2 and self.char_zani is not None:
-            if self.support_rotation_started_at > 0 and time.time() - self.support_rotation_started_at < 0.6:
-                return False
-            if self.state.get("starflash_combo", 0) >= 2:
-                if self.plain_fill_started_at > 0 and time.time() - self.plain_fill_started_at < 0.6:
-                    return False
-        if self._con_full_confirmed():
-            if self.attribute == 2 and self.char_zani is not None and not self.is_action_complete():
-                self.logger.info(
-                    f"Phoebe custom con full but action incomplete "
-                    f"liberation={self.state.get('liberation', 0)} "
-                    f"starflash={self.state.get('starflash_combo', 0)}")
-                return False
-            return True
-        return False
+    def _ensure_first_rotation_con(self):
+        """第一轮切人前确保协奏打满，之后不再限制。"""
+        if not self.first_rotation_done:
+            self.first_rotation_done = True
+            if not self.is_con_full():
+                self.logger.info('phoebe: first rotation, wait for full con')
+                self.continues_normal_attack(5.0, until_con_full=True)
 
-    def _wait_for_outro_refresh(self):
-        start = time.time()
-        while time.time() - start < 0.2:
-            self.check_combat()
-            if self._outro_ready_now():
-                return True
-            self.sleep(0.03)
-        return self._outro_ready_now()
-
-    def _can_cast_short_resonance(self):
-        if not self.resonance_available() or self.rotation_short_resonance_used:
-            return False
-        if self.attribute == 2 and self.confession_ready():
-            self.logger.info("Phoebe custom skip short resonance while confession icon active")
-            return False
-        return True
-
-    def _cast_short_resonance(self):
-        if not self._can_cast_short_resonance():
-            return False
-        self.rotation_short_resonance_used = True
-        self.logger.info("Phoebe custom cast short resonance")
-        self.click_resonance_once()
-        self.check_combat()
-        return self._wait_for_outro_refresh()
-
-    def _should_prioritize_liberation(self):
-        return bool(
-            self.attribute == 2
-            and self.char_zani is not None
-            and (self.has_intro or self.get_zani_state() == 1)
-        )
-
-    def _zani_still_needs_liberation_followup(self):
-        if self.char_zani is None:
-            return False
-        if self.get_zani_state() == 1:
-            return True
-        if getattr(self.char_zani, "in_liberation", False):
-            return True
-        if getattr(self.char_zani, "liberation_time", -1) > 0 and self.char_zani.liberation_time_left() > 0:
-            return True
-        return False
-
-    def _should_take_shorekeeper_intro(self, current_char, has_intro):
-        if not has_intro or current_char is None:
-            return False
-        if current_char.__class__.__name__ != "ShoreKeeper":
-            return False
-        if not self._should_use_locked_zani_team_logic():
-            return False
-        return not self._zani_still_needs_liberation_followup()
-
-    def _wait_briefly_for_liberation(self, wait_time, interval):
-        if self.liberation_available():
-            return True
-        if not self.star_available or not self._should_prioritize_liberation():
-            return False
-        start = time.time()
-        while time.time() - start < wait_time:
-            self.check_combat()
-            if self.liberation_available():
-                return True
-            self.sleep(interval)
-        return self.liberation_available()
-    def _try_cast_priority_liberation(self, status_entered=State.UNAVAILABLE,
-                                      attribute_mismatch=False, allow_wait=False):
-        if self.attribute != 2 or self.char_zani is None:
-            return False
-
-        if not self.star_available and status_entered != State.SUCCESS:
-            refreshed = self.absolution_or_confession()
-            if refreshed == State.SUCCESS:
-                status_entered = refreshed
-
-        if attribute_mismatch and status_entered != State.SUCCESS:
-            return False
-        if not self.star_available:
-            return False
-
-        if not self.liberation_available():
-            if not allow_wait:
-                return False
-            if not self._wait_briefly_for_liberation(0.25, 0.03):
-                return False
-
-        if not self.liberation_available():
-            return False
-
-        self.logger.info("Phoebe custom cast liberation")
-        if self.click_liberation(send_click=True):
-            self.state["priority_liberation_cast"] = 1
-            self.state["liberation"] += 1
-            self.check_combat()
-            return self._wait_for_outro_refresh()
-        return self._outro_ready_now()
-
-    def _try_cast_liberation_before_switch(self):
-        if not self._should_use_locked_zani_team_logic():
-            return False
-        if self.attribute != 2 or self.char_zani is None:
-            return False
-        if self.state.get("priority_liberation_cast"):
-            return False
-        if not self.liberation_available():
-            return False
-        self.logger.info("Phoebe custom cast available liberation before switch")
-        if self.click_liberation(send_click=True):
-            self.state["priority_liberation_cast"] = 1
-            self.state["liberation"] += 1
-            self.check_combat()
-            self._wait_for_outro_refresh()
-            return True
-        return False
-
-    def _perform_bound_heavy_combo(self):
-        self.logger.info("Phoebe custom bound starflash wait heavy ready")
-        condition = self.get_prayer_condition()
-        start = time.time()
-        check_forte = start
-        normal_clicks = 0
-        while not self.heavy_attack_ready():
-            if self.flying():
-                self.shorekeeper_auto_dodge()
-
-            self.click()
-            normal_clicks += 1
-            self.check_combat()
-            if self._outro_ready_now():
-                return True
-
-            if time.time() - start > 2.2:
-                self.logger.info(f"Phoebe custom bound starflash timeout before heavy clicks {normal_clicks}")
-                self.continues_right_click(0.05)
-                self.heavy_attack(0.55)
-                self.state["starflash_combo"] += 1
-                self.check_combat()
-                self._wait_for_outro_refresh()
-                return True
-
-            if time.time() - check_forte > 1.0:
-                if condition() or self.judge_forte() == 0:
-                    if normal_clicks >= 24:
-                        self.continues_right_click(0.05)
-                        self.check_combat()
-                        self.task.next_frame()
-                        if self._outro_ready_now():
-                            return True
-                        if self.heavy_attack_ready():
-                            result = self.perform_heavy_attack()
-                            if result:
-                                self.state["starflash_combo"] += 1
-                            self.check_combat()
-                            self._wait_for_outro_refresh()
-                            return result
-                        self._wait_for_outro_refresh()
-                        return True
-                check_forte = time.time()
-
-            self.task.next_frame()
-
-        self.logger.info(f"Phoebe custom bound starflash heavy ready clicks {normal_clicks}")
-        self.continues_right_click(0.05)
-        result = self.perform_heavy_attack()
-        if result:
-            self.state["starflash_combo"] += 1
-        self.check_combat()
-        self._wait_for_outro_refresh()
-        return result
-
-    def _finish_con_with_plain_normals(self):
-        self.logger.info("Phoebe v8 plain normal fill con")
-        if self.plain_fill_started_at == 0:
-            self.plain_fill_started_at = time.time()
-        start = time.time()
-        while time.time() - start < 4.0:
-            self.click(interval=0.05)
-            self.check_combat()
-            if self._outro_ready_now():
-                return True
-            self.task.next_frame()
-        return self._outro_ready_now()
-
-    def _zani_support_rotation(self, start_time):
-        self._begin_support_rotation()
-        attribute_mismatch = self.check_attribute_mismatch()
-
-        if self.attribute == 2 and self.char_zani is not None and not self.star_available:
-            self.absolution_or_confession()
-
-        wait_ui_time = 0.35 - (time.time() - start_time)
-        if wait_ui_time > 0 and self.star_available and self.judge_forte() == 0:
-            self.logger.info("Phoebe custom wait for UI")
-            self.continues_normal_attack(wait_ui_time)
-
-        status_entered = self.absolution_or_confession()
-        self.check_combat()
-
-        self.logger.info("Phoebe custom build con with bound heavy loop")
-        start = time.time()
-        while time.time() - start < 18.0:
-            self.check_combat()
-            if self._outro_ready_now():
-                return self.switch_next_char()
-
-            if self.state.get("starflash_combo", 0) >= 2:
-                if self._finish_con_with_plain_normals():
-                    return self.switch_next_char()
-
-            if self._try_cast_priority_liberation(
-                    status_entered=status_entered,
-                    attribute_mismatch=attribute_mismatch,
-                    allow_wait=False):
-                if self._outro_ready_now():
-                    return self.switch_next_char()
-
-            if self._can_cast_short_resonance():
-                if self._cast_short_resonance():
-                    return self.switch_next_char()
-
-            self._perform_bound_heavy_combo()
-            if self._outro_ready_now():
-                return self.switch_next_char()
-
-        self.logger.info("Phoebe custom bound heavy loop timeout")
-        return self.switch_next_char()
-
-    def do_perform(self):
-        self._ensure_zani_support_state()
-        if not self._should_use_locked_zani_team_logic():
-            self.logger.info("Phoebe custom exact fallback to current builtin")
-            return self._default_do_perform()
-        self.last_outro_time = -1
-        self.rotation_short_resonance_used = False
-        start = time.time()
-
-        if self.attribute == 0:
-            self.decide_teammate()
-
-        if self.flying():
-            self.logger.info('flying')
-            self.continues_normal_attack(0.1)
-            return self.switch_next_char()
-
-        if self.attribute != 2 or self.char_zani is None:
-            self.logger.info("Phoebe custom fallback to current builtin outside locked branch")
-            return self._default_do_perform()
-
-        if self.char_zani is not None and self.get_zani_state() == 1:
-            self.logger.info("Phoebe custom use builtin logic during Zani liberation")
-            return self._default_do_perform()
-
-        return self._zani_support_rotation(start)
     def zani_linkage(self):
         self.logger.debug('zani linkage')
         result = self.get_zani_state()
@@ -587,6 +281,7 @@ class Phoebe(BaseChar):
             return self.confession_ready
         else:
             return lambda: False
+
     def absolution_or_confession(self):
         self.task.wait_in_team_and_world(time_out=3, raise_if_not_found=False)
         condition = self.get_prayer_condition()
@@ -624,19 +319,46 @@ class Phoebe(BaseChar):
             return State.SUCCESS
         return State.UNAVAILABLE
 
+    def _con_full_confirmed(self, stable_time=0.12, interval=0.03):
+        # 协奏满判定防抖:技能特效/伤害数字可能让单帧误判为满,导致过早 outro,
+        # 要求短时间窗口内持续为满才认可,再提交切人
+        if not self.is_con_full():
+            return False
+        start = time.time()
+        while time.time() - start < stable_time:
+            self.check_combat()
+            if not self.is_con_full():
+                return False
+            self.sleep(interval)
+        return self.is_con_full()
+
+    def _try_cast_liberation_before_switch(self):
+        # 有大放大:flying / zani_linkage / 共鸣等提前切人的分支可能带着可用大招切走,
+        # 在此切人前补放一次。加保护:仅辅助型、不在空中、每轮不重复放
+        if self.attribute != 2:
+            return False
+        if self.state.get("priority_liberation_cast"):
+            return False
+        if not self.star_available or self.flying():
+            return False
+        if not self.liberation_available():
+            return False
+        self.logger.info('cast available liberation before switch')
+        if self.click_liberation(send_click=True):
+            self.state["priority_liberation_cast"] = 1
+            self.state["liberation"] += 1
+            self.check_combat()
+            return True
+        return False
+
     def switch_next_char(self, *args, **kwargs):
         self._try_cast_liberation_before_switch()
-        if self.is_con_full() and self.attribute == 2:
+        if self.attribute == 2 and self._con_full_confirmed():
             self.click_echo()
             self.state["outro"] += 1
-            self._ensure_zani_support_state()
-            self.state["zani_outro_ready"] = 1
-        return BaseChar.switch_next_char(self, *args, **kwargs)
+        return super().switch_next_char(*args, **kwargs)
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        if self._should_take_shorekeeper_intro(current_char, has_intro):
-            self.logger.info("Phoebe custom take ShoreKeeper intro instead of returning to Zani")
-            return SwitchPriority.MUST
         if not has_intro and self.last_outro_time > 0 and self.time_elapsed_accounting_for_freeze(
                 self.last_outro_time, intro_motion_freeze=True) < 4.5:
             self.logger.info('performing outro, switch priority no')
@@ -665,8 +387,12 @@ class Phoebe(BaseChar):
     def decide_teammate(self):
         from src.char.Cartethyia import Cartethyia
         from src.char.HavocRover import HavocRover
-        if char := self._find_zani_char():
-            self.char_zani = char
+        zani = next(
+            (c for c in self.task.chars if c is not None and c.__class__.__name__ == 'Zani'),
+            None
+        )
+        if zani is not None:
+            self.char_zani = zani
             self.attribute = 2
         elif self.task.has_char(Cartethyia) and self.task.has_char(HavocRover):
             self.attribute = 2
@@ -732,7 +458,7 @@ class Phoebe(BaseChar):
             return False
         self.logger.debug(
             f'state_liberation {self.state["liberation"]} state_starflash_combo {self.state["starflash_combo"]}')
-        if self.state["starflash_combo"] >= 2:
+        if self.state["liberation"] >= 1 and self.state["starflash_combo"] >= 2:
             return True
         return False
 
@@ -744,36 +470,19 @@ class Phoebe(BaseChar):
                 "starflash_combo": 0,
                 "liberation": 0,
                 "outro": 0,
-                "zani_outro_ready": 0,
                 "priority_liberation_cast": 0
             }
-        else:
-            self._ensure_zani_support_state()
-            self.state["zani_outro_ready"] = 0
-            self.state["priority_liberation_cast"] = 0
 
     def is_forte_full(self):
         if not self.star_available:
             return super().is_forte_full()
-        elif self.attribute == 1:
-            box = self.task.box_of_screen_scaled(3840, 2160, 2286, 1992, 2306, 2018, name='forte_full', hcenter=True)
-        else:
-            box = self.task.box_of_screen_scaled(3840, 2160, 2256, 1992, 2276, 2018, name='forte_full', hcenter=True)
-        self.task.draw_boxes(box.name, box)
-        mean_val = contrast_val = 0
-        if self.task.calculate_color_percentage(forte_white_color, box) > 0.08:
-            cropped = box.crop_frame(self.task.frame)
-            gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
-            mean_val = np.mean(gray)
-            contrast_val = np.std(gray)
-            self.logger.debug(f'is_forte_full mean {mean_val} contrast {contrast_val}')
-        return mean_val > 190 and contrast_val < 50
+        return self.is_mouse_forte_full()
 
     def shorekeeper_auto_dodge(self):
         from src.char.ShoreKeeper import ShoreKeeper
         for i, char in enumerate(self.task.chars):
             if isinstance(char, ShoreKeeper):
-                return char.auto_dodge(condition = self.flying)
+                return char.auto_dodge(condition = self.flying)  
 
 phoebe_blue_color = {
     'r': (124, 134),  # Red range
