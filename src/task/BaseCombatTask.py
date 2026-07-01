@@ -567,6 +567,7 @@ class BaseCombatTask(CombatCheck):
                 if has_intro:
                     current_char.f_break(check_f_on_switch=True)
             if switch_to.wait_switch():
+                self.click()
                 self.sleep(0.1)
                 continue
             if now - last_click > 0.1:
