@@ -44,7 +44,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         if self.in_realm():
             self.send_key('esc', after_sleep=1)
             self.wait_click_feature('gray_confirm_exit_button', relative_x=-1, raise_if_not_found=False,
-                                    time_out=3, click_after_delay=0.5, threshold=0.7)
+                                    time_out=3, click_after_delay=0.5, threshold=0.7, after_sleep=1)
             self.wait_in_team_and_world(time_out=self.teleport_timeout)
         else:
             self.ensure_main()
