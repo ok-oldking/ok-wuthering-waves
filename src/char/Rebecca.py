@@ -1,9 +1,11 @@
 import time
-from src.char.BaseChar import BaseChar
+from src.char.BaseChar import BaseChar, SwitchPriority
 
 class Rebecca(BaseChar):
     FORTE_TIMEOUT = 5.5          # 防卡死超时
     NORMAL_ATTACK_DURATION = 0.5
+    ATTACK_DURATION = 1.0
+    ATTACK_TIMEOUT = 2.2
     HEAVY_ATTACK_DURATION = 1.5
     LIB_HOLD_DURATION = 5.2
     LIB_CD_WAIT = 1.5
@@ -17,6 +19,10 @@ class Rebecca(BaseChar):
 
     def do_perform(self):
         if self.perform_combat():
+            start = time.time()
+            while not self.is_con_full() and time.time() - start < self.ATTACK_TIMEOUT:
+                self.continues_normal_attack(self.ATTACK_DURATION)
+                time.sleep(0.1)
             return self.switch_next_char()
 
     def perform_combat(self):
@@ -31,12 +37,11 @@ class Rebecca(BaseChar):
         if self.liberation_available():
             self.perform_enhanced_heavy()
             self.perform_liberation()
-            self.continues_normal_attack(self.NORMAL_ATTACK_DURATION)
             return True
         
         # 状态分支 3：常规循环（大招未就绪）
-        self.continues_normal_attack(self.NORMAL_ATTACK_DURATION)
         self.click_resonance()
+        self.continues_normal_attack(self.NORMAL_ATTACK_DURATION)
         return True
 
     def _build_forte_sequence(self):

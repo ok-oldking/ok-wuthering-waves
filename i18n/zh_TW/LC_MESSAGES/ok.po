@@ -849,11 +849,8 @@ msgstr "傳送到第幾個週常Boss"
 msgid "Which Boss Challenge to Teleport"
 msgstr "傳送到第幾個Boss挑戰"
 
-msgid "For Example, Denia, From Top to Bottom, Starting with 1"
-msgstr "例如德尼亞，從上到下，從1開始"
-
-msgid "For Example, Nameless Explorer, From Top to Bottom, Starting with 1"
-msgstr "例如無銘探索者，從上到下，從1開始"
+msgid "From Top to Bottom, Starting with 1"
+msgstr "從上到下，從1開始"
 
 msgid "Characters"
 msgstr "角色"

@@ -40,8 +40,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Combat Wait Time': 'Wait time before each combat (seconds), overrides Boss profile if set',
             'Use Liberation': 'Do not use Liberation to Save Time',
             'Switch to Healer after Combat': 'Better Chance to Keep Character Alive',
-            'Which Weekly Boss to Teleport': 'For Example, Denia, From Top to Bottom, Starting with 1',
-            'Which Boss Challenge to Teleport': 'For Example, Nameless Explorer, From Top to Bottom, Starting with 1'
+            'Which Weekly Boss to Teleport': 'From Top to Bottom, Starting with 1',
+            'Which Boss Challenge to Teleport': 'From Top to Bottom, Starting with 1'
         })
         self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Teleport to Boss'] = {'type': "drop_down",

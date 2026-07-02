@@ -3,7 +3,7 @@ from src.char.BaseChar import BaseChar, SwitchPriority
 
 class Hiyuki(BaseChar):
     # 在场/阶段总超时 (秒)
-    FIELD_TIME_OUT: float = 15.0
+    FIELD_TIME_OUT: float = 16.0
     # Linnai BUFF 时长 (秒)
     LINNAI_FIELD_TIME_OUT: float = 18.0
     # hold_liberation 长按的总超时 (秒)
@@ -20,6 +20,8 @@ class Hiyuki(BaseChar):
     LIB2_KENDO_COUNT: int = 4
     # lib2 CD 等待时间 (秒)
     HOLD_LIB_CD_WAIT: float = 1.5
+    # 重击/大招前等"重新锁定敌人(has_long_action2)"的最长等待 (秒): 超时仍未锁上则跳过本次, 不空招
+    WAIT_LOCK_TIME_OUT: float = 2.0
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -111,9 +113,10 @@ class Hiyuki(BaseChar):
             elif self.lib_heavy_available():
                 if is_timeout:
                     break
-                self.heavy_click_forte(check_fun=self.lib_heavy_available)
+                if self.wait_locked(self.WAIT_LOCK_TIME_OUT):
+                    self.heavy_click_forte(check_fun=self.lib_heavy_available)
                 if self.task.wait_until(self.liberation_available, post_action=self.click, time_out=0.5):
-                    if self.hold_liberation():
+                    if self.wait_locked(self.WAIT_LOCK_TIME_OUT) and self.hold_liberation():
                         self.logger.debug('hiyuki perform lib2 (after heavy)')
                         self.lib2_count = 0
                         return True
@@ -145,6 +148,14 @@ class Hiyuki(BaseChar):
 
     def lib_heavy_available(self):
         return bool(self.task.find_one('hiyuki_lib_forte', threshold=0.7))
+
+    def wait_locked(self, time_out):
+        """等到重新锁定敌人(has_long_action2 为真)再返回 True; 等满 time_out 仍未锁上返回 False。
+
+        期间用 post_action=self.click 持续普攻——既维持/重新锁定敌人, 又不空转。
+        用于重击/大招前: 避免在"敌人刚死、新敌未锁"的窗口里空放。
+        """
+        return bool(self.task.wait_until(self.has_long_action2, post_action=self.click, time_out=time_out))
 
     def hold_liberation(self):
         if not self.task.use_liberation:
