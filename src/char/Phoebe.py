@@ -385,14 +385,11 @@ class Phoebe(BaseChar):
         return False
 
     def decide_teammate(self):
+        from src.char.Zani import Zani
         from src.char.Cartethyia import Cartethyia
         from src.char.HavocRover import HavocRover
-        zani = next(
-            (c for c in self.task.chars if c is not None and c.__class__.__name__ == 'Zani'),
-            None
-        )
-        if zani is not None:
-            self.char_zani = zani
+        if char := self.task.has_char(Zani):
+            self.char_zani = char
             self.attribute = 2
         elif self.task.has_char(Cartethyia) and self.task.has_char(HavocRover):
             self.attribute = 2
