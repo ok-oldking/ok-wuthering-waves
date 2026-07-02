@@ -1,6 +1,7 @@
 import time
 from decimal import Decimal, ROUND_UP, ROUND_HALF_UP
 from enum import Enum
+from typing import Callable
 import cv2
 import numpy as np
 import math
@@ -75,7 +76,6 @@ class Zani(BaseChar):
                     self.continues_normal_attack(0.25)
                     self.sleep(0.25)
             self.crisis_time = - 1
-
         if not cast_liberation:
             self.chair_time = -1
             if (not self.has_intro and
@@ -104,24 +104,25 @@ class Zani(BaseChar):
                             self.dodge_time = time.time()
                     if breakthrough_result == State.INTERRUPTED or result == State.INTERRUPTED:
                         self.wait_until(lambda: not self.flying(), time_out=0.6)
-                    if self.crisis_response_protocol_combo():
-                        cast_liberation = self.liberation_available()
+                    self.crisis_response_protocol_combo()
                 else:
                     self.logger.info('liberation has cd')
-                    if self.is_forte_full() and self.crisis_response_protocol_combo():
-                        cast_liberation = self.liberation_available()
-                self.logger.info(f'cast_liberation {cast_liberation}')
-                if cast_liberation:
+                    if self.is_e_forte_full():
+                        self.crisis_response_protocol_combo()
+                if self.liberation_available():
+                    cast_liberation = True
                     if self.blazes != 1:
                         self.wait_crisis_protocol_end()
                         self.crisis_time = - 1
                 else:
                     return self.switch_next_char()
 
+        self.logger.info(f'cast_liberation {cast_liberation}')
+
         if cast_liberation:
             self.check_combat()
             self.update_blazes()
-            if self.click_liberation():
+            if self.click_liberation(send_click=True):
                 self.crisis_time = - 1
                 self.state = 1
                 self.in_liberation = True
@@ -131,16 +132,16 @@ class Zani(BaseChar):
                 self.continues_normal_attack(0.15)
                 self.nightfall_combo(cancel_last_smash=True)
                 self.sleep(0.1)
-                if self.is_forte_full():
+                if self.is_mouse_forte_full():
                     self.nightfall_combo()
             return self.switch_next_char()
 
-        if self.is_forte_full():
+        if self.is_e_forte_full():
             self.crisis_response_protocol_combo()
         self.switch_next_char()
 
     def basic_attack_breakthrough_combo(self):
-        if self.is_forte_full():
+        if self.is_e_forte_full():
             return State.FORTE_FULL
         self.logger.info('basic attack - breakthrough')
         if (result := self.basic_attack_breakthrough()) != State.DONE:
@@ -187,7 +188,7 @@ class Zani(BaseChar):
         if self.wait_resonance_not_gray(send_click=True, liber_time_check=True) == State.INTERRUPTED:
             self.logger.info('Nightfall interrupted, perform liberation2')
             return True
-        if not self.is_forte_full():
+        if not self.is_mouse_forte_full():
             self.logger.info('Cannot perform another nightfall, perform liberation2')
             return True
         return False
@@ -273,7 +274,7 @@ class Zani(BaseChar):
         return result
 
     def standard_defense_protocol_combo(self):
-        if self.is_forte_full():
+        if self.is_e_forte_full():
             return State.FORTE_FULL
         if self.resonance_available():
             self.logger.info('perform standard_defense_protocol')
@@ -311,7 +312,7 @@ class Zani(BaseChar):
     def crisis_response_protocol_combo(self):
         self.logger.info('perform crisis_response_protocol')
         self.check_combat()
-        if not self.is_forte_full():
+        if not self.is_e_forte_full():
             for _ in range(1):
                 if (result := self.basic_attack_breakthrough()) != State.DONE:
                     break
@@ -320,11 +321,11 @@ class Zani(BaseChar):
                 else:
                     self.continues_right_click(0.05)
                     self.dodge_time = time.time()
-            if result != State.FORTE_FULL and not self.is_forte_full():
+            if result != State.FORTE_FULL and not self.is_e_forte_full():
                 self.logger.info('crisis_response_protocol not FORTE_FULL')
                 return False
         start = time.time()
-        self.wait_until(lambda: not self.is_forte_full(), post_action=self.send_resonance_key, time_out=1)
+        self.wait_until(lambda: not self.is_e_forte_full(), post_action=self.send_resonance_key, time_out=1)
         current = time.time()
         self.logger.debug(f'cast resonance duration {current - start}')
         if current - start < 0.35:
@@ -358,7 +359,7 @@ class Zani(BaseChar):
                 if last_value[0] > 0:
                     gap = current_value - last_value[0]
                     self.logger.info(f"check_forte gap: {gap} current_value: {current_value}")
-                    if gap < 0.01 and not self.is_forte_full():
+                    if gap < 0.01 and not self.is_e_forte_full():
                         self.continues_right_click(0.05)
                         self.dodge_time = time.time()
                         return True
@@ -373,7 +374,7 @@ class Zani(BaseChar):
         if timeout <= 0:
             return State.DONE
         kwargs = {
-            'condition': self.is_forte_full,
+            'condition': self.is_e_forte_full,
             'condition2': self.flying,
             'time_out': timeout,
             'settle_time': settle_time
@@ -392,8 +393,8 @@ class Zani(BaseChar):
             result = State.DONE
         return result
 
-    def wait_until(self, condition: callable, condition2: callable = lambda: None,
-                   post_action: callable = lambda: None, time_out: float = 0, settle_time: float = 0):
+    def wait_until(self, condition: Callable, condition2: Callable = lambda: None,
+                   post_action: Callable = lambda: None, time_out: float = 0, settle_time: float = 0):
         if time_out <= 0:
             return False
         start = time.time()
@@ -417,21 +418,6 @@ class Zani(BaseChar):
             post_action()
             self.task.next_frame()
         return False
-
-    def is_forte_full(self):
-        if self.in_liberation:
-            box = self.task.box_of_screen_scaled(2560, 1440, 1527, 1335, 1544, 1352, name='forte_full', hcenter=True)
-        else:
-            box = self.task.box_of_screen_scaled(3840, 2160, 2284, 1992, 2311, 2019, name='forte_full', hcenter=True)
-        self.task.draw_boxes(box.name, box)
-        mean_val = contrast_val = 0
-        if self.task.calculate_color_percentage(forte_white_color, box) > 0.08:
-            cropped = box.crop_frame(self.task.frame)
-            gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
-            mean_val = np.mean(gray)
-            contrast_val = np.std(gray)
-            self.logger.debug(f'is_forte_full mean {mean_val} contrast {contrast_val}')
-        return mean_val > 200 and contrast_val > 40
 
     def crisis_time_left(self):
         if self.crisis_time <= 0:
