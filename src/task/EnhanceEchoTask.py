@@ -28,30 +28,63 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         self.group_icon = FluentIcon.ADD
         self.fail_reason = ""
         self.supported_languages = ["zh_CN", "zh_TW"]
+
+        self.all_props = [
+            '暴击伤害', '暴击', '共鸣效率', '攻击百分比', '生命百分比', '防御百分比',
+            '普攻伤害加成', '重击伤害加成',
+            '共鸣解放伤害加成', '共鸣技能伤害加成',
+            '攻击', '生命', '防御'
+        ]
+
         self.default_config.update({
-            '必须有双爆': True,
-            '双爆出现之前必须全有效词条': True,
-            '双爆总计>=': 13.8,
-            '首条双爆>=': 6.9,
-            '有效词条>=': 3,
-            '第一条必须为有效词条': True,
-            '有效词条': ['暴击', '暴击伤害', '攻击百分比'],
+            '方案选择': '经典双爆方案',
+            '必须词条': ['暴击', '暴击伤害'],
+            '可选词条': ['攻击百分比'],
+            '可选词条数量 >=': 3,
+            '前置检查': '在双爆出现前',
+            '暴击数值 >=': '6.3%',
+            '爆伤数值 >=': '12.6%',
+            '双爆总计 >=': 13.8,
             'Pause after Success': True,
         })
-        self.config_type["有效词条"] = {'type': "multi_selection",
-                                        'options': ['暴击伤害', '暴击', '攻击百分比', '生命百分比', '防御百分比',
-                                                    '攻击', '生命', '防御',
-                                                    '共鸣效率', '普攻伤害加成',
-                                                    '重击伤害加成', '共鸣解放伤害加成',
-                                                    '共鸣技能伤害加成']}
+
+        self.config_type["方案选择"] = {
+            'type': 'preset_manager',
+            'linked_keys': [
+                '必须词条', '可选词条', '可选词条数量 >=', '前置检查',
+                '暴击数值 >=', '爆伤数值 >=', '双爆总计 >=', 'Pause after Success'
+            ]
+        }
+        self.config_type["必须词条"] = {
+            'type': 'multi_selection',
+            'options': self.all_props
+        }
+        self.config_type["可选词条"] = {
+            'type': 'multi_selection',
+            'options': self.all_props
+        }
+        self.config_type["前置检查"] = {
+            'type': 'radio_group',
+            'options': ['不限制', '在双爆出现前', '在必须词条出现前']
+        }
+        self.config_type["暴击数值 >="] = {
+            'type': 'drop_down',
+            'options': ['6.3%', '6.9%', '7.5%', '8.1%', '8.7%', '9.3%', '9.9%', '10.5%']
+        }
+        self.config_type["爆伤数值 >="] = {
+            'type': 'drop_down',
+            'options': ['12.6%', '13.8%', '15%', '16.2%', '17.4%', '18.6%', '19.8%', '21%']
+        }
+
         self.config_description = {
-            '必须有双爆': '如果开启，声骸最终必须同时拥有暴击和暴击伤害。如果剩余孔位不足以凑齐双爆，则丢弃',
-            '双爆出现之前必须全有效词条': '开启后，在暴击或暴击伤害词条出现之前，前面的所有词条必须都在有效词条列表中',
-            '双爆总计>=': '当声骸同时存在暴击和爆伤时，需要满足 暴击 + (爆伤/2) >= 此数值',
-            '首条双爆>=': '仅检查第一条出现的暴击或暴击伤害是否满足条件, 爆伤/2',
-            '有效词条>=': '声骸满级时需达到的有效词条数量，若剩余孔位无法凑齐该数量，则停止强化并丢弃',
-            '第一条必须为有效词条': '如果开启，第一个副词条必须在有效词条列表中且符合数值要求，否则直接丢弃',
-            '有效词条': '定义哪些属性被视为有效',
+            '方案选择': '保存或切换用户自定义的整套强化要求过滤方案。',
+            '必须词条': '剩余孔位无法凑齐已选项，或满级时未凑齐，均丢弃。',
+            '可选词条': '声骸满级时，需凑齐符合数量的任意词条，否则丢弃。',
+            '可选词条数量 >=': '若剩余孔位无法凑齐该数量，则提前丢弃。',
+            '前置检查': '是否需要在暴击或爆伤或必须词条项出现前，前面的所有词条都必须在已选词条里，否则丢弃。',
+            '暴击数值 >=': '若暴击在必须词条中，则检查暴击数值是否满足，否则丢弃。',
+            '爆伤数值 >=': '若爆伤在必须词条中，则检查爆伤数值是否满足，否则丢弃。',
+            '双爆总计 >=': '若双爆均在必须词条中，检查 暴击数值 + (爆伤数值/2) 的总和是否 >= 此数值，否则丢弃。',
             'Pause after Success': 'When a success occurs, send notification and pause task',
         }
 
@@ -151,127 +184,134 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             return [confirm]
         return self.ocr(box=button_box, match='确认')
 
+    # ---------- 核心判断逻辑 ----------
     def check_echo_stats(self, properties, values):
         self.fail_reason = ""
-        invalid_count = 0
-
-        paired_stats = []
-        unmatched_values = values.copy()
-        for prop in properties:
-            matched_val_text = "0"
-            if unmatched_values:
-                closest_val = min(unmatched_values, key=lambda v: abs(prop.y - v.y))
-                matched_val_text = closest_val.name
-                unmatched_values.remove(closest_val)
-            paired_stats.append((prop.name, matched_val_text))
-
+        paired_stats = self._pair_stats(properties, values)
         total_count = len(paired_stats)
-
-        crit_rate_val = 0
-        crit_dmg_val = 0
-        has_crit_rate = False
-        has_crit_dmg = False
-
-        checked_first_crit = False
-        has_encountered_crit = False
-
-        valid_stats = self.config.get('有效词条') or []
-
-        for p_raw, v_str in paired_stats:
-            p = p_raw
-            if '暴击伤害' in p:
-                p = '暴击伤害'
-            elif '暴击' in p:
-                p = '暴击'
-            elif '攻击' in p:
-                p = '攻击' + ('百分比' if '%' in v_str or '％' in v_str else '')
-            elif '生命' in p:
-                p = '生命' + ('百分比' if '%' in v_str or '％' in v_str else '')
-            elif '防御' in p:
-                p = '防御' + ('百分比' if '%' in v_str or '％' in v_str else '')
-            elif '效率' in p:
-                p = '共鸣效率'
-            elif '普攻' in p:
-                p = '普攻伤害加成'
-            elif '重击' in p:
-                p = '重击伤害加成'
-            elif '解放' in p:
-                p = '共鸣解放伤害加成'
-            elif '技能' in p:
-                p = '共鸣技能伤害加成'
-
-            v = parse_number(v_str)
-
-            is_valid_prop = True
-            is_crit_stat = p in ['暴击', '暴击伤害']
-
-            if self.config.get(
-                    '双爆出现之前必须全有效词条') and '暴击' in valid_stats and '暴击伤害' in valid_stats and not has_encountered_crit:
-                if not is_crit_stat:
-                    if p not in valid_stats:
-                        self.fail_reason = f'双爆前含无效_{p}'
-                        self.log_info(f'双爆出现前存在无效词条 {p}, 丢弃')
-                        return False
-                else:
-                    has_encountered_crit = True
-
-            if is_valid_prop and p not in valid_stats:
-                is_valid_prop = False
-                self.log_debug(f'非有效词条, {p} 不符合条件')
-
-            if p == '暴击':
-                has_crit_rate = True
-                crit_rate_val += v
-                if '暴击' in valid_stats and not checked_first_crit:
-                    checked_first_crit = True
-                    if v < self.config.get('首条双爆>='):
-                        self.fail_reason = f'首条暴击不足_{v}'
-                        self.log_info(f'首条暴击 {v} < {self.config.get("首条双爆>=")}，丢弃')
-                        return False
-
-            elif p == '暴击伤害':
-                has_crit_dmg = True
-                crit_dmg_val += v
-                if '暴击伤害' in valid_stats and not checked_first_crit:
-                    checked_first_crit = True
-                    if v / 2 < self.config.get('首条双爆>='):
-                        self.fail_reason = f'首条爆伤不足_{v}'
-                        self.log_info(f'首条爆伤 {v} < {self.config.get("首条双爆>=")}，丢弃')
-                        return False
-
-            if not is_valid_prop:
-                invalid_count += 1
-
-        self.info_set('不符合条件属性', invalid_count)
-
-        if self.config.get('必须有双爆'):
-            missing_crit = (0 if has_crit_rate else 1) + (0 if has_crit_dmg else 1)
-            remaining_slots = 5 - total_count
-            if remaining_slots < missing_crit:
-                self.fail_reason = f'无法凑齐双爆_缺{missing_crit}'
-                self.log_info(f'无法凑齐双爆 (缺{missing_crit}种, 剩{remaining_slots}孔), 丢弃')
-                return False
-
-        if has_crit_rate and has_crit_dmg:
-            total_score = crit_rate_val + (crit_dmg_val / 2)
-            if total_score < self.config.get('双爆总计>='):
-                self.fail_reason = f'双爆总计不足_{total_score:.1f}'
-                self.log_info(f'双爆总计 {total_score:.1f} < {self.config.get("双爆总计>=")}，丢弃')
-                return False
-
-        if total_count == 1 and self.config.get('第一条必须为有效词条') and invalid_count == 1:
-            self.fail_reason = '首条无效'
-            self.log_info('第一条必须为有效词条, 丢弃')
-            return False
-
-        valid_count = total_count - invalid_count
         remaining_slots = 5 - total_count
-        if (valid_count + remaining_slots) < self.config.get('有效词条>='):
-            self.fail_reason = f'有效词条不足_上限{valid_count + remaining_slots}'
-            self.log_info(f'剩余孔位不足以达到设定的有效词条数量, 丢弃')
+
+        required_set = set(self.config.get('必须词条') or [])
+        optional_set = set(self.config.get('可选词条') or [])
+        all_selected = required_set | optional_set
+
+        parsed = []
+        for raw_name, val_str in paired_stats:
+            normalized, is_crit_rate, is_crit_dmg = self._normalize_prop(raw_name, val_str)
+            value = parse_number(val_str)
+            parsed.append({
+                'raw': raw_name,
+                'name': normalized,
+                'value': value,
+                'is_crit_rate': is_crit_rate,
+                'is_crit_dmg': is_crit_dmg,
+                'in_required': normalized in required_set,
+                'in_optional': normalized in optional_set,
+                'in_selected': normalized in all_selected,
+            })
+
+        # ---- 前置检查 ----
+        mode = self.config.get('前置检查')
+        if mode != '不限制':
+            trigger_props = None
+            if mode == '在双爆出现前':
+                trigger_props = {'暴击', '暴击伤害'}
+            elif mode == '在必须词条出现前':
+                trigger_props = required_set
+
+            if trigger_props:
+                for s in parsed:
+                    if s['name'] in trigger_props:
+                        break
+                    if not s['in_selected']:
+                        self.fail_reason = f'前置检查失败：{s["name"]}不在已选词条中'
+                        self.log_info(f'前置检查失败：{s["name"]}不在已选词条中')
+                        return False
+
+        # ---- 暴击数值 >= ----
+        if '暴击' in required_set:
+            threshold = parse_number(self.config.get('暴击数值 >='))
+            found = next((s for s in parsed if s['is_crit_rate']), None)
+            if found and found['value'] < threshold:
+                self.fail_reason = f'暴击{found["value"]}% < {threshold}%'
+                self.log_info(f'暴击不达标: {found["value"]}%')
+                return False
+
+        # ---- 爆伤数值 >= ----
+        if '暴击伤害' in required_set:
+            threshold = parse_number(self.config.get('爆伤数值 >='))
+            found = next((s for s in parsed if s['is_crit_dmg']), None)
+            if found and found['value'] < threshold:
+                self.fail_reason = f'爆伤{found["value"]}% < {threshold}%'
+                self.log_info(f'爆伤不达标: {found["value"]}%')
+                return False
+
+        # ---- 双爆合计 >= ----
+        if '暴击' in required_set and '暴击伤害' in required_set:
+            total_threshold = self.config.get('双爆总计 >=')
+            cr = next((s['value'] for s in parsed if s['is_crit_rate']), None)
+            cd = next((s['value'] for s in parsed if s['is_crit_dmg']), None)
+            if cr is not None and cd is not None:
+                total = cr + cd / 2
+                if total < total_threshold:
+                    self.fail_reason = f'双爆合计{total:.1f} < {total_threshold}'
+                    self.log_info('双爆合计不达标')
+                    return False
+
+        # ---- 必须词条剩余孔位预测 ----
+        required_total = len(required_set)
+        if required_total > 0:
+            appeared = sum(1 for s in parsed if s['in_required'])
+            if remaining_slots < required_total - appeared:
+                self.fail_reason = '剩余孔位不足凑齐必须词条'
+                self.log_info('必须词条无法凑齐')
+                return False
+
+        # ---- 可选词条数量预测 ----
+        opt_target = self.config.get('可选词条数量 >=')
+        current_opt = sum(1 for s in parsed if s['in_optional'])
+        if current_opt + remaining_slots < opt_target:
+            self.fail_reason = '可选词条数量不足'
+            self.log_info('可选词条预测不达标')
             return False
 
         return True
+
+    def _pair_stats(self, properties, values):
+        unmatched = values.copy()
+        result = []
+        for prop in properties:
+            if unmatched:
+                closest = min(unmatched, key=lambda v, p=prop: abs(p.y - v.y))
+                result.append((prop.name, closest.name))
+                unmatched.remove(closest)
+            else:
+                result.append((prop.name, "0"))
+        return result
+
+    # ---------- 属性标准化（查表法，低复杂度版） ----------
+    PROP_MAP = [
+        ('暴击伤害', '暴击伤害', False, True),
+        ('暴击', '暴击', True, False),
+        ('攻击', None, False, False),
+        ('生命', None, False, False),
+        ('防御', None, False, False),
+        ('效率', '共鸣效率', False, False),
+        ('普攻', '普攻伤害加成', False, False),
+        ('重击', '重击伤害加成', False, False),
+        ('解放', '共鸣解放伤害加成', False, False),
+        ('技能', '共鸣技能伤害加成', False, False),
+    ]
+
+    def _normalize_prop(self, raw_name, val_str):
+        for keyword, standard, is_crit_rate, is_crit_dmg in self.PROP_MAP:
+            if keyword not in raw_name:
+                continue
+            if standard is not None:
+                return standard, is_crit_rate, is_crit_dmg
+            suffix = '百分比' if ('%' in val_str or '％' in val_str) else ''
+            return f'{keyword}{suffix}', is_crit_rate, is_crit_dmg
+        return raw_name, False, False
 
     def find_add_mat(self):
         return self.wait_ocr(0.09, 0.6, 0.38, 0.86, match=['阶段放入'], time_out=1)
@@ -325,7 +365,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             if drop_status.name == 'echo_not_locked':
                 self.send_key('c', after_sleep=1)
             else:
-                self.log_info('成功弃置!')
+                self.log_info('成功上锁!')
                 success = True
                 break
         if not success:
