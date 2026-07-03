@@ -44,6 +44,7 @@ class Phoebe(BaseChar):
         start = time.time()
         if self.attribute == 0:
             self.decide_teammate()
+        self._try_liberation_now()
         if self.has_intro:
             self.continues_normal_attack(1.5)
         else:
@@ -80,15 +81,18 @@ class Phoebe(BaseChar):
             self.check_combat()
         if status_entered == State.SUCCESS or self.judge_forte() > 0:
             self.starflash_combo()
-            # support 形态且赞妮未在大招中：尽可能补足第二个重击
+            # 第一次重击后检查大招（可插入），无论是否触发都继续打第二次重击
+            self._try_liberation_now()
             if (self.attribute == 2 and
                     self.state["starflash_combo"] < 2 and
                     self.get_zani_state() != 1):
                 self.logger.info('phoebe: try second starflash_combo')
                 self.starflash_combo()
+        self._try_liberation_now()
         if self.resonance_available():
             if self.attribute == 2:
-                if not self.confession_ready():
+                # 第一轮未完成时跳过共鸣点击，避免触发非蓝色重击打断普攻填协奏
+                if not self.confession_ready() and self.first_rotation_done:
                     self.click_resonance_once()
             else:
                 self.click_resonance()
@@ -319,18 +323,16 @@ class Phoebe(BaseChar):
             return State.SUCCESS
         return State.UNAVAILABLE
 
-    def _con_full_confirmed(self, stable_time=0.12, interval=0.03):
-        # 协奏满判定防抖:技能特效/伤害数字可能让单帧误判为满,导致过早 outro,
-        # 要求短时间窗口内持续为满才认可,再提交切人
-        if not self.is_con_full():
-            return False
-        start = time.time()
-        while time.time() - start < stable_time:
-            self.check_combat()
-            if not self.is_con_full():
-                return False
-            self.sleep(interval)
-        return self.is_con_full()
+    def _try_liberation_now(self):
+        """每个主要动作前检查大招，可用就立即释放，返回True表示已释放"""
+        if (self.star_available and not self.flying()
+                and self.liberation_available()):
+            if self.click_liberation(send_click=True):
+                self.state["liberation"] += 1
+                self.state["priority_liberation_cast"] = 1
+                self.check_combat()
+                return True
+        return False
 
     def _try_cast_liberation_before_switch(self):
         # 有大放大:flying / zani_linkage / 共鸣等提前切人的分支可能带着可用大招切走,
@@ -353,7 +355,7 @@ class Phoebe(BaseChar):
 
     def switch_next_char(self, *args, **kwargs):
         self._try_cast_liberation_before_switch()
-        if self.attribute == 2 and self._con_full_confirmed():
+        if self.attribute == 2 and self.is_con_full():
             self.click_echo()
             self.state["outro"] += 1
         return super().switch_next_char(*args, **kwargs)
