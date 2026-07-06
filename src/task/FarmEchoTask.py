@@ -254,12 +254,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                             raise Exception("cannot find button to continue")
                     self.sleep(4)
                     if self._in_realm:  # domain
-                        if count < total_count: 
-                            self.click(x=0.37, y=0.85, after_sleep=1)  # button "exit"
+                        if count < total_count:
+                            self.click(x=0.63, y=0.85, after_sleep=1)  # right button "challenge again"
                         else:
-                            self.click(x=0.63, y=0.85, after_sleep=1)  # button "challenge again"
+                            self.click(x=0.37, y=0.85, after_sleep=1)  # left button "exit"
                     else:  # world
-                        self.click(x=0.5, y=0.85, after_sleep=1)  # button "confirm"
+                        self.click(x=0.5, y=0.85, after_sleep=1)  # middle button "confirm"
             except TaskDisabledException:
                 raise
             except Exception as e:
