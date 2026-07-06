@@ -125,13 +125,13 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
         # No check after reaching MAX speed
         if self._is_max_speed:
             return
-        speed_box = self.box_of_screen(1226/1920, 46/1080, 1300/1920, 75/1080, hcenter=True)
-        # Check if include "MAX". Exculde "X" to avoid misrecognition.
-        if not self.ocr(box=speed_box, match=re.compile(r"[MA]")):
+        speed_box = self.box_of_screen(1630/2560, 60/1440, 1785/2560, 100/1440, hcenter=True)
+        # Check if not max speed including 1.0, 3.0, 5.0.
+        while self.ocr(box=speed_box, match=re.compile(r"[135]\.0")):
             # If speed is not max, click speed box
             self.click(speed_box, after_sleep=1)
         else:
-            self.log_info(f"speed is max")
+            self.log_info(f"speed achieve {self.ocr(box=speed_box)}")
             self._is_max_speed = True
 
     def _choose_first_blessing(self):
