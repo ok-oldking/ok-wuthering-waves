@@ -259,7 +259,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                         else:
                             self.click(x=0.63, y=0.85, after_sleep=1)  # button "challenge again"
                     else:  # world
-                        self.click(x=0.50, y=0.85, after_sleep=1)  # TODO: pending verification
+                        self.click(x=0.5, y=0.85, after_sleep=1)  # button "confirm"
             except TaskDisabledException:
                 raise
             except Exception as e:
