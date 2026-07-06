@@ -120,7 +120,9 @@ class Phoebe(BaseChar):
                 if result == 0 or self.char_zani.liberation_time_left() > 3:
                     self.continues_normal_attack(1, interval=0.15)
             else:
-                self.click_resonance(send_click=False)
+                # 首轮跳过 E；之后 confession 已经就绪时也不要短按 E，避免打断协奏轴。
+                if self.first_rotation_done and not self.confession_ready():
+                    self.click_resonance(send_click=False)
             return True
         if result == 1:
             self.cast_remaining_skills()
