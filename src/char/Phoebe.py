@@ -44,11 +44,12 @@ class Phoebe(BaseChar):
         start = time.time()
         if self.attribute == 0:
             self.decide_teammate()
-        self._try_liberation_now()
         if self.has_intro:
             self.continues_normal_attack(1.5)
         else:
-            self.sleep(0.01)
+            # 非变奏切人后会自然接一段普攻，先等它结算协奏，再抢大招。
+            self.sleep(0.35)
+        self._try_liberation_now()
 
         if self.attribute == 1:
             self.click_echo(time_out=0)
