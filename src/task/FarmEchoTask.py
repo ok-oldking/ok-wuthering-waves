@@ -33,6 +33,14 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         'Nameless Explorer',
     ]
 
+    boss_level = [  # boss 等级
+        '50',
+        '60',
+        '70',
+        '80',
+        '90'
+    ]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.description = "Click Start after Entering Dungeon or Teleporting to The Boss"
@@ -71,7 +79,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                                     'Boss Challenge': ['Which Boss Challenge to Teleport',
                                                                        'Boss Level'],
                                                 }}
-        self.config_type['Boss Level'] = {'type': "drop_down", 'options': ['50', '60', '70', '80'], }
+        self.config_type['Boss Level'] = {'type': "drop_down", 'options': self.boss_level}
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.icon = FluentIcon.ALBUM
