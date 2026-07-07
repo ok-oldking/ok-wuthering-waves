@@ -47,11 +47,6 @@ class Zani(BaseChar):
 
         # 等待落地/入场动画，click=False 避免打出无意义普攻
         self.wait_down()
-        # 变奏入场时，动画冻结可能导致 E 的 CD 未完全清除（UI 显示可用但游戏仍锁定），
-        # 等到 resonance_available() 真正就绪再进入场景决策，避免19ms极短失败。
-        if self.has_intro:
-            self.wait_until(self.resonance_available, time_out=1.5)
-            self.sleep(0.3)  # UI显示就绪后游戏输入仍可能短暂锁定，额外缓冲
         self.check_liber()
 
         # 大招状态（branch 0）：保留基线 nightfall/liber2 逻辑
@@ -72,15 +67,11 @@ class Zani(BaseChar):
         self.update_blazes()
         forte_full = self.is_e_forte_full()
         e_available = self.current_resonance() > 0.05
-        # 入场后 UI 刷新延迟可能导致 liberation_available() 短暂返回 None，
-        # 最多重试4次（间隔50ms），总等待上限200ms，覆盖常见的UI刷新窗口。
         liber_avail = self.liberation_available()
-        if not liber_avail:
-            for _ in range(4):
-                self.sleep(0.05)
-                liber_avail = self.liberation_available()
-                if liber_avail:
-                    break
+        if self.has_intro and self.blazes >= 1 and not liber_avail:
+            self.sleep(0.2, check_combat=False)
+            liber_avail = self.liberation_available()
+            e_available = self.current_resonance() > 0.05
         predicted = float(self.blazes) + 0.1
 
         self.logger.info(
@@ -90,31 +81,24 @@ class Zani(BaseChar):
         )
 
         # 场景3：焰光拉满（1.0）且大招可用 → 直接开大
+        # 0.96 can appear for both full and not-full bars; only 1.00 is safe for direct liberation.
         if self.blazes >= 1 and liber_avail:
             self.logger.info('scene3: blazes full, liberation available, direct liberation')
-            if self.echo_available():
-                self.click_echo(time_out=0)
-            if self.click_liberation(send_click=True):
-                self._liberation_followup()
-            elif self.blazes >= 1:
-                # click_liberation 首次失败时补一次重试（CD边界误判）
+            if not self._try_liberation():
                 self.sleep(0.1)
-                if self.click_liberation(send_click=True):
-                    self._liberation_followup()
+                self._try_liberation()
             return self.switch_next_char()
 
-        # 场景4：强化E 已 ready，焰光未满（加稳定帧确认，排除单帧误识别）
-        if forte_full:
-            forte_full = self.wait_forte_full(0.15, settle_time=0.08) == State.FORTE_FULL
+        # scene4: enhanced E ready; cast once, then liberate if needed.
         if forte_full:
             self.logger.info(f'scene4: enhanced E ready, predicted={predicted:.2f}')
-            if predicted >= self.blazes_threshold and liber_avail:
+            should_liberate = predicted >= self.blazes_threshold
+            success = self.crisis_response_protocol_combo()
+            if success and should_liberate and self.liberation_available():
                 self.logger.info('scene4: enhanced E -> liberate')
-                self.crisis_response_protocol_combo()
-                self._liberate_after_enhanced_e()
+                self._try_liberation(wait_crisis=True)
             else:
                 self.logger.info('scene4: enhanced E -> switch')
-                self.crisis_response_protocol_combo()
             return self.switch_next_char()
 
         # 场景1：普通E 可用，焰光未满 → 完全沿用基线 crisis_response_protocol_combo
@@ -122,15 +106,11 @@ class Zani(BaseChar):
         if e_available:
             self.logger.info(f'scene1: normal E available, predicted={predicted:.2f}')
             success = self.crisis_response_protocol_combo()
-            if not success and self.is_e_forte_full():
-                # check_forte_action 误判提前退出，forte 实际已满，补一次强化E
-                self.logger.info('scene1: forte ready after crisis exit, retry enhanced E')
-                success = self.crisis_response_protocol_combo()
-            # combo 结束后才决定是否开大：liber_avail 作快速缓存，liberation_available() 兜底
+            # combo 结束后即时检查一次大招。
             if success and self.blazes >= self.blazes_threshold:
-                if liber_avail or self.liberation_available():
+                if self.liberation_available():
                     self.logger.info('scene1: liberate after enhanced E')
-                    self._liberate_after_enhanced_e()
+                    self._try_liberation(wait_crisis=True)
             return self.switch_next_char()
 
         # 场景2：E 在 CD → 普攻直到可切人
@@ -139,14 +119,16 @@ class Zani(BaseChar):
         return self.switch_next_char()
 
     # ─── 新增辅助方法 ───────────────────────────────────────────────
-    def _liberate_after_enhanced_e(self):
-        """强化E命中后：等危机时间窗 → echo → 开大。"""
-        self.wait_crisis_protocol_end()
-        self.update_blazes()
+    def _try_liberation(self, wait_crisis=False):
+        if wait_crisis:
+            self.wait_crisis_protocol_end()
+            self.update_blazes()
         if self.echo_available():
             self.click_echo(time_out=0)
         if self.click_liberation(send_click=True):
             self._liberation_followup()
+            return True
+        return False
 
     def _liberation_followup(self):
         """click_liberation 成功后进入大招态的固定收尾序列。"""

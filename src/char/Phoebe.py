@@ -48,7 +48,7 @@ class Phoebe(BaseChar):
             self.continues_normal_attack(1.5)
         else:
             # 非变奏切人后会自然接一段普攻，先等它结算协奏，再抢大招。
-            self.sleep(0.35)
+            self.sleep(0.01)
         self._try_liberation_now()
 
         if self.attribute == 1:
