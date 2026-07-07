@@ -32,12 +32,12 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
 
     def run(self):
         WWOneTimeTask.run(self)
-        self.ensure_main()
-        self.open_garden_weekly_page()
-        if self.is_weekly_garden_completed():
-            self.log_info('乐园任务完成, 已达到上限', notify=True)
-            return
-        self.click(0.246, 0.486, after_sleep=1)
+        # self.ensure_main()
+        # self.open_garden_weekly_page()
+        # if self.is_weekly_garden_completed():
+        #     self.log_info('乐园任务完成, 已达到上限', notify=True)
+        #     return
+        # self.click(0.246, 0.486, after_sleep=1)
         while True:
             self.sleep(0.1)
             target = self.find_best_garden_feature()
@@ -69,6 +69,8 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
                 garden_restart = self.find_one('a_garden_restart')
                 garden_back = self.find_one('a_garden_back')
                 if garden_restart and garden_back:
+                    # 避免因点击太快，导致[挑战失败]页面中点击[返回主页]失败
+                    self.sleep(2)
                     texts = self.ocr(0.373, 0.346, 0.859, 0.615)
                     self.log_info('garden end {}'.format(texts))
                     if self.is_garden_done(texts):
