@@ -417,7 +417,7 @@ class BaseWWTask(BaseTask):
         self.info_set('back_up_stamina', back_up)
         return current, back_up, current + back_up
 
-    def use_stamina(self, once, must_use=0):
+    def use_stamina(self, once=60, must_use=0):
         self.sleep(1)
         current, back_up, total = self.get_stamina()
         y = 0.62
@@ -435,7 +435,7 @@ class BaseWWTask(BaseTask):
             logger.info(f"使用单倍体力")
         self.click(x, y, after_sleep=1)
         if self.wait_feature('gem_add_stamina', horizontal_variance=0.4, vertical_variance=0.05,
-                             time_out=2):  # 看是否需要使用备用体力
+                             time_out=2, settle_time=0.5):  # 看是否需要使用备用体力
             self.click(0.70, 0.71, after_sleep=1)  # 点击确认
             self.click(0.70, 0.71, after_sleep=1)
             self.back(after_sleep=1)
