@@ -1,3 +1,11 @@
+'''
+Author: LK
+version:
+Date: 2026-06-22 15:46:12
+LastEditors: your name
+LastEditTime: 2026-07-09 00:51:14
+Description:
+'''
 import time
 
 from qfluentwidgets import FluentIcon
@@ -20,7 +28,7 @@ class AutoPickTask(TriggerTask, BaseWWTask):
         self.default_config.update({
             '_enabled': True,
             'Pick Up White List': ['吸收', 'Absorb'],
-            'Pick Up Black List': ['开始合成', '领取奖励', 'Claim', '合成台']
+            'Pick Up Black List': ['开始合成', '领取奖励', 'Claim', '合成台','开始烹饪']
         })
 
     def send_fs(self):
