@@ -229,6 +229,7 @@ class Labels(str, Enum):
     no_target_cloud = 'no_target_cloud'
     on_the_wall = 'on_the_wall'
     pick_up_f_hcenter_vcenter = 'pick_up_f_hcenter_vcenter'
+    pre = 'pre'
     purple_target_distance_icon = 'purple_target_distance_icon'
     q = 'q'
     r = 'r'
