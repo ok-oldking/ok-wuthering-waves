@@ -9,7 +9,7 @@ from ok import color_range_to_bound
 from ok import Logger, TaskDisabledException
 from ok import find_boxes_by_name
 from src import text_white_color
-from src.task.BaseCombatTask import BaseCombatTask
+from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException
 from src.task.BaseWWTask import binarize_for_matching
 from src.task.WWOneTimeTask import WWOneTimeTask
 
@@ -128,7 +128,13 @@ class AutoRogueTask(WWOneTimeTask, BaseCombatTask):
             # 战斗处理
             if self.in_combat():
                 self.log_info('wait combat')
-                self.combat_once(wait_combat_time=0, raise_if_not_found=False)
+                try:
+                    self.combat_once(wait_combat_time=0, raise_if_not_found=False)
+                except CharRevivedException:
+                    self.log_info('Half-Auto Rougue: death recovered, resume loop')
+                    self.status = -1
+                    start = time.time()
+                    continue
                 start = time.time()
             # 领声骸奖励时体力不够：按Esc
             if self.check_text(0.18, 0.17, 0.28, 0.22, r'补充结晶波片', 'treasure_text'):

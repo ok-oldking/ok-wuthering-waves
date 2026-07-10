@@ -2,6 +2,10 @@ name: build exe
 
 on: workflow_dispatch
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   build:
     name: Build exe with launcher
@@ -14,6 +18,8 @@ jobs:
         run: echo "Version is set to $VERSION"
 
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2

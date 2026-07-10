@@ -34,6 +34,17 @@ class CharRevivedException(CharDeadException):
     pass
 
 
+mismatched_names = {
+    "Douling": "Buling",
+    "Xigelika": "Sigrika",
+    "Linnai": "Lynae",
+    "Luhesi": "Luuk Herssen",
+    "Xiangliyao": "Xiangli Yao",
+    "ShoreKeeper": "Shorekeeper",
+    "HavocRover": "Rover: Havoc"
+}
+
+
 class BaseCombatTask(CombatCheck):
     """基础战斗任务类，封装了游戏"鸣潮"中角色自动化操作的通用逻辑。"""
     hot_key_verified = False  # 热键是否已验证
@@ -171,10 +182,34 @@ class BaseCombatTask(CombatCheck):
         else:
             return 0
 
+    def close_revive_popup(self):
+        """关闭角色死亡弹窗。
+
+        优先点击弹窗按钮 (避免 ESC 注入偶发不生效)，依次尝试:
+        cancel_button → btn_dialog_close → 最后回退 ESC。
+        供 BaseCombatTask 与 DomainTask 的死亡恢复共用, 保证关弹窗稳定。
+
+        Returns:
+            bool: True 表示通过点击按钮关闭, False 表示回退到了 ESC。
+        """
+        if self.wait_click_feature('cancel_button_hcenter_vcenter',
+                                   raise_if_not_found=False,
+                                   time_out=1.2,
+                                   click_after_delay=0.2,
+                                   threshold=0.7):
+            return True
+        btn_dialog_close = self.find_one('btn_dialog_close', threshold=0.8)
+        if btn_dialog_close:
+            self.click(btn_dialog_close, move_back=True)
+            return True
+        self.send_key('esc', after_sleep=2)
+        self.sleep(1)
+        return False
+
     def revive_action(self):
-        """角色死亡恢复：关闭弹窗 → 传周本入口 → 传最近传送点回血。"""
+        """角色死亡恢复：关闭弹窗 → 传最近传送点回血。"""
         try:
-            self.send_key('esc', after_sleep=2)  # ① 关闭复活弹窗
+            self.close_revive_popup()  # ① 关闭复活弹窗 (点按钮优先, esc 兜底)
             self.revive_at_tower_and_heal()
             logger.info(f'revive_action success')
             return True
@@ -182,18 +217,56 @@ class BaseCombatTask(CombatCheck):
             logger.error(f'revive_action failed', e)
             return False
 
+    def get_revive_search_boss_name(self):
+        revive_search_names = {
+            'zh_CN': '无冠者',
+            'zh_TW': '無冠者',
+            'en_US': 'Crownless',
+        }
+        return revive_search_names.get(self.game_lang, '无冠者')
+
     def revive_at_tower_and_heal(self):
-        """Use the weekly entrance as a stable anchor, then teleport to heal."""
-        self.go_to_tower()
-        self.teleport_to_heal()
+        """搜索对应语言的无冠者/Crownless→探测打开地图→找最近传送点回血。
+
+        不再依赖已被移除的 go_to_tower。改用 F2 图鉴搜索对应语言的目标名称后点"探测"，
+        游戏会把地图定位到固定位置，从该位置寻找传送点回血，结果稳定可复现。
+        只点一次"探测"，等待地图打开后再操作，防止二次点击误触地图上的传送图标。
+        前提：调用前已回到大世界 (副本内死亡需先退本)。
+        """
+        # 退本后可能仍在加载黑屏, 给足超时等待真正回到大世界 (原 go_to_tower 用 80s)
+        self.ensure_main(time_out=120)
+        # ① F2 图鉴 → 全部怪物 → 搜索对应语言的无冠者
+        gray_book = self.openF2Book("gray_book_all_monsters")
+        self.click_box(gray_book, after_sleep=1)
+        self.click(0.13, 0.14, after_sleep=0.5)  # 搜索图标
+        self.input_text(self.get_revive_search_boss_name())
+        self.sleep(0.3)
+        self.click(0.20, 0.14, after_sleep=0.3)  # 点搜索框确保焦点
+        self.send_key('enter', after_sleep=0.5)  # 回车确认搜索, 刷新结果列表
+        self.click(0.13, 0.24, after_sleep=0.5)  # 选中第一条结果
+        # ② 点"探测"打开地图并定位到目标 boss (只点一次, 避免地图打开后误触传送点)
+        self.click(0.89, 0.92, after_sleep=1)
+        # ③ 等待地图打开 (检测地图传送点), 若未打开则补点一次兜底
+        if not self.wait_until(lambda: self.find_best_match_in_box(
+                self.box_of_screen(0.1, 0.1, 0.9, 0.9),
+                ['map_way_point', 'map_way_point_big'], 0.6) is not None,
+                               time_out=4, raise_if_not_found=False):
+            logger.warning('revive_at_tower_and_heal: map not opened, retry探测')
+            self.click(0.89, 0.92, after_sleep=1)
+        # ④ 在已打开的地图上找最近传送点回血
+        self._travel_to_nearest_waypoint()
 
     def teleport_to_heal(self):
-        """传送回城治疗。"""
+        """按 M 开图, 就近找传送点回血 (供 FarmEchoTask 在 boss 点使用)。"""
         self.ensure_main(time_out=10)
         self.log_info('click m to open the map')
         start = time.time()
         while self.in_team_and_world() and time.time() - start < 20:
             self.send_key('m', after_sleep=2)
+        self._travel_to_nearest_waypoint()
+
+    def _travel_to_nearest_waypoint(self):
+        """在已打开的地图界面上, 找最近传送点并传送, 等回到大世界。"""
         self.sleep(2)
         teleport = self.find_best_match_in_box(self.box_of_screen(0.1, 0.1, 0.9, 0.9),
                                                ['map_way_point', 'map_way_point_big'], 0.6)
@@ -238,6 +311,20 @@ class BaseCombatTask(CombatCheck):
             exception_type = NotInCombatException
         raise exception_type(message)
 
+    def wait_combat(self, target=True, time_out=10, raise_if_not_found=True):
+        start = time.time()
+        result = None
+        while time.time() - start < time_out:
+            if result := self.in_combat():
+                break
+            if target:
+                self.middle_click(interval=0.5)
+            self.sleep(0.02)
+
+        if raise_if_not_found and not result:
+            raise Exception('wait condition failed while walking')
+        return result
+
     def available(self, name, check_color=True, check_cd=True):
         """检查指定名称的技能或动作是否可用 (通过颜色百分比和冷却时间判断)。
 
@@ -263,7 +350,7 @@ class BaseCombatTask(CombatCheck):
             current = 0
         return current
 
-    def combat_once(self, wait_combat_time=200, raise_if_not_found=True):
+    def combat_once(self, wait_combat_time=200, raise_if_not_found=True, target=False):
         """执行一次完整的战斗流程。
 
         Args:
@@ -271,7 +358,7 @@ class BaseCombatTask(CombatCheck):
             raise_if_not_found (bool, optional): 如果未找到战斗状态是否抛出异常。默认为 True。
         """
         if wait_combat_time > 0:
-            self.wait_until(self.in_combat, time_out=wait_combat_time, raise_if_not_found=raise_if_not_found)
+            self.wait_combat(target=target, time_out=wait_combat_time, raise_if_not_found=raise_if_not_found)
         self.load_chars()
         self.info['Combat Count'] = self.info.get('Combat Count', 0) + 1
         try:
@@ -359,7 +446,7 @@ class BaseCombatTask(CombatCheck):
         unbuffed_non_main = [
             char for char in candidates
             if not char.is_main_dps and char.buff_time > 0
-            and not char.has_buff()
+               and not char.has_buff()
         ]
         return self._oldest_switch_target(unbuffed_non_main)
 
@@ -405,7 +492,7 @@ class BaseCombatTask(CombatCheck):
         no_targets = []
         for char in candidates:
             switch_priority = char.get_switch_priority(current_char=current_char, has_intro=has_intro,
-                                                        target_low_con=target_low_con)
+                                                       target_low_con=target_low_con)
             logger.debug(f'switch_next_char hook: {char} priority {switch_priority}')
             if switch_priority == SwitchPriority.MUST:
                 must_targets.append(char)
@@ -493,7 +580,10 @@ class BaseCombatTask(CombatCheck):
                 self._apply_intro_flags(current_char, switch_to, has_intro)
                 if has_intro:
                     current_char.f_break(check_f_on_switch=True)
-
+            if switch_to.wait_switch():
+                self.click()
+                self.sleep(0.1)
+                continue
             if now - last_click > 0.1:
                 self.send_key(switch_to.index + 1)
                 self.sleep(0.001)
@@ -542,7 +632,7 @@ class BaseCombatTask(CombatCheck):
 
     def find_e_forte(self):
         return self.find_one('e_forte', horizontal_variance=0.025, threshold=0.6,
-                             frame_processor=binarize_for_matching)
+                             frame_processor=lambda img: binarize_for_matching(img, 220))
 
     def get_liberation_key(self):
         """获取共鸣解放技能的按键。
@@ -633,6 +723,8 @@ class BaseCombatTask(CombatCheck):
 
     def check_combat(self):
         """检查当前是否处于战斗状态, 如果不是则抛出异常。"""
+        if self.skip_combat_check:
+            return
         if self._in_combat and not self.in_combat():
             # if self.debug:
             #     self.screenshot('not_in_combat_calling_check_combat')
@@ -645,6 +737,10 @@ class BaseCombatTask(CombatCheck):
             self.key_config[key] = best.name
             self.log_info(f'set_key {key} to {best.name}')
 
+    def has_short_action(self):
+        """是否有短动作条"""
+        return self.find_one(self.get_target_names()[0], box='target_box_short', threshold=0.6)
+
     def load_hotkey(self, force=False):
         """加载或自动设置游戏内技能热键。
 
@@ -654,10 +750,11 @@ class BaseCombatTask(CombatCheck):
         if not self.hot_key_verified or force:
             self.hot_key_verified = True
             scale = 1.2
-            # self.set_key('Resonance Key', self.get_box_by_name('e').scale(scale))
-            self.set_key('Echo Key', self.get_box_by_name('r').scale(scale))
-            self.set_key('Liberation Key', self.get_box_by_name('q').scale(scale))
-            # self.set_key('Tool Key', self.get_box_by_name('t').scale(scale))
+            if not self.has_short_action():
+                # self.set_key('Resonance Key', self.get_box_by_name('e').scale(scale))
+                self.set_key('Echo Key', self.get_box_by_name('r').scale(scale))
+                self.set_key('Liberation Key', self.get_box_by_name('q').scale(scale))
+                # self.set_key('Tool Key', self.get_box_by_name('t').scale(scale))
 
             self.info_set('Liberation Key', self.get_liberation_key())
             # self.info_set('Resonance Key', self.get_resonance_key())
@@ -676,6 +773,7 @@ class BaseCombatTask(CombatCheck):
         in_team, current_index, count = self.in_team()
         if not in_team:
             return
+        previous_char_identity = self._char_identity(self.chars)
         # self.log_info('load chars')
         self.chars[0] = get_char_by_pos(self, self.get_box_by_name('box_char_1'), 0, safe_get(self.chars, 0))
         self.chars[1] = get_char_by_pos(self, self.get_box_by_name('box_char_2'), 1, safe_get(self.chars, 1))
@@ -689,7 +787,7 @@ class BaseCombatTask(CombatCheck):
         else:
             if len(self.chars) == 3:
                 self.chars = self.chars[:2]
-            logger.info(f'team size changed to 2')
+                logger.info(f'team size changed to 2')
 
         for char in self.chars:
             if char is not None:
@@ -700,10 +798,23 @@ class BaseCombatTask(CombatCheck):
                     char.is_current_char = False
         self.combat_start = time.time()
         if len(self.chars) >= 2:
-            self.info_set('Chars', self.chars)
-            for c in self.chars:
-                self.log_info(f'loaded chars success {c} {c.confidence}')
+            if self._char_identity(self.chars) != previous_char_identity:
+                translated_names = []
+                for c in self.chars:
+                    if c is not None:
+                        class_name = c.name
+                        official_name = mismatched_names.get(class_name, class_name)
+                        # 单元测试时 self._app 为 None，此时不进行翻译，直接回传原名
+                        translated_name = self.tr(official_name) if self._app is not None else official_name
+                        translated_names.append(translated_name)
+                self.info_set('Chars', ', '.join(translated_names))
+                for c in self.chars:
+                    self.log_info(f'loaded chars success {c} {c.confidence}')
             return True
+
+    @staticmethod
+    def _char_identity(chars):
+        return tuple((char.char_name, char.name) if char is not None else None for char in chars)
 
     @staticmethod
     def should_update(the_char, old_char):

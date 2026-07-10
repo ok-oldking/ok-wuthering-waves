@@ -6,6 +6,10 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+  actions: write
+
 jobs:
   build:
     name: Build exe with launcher
@@ -13,8 +17,9 @@ jobs:
 
     env:
       PYTHONIOENCODING: 'UTF-8'
-      #      SIGN_BUILD: 'true'
       SIGN_BUILD: 'false'
+      BUILD_EXE: 'true'
+      USE_RELEASE: 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.3.74'
 
     strategy:
       matrix:
@@ -36,9 +41,10 @@ jobs:
           submodules: true
           lfs: true
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -54,11 +60,39 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: inline_ok_requirements
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          python -m ok.update.inline_ok_requirements --tag ${{ github.ref_name }}
+          python -m ok.update.inline_ok_requirements --tag "$env:RELEASE_TAG"
 
       - name: Run tests
+        env:
+          GITHUB_TOKEN: ''
+          GH_TOKEN: ''
+          CNB_TOKEN: ''
+          OK_GH: ''
+          SIGNPATH_API_TOKEN: ''
+          GEMINI_API_KEY: ''
+          AI_API_KEY: ''
+          MirrorChyanUploadToken: ''
+          ACTIONS_RUNTIME_TOKEN: ''
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ''
         run: |
+          @(
+            'GITHUB_TOKEN',
+            'GH_TOKEN',
+            'CNB_TOKEN',
+            'OK_GH',
+            'SIGNPATH_API_TOKEN',
+            'GEMINI_API_KEY',
+            'AI_API_KEY',
+            'MirrorChyanUploadToken',
+            'ACTIONS_RUNTIME_TOKEN',
+            'ACTIONS_ID_TOKEN_REQUEST_TOKEN'
+          ) | ForEach-Object {
+            Remove-Item "Env:\$_" -ErrorAction SilentlyContinue
+          }
+
           Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
               Write-Host "Running tests in $($_.FullName)"
               try {
@@ -76,6 +110,18 @@ jobs:
               }
           }
 
+      - name: Check release version
+        id: release-version
+        if: env.BUILD_EXE == 'true'
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $tag = $env:RELEASE_TAG
+          $isRelease = $tag -match '^v?\d+\.\d+\.\d+$'
+          "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          Write-Host "Release version: $isRelease"
+
       - name: Sync Repositories
         id: sync   # Give the step an ID to access its outputs
         uses: ok-oldking/partial-sync-repo@master # Replace with your action path
@@ -88,24 +134,22 @@ jobs:
           gitignore_file: '.update_repo_gitignore'
           show_author: true
 
-      - name: Check release version
-        id: release-version
-        shell: pwsh
-        run: |
-          $tag = "${{ github.ref_name }}"
-          $isRelease = $tag -match '^v?\d+\.\d+\.\d+$'
-          "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
-          Write-Host "Release version: $isRelease"
+      - name: pyappify build-exe-only use_release
+        id: build-exe-only-use_release
+        uses: ok-oldking/pyappify-action@master
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.USE_RELEASE != ''
+        with:
+          use_release: ${{ env.USE_RELEASE }}
 
       - name: pyappify build-exe-only
         id: build-exe-only
         uses: ok-oldking/pyappify-action@master
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.USE_RELEASE == ''
         with:
-          build_exe_only: false
-      #          use_release: https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v2.7.12
+          build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
 
       - name: Upload unsigned EXE artifact
-        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
         id: upload-unsigned-artifact
         uses: actions/upload-artifact@v4
         with:
@@ -113,7 +157,7 @@ jobs:
           path: ${{ steps.build-exe-only.outputs.exe-path }}
 
       - name: Sign EXE
-        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
         uses: signpath/github-action-submit-signing-request@v1.1
         with:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
@@ -127,35 +171,36 @@ jobs:
           output-artifact-directory: ${{ steps.build-exe-only.outputs.exe-folder }}
 
       - name: pyappify build-setup-exe
-        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
         id: build-setup-exe
         uses: ok-oldking/pyappify-action@master
 
-      - name: Upload unsigned setup EXE artifact
-        if: steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
+      - name: Upload unsigned China setup EXE artifact
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
         id: upload-unsigned-setup-artifact
         uses: actions/upload-artifact@v4
         with:
           name: setup-to-sign
-          path: pyappify_dist/ok-ww-win32-online-setup.exe
+          path: pyappify_dist/ok-ww-win32-China-setup.exe
+          if-no-files-found: error
 
-      #      - name: Sign setup EXE
-      #        if: env.SIGN_BUILD == 'true'
-      #        uses: signpath/github-action-submit-signing-request@v1.1
-      #        with:
-      #          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
-      #          organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
-      #          project-slug: 'ok-wuthering-waves'
-      #          signing-policy-slug: 'release-signing'
-      #          artifact-configuration-slug: "single-exe"
-      #          github-artifact-id: '${{ steps.upload-unsigned-setup-artifact.outputs.artifact-id }}'
-      #          wait-for-completion: true
-      #          wait-for-completion-timeout-in-seconds: 60000
-      #          output-artifact-directory: 'pyappify_dist'
+      - name: Sign China setup EXE
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
+        uses: signpath/github-action-submit-signing-request@v1.1
+        with:
+          api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
+          organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
+          project-slug: 'ok-wuthering-waves'
+          signing-policy-slug: 'release-signing'
+          artifact-configuration-slug: 'setupexe'
+          github-artifact-id: '${{ steps.upload-unsigned-setup-artifact.outputs.artifact-id }}'
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 60000
+          output-artifact-directory: 'pyappify_dist'
 
       - name: Release
         uses: softprops/action-gh-release@v2
-        if: steps.release-version.outputs.is_release == 'true' && startsWith(github.ref, 'refs/tags/')
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -175,7 +220,7 @@ jobs:
           files: pyappify_dist/*
 
       - name: Trigger MirrorChyanUploading
-        if: steps.release-version.outputs.is_release == 'true' && startsWith(github.ref, 'refs/tags/')
+        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true' && startsWith(github.ref, 'refs/tags/')
         shell: bash
         run: |
           gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_uploading

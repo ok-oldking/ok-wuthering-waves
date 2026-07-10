@@ -1,12 +1,24 @@
 import time
 
-from src.char.BaseChar import BaseChar
+from src.char.BaseChar import BaseChar, CharType, get_default_buff_time
 
 
 class Chisa(BaseChar):
+    def is_dps_config(self):
+        return self.task and self.task.char_config.get("Chisa DPS")
+
+    def get_char_type(self):
+        if self.is_dps_config():
+            return CharType.MAIN_DPS
+        return super().get_char_type()
+
+    def get_buff_time(self):
+        if self.is_dps_config():
+            return get_default_buff_time(CharType.MAIN_DPS)
+        return super().get_buff_time()
 
     def do_perform(self):
-        if not self.task.char_config.get("Chisa DPS"):
+        if not self.is_dps_config():
             return self.do_fast_support()
         return self.do_dps_perform()
 
@@ -34,7 +46,7 @@ class Chisa(BaseChar):
     def switch_out(self, con_full=False):
         support_buff_time = self.last_buff_time
         super().switch_out(con_full=con_full)
-        if not self.task.char_config.get("Chisa DPS"):
+        if not self.is_dps_config():
             self.last_buff_time = support_buff_time
 
     def do_dps_perform(self):
@@ -58,7 +70,7 @@ class Chisa(BaseChar):
                 start = time.time()
                 if timeout != 10:
                     timeout = 1.7
-            if (under_liber or self.task.char_config.get("Chisa DPS")) and self.is_forte_full() and self.perform_forte():
+            if (under_liber or self.is_dps_config()) and self.is_forte_full() and self.perform_forte():
                 self.check_f_on_switch = False
                 return self.switch_next_char()
             self.click()

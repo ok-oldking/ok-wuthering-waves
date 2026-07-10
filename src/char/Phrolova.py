@@ -26,8 +26,6 @@ class Phrolova(BaseChar):
         if self.flying():
             self.wait_down()
         if self.liberation_available() and self.click_liberation(wait_if_cd_ready=0):
-            if self.task.name and self.task.name == "Nightmare Nest Task":
-                self.continues_click(self.get_liberation_key(), 1)
             return self.switch_next_char()
         if self.heavy_and_liber():
             return self.switch_next_char()
@@ -46,8 +44,6 @@ class Phrolova(BaseChar):
             self.sp = True
         while timeout():
             if self.liberation_available() and self.click_liberation(wait_if_cd_ready=0):
-                if self.task.name and self.task.name == "Nightmare Nest Task":
-                    self.continues_click(self.get_liberation_key(), 1.5)
                 return self.switch_next_char()
             if self.flying():
                 self.shorekeeper_auto_dodge()
@@ -91,8 +87,6 @@ class Phrolova(BaseChar):
         if self.heavy_click_forte(check_fun=self.is_mouse_forte_full):
             self.logger.debug('Phrolova heavy_click_forte')
             self.task.wait_until(lambda: self.click_liberation(wait_if_cd_ready=0), time_out=3)
-            if self.task.name and self.task.name == "Nightmare Nest Task":
-                self.continues_click(self.get_liberation_key(), 1)
             return True
 
     def shorekeeper_auto_dodge(self):

@@ -60,7 +60,7 @@ class ForgeryTask(DomainTask):
         self.ensure_main()
 
     def teleport_into_domain(self, serial_number, daily=False):
-        self.click_relative(0.18, 0.16, after_sleep=1)
+        self.open_boss_book('ningsu')
         self.info_set('Teleport to Forgery Challenge', serial_number - 1)
         if serial_number > self.total_number:
             raise IndexError(f'Index out of range, max is {self.total_number}')

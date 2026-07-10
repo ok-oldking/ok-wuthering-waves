@@ -29,7 +29,7 @@
 
 </div>
 
-### [English Readme](README_en.md) | 涓枃璇存槑
+### [English Readme](README_en.md) | 中文说明 | [日本語Readme](README_ja.md)
 
 **婕旂ず涓庢暀绋?** [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/h6P1KWjdnB4)
 
@@ -83,12 +83,13 @@ python main_debug.py
 *   `-t` 鎴?`--task`: 鍚姩鍚庤嚜鍔ㄦ墽琛岀 N 涓换鍔°€俙1` 浠ｈ〃浠诲姟鍒楄〃涓殑绗竴涓€?*   `-e` 鎴?`--exit`: 浠诲姟鎵ц瀹屾瘯鍚庤嚜鍔ㄩ€€鍑虹▼搴忋€?
 ## 馃挰 鍔犲叆鎴戜滑
 
-*   **QQ 浜ゆ祦缇?*: `462079653` (鍏ョ兢绛旀: `鑰佺帇鍚屽OK`)
-*   **QQ 棰戦亾**: [鐐瑰嚮鍔犲叆](https://pd.qq.com/s/djmm6l44y) (缇ゆ弧鎴栬幏鍙栨渶鏂拌祫璁?
-*   **寮€鍙戣€呯兢**: `926858895` ( **娉ㄦ剰**: 姝ょ兢浠呴潰鍚戞湁寮€鍙戣兘鍔涖€佸笇鏈涘弬涓庤础鐚殑寮€鍙戣€咃紝鍏ョ兢鍓嶈纭繚鎮ㄥ凡鑳藉浠庢簮鐮佹垚鍔熻繍琛岄」鐩€?
+*   **QQ 交流群**: `1035795301` (入群答案: `老王同学OK`)
+*   **QQ 频道**: [点击加入](https://pd.qq.com/s/djmm6l44y) (群满或获取最新资讯)
+*   **开发者群**: `926858895` ( **注意**: 此群仅面向有开发能力、希望参与贡献的开发者，入群前请确保您已能够从源码成功运行项目。)
 
-鏈」鐩熀浜?[ok-script](https://github.com/ok-oldking/ok-script) 妗嗘灦寮€鍙戯紝鏍稿績浠ｇ爜浠呯害 3000 琛?(Python)锛岀畝鍗曟槗缁存姢銆傛杩庢湁鍏磋叮鐨勫紑鍙戣€呬娇鐢?[ok-script](https://github.com/ok-oldking/ok-script) 寮€鍙戞偍鑷繁鐨勮嚜鍔ㄥ寲椤圭洰銆?
-## 馃敆 浣跨敤ok-script鐨勯」鐩細
+本项目基于 [ok-script](https://github.com/ok-oldking/ok-script) 框架开发，核心代码仅约 3000 行 (Python)，简单易维护。欢迎有兴趣的开发者使用 [ok-script](https://github.com/ok-oldking/ok-script) 开发您自己的自动化项目。
+
+## 🔗 使用ok-script的项目：
 
 * 楦ｆ疆 [https://github.com/ok-oldking/ok-wuthering-wave](https://github.com/ok-oldking/ok-wuthering-waves)
 * 鍘熺(鍋滄缁存姢,

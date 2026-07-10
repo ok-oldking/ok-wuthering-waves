@@ -25,6 +25,8 @@ from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
 from src.char.Jiyan import Jiyan
 from src.char.Linnai import Linnai
+from src.char.Lucilla import Lucilla
+from src.char.Lucy import Lucy
 from src.char.Luhesi import Luhesi
 from src.char.Lupa import Lupa
 from src.char.Mortefi import Mortefi
@@ -32,6 +34,7 @@ from src.char.Mornye import Mornye
 from src.char.Phoebe import Phoebe
 from src.char.Phrolova import Phrolova
 from src.char.Qiuyuan import Qiuyuan
+from src.char.Rebecca import Rebecca
 from src.char.Roccia import Roccia
 from src.char.Sanhua import Sanhua
 from src.char.ShoreKeeper import ShoreKeeper
@@ -40,12 +43,16 @@ from src.char.Verina import Verina
 from src.char.Xiangliyao import Xiangliyao
 from src.char.Xigelika import Xigelika
 from src.char.Yinlin import Yinlin
+from src.char.YangYangSp import YangYangSp
 from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
 from src.char.Zani import Zani
 from src.char.Zhezhi import Zhezhi
+from src.char.CustomCharLoader import load_custom_char_class
 
 _char_dict_raw = {
+    Labels.yangyang_sp: {'cls': YangYangSp, 'char_type': CharType.MAIN_DPS,
+                         'ring_index': Elements.HAVOC},
     Labels.char_yinlin: {'cls': Yinlin, 'char_type': CharType.SUB_DPS,
                          'ring_index': Elements.ELECTRIC},
     Labels.char_verina: {'cls': Verina, 'char_type': CharType.HEALER,
@@ -115,6 +122,10 @@ _char_dict_raw = {
     Labels.char_xigelika: {'cls': Xigelika, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.WIND},
     Labels.char_luhesi: {'cls': Luhesi, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
     Labels.char_hiyuki: {'cls': Hiyuki, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.ICE},
+    Labels.char_lucilla: {'cls': Lucilla, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ICE,
+                          'target_box_short_combat_check': True},
+    Labels.char_lucy: {'cls': Lucy, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
+    Labels.char_rebecca: {'cls': Rebecca, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ELECTRIC},
 }
 
 char_dict = {}
@@ -131,16 +142,11 @@ char_names = char_dict.keys()
 
 
 def _get_char_type(task, info):
-    char_config = getattr(task, 'char_config', {})
-    if info.get('cls') is Iuno and char_config.get('Iuno C6'):
-        return CharType.MAIN_DPS
     return info.get('char_type', CharType.MAIN_DPS)
 
 
 def _get_buff_time(task, info):
     char_type = _get_char_type(task, info)
-    if info.get('cls') is Iuno and char_type == CharType.MAIN_DPS:
-        return get_default_buff_time(CharType.MAIN_DPS)
     return info.get('buff_time', get_default_buff_time(char_type))
 
 
@@ -148,6 +154,7 @@ def _apply_char_config(task, char, info):
     if char and info:
         char.set_char_type(_get_char_type(task, info))
         char.set_buff_time(_get_buff_time(task, info))
+        char.target_box_short_combat_check = info.get('target_box_short_combat_check', False)
     return char
 
 
@@ -159,16 +166,26 @@ def get_char_by_pos(task, box, index, old_char):
     if old_char and old_char.confidence > 0.92 and old_char.char_name in char_names:
         char = task.find_one(old_char.char_name, box=box, threshold=0.6)
         if char:
-            _apply_char_config(task, old_char, char_dict.get(old_char.char_name))
+            info = char_dict.get(old_char.char_name)
+            cls = load_custom_char_class(info.get('cls'))
+            if type(old_char) is not cls:
+                return _apply_char_config(task, cls(task, index, char_name=old_char.char_name,
+                                                    confidence=char.confidence,
+                                                    ring_index=info.get('ring_index', -1),
+                                                    char_type=_get_char_type(task, info),
+                                                    buff_time=_get_buff_time(task, info)), info)
+            _apply_char_config(task, old_char, info)
             return old_char
     if not char:
         char = task.find_best_match_in_box(box, char_names, threshold=0.6)
         if char:
             info = char_dict.get(char.name)
             name = char.name
-            cls = info.get('cls')
-            return cls(task, index, char_name=name, confidence=char.confidence, ring_index=info.get('ring_index', -1),
-                       char_type=_get_char_type(task, info), buff_time=_get_buff_time(task, info))
+            cls = load_custom_char_class(info.get('cls'))
+            return _apply_char_config(task, cls(task, index, char_name=name, confidence=char.confidence,
+                                                ring_index=info.get('ring_index', -1),
+                                                char_type=_get_char_type(task, info),
+                                                buff_time=_get_buff_time(task, info)), info)
     task.log_info(f'could not find char {index} {info} {highest_confidence}')
     if old_char:
         return old_char
