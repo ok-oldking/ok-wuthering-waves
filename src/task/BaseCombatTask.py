@@ -238,19 +238,19 @@ class BaseCombatTask(CombatCheck):
         # ① F2 图鉴 → 全部怪物 → 搜索对应语言的无冠者
         gray_book = self.openF2Book("gray_book_all_monsters")
         self.click_box(gray_book, after_sleep=1)
-        self.click(0.13, 0.14, after_sleep=0.5)        # 搜索图标
+        self.click(0.13, 0.14, after_sleep=0.5)  # 搜索图标
         self.input_text(self.get_revive_search_boss_name())
         self.sleep(0.3)
-        self.click(0.20, 0.14, after_sleep=0.3)         # 点搜索框确保焦点
-        self.send_key('enter', after_sleep=0.5)          # 回车确认搜索, 刷新结果列表
-        self.click(0.13, 0.24, after_sleep=0.5)         # 选中第一条结果
+        self.click(0.20, 0.14, after_sleep=0.3)  # 点搜索框确保焦点
+        self.send_key('enter', after_sleep=0.5)  # 回车确认搜索, 刷新结果列表
+        self.click(0.13, 0.24, after_sleep=0.5)  # 选中第一条结果
         # ② 点"探测"打开地图并定位到目标 boss (只点一次, 避免地图打开后误触传送点)
         self.click(0.89, 0.92, after_sleep=1)
         # ③ 等待地图打开 (检测地图传送点), 若未打开则补点一次兜底
         if not self.wait_until(lambda: self.find_best_match_in_box(
                 self.box_of_screen(0.1, 0.1, 0.9, 0.9),
                 ['map_way_point', 'map_way_point_big'], 0.6) is not None,
-                time_out=4, raise_if_not_found=False):
+                               time_out=4, raise_if_not_found=False):
             logger.warning('revive_at_tower_and_heal: map not opened, retry探测')
             self.click(0.89, 0.92, after_sleep=1)
         # ④ 在已打开的地图上找最近传送点回血
@@ -311,6 +311,20 @@ class BaseCombatTask(CombatCheck):
             exception_type = NotInCombatException
         raise exception_type(message)
 
+    def wait_combat(self, target=True, time_out=10, raise_if_not_found=True):
+        start = time.time()
+        result = None
+        while time.time() - start < time_out:
+            if result := self.in_combat():
+                break
+            if target:
+                self.middle_click(interval=0.5)
+            self.sleep(0.02)
+
+        if raise_if_not_found and not result:
+            raise Exception('wait condition failed while walking')
+        return result
+
     def available(self, name, check_color=True, check_cd=True):
         """检查指定名称的技能或动作是否可用 (通过颜色百分比和冷却时间判断)。
 
@@ -336,7 +350,7 @@ class BaseCombatTask(CombatCheck):
             current = 0
         return current
 
-    def combat_once(self, wait_combat_time=200, raise_if_not_found=True):
+    def combat_once(self, wait_combat_time=200, raise_if_not_found=True, target=False):
         """执行一次完整的战斗流程。
 
         Args:
@@ -344,7 +358,7 @@ class BaseCombatTask(CombatCheck):
             raise_if_not_found (bool, optional): 如果未找到战斗状态是否抛出异常。默认为 True。
         """
         if wait_combat_time > 0:
-            self.wait_until(self.in_combat, time_out=wait_combat_time, raise_if_not_found=raise_if_not_found)
+            self.wait_combat(target=target, time_out=wait_combat_time, raise_if_not_found=raise_if_not_found)
         self.load_chars()
         self.info['Combat Count'] = self.info.get('Combat Count', 0) + 1
         try:
