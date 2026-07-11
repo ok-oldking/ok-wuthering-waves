@@ -43,6 +43,7 @@ from src.char.Verina import Verina
 from src.char.Xiangliyao import Xiangliyao
 from src.char.Xigelika import Xigelika
 from src.char.Yinlin import Yinlin
+from src.char.YangYangSp import YangYangSp
 from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
 from src.char.Zani import Zani
@@ -50,6 +51,8 @@ from src.char.Zhezhi import Zhezhi
 from src.char.CustomCharLoader import load_custom_char_class
 
 _char_dict_raw = {
+    Labels.yangyang_sp: {'cls': YangYangSp, 'char_type': CharType.MAIN_DPS,
+                         'ring_index': Elements.HAVOC},
     Labels.char_yinlin: {'cls': Yinlin, 'char_type': CharType.SUB_DPS,
                          'ring_index': Elements.ELECTRIC},
     Labels.char_verina: {'cls': Verina, 'char_type': CharType.HEALER,

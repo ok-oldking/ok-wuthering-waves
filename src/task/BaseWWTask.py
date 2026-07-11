@@ -113,6 +113,9 @@ class BaseWWTask(BaseTask):
                                          name='search_dialog')
         return f_search_box
 
+    def find_f_with_claim_text(self):
+        return self.find_f_with_text(target_text=[re.compile('领取|領取|Claim', re.IGNORECASE)])
+
     def find_f_with_text(self, target_text=None):
         f = self.find_one(Labels.pick_up_f_hcenter_vcenter, box=self.f_search_box, threshold=0.8)
         if not f:
@@ -417,7 +420,7 @@ class BaseWWTask(BaseTask):
         self.info_set('back_up_stamina', back_up)
         return current, back_up, current + back_up
 
-    def use_stamina(self, once, must_use=0):
+    def use_stamina(self, once=60, must_use=0):
         self.sleep(1)
         current, back_up, total = self.get_stamina()
         y = 0.62
@@ -435,7 +438,7 @@ class BaseWWTask(BaseTask):
             logger.info(f"使用单倍体力")
         self.click(x, y, after_sleep=1)
         if self.wait_feature('gem_add_stamina', horizontal_variance=0.4, vertical_variance=0.05,
-                             time_out=2):  # 看是否需要使用备用体力
+                             time_out=2, settle_time=0.5):  # 看是否需要使用备用体力
             self.click(0.70, 0.71, after_sleep=1)  # 点击确认
             self.click(0.70, 0.71, after_sleep=1)
             self.back(after_sleep=1)
@@ -517,13 +520,8 @@ class BaseWWTask(BaseTask):
             logger.info(f"handle_claim_button found a claim reward")
             return True
 
-    def handle_claim_button_now(self):
-        if self.has_claim():
-            self.sleep(0.5)
-            self.send_key('esc')
-            self.sleep(0.2)
-            logger.info(f"handle_claim_button_now found a claim reward")
-            return True
+    def has_claim_stamina(self):
+        return not self.in_team()[0] and self.find_one('claim_stamina_sign')
 
     def has_claim(self):
         return not self.in_team()[0] and self.find_one('claim_cancel_button_hcenter_vcenter', horizontal_variance=0.05,
@@ -580,7 +578,7 @@ class BaseWWTask(BaseTask):
 
     def pick_f(self, handle_claim=True):
         if self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box, threshold=0.8):
-            self.send_key('f', after_sleep=0.8)
+            self.send_key('f', after_sleep=1)
             if not handle_claim:
                 return True
             if not self.handle_claim_button():
@@ -601,7 +599,7 @@ class BaseWWTask(BaseTask):
 
     def walk_to_treasure(self, send_f=True, raise_if_not_found=True):
         self.log_info('start walk_to_treasure')
-        if not self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text):
+        if not self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_claim_text):
             if not self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text):
                 raise Exception(f'can not walk to treasure!')
         if send_f:
@@ -947,17 +945,17 @@ class BaseWWTask(BaseTask):
         x = 0.24
         self.sleep(0.4)
         if name == 'ningsu':
-            y = 0.28
+            y = 0.4
         elif name == 'moni':
-            y = 0.39
+            y = 0.3
         elif name == 'qiangdi':
             y = 0.49
         elif name == 'wuyin':
-            y = 0.6
+            y = 0.73
         elif name == 'zhange':
-            y = 0.7
+            y = 0.61
         elif name == 'mengyan':
-            y = 0.86
+            y = 0.83
         elif name == 'canxiang':
             self.click_relative(0.356, 0.882, after_sleep=after_sleep)
             y = 0.86
@@ -1015,6 +1013,9 @@ class BaseWWTask(BaseTask):
             relative_x=-1, raise_if_not_found=False,
             threshold=0.6,
             time_out=1)
+
+    def click_team_challenge(self):
+        self.wait_click_feature('team_start_challenge', raise_if_not_found=True, after_sleep=1)
 
     def wait_click_travel(self):
         self.wait_until(self.click_traval_button, raise_if_not_found=True, time_out=10)
@@ -1075,7 +1076,9 @@ class BaseWWTask(BaseTask):
             target = max(btns, key=lambda box: box.y)
         self.draw_boxes(boxes=target, color="red")
         self.click(target, after_sleep=1)
-        self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom'], time_out=10, settle_time=0.5)
+        feature = self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom', 'team_close'], time_out=10,
+                                    settle_time=0.5, raise_if_not_found=True)
+        return feature.name == 'team_close'
 
     def change_time_to_night(self):
         logger.info('change time to night')
