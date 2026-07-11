@@ -7,15 +7,15 @@ from src.task.EnhanceEchoTask import EnhanceEchoTask
 class FakeEnhanceTask:
     """Drives the drop/lock status checks with scripted feature boxes.
 
-    find_best_match_in_box records every search box it receives, so a test
-    can assert the box covers both sibling templates: a sibling template
+    find_best_match_in_box records every call it receives, so a test can
+    assert the search box covers both sibling templates: a sibling template
     larger than the search area crashes cv2.matchTemplate (#1238, #1291).
     """
 
     def __init__(self, boxes, match_name):
         self.boxes = boxes
         self.match_name = match_name
-        self.searched_boxes = []
+        self.search_calls = []
         self.fail_reason = ''
         self.config = {}
         self.counters = {}
@@ -24,7 +24,7 @@ class FakeEnhanceTask:
         return self.boxes[name]
 
     def find_best_match_in_box(self, box, names, threshold=0):
-        self.searched_boxes.append(box)
+        self.search_calls.append((box, names, threshold))
         return Box(0, 0, 1, 1, name=self.match_name)
 
     def info_incr(self, name):
@@ -34,16 +34,16 @@ class FakeEnhanceTask:
         return self.counters.get(name, 0)
 
     def send_key(self, key, after_sleep=0):
-        pass
+        """No-op: key presses do not affect the search-box geometry."""
 
     def log_info(self, *args, **kwargs):
-        pass
+        """No-op: logging is irrelevant to the assertions."""
 
     def screenshot_echo(self, name):
-        pass
+        """No-op: screenshots are irrelevant to the assertions."""
 
     def esc(self):
-        pass
+        """No-op: leaving the screen is irrelevant to the assertions."""
 
     def wait_ocr(self, *args, **kwargs):
         return None
@@ -71,9 +71,11 @@ class TestEnhanceEchoStatusBox(unittest.TestCase):
 
         EnhanceEchoTask.trash_and_esc(task)
 
-        self.assertEqual(len(task.searched_boxes), 1)
-        self.assertCovers(task.searched_boxes[0], dropped)
-        self.assertCovers(task.searched_boxes[0], not_dropped)
+        [(search, names, threshold)] = task.search_calls
+        self.assertEqual(names, ['echo_dropped', 'echo_not_dropped'])
+        self.assertEqual(threshold, 0.7)
+        self.assertCovers(search, dropped)
+        self.assertCovers(search, not_dropped)
 
     def test_lock_search_box_covers_both_lock_templates(self):
         locked = Box(631, 152, 23, 26, name='echo_locked')
@@ -84,9 +86,11 @@ class TestEnhanceEchoStatusBox(unittest.TestCase):
 
         EnhanceEchoTask.lock_and_esc(task)
 
-        self.assertEqual(len(task.searched_boxes), 1)
-        self.assertCovers(task.searched_boxes[0], locked)
-        self.assertCovers(task.searched_boxes[0], not_locked)
+        [(search, names, threshold)] = task.search_calls
+        self.assertEqual(names, ['echo_locked', 'echo_not_locked'])
+        self.assertEqual(threshold, 0.7)
+        self.assertCovers(search, locked)
+        self.assertCovers(search, not_locked)
 
 
 if __name__ == '__main__':
