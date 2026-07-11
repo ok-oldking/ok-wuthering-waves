@@ -55,7 +55,6 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         else:
             must_use = 0
         self.info_incr('used stamina', 0)
-        fail_count = 0
         while True:
             self.sleep(1)
             self.openF2Book("gray_book_boss")

@@ -83,16 +83,24 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def combat_nest(self, nest):
         target_box = nest.box if isinstance(nest, NestTarget) else nest
         self.click(target_box, after_sleep=2)
-        if not self._travel_to_nest_or_skip(nest):
-            return
-        self.sleep(1)
-        while self.find_f_with_text():
-            self.send_key('f', after_sleep=1)
-            self.wait_in_team_and_world(time_out=40, raise_if_not_found=False)
-        self.sleep(2)
-        self.run_until(self.in_combat, 'w', time_out=10, running=False, target=True)
+        feature = self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom', 'team_close'], time_out=10,
+                                    settle_time=0.5, raise_if_not_found=True)
+        is_team = feature.name == 'team_close'
+        if is_team:
+            self.click_team_challenge()
+            self.wait_in_team_and_world(time_out=120)
+        else:
+            if not self._travel_to_nest_or_skip(nest):
+                return
+            self.sleep(1)
+            while self.find_f_with_text():
+                self.send_key('f', after_sleep=1)
+                self.wait_in_team_and_world(time_out=40, raise_if_not_found=False)
+            self.sleep(2)
+            self.run_until(self.in_combat, 'w', time_out=10, running=False, target=True)
+        need_find = False
         try:
-            self.combat_once(wait_combat_time=0)
+            need_find = self.combat_once(wait_combat_time=10, target=True, raise_if_not_found=False)
         except CharRevivedException:
             self.log_info('nightmare nest: death recovered, re-enter from F2 book')
             return
@@ -102,13 +110,17 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 return
         else:
             self.sleep(3)
-        if not self.walk_find_echo(time_out=5, backward_time=2.5):
+        if need_find and not self.walk_find_echo(time_out=5, backward_time=2.5):
             dropped = self.yolo_find_echo(turn=True, use_color=False, time_out=30)[0]
             logger.info(f'farm echo yolo find {dropped}')
         else:
             dropped = True
             self.log_info(f'farm echo walk find true')
         self._capture_success = dropped
+        if is_team:
+            self.send_key('esc', after_sleep=1)
+            self.click(0.652, 0.628, after_sleep=2)
+            self.wait_in_team_and_world(time_out=120)
         self.sleep(1)
 
     def _travel_to_nest_or_skip(self, nest):
@@ -176,7 +188,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             for match in re.finditer(self.count_re, count_box.name):
                 numerator = match.group(1)
                 denominator = match.group(2)
-                if numerator != denominator and denominator in ['24', '36', '48']:
+                if numerator != denominator and denominator in ['24', '36', '48'] and numerator == '0':
                     cache_key = self._make_nest_cache_key(count_box, denominator)
                     if cache_key in self._unreachable_nests:
                         self.log_info(f'skip cached unreachable nightmare nest: {cache_key}')
