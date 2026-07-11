@@ -23,7 +23,8 @@ class ForgeryTask(DomainTask):
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
         }
         self.stamina_once = 40
-        self.total_number = 15
+        self.structure = [5, 5, 5, 5]
+        self.total_number = sum(self.structure)
         self.material_mat = None
 
     def run(self):
@@ -64,21 +65,9 @@ class ForgeryTask(DomainTask):
         self.info_set('Teleport to Forgery Challenge', serial_number - 1)
         if serial_number > self.total_number:
             raise IndexError(f'Index out of range, max is {self.total_number}')
-        self.click_on_book_target(serial_number, self.total_number)
-        # if daily:
-        #     self.get_material_mat()
-        self.wait_click_travel()
-        self.wait_in_team_and_world(time_out=self.teleport_timeout)
-        self.sleep(1)
-        self.walk_until_f(time_out=2)
-        for _ in range(5):
-            self.pick_f()
-            if self.wait_click_feature('gray_button_challenge', relative_x=4, raise_if_not_found=False,
-                                       click_after_delay=1, threshold=0.6, after_sleep=1, time_out=3):
-                self.click_relative(0.93, 0.90, after_sleep=1)
-                self.wait_in_team_and_world(time_out=self.teleport_timeout)
-                return
-        raise RuntimeError('Failed to enter Forgery Challenge')
+        self.click_on_book_target(serial_number, self.total_number, self.structure)
+        self.click(0.891, 0.910, after_sleep=1)
+        self.click_team_challenge()
 
     def get_material_mat(self):
         min_width = self.width_of_screen(80 / 2560)

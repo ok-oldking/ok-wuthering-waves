@@ -75,7 +75,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
 
     def has_echo_notification(self):
         if self.find_best_match_in_box(self.box_of_screen(0.078, 0.488, 0.094, 0.514),
-                                       ['char_1_text', 'char_3_text'], 0.7,
+                                       ['char_1_text', 'char_3_text'], 0.6,
                                        frame_processor=convert_image_to_negative):
             self._capture_success = True
         return self._capture_success
@@ -211,7 +211,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
 
 def convert_image_to_negative(img):
     to_gray = False
-    _mat = cv2.resize(img, None, fx=0.8, fy=0.8, interpolation=cv2.INTER_LINEAR)
+    _mat = img
     if len(_mat.shape) == 3:
         to_gray = True
         _mat = cv2.cvtColor(_mat, cv2.COLOR_BGR2GRAY)
