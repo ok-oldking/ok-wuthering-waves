@@ -1,5 +1,3 @@
-import re
-
 from qfluentwidgets import FluentIcon
 
 from ok import Logger
@@ -53,19 +51,9 @@ class SimulationTask(DomainTask):
         if not btns:
             raise Exception("can't find boss_proceed")
         top_btn = min(btns, key=lambda box: box.y)
-        self.click_box(top_btn, after_sleep=1)
-        self.wait_click_travel()
-        self.wait_in_team_and_world(time_out=self.teleport_timeout)
-        self.sleep(1)
-        self.walk_until_f(time_out=1)
-        self.pick_f()
-        if selection == 'Resonator EXP':
-            index = 0
-        elif selection == 'Weapon EXP':
-            index = 1
-        else:  # selection == 'Shell Credit'
-            index = 2
-        self.click_relative(0.22, 0.17 + index * 0.08, after_sleep=1)
-        self.click_relative(0.93, 0.90, after_sleep=1)
-        self.click_relative(0.93, 0.90, after_sleep=1)
+        self.click_box(top_btn, after_sleep=2)
+        # 点击[单人挑战]
+        self.click_relative(2270/2560,1300/1440, after_sleep=2)
+        # 确认配队
+        self.click_relative(2270/2560,1300/1440, after_sleep=2)
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
