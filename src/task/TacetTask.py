@@ -20,7 +20,8 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         default_config = {
             'Which Tacet Suppression to Farm': 1,  # starts with 1
         }
-        self.total_number = 17
+        self.structure = [2, 5, 5, 7]
+        self.total_number = sum(self.structure)
         self.target_enemy_time_out = 10
         default_config.update(self.default_config)
         self.config_description = {
@@ -98,4 +99,4 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.info_set('Teleport to Tacet Suppression', index)
         if index >= self.total_number:
             raise IndexError(f'Index out of range, max is {self.total_number}')
-        return self.click_on_book_target(index + 1, self.total_number)
+        return self.click_on_book_target(index + 1, self.total_number, self.structure)

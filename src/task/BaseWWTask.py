@@ -1061,10 +1061,23 @@ class BaseWWTask(BaseTask):
         bar_top = bar.y / self.height
         return bar_top
 
-    def click_on_book_target(self, serial_number: int, total_number: int):
+    def click_on_book_target(self, serial_number: int, total_number: int, structure: list[int] = None):
+        def get_cross_count(structure, sn):
+            current_sum = 0
+            cross_count = 0
+            for s in structure:
+                current_sum += s
+                if sn > current_sum:
+                    cross_count += 1
+                else:
+                    break
+            return cross_count
+
         self.sleep(0.5)
         bar_bottom = 0.8806
         bar_x = 0.9730
+        separator = 0.01
+        cross_count = 0
         container_max_rows = 4
         target_index = -1
 
@@ -1073,9 +1086,15 @@ class BaseWWTask(BaseTask):
         if serial_number <= container_max_rows:
             target_index = serial_number - 1
         else:
-            item_h = (bar_bottom - bar_top) / total_number
+            container_h = bar_bottom - bar_top
+            if structure:
+                cross_count = get_cross_count(structure, serial_number)
+                cross_count += 1
+                container_h -= len(structure) * separator
+            item_h = container_h / total_number
             height = item_h * serial_number
-            self.click(bar_x, bar_top + height, after_sleep=1)
+            to_click_y = min(bar_top + height + cross_count * separator, bar_bottom)
+            self.click(bar_x, to_click_y, after_sleep=1)
         btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
         if not btns:
             raise Exception("can't find boss_proceed")
