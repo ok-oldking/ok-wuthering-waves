@@ -53,7 +53,7 @@ class SimulationTask(DomainTask):
         top_btn = min(btns, key=lambda box: box.y)
         self.click_box(top_btn, after_sleep=2)
         # 点击[单人挑战]
-        self.click_relative(2270/2560,1300/1440, after_sleep=2)
+        self.click_relative(2270/2560, 1300/1440, after_sleep=2)
         # 确认配队
-        self.click_relative(2270/2560,1300/1440, after_sleep=2)
+        self.click_relative(2270/2560, 1300/1440, after_sleep=2)
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
