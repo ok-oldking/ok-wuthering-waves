@@ -566,7 +566,7 @@ msgstr "シミュレーション挑戦"
 
 msgid ""
 "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
-msgstr "選択したシミュレーション挑戦を周回します。「黎明の塔-剣闘士の肖像」にテレポート可能である必要があります。"
+msgstr "選択したシミュレーション挑戦を周回します。「夢州-演武場」にテレポート可能である必要があります。"
 
 msgid "Material Selection"
 msgstr "素材選択"

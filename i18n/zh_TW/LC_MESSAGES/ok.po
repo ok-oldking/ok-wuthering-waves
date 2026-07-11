@@ -564,7 +564,7 @@ msgstr "模擬領域"
 
 msgid ""
 "Farms the selected Simulation Challenge. Must be able to teleport (F2)."
-msgstr "刷指定的模擬領域，需要「前往-角鬥士的肖像」可傳送"
+msgstr "刷指定的模擬領域，需要「夢州-演武場」可傳送"
 
 msgid "Material Selection"
 msgstr "材料選擇"
