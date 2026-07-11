@@ -17,6 +17,7 @@ logger = Logger.get_logger(__name__)
 number_re = re.compile(r'(\d+)')
 stamina_re = re.compile(r'(\d+)/(\d+)')
 LOGIN_TEXTS = ["登录", re.compile('Log', re.IGNORECASE), '登入']
+LOGIN_CLICK_SETTLE_TIME = 4  # seconds; keep below AutoLoginTask trigger_interval (5) so triggers don't overlap
 f_white_color = {
     'r': (235, 255),  # Red range
     'g': (235, 255),  # Green range
@@ -714,8 +715,16 @@ class BaseWWTask(BaseTask):
             if login := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7),
                                         match=LOGIN_TEXTS):
                 if not self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match="+86"):
-                    self.click(login, after_sleep=1)
-                    self.log_info('点击登录按钮!')
+                    # the game may be auto logging in with saved credentials, wait and
+                    # confirm the login button is still there before clicking (#1356)
+                    self.sleep(LOGIN_CLICK_SETTLE_TIME)
+                    texts = self.ocr(log=self.debug)
+                    login = self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7),
+                                            match=LOGIN_TEXTS)
+                    if login and not self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7),
+                                                     match="+86"):
+                        self.click(login, after_sleep=1)
+                        self.log_info('点击登录按钮!')
                 return False
             if agree := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match="同意"):
                 self.log_debug(f'found agree {agree}')
