@@ -68,6 +68,7 @@ class ForgeryTask(DomainTask):
         self.click_on_book_target(serial_number, self.total_number, self.structure)
         self.click(0.891, 0.910, after_sleep=1)
         self.click_team_challenge()
+        self.wait_in_team_and_world(time_out=self.teleport_timeout)
 
     def get_material_mat(self):
         min_width = self.width_of_screen(80 / 2560)

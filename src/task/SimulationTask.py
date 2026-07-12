@@ -60,3 +60,4 @@ class SimulationTask(DomainTask):
         self.click(0.898, 0.533 + index * 0.14, after_sleep=1)
         self.click_relative(0.93, 0.90, after_sleep=1)
         self.click_team_challenge()
+        self.wait_in_team_and_world(time_out=self.teleport_timeout)
