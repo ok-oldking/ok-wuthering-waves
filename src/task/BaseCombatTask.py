@@ -358,7 +358,7 @@ class BaseCombatTask(CombatCheck):
             raise_if_not_found (bool, optional): 如果未找到战斗状态是否抛出异常。默认为 True。
         """
         if wait_combat_time > 0:
-            self.wait_combat(target=target, time_out=wait_combat_time, raise_if_not_found=raise_if_not_found)
+            result = self.wait_combat(target=target, time_out=wait_combat_time, raise_if_not_found=raise_if_not_found)
         self.load_chars()
         self.info['Combat Count'] = self.info.get('Combat Count', 0) + 1
         try:
@@ -372,6 +372,7 @@ class BaseCombatTask(CombatCheck):
         self.combat_end()
         self.switch_healer()
         self.wait_in_team_and_world(time_out=10, raise_if_not_found=False)
+        return result
 
     def run_in_circle_to_find_echo(self, circle_count=3):
         """通过绕圈移动来尝试拾取声骸。

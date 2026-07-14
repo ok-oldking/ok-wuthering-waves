@@ -1319,6 +1319,16 @@
             "id": 261,
             "name": "claim_stamina_sign",
             "supercategory": ""
+        },
+        {
+            "id": 262,
+            "name": "char_linnai2",
+            "supercategory": ""
+        },
+        {
+            "id": 263,
+            "name": "char_chisa2",
+            "supercategory": ""
         }
     ],
     "images": [
@@ -1946,7 +1956,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/38.png",
+            "file_name": "images/39.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -1973,7 +1983,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/39.png",
+            "file_name": "images/40.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -1982,7 +1992,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/40.png",
+            "file_name": "images/41.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -2099,7 +2109,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/41.png",
+            "file_name": "images/42.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -2338,7 +2348,7 @@
         },
         {
             "id": 241,
-            "file_name": "images/42.png",
+            "file_name": "images/43.png",
             "width": 2048,
             "height": 1152
         },
@@ -2465,6 +2475,18 @@
         {
             "id": 268,
             "file_name": "images/33.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 269,
+            "file_name": "images/37.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 270,
+            "file_name": "images/38.png",
             "width": 1920,
             "height": 1080
         }
@@ -4557,6 +4579,32 @@
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
+        },
+        {
+            "id": 150,
+            "image_id": 269,
+            "category_id": 262,
+            "bbox": [
+                1774,
+                221,
+                41,
+                43
+            ],
+            "area": 1763,
+            "iscrowd": 0
+        },
+        {
+            "id": 151,
+            "image_id": 270,
+            "category_id": 263,
+            "bbox": [
+                1776,
+                227,
+                42,
+                41
+            ],
+            "area": 1722,
+            "iscrowd": 0
         },
         {
             "id": 154,

@@ -220,7 +220,7 @@ msgid "Diagnosis"
 msgstr "診斷問題"
 
 msgid "Diagnosis Problem, Performance Test, Run in Game World"
-msgstr "診斷問題、截圖性能測試，請在遊戲世界中啟動。若技能狀態與遊戲內不符，請查看常見問題。"
+msgstr "診斷問題、截圖效能測試，請在遊戲世界中啟動。若技能狀態與遊戲內不符，請查看常見問題。"
 
 msgid "Echo Available"
 msgstr "聲骸可用"
@@ -452,12 +452,12 @@ msgid ""
 "Auto combat error: Make sure you're equipping echos and turn off effect that"
 " changes the game color, (Game Gammar/Nvidia AMD Game Filter), turn off "
 "Motion Blur in game video options"
-msgstr "自動戰鬥錯誤：請確認已裝備聲骸，關閉動態模糊，遊戲為預設亮度，並關閉夜間模式/顯示器進階色彩/顯卡濾鏡等所有會改變遊戲顏色的設定。"
+msgstr "自動戰鬥錯誤：請確認已裝備聲骸，關閉動態模糊，遊戲為預設亮度，並關閉夜間模式/顯示器進階色彩/顯示卡濾鏡等所有會改變遊戲顏色的設定。"
 
 msgid ""
 "Auto combat error: Make sure to turn off effect that changes the game color,"
 " (Game Gammar/Nvidia AMD Game Filter/HDR)"
-msgstr "自動戰鬥錯誤：請將遊戲設定為預設亮度，並關閉夜間模式/顯示器進階色彩/顯卡濾鏡/HDR等所有會改變遊戲顏色的設定。"
+msgstr "自動戰鬥錯誤：請將遊戲設定為預設亮度，並關閉夜間模式/顯示器進階色彩/顯示卡濾鏡/HDR等所有會改變遊戲顏色的設定。"
 
 msgid "Auto Login"
 msgstr "自動登入遊戲"
@@ -640,7 +640,7 @@ msgid "wait main"
 msgstr ""
 
 msgid "Stop When Treasure Found"
-msgstr "出現聲骸獎勵時停止運行"
+msgstr "出現聲骸獎勵時停止執行"
 
 msgid "Don't restart in Realm"
 msgstr "副本Boss不點擊重開"
@@ -682,7 +682,7 @@ msgid "Hyvatia"
 msgstr "海維夏"
 
 msgid "Character Config"
-msgstr "角色設置"
+msgstr "角色設定"
 
 msgid "Iuno C6"
 msgstr "尤諾6鏈"
@@ -709,13 +709,13 @@ msgid "Target enemy failed, please disable Nvidia/AMD Filter or Sharpening!"
 msgstr "選擇目標失敗!請關閉顯示卡濾鏡和銳化!"
 
 msgid "Check Levitator"
-msgstr ""
+msgstr "檢查探索工具是否為控物"
 
 msgid "Fast Travel"
-msgstr ""
+msgstr "快速旅行"
 
 msgid "Toggle the levitator and verify if the character is floating"
-msgstr ""
+msgstr "在秘境中自動戰鬥時切換控物以判斷角色是否處於空中"
 
 msgid "Daily"
 msgstr "周常日常"
@@ -995,7 +995,7 @@ msgid "Calcharo"
 msgstr "卡卡羅"
 
 msgid "Jianxin"
-msgstr "鑑心"
+msgstr "鑒心"
 
 msgid "Lingyang"
 msgstr "凌陽"
@@ -1130,7 +1130,7 @@ msgid "Lucy"
 msgstr "露西"
 
 msgid "Rebecca"
-msgstr "麗貝卡"
+msgstr "蕾貝卡"
 
 msgid "Lucilla"
 msgstr "洛瑟菈"
