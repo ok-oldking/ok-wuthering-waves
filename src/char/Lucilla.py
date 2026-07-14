@@ -121,19 +121,16 @@ class Lucilla(BaseChar):
         """
         end = time.time() + total_time
         seen_active = False
-        holding = True
         self.task.mouse_down()
         try:
             while time.time() < end:
                 if self.flying():
                     self.logger.info('Lucilla heavy attack interrupted by flying, wait down and retry')
                     self.task.mouse_up()
-                    holding = False
                     self.wait_down()
                     if time.time() >= end:
                         break
                     self.task.mouse_down()
-                    holding = True
                     continue
 
                 remaining = max(0, end - time.time())
@@ -146,8 +143,7 @@ class Lucilla(BaseChar):
                     self.logger.info('Lucilla transform ended, stop heavy attack early')
                     break
         finally:
-            if holding:
-                self.task.mouse_up()
+            self.task.mouse_up()
 
     def hold_resonance(self, duration):
         """长按共鸣技能键一段时间 (攒 1 格回路能量)。
