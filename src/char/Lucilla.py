@@ -13,6 +13,7 @@ class Lucilla(BaseChar):
     LIBERATION_ANIMATION_TIME: float = 3.0
     LIBERATION_HEAVY_TIME: float = 15.0
     HEAVY_CHECK_INTERVAL: float = 0.1
+    CONCERTO_SETTLE_TIME: float = 0.8
     CHARGE_TIME_OUT: float = 7.2
     LIBERATION_CD_SKIP: float = 1.5
     SWITCH_IN_SETTLE: float = 0.5
@@ -108,6 +109,8 @@ class Lucilla(BaseChar):
         self.sleep(self.LIBERATION_ANIMATION_TIME, check_combat=False)
         
         self.hold_heavy_attack(self.LIBERATION_HEAVY_TIME)
+        if not self.task.wait_until(self.is_con_full, time_out=self.CONCERTO_SETTLE_TIME):
+            self.logger.info('Lucilla concerto did not settle before switch timeout')
         self.logger.info('Lucilla perform lib end')
 
     def hold_heavy_attack(self, total_time):
