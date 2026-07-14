@@ -188,7 +188,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             for match in re.finditer(self.count_re, count_box.name):
                 numerator = match.group(1)
                 denominator = match.group(2)
-                if numerator != denominator and denominator in ['24', '36', '48'] and numerator == '0':
+                if numerator != denominator and denominator in ['24', '36', '48', '41'] and numerator == '0':
                     cache_key = self._make_nest_cache_key(count_box, denominator)
                     if cache_key in self._unreachable_nests:
                         self.log_info(f'skip cached unreachable nightmare nest: {cache_key}')
