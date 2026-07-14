@@ -12,7 +12,7 @@ class Lucilla(BaseChar):
     HOLD_TIME: float = 1.4
     LIBERATION_ANIMATION_TIME: float = 3.0
     LIBERATION_HEAVY_TIME: float = 15.0
-    HEAVY_PULSE_TIME: float = 0.6
+    HEAVY_CHECK_INTERVAL: float = 0.1
     CHARGE_TIME_OUT: float = 7.2
     LIBERATION_CD_SKIP: float = 1.5
     SWITCH_IN_SETTLE: float = 0.5
@@ -107,36 +107,44 @@ class Lucilla(BaseChar):
 
         self.sleep(self.LIBERATION_ANIMATION_TIME, check_combat=False)
         
-        # 恢复调用脉冲重击, con 归零会在内部自动提前 break
-        self.pulse_heavy_attack(self.LIBERATION_HEAVY_TIME)
+        self.hold_heavy_attack(self.LIBERATION_HEAVY_TIME)
         self.logger.info('Lucilla perform lib end')
 
-    def pulse_heavy_attack(self, total_time):
-        """变身后脉冲式重击 total_time 秒: 反复 mouse_down/sleep/mouse_up.
+    def hold_heavy_attack(self, total_time):
+        """变身后持续长按重击, 直到变身结束或超时.
 
-        每拍重新 mouse_down, 某拍被打断, 下一拍自动
-        重按恢复, 保证持续输出直到连招打完. 全程 check_combat=False
-        
-        检测 con 归零以提前结束脉冲. 变身激活时 con 会变非零, 变身结束动画时 con 会短暂归零.
-        若未检测到归零(如被连续打断), 则持续脉冲直到 total_time 兜底.
+        长按期间只轮询协奏值: 变身激活时 con 会变非零,
+        变身结束动画时 con 会短暂归零.
         """
         end = time.time() + total_time
         seen_active = False
-        while time.time() < end:
-            self.task.mouse_down()
-            try:
-                self.sleep(min(self.HEAVY_PULSE_TIME, end - time.time()), check_combat=False)
-            finally:
+        holding = True
+        self.task.mouse_down()
+        try:
+            while time.time() < end:
+                if self.flying():
+                    self.logger.info('Lucilla heavy attack interrupted by flying, wait down and retry')
+                    self.task.mouse_up()
+                    holding = False
+                    self.wait_down()
+                    if time.time() >= end:
+                        break
+                    self.task.mouse_down()
+                    holding = True
+                    continue
+
+                remaining = max(0, end - time.time())
+                self.sleep(min(self.HEAVY_CHECK_INTERVAL, remaining), check_combat=False)
+
+                con = self.task.get_current_con()
+                if con > 0.1:
+                    seen_active = True
+                elif seen_active and con < 0.05:
+                    self.logger.info('Lucilla transform ended, stop heavy attack early')
+                    break
+        finally:
+            if holding:
                 self.task.mouse_up()
-            
-            con = self.task.get_current_con()
-            if con > 0.1:
-                seen_active = True
-            elif seen_active and con < 0.05:
-                self.logger.info('Lucilla transform ended, stop pulse heavy early')
-                break
-                
-            self.sleep(0.02, check_combat=False) 
 
     def hold_resonance(self, duration):
         """长按共鸣技能键一段时间 (攒 1 格回路能量)。

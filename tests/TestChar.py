@@ -102,6 +102,76 @@ class TestChar(TaskTestCase):
         self.assertTrue(task.char_features_warmed_up)
         self.assertEqual(loaded, list(char_names))
 
+    def test_lucilla_liberation_heavy_stays_held_until_transform_ends(self):
+        class Task:
+            skip_combat_check = False
+
+            def __init__(self):
+                self.events = []
+                self.con_values = iter((0.5, 0.0))
+
+            def mouse_down(self):
+                self.events.append('down')
+
+            def mouse_up(self):
+                self.events.append('up')
+
+            def sleep(self, sec):
+                self.events.append('sleep')
+
+            def get_current_con(self):
+                self.events.append('con')
+                return next(self.con_values)
+
+        class TrackingLucilla(Lucilla):
+            def flying(self):
+                return False
+
+        task = Task()
+        TrackingLucilla(task, 0).hold_heavy_attack(1)
+
+        self.assertEqual(task.events, ['down', 'sleep', 'con', 'sleep', 'con', 'up'])
+
+    def test_lucilla_liberation_heavy_retries_after_flying(self):
+        class Task:
+            skip_combat_check = False
+
+            def __init__(self):
+                self.events = []
+                self.con_values = iter((0.5, 0.0))
+
+            def mouse_down(self):
+                self.events.append('down')
+
+            def mouse_up(self):
+                self.events.append('up')
+
+            def sleep(self, sec):
+                self.events.append('sleep')
+
+            def get_current_con(self):
+                self.events.append('con')
+                return next(self.con_values)
+
+        class TrackingLucilla(Lucilla):
+            def __init__(self, task):
+                super().__init__(task, 0)
+                self.flying_values = iter((True, False, False))
+
+            def flying(self):
+                return next(self.flying_values)
+
+            def wait_down(self):
+                self.task.events.append('wait_down')
+
+        task = Task()
+        TrackingLucilla(task).hold_heavy_attack(1)
+
+        self.assertEqual(
+            task.events,
+            ['down', 'up', 'wait_down', 'down', 'sleep', 'con', 'sleep', 'con', 'up'],
+        )
+
     def test_load_chars_reports_only_when_team_changes(self):
         from importlib import import_module
 
