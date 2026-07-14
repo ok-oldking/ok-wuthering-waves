@@ -963,9 +963,9 @@ class BaseWWTask(BaseTask):
             y = 0.73
         elif name == 'zhange':
             y = 0.61
-        elif name == 'mengyan':
-            y = 0.83
         elif name == 'canxiang':
+            y = 0.83
+        elif name == 'mengyan':
             self.click_relative(0.356, 0.882, after_sleep=after_sleep)
             y = 0.86
         else:
