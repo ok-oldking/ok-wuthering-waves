@@ -27,12 +27,10 @@ class Brant(BaseChar):
             self.resonance_forte_full()
             self.last_liberation = -1
             self.perform_anchor = time.time()
-            return self.switch_next_char()
+            if self.echo_available():
+                self.click_echo()
         if not self.need_fast_perform() and not self.is_forte_full() and self.click_liberation():
             self.continues_normal_attack(0.8)
-        if not self.still_in_liberation() and self.echo_available():
-            self.click_echo()
-            return self.switch_next_char()
         self.click_jump_with_click(1.3)
         if self.is_forte_full() and self.resonance_available():
             self.resonance_forte_full()

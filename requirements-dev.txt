@@ -1,2 +1,2 @@
-x-anylabeling-cvhub
 polib
+pytest

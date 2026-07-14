@@ -2,6 +2,11 @@ import os
 import re
 from pathlib import Path
 
+# WA: set empty PATH to resolve qfluentwidgets/PySide6 access os.environ['PATH'] issue
+if 'PATH' not in os.environ:
+    os.environ['PATH'] = ""
+from qfluentwidgets import FluentIcon
+
 from ok import Box, ConfigOption
 from src.task.process_feature import process_feature
 
@@ -19,7 +24,7 @@ def blur_area(width, height):
     return Box(width * 0.879, height * 0.976, blur_width * 0.973, blur_height * 0.994)
 
 
-key_config_option = ConfigOption('Game Hotkey Config', {
+key_config_option = ConfigOption('Game Hotkey', {
     'Echo Key': 'q',
     'Liberation Key': 'r',
     'Resonance Key': 'e',
@@ -27,13 +32,13 @@ key_config_option = ConfigOption('Game Hotkey Config', {
     'Jump Key': 'space',
     'Dodge Key': 'lshift',
     'Wheel Key': 'tab',
-}, description='In Game Hotkey for Skills')
+    'Guidebook Key': 'f2',
+}, description='In Game Hotkey for Skills', show_at_tab=True, icon=FluentIcon.GAME)
 
 char_config_option = ConfigOption('Character Config', {
     'Iuno C6': False,
-    'Verina C2': False,
     'Chisa DPS': False,
-}, description='Character Config')
+}, description='Character Config', show_at_tab=True, icon=FluentIcon.PEOPLE)
 
 monthly_card_config_option = ConfigOption('Monthly Card Config', {
     'Check Monthly Card': True,
@@ -50,6 +55,7 @@ config = {
     'blur_area': blur_area,
     'gui_icon': 'icon.png',
     'global_configs': [key_config_option, char_config_option, monthly_card_config_option],
+    'custom_tabs': [["src.gui.CharacterCodeTab", "CharacterCodeTab"]],
     'ocr': {
         'lib': 'onnxocr',
         'auto_simplify': True,
@@ -73,8 +79,8 @@ config = {
     },
     'windows': {  # required  when supporting windows game
         'top_hwnd_class': [re.compile('CAgreementDlg'), re.compile('CLoginDlg_P_'),
-                           'CefBrowserWindow', 'Chrome_RenderWidgetHostHWND',
-                           re.compile('CNativeLoginDlg'), '#32770', 'Static', 'ComboBox', 'ComboLBox', 'Button'
+                           'CefBrowserWindow', 'Chrome_RenderWidgetHostHWND', '#32770',
+                           re.compile('CNativeLoginDlg'), 'Static', 'ComboBox', 'ComboLBox', 'Button'
                            ],
         'calculate_pc_exe_path': calculate_pc_exe_path,
         'exe': 'Client-Win64-Shipping.exe',
@@ -109,9 +115,9 @@ config = {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
             'sponsor': 'https://afdian.com/a/ok-oldking',
-            'share': 'OK-WW 百度网盘 https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww 夸克网盘 https://pan.quark.cn/s/418018ddf7a0 不定期更新最新版 GitHub下载: https://github.com/ok-oldking/ok-wuthering-waves/releases/latest',
+            'share': 'GitHub: https://github.com/ok-oldking 百度网盘: https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww 夸克网盘: https://pan.quark.cn/s/418018ddf7a0 Mirror酱：https://mirrorchyan.com/zh/projects?source=okbilibili',
             'faq': 'https://cnb.cool/ok-oldking/ok-wuthering-waves/-/blob/main/README.md',
-            'qq_group': 'https://qm.qq.com/q/QUMHZ9IJYO',
+            'qq_group': 'https://qm.qq.com/q/SUQpIpmq4',
             'qq_channel': 'https://pd.qq.com/s/djmm6l44y',
         },
     },
@@ -145,7 +151,8 @@ config = {
         ["src.task.TacetTask", "TacetTask"],
         ["src.task.EnhanceEchoTask", "EnhanceEchoTask"],
         ["src.task.ChangeEchoTask", "ChangeEchoTask"],
-        ["src.task.DiagnosisTask", "DiagnosisTask"],
+        ["src.task.GardenTask", "GardenTask"],
+        # ["src.task.DiagnosisTask", "DiagnosisTask"],
     ], 'trigger_tasks': [
         ["src.task.AutoCombatTask", "AutoCombatTask"],
         ["src.task.AutoPickTask", "AutoPickTask"],
@@ -154,4 +161,10 @@ config = {
         ["src.task.MouseResetTask", "MouseResetTask"],
         ["src.task.FastTravelTask", "FastTravelTask"],
     ], 'scene': ["src.scene.WWScene", "WWScene"],
+    'update_pyappify': {
+        'to_version': '1.1.6',
+        'zip_url': 'https://github.com/ok-oldking/ok-wuthering-waves/releases/download/v3.3.74/ok-ww-win32.zip',
+        'sha256': 'ee8db613a5e026a2873adb2e147490c86333092bedf3230b10be3b9c574ad3b6',
+    }
+
 }

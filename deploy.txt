@@ -11,4 +11,5 @@ icon.png
 requirements.txt
 main_debug.py
 i18n
+pyappify
 pyappify.yml

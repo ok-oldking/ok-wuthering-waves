@@ -46,26 +46,18 @@ class SimulationTask(DomainTask):
         self.farm_domain_with_recovery_loop(must_use, teleport_once)
 
     def teleport_into_domain(self, selection):
-        self.click_relative(0.18, 0.28, after_sleep=1)
-        self.info_set('Teleport to Simulation Challenge', selection)
-        self.click_relative(0.980, 0.875, after_sleep=1)
-        btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.94, 0.26, 0.97, 0.88), threshold=0.8)
-        if btns is None:
-            raise Exception("can't find boss_proceed")
-        top_btn = min(btns, key=lambda box: box.y)
-        self.click_box(top_btn, after_sleep=1)
-        self.wait_click_travel()
-        self.wait_in_team_and_world(time_out=self.teleport_timeout)
-        self.sleep(1)
-        self.walk_until_f(time_out=1)
-        self.pick_f()
+        self.open_boss_book('moni')
+        self.info_set('Target Simulation Challenge', selection)
         if selection == 'Resonator EXP':
             index = 0
         elif selection == 'Weapon EXP':
             index = 1
         else:  # selection == 'Shell Credit'
             index = 2
-        self.click_relative(0.22, 0.17 + index * 0.08, after_sleep=1)
+        # go buttom
+        self.click(0.9730, 0.8806, after_sleep=1)
+        # click target
+        self.click(0.898, 0.533 + index * 0.14, after_sleep=1)
         self.click_relative(0.93, 0.90, after_sleep=1)
-        self.click_relative(0.93, 0.90, after_sleep=1)
+        self.click_team_challenge()
         self.wait_in_team_and_world(time_out=self.teleport_timeout)

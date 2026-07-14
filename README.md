@@ -24,7 +24,7 @@
 
 </div>
 
-### [English Readme](README_en.md) | 中文说明
+### [English Readme](README_en.md) | 中文说明 | [繁體中文說明](README_zh_TW.md) | [日本語Readme](README_ja.md)
 
 **演示与教程:** [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/h6P1KWjdnB4)
 
@@ -114,7 +114,7 @@ ok-ww.exe -t 1 -e
 
 ## 💬 加入我们
 
-*   **QQ 交流群**: `462079653` (入群答案: `老王同学OK`)
+*   **QQ 交流群**: `1035795301` (入群答案: `老王同学OK`)
 *   **QQ 频道**: [点击加入](https://pd.qq.com/s/djmm6l44y) (群满或获取最新资讯)
 *   **开发者群**: `926858895` ( **注意**: 此群仅面向有开发能力、希望参与贡献的开发者，入群前请确保您已能够从源码成功运行项目。)
 

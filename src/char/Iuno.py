@@ -1,6 +1,6 @@
 import time
 
-from src.char.BaseChar import BaseChar
+from src.char.BaseChar import BaseChar, CharType, get_default_buff_time
 
 
 class Iuno(BaseChar):
@@ -8,6 +8,19 @@ class Iuno(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last_heavy = 0
+
+    def is_c6(self):
+        return self.task and self.task.char_config.get("Iuno C6")
+
+    def get_char_type(self):
+        if self.is_c6():
+            return CharType.MAIN_DPS
+        return super().get_char_type()
+
+    def get_buff_time(self):
+        if self.is_c6():
+            return get_default_buff_time(CharType.MAIN_DPS)
+        return super().get_buff_time()
 
     def do_perform(self):
         self.wait_down()
@@ -36,7 +49,7 @@ class Iuno(BaseChar):
                 heavy_success = True
             if heavy_success:
                 self.last_heavy = time.time()
-                if not c6_performed and self.task.char_config.get("Iuno C6"):
+                if not c6_performed and self.is_c6():
                     c6_performed = True
                     start = time.time()
                     time_out = 5

@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [ opened, synchronize ]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build exe with launcher
@@ -31,10 +34,11 @@ jobs:
         with:
           submodules: true
           lfs: true
-          fetch-depth: 0
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -49,7 +53,33 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
+        env:
+          GITHUB_TOKEN: ''
+          GH_TOKEN: ''
+          CNB_TOKEN: ''
+          OK_GH: ''
+          SIGNPATH_API_TOKEN: ''
+          GEMINI_API_KEY: ''
+          AI_API_KEY: ''
+          MirrorChyanUploadToken: ''
+          ACTIONS_RUNTIME_TOKEN: ''
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ''
         run: |
+          @(
+            'GITHUB_TOKEN',
+            'GH_TOKEN',
+            'CNB_TOKEN',
+            'OK_GH',
+            'SIGNPATH_API_TOKEN',
+            'GEMINI_API_KEY',
+            'AI_API_KEY',
+            'MirrorChyanUploadToken',
+            'ACTIONS_RUNTIME_TOKEN',
+            'ACTIONS_ID_TOKEN_REQUEST_TOKEN'
+          ) | ForEach-Object {
+            Remove-Item "Env:\$_" -ErrorAction SilentlyContinue
+          }
+
           Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
               Write-Host "Running tests in $($_.FullName)"
               try {

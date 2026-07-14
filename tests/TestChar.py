@@ -8,9 +8,16 @@ from src.char.CharFactory import _get_buff_time, _get_char_type, char_dict, char
 from src.char.Aemeath import Aemeath
 from src.char.Chisa import Chisa
 from src.char.Ciaccona import Ciaccona
+from src.char.Iuno import Iuno
 from src.char.Linnai import Linnai
+from src.char.Lucilla import Lucilla
+from src.char.Lucy import Lucy
 from src.char.Phrolova import Phrolova
+from src.char.Rebecca import Rebecca
+from src.char.ShoreKeeper import ShoreKeeper
 from src.char.Verina import Verina
+from src.char.YangYangSp import YangYangSp
+from src.task.BaseCombatTask import NotInCombatException
 from src.task.AutoCombatTask import AutoCombatTask
 
 config['debug'] = True
@@ -47,13 +54,41 @@ class TestChar(TaskTestCase):
         self.assertEqual(char_dict[Labels.char_mortefi]['char_type'], CharType.SUB_DPS)
         self.assertEqual(char_dict[Labels.char_mortefi]['buff_time'], get_default_buff_time(CharType.SUB_DPS))
         self.assertEqual(char_dict[Labels.char_chisa]['buff_time'], 12)
+        self.assertEqual(char_dict[Labels.char_chisa2]['cls'], Chisa)
+        self.assertEqual(char_dict[Labels.char_chisa2]['buff_time'], 12)
+        self.assertEqual(char_dict[Labels.char_linnai2]['cls'], Linnai)
+        self.assertEqual(char_dict[Labels.char_linnai2]['char_type'], CharType.SUB_DPS)
+        self.assertEqual(char_dict[Labels.char_lucilla]['cls'], Lucilla)
+        self.assertEqual(char_dict[Labels.char_lucilla]['char_type'], CharType.SUB_DPS)
+        self.assertTrue(char_dict[Labels.char_lucilla]['target_box_short_combat_check'])
+        self.assertEqual(char_dict[Labels.char_lucy]['cls'], Lucy)
+        self.assertEqual(char_dict[Labels.char_lucy]['char_type'], CharType.MAIN_DPS)
+        self.assertEqual(char_dict[Labels.char_rebecca]['cls'], Rebecca)
+        self.assertEqual(char_dict[Labels.char_rebecca]['char_type'], CharType.SUB_DPS)
+        self.assertEqual(char_dict[Labels.yangyang_sp]['cls'], YangYangSp)
+        self.assertEqual(char_dict[Labels.yangyang_sp]['char_type'], CharType.MAIN_DPS)
         self.assertEqual(_get_char_type(task, char_dict[Labels.char_iuno]), CharType.SUB_DPS)
         self.assertEqual(_get_buff_time(task, char_dict[Labels.char_iuno]), get_default_buff_time(CharType.SUB_DPS))
         self.assertEqual(_get_buff_time(task, dict(char_dict[Labels.char_mortefi], buff_time=12)), 12)
 
+        chisa = Chisa(task, 0, char_type=char_dict[Labels.char_chisa]['char_type'],
+                      buff_time=char_dict[Labels.char_chisa]['buff_time'])
+        self.assertEqual(chisa.char_type, CharType.HEALER)
+        self.assertEqual(chisa.buff_time, 12)
+
+        task.char_config = {'Chisa DPS': True}
+        self.assertEqual(chisa.char_type, CharType.MAIN_DPS)
+        self.assertEqual(chisa.buff_time, get_default_buff_time(CharType.MAIN_DPS))
+
         task.char_config = {'Iuno C6': True}
-        self.assertEqual(_get_char_type(task, char_dict[Labels.char_iuno]), CharType.MAIN_DPS)
-        self.assertEqual(_get_buff_time(task, char_dict[Labels.char_iuno]), 0)
+        iuno = Iuno(task, 0, char_type=char_dict[Labels.char_iuno]['char_type'],
+                    buff_time=char_dict[Labels.char_iuno]['buff_time'])
+        self.assertEqual(iuno.char_type, CharType.MAIN_DPS)
+        self.assertEqual(iuno.buff_time, 0)
+
+        task.char_config = {'Iuno C6': False}
+        self.assertEqual(iuno.char_type, CharType.SUB_DPS)
+        self.assertEqual(iuno.buff_time, get_default_buff_time(CharType.SUB_DPS))
 
     def test_auto_combat_warms_char_features_only_once(self):
         task = AutoCombatTask.__new__(AutoCombatTask)
@@ -66,6 +101,59 @@ class TestChar(TaskTestCase):
 
         self.assertTrue(task.char_features_warmed_up)
         self.assertEqual(loaded, list(char_names))
+
+    def test_load_chars_reports_only_when_team_changes(self):
+        from importlib import import_module
+
+        base_combat_task_module = import_module('src.task.BaseCombatTask')
+        original_get_char_by_pos = base_combat_task_module.get_char_by_pos
+
+        class CharA(BaseChar):
+            pass
+
+        class CharB(BaseChar):
+            pass
+
+        class CharC(BaseChar):
+            pass
+
+        class CharD(BaseChar):
+            pass
+
+        task = AutoCombatTask.__new__(AutoCombatTask)
+        task.chars = [None, None, None]
+        task.load_hotkey = lambda: None
+        task.in_team = lambda: (True, 0, 3)
+        task.get_box_by_name = lambda name: name
+        task._app = None
+        task.tr = lambda text: text
+        info_sets = []
+        logs = []
+        task.info_set = lambda key, value: info_sets.append((key, value))
+        task.log_info = logs.append
+        team = [(CharA, 'char_a'), (CharB, 'char_b'), (CharC, 'char_c')]
+
+        def get_char_by_pos(task_arg, box, index, old_char):
+            char_cls, char_name = team[index]
+            return char_cls(task_arg, index, char_name=char_name, confidence=0.9)
+
+        base_combat_task_module.get_char_by_pos = get_char_by_pos
+        try:
+            self.assertTrue(task.load_chars())
+            self.assertEqual(info_sets, [('Chars', 'CharA, CharB, CharC')])
+            self.assertEqual(len(logs), 3)
+
+            self.assertTrue(task.load_chars())
+            self.assertEqual(len(info_sets), 1)
+            self.assertEqual(len(logs), 3)
+
+            team[1] = (CharD, 'char_d')
+            self.assertTrue(task.load_chars())
+            self.assertEqual(info_sets[-1], ('Chars', 'CharA, CharD, CharC'))
+            self.assertEqual(len(info_sets), 2)
+            self.assertEqual(len(logs), 6)
+        finally:
+            base_combat_task_module.get_char_by_pos = original_get_char_by_pos
 
     def test_switch_priority_rules(self):
         class Task:
@@ -177,22 +265,36 @@ class TestChar(TaskTestCase):
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 return time.time() - start
 
+            def wait_until(self, condition, time_out=0, **kwargs):
+                return condition()
+
+            def in_team(self):
+                return True, None
+
+            def sleep(self, sec):
+                pass
+
+            def jump(self, after_sleep=0.01):
+                pass
+
         class TrackingVerina(Verina):
             def __init__(self, task):
                 super().__init__(task, 0)
                 self.heavy_count = 0
-                self.click_count = 0
 
             def is_con_full(self):
                 return False
 
-            def click_liberation(self, **kwargs):
+            def continues_normal_attack(self, duration, **kwargs):
+                pass
+
+            def resonance_available(self):
                 return False
 
-            def click_resonance(self, **kwargs):
-                return False, None
+            def liberation_available(self):
+                return False
 
-            def click_echo(self, **kwargs):
+            def echo_available(self):
                 return False
 
             def is_mouse_forte_full(self):
@@ -201,19 +303,15 @@ class TestChar(TaskTestCase):
             def heavy_attack(self, duration=0.6):
                 self.heavy_count += 1
 
-            def click(self):
-                self.click_count += 1
-
         verina = TrackingVerina(Task())
-        self.assertFalse(verina.do_cycle())
+        verina.perform_combat()
         self.assertEqual(verina.heavy_count, 1)
 
-        self.assertTrue(verina.do_cycle())
+        verina.perform_combat()
         self.assertEqual(verina.heavy_count, 1)
-        self.assertEqual(verina.click_count, 1)
 
         verina.last_heavy = time.time() - verina.HEAVY_ATTACK_INTERVAL
-        self.assertFalse(verina.do_cycle())
+        verina.perform_combat()
         self.assertEqual(verina.heavy_count, 2)
 
     def test_chisa_support_liberation_records_buff_without_dps_sequence(self):
@@ -322,12 +420,18 @@ class TestChar(TaskTestCase):
             def find_one(self, template, threshold=None):
                 return self.lib2 and template == 'aemeath_lib2'
 
+            def check_combat(self):
+                pass
+
         class TrackingAemeath(Aemeath):
             def click_liberation(self, **kwargs):
                 return True
 
             def f_break(self):
                 pass
+
+            def _execute_post_lib2_combo(self):
+                self.check_combat()
 
         task = Task()
         aemeath = TrackingAemeath(task, 0)
@@ -353,6 +457,9 @@ class TestChar(TaskTestCase):
             def find_one(self, template, threshold=None):
                 return self.lib2 and template == 'aemeath_lib2'
 
+            def check_combat(self):
+                pass
+
         class TrackingAemeath(Aemeath):
             def has_long_action(self):
                 return True
@@ -365,6 +472,10 @@ class TestChar(TaskTestCase):
 
             def f_break(self):
                 pass
+
+            def _execute_post_lib2_combo(self):
+                self.check_combat()
+                self.record_enhance_e()
 
         task = Task()
         aemeath = TrackingAemeath(task, 0)
@@ -887,6 +998,68 @@ class TestChar(TaskTestCase):
         self.assertEqual(linnai.actions, [('sleep', 0.3), ('wait_down', True),
                                           ('sleep', 0.3), ('wait_down', True)])
 
+    def test_linnai_waits_longer_after_aemeath_outro(self):
+        class Task:
+            def __init__(self):
+                self.wait_time_out = None
+
+            def wait_until(self, condition, post_action=None, time_out=0, **kwargs):
+                self.wait_time_out = time_out
+                return condition()
+
+        class TestLinnai(Linnai):
+            def __init__(self, task):
+                super().__init__(task, 0)
+                self.has_intro = True
+                self.check_count = 0
+
+            def check_res(self):
+                self.check_count += 1
+                return self.check_count >= 2
+
+            def check_outro(self):
+                return 'char_aemeath'
+
+            def click_with_interval(self, interval=0.1):
+                pass
+
+        task = Task()
+        linnai = TestLinnai(task)
+        self.assertTrue(linnai.wait_for_accelerate_ready())
+        self.assertEqual(task.wait_time_out, linnai.AEMEATH_INTRO_RES_WAIT)
+
+    def test_linnai_check_res_falls_back_to_long_target_box(self):
+        class Box:
+            def __init__(self, name):
+                self.name = name
+
+        class Match:
+            name = 'has_target'
+
+        class Task:
+            def in_team_and_world(self):
+                return True
+
+            def get_target_names(self):
+                return 'has_target', 'no_target'
+
+            def get_box_by_name(self, name):
+                return Box(name)
+
+            def find_best_match_in_box(self, box, names, threshold=0.6):
+                if box.name == 'box_target_enemy_long':
+                    return Match()
+                return None
+
+            def find_one(self, *args, **kwargs):
+                return None
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return 999
+
+        linnai = Linnai(Task(), 0)
+        self.assertTrue(linnai.check_res())
+
     def test_intro_does_not_switch_to_phrolova_during_liberation_lock(self):
         class Task:
             name = None
@@ -905,6 +1078,88 @@ class TestChar(TaskTestCase):
 
         self.assertEqual(phrolova.get_switch_priority(current_char=current, has_intro=True), SwitchPriority.NO)
         self.assertEqual(combat._choose_switch_target(current, True), current)
+
+    def test_phrolova_nightmare_nest_does_not_cancel_liberation(self):
+        class Task:
+            name = "Nightmare Nest Task"
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                if start < 0:
+                    return 10000
+                return time.time() - start
+
+        class TestPhrolova(Phrolova):
+            def __init__(self):
+                super().__init__(Task(), 0)
+                self.actions = []
+
+            def flying(self):
+                return False
+
+            def liberation_available(self, check_color=True):
+                return True
+
+            def click_liberation(self, **kwargs):
+                self.actions.append(('liberation', kwargs))
+                return True
+
+            def continues_click(self, key, duration, interval=0.1):
+                self.actions.append(('continues_click', key, duration))
+
+            def switch_next_char(self, *args, **kwargs):
+                self.actions.append(('switch', {}))
+
+        phrolova = TestPhrolova()
+        phrolova.do_perform()
+
+        self.assertEqual(phrolova.actions, [
+            ('liberation', {'wait_if_cd_ready': 0}),
+            ('switch', {}),
+        ])
+
+    def test_check_combat_respects_skip_flag(self):
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        combat._in_combat = True
+        combat.skip_combat_check = True
+        combat.in_combat = lambda: False
+
+        def raise_not_in_combat(message):
+            raise NotInCombatException(message)
+
+        combat.raise_not_in_combat = raise_not_in_combat
+
+        combat.check_combat()
+
+    def test_shorekeeper_intro_restores_skip_flag_on_error(self):
+        class Task:
+            skip_combat_check = False
+            name = None
+
+            def in_team_and_world(self):
+                return False
+
+            def wait_in_team_and_world(self, **kwargs):
+                raise RuntimeError('intro wait failed')
+
+        shorekeeper = ShoreKeeper(Task(), 0)
+        shorekeeper.has_intro = True
+
+        with self.assertRaises(RuntimeError):
+            shorekeeper.do_perform()
+
+        self.assertFalse(shorekeeper.task.skip_combat_check)
+
+    def test_shorekeeper_skips_combat_check_during_intro_or_airborne(self):
+        class Task:
+            has_lavitator = False
+
+        shorekeeper = ShoreKeeper(Task(), 0)
+        shorekeeper.has_intro = True
+        self.assertTrue(shorekeeper.skip_combat_check())
+
+        shorekeeper.has_intro = False
+        shorekeeper.flying = lambda: True
+        self.assertTrue(shorekeeper.skip_combat_check())
 
     def test_aemeath_lib(self):
         self.task.do_reset_to_false()

@@ -10,6 +10,16 @@ class TestKey(TaskTestCase):
     task_class = AutoCombatTask
     config = config
 
+    def setUp(self):
+        self._key_config_before_test = dict(self.task.key_config)
+        self._set_key_before_test = self.task.set_key
+
+    def tearDown(self):
+        self.task.key_config.clear()
+        self.task.key_config.update(self._key_config_before_test)
+        self.task.set_key = self._set_key_before_test
+        super().tearDown()
+
     def test_key1(self):
         self.task.do_reset_to_false()
         self.task.key_config['Resonance Key'] = 'a'
@@ -23,6 +33,24 @@ class TestKey(TaskTestCase):
         self.assertEqual(self.task.key_config['Liberation Key'], 'q')
         self.assertEqual(self.task.key_config['Echo Key'], 'r')
         self.assertEqual(self.task.key_config['Tool Key'], 'a')
+
+    def test_load_hotkey_skips_set_key_when_short_action_bar_visible(self):
+        self.task.do_reset_to_false()
+        self.task.key_config['Echo Key'] = 'a'
+        self.task.key_config['Liberation Key'] = 'a'
+        set_key_calls = []
+
+        def set_key(key, box):
+            set_key_calls.append(key)
+            self.task.key_config[key] = 't'
+
+        self.task.set_key = set_key
+        self.set_image('ok_templates/25.png')
+        self.task.load_hotkey(force=True)
+
+        self.assertEqual(set_key_calls, [])
+        self.assertEqual(self.task.key_config['Echo Key'], 'a')
+        self.assertEqual(self.task.key_config['Liberation Key'], 'a')
 
 
 if __name__ == '__main__':
