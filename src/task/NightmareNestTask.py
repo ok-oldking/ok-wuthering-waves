@@ -163,11 +163,11 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def _init_queue(self):
         quests = self.config.get('Which to Farm') or ['Nightmare Purification', 'Tacet Discord Nest']
         actions = []
+        if 'Tacet Discord Nest' in quests:
+            actions.append(self.go_nest)
         if 'Nightmare Purification' in quests:
             actions.append(self.go_nightmare)
             actions.append(self.go_nightmare_scroll)
-        if 'Tacet Discord Nest' in quests:
-            actions.append(self.go_nest)
         self.queues = actions
 
     def go_nightmare(self):
