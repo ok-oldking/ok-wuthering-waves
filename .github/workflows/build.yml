@@ -17,7 +17,7 @@ jobs:
 
     env:
       PYTHONIOENCODING: 'UTF-8'
-      SIGN_BUILD: 'true'
+      SIGN_BUILD: 'false'
       BUILD_EXE: 'true'
       USE_RELEASE: 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.3.74'
 

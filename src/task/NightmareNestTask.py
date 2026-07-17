@@ -163,11 +163,11 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def _init_queue(self):
         quests = self.config.get('Which to Farm') or ['Nightmare Purification', 'Tacet Discord Nest']
         actions = []
+        if 'Tacet Discord Nest' in quests:
+            actions.append(self.go_nest)
         if 'Nightmare Purification' in quests:
             actions.append(self.go_nightmare)
             actions.append(self.go_nightmare_scroll)
-        if 'Tacet Discord Nest' in quests:
-            actions.append(self.go_nest)
         self.queues = actions
 
     def go_nightmare(self):
@@ -188,7 +188,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             for match in re.finditer(self.count_re, count_box.name):
                 numerator = match.group(1)
                 denominator = match.group(2)
-                if numerator != denominator and denominator in ['24', '36', '48'] and numerator == '0':
+                if numerator != denominator and denominator in ['24', '36', '48', '41'] and numerator == '0':
                     cache_key = self._make_nest_cache_key(count_box, denominator)
                     if cache_key in self._unreachable_nests:
                         self.log_info(f'skip cached unreachable nightmare nest: {cache_key}')
