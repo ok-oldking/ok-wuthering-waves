@@ -31,10 +31,12 @@ def resolve_openvino_params(state_file, version):
     if state.get("version") == version:
         status = state.get("status")
         if status == STATUS_DISABLED:
-            logger.warning(
-                "OpenVINO disabled by previous failure: %s",
-                state.get("reason", "unknown"),
+            # state file is user-editable: strip line breaks so a crafted
+            # reason cannot forge extra log lines (SonarCloud S5145)
+            reason = (
+                str(state.get("reason", "unknown")).replace("\r", "").replace("\n", " ")
             )
+            logger.warning("OpenVINO disabled by previous failure: %s", reason)
             return dict(DISABLED)
         if status == STATUS_INITIALIZING:
             _write_state(
