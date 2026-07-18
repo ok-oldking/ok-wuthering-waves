@@ -212,7 +212,7 @@ class Zani(BaseChar):
         if not self.is_nightfall_ready():
             while not self.is_nightfall_ready() or time.time() - start < 1.6:
                 self.click()
-                if time.time() - start > 3.5 or not self.in_liberation:
+                if time.time() - start > 7.0 or not self.in_liberation:
                     return
                 if self.should_end_liberation(time_only=True) and self.click_liber2():
                     return
