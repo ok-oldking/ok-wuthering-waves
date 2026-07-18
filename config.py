@@ -7,7 +7,9 @@ if 'PATH' not in os.environ:
     os.environ['PATH'] = ""
 from qfluentwidgets import FluentIcon
 
-from ok import Box, ConfigOption
+import pyappify
+from ok import Box, ConfigOption, get_path_relative_to_exe
+from src.openvino_guard import resolve_openvino_params
 from src.task.process_feature import process_feature
 
 version = "dev"
@@ -22,6 +24,17 @@ def blur_area(width, height):
     blur_width = int(0.12 * width)
     blur_height = int(0.024 * height)
     return Box(width * 0.879, height * 0.976, blur_width * 0.973, blur_height * 0.994)
+
+
+def ocr_accel_params():
+    # Only guard launcher-managed installs, where a crash-prone OpenVINO cannot be
+    # turned off permanently because updates overwrite config.py (#1504). Source
+    # runs and tests keep the static defaults, free of probe threads/state files.
+    if not pyappify.app_version:
+        return {'use_openvino': True, 'use_npu': True}
+    return resolve_openvino_params(
+        get_path_relative_to_exe('configs', 'openvino_state.json'),
+        pyappify.app_version)
 
 
 key_config_option = ConfigOption('Game Hotkey', {
@@ -59,10 +72,8 @@ config = {
     'ocr': {
         'lib': 'onnxocr',
         'auto_simplify': True,
-        'params': {
-            'use_openvino': True,
-            'use_npu': True,
-        }
+        # falls back to ONNX Runtime CPU when OpenVINO crashed a previous launch (#1504)
+        'params': ocr_accel_params(),
     },
     'my_app': ['src.globals', 'Globals'],
     'start_timeout': 120,  # default 60
