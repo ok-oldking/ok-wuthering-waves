@@ -16,6 +16,13 @@ class FakeBox:
 
 class TestNightmareNestTask(unittest.TestCase):
 
+    def test_nest_is_checked_before_nightmare_changes_book_scroll(self):
+        task = NightmareNestTask.__new__(NightmareNestTask)
+        task.config = {'Which to Farm': ['Nightmare Purification', 'Tacet Discord Nest']}
+        task._init_queue()
+        self.assertEqual(['go_nest', 'go_nightmare', 'go_nightmare_scroll'],
+                         [action.__name__ for action in task.queues])
+
     def test_capture_success_clears_combat_before_post_combat_waits(self):
         task = NightmareNestTask.__new__(NightmareNestTask)
         task._capture_mode = True

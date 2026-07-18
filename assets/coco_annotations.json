@@ -1299,6 +1299,36 @@
             "id": 257,
             "name": "garden_continue_game",
             "supercategory": ""
+        },
+        {
+            "id": 258,
+            "name": "yangyang_sp",
+            "supercategory": ""
+        },
+        {
+            "id": 259,
+            "name": "team_start_challenge",
+            "supercategory": ""
+        },
+        {
+            "id": 260,
+            "name": "team_close",
+            "supercategory": ""
+        },
+        {
+            "id": 261,
+            "name": "claim_stamina_sign",
+            "supercategory": ""
+        },
+        {
+            "id": 262,
+            "name": "char_linnai2",
+            "supercategory": ""
+        },
+        {
+            "id": 263,
+            "name": "char_chisa2",
+            "supercategory": ""
         }
     ],
     "images": [
@@ -1926,7 +1956,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/38.png",
+            "file_name": "images/39.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -1953,7 +1983,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/39.png",
+            "file_name": "images/40.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -1962,7 +1992,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/40.png",
+            "file_name": "images/41.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -2079,7 +2109,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/41.png",
+            "file_name": "images/42.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -2318,7 +2348,7 @@
         },
         {
             "id": 241,
-            "file_name": "images/42.png",
+            "file_name": "images/43.png",
             "width": 2048,
             "height": 1152
         },
@@ -2427,6 +2457,36 @@
         {
             "id": 265,
             "file_name": "images/33.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 266,
+            "file_name": "images/36.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 267,
+            "file_name": "images/34.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 268,
+            "file_name": "images/33.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 269,
+            "file_name": "images/37.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 270,
+            "file_name": "images/38.png",
             "width": 1920,
             "height": 1080
         }
@@ -4394,6 +4454,45 @@
             "segmentation": []
         },
         {
+            "id": 141,
+            "image_id": 266,
+            "category_id": 258,
+            "bbox": [
+                1774,
+                227,
+                40,
+                54
+            ],
+            "area": 2160,
+            "iscrowd": 0
+        },
+        {
+            "id": 142,
+            "image_id": 267,
+            "category_id": 259,
+            "bbox": [
+                1754,
+                950,
+                74,
+                87
+            ],
+            "area": 6438,
+            "iscrowd": 0
+        },
+        {
+            "id": 143,
+            "image_id": 267,
+            "category_id": 260,
+            "bbox": [
+                1780,
+                30,
+                66,
+                63
+            ],
+            "area": 4158,
+            "iscrowd": 0
+        },
+        {
             "id": 144,
             "image_id": 74,
             "category_id": 130,
@@ -4407,6 +4506,19 @@
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
+        },
+        {
+            "id": 145,
+            "image_id": 268,
+            "category_id": 261,
+            "bbox": [
+                1284,
+                324,
+                62,
+                57
+            ],
+            "area": 3534,
+            "iscrowd": 0
         },
         {
             "id": 146,
@@ -4467,6 +4579,32 @@
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
+        },
+        {
+            "id": 150,
+            "image_id": 269,
+            "category_id": 262,
+            "bbox": [
+                1774,
+                221,
+                41,
+                43
+            ],
+            "area": 1763,
+            "iscrowd": 0
+        },
+        {
+            "id": 151,
+            "image_id": 270,
+            "category_id": 263,
+            "bbox": [
+                1776,
+                227,
+                42,
+                41
+            ],
+            "area": 1722,
+            "iscrowd": 0
         },
         {
             "id": 154,

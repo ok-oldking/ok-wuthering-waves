@@ -43,6 +43,7 @@ from src.char.Verina import Verina
 from src.char.Xiangliyao import Xiangliyao
 from src.char.Xigelika import Xigelika
 from src.char.Yinlin import Yinlin
+from src.char.YangYangSp import YangYangSp
 from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
 from src.char.Zani import Zani
@@ -50,6 +51,8 @@ from src.char.Zhezhi import Zhezhi
 from src.char.CustomCharLoader import load_custom_char_class
 
 _char_dict_raw = {
+    Labels.yangyang_sp: {'cls': YangYangSp, 'char_type': CharType.MAIN_DPS,
+                         'ring_index': Elements.HAVOC},
     Labels.char_yinlin: {'cls': Yinlin, 'char_type': CharType.SUB_DPS,
                          'ring_index': Elements.ELECTRIC},
     Labels.char_verina: {'cls': Verina, 'char_type': CharType.HEALER,
@@ -108,11 +111,12 @@ _char_dict_raw = {
                        'ring_index': Elements.WIND},
     Labels.char_galbrena: {'cls': Galbrena, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.FIRE},
     Labels.char_chouyuan: {'cls': Qiuyuan, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.WIND},
-    Labels.char_chisa: {'cls': Chisa, 'char_type': CharType.HEALER, 'buff_time': 12,
-                        'ring_index': Elements.HAVOC},
+    (Labels.char_chisa, Labels.char_chisa2): {'cls': Chisa, 'char_type': CharType.HEALER, 'buff_time': 12,
+                                              'ring_index': Elements.HAVOC},
     Labels.char_denia: {'cls': Denia, 'char_type': CharType.SUB_DPS, 'buff_time': 14, 'ring_index': Elements.FIRE},
     Labels.char_douling: {'cls': Douling, 'char_type': CharType.HEALER, 'ring_index': Elements.ELECTRIC},
-    Labels.char_linnai: {'cls': Linnai, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.SPECTRO},
+    (Labels.char_linnai, Labels.char_linnai2): {'cls': Linnai, 'char_type': CharType.SUB_DPS,
+                                                'ring_index': Elements.SPECTRO},
     (Labels.char_moning, Labels.char_moning_new): {'cls': Mornye, 'char_type': CharType.HEALER,
                                                    'ring_index': Elements.FIRE},
     Labels.char_aemeath: {'cls': Aemeath, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.FIRE},

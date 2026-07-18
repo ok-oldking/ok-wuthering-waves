@@ -220,8 +220,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
     def teleport_to_configured_boss_and_prepare(self):
         self._teleport_walk_result = None
         try:
-            self.teleport_to_configured_boss()
-            walk_result = self.walk_after_boss_teleport()
+            is_team = self.teleport_to_configured_boss()
+            if is_team:
+                walk_result = 'realm'
+                self._just_entered_boss_realm = True
+            else:
+                walk_result = self.walk_after_boss_teleport()
         except Exception as e:
             raise RuntimeError('Teleport to boss failed') from e
 
@@ -255,10 +259,17 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.info_set('Teleport to Boss', f'{teleport_to_boss} {serial_number - 1}')
         self.openF2Book('gray_book_boss')
         self.open_boss_book(feature)
-        self.click_on_book_target(serial_number, total_number)
-        self.wait_click_travel()
+        is_team = self.click_on_book_target(serial_number, total_number)
+        if is_team:
+            if teleport_to_boss == 'Weekly Challenge':
+                self.click_configured_boss_level()
+                self.click(0.880, 0.911, after_sleep=2)
+            self.click_team_challenge()
+        else:
+            self.wait_click_travel()
         self.wait_in_team_and_world(time_out=120)
         self.sleep(2)
+        return is_team
 
     def walk_after_boss_teleport(self):
         self.log_info('walk after boss teleport until combat or F')
