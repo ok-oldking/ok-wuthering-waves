@@ -9,7 +9,7 @@ from qfluentwidgets import FluentIcon
 
 import pyappify
 from ok import Box, ConfigOption, get_path_relative_to_exe
-from src.openvino_guard import resolve_openvino_params
+from src import openvino_guard
 from src.task.process_feature import process_feature
 
 version = "dev"
@@ -31,8 +31,8 @@ def ocr_accel_params():
     # turned off permanently because updates overwrite config.py (#1504). Source
     # runs and tests keep the static defaults, free of probe threads/state files.
     if not pyappify.app_version:
-        return {'use_openvino': True, 'use_npu': True}
-    return resolve_openvino_params(
+        return dict(openvino_guard.ENABLED)
+    return openvino_guard.resolve_openvino_params(
         get_path_relative_to_exe('configs', 'openvino_state.json'),
         pyappify.app_version)
 
