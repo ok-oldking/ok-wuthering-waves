@@ -1,14 +1,42 @@
 import time
+from ok import Logger
 from src.char.BaseChar import BaseChar, Elements
+
+_ROVER_FORM_NAMES = {
+    Elements.SPECTRO: 'Rover: Spectro',
+    Elements.WIND: 'Rover: Aero',
+    Elements.HAVOC: 'Rover: Havoc',
+}
 
 
 class HavocRover(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._bind_form_logger()
 
     def reset_state(self):
         self.ring_index = -1
         super().reset_state()
+        self._bind_form_logger()
+
+    @property
+    def display_name(self):
+        return _ROVER_FORM_NAMES.get(self.ring_index, 'Rover')
+
+    def __repr__(self):
+        return self.display_name
+
+    def _bind_form_logger(self):
+        self.logger = Logger.get_logger(self.display_name)
+
+    def ensure_display_form(self):
+        if self.ring_index >= 0:
+            return
+        if not self.is_current_char:
+            return
+        if hasattr(self.task, '_ensure_ring_index'):
+            self.task._ensure_ring_index()
+            self._bind_form_logger()
 
     def do_perform(self):
         self.init()
@@ -30,6 +58,7 @@ class HavocRover(BaseChar):
     def init(self):
         if self.ring_index == -1:
             self.task._ensure_ring_index()
+            self._bind_form_logger()
             if self.ring_index == Elements.WIND:
                 self.init_wind()
 

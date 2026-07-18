@@ -1002,13 +1002,34 @@ msgid "自动周常乐园"
 msgstr "Jardín semanal automático"
 
 msgid "Detect and click garden actions until the task is stopped."
-msgstr "Detecta y hace clic en acciones del jardín hasta que se detenga la tarea."
+msgstr ""
+"Detecta y hace clic en acciones del jardín hasta que se detenga la tarea."
 
 msgid "Check Weekly Garden"
 msgstr "Comprobar jardín semanal"
 
-msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
-msgstr "Después de reclamar las recompensas diarias, comprueba el progreso del jardín semanal y ejecuta la tarea de jardín si no se han alcanzado 6000 puntos."
+msgid ""
+"After claiming daily rewards, check weekly Garden progress and run Garden "
+"Task if 6000 points has not been reached."
+msgstr ""
+"Después de reclamar las recompensas diarias, comprueba el progreso del "
+"jardín semanal y ejecuta la tarea de jardín si no se han alcanzado 6000 "
+"puntos."
 
 msgid "Guidebook Key"
 msgstr "Guía de Solaris"
+
+msgid "Rover"
+msgstr "Rover"
+
+msgid "Rover: Spectro"
+msgstr "Rover: Espectro"
+
+msgid "Rover: Havoc"
+msgstr "Rover: Caos"
+
+msgid "Rover: Aero"
+msgstr "Rover: Aero"
+
+msgid "Yangyang: Xuanling"
+msgstr "Yangyang: Xuanling"
