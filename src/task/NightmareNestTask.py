@@ -104,19 +104,21 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         except CharRevivedException:
             self.log_info('nightmare nest: death recovered, re-enter from F2 book')
             return
+        captured_early = False
         if self._capture_mode:
             if self._capture_success or self.wait_until(self.has_echo_notification, time_out=3):
                 self.log_info("Captured echo during combat, skipping search.")
-                return
-        else:
+                captured_early = True
+        if not captured_early:
             self.sleep(3)
-        if need_find and not self.walk_find_echo(time_out=5, backward_time=2.5):
-            dropped = self.yolo_find_echo(turn=True, use_color=False, time_out=30)[0]
-            logger.info(f'farm echo yolo find {dropped}')
-        else:
-            dropped = True
-            self.log_info(f'farm echo walk find true')
-        self._capture_success = dropped
+            if need_find and not self.walk_find_echo(time_out=5, backward_time=2.5):
+                dropped = self.yolo_find_echo(turn=True, use_color=False, time_out=30)[0]
+                logger.info(f'farm echo yolo find {dropped}')
+            else:
+                dropped = True
+                self.log_info(f'farm echo walk find true')
+            self._capture_success = dropped
+        # 与刷全部一致：退本后再结束 combat_nest，避免还在巢穴内回 Daily/开书
         if is_team:
             self.send_key('esc', after_sleep=1)
             self.click(0.652, 0.628, after_sleep=2)
