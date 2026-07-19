@@ -1095,8 +1095,16 @@ msgstr "タスクが停止するまでガーデン操作を検出してクリッ
 msgid "Check Weekly Garden"
 msgstr "ウィークリーガーデンを確認"
 
-msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
+msgid ""
+"After claiming daily rewards, check weekly Garden progress and run Garden "
+"Task if 6000 points has not been reached."
 msgstr "デイリー報酬の受取後、ウィークリーガーデンの進捗を確認し、6000ポイント未達ならガーデンタスクを実行します。"
 
 msgid "Guidebook Key"
 msgstr "ソラリスガイド"
+
+msgid "Rover"
+msgstr "漂泊者"
+
+msgid "Yangyang: Xuanling"
+msgstr "秧秧・玄翎"

@@ -32,7 +32,8 @@ CHARACTER_DISPLAY_NAMES = {
     "Luhesi": "Luuk Herssen",
     "Xiangliyao": "Xiangli Yao",
     "ShoreKeeper": "Shorekeeper",
-    "HavocRover": "Rover: Havoc",
+    "HavocRover": "Rover",
+    "YangYangSp": "Yangyang: Xuanling",
 }
 
 

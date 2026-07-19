@@ -744,7 +744,8 @@ msgstr "必要时，前往梦魇巢穴获取声骸完成日常"
 msgid "Continue Farm After Daily"
 msgstr "完成日常后继续刷取体力"
 
-msgid "After completing daily activity, continue farming stamina until depleted."
+msgid ""
+"After completing daily activity, continue farming stamina until depleted."
 msgstr "在完成日常任务活跃度之后仍然刷取体力直到体力耗尽"
 
 msgid "F10"
@@ -1143,8 +1144,16 @@ msgstr "自动检测并点击乐园操作，直到任务停止。"
 msgid "Check Weekly Garden"
 msgstr "检查每周乐园"
 
-msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
+msgid ""
+"After claiming daily rewards, check weekly Garden progress and run Garden "
+"Task if 6000 points has not been reached."
 msgstr "领取日常奖励后检查每周乐园进度；如果尚未达到 6000 点，则运行乐园任务。"
 
 msgid "Guidebook Key"
 msgstr "索拉指南"
+
+msgid "Rover"
+msgstr "漂泊者"
+
+msgid "Yangyang: Xuanling"
+msgstr "秧秧·玄翎"

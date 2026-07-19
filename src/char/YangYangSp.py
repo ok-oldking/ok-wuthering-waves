@@ -1,11 +1,24 @@
 import time
 
+from ok import Logger
 from src.char.BaseChar import BaseChar
 
 
 class YangYangSp(BaseChar):
     INTRO_PERFORM_DURATION = 8.0
     PERFORM_DURATION = 2.6
+    DISPLAY_NAME = 'Yangyang: Xuanling'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.logger = Logger.get_logger(self.DISPLAY_NAME)
+
+    @property
+    def display_name(self):
+        return self.DISPLAY_NAME
+
+    def __repr__(self):
+        return self.DISPLAY_NAME
 
     def do_perform(self):
         duration = self.INTRO_PERFORM_DURATION if self.has_intro else self.PERFORM_DURATION
