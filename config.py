@@ -24,8 +24,8 @@ def blur_area(width, height):
     return Box(width * 0.879, height * 0.976, blur_width * 0.973, blur_height * 0.994)
 
 
-def get_path_under_logs(*relative_path):
-    return os.path.join(os.path.dirname(__file__), 'logs', *relative_path)
+def get_path_under_okww(*relative_path):
+    return os.path.join(os.path.dirname(__file__), *relative_path)
 
 
 key_config_option = ConfigOption('Game Hotkey', {
@@ -55,9 +55,9 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
 config = {
     'debug': False,  # Optional, default: False
     'use_gui': True,
-    'config_folder': 'configs',
+    'config_folder': get_path_under_okww('configs'),
     'blur_area': blur_area,
-    'gui_icon': 'icon.png',
+    'gui_icon': get_path_under_okww('icon.png'),
     'global_configs': [key_config_option, char_config_option, monthly_card_config_option],
     'custom_tabs': [["src.gui.CharacterCodeTab", "CharacterCodeTab"]],
     'ocr': {
@@ -73,7 +73,7 @@ config = {
     'wait_until_settle_time': 0,
     # required if using feature detection
     'template_matching': {
-        'coco_feature_json': os.path.join('assets', 'coco_annotations.json'),
+        'coco_feature_json': get_path_under_okww('assets', 'coco_annotations.json'),
         'default_horizontal_variance': 0.002,
         'default_vertical_variance': 0.002,
         'default_threshold': 0.8,
@@ -136,13 +136,13 @@ config = {
         <strong>使用本软件可能会导致账号被封。</strong> 请在了解风险后再使用。
     </p>
 """,
-    'screenshots_folder': "screenshots",
+    'screenshots_folder': get_path_under_okww('screenshots'),
     'gui_title': 'OK-WW',  # Optional
     # 'coco_feature_folder': get_path(__file__, 'assets/coco_feature'),  # required if using feature detection
-    'log_file': get_path_under_logs('ok-ww.log'),  # Optional, auto rotating every day
-    'error_log_file': get_path_under_logs('ok-ww_error.log'),
-    'launcher_log_file': get_path_under_logs('launcher.log'),
-    'launcher_error_log_file': get_path_under_logs('launcher_error.log'),
+    'log_file': get_path_under_okww('logs', 'ok-ww.log'),  # Optional, auto rotating every day
+    'error_log_file': get_path_under_okww('logs', 'ok-ww_error.log'),
+    'launcher_log_file': get_path_under_okww('logs', 'launcher.log'),
+    'launcher_error_log_file': get_path_under_okww('logs', 'launcher_error.log'),
     'version': version,
     'onetime_tasks': [  # tasks to execute
         ["src.task.DailyTask", "DailyTask"],
