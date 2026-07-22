@@ -87,7 +87,8 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                     self.wait_in_team_and_world(time_out=120)
                     return None
                 else:
-                    self.click(0.640, 0.851, after_sleep=3)
+                    self.click(0.640, 0.851, after_sleep=0.2)
+                    self.wait_click_skip_dialog_confirm()
                 must_use -= used
 
     def not_enough_stamina(self, back=True):

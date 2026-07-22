@@ -24,6 +24,7 @@ f_white_color = {
     'b': (235, 255)  # Blue range
 }
 processed_feature = False
+WIDE_MODE_UI_SCALE = 0.75
 
 
 class BaseWWTask(BaseTask):
@@ -1014,6 +1015,8 @@ class BaseWWTask(BaseTask):
                         self.click(0.49, 0.55, after_sleep=0.5)  # 点击不再提醒
                         self.click(confirm, after_sleep=0.5)
                         self.click_confirm()
+                if feature.name != 'remove_custom':
+                    self.wait_click_skip_dialog_confirm()
                 return True
 
     def click_confirm(self, timeout=1):
@@ -1022,6 +1025,52 @@ class BaseWWTask(BaseTask):
             relative_x=-1, raise_if_not_found=False,
             threshold=0.6,
             time_out=1)
+
+    def click_skip_dialog_confirm(self):
+        skip_dialog_confirm = self.find_one(
+            'skip_dialog_confirm',
+            horizontal_variance=0.1,
+            vertical_variance=0.1,
+        )
+        if not skip_dialog_confirm:
+            return False
+
+        skip_dialog_check = self.find_one(
+            'skip_dialog_check',
+            horizontal_variance=0.1,
+            vertical_variance=0.1,
+        )
+        if not skip_dialog_check:
+            check_feature = self.get_feature_by_name('skip_dialog_check')
+            wide_check_template = cv2.resize(
+                check_feature.mat,
+                (0, 0),
+                fx=WIDE_MODE_UI_SCALE,
+                fy=WIDE_MODE_UI_SCALE,
+                interpolation=cv2.INTER_AREA,
+            )
+            skip_dialog_check = self.find_one(
+                'skip_dialog_check',
+                box=self.box_of_screen(0.35, 0.45, 0.55, 0.65),
+                template=wide_check_template,
+            )
+        if not skip_dialog_check:
+            return False
+
+        logger.info('confirm dialog exists, click confirm')
+        self.sleep(0.5)
+        self.click(skip_dialog_check)
+        self.sleep(0.5)
+        self.click(skip_dialog_confirm)
+        self.sleep(0.2)
+        return True
+
+    def wait_click_skip_dialog_confirm(self, time_out=3):
+        return self.wait_until(
+            self.click_skip_dialog_confirm,
+            time_out=time_out,
+            raise_if_not_found=False,
+        )
 
     def click_team_challenge(self):
         self.wait_click_feature('team_start_challenge', raise_if_not_found=True, after_sleep=1)
