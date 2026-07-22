@@ -4,12 +4,12 @@
 #
 #    pip-compile '.\requirements.in'
 #
-ok-script==1.0.163
+ok-script==1.0.167
     # via -r .\requirements.in
 OpenCC==1.2.0
 onnxocr-ppocrv5==0.0.18
     # via -r .\requirements.in
-pyappify==1.0.5
+pyappify==1.0.6
     # via ok-script
 pynput==1.8.2
 six==1.17.0
@@ -31,7 +31,7 @@ numpy==2.2.6
 
 opencv-python==4.12.0.88
     # via -r .\requirements.in
-openvino==2026.0.0
+openvino==2026.2.1
     # via -r .\requirements.in
 openvino-telemetry==2025.2.0
     # via openvino
