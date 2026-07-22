@@ -24,6 +24,10 @@ def blur_area(width, height):
     return Box(width * 0.879, height * 0.976, blur_width * 0.973, blur_height * 0.994)
 
 
+def get_path_under_logs(*relative_path):
+    return os.path.join(os.path.dirname(__file__), 'logs', *relative_path)
+
+
 key_config_option = ConfigOption('Game Hotkey', {
     'Echo Key': 'q',
     'Liberation Key': 'r',
@@ -135,10 +139,10 @@ config = {
     'screenshots_folder': "screenshots",
     'gui_title': 'OK-WW',  # Optional
     # 'coco_feature_folder': get_path(__file__, 'assets/coco_feature'),  # required if using feature detection
-    'log_file': 'logs/ok-ww.log',  # Optional, auto rotating every day
-    'error_log_file': 'logs/ok-ww_error.log',
-    'launcher_log_file': 'logs/launcher.log',
-    'launcher_error_log_file': 'logs/launcher_error.log',
+    'log_file': get_path_under_logs('ok-ww.log'),  # Optional, auto rotating every day
+    'error_log_file': get_path_under_logs('ok-ww_error.log'),
+    'launcher_log_file': get_path_under_logs('launcher.log'),
+    'launcher_error_log_file': get_path_under_logs('launcher_error.log'),
     'version': version,
     'onetime_tasks': [  # tasks to execute
         ["src.task.DailyTask", "DailyTask"],
