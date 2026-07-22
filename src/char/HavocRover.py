@@ -1,6 +1,6 @@
 import time
 from ok import Logger
-from src.char.BaseChar import BaseChar, Elements
+from src.char.BaseChar import BaseChar, Elements, SwitchPriority
 
 _ROVER_FORM_NAMES = {
     Elements.SPECTRO: 'Rover: Spectro',
@@ -12,10 +12,14 @@ _ROVER_FORM_NAMES = {
 class HavocRover(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.zani_liber_insert = False
+        self._force_switch_me = False
         self._bind_form_logger()
 
     def reset_state(self):
         self.ring_index = -1
+        self.zani_liber_insert = False
+        self._force_switch_me = False
         super().reset_state()
         self._bind_form_logger()
 
@@ -38,7 +42,30 @@ class HavocRover(BaseChar):
             self.task._ensure_ring_index()
             self._bind_form_logger()
 
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        if self._force_switch_me:
+            return SwitchPriority.MUST
+        for char in self.task.chars:
+            if char is not None and char is not self and getattr(char, "_force_switch_me", False):
+                return SwitchPriority.NO
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
+
+    def _force_switch_to(self, target):
+        if target is None:
+            return super().switch_next_char()
+        for char in self.task.chars:
+            if char is not None:
+                char._force_switch_me = char is target
+        try:
+            return super().switch_next_char()
+        finally:
+            for char in self.task.chars:
+                if char is not None:
+                    char._force_switch_me = False
+
     def do_perform(self):
+        if self.zani_liber_insert:
+            return self._do_zani_liber_insert()
         self.init()
         if not self.has_intro:
             self.sleep(0.01)
@@ -54,6 +81,46 @@ class HavocRover(BaseChar):
         else:
             self.perform_basic_routine()
         self.switch_next_char()
+
+    def _do_zani_liber_insert(self):
+        """赞妮大招插入：E + Q + 大招，然后切回赞妮。"""
+        self.zani_liber_insert = False
+        self.logger.info("rover: zani liber insert short axis (E+Q+R)")
+        self.init()
+        if self.has_intro:
+            self.continues_normal_attack(0.2)
+        self.wait_down()
+        if self.resonance_available():
+            self.click_resonance(send_click=True)
+            self.sleep(0.05)
+        if self.echo_available():
+            self.click_echo(time_out=0)
+            self.sleep(0.05)
+        attempts = 0
+        recovery_elapsed = 0
+        result = "disabled"
+        if self.task.use_liberation:
+            attempts = 1
+            if self.click_liberation(send_click=True):
+                result = "first-success"
+            else:
+                result = "retry-timeout"
+                retry_start = time.time()
+                while time.time() - retry_start < 2:
+                    remaining = 2 - (time.time() - retry_start)
+                    self.continues_normal_attack(min(0.25, remaining))
+                    recovery_elapsed = min(time.time() - retry_start, 2)
+                    if recovery_elapsed >= 2:
+                        break
+                    attempts += 1
+                    if self.click_liberation(send_click=True, wait_if_cd_ready=0):
+                        result = "retry-success"
+                        break
+        self.logger.info(f"rover: liber insert result={result} attempts={attempts} recovery={recovery_elapsed:.2f}s")
+        from src.char.Zani import Zani
+
+        zani = self.task.has_char(Zani)
+        return self._force_switch_to(zani)
 
     def init(self):
         if self.ring_index == -1:
@@ -168,6 +235,8 @@ class HavocRover(BaseChar):
             self.continues_normal_attack(1)
 
     def do_fast_perform(self):
+        if self.zani_liber_insert:
+            return self._do_zani_liber_insert()
         self.init()
         if not self.has_intro:
             self.sleep(0.01)

@@ -21,14 +21,19 @@ class Phoebe(BaseChar):
         self.attribute = 0
         self.star_available = False
         self.char_zani = None
+        self.char_rover = None
         self.attribute_mismatch = False
         self.first_rotation_done = False
+        self._zanfei_guang = False
+        self._liber_insert = False
+        self._force_switch_me = False
+        self._zanfei_first_outro_done = False
         self.state = {
             "enter_status": 0,
             "starflash_combo": 0,
             "liberation": 0,
             "outro": 0,
-            "priority_liberation_cast": 0
+            "priority_liberation_cast": 0,
         }
 
     def reset_state(self):
@@ -37,9 +42,44 @@ class Phoebe(BaseChar):
         self.attribute = 0
         self.star_available = False
         self.char_zani = None
+        self.char_rover = None
         self.first_rotation_done = False
+        self._zanfei_guang = False
+        self._liber_insert = False
+        self._force_switch_me = False
+        self._zanfei_first_outro_done = False
+
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        if self._force_switch_me:
+            return SwitchPriority.MUST
+        for char in self.task.chars:
+            if char is not None and char is not self and getattr(char, "_force_switch_me", False):
+                return SwitchPriority.NO
+        if (
+            not has_intro
+            and self.last_outro_time > 0
+            and (self.time_elapsed_accounting_for_freeze(self.last_outro_time, intro_motion_freeze=True) < 4.5)
+        ):
+            self.logger.info("performing outro, switch priority no")
+            return SwitchPriority.NO
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
+
+    def _force_switch_to(self, target):
+        if target is None:
+            return super().switch_next_char()
+        for char in self.task.chars:
+            if char is not None:
+                char._force_switch_me = char is target
+        try:
+            return super().switch_next_char()
+        finally:
+            for char in self.task.chars:
+                if char is not None:
+                    char._force_switch_me = False
 
     def do_perform(self):
+        if self._zanfei_guang and self._liber_insert:
+            return self._do_liber_insert()
         self.last_outro_time = -1
         start = time.time()
         if self.attribute == 0:
@@ -50,83 +90,143 @@ class Phoebe(BaseChar):
             # 非变奏切人后会自然接一段普攻，先等它结算协奏，再抢大招。
             self.sleep(0.01)
         self._try_liberation_now()
-
         if self.attribute == 1:
             self.click_echo(time_out=0)
         if self.flying():
-            self.logger.info('flying')
+            self.logger.info("flying")
             self.continues_normal_attack(0.1)
             return self.switch_next_char()
-
         attribute_mismatch = self.check_attribute_mismatch()
-
         if self.attribute == 2 and self.char_zani is not None:
             if not self.star_available:
                 self.absolution_or_confession()
             if self.zani_linkage():
                 return self.switch_next_char()
-
         wait_ui_time = 0.35 - (time.time() - start)
         if wait_ui_time > 0 and self.star_available and self.judge_forte() == 0:
-            self.logger.info('wait for UI')
+            self.logger.info("wait for UI")
             self.continues_normal_attack(wait_ui_time)
-
         status_entered = self.absolution_or_confession()
         self.check_combat()
-        if ((not attribute_mismatch or status_entered == State.SUCCESS) and
-                self.star_available and
-                self.click_liberation(send_click=True)
+        if (
+            (not attribute_mismatch or status_entered == State.SUCCESS)
+            and self.star_available
+            and self.click_liberation(send_click=True)
         ):
             self.state["liberation"] += 1
             self.state["priority_liberation_cast"] = 1
             self.check_combat()
         if status_entered == State.SUCCESS or self.judge_forte() > 0:
             self.starflash_combo()
-            # 第一次重击后检查大招（可插入），无论是否触发都继续打第二次重击
             self._try_liberation_now()
-            if (self.attribute == 2 and
-                    self.state["starflash_combo"] < 2 and
-                    self.get_zani_state() != 1):
-                self.logger.info('phoebe: try second starflash_combo')
+            max_starflash = 1 if self._zanfei_guang else 2
+            if self.attribute == 2 and self.state["starflash_combo"] < max_starflash and (self.get_zani_state() != 1):
+                self.logger.info("phoebe: try second starflash_combo")
                 self.starflash_combo()
         self._try_liberation_now()
         if self.resonance_available():
             if self.attribute == 2:
-                # 第一轮未完成时跳过共鸣点击，避免触发非蓝色重击打断普攻填协奏
-                if not self.confession_ready() and self.first_rotation_done:
+                if not self._zanfei_guang and (not self.confession_ready()) and self.first_rotation_done:
                     self.click_resonance_once()
             else:
                 self.click_resonance()
             self._ensure_first_rotation_con()
-            return self.switch_next_char()
+            return self.switch_next_char(_zanfei_full_tail=self._zanfei_guang)
         self.continues_normal_attack(0.1)
         self._ensure_first_rotation_con()
-        self.switch_next_char()
+        self.switch_next_char(_zanfei_full_tail=self._zanfei_guang)
+
+    def _do_liber_insert(self):
+        """赞妮大招插入：starflash + 长按定身E + 有大招则放，切回赞妮（禁止短按传送/闪避起飞）。"""
+        self._liber_insert = False
+        self.logger.info("phoebe: zani liber insert short axis")
+        if self.attribute == 0:
+            self.decide_teammate()
+        self._ensure_grounded("insert enter")
+        self.logger.info("phoebe: insert settle after switch")
+        self.sleep(0.5)
+        if self.has_intro:
+            self.continues_normal_attack(0.8)
+            self._ensure_grounded("insert after intro na")
+        if not self.star_available:
+            self.absolution_or_confession(dodge_cancel=False)
+            self._ensure_grounded("insert after confession")
+        if self._try_liberation_now():
+            self.logger.info("phoebe: liber insert cast liberation")
+            self._ensure_grounded("insert after liber")
+        if self.judge_forte() > 0 or self.heavy_attack_ready():
+            if self.heavy_attack_ready():
+                self.logger.info("phoebe: liber insert direct heavy (no dodge cancel)")
+                if self.perform_heavy_attack():
+                    self.state["starflash_combo"] += 1
+            else:
+                self.starflash_combo()
+            self._ensure_grounded("insert after heavy")
+        if self._try_liberation_now():
+            self.logger.info("phoebe: liber insert cast liberation after starflash")
+            self._ensure_grounded("insert after liber2")
+        self._insert_long_press_dingshen_e()
+        self._ensure_grounded("insert before switch")
+        from src.char.Zani import Zani
+
+        zani = self.char_zani or self.task.has_char(Zani)
+        return self._force_switch_to(zani)
+
+    def _ensure_grounded(self, tag=""):
+        """插入轴落地，避免重击/技能后滞空切人。"""
+        self.wait_down()
+        if self.flying():
+            self.logger.info(f"phoebe: wait land {tag}")
+            self.task.wait_until(
+                lambda: not self.flying(), post_action=lambda: self.click(interval=0.1, after_sleep=0.05), time_out=2.0
+            )
+            self.wait_down()
+
+    def _insert_long_press_dingshen_e(self):
+        """大招插入定身：E 可用则长按；绝不用短按二段传送。"""
+        if not self.resonance_available():
+            self.logger.info("phoebe: insert dingshen skip, E not ready")
+            return False
+        if self.confession_ready() or self.star_available:
+            self.logger.info("phoebe: insert long-press E dingshen")
+            key = self.get_resonance_key()
+            self.task.send_key_down(key)
+            hold_start = time.time()
+            while time.time() - hold_start < 0.55:
+                self.task.next_frame()
+            self.task.send_key_up(key)
+            self.sleep(0.05)
+            return True
+        self.logger.info("phoebe: insert dingshen skip, not confession/star state")
+        return False
 
     def _ensure_first_rotation_con(self):
-        """完整输出轴切人前确保协奏打满（大招中途快切不会走到这里）。"""
+        """切人前补协奏：赞菲光每轮最多10秒；非赞菲光完整轴最多5秒。"""
+        if self._zanfei_guang:
+            if not self.is_con_full():
+                self.logger.info(f"phoebe: zanfei wait full con before switch first_rot={not self.first_rotation_done}")
+                self.continues_normal_attack(10.0, until_con_full=True)
+            self.first_rotation_done = True
+            return
         if not self.first_rotation_done:
             self.first_rotation_done = True
-        if self.is_con_full():
+        start_con = self.get_current_con()
+        if start_con == 1 or self.get_zani_state() == 1:
             return
-        # 赞妮大招态由 zani_linkage 提前 return；此处再挡一层
-        if self.get_zani_state() == 1:
-            return
-        self.logger.info('phoebe: wait for full con before switch')
         self.continues_normal_attack(5.0, until_con_full=True)
+        end_con = self.get_current_con()
+        self.logger.info(f"phoebe: full con fallback start={start_con} end={end_con} full={end_con == 1}")
 
     def zani_linkage(self):
-        self.logger.debug('zani linkage')
+        self.logger.debug("zani linkage")
         result = self.get_zani_state()
         if self.char_zani.blazes >= 0.9:
-            self.logger.info('stop applying spectro frazzle')
+            self.logger.info("stop applying spectro frazzle")
             if not self.resonance_available():
                 if result == 0 or self.char_zani.liberation_time_left() > 3:
                     self.continues_normal_attack(1, interval=0.15)
-            else:
-                # 首轮跳过 E；之后 confession 已经就绪时也不要短按 E，避免打断协奏轴。
-                if self.first_rotation_done and not self.confession_ready():
-                    self.click_resonance(send_click=False)
+            elif not self._zanfei_guang and self.first_rotation_done and (not self.confession_ready()):
+                self.click_resonance(send_click=False)
             return True
         if result == 1:
             self.cast_remaining_skills()
@@ -293,14 +393,14 @@ class Phoebe(BaseChar):
         else:
             return lambda: False
 
-    def absolution_or_confession(self):
+    def absolution_or_confession(self, dodge_cancel=True):
         self.task.wait_in_team_and_world(time_out=3, raise_if_not_found=False)
         condition = self.get_prayer_condition()
         if self.attribute == 2:
             key_down = lambda: self.task.send_key_down(self.get_resonance_key())
             key_up = lambda: self.task.send_key_up(self.get_resonance_key())
         else:
-            key_down, key_up = self.task.mouse_down, self.task.mouse_up
+            key_down, key_up = (self.task.mouse_down, self.task.mouse_up)
         if condition():
             outer_start = time.time()
             while condition():
@@ -314,16 +414,20 @@ class Phoebe(BaseChar):
                     self.task.next_frame()
                 key_up()
                 if self.flying():
-                    self.logger.info('flying')
-                    self.task.wait_until(lambda: not self.flying(),
-                                         post_action=lambda: self.click(interval=0.1, after_sleep=0.1), time_out=2)
+                    self.logger.info("flying")
+                    self.task.wait_until(
+                        lambda: not self.flying(),
+                        post_action=lambda: self.click(interval=0.1, after_sleep=0.1),
+                        time_out=2,
+                    )
                     outer_start = time.time()
                 self.task.next_frame()
             if self.attribute == 2:
-                self.logger.info('Enters confession status')
+                self.logger.info("Enters confession status")
             else:
-                self.logger.info('Enters absolution status')
-            self.continues_right_click(0.05)
+                self.logger.info("Enters absolution status")
+            if dodge_cancel:
+                self.continues_right_click(0.05)
             self.star_available = True
             self.reset_action()
             self.state["enter_status"] += 1
@@ -331,9 +435,8 @@ class Phoebe(BaseChar):
         return State.UNAVAILABLE
 
     def _try_liberation_now(self):
-        """每个主要动作前检查大招，可用就立即释放，返回True表示已释放"""
-        if (self.star_available and not self.flying()
-                and self.liberation_available()):
+        """每次需要攻击前额外检查，有大招就释放，返回True表示已释放"""
+        if self.star_available and (not self.flying()) and self.liberation_available():
             if self.click_liberation(send_click=True):
                 self.state["liberation"] += 1
                 self.state["priority_liberation_cast"] = 1
@@ -342,37 +445,80 @@ class Phoebe(BaseChar):
         return False
 
     def _try_cast_liberation_before_switch(self):
-        # 有大放大:flying / zani_linkage / 共鸣等提前切人的分支可能带着可用大招切走,
-        # 在此切人前补放一次。加保护:仅辅助型、不在空中、每轮不重复放
         if self.attribute != 2:
+            self.logger.info("phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=attribute")
             return False
         if self.state.get("priority_liberation_cast"):
+            self.logger.info("phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=duplicate")
             return False
-        if not self.star_available or self.flying():
+        if not self.star_available:
+            self.logger.info("phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=star-unavailable")
+            return False
+        if self.flying():
+            self.logger.info("phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=airborne")
             return False
         if not self.liberation_available():
+            self.logger.info("phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=liberation-unavailable")
             return False
-        self.logger.info('cast available liberation before switch')
         if self.click_liberation(send_click=True):
             self.state["priority_liberation_cast"] = 1
             self.state["liberation"] += 1
             self.check_combat()
+            self.logger.info("phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=cast-success")
             return True
+        self.logger.info("phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=cast-failed")
         return False
 
+    def _settle_zanfei_liberation_before_switch(self):
+        start = time.time()
+        attempts = 0
+        result = "already-success" if self.state.get("priority_liberation_cast") else "availability-timeout"
+        if result != "already-success" and (not self.star_available):
+            result = "star-unavailable"
+        while result not in ("already-success", "star-unavailable") and time.time() - start < 1.0:
+            if self.flying():
+                result = "airborne-timeout"
+                self.click(interval=0.1)
+                self.task.next_frame()
+                continue
+            result = "availability-timeout"
+            if self.liberation_available():
+                attempts += 1
+                if self.click_liberation(send_click=True):
+                    self.state["priority_liberation_cast"] = 1
+                    self.state["liberation"] += 1
+                    self.check_combat()
+                    result = "cast-success"
+                    break
+                if attempts >= 2:
+                    result = "cast-failed-limit"
+                    break
+            self.task.next_frame()
+        elapsed = min(time.time() - start, 1.0)
+        self.logger.info(
+            f"phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=settlement result={result} elapsed={elapsed:.2f}s attempts={attempts}"
+        )
+        return result in ("already-success", "cast-success")
+
     def switch_next_char(self, *args, **kwargs):
+        full_tail = bool(kwargs.pop("_zanfei_full_tail", False))
         self._try_cast_liberation_before_switch()
         if self.attribute == 2 and self.is_con_full():
+            if full_tail and self._zanfei_guang and (not self._liber_insert):
+                self._settle_zanfei_liberation_before_switch()
             self.click_echo()
             self.state["outro"] += 1
+            if self._zanfei_guang and (not self._liber_insert):
+                return self._zanfei_switch_on_full_con()
         return super().switch_next_char(*args, **kwargs)
 
-    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        if not has_intro and self.last_outro_time > 0 and self.time_elapsed_accounting_for_freeze(
-                self.last_outro_time, intro_motion_freeze=True) < 4.5:
-            self.logger.info('performing outro, switch priority no')
-            return SwitchPriority.NO
-        return super().get_switch_priority(current_char, has_intro, target_low_con)
+    def _zanfei_switch_on_full_con(self):
+        from src.char.Zani import Zani
+
+        self._zanfei_first_outro_done = True
+        target = self.char_zani or self.task.has_char(Zani)
+        self.logger.info("phoebe: zanfei full-con outro -> Zani")
+        return self._force_switch_to(target)
 
     def check_middle_star(self):
         if self.star_available:
@@ -397,14 +543,21 @@ class Phoebe(BaseChar):
         from src.char.Zani import Zani
         from src.char.Cartethyia import Cartethyia
         from src.char.HavocRover import HavocRover
+
+        self.char_rover = self.task.has_char(HavocRover)
         if char := self.task.has_char(Zani):
             self.char_zani = char
             self.attribute = 2
-        elif self.task.has_char(Cartethyia) and self.task.has_char(HavocRover):
+            self._zanfei_guang = bool(self.char_rover)
+        elif self.task.has_char(Cartethyia) and self.char_rover:
             self.attribute = 2
+            self._zanfei_guang = False
         else:
             self.attribute = 1
-        self.logger.debug(f"set attribute: {'support' if self.attribute == 2 else 'attacker'}")
+            self._zanfei_guang = False
+        self.logger.debug(
+            f"set attribute: {('support' if self.attribute == 2 else 'attacker')} zanfei={self._zanfei_guang}"
+        )
 
     def judge_frequncy_and_amplitude(self, gray, min_freq, max_freq, min_amp):
         height, width = gray.shape[:]
@@ -463,8 +616,10 @@ class Phoebe(BaseChar):
         if self.attribute != 2:
             return False
         self.logger.debug(
-            f'state_liberation {self.state["liberation"]} state_starflash_combo {self.state["starflash_combo"]}')
-        if self.state["liberation"] >= 1 and self.state["starflash_combo"] >= 2:
+            f"state_liberation {self.state['liberation']} state_starflash_combo {self.state['starflash_combo']}"
+        )
+        need_starflash = 1 if self._zanfei_guang else 2
+        if self.state["liberation"] >= 1 and self.state["starflash_combo"] >= need_starflash:
             return True
         return False
 
@@ -488,8 +643,7 @@ class Phoebe(BaseChar):
         from src.char.ShoreKeeper import ShoreKeeper
         for i, char in enumerate(self.task.chars):
             if isinstance(char, ShoreKeeper):
-                return char.auto_dodge(condition = self.flying)  
-
+                return char.auto_dodge(condition = self.flying)
 phoebe_blue_color = {
     'r': (124, 134),  # Red range
     'g': (176, 186),  # Green range
