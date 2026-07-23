@@ -1,69 +1,68 @@
-name: Build Windows Executable
+name: Windows Release
+run-name: Windows release · ${{ github.ref_name }}
 
 on:
   push:
-    # Sequence of patterns matched against refs/tags
     tags:
       - 'v*'
+
+concurrency:
+  group: windows-release-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
   actions: write
 
+env:
+  PYTHON_VERSION: '3.12'
+  PYTHONIOENCODING: 'UTF-8'
+  PYTHONLEGACYWINDOWSSTDIO: 'UTF-8'
+  SIGN_BUILD: 'true'
+  BUILD_EXE: 'true'
+#  USE_RELEASE: 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.3.74'
+
 jobs:
-  build:
-    name: Build exe with launcher
+  validate:
+    name: 1 · Validate
     runs-on: windows-latest
 
-    env:
-      PYTHONIOENCODING: 'UTF-8'
-      SIGN_BUILD: 'true'
-      BUILD_EXE: 'true'
-      USE_RELEASE: 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.3.74'
-
-    strategy:
-      matrix:
-        python-version: [ 3.12 ]
-
     steps:
-      - name: Configure git
+      - name: Configure runner
+        shell: pwsh
         run: |
           [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
           git config --global core.autocrlf false
           git config --global core.eol lf
           git config --global user.email "ok-oldking@users.noreply.github.com"
           git config --global user.name "ok-oldking"
-          echo "action_state=yellow" >> $env:GITHUB_ENV
-          echo "${{ env.action_state }}"
 
-      - uses: actions/checkout@v4
+      - name: Check out source
+        uses: actions/checkout@v4
         with:
           submodules: true
           lfs: true
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
 
-      - name: Set UTF-8 encoding
+      - name: Install dependencies
         run: |
-          set PYTHONIOENCODING=utf-8
-          set PYTHONLEGACYWINDOWSSTDIO=utf-8
-          echo PYTHONIOENCODING=utf-8 >> $GITHUB_ENV
+          python -m pip install -r requirements.txt
+          python -m pip install -r requirements-dev.txt
 
-      - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r requirements-dev.txt
-
-      - name: inline_ok_requirements
+      - name: Prepare release requirements
         env:
           RELEASE_TAG: ${{ github.ref_name }}
-        run: |
-          python -m ok.update.inline_ok_requirements --tag "$env:RELEASE_TAG"
+        run: python -m ok.update.inline_ok_requirements --tag "$env:RELEASE_TAG"
 
       - name: Run tests
         env:
@@ -94,37 +93,75 @@ jobs:
           }
 
           Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
-              Write-Host "Running tests in $($_.FullName)"
-              try {
-                  # Run the Python unittest command
-                  python -m unittest $_.FullName
+            Write-Host "Running tests in $($_.FullName)"
+            python -m unittest $_.FullName
 
-                  # Check if the previous command succeeded
-                  if ($LASTEXITCODE -ne 0) {
-                      throw "Tests failed in $($_.FullName)"
-                  }
-              } catch {
-                  # Stop the loop and return the error
-                  Write-Error $_
-                  exit 1
-              }
+            if ($LASTEXITCODE -ne 0) {
+              throw "Tests failed in $($_.FullName)"
+            }
           }
 
+  synchronize:
+    name: 2 · Synchronize repositories
+    needs: validate
+    runs-on: windows-latest
+    outputs:
+      is_release: ${{ steps.release_version.outputs.is_release }}
+      start_tag: ${{ steps.sync.outputs.start_tag }}
+      end_tag: ${{ steps.sync.outputs.end_tag }}
+      changes: ${{ steps.sync.outputs.changes_with_asterisk }}
+
+    steps:
+      - name: Configure runner
+        shell: pwsh
+        run: |
+          [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+          git config --global user.email "ok-oldking@users.noreply.github.com"
+          git config --global user.name "ok-oldking"
+
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: true
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install -r requirements-dev.txt
+
+      - name: Prepare release requirements
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python -m ok.update.inline_ok_requirements --tag "$env:RELEASE_TAG"
+
       - name: Check release version
-        id: release-version
+        id: release_version
         if: env.BUILD_EXE == 'true'
         shell: pwsh
         env:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          $tag = $env:RELEASE_TAG
-          $isRelease = $tag -match '^v?\d+\.\d+\.\d+$'
+          $isRelease = $env:RELEASE_TAG -match '^v?\d+\.\d+\.\d+$'
           "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           Write-Host "Release version: $isRelease"
 
-      - name: Sync Repositories
-        id: sync   # Give the step an ID to access its outputs
-        uses: ok-oldking/partial-sync-repo@master # Replace with your action path
+      - name: Synchronize update repositories
+        id: sync
+        uses: ok-oldking/partial-sync-repo@master
         with:
           repos: |
             https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-wuthering-waves.git
@@ -134,82 +171,149 @@ jobs:
           gitignore_file: '.update_repo_gitignore'
           show_author: true
 
-      - name: pyappify build-exe-only use_release
-        id: build-exe-only-use_release
+  package:
+    name: 3 · Build and sign
+    needs: synchronize
+    if: needs.synchronize.outputs.is_release == 'true'
+    runs-on: windows-latest
+
+    steps:
+      - name: Configure runner
+        shell: pwsh
+        run: |
+          [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+          git config --global user.email "ok-oldking@users.noreply.github.com"
+          git config --global user.name "ok-oldking"
+
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: true
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install -r requirements-dev.txt
+
+      - name: Prepare release requirements
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python -m ok.update.inline_ok_requirements --tag "$env:RELEASE_TAG"
+
+      - name: Reuse base executable
+        id: reuse_executable
         uses: ok-oldking/pyappify-action@master
-        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.USE_RELEASE != ''
+        if: env.BUILD_EXE == 'true' && env.USE_RELEASE != ''
         with:
           use_release: ${{ env.USE_RELEASE }}
 
-      - name: pyappify build-exe-only
-        id: build-exe-only
+      - name: Build portable executable
+        id: build_executable
         uses: ok-oldking/pyappify-action@master
-        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.USE_RELEASE == ''
+        if: env.BUILD_EXE == 'true' && env.USE_RELEASE == ''
         with:
           build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
 
-      - name: Upload unsigned EXE artifact
-        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
-        id: upload-unsigned-artifact
+      - name: Upload portable executable for signing
+        id: upload_executable
         uses: actions/upload-artifact@v4
+        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
         with:
-          name: to-sign
-          path: ${{ steps.build-exe-only.outputs.exe-path }}
+          name: portable-executable-to-sign
+          path: ${{ steps.build_executable.outputs.exe-path }}
+          if-no-files-found: error
+          retention-days: 1
 
-      - name: Sign EXE
-        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
+      - name: Sign portable executable
         uses: signpath/github-action-submit-signing-request@v1.1
+        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
         with:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
           organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
           project-slug: 'ok-wuthering-waves'
           signing-policy-slug: 'release-signing'
-          artifact-configuration-slug: "single-exe"
-          github-artifact-id: '${{ steps.upload-unsigned-artifact.outputs.artifact-id }}'
+          artifact-configuration-slug: 'single-exe'
+          github-artifact-id: '${{ steps.upload_executable.outputs.artifact-id }}'
           wait-for-completion: true
           wait-for-completion-timeout-in-seconds: 60000
-          output-artifact-directory: ${{ steps.build-exe-only.outputs.exe-folder }}
+          output-artifact-directory: ${{ steps.build_executable.outputs.exe-folder }}
 
-      - name: pyappify build-setup-exe
-        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
-        id: build-setup-exe
+      - name: Build installers
+        id: build_installers
         uses: ok-oldking/pyappify-action@master
+        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
 
-      - name: Upload unsigned China setup EXE artifact
-        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
-        id: upload-unsigned-setup-artifact
+      - name: Upload China installer for signing
+        id: upload_china_installer
         uses: actions/upload-artifact@v4
+        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
         with:
-          name: setup-to-sign
+          name: china-installer-to-sign
           path: pyappify_dist/ok-ww-win32-China-setup.exe
           if-no-files-found: error
+          retention-days: 1
 
-      - name: Sign China setup EXE
-        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true'
+      - name: Sign China installer
         uses: signpath/github-action-submit-signing-request@v1.1
+        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
         with:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
           organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
           project-slug: 'ok-wuthering-waves'
           signing-policy-slug: 'release-signing'
           artifact-configuration-slug: 'setupexe'
-          github-artifact-id: '${{ steps.upload-unsigned-setup-artifact.outputs.artifact-id }}'
+          github-artifact-id: '${{ steps.upload_china_installer.outputs.artifact-id }}'
           wait-for-completion: true
           wait-for-completion-timeout-in-seconds: 60000
           output-artifact-directory: 'pyappify_dist'
 
-      - name: Release
+      - name: Stage release assets
+        uses: actions/upload-artifact@v4
+        if: env.BUILD_EXE == 'true'
+        with:
+          name: release-assets
+          path: pyappify_dist/*
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: 4 · Publish
+    needs: [ synchronize, package ]
+    if: needs.synchronize.outputs.is_release == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download release assets
+        uses: actions/download-artifact@v4
+        with:
+          name: release-assets
+          path: pyappify_dist
+
+      - name: Create GitHub release
         uses: softprops/action-gh-release@v2
-        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           body: |
-            ###  更新日志 ${{ steps.sync.outputs.start_tag }} -> ${{ steps.sync.outputs.end_tag }}:
-              ${{ steps.sync.outputs.changes_with_asterisk }}          
+            ### 更新日志 ${{ needs.synchronize.outputs.start_tag }} -> ${{ needs.synchronize.outputs.end_tag }}:
+              ${{ needs.synchronize.outputs.changes }}
             ### 下载包说明
-              * [ok-ww-win32-China-setup.exe](https://github.com/ok-oldking/ok-wuthering-waves/releases/download/${{ github.ref_name }}/ok-ww-win32-China-setup.exe) 完整安装包, 更新使用阿里云+腾讯CNB.               
-              * [ok-ww-win32-Global-setup.exe](https://github.com/ok-oldking/ok-wuthering-waves/releases/download/${{ github.ref_name }}/ok-ww-win32-Global-setup.exe) full package with dependencies, using GitHub and PyPi as update source 
+              * [ok-ww-win32-China-setup.exe](https://github.com/ok-oldking/ok-wuthering-waves/releases/download/${{ github.ref_name }}/ok-ww-win32-China-setup.exe) 完整安装包, 更新使用阿里云+腾讯CNB.
+              * [ok-ww-win32-Global-setup.exe](https://github.com/ok-oldking/ok-wuthering-waves/releases/download/${{ github.ref_name }}/ok-ww-win32-Global-setup.exe) full package with dependencies, using GitHub and PyPi as update source
               * 不要下载ok-ww-win32.zip,和SourceCode.zip, Do Not Download the SourceCode, ok-ww-win32.zip
             ### 如果无法下载或下载慢, 可以使用其他下载源
               * [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okww&source=ok-ww-release), 国内网页直链, 下载需要购买CD-KEY, 已有Mirror酱CD-KEY可免费下载
@@ -219,11 +323,11 @@ jobs:
           prerelease: false
           files: pyappify_dist/*
 
-      - name: Trigger MirrorChyanUploading
-        if: env.BUILD_EXE == 'true' && steps.release-version.outputs.is_release == 'true' && env.SIGN_BUILD == 'true' && startsWith(github.ref, 'refs/tags/')
+      - name: Trigger distribution workflows
+        if: env.SIGN_BUILD == 'true'
         shell: bash
-        run: |
-          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_uploading
-          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_release_note
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run --repo "$GITHUB_REPOSITORY" mirrorchyan_uploading
+          gh workflow run --repo "$GITHUB_REPOSITORY" mirrorchyan_release_note
