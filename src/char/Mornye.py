@@ -86,7 +86,7 @@ class Mornye(BaseChar):
         if has_intro and current_char and current_char.char_name in {'char_aemeath'}:
             return SwitchPriority.MUST
         from src.char.Linnai import Linnai
-        if has_intro and current_char and self.task.has_char(Linnai) and current_char.char_name not in {'char_linnai'}:
+        if has_intro and current_char and self.task.has_char(Linnai) and current_char.char_name != 'char_linnai':
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
         

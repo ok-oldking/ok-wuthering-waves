@@ -133,11 +133,11 @@ char_dict = {}
 for keys, value in _char_dict_raw.items():
     value = dict(value)
     value.setdefault('buff_time', get_default_buff_time(value.get('char_type', CharType.MAIN_DPS)))
-    if isinstance(keys, tuple):
-        for key in keys:
-            char_dict[key] = value
-    else:
-        char_dict[keys] = value
+    template_names = keys if isinstance(keys, tuple) else (keys,)
+    value['canonical_name'] = template_names[0]
+    value['template_names'] = template_names
+    for key in template_names:
+        char_dict[key] = value
 
 char_names = char_dict.keys()
 
@@ -153,10 +153,18 @@ def _get_buff_time(task, info):
 
 def _apply_char_config(task, char, info):
     if char and info:
+        char.char_name = info['canonical_name']
         char.set_char_type(_get_char_type(task, info))
         char.set_buff_time(_get_buff_time(task, info))
         char.target_box_short_combat_check = info.get('target_box_short_combat_check', False)
     return char
+
+
+def _find_registered_char(task, box, info):
+    template_names = info['template_names']
+    if len(template_names) == 1:
+        return task.find_one(template_names[0], box=box, threshold=0.6)
+    return task.find_best_match_in_box(box, template_names, threshold=0.6)
 
 
 def get_char_by_pos(task, box, index, old_char):
@@ -165,12 +173,12 @@ def get_char_by_pos(task, box, index, old_char):
     name = "unknown"
     char = None
     if old_char and old_char.confidence > 0.92 and old_char.char_name in char_names:
-        char = task.find_one(old_char.char_name, box=box, threshold=0.6)
+        info = char_dict.get(old_char.char_name)
+        char = _find_registered_char(task, box, info)
         if char:
-            info = char_dict.get(old_char.char_name)
             cls = load_custom_char_class(info.get('cls'))
             if type(old_char) is not cls:
-                return _apply_char_config(task, cls(task, index, char_name=old_char.char_name,
+                return _apply_char_config(task, cls(task, index, char_name=info['canonical_name'],
                                                     confidence=char.confidence,
                                                     ring_index=info.get('ring_index', -1),
                                                     char_type=_get_char_type(task, info),
@@ -183,7 +191,8 @@ def get_char_by_pos(task, box, index, old_char):
             info = char_dict.get(char.name)
             name = char.name
             cls = load_custom_char_class(info.get('cls'))
-            return _apply_char_config(task, cls(task, index, char_name=name, confidence=char.confidence,
+            return _apply_char_config(task, cls(task, index, char_name=info['canonical_name'],
+                                                confidence=char.confidence,
                                                 ring_index=info.get('ring_index', -1),
                                                 char_type=_get_char_type(task, info),
                                                 buff_time=_get_buff_time(task, info)), info)

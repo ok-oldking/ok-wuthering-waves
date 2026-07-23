@@ -4,7 +4,6 @@ class Linnai(BaseChar):
     RES_CHECK_THRESHOLD = 0.6
     INTRO_RES_WAIT = 1.0
     AEMEATH_INTRO_RES_WAIT = 1.6
-    MORNYE_NAMES = {'char_moning', 'char_moning_new'}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -121,6 +120,6 @@ class Linnai(BaseChar):
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         # Mornye 离场就强制切 Linnai
-        if current_char and current_char.char_name in self.MORNYE_NAMES:
+        if current_char and current_char.char_name == 'char_moning':
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)

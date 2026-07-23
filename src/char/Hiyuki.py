@@ -58,7 +58,7 @@ class Hiyuki(BaseChar):
 
     def perform_standard(self):
         timeout = self.FIELD_TIME_OUT
-        if self.has_intro and self.check_outro() in {'char_linnai'}:
+        if self.has_intro and self.check_outro() == 'char_linnai':
             timeout = self.LINNAI_FIELD_TIME_OUT
 
         while self.has_long_action() and self.time_elapsed_accounting_for_freeze(self.last_perform) < timeout:
@@ -84,7 +84,7 @@ class Hiyuki(BaseChar):
     def perform_lib(self):
         start = time.time()
         timeout = self.FIELD_TIME_OUT
-        if self.has_intro and self.check_outro() in {'char_linnai'}:
+        if self.has_intro and self.check_outro() == 'char_linnai':
             timeout = self.LINNAI_FIELD_TIME_OUT
 
         is_timeout = False
