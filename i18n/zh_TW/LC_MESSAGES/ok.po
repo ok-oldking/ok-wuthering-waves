@@ -1267,3 +1267,21 @@ msgstr "檢查已棄置聲骸"
 
 msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
 msgstr "完成每日任務後，檢查是否有1000個已棄置聲骸並進行融合。"
+
+msgid "Teleport and Farm 4C Echo"
+msgstr "傳送並刷取4C聲骸"
+
+msgid "Merge Echo If discarded > 1000"
+msgstr "已棄置聲骸超過1000時融合"
+
+msgid "Additional Tasks to Run After Daily Task"
+msgstr "每日任務後執行的附加任務"
+
+msgid "Select optional tasks to run after the daily task is complete."
+msgstr "選擇在每日任務完成後執行的可選任務。"
+
+msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
+msgstr "選擇「傳送並刷取4C聲骸」時，必須在刷取聲骸任務中啟用「傳送至首領」。"
+
+msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgstr "選擇「自動刷取所有夢魘巢穴」時，「刷取目標」必須至少選擇一項。"

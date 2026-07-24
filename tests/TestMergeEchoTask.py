@@ -2,9 +2,17 @@ import unittest
 from unittest.mock import Mock, call
 
 from config import key_config_option
-from src.task.DailyTask import DailyTask
+from src.task.DailyTask import (
+    ADDITIONAL_TASKS,
+    AUTO_FARM_NIGHTMARE_NEST,
+    CHECK_WEEKLY_GARDEN,
+    MERGE_ECHO_IF_DISCARDED_OVER_1000,
+    TELEPORT_AND_FARM_4C_ECHO,
+    DailyTask,
+)
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.MergeEchoTask import FULL_BATCH_PATTERN, MergeEchoTask
+from src.task.NightmareNestTask import NightmareNestTask
 
 
 class TestMergeEchoTask(unittest.TestCase):
@@ -127,34 +135,112 @@ class TestMergeEchoTask(unittest.TestCase):
 
 class TestDailyMergeEchoTask(unittest.TestCase):
 
-    def test_daily_option_defaults_to_false(self):
+    def test_daily_additional_tasks_metadata(self):
         executor = Mock()
         executor.scene = None
         executor.global_config.get_config.return_value = {}
 
         daily_task = DailyTask(executor, Mock())
 
-        self.assertFalse(daily_task.default_config["Check Discarded Echo"])
+        self.assertEqual(daily_task.default_config[ADDITIONAL_TASKS], [CHECK_WEEKLY_GARDEN])
+        self.assertEqual(
+            daily_task.config_type[ADDITIONAL_TASKS],
+            {
+                "type": "multi_selection",
+                "options": [
+                    CHECK_WEEKLY_GARDEN,
+                    AUTO_FARM_NIGHTMARE_NEST,
+                    MERGE_ECHO_IF_DISCARDED_OVER_1000,
+                    TELEPORT_AND_FARM_4C_ECHO,
+                ],
+            },
+        )
+        self.assertNotIn("Continue Farm After Daily", daily_task.default_config)
+        self.assertNotIn(CHECK_WEEKLY_GARDEN, daily_task.default_config)
+        self.assertNotIn(AUTO_FARM_NIGHTMARE_NEST, daily_task.default_config)
+        self.assertNotIn(MERGE_ECHO_IF_DISCARDED_OVER_1000, daily_task.default_config)
 
-    def test_daily_skips_discarded_echo_check_when_disabled(self):
+    def test_daily_runs_selected_additional_tasks(self):
         daily_task = DailyTask.__new__(DailyTask)
-        daily_task.config = {"Check Discarded Echo": False}
+        daily_task.config = {
+            ADDITIONAL_TASKS: [
+                CHECK_WEEKLY_GARDEN,
+                AUTO_FARM_NIGHTMARE_NEST,
+                MERGE_ECHO_IF_DISCARDED_OVER_1000,
+                TELEPORT_AND_FARM_4C_ECHO,
+            ],
+        }
+        daily_task.check_weekly_garden = Mock()
+        daily_task.check_discarded_echo = Mock()
         daily_task.run_task_by_class = Mock()
 
-        daily_task.check_discarded_echo()
+        daily_task.run_additional_tasks()
 
-        daily_task.run_task_by_class.assert_not_called()
+        daily_task.check_weekly_garden.assert_called_once_with()
+        daily_task.check_discarded_echo.assert_called_once_with()
+        self.assertEqual(
+            daily_task.run_task_by_class.call_args_list,
+            [call(NightmareNestTask), call(FarmEchoTask)],
+        )
 
-    def test_daily_runs_merge_echo_task_when_enabled(self):
+    def test_daily_rejects_farm_echo_without_teleport(self):
         daily_task = DailyTask.__new__(DailyTask)
-        daily_task.config = {"Check Discarded Echo": True}
-        daily_task.info_set = Mock()
-        daily_task.log_info = Mock()
-        daily_task.run_task_by_class = Mock()
+        daily_task.config = {ADDITIONAL_TASKS: [TELEPORT_AND_FARM_4C_ECHO]}
+        farm_echo_task = Mock()
+        farm_echo_task.config = {"Teleport to Boss": "No"}
+        daily_task.get_task_by_class = Mock(return_value=farm_echo_task)
+        daily_task.log_error = Mock()
+        daily_task.tr = lambda message: message
 
-        daily_task.check_discarded_echo()
+        self.assertFalse(daily_task.validate_additional_tasks())
+        daily_task.log_error.assert_called_once_with(
+            'Teleport and Farm 4C Echo requires "Teleport to Boss" to be enabled in Farm Echo Task.',
+            notify=True,
+        )
 
-        daily_task.run_task_by_class.assert_called_once_with(MergeEchoTask)
+    def test_daily_rejects_nightmare_without_selection(self):
+        daily_task = DailyTask.__new__(DailyTask)
+        daily_task.config = {ADDITIONAL_TASKS: [AUTO_FARM_NIGHTMARE_NEST]}
+        nightmare_task = Mock()
+        nightmare_task.config = {"Which to Farm": []}
+        daily_task.get_task_by_class = Mock(return_value=nightmare_task)
+        daily_task.log_error = Mock()
+        daily_task.tr = lambda message: message
+
+        self.assertFalse(daily_task.validate_additional_tasks())
+        daily_task.log_error.assert_called_once_with(
+            'Auto Farm all Nightmare Nest requires at least one "Which to Farm" option.',
+            notify=True,
+        )
+
+    def test_daily_accepts_valid_additional_task_configs(self):
+        daily_task = DailyTask.__new__(DailyTask)
+        daily_task.config = {
+            ADDITIONAL_TASKS: [TELEPORT_AND_FARM_4C_ECHO, AUTO_FARM_NIGHTMARE_NEST],
+        }
+        farm_echo_task = Mock()
+        farm_echo_task.config = {"Teleport to Boss": "Boss Challenge"}
+        nightmare_task = Mock()
+        nightmare_task.config = {"Which to Farm": ["Nightmare Purification"]}
+        daily_task.get_task_by_class = Mock(
+            side_effect=lambda task_class: {
+                FarmEchoTask: farm_echo_task,
+                NightmareNestTask: nightmare_task,
+            }[task_class],
+        )
+        daily_task.log_error = Mock()
+
+        self.assertTrue(daily_task.validate_additional_tasks())
+        daily_task.log_error.assert_not_called()
+
+    def test_daily_stops_before_initialization_when_additional_config_is_invalid(self):
+        daily_task = DailyTask.__new__(DailyTask)
+        daily_task.validate_additional_tasks = Mock(return_value=False)
+        daily_task.ensure_main = Mock()
+
+        daily_task.run()
+
+        daily_task.ensure_main.assert_not_called()
 
 
 if __name__ == "__main__":

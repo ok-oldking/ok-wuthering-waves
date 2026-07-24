@@ -1131,3 +1131,21 @@ msgstr "破棄済み音骸を確認"
 
 msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
 msgstr "デイリータスク後に破棄済み音骸が1000個あるか確認し、融合します。"
+
+msgid "Teleport and Farm 4C Echo"
+msgstr "テレポートしてコスト4音骸を収集"
+
+msgid "Merge Echo If discarded > 1000"
+msgstr "破棄済み音骸が1000個超なら融合"
+
+msgid "Additional Tasks to Run After Daily Task"
+msgstr "デイリータスク後に実行する追加タスク"
+
+msgid "Select optional tasks to run after the daily task is complete."
+msgstr "デイリータスク完了後に実行する任意のタスクを選択します。"
+
+msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
+msgstr "「テレポートしてコスト4音骸を収集」を実行するには、音骸収集タスクの「ボスへテレポート」を有効にしてください。"
+
+msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgstr "「すべての悪夢の巣を自動周回」を実行するには、「周回対象」を1つ以上選択してください。"

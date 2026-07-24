@@ -1132,3 +1132,21 @@ msgstr "폐기된 에코 확인"
 
 msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
 msgstr "일일 작업 후 폐기된 에코가 1000개 있는지 확인하고 합성합니다."
+
+msgid "Teleport and Farm 4C Echo"
+msgstr "순간이동 후 코스트 4 에코 파밍"
+
+msgid "Merge Echo If discarded > 1000"
+msgstr "폐기된 에코가 1000개 초과면 합성"
+
+msgid "Additional Tasks to Run After Daily Task"
+msgstr "일일 작업 후 실행할 추가 작업"
+
+msgid "Select optional tasks to run after the daily task is complete."
+msgstr "일일 작업 완료 후 실행할 선택 작업을 고르세요."
+
+msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
+msgstr "순간이동 후 코스트 4 에코 파밍을 실행하려면 에코 파밍 작업에서 \"보스로 순간이동\"을 활성화해야 합니다."
+
+msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgstr "모든 악몽 둥지 자동 파밍을 실행하려면 \"파밍 대상\"을 하나 이상 선택해야 합니다."
