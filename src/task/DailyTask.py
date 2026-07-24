@@ -46,7 +46,8 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
             'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.',
-            ADDITIONAL_TASKS: 'Select optional tasks to run after the daily task is complete.',
+            ADDITIONAL_TASKS: 'Select optional tasks. Nightmare Nest runs before stamina farming to help complete '
+                              'the daily task; the other tasks run afterward.',
         }
         material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type = {
@@ -85,11 +86,13 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.logged_in = False
         self.ensure_main(time_out=180)
 
+        additional_tasks = self.config.get(ADDITIONAL_TASKS) or []
+        condition1 = AUTO_FARM_NIGHTMARE_NEST in additional_tasks
         condition2 = self.config.get('Farm Nightmare Nest for Daily Echo')
 
         used_stamina, daily_reward_ready = self.open_daily()
         need_stamina = not daily_reward_ready and used_stamina < 180
-        need_nightmare = (
+        need_nightmare = condition1 or (
                 condition2
                 and not daily_reward_ready
                 and self.config.get('Which to Farm', self.support_tasks[0]) != self.support_tasks[0]
@@ -100,8 +103,12 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 # 劫持 NightmareNestTask.ensure_main 避免梦魇打完关书
                 self.get_task_by_class(NightmareNestTask).ensure_main = lambda *args, **kwargs: None
 
-                self.log_debug('Farm Nightmare Nest for Daily Echo')
-                self.get_task_by_class(NightmareNestTask).run_capture_mode()
+                if condition1:
+                    self.log_debug('Auto Farm all Nightmare Nest')
+                    self.run_task_by_class(NightmareNestTask)
+                elif condition2:
+                    self.log_debug('Farm Nightmare Nest for Daily Echo')
+                    self.get_task_by_class(NightmareNestTask).run_capture_mode()
             except TaskDisabledException:
                 raise
             except Exception as e:
@@ -161,8 +168,6 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         additional_tasks = self.config.get(ADDITIONAL_TASKS) or []
         if CHECK_WEEKLY_GARDEN in additional_tasks:
             self.check_weekly_garden()
-        if AUTO_FARM_NIGHTMARE_NEST in additional_tasks:
-            self.run_task_by_class(NightmareNestTask)
         if MERGE_ECHO_IF_DISCARDED_OVER_1000 in additional_tasks:
             self.check_discarded_echo()
         if TELEPORT_AND_FARM_4C_ECHO in additional_tasks:
@@ -189,7 +194,10 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
     def check_discarded_echo(self):
         self.info_set('current task', 'check discarded echo')
         self.log_info('check discarded echo')
+        merge_echo_task = self.get_task_by_class(MergeEchoTask)
+        old_notify_if_not_enough = merge_echo_task.notify_if_not_enough
         try:
+            merge_echo_task.notify_if_not_enough = False
             self.run_task_by_class(MergeEchoTask)
         except TaskDisabledException:
             raise
@@ -197,6 +205,8 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             self.log_error("MergeEchoTask Failed", e)
             self.screenshot('MergeEchoTask')
             self.ensure_main(time_out=180)
+        finally:
+            merge_echo_task.notify_if_not_enough = old_notify_if_not_enough
 
     def claim_battle_pass(self):
         self.log_info('battle pass')

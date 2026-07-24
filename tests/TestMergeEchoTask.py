@@ -47,6 +47,7 @@ class TestMergeEchoTask(unittest.TestCase):
         self.task.ocr = Mock(return_value=[])
         self.task.log_info = Mock()
         self.task.log_error = Mock()
+        self.task.notify_if_not_enough = True
 
     def test_stops_when_selected_echoes_do_not_fill_a_batch(self):
         self.task.run()
@@ -132,6 +133,17 @@ class TestMergeEchoTask(unittest.TestCase):
         self.task.click_relative.assert_not_called()
         self.task.ocr.assert_not_called()
 
+    def test_quietly_returns_when_not_enough_notification_is_disabled(self):
+        self.task.wait_click_skip_dialog_confirm.return_value = False
+        self.task.notify_if_not_enough = False
+
+        self.task.run()
+
+        self.task.log_error.assert_not_called()
+        self.assertEqual(self.task.ensure_main.call_count, 2)
+        self.task.click_relative.assert_not_called()
+        self.task.ocr.assert_not_called()
+
 
 class TestDailyMergeEchoTask(unittest.TestCase):
 
@@ -160,7 +172,7 @@ class TestDailyMergeEchoTask(unittest.TestCase):
         self.assertNotIn(AUTO_FARM_NIGHTMARE_NEST, daily_task.default_config)
         self.assertNotIn(MERGE_ECHO_IF_DISCARDED_OVER_1000, daily_task.default_config)
 
-    def test_daily_runs_selected_additional_tasks(self):
+    def test_daily_runs_only_post_daily_selected_tasks(self):
         daily_task = DailyTask.__new__(DailyTask)
         daily_task.config = {
             ADDITIONAL_TASKS: [
@@ -180,8 +192,27 @@ class TestDailyMergeEchoTask(unittest.TestCase):
         daily_task.check_discarded_echo.assert_called_once_with()
         self.assertEqual(
             daily_task.run_task_by_class.call_args_list,
-            [call(NightmareNestTask), call(FarmEchoTask)],
+            [call(FarmEchoTask)],
         )
+
+    def test_daily_suppresses_and_restores_not_enough_echo_notification(self):
+        daily_task = DailyTask.__new__(DailyTask)
+        daily_task.info_set = Mock()
+        daily_task.log_info = Mock()
+        merge_echo_task = Mock()
+        merge_echo_task.notify_if_not_enough = True
+        daily_task.get_task_by_class = Mock(return_value=merge_echo_task)
+
+        def assert_notification_suppressed(task_class):
+            self.assertIs(task_class, MergeEchoTask)
+            self.assertFalse(merge_echo_task.notify_if_not_enough)
+
+        daily_task.run_task_by_class = Mock(side_effect=assert_notification_suppressed)
+
+        daily_task.check_discarded_echo()
+
+        daily_task.run_task_by_class.assert_called_once_with(MergeEchoTask)
+        self.assertTrue(merge_echo_task.notify_if_not_enough)
 
     def test_daily_rejects_farm_echo_without_teleport(self):
         daily_task = DailyTask.__new__(DailyTask)

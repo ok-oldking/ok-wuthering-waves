@@ -19,6 +19,7 @@ class MergeEchoTask(BaseWWTask):
         self.icon = FluentIcon.SYNC
         self.group_name = "Echo"
         self.group_icon = FluentIcon.SYNC
+        self.notify_if_not_enough = True
 
     def run(self):
         self.ensure_main()
@@ -39,10 +40,11 @@ class MergeEchoTask(BaseWWTask):
         if self.wait_click_skip_dialog_confirm():
             self.sleep(2)
         else:
-            self.log_error(
-                "Must have 1000 discarded Echo to Run",
-                notify=True,
-            )
+            if self.notify_if_not_enough:
+                self.log_error(
+                    "Must have 1000 discarded Echo to Run",
+                    notify=True,
+                )
             self.ensure_main()
             return
 

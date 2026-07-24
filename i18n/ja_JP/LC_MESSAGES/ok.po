@@ -1141,8 +1141,8 @@ msgstr "破棄済み音骸が1000個超なら融合"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "デイリータスク後に実行する追加タスク"
 
-msgid "Select optional tasks to run after the daily task is complete."
-msgstr "デイリータスク完了後に実行する任意のタスクを選択します。"
+msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
+msgstr "任意のタスクを選択します。悪夢の巣はデイリー達成を補助するためスタミナ消費前に実行し、その他のタスクはその後に実行します。"
 
 msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
 msgstr "「テレポートしてコスト4音骸を収集」を実行するには、音骸収集タスクの「ボスへテレポート」を有効にしてください。"

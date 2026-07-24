@@ -1277,8 +1277,8 @@ msgstr "已棄置聲骸超過1000時融合"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "每日任務後執行的附加任務"
 
-msgid "Select optional tasks to run after the daily task is complete."
-msgstr "選擇在每日任務完成後執行的可選任務。"
+msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
+msgstr "選擇可選任務。夢魘巢穴會在消耗體力前執行，以協助完成每日任務；其他任務將在之後執行。"
 
 msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
 msgstr "選擇「傳送並刷取4C聲骸」時，必須在刷取聲骸任務中啟用「傳送至首領」。"
