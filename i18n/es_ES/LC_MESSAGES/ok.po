@@ -856,6 +856,15 @@ msgstr "Desafio de jefe al que teletransportar"
 msgid "From Top to Bottom, Starting with 1"
 msgstr "De arriba a abajo, empezando en 1"
 
+msgid "Advanced Skill Material Mode"
+msgstr "Modo de material de habilidad avanzado"
+
+msgid "If enabled, execute ONLY when all of the following conditions are met: (1) option \"Teleport to Boss\" is set to \"Weekly Challenge\"; (2) Advanced Skill Material claim count has not reached the weekly limit; (3) stamina is sufficient to farm once. At this time, option \"Repeat Farm Count\" will be ignored and total count will be determined by weekly limit and stamina remaining."
+msgstr "Si se activa, se ejecutara SOLO cuando se cumplan las tres condiciones siguientes: (1) la opcion \"Teleport to Boss\" esta configurada como \"Weekly Challenge\"; (2) el recuento de obtenciones de material de habilidad avanzado no ha alcanzado el limite semanal; (3) hay stamina suficiente para farmear una vez. En este caso, la opcion \"Repeat Farm Count\" se ignorara y el total se determinara por el limite semanal y la stamina restante."
+
+msgid "Try to Farm Weekly-Limited Advanced Skill Material"
+msgstr "Intentar farmear material de habilidad avanzado con limite semanal"
+
 msgid "Characters"
 msgstr "Personajes"
 
@@ -1059,8 +1068,8 @@ msgstr "Comprobar ecos descartados"
 msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
 msgstr "Después de las tareas diarias, comprueba si hay 1000 ecos descartados y fusiónalos."
 
-msgid "Teleport and Farm 4C Echo"
-msgstr "Teletransportarse y farmear eco de coste 4"
+msgid "Teleport and Farm 4C Echo, Support Weekly-Limited Advanced Skill Material"
+msgstr "Teletransportarse y farmear eco de coste 4, admite material de habilidad avanzada con limite semanal"
 
 msgid "Merge Echo If discarded > 1000"
 msgstr "Fusionar ecos si hay más de 1000 descartados"
@@ -1068,8 +1077,8 @@ msgstr "Fusionar ecos si hay más de 1000 descartados"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "Tareas adicionales para ejecutar después de la tarea diaria"
 
-msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
-msgstr "Selecciona tareas opcionales. Nido de pesadilla se ejecuta antes de gastar energía para ayudar a completar la tarea diaria; las demás se ejecutan después."
+msgid "Select optional tasks. (1) Nightmare Nest: runs before stamina farming to help complete the daily task (2) Farm 4C Echo: runs before stamina farming if \"advanced skill material mode\" enabled, otherwise run afterward (3) other tasks: run afterward."
+msgstr "Selecciona tareas opcionales. (1) Nido de pesadilla: se ejecuta antes de gastar energia para ayudar a completar la tarea diaria (2) Farmear eco 4C: se ejecuta antes de gastar energia si el \"modo de material de habilidad avanzada\" esta activado; de lo contrario, se ejecuta despues (3) otras tareas: se ejecutan despues."
 
 msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
 msgstr "Teletransportarse y farmear eco de coste 4 requiere activar \"Teletransportarse al jefe\" en la tarea de farmeo de ecos."

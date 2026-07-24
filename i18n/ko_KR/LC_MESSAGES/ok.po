@@ -804,6 +804,15 @@ msgstr "텔레포트할 보스 도전 번호"
 msgid "From Top to Bottom, Starting with 1"
 msgstr "위에서 아래로, 1부터 시작"
 
+msgid "Advanced Skill Material Mode"
+msgstr "고급 스킬 재료 모드"
+
+msgid "If enabled, execute ONLY when all of the following conditions are met: (1) option \"Teleport to Boss\" is set to \"Weekly Challenge\"; (2) Advanced Skill Material claim count has not reached the weekly limit; (3) stamina is sufficient to farm once. At this time, option \"Repeat Farm Count\" will be ignored and total count will be determined by weekly limit and stamina remaining."
+msgstr "활성화하면 다음 세 조건이 모두 충족될 때만 실행합니다: (1) \"Teleport to Boss\" 옵션이 \"Weekly Challenge\"로 설정됨 (2) 고급 스킬 재료 수령 횟수가 주간 한도에 도달하지 않음 (3) 한 번 파밍할 만큼 스태미나가 충분함. 이때 \"Repeat Farm Count\" 옵션은 무시되며, 총 횟수는 주간 한도와 남은 스태미나에 따라 결정됩니다."
+
+msgid "Try to Farm Weekly-Limited Advanced Skill Material"
+msgstr "주간 제한 고급 스킬 재료 파밍 시도"
+
 msgid "Characters"
 msgstr "캐릭터"
 
@@ -1133,8 +1142,8 @@ msgstr "폐기된 에코 확인"
 msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
 msgstr "일일 작업 후 폐기된 에코가 1000개 있는지 확인하고 합성합니다."
 
-msgid "Teleport and Farm 4C Echo"
-msgstr "순간이동 후 코스트 4 에코 파밍"
+msgid "Teleport and Farm 4C Echo, Support Weekly-Limited Advanced Skill Material"
+msgstr "순간이동 후 코스트 4 에코 파밍, 주간 제한 고급 스킬 재료 지원"
 
 msgid "Merge Echo If discarded > 1000"
 msgstr "폐기된 에코가 1000개 초과면 합성"
@@ -1142,8 +1151,8 @@ msgstr "폐기된 에코가 1000개 초과면 합성"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "일일 작업 후 실행할 추가 작업"
 
-msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
-msgstr "선택 작업을 고르세요. 악몽 둥지는 일일 작업 완료를 돕기 위해 스태미나 파밍 전에 실행하고, 다른 작업은 그 후에 실행합니다."
+msgid "Select optional tasks. (1) Nightmare Nest: runs before stamina farming to help complete the daily task (2) Farm 4C Echo: runs before stamina farming if \"advanced skill material mode\" enabled, otherwise run afterward (3) other tasks: run afterward."
+msgstr "선택 작업을 고르세요. (1) 악몽 둥지: 일일 작업 완료를 돕기 위해 스태미나 파밍 전에 실행합니다 (2) 코스트 4 에코 파밍: \"고급 스킬 재료 모드\"가 활성화된 경우 스태미나 파밍 전에 실행되고, 그렇지 않으면 이후에 실행됩니다 (3) 기타 작업: 이후에 실행됩니다."
 
 msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
 msgstr "순간이동 후 코스트 4 에코 파밍을 실행하려면 에코 파밍 작업에서 \"보스로 순간이동\"을 활성화해야 합니다."

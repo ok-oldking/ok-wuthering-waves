@@ -185,6 +185,10 @@ class TestDailyMergeEchoTask(unittest.TestCase):
         daily_task.check_weekly_garden = Mock()
         daily_task.check_discarded_echo = Mock()
         daily_task.run_task_by_class = Mock()
+        daily_task.need_stamina = False
+        farm_echo_task = Mock()
+        farm_echo_task.config = {"Advanced Skill Material Mode": False}
+        daily_task.get_task_by_class = Mock(return_value=farm_echo_task)
 
         daily_task.run_additional_tasks()
 
