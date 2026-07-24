@@ -239,7 +239,7 @@ jobs:
           retention-days: 1
 
       - name: Sign portable executable
-        uses: signpath/github-action-submit-signing-request@v1.1
+        uses: signpath/github-action-submit-signing-request@v2.2
         if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
         with:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
@@ -268,7 +268,7 @@ jobs:
           retention-days: 1
 
       - name: Sign China installer
-        uses: signpath/github-action-submit-signing-request@v1.1
+        uses: signpath/github-action-submit-signing-request@v2.2
         if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
         with:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
