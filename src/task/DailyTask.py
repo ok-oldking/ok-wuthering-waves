@@ -19,7 +19,7 @@ logger = Logger.get_logger(__name__)
 CHECK_WEEKLY_GARDEN = 'Check Weekly Garden'
 AUTO_FARM_NIGHTMARE_NEST = 'Auto Farm all Nightmare Nest'
 MERGE_ECHO_IF_DISCARDED_OVER_1000 = 'Merge Echo If discarded > 1000'
-TELEPORT_AND_FARM_4C_ECHO = 'Teleport and Farm 4C Echo'
+TELEPORT_AND_FARM_4C_ECHO = 'Teleport and Farm 4C Echo, Support Weekly-Limited Advanced Skill Material'
 ADDITIONAL_TASKS = 'Additional Tasks to Run After Daily Task'
 
 
@@ -31,6 +31,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.group_name = "Daily"
         self.group_icon = FluentIcon.CALENDAR
         self.icon = FluentIcon.CAR
+        self.need_stamina = False
         self.support_schedule_task = True
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
         self.default_config = {
@@ -46,8 +47,9 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
             'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.',
-            ADDITIONAL_TASKS: 'Select optional tasks. Nightmare Nest runs before stamina farming to help complete '
-                              'the daily task; the other tasks run afterward.',
+            ADDITIONAL_TASKS: 'Select optional tasks. (1) Nightmare Nest: runs before stamina farming to help complete '
+                              'the daily task (2) Farm 4C Echo: runs before stamina farming if "advanced skill '
+                              'material mode" enabled, otherwise run afterward (3) other tasks: run afterward.',
         }
         material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type = {
@@ -91,7 +93,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         condition2 = self.config.get('Farm Nightmare Nest for Daily Echo')
 
         used_stamina, daily_reward_ready = self.open_daily()
-        need_stamina = not daily_reward_ready and used_stamina < 180
+        self.need_stamina = not daily_reward_ready and used_stamina < 180
         need_nightmare = condition1 or (
                 condition2
                 and not daily_reward_ready
@@ -119,7 +121,17 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 # 还原 ensure_main，防范实例状态污染
                 self.get_task_by_class(NightmareNestTask).__dict__.pop('ensure_main', None)
 
-        if need_stamina:
+        if self.need_stamina:
+            if TELEPORT_AND_FARM_4C_ECHO in additional_tasks:
+                farm_echo_task = self.get_task_by_class(FarmEchoTask)
+                # 如果启用刷取周本材料，那么应当优先执行。
+                if farm_echo_task.config.get('Advanced Skill Material Mode'):
+                    self.run_task_by_class(FarmEchoTask)
+                    #
+                    used_stamina, daily_reward_ready = self.open_daily()
+                    self.need_stamina = not daily_reward_ready and used_stamina < 180
+
+        if self.need_stamina:
             target = self.config.get('Which to Farm', self.support_tasks[0])
             if target == self.support_tasks[0]:
                 self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina,
@@ -171,7 +183,10 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         if MERGE_ECHO_IF_DISCARDED_OVER_1000 in additional_tasks:
             self.check_discarded_echo()
         if TELEPORT_AND_FARM_4C_ECHO in additional_tasks:
-            self.run_task_by_class(FarmEchoTask)
+            farm_echo_task = self.get_task_by_class(FarmEchoTask)
+            # 如果启用刷取周本材料，那么刷4C任务已经在消耗体力时执行完毕，此处不应再次执行。
+            if not self.need_stamina or not farm_echo_task.config.get('Advanced Skill Material Mode'):
+                self.run_task_by_class(FarmEchoTask)
 
     def check_weekly_garden(self):
         self.info_set('current task', 'check weekly garden')

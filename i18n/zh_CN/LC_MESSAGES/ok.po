@@ -1190,8 +1190,8 @@ msgstr "检查已弃置声骸"
 msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
 msgstr "完成每日任务后，检查是否有1000个已弃置声骸并进行融合。"
 
-msgid "Teleport and Farm 4C Echo"
-msgstr "传送并刷取4C声骸"
+msgid "Teleport and Farm 4C Echo, Support Weekly-Limited Advanced Skill Material"
+msgstr "传送并刷取4C声骸，支持（周本）高级技能材料"
 
 msgid "Merge Echo If discarded > 1000"
 msgstr "已弃置声骸超过1000时融合"
@@ -1199,8 +1199,8 @@ msgstr "已弃置声骸超过1000时融合"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "每日任务后运行的附加任务"
 
-msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
-msgstr "选择可选任务。梦魇巢穴会在消耗体力前运行，以协助完成每日任务；其他任务将在之后运行。"
+msgid "Select optional tasks. (1) Nightmare Nest: runs before stamina farming to help complete the daily task (2) Farm 4C Echo: runs before stamina farming if \"advanced skill material mode\" enabled, otherwise run afterward (3) other tasks: run afterward."
+msgstr "选择可选任务。(1) 梦魇巢穴：会在消耗体力前运行，以协助完成每日任务 (2) 刷取4C声骸：如果开启 高级技能材料模式，那么将在消耗体力前运行，否则将在之后运行 (3) 其他任务：将在之后运行。"
 
 msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
 msgstr "选择“传送并刷取4C声骸”时，必须在刷取声骸任务中启用“传送至首领”。"
