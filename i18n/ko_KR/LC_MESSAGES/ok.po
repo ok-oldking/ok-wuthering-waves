@@ -1109,3 +1109,26 @@ msgstr "방랑자"
 
 msgid "Yangyang: Xuanling"
 msgstr "양양·현령"
+
+msgid "Merge Discarded Echoes"
+msgstr "폐기된 에코 합성"
+
+msgid ""
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
+"batches of 100."
+msgstr "실행하려면 폐기된 에코가 1000개 있어야 합니다. 폐기된 에코를 100개 단위로 합성합니다."
+
+msgid "Bag Key"
+msgstr "가방 키"
+
+msgid "In-game hotkey used to open the Bag."
+msgstr "가방을 여는 게임 내 단축키입니다."
+
+msgid "Echo"
+msgstr "에코"
+
+msgid "Check Discarded Echo"
+msgstr "폐기된 에코 확인"
+
+msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
+msgstr "일일 작업 후 폐기된 에코가 1000개 있는지 확인하고 합성합니다."

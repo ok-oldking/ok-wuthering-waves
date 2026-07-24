@@ -1033,3 +1033,28 @@ msgstr "Rover: Aero"
 
 msgid "Yangyang: Xuanling"
 msgstr "Yangyang: Xuanling"
+
+msgid "Merge Discarded Echoes"
+msgstr "Fusionar ecos descartados"
+
+msgid ""
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
+"batches of 100."
+msgstr ""
+"Debe haber 1000 ecos descartados para ejecutarse. Fusiona ecos descartados "
+"en lotes completos de 100."
+
+msgid "Bag Key"
+msgstr "Tecla de la mochila"
+
+msgid "In-game hotkey used to open the Bag."
+msgstr "Tecla del juego usada para abrir la mochila."
+
+msgid "Echo"
+msgstr "Ecos"
+
+msgid "Check Discarded Echo"
+msgstr "Comprobar ecos descartados"
+
+msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
+msgstr "Después de las tareas diarias, comprueba si hay 1000 ecos descartados y fusiónalos."

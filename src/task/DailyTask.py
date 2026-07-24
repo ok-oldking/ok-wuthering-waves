@@ -7,6 +7,7 @@ from src.task.BaseWWTask import number_re
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.ForgeryTask import ForgeryTask
 from src.task.GardenTask import GardenTask
+from src.task.MergeEchoTask import MergeEchoTask
 from src.task.NightmareNestTask import NightmareNestTask
 from src.task.TacetTask import TacetTask
 from src.task.SimulationTask import SimulationTask
@@ -34,6 +35,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Auto Farm all Nightmare Nest': False,
             'Farm Nightmare Nest for Daily Echo': True,
             'Check Weekly Garden': True,
+            'Check Discarded Echo': False,
             'Continue Farm After Daily': False,
         }
         self.config_description = {
@@ -43,6 +45,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.',
             'Check Weekly Garden': 'After claiming daily rewards, check weekly Garden progress and run Garden Task '
                                    'if 6000 points has not been reached.',
+            'Check Discarded Echo': 'After daily tasks, check for 1000 discarded Echoes and merge them.',
             'Continue Farm After Daily': 'After completing daily activity, continue farming stamina until depleted.'
         }
         material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
@@ -125,6 +128,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.sleep(1)
         self.claim_battle_pass()
         self.check_weekly_garden()
+        self.check_discarded_echo()
         self.log_info('Task completed', notify=True)
 
     def check_weekly_garden(self):
@@ -145,6 +149,20 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         except Exception as e:
             self.log_error("GardenTask Failed", e)
             self.screenshot('GardenTask')
+            self.ensure_main(time_out=180)
+
+    def check_discarded_echo(self):
+        if not self.config.get('Check Discarded Echo', False):
+            return
+        self.info_set('current task', 'check discarded echo')
+        self.log_info('check discarded echo')
+        try:
+            self.run_task_by_class(MergeEchoTask)
+        except TaskDisabledException:
+            raise
+        except Exception as e:
+            self.log_error("MergeEchoTask Failed", e)
+            self.screenshot('MergeEchoTask')
             self.ensure_main(time_out=180)
 
     def claim_battle_pass(self):

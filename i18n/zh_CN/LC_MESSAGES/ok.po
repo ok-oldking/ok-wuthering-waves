@@ -1157,3 +1157,26 @@ msgstr "漂泊者"
 
 msgid "Yangyang: Xuanling"
 msgstr "秧秧·玄翎"
+
+msgid "Merge Discarded Echoes"
+msgstr "融合已弃置声骸"
+
+msgid ""
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
+"batches of 100."
+msgstr "运行前必须有1000个已弃置声骸，每批融合100个。"
+
+msgid "Bag Key"
+msgstr "背包按键"
+
+msgid "In-game hotkey used to open the Bag."
+msgstr "用于打开背包的游戏内快捷键。"
+
+msgid "Echo"
+msgstr "声骸"
+
+msgid "Check Discarded Echo"
+msgstr "检查已弃置声骸"
+
+msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
+msgstr "完成每日任务后，检查是否有1000个已弃置声骸并进行融合。"
