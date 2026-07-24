@@ -185,6 +185,10 @@ class TestDailyMergeEchoTask(unittest.TestCase):
         daily_task.check_weekly_garden = Mock()
         daily_task.check_discarded_echo = Mock()
         daily_task.log_info = Mock()
+        daily_task.need_stamina = False
+        farm_echo_task = Mock()
+        farm_echo_task.config = {"Advanced Skill Material Mode": False}
+        daily_task.get_task_by_class = Mock(return_value=farm_echo_task)
 
         def assert_farm_alert_was_sent(task_class):
             self.assertIs(task_class, FarmEchoTask)
