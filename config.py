@@ -164,6 +164,7 @@ config = {
         ["src.task.AutoLoginTask", "AutoLoginTask"],
         ["src.task.MouseResetTask", "MouseResetTask"],
         ["src.task.FastTravelTask", "FastTravelTask"],
+        ["src.task.MapOverlayTask", "MapOverlayTask"],
     ], 'scene': ["src.scene.WWScene", "WWScene"],
     'update_pyappify': {
         'to_version': '1.1.6',

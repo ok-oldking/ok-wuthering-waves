@@ -1141,6 +1141,30 @@ msgstr "自动周常乐园"
 msgid "Detect and click garden actions until the task is stopped."
 msgstr "自动检测并点击乐园操作，直到任务停止。"
 
+msgid "High-value items display"
+msgstr "高价值物品显示"
+
+msgid "Get player position and display nearby high value items"
+msgstr "获取玩家位置并显示附近高价值物品"
+
+msgid "Detect interval (ms)"
+msgstr "检测间隔(毫秒)"
+
+msgid "World map overlay"
+msgstr "世界地图覆盖"
+
+msgid "Item type filter"
+msgstr "物品类型筛选"
+
+msgid "SURF"
+msgstr "SURF"
+
+msgid "SIFT"
+msgstr "SIFT"
+
+msgid "SIFTGZ"
+msgstr "SIFTGZ"
+
 msgid "Check Weekly Garden"
 msgstr "检查每周乐园"
 
