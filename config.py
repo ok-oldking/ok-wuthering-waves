@@ -13,7 +13,110 @@ from src.task.process_feature import process_feature
 version = "dev"
 
 
+def _find_most_recently_run_pc_exe():
+    try:
+        import codecs
+        import struct
+        import winreg
+    except ImportError:
+        return None
+
+    user_assist_key = r"Software\Microsoft\Windows\CurrentVersion\Explorer\UserAssist"
+    candidates = []
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, user_assist_key) as root:
+            for index in range(winreg.QueryInfoKey(root)[0]):
+                guid = winreg.EnumKey(root, index)
+                try:
+                    with winreg.OpenKey(root, fr"{guid}\Count") as count_key:
+                        for value_index in range(winreg.QueryInfoKey(count_key)[1]):
+                            encoded_path, data, _ = winreg.EnumValue(count_key, value_index)
+                            path = os.path.expandvars(codecs.decode(encoded_path, "rot_13"))
+                            if not path.casefold().endswith(r"\wuthering waves.exe"):
+                                continue
+                            if not Path(path).is_file():
+                                continue
+                            last_run = struct.unpack_from("<Q", data, 60)[0] if len(data) >= 68 else 0
+                            candidates.append((last_run, path))
+                except OSError:
+                    continue
+    except OSError:
+        return None
+
+    return max(candidates, default=(0, None))[1]
+
+
+def _find_pc_exe_from_registry():
+    try:
+        import winreg
+    except ImportError:
+        return None
+
+    uninstall_key = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+    registry_views = (winreg.KEY_WOW64_64KEY, winreg.KEY_WOW64_32KEY)
+
+    for root in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
+        for view in registry_views:
+            try:
+                with winreg.OpenKey(root, uninstall_key, 0, winreg.KEY_READ | view) as key:
+                    subkey_count = winreg.QueryInfoKey(key)[0]
+                    for index in range(subkey_count):
+                        try:
+                            subkey_name = winreg.EnumKey(key, index)
+                            with winreg.OpenKey(key, subkey_name) as subkey:
+                                display_name = _read_registry_value(subkey, "DisplayName", winreg)
+                                if not _is_wuthering_waves_registry_entry(subkey_name, display_name):
+                                    continue
+                                for value_name in (
+                                        "InstallPath", "InstallLocation", "LauncherPath",
+                                        "DisplayIcon", "UninstallString"):
+                                    registered_path = _read_registry_value(subkey, value_name, winreg)
+                                    if game_exe := _find_pc_exe_near_registered_path(registered_path):
+                                        return game_exe
+                        except OSError:
+                            continue
+            except OSError:
+                continue
+    return None
+
+
+def _read_registry_value(key, name, winreg):
+    try:
+        return str(winreg.QueryValueEx(key, name)[0])
+    except OSError:
+        return ""
+
+
+def _is_wuthering_waves_registry_entry(subkey_name, display_name):
+    names = f"{subkey_name} {display_name}".casefold()
+    return "wuthering waves" in names or "鸣潮" in names or "鳴潮" in names
+
+
+def _find_pc_exe_near_registered_path(registered_path):
+    if not registered_path:
+        return None
+
+    path_text = os.path.expandvars(registered_path.strip().strip('"'))
+    exe_end = path_text.casefold().find(".exe")
+    if exe_end >= 0:
+        path_text = path_text[:exe_end + 4]
+
+    registered = Path(path_text)
+    install_folder = registered.parent if registered.suffix.casefold() == ".exe" else registered
+    candidates = (
+        install_folder / "Wuthering Waves.exe",
+        install_folder / "Wuthering Waves Game" / "Wuthering Waves.exe",
+        install_folder.parent / "Wuthering Waves Game" / "Wuthering Waves.exe",
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return str(candidate)
+    return None
+
+
 def calculate_pc_exe_path(running_path):
+    if running_path is None:
+        return _find_most_recently_run_pc_exe() or _find_pc_exe_from_registry()
     game_exe_folder = Path(running_path).parents[3]
     return str(game_exe_folder / "Wuthering Waves.exe")
 
