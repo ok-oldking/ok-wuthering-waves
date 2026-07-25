@@ -218,6 +218,8 @@ jobs:
         id: reuse_executable
         uses: ok-oldking/pyappify-action@master
         if: env.BUILD_EXE == 'true' && env.USE_RELEASE != ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           use_release: ${{ env.USE_RELEASE }}
 
