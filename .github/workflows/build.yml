@@ -239,6 +239,7 @@ jobs:
           retention-days: 1
 
       - name: Sign portable executable
+        id: sign_executable
         uses: signpath/github-action-submit-signing-request@v2.2
         if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
         with:
@@ -248,9 +249,57 @@ jobs:
           signing-policy-slug: 'release-signing'
           artifact-configuration-slug: 'single-exe'
           github-artifact-id: '${{ steps.upload_executable.outputs.artifact-id }}'
-          wait-for-completion: true
-          wait-for-completion-timeout-in-seconds: 60000
-          output-artifact-directory: ${{ steps.build_executable.outputs.exe-folder }}
+          wait-for-completion: false
+
+      - name: Approve portable executable signing
+        uses: fjogeleit/http-request-action@v1
+        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
+        with:
+          url: 'https://app.signpath.io/API/v1/639bc6dd-9623-43cd-ac75-50a445898012/SigningRequests/${{ steps.sign_executable.outputs.signing-request-id }}/Approve'
+          method: POST
+          bearerToken: '${{ secrets.SIGNPATH_API_TOKEN }}'
+          contentType: application/json
+          data: '{}'
+          preventFailureOnNoResponse: true
+          retry: 60
+          retryWait: 10000
+
+      - name: Download signed portable executable
+        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
+        shell: pwsh
+        env:
+          SIGNING_REQUEST_ID: ${{ steps.sign_executable.outputs.signing-request-id }}
+          SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+          OUTPUT_DIRECTORY: ${{ steps.build_executable.outputs.exe-folder }}
+        run: |
+          $baseUrl = "https://app.signpath.io/API/v1/639bc6dd-9623-43cd-ac75-50a445898012/SigningRequests/$env:SIGNING_REQUEST_ID"
+          $headers = @{ Authorization = "Bearer $env:SIGNPATH_API_TOKEN" }
+          $deadline = (Get-Date).AddSeconds(60000)
+
+          do {
+            $status = Invoke-RestMethod -Uri "$baseUrl/Status" -Headers $headers
+            Write-Host "SignPath status: $($status.status) ($($status.workflowStatus))"
+
+            if ($status.status -eq 'Completed') {
+              break
+            }
+
+            if ($status.isFinalStatus) {
+              throw "SignPath request ended with status '$($status.status)' ($($status.workflowStatus))."
+            }
+
+            if ((Get-Date) -ge $deadline) {
+              throw 'Timed out waiting for SignPath to sign the portable executable.'
+            }
+
+            Start-Sleep -Seconds 10
+          } while ($true)
+
+          $archivePath = Join-Path $env:RUNNER_TEMP 'signed-portable-executable.zip'
+          $outputDirectory = [System.IO.Path]::GetFullPath($env:OUTPUT_DIRECTORY)
+          New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
+          Invoke-WebRequest -Uri "$baseUrl/SignedArtifact" -Headers $headers -OutFile $archivePath
+          Expand-Archive -LiteralPath $archivePath -DestinationPath $outputDirectory -Force
 
       - name: Build installers
         id: build_installers
@@ -268,6 +317,7 @@ jobs:
           retention-days: 1
 
       - name: Sign China installer
+        id: sign_china_installer
         uses: signpath/github-action-submit-signing-request@v2.2
         if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
         with:
@@ -277,9 +327,56 @@ jobs:
           signing-policy-slug: 'release-signing'
           artifact-configuration-slug: 'setupexe'
           github-artifact-id: '${{ steps.upload_china_installer.outputs.artifact-id }}'
-          wait-for-completion: true
-          wait-for-completion-timeout-in-seconds: 60000
-          output-artifact-directory: 'pyappify_dist'
+          wait-for-completion: false
+
+      - name: Approve China installer signing
+        uses: fjogeleit/http-request-action@v1
+        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
+        with:
+          url: 'https://app.signpath.io/API/v1/639bc6dd-9623-43cd-ac75-50a445898012/SigningRequests/${{ steps.sign_china_installer.outputs.signing-request-id }}/Approve'
+          method: POST
+          bearerToken: '${{ secrets.SIGNPATH_API_TOKEN }}'
+          contentType: application/json
+          data: '{}'
+          preventFailureOnNoResponse: true
+          retry: 60
+          retryWait: 10000
+
+      - name: Download signed China installer
+        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
+        shell: pwsh
+        env:
+          SIGNING_REQUEST_ID: ${{ steps.sign_china_installer.outputs.signing-request-id }}
+          SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+        run: |
+          $baseUrl = "https://app.signpath.io/API/v1/639bc6dd-9623-43cd-ac75-50a445898012/SigningRequests/$env:SIGNING_REQUEST_ID"
+          $headers = @{ Authorization = "Bearer $env:SIGNPATH_API_TOKEN" }
+          $deadline = (Get-Date).AddSeconds(60000)
+
+          do {
+            $status = Invoke-RestMethod -Uri "$baseUrl/Status" -Headers $headers
+            Write-Host "SignPath status: $($status.status) ($($status.workflowStatus))"
+
+            if ($status.status -eq 'Completed') {
+              break
+            }
+
+            if ($status.isFinalStatus) {
+              throw "SignPath request ended with status '$($status.status)' ($($status.workflowStatus))."
+            }
+
+            if ((Get-Date) -ge $deadline) {
+              throw 'Timed out waiting for SignPath to sign the China installer.'
+            }
+
+            Start-Sleep -Seconds 10
+          } while ($true)
+
+          $archivePath = Join-Path $env:RUNNER_TEMP 'signed-china-installer.zip'
+          $outputDirectory = [System.IO.Path]::GetFullPath('pyappify_dist')
+          New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
+          Invoke-WebRequest -Uri "$baseUrl/SignedArtifact" -Headers $headers -OutFile $archivePath
+          Expand-Archive -LiteralPath $archivePath -DestinationPath $outputDirectory -Force
 
       - name: Stage release assets
         uses: actions/upload-artifact@v4
