@@ -138,7 +138,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.sleep(1)
         self.claim_battle_pass()
         self.run_additional_tasks()
-        self.log_info('Task completed', notify=True)
+        self.log_info('Daily Task Completed', notify=True)
 
     def validate_additional_tasks(self):
         additional_tasks = self.config.get(ADDITIONAL_TASKS) or []
@@ -171,6 +171,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         if MERGE_ECHO_IF_DISCARDED_OVER_1000 in additional_tasks:
             self.check_discarded_echo()
         if TELEPORT_AND_FARM_4C_ECHO in additional_tasks:
+            self.log_info('Daily task completed, start teleport to farm 4C echo', notify=True)
             self.run_task_by_class(FarmEchoTask)
 
     def check_weekly_garden(self):

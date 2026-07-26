@@ -1198,3 +1198,9 @@ msgstr "选择“传送并刷取4C声骸”时，必须在刷取声骸任务中�
 
 msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
 msgstr "选择“自动刷取所有梦魇巢穴”时，“刷取目标”必须至少选择一项。"
+
+msgid "Daily Task Completed"
+msgstr "每日任务已完成"
+
+msgid "Daily task completed, start teleport to farm 4C echo"
+msgstr "每日任务已完成，开始传送并刷取4C声骸"

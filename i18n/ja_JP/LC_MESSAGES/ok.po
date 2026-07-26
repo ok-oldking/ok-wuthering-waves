@@ -1149,3 +1149,9 @@ msgstr "「テレポートしてコスト4音骸を収集」を実行するに�
 
 msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
 msgstr "「すべての悪夢の巣を自動周回」を実行するには、「周回対象」を1つ以上選択してください。"
+
+msgid "Daily Task Completed"
+msgstr "デイリータスク完了"
+
+msgid "Daily task completed, start teleport to farm 4C echo"
+msgstr "デイリータスク完了。テレポートしてコスト4音骸の収集を開始します"

@@ -184,16 +184,42 @@ class TestDailyMergeEchoTask(unittest.TestCase):
         }
         daily_task.check_weekly_garden = Mock()
         daily_task.check_discarded_echo = Mock()
-        daily_task.run_task_by_class = Mock()
+        daily_task.log_info = Mock()
+
+        def assert_farm_alert_was_sent(task_class):
+            self.assertIs(task_class, FarmEchoTask)
+            daily_task.log_info.assert_called_once_with(
+                'Daily task completed, start teleport to farm 4C echo',
+                notify=True,
+            )
+
+        daily_task.run_task_by_class = Mock(side_effect=assert_farm_alert_was_sent)
 
         daily_task.run_additional_tasks()
 
         daily_task.check_weekly_garden.assert_called_once_with()
         daily_task.check_discarded_echo.assert_called_once_with()
+        daily_task.log_info.assert_called_once_with(
+            'Daily task completed, start teleport to farm 4C echo',
+            notify=True,
+        )
         self.assertEqual(
             daily_task.run_task_by_class.call_args_list,
             [call(FarmEchoTask)],
         )
+
+    def test_daily_does_not_alert_farm_echo_when_not_selected(self):
+        daily_task = DailyTask.__new__(DailyTask)
+        daily_task.config = {ADDITIONAL_TASKS: [CHECK_WEEKLY_GARDEN]}
+        daily_task.check_weekly_garden = Mock()
+        daily_task.check_discarded_echo = Mock()
+        daily_task.log_info = Mock()
+        daily_task.run_task_by_class = Mock()
+
+        daily_task.run_additional_tasks()
+
+        daily_task.log_info.assert_not_called()
+        daily_task.run_task_by_class.assert_not_called()
 
     def test_daily_suppresses_and_restores_not_enough_echo_notification(self):
         daily_task = DailyTask.__new__(DailyTask)

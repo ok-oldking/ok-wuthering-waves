@@ -1150,3 +1150,9 @@ msgstr "순간이동 후 코스트 4 에코 파밍을 실행하려면 에코 파
 
 msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
 msgstr "모든 악몽 둥지 자동 파밍을 실행하려면 \"파밍 대상\"을 하나 이상 선택해야 합니다."
+
+msgid "Daily Task Completed"
+msgstr "일일 작업 완료"
+
+msgid "Daily task completed, start teleport to farm 4C echo"
+msgstr "일일 작업 완료. 순간이동 후 코스트 4 에코 파밍을 시작합니다"

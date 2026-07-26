@@ -1076,3 +1076,9 @@ msgstr "Teletransportarse y farmear eco de coste 4 requiere activar \"Teletransp
 
 msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
 msgstr "Farmear automáticamente todos los nidos de pesadilla requiere seleccionar al menos una opción en \"Qué farmear\"."
+
+msgid "Daily Task Completed"
+msgstr "Tarea diaria completada"
+
+msgid "Daily task completed, start teleport to farm 4C echo"
+msgstr "Tarea diaria completada; iniciando teletransporte para farmear ecos de coste 4"
