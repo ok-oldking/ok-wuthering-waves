@@ -1,0 +1,1709 @@
+{
+    "name":  "ok-ww",
+    "description":  "Image-recognition-based automation tool for Wuthering Waves (ok-script). Simulates Windows UI actions for combat rotations, daily tasks, echo farming, and related workflows without memory reading or game-file modification.",
+    "languages":  [
+                      "in",
+                      "markdown",
+                      "po",
+                      "powershell",
+                      "python",
+                      "txt",
+                      "unknown",
+                      "yaml"
+                  ],
+    "frameworks":  [
+                       "ok-script",
+                       "PySide6",
+                       "OpenVINO",
+                       "ONNX",
+                       "OpenCV",
+                       "pytest"
+                   ],
+    "estimatedComplexity":  "large",
+    "totalFiles":  168,
+    "filteredByIgnore":  7,
+    "files":  [
+                  {
+                      "path":  ".agents/skills/deploy/SKILL.md",
+                      "language":  "markdown",
+                      "sizeLines":  79,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  ".agents/skills/deploy/agents/openai.yaml",
+                      "language":  "yaml",
+                      "sizeLines":  4,
+                      "fileCategory":  "config"
+                  },
+                  {
+                      "path":  ".agents/skills/deploy/scripts/next_tag.py",
+                      "language":  "python",
+                      "sizeLines":  122,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  ".agents/skills/ok-script-i18n/SKILL.md",
+                      "language":  "markdown",
+                      "sizeLines":  66,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  ".agents/skills/ok-script-i18n/agents/openai.yaml",
+                      "language":  "yaml",
+                      "sizeLines":  4,
+                      "fileCategory":  "config"
+                  },
+                  {
+                      "path":  ".agents/skills/ok-script-i18n/scripts/task_i18n_helper.py",
+                      "language":  "python",
+                      "sizeLines":  167,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  ".agents/skills/ok-script-tasks/SKILL.md",
+                      "language":  "markdown",
+                      "sizeLines":  54,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  ".agents/skills/ok-script-tasks/agents/openai.yaml",
+                      "language":  "yaml",
+                      "sizeLines":  4,
+                      "fileCategory":  "config"
+                  },
+                  {
+                      "path":  ".agents/skills/ok-script-tasks/references/task-api.md",
+                      "language":  "markdown",
+                      "sizeLines":  165,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  ".agents/skills/ok-script-tasks/references/templates.md",
+                      "language":  "markdown",
+                      "sizeLines":  162,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  ".agents/skills/ok-ww-characters/SKILL.md",
+                      "language":  "markdown",
+                      "sizeLines":  62,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  ".agents/skills/ok-ww-characters/agents/openai.yaml",
+                      "language":  "yaml",
+                      "sizeLines":  4,
+                      "fileCategory":  "config"
+                  },
+                  {
+                      "path":  ".agents/skills/ok-ww-characters/references/character-patterns.md",
+                      "language":  "markdown",
+                      "sizeLines":  191,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  ".agents/skills/use-local-venv/SKILL.md",
+                      "language":  "markdown",
+                      "sizeLines":  53,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  ".agents/skills/use-local-venv/agents/openai.yaml",
+                      "language":  "yaml",
+                      "sizeLines":  4,
+                      "fileCategory":  "config"
+                  },
+                  {
+                      "path":  ".github/ISSUE_TEMPLATE/æŠ¥å‘Šbug-.md",
+                      "language":  "markdown",
+                      "sizeLines":  43,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  ".github/ISSUE_TEMPLATE/æ–°åŠŸèƒ½å»ºè®®-.md",
+                      "language":  "markdown",
+                      "sizeLines":  19,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  ".github/PULL_REQUEST_TEMPLATE.md",
+                      "language":  "markdown",
+                      "sizeLines":  66,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  ".github/workflows/ai_code_review.yml",
+                      "language":  "yaml",
+                      "sizeLines":  32,
+                      "fileCategory":  "infra"
+                  },
+                  {
+                      "path":  ".github/workflows/build.yml",
+                      "language":  "yaml",
+                      "sizeLines":  432,
+                      "fileCategory":  "infra"
+                  },
+                  {
+                      "path":  ".github/workflows/close_stale_issues.yml",
+                      "language":  "yaml",
+                      "sizeLines":  71,
+                      "fileCategory":  "infra"
+                  },
+                  {
+                      "path":  ".github/workflows/mirrorchyan_release_note.yml",
+                      "language":  "yaml",
+                      "sizeLines":  22,
+                      "fileCategory":  "infra"
+                  },
+                  {
+                      "path":  ".github/workflows/mirrorchyan_uploading.yml",
+                      "language":  "yaml",
+                      "sizeLines":  23,
+                      "fileCategory":  "infra"
+                  },
+                  {
+                      "path":  ".github/workflows/sign_exe.yml",
+                      "language":  "yaml",
+                      "sizeLines":  58,
+                      "fileCategory":  "infra"
+                  },
+                  {
+                      "path":  ".github/workflows/test.yml",
+                      "language":  "yaml",
+                      "sizeLines":  100,
+                      "fileCategory":  "infra"
+                  },
+                  {
+                      "path":  ".gitmodules",
+                      "language":  "unknown",
+                      "sizeLines":  4,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  ".ua/.understandignore",
+                      "language":  "unknown",
+                      "sizeLines":  119,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  ".update_repo_gitignore",
+                      "language":  "unknown",
+                      "sizeLines":  9,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "AGENTS.md",
+                      "language":  "markdown",
+                      "sizeLines":  9,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  "CONTRIBUTING.md",
+                      "language":  "markdown",
+                      "sizeLines":  98,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  "FUNDING.yml",
+                      "language":  "yaml",
+                      "sizeLines":  1,
+                      "fileCategory":  "config"
+                  },
+                  {
+                      "path":  "LICENSE.txt",
+                      "language":  "txt",
+                      "sizeLines":  661,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  "README.md",
+                      "language":  "markdown",
+                      "sizeLines":  144,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  "README_en.md",
+                      "language":  "markdown",
+                      "sizeLines":  131,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  "README_ja.md",
+                      "language":  "markdown",
+                      "sizeLines":  131,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  "README_zh_TW.md",
+                      "language":  "markdown",
+                      "sizeLines":  136,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  "config.py",
+                      "language":  "python",
+                      "sizeLines":  277,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "deploy.txt",
+                      "language":  "txt",
+                      "sizeLines":  14,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  "i18n/es_ES/LC_MESSAGES/ok.po",
+                      "language":  "po",
+                      "sizeLines":  1084,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "i18n/ja_JP/LC_MESSAGES/ok.po",
+                      "language":  "po",
+                      "sizeLines":  1157,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "i18n/ko_KR/LC_MESSAGES/ok.po",
+                      "language":  "po",
+                      "sizeLines":  1158,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "i18n/zh_CN/LC_MESSAGES/ok.po",
+                      "language":  "po",
+                      "sizeLines":  1206,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "i18n/zh_TW/LC_MESSAGES/ok.po",
+                      "language":  "po",
+                      "sizeLines":  1293,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "main.py",
+                      "language":  "python",
+                      "sizeLines":  7,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "main_debug.py",
+                      "language":  "python",
+                      "sizeLines":  9,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pyappify.yml",
+                      "language":  "yaml",
+                      "sizeLines":  21,
+                      "fileCategory":  "config"
+                  },
+                  {
+                      "path":  "readme/faq.md",
+                      "language":  "markdown",
+                      "sizeLines":  17,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  "requirements-dev.txt",
+                      "language":  "txt",
+                      "sizeLines":  1,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  "requirements.in",
+                      "language":  "in",
+                      "sizeLines":  5,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "requirements.txt",
+                      "language":  "txt",
+                      "sizeLines":  81,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  "run_tests.ps1",
+                      "language":  "powershell",
+                      "sizeLines":  24,
+                      "fileCategory":  "script"
+                  },
+                  {
+                      "path":  "setup.py",
+                      "language":  "python",
+                      "sizeLines":  63,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/Labels.py",
+                      "language":  "python",
+                      "sizeLines":  267,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/OnnxYolo8Detect.py",
+                      "language":  "python",
+                      "sizeLines":  207,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/OpenVinoYolo8Detect.py",
+                      "language":  "python",
+                      "sizeLines":  144,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/__init__.py",
+                      "language":  "python",
+                      "sizeLines":  5,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Aemeath.py",
+                      "language":  "python",
+                      "sizeLines":  330,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Augusta.py",
+                      "language":  "python",
+                      "sizeLines":  116,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Baizhi.py",
+                      "language":  "python",
+                      "sizeLines":  13,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/BaseChar.py",
+                      "language":  "python",
+                      "sizeLines":  979,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Brant.py",
+                      "language":  "python",
+                      "sizeLines":  143,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Calcharo.py",
+                      "language":  "python",
+                      "sizeLines":  11,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Camellya.py",
+                      "language":  "python",
+                      "sizeLines":  360,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Cantarella.py",
+                      "language":  "python",
+                      "sizeLines":  74,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Carlotta.py",
+                      "language":  "python",
+                      "sizeLines":  334,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Cartethyia.py",
+                      "language":  "python",
+                      "sizeLines":  268,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Changli.py",
+                      "language":  "python",
+                      "sizeLines":  219,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/CharFactory.py",
+                      "language":  "python",
+                      "sizeLines":  212,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Chisa.py",
+                      "language":  "python",
+                      "sizeLines":  88,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Chixia.py",
+                      "language":  "python",
+                      "sizeLines":  18,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Ciaccona.py",
+                      "language":  "python",
+                      "sizeLines":  180,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/CustomCharLoader.py",
+                      "language":  "python",
+                      "sizeLines":  161,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Danjin.py",
+                      "language":  "python",
+                      "sizeLines":  30,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Denia.py",
+                      "language":  "python",
+                      "sizeLines":  14,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Douling.py",
+                      "language":  "python",
+                      "sizeLines":  89,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Encore.py",
+                      "language":  "python",
+                      "sizeLines":  77,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Galbrena.py",
+                      "language":  "python",
+                      "sizeLines":  52,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/HavocRover.py",
+                      "language":  "python",
+                      "sizeLines":  204,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Hiyuki.py",
+                      "language":  "python",
+                      "sizeLines":  182,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Iuno.py",
+                      "language":  "python",
+                      "sizeLines":  85,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Jianxin.py",
+                      "language":  "python",
+                      "sizeLines":  13,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Jinhsi.py",
+                      "language":  "python",
+                      "sizeLines":  114,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Jiyan.py",
+                      "language":  "python",
+                      "sizeLines":  33,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Linnai.py",
+                      "language":  "python",
+                      "sizeLines":  125,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Lucilla.py",
+                      "language":  "python",
+                      "sizeLines":  156,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Lucy.py",
+                      "language":  "python",
+                      "sizeLines":  95,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Luhesi.py",
+                      "language":  "python",
+                      "sizeLines":  94,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Lupa.py",
+                      "language":  "python",
+                      "sizeLines":  176,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Mornye.py",
+                      "language":  "python",
+                      "sizeLines":  94,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Mortefi.py",
+                      "language":  "python",
+                      "sizeLines":  12,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Phoebe.py",
+                      "language":  "python",
+                      "sizeLines":  527,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Phrolova.py",
+                      "language":  "python",
+                      "sizeLines":  96,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Qiuyuan.py",
+                      "language":  "python",
+                      "sizeLines":  34,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Rebecca.py",
+                      "language":  "python",
+                      "sizeLines":  107,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Roccia.py",
+                      "language":  "python",
+                      "sizeLines":  52,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Sanhua.py",
+                      "language":  "python",
+                      "sizeLines":  35,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/ShoreKeeper.py",
+                      "language":  "python",
+                      "sizeLines":  70,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Taoqi.py",
+                      "language":  "python",
+                      "sizeLines":  13,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Verina.py",
+                      "language":  "python",
+                      "sizeLines":  79,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Xiangliyao.py",
+                      "language":  "python",
+                      "sizeLines":  27,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Xigelika.py",
+                      "language":  "python",
+                      "sizeLines":  90,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/YangYangSp.py",
+                      "language":  "python",
+                      "sizeLines":  41,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Yinlin.py",
+                      "language":  "python",
+                      "sizeLines":  20,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Youhu.py",
+                      "language":  "python",
+                      "sizeLines":  7,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Yuanwu.py",
+                      "language":  "python",
+                      "sizeLines":  15,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Zani.py",
+                      "language":  "python",
+                      "sizeLines":  530,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/char/Zhezhi.py",
+                      "language":  "python",
+                      "sizeLines":  172,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/combat/CombatCheck.py",
+                      "language":  "python",
+                      "sizeLines":  404,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/globals.py",
+                      "language":  "python",
+                      "sizeLines":  41,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/gui/CharacterCodeTab.py",
+                      "language":  "python",
+                      "sizeLines":  532,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/gui/__init__.py",
+                      "language":  "python",
+                      "sizeLines":  1,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/scene/WWScene.py",
+                      "language":  "python",
+                      "sizeLines":  42,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/AutoCombatTask.py",
+                      "language":  "python",
+                      "sizeLines":  95,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/AutoLoginTask.py",
+                      "language":  "python",
+                      "sizeLines":  26,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/AutoPickTask.py",
+                      "language":  "python",
+                      "sizeLines":  75,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/AutoRogueTask.py",
+                      "language":  "python",
+                      "sizeLines":  436,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/BaseCombatTask.py",
+                      "language":  "python",
+                      "sizeLines":  1131,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/BaseWWTask.py",
+                      "language":  "python",
+                      "sizeLines":  1276,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/ChangeEchoTask.py",
+                      "language":  "python",
+                      "sizeLines":  100,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/DailyTask.py",
+                      "language":  "python",
+                      "sizeLines":  281,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/DiagnosisTask.py",
+                      "language":  "python",
+                      "sizeLines":  71,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/DomainTask.py",
+                      "language":  "python",
+                      "sizeLines":  124,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/EnhanceEchoTask.py",
+                      "language":  "python",
+                      "sizeLines":  350,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/FarmEchoTask.py",
+                      "language":  "python",
+                      "sizeLines":  683,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/FarmMapTask.py",
+                      "language":  "python",
+                      "sizeLines":  290,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/FastTravelTask.py",
+                      "language":  "python",
+                      "sizeLines":  27,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/FiveToOneTask.py",
+                      "language":  "python",
+                      "sizeLines":  140,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/ForgeryTask.py",
+                      "language":  "python",
+                      "sizeLines":  95,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/GardenTask.py",
+                      "language":  "python",
+                      "sizeLines":  133,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/MergeEchoTask.py",
+                      "language":  "python",
+                      "sizeLines":  85,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/MouseResetTask.py",
+                      "language":  "python",
+                      "sizeLines":  63,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/MultiAccountDailyTask.py",
+                      "language":  "python",
+                      "sizeLines":  182,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/NightmareNestTask.py",
+                      "language":  "python",
+                      "sizeLines":  241,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/SimulationTask.py",
+                      "language":  "python",
+                      "sizeLines":  63,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/SkipBaseTask.py",
+                      "language":  "python",
+                      "sizeLines":  94,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/SkipDialogTask.py",
+                      "language":  "python",
+                      "sizeLines":  30,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/TacetTask.py",
+                      "language":  "python",
+                      "sizeLines":  103,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/WWOneTimeTask.py",
+                      "language":  "python",
+                      "sizeLines":  12,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "src/task/process_feature.py",
+                      "language":  "python",
+                      "sizeLines":  16,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestBaseCombatTask.py",
+                      "language":  "python",
+                      "sizeLines":  72,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestCD.py",
+                      "language":  "python",
+                      "sizeLines":  31,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestChar.py",
+                      "language":  "python",
+                      "sizeLines":  1235,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestCharacterCodeTab.py",
+                      "language":  "python",
+                      "sizeLines":  73,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestCombatCheck.py",
+                      "language":  "python",
+                      "sizeLines":  129,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestCon.py",
+                      "language":  "python",
+                      "sizeLines":  61,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestConfig.py",
+                      "language":  "python",
+                      "sizeLines":  64,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestConfirm.py",
+                      "language":  "python",
+                      "sizeLines":  22,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestCustomCharLoader.py",
+                      "language":  "python",
+                      "sizeLines":  115,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestDomainRecoveryLoop.py",
+                      "language":  "python",
+                      "sizeLines":  78,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestEcho.py",
+                      "language":  "python",
+                      "sizeLines":  35,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestEnchaneEcho.py",
+                      "language":  "python",
+                      "sizeLines":  32,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestEnhanceEchoStatusBox.py",
+                      "language":  "python",
+                      "sizeLines":  97,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestFarmEcho.py",
+                      "language":  "python",
+                      "sizeLines":  23,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestFeatureSet.py",
+                      "language":  "python",
+                      "sizeLines":  28,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestForte.py",
+                      "language":  "python",
+                      "sizeLines":  51,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestKey.py",
+                      "language":  "python",
+                      "sizeLines":  57,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestLevitator.py",
+                      "language":  "python",
+                      "sizeLines":  29,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestMap.py",
+                      "language":  "python",
+                      "sizeLines":  32,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestMergeEchoTask.py",
+                      "language":  "python",
+                      "sizeLines":  304,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestMultiAccountDailyTask.py",
+                      "language":  "python",
+                      "sizeLines":  84,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestNightmareNestTask.py",
+                      "language":  "python",
+                      "sizeLines":  149,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestOCR.py",
+                      "language":  "python",
+                      "sizeLines":  26,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestScheduleSupport.py",
+                      "language":  "python",
+                      "sizeLines":  135,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestSkipDialogConfirm.py",
+                      "language":  "python",
+                      "sizeLines":  73,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestSkipDialogWideMode.py",
+                      "language":  "python",
+                      "sizeLines":  27,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestTacet.py",
+                      "language":  "python",
+                      "sizeLines":  25,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestWaitLogin.py",
+                      "language":  "python",
+                      "sizeLines":  110,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "tests/TestWorld.py",
+                      "language":  "python",
+                      "sizeLines":  32,
+                      "fileCategory":  "code"
+                  }
+              ],
+    "importMap":  {
+                      ".agents/skills/deploy/SKILL.md":  [
+
+                                                         ],
+                      ".agents/skills/deploy/agents/openai.yaml":  [
+
+                                                                   ],
+                      ".agents/skills/deploy/scripts/next_tag.py":  [
+
+                                                                    ],
+                      ".agents/skills/ok-script-i18n/SKILL.md":  [
+
+                                                                 ],
+                      ".agents/skills/ok-script-i18n/agents/openai.yaml":  [
+
+                                                                           ],
+                      ".agents/skills/ok-script-i18n/scripts/task_i18n_helper.py":  [
+
+                                                                                    ],
+                      ".agents/skills/ok-script-tasks/SKILL.md":  [
+
+                                                                  ],
+                      ".agents/skills/ok-script-tasks/agents/openai.yaml":  [
+
+                                                                            ],
+                      ".agents/skills/ok-script-tasks/references/task-api.md":  [
+
+                                                                                ],
+                      ".agents/skills/ok-script-tasks/references/templates.md":  [
+
+                                                                                 ],
+                      ".agents/skills/ok-ww-characters/SKILL.md":  [
+
+                                                                   ],
+                      ".agents/skills/ok-ww-characters/agents/openai.yaml":  [
+
+                                                                             ],
+                      ".agents/skills/ok-ww-characters/references/character-patterns.md":  [
+
+                                                                                           ],
+                      ".agents/skills/use-local-venv/SKILL.md":  [
+
+                                                                 ],
+                      ".agents/skills/use-local-venv/agents/openai.yaml":  [
+
+                                                                           ],
+                      ".github/ISSUE_TEMPLATE/Ã¦Å Â¥Ã¥â€˜Å bug-.md":  [
+
+                                                                      ],
+                      ".github/ISSUE_TEMPLATE/Ã¦â€“Â°Ã¥Å Å¸Ã¨Æ’Â½Ã¥Â»ÂºÃ¨Â®Â®-.md":  [
+
+                                                                                     ],
+                      ".github/PULL_REQUEST_TEMPLATE.md":  [
+
+                                                           ],
+                      ".github/workflows/ai_code_review.yml":  [
+
+                                                               ],
+                      ".github/workflows/build.yml":  [
+
+                                                      ],
+                      ".github/workflows/close_stale_issues.yml":  [
+
+                                                                   ],
+                      ".github/workflows/mirrorchyan_release_note.yml":  [
+
+                                                                         ],
+                      ".github/workflows/mirrorchyan_uploading.yml":  [
+
+                                                                      ],
+                      ".github/workflows/sign_exe.yml":  [
+
+                                                         ],
+                      ".github/workflows/test.yml":  [
+
+                                                     ],
+                      ".gitmodules":  [
+
+                                      ],
+                      ".ua/.understandignore":  [
+
+                                                ],
+                      ".update_repo_gitignore":  [
+
+                                                 ],
+                      "AGENTS.md":  [
+
+                                    ],
+                      "CONTRIBUTING.md":  [
+
+                                          ],
+                      "FUNDING.yml":  [
+
+                                      ],
+                      "LICENSE.txt":  [
+
+                                      ],
+                      "README.md":  [
+
+                                    ],
+                      "README_en.md":  [
+
+                                       ],
+                      "README_ja.md":  [
+
+                                       ],
+                      "README_zh_TW.md":  [
+
+                                          ],
+                      "config.py":  [
+                                        "src/task/process_feature.py"
+                                    ],
+                      "deploy.txt":  [
+
+                                     ],
+                      "i18n/es_ES/LC_MESSAGES/ok.po":  [
+
+                                                       ],
+                      "i18n/ja_JP/LC_MESSAGES/ok.po":  [
+
+                                                       ],
+                      "i18n/ko_KR/LC_MESSAGES/ok.po":  [
+
+                                                       ],
+                      "i18n/zh_CN/LC_MESSAGES/ok.po":  [
+
+                                                       ],
+                      "i18n/zh_TW/LC_MESSAGES/ok.po":  [
+
+                                                       ],
+                      "main.py":  [
+
+                                  ],
+                      "main_debug.py":  [
+
+                                        ],
+                      "pyappify.yml":  [
+
+                                       ],
+                      "readme/faq.md":  [
+
+                                        ],
+                      "requirements-dev.txt":  [
+
+                                               ],
+                      "requirements.in":  [
+
+                                          ],
+                      "requirements.txt":  [
+
+                                           ],
+                      "run_tests.ps1":  [
+
+                                        ],
+                      "setup.py":  [
+
+                                   ],
+                      "src/Labels.py":  [
+
+                                        ],
+                      "src/OnnxYolo8Detect.py":  [
+
+                                                 ],
+                      "src/OpenVinoYolo8Detect.py":  [
+
+                                                     ],
+                      "src/__init__.py":  [
+
+                                          ],
+                      "src/char/Aemeath.py":  [
+                                                  "src/char/BaseChar.py"
+                                              ],
+                      "src/char/Augusta.py":  [
+                                                  "src/char/BaseChar.py"
+                                              ],
+                      "src/char/Baizhi.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/BaseChar.py":  [
+                                                   "src/__init__.py"
+                                               ],
+                      "src/char/Brant.py":  [
+                                                "src/char/BaseChar.py"
+                                            ],
+                      "src/char/Calcharo.py":  [
+                                                   "src/char/BaseChar.py"
+                                               ],
+                      "src/char/Camellya.py":  [
+                                                   "src/char/BaseChar.py"
+                                               ],
+                      "src/char/Cantarella.py":  [
+                                                     "src/char/BaseChar.py"
+                                                 ],
+                      "src/char/Carlotta.py":  [
+                                                   "src/char/BaseChar.py"
+                                               ],
+                      "src/char/Cartethyia.py":  [
+                                                     "src/char/BaseChar.py"
+                                                 ],
+                      "src/char/Changli.py":  [
+                                                  "src/char/BaseChar.py"
+                                              ],
+                      "src/char/CharFactory.py":  [
+                                                      "src/Labels.py",
+                                                      "src/char/Aemeath.py",
+                                                      "src/char/Augusta.py",
+                                                      "src/char/Baizhi.py",
+                                                      "src/char/BaseChar.py",
+                                                      "src/char/Brant.py",
+                                                      "src/char/Calcharo.py",
+                                                      "src/char/Camellya.py",
+                                                      "src/char/Cantarella.py",
+                                                      "src/char/Carlotta.py",
+                                                      "src/char/Cartethyia.py",
+                                                      "src/char/Changli.py",
+                                                      "src/char/Chisa.py",
+                                                      "src/char/Chixia.py",
+                                                      "src/char/Ciaccona.py",
+                                                      "src/char/CustomCharLoader.py",
+                                                      "src/char/Danjin.py",
+                                                      "src/char/Denia.py",
+                                                      "src/char/Douling.py",
+                                                      "src/char/Encore.py",
+                                                      "src/char/Galbrena.py",
+                                                      "src/char/HavocRover.py",
+                                                      "src/char/Hiyuki.py",
+                                                      "src/char/Iuno.py",
+                                                      "src/char/Jianxin.py",
+                                                      "src/char/Jinhsi.py",
+                                                      "src/char/Jiyan.py",
+                                                      "src/char/Linnai.py",
+                                                      "src/char/Lucilla.py",
+                                                      "src/char/Lucy.py",
+                                                      "src/char/Luhesi.py",
+                                                      "src/char/Lupa.py",
+                                                      "src/char/Mornye.py",
+                                                      "src/char/Mortefi.py",
+                                                      "src/char/Phoebe.py",
+                                                      "src/char/Phrolova.py",
+                                                      "src/char/Qiuyuan.py",
+                                                      "src/char/Rebecca.py",
+                                                      "src/char/Roccia.py",
+                                                      "src/char/Sanhua.py",
+                                                      "src/char/ShoreKeeper.py",
+                                                      "src/char/Taoqi.py",
+                                                      "src/char/Verina.py",
+                                                      "src/char/Xiangliyao.py",
+                                                      "src/char/Xigelika.py",
+                                                      "src/char/YangYangSp.py",
+                                                      "src/char/Yinlin.py",
+                                                      "src/char/Youhu.py",
+                                                      "src/char/Yuanwu.py",
+                                                      "src/char/Zani.py",
+                                                      "src/char/Zhezhi.py"
+                                                  ],
+                      "src/char/Chisa.py":  [
+                                                "src/char/BaseChar.py"
+                                            ],
+                      "src/char/Chixia.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/Ciaccona.py":  [
+                                                   "src/char/BaseChar.py"
+                                               ],
+                      "src/char/CustomCharLoader.py":  [
+
+                                                       ],
+                      "src/char/Danjin.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/Denia.py":  [
+                                                "src/char/BaseChar.py"
+                                            ],
+                      "src/char/Douling.py":  [
+                                                  "src/char/BaseChar.py"
+                                              ],
+                      "src/char/Encore.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/Galbrena.py":  [
+                                                   "src/char/BaseChar.py"
+                                               ],
+                      "src/char/HavocRover.py":  [
+                                                     "src/char/BaseChar.py"
+                                                 ],
+                      "src/char/Hiyuki.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/Iuno.py":  [
+                                               "src/char/BaseChar.py"
+                                           ],
+                      "src/char/Jianxin.py":  [
+                                                  "src/char/BaseChar.py"
+                                              ],
+                      "src/char/Jinhsi.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/Jiyan.py":  [
+                                                "src/char/BaseChar.py"
+                                            ],
+                      "src/char/Linnai.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/Lucilla.py":  [
+                                                  "src/char/BaseChar.py"
+                                              ],
+                      "src/char/Lucy.py":  [
+                                               "src/char/BaseChar.py"
+                                           ],
+                      "src/char/Luhesi.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/Lupa.py":  [
+                                               "src/char/BaseChar.py"
+                                           ],
+                      "src/char/Mornye.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/Mortefi.py":  [
+                                                  "src/char/BaseChar.py"
+                                              ],
+                      "src/char/Phoebe.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/Phrolova.py":  [
+                                                   "src/char/BaseChar.py"
+                                               ],
+                      "src/char/Qiuyuan.py":  [
+                                                  "src/char/BaseChar.py"
+                                              ],
+                      "src/char/Rebecca.py":  [
+                                                  "src/char/BaseChar.py"
+                                              ],
+                      "src/char/Roccia.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/Sanhua.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/ShoreKeeper.py":  [
+                                                      "src/char/BaseChar.py"
+                                                  ],
+                      "src/char/Taoqi.py":  [
+                                                "src/char/BaseChar.py"
+                                            ],
+                      "src/char/Verina.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/Xiangliyao.py":  [
+                                                     "src/char/BaseChar.py"
+                                                 ],
+                      "src/char/Xigelika.py":  [
+                                                   "src/char/BaseChar.py"
+                                               ],
+                      "src/char/YangYangSp.py":  [
+                                                     "src/char/BaseChar.py"
+                                                 ],
+                      "src/char/Yinlin.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/Youhu.py":  [
+                                                "src/char/BaseChar.py"
+                                            ],
+                      "src/char/Yuanwu.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/char/Zani.py":  [
+                                               "src/char/BaseChar.py"
+                                           ],
+                      "src/char/Zhezhi.py":  [
+                                                 "src/char/BaseChar.py"
+                                             ],
+                      "src/combat/CombatCheck.py":  [
+                                                        "src/Labels.py",
+                                                        "src/__init__.py",
+                                                        "src/char/Roccia.py",
+                                                        "src/task/BaseWWTask.py"
+                                                    ],
+                      "src/globals.py":  [
+
+                                         ],
+                      "src/gui/CharacterCodeTab.py":  [
+                                                          "src/char/CharFactory.py",
+                                                          "src/char/CustomCharLoader.py"
+                                                      ],
+                      "src/gui/__init__.py":  [
+
+                                              ],
+                      "src/scene/WWScene.py":  [
+
+                                               ],
+                      "src/task/AutoCombatTask.py":  [
+                                                         "config.py",
+                                                         "src/char/CharFactory.py",
+                                                         "src/scene/WWScene.py",
+                                                         "src/task/BaseCombatTask.py"
+                                                     ],
+                      "src/task/AutoLoginTask.py":  [
+                                                        "src/scene/WWScene.py",
+                                                        "src/task/BaseWWTask.py"
+                                                    ],
+                      "src/task/AutoPickTask.py":  [
+                                                       "src/scene/WWScene.py",
+                                                       "src/task/BaseWWTask.py"
+                                                   ],
+                      "src/task/AutoRogueTask.py":  [
+                                                        "src/__init__.py",
+                                                        "src/task/BaseCombatTask.py",
+                                                        "src/task/BaseWWTask.py",
+                                                        "src/task/WWOneTimeTask.py"
+                                                    ],
+                      "src/task/BaseCombatTask.py":  [
+                                                         "src/__init__.py",
+                                                         "src/char/BaseChar.py",
+                                                         "src/char/CharFactory.py",
+                                                         "src/combat/CombatCheck.py",
+                                                         "src/task/BaseWWTask.py"
+                                                     ],
+                      "src/task/BaseWWTask.py":  [
+                                                     "src/Labels.py",
+                                                     "src/scene/WWScene.py"
+                                                 ],
+                      "src/task/ChangeEchoTask.py":  [
+                                                         "src/scene/WWScene.py",
+                                                         "src/task/BaseWWTask.py"
+                                                     ],
+                      "src/task/DailyTask.py":  [
+                                                    "config.py",
+                                                    "src/task/BaseCombatTask.py",
+                                                    "src/task/BaseWWTask.py",
+                                                    "src/task/FarmEchoTask.py",
+                                                    "src/task/ForgeryTask.py",
+                                                    "src/task/GardenTask.py",
+                                                    "src/task/MergeEchoTask.py",
+                                                    "src/task/NightmareNestTask.py",
+                                                    "src/task/SimulationTask.py",
+                                                    "src/task/TacetTask.py",
+                                                    "src/task/WWOneTimeTask.py"
+                                                ],
+                      "src/task/DiagnosisTask.py":  [
+                                                        "src/task/BaseCombatTask.py",
+                                                        "src/task/WWOneTimeTask.py"
+                                                    ],
+                      "src/task/DomainTask.py":  [
+                                                     "src/task/BaseCombatTask.py",
+                                                     "src/task/WWOneTimeTask.py"
+                                                 ],
+                      "src/task/EnhanceEchoTask.py":  [
+                                                          "src/scene/WWScene.py",
+                                                          "src/task/BaseWWTask.py"
+                                                      ],
+                      "src/task/FarmEchoTask.py":  [
+                                                       "config.py",
+                                                       "src/task/BaseCombatTask.py",
+                                                       "src/task/WWOneTimeTask.py"
+                                                   ],
+                      "src/task/FarmMapTask.py":  [
+                                                      "src/task/BaseCombatTask.py",
+                                                      "src/task/BaseWWTask.py",
+                                                      "src/task/WWOneTimeTask.py"
+                                                  ],
+                      "src/task/FastTravelTask.py":  [
+                                                         "src/task/BaseWWTask.py"
+                                                     ],
+                      "src/task/FiveToOneTask.py":  [
+                                                        "src/task/BaseCombatTask.py"
+                                                    ],
+                      "src/task/ForgeryTask.py":  [
+                                                      "src/task/DomainTask.py"
+                                                  ],
+                      "src/task/GardenTask.py":  [
+                                                     "config.py",
+                                                     "src/Labels.py",
+                                                     "src/task/BaseWWTask.py",
+                                                     "src/task/WWOneTimeTask.py"
+                                                 ],
+                      "src/task/MergeEchoTask.py":  [
+                                                        "src/task/BaseWWTask.py"
+                                                    ],
+                      "src/task/MouseResetTask.py":  [
+
+                                                     ],
+                      "src/task/MultiAccountDailyTask.py":  [
+                                                                "config.py",
+                                                                "src/task/BaseCombatTask.py",
+                                                                "src/task/BaseWWTask.py",
+                                                                "src/task/DailyTask.py",
+                                                                "src/task/MouseResetTask.py",
+                                                                "src/task/WWOneTimeTask.py"
+                                                            ],
+                      "src/task/NightmareNestTask.py":  [
+                                                            "config.py",
+                                                            "src/task/BaseCombatTask.py",
+                                                            "src/task/WWOneTimeTask.py"
+                                                        ],
+                      "src/task/SimulationTask.py":  [
+                                                         "src/task/DomainTask.py"
+                                                     ],
+                      "src/task/SkipBaseTask.py":  [
+                                                       "src/task/BaseWWTask.py"
+                                                   ],
+                      "src/task/SkipDialogTask.py":  [
+                                                         "src/task/SkipBaseTask.py"
+                                                     ],
+                      "src/task/TacetTask.py":  [
+                                                    "src/task/BaseCombatTask.py",
+                                                    "src/task/WWOneTimeTask.py"
+                                                ],
+                      "src/task/WWOneTimeTask.py":  [
+                                                        "src/task/MouseResetTask.py"
+                                                    ],
+                      "src/task/process_feature.py":  [
+                                                          "src/task/BaseWWTask.py"
+                                                      ],
+                      "tests/TestBaseCombatTask.py":  [
+
+                                                      ],
+                      "tests/TestCD.py":  [
+                                              "config.py",
+                                              "src/task/AutoCombatTask.py"
+                                          ],
+                      "tests/TestChar.py":  [
+                                                "config.py",
+                                                "src/Labels.py",
+                                                "src/char/Aemeath.py",
+                                                "src/char/BaseChar.py",
+                                                "src/char/CharFactory.py",
+                                                "src/char/Chisa.py",
+                                                "src/char/Ciaccona.py",
+                                                "src/char/Iuno.py",
+                                                "src/char/Linnai.py",
+                                                "src/char/Lucilla.py",
+                                                "src/char/Lucy.py",
+                                                "src/char/Phrolova.py",
+                                                "src/char/Rebecca.py",
+                                                "src/char/ShoreKeeper.py",
+                                                "src/char/Verina.py",
+                                                "src/char/YangYangSp.py",
+                                                "src/task/AutoCombatTask.py",
+                                                "src/task/BaseCombatTask.py"
+                                            ],
+                      "tests/TestCharacterCodeTab.py":  [
+                                                            "src/char/Chixia.py",
+                                                            "src/char/CustomCharLoader.py",
+                                                            "src/char/Mortefi.py",
+                                                            "src/gui/CharacterCodeTab.py"
+                                                        ],
+                      "tests/TestCombatCheck.py":  [
+                                                       "config.py",
+                                                       "src/Labels.py",
+                                                       "src/char/BaseChar.py",
+                                                       "src/char/CharFactory.py",
+                                                       "src/task/AutoCombatTask.py"
+                                                   ],
+                      "tests/TestCon.py":  [
+                                               "config.py",
+                                               "src/task/AutoCombatTask.py"
+                                           ],
+                      "tests/TestConfig.py":  [
+                                                  "config.py"
+                                              ],
+                      "tests/TestConfirm.py":  [
+                                                   "config.py",
+                                                   "src/task/FiveToOneTask.py"
+                                               ],
+                      "tests/TestCustomCharLoader.py":  [
+                                                            "src/Labels.py",
+                                                            "src/char/CharFactory.py",
+                                                            "src/char/CustomCharLoader.py",
+                                                            "src/char/Mortefi.py"
+                                                        ],
+                      "tests/TestDomainRecoveryLoop.py":  [
+
+                                                          ],
+                      "tests/TestEcho.py":  [
+                                                "config.py",
+                                                "src/task/AutoCombatTask.py",
+                                                "src/task/DailyTask.py"
+                                            ],
+                      "tests/TestEnchaneEcho.py":  [
+                                                       "config.py",
+                                                       "src/task/AutoCombatTask.py",
+                                                       "src/task/EnhanceEchoTask.py"
+                                                   ],
+                      "tests/TestEnhanceEchoStatusBox.py":  [
+                                                                "src/task/EnhanceEchoTask.py"
+                                                            ],
+                      "tests/TestFarmEcho.py":  [
+                                                    "config.py",
+                                                    "src/task/DailyTask.py",
+                                                    "src/task/FarmEchoTask.py",
+                                                    "src/task/FiveToOneTask.py"
+                                                ],
+                      "tests/TestFeatureSet.py":  [
+
+                                                  ],
+                      "tests/TestForte.py":  [
+                                                 "config.py",
+                                                 "src/task/AutoCombatTask.py"
+                                             ],
+                      "tests/TestKey.py":  [
+                                               "config.py",
+                                               "src/task/AutoCombatTask.py"
+                                           ],
+                      "tests/TestLevitator.py":  [
+                                                     "config.py",
+                                                     "src/task/AutoCombatTask.py"
+                                                 ],
+                      "tests/TestMap.py":  [
+                                               "config.py",
+                                               "src/task/FarmMapTask.py"
+                                           ],
+                      "tests/TestMergeEchoTask.py":  [
+                                                         "config.py",
+                                                         "src/task/DailyTask.py",
+                                                         "src/task/FarmEchoTask.py",
+                                                         "src/task/MergeEchoTask.py",
+                                                         "src/task/NightmareNestTask.py"
+                                                     ],
+                      "tests/TestMultiAccountDailyTask.py":  [
+                                                                 "src/task/BaseWWTask.py",
+                                                                 "src/task/MultiAccountDailyTask.py"
+                                                             ],
+                      "tests/TestNightmareNestTask.py":  [
+                                                             "src/task/NightmareNestTask.py"
+                                                         ],
+                      "tests/TestOCR.py":  [
+                                               "config.py",
+                                               "src/task/FarmMapTask.py"
+                                           ],
+                      "tests/TestScheduleSupport.py":  [
+
+                                                       ],
+                      "tests/TestSkipDialogConfirm.py":  [
+                                                             "src/task/BaseWWTask.py"
+                                                         ],
+                      "tests/TestSkipDialogWideMode.py":  [
+                                                              "config.py",
+                                                              "src/task/SkipDialogTask.py"
+                                                          ],
+                      "tests/TestTacet.py":  [
+                                                 "config.py",
+                                                 "src/task/TacetTask.py"
+                                             ],
+                      "tests/TestWaitLogin.py":  [
+                                                     "src/task/BaseWWTask.py"
+                                                 ],
+                      "tests/TestWorld.py":  [
+                                                 "config.py",
+                                                 "src/task/DailyTask.py",
+                                                 "src/task/FiveToOneTask.py"
+                                             ]
+                  },
+    "contentDigest":  "006b227d66c774e00434b223827e8cea993572152e5d8bb56dcf8dd894daecc6",
+    "stats":  {
+                  "filesScanned":  168,
+                  "byCategory":  {
+                                     "docs":  22,
+                                     "config":  7,
+                                     "code":  131,
+                                     "infra":  7,
+                                     "script":  1
+                                 },
+                  "byLanguage":  {
+                                     "markdown":  18,
+                                     "yaml":  14,
+                                     "python":  122,
+                                     "unknown":  3,
+                                     "txt":  4,
+                                     "po":  5,
+                                     "in":  1,
+                                     "powershell":  1
+                                 }
+              }
+}
