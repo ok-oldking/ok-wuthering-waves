@@ -269,9 +269,9 @@ config = {
         ["src.task.FastTravelTask", "FastTravelTask"],
     ], 'scene': ["src.scene.WWScene", "WWScene"],
     'update_pyappify': {
-        'to_version': '1.1.6',
-        'zip_url': 'https://github.com/ok-oldking/ok-wuthering-waves/releases/download/v3.3.74/ok-ww-win32.zip',
-        'sha256': 'ee8db613a5e026a2873adb2e147490c86333092bedf3230b10be3b9c574ad3b6',
+        'to_version': '1.1.9',
+        'zip_url': 'https://github.com/ok-oldking/ok-wuthering-waves/releases/download/v3.5.17/ok-ww-win32.zip',
+        'sha256': '0ad4d89aae5995641136eb977536a05d2f9c567c9a43ab16c670a947bc301531',
     }
 
 }
