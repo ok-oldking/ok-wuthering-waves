@@ -249,11 +249,10 @@ class TestDailyMergeEchoTask(unittest.TestCase):
         daily_task.log_error = Mock()
         daily_task.tr = lambda message: message
 
-        self.assertFalse(daily_task.validate_additional_tasks())
-        daily_task.log_error.assert_called_once_with(
-            'Teleport and Farm 4C Echo requires "Teleport to Boss" to be enabled in Farm Echo Task.',
-            notify=True,
-        )
+        message = 'Teleport and Farm 4C Echo requires "Teleport to Boss" to be enabled in Farm Echo Task.'
+        with self.assertRaisesRegex(Exception, message):
+            daily_task.validate_additional_tasks()
+        daily_task.log_error.assert_not_called()
 
     def test_daily_rejects_nightmare_without_selection(self):
         daily_task = DailyTask.__new__(DailyTask)
@@ -264,11 +263,10 @@ class TestDailyMergeEchoTask(unittest.TestCase):
         daily_task.log_error = Mock()
         daily_task.tr = lambda message: message
 
-        self.assertFalse(daily_task.validate_additional_tasks())
-        daily_task.log_error.assert_called_once_with(
-            'Auto Farm all Nightmare Nest requires at least one "Which to Farm" option.',
-            notify=True,
-        )
+        message = 'Auto Farm all Nightmare Nest requires at least one "Which to Farm" option.'
+        with self.assertRaisesRegex(Exception, message):
+            daily_task.validate_additional_tasks()
+        daily_task.log_error.assert_not_called()
 
     def test_daily_accepts_valid_additional_task_configs(self):
         daily_task = DailyTask.__new__(DailyTask)
@@ -292,10 +290,11 @@ class TestDailyMergeEchoTask(unittest.TestCase):
 
     def test_daily_stops_before_initialization_when_additional_config_is_invalid(self):
         daily_task = DailyTask.__new__(DailyTask)
-        daily_task.validate_additional_tasks = Mock(return_value=False)
+        daily_task.validate_additional_tasks = Mock(side_effect=Exception('invalid additional task config'))
         daily_task.ensure_main = Mock()
 
-        daily_task.run()
+        with self.assertRaisesRegex(Exception, 'invalid additional task config'):
+            daily_task.run()
 
         daily_task.ensure_main.assert_not_called()
 

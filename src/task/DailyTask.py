@@ -79,8 +79,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.description = "Login, claim monthly card, farm echo, and claim daily reward"
 
     def run(self):
-        if not self.validate_additional_tasks():
-            return
+        self.validate_additional_tasks()
 
         WWOneTimeTask.run(self)
         self.logged_in = False
@@ -145,23 +144,19 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         if TELEPORT_AND_FARM_4C_ECHO in additional_tasks:
             farm_echo_task = self.get_task_by_class(FarmEchoTask)
             if farm_echo_task.config.get('Teleport to Boss', 'No') == 'No':
-                self.log_error(
+                raise Exception(
                     self.tr(
                         'Teleport and Farm 4C Echo requires "Teleport to Boss" to be enabled in Farm Echo Task.'
-                    ),
-                    notify=True,
+                    )
                 )
-                return False
         if AUTO_FARM_NIGHTMARE_NEST in additional_tasks:
             nightmare_task = self.get_task_by_class(NightmareNestTask)
             if not nightmare_task.config.get('Which to Farm'):
-                self.log_error(
+                raise Exception(
                     self.tr(
                         'Auto Farm all Nightmare Nest requires at least one "Which to Farm" option.'
-                    ),
-                    notify=True,
+                    )
                 )
-                return False
         return True
 
     def run_additional_tasks(self):
