@@ -1,5 +1,8 @@
 import time
 import unittest
+from types import SimpleNamespace
+from unittest.mock import Mock
+
 from config import config
 from ok.test.TaskTestCase import TaskTestCase
 from src.Labels import Labels
@@ -40,6 +43,10 @@ class ForcedChar(BaseChar):
 class TestChar(TaskTestCase):
     task_class = AutoCombatTask
     config = config
+
+    @staticmethod
+    def cd_text(name, x):
+        return SimpleNamespace(name=name, x=x)
 
     def test_char_type_config(self):
         class Task:
@@ -1203,6 +1210,7 @@ class TestChar(TaskTestCase):
         self.set_image('tests/images/aemeath_lib.png')
         in_combat = self.task.in_combat()
         self.assertTrue(in_combat)
+        self.task.ocr = Mock(return_value=[])
         liberation_available = self.task.available('liberation')
         self.assertTrue(liberation_available)
 
@@ -1225,6 +1233,9 @@ class TestChar(TaskTestCase):
         self.assertTrue(len(self.task.chars) > 0)
         self.assertEqual(self.task.chars[0].name, 'Luhesi')
 
+        self.task.ocr = Mock(return_value=[
+            self.cd_text('9.9', 3600),
+        ])
         has_cd = self.task.chars[0].has_cd('liberation')
         time.sleep(1)
         self.task.screenshot('click_liberation', show_box=True)
