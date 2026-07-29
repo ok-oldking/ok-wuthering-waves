@@ -1119,8 +1119,63 @@ msgstr "SIFTGZ"
 msgid "Check Weekly Garden"
 msgstr "ウィークリーガーデンを確認"
 
-msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
+msgid ""
+"After claiming daily rewards, check weekly Garden progress and run Garden "
+"Task if 6000 points has not been reached."
 msgstr "デイリー報酬の受取後、ウィークリーガーデンの進捗を確認し、6000ポイント未達ならガーデンタスクを実行します。"
 
 msgid "Guidebook Key"
 msgstr "ソラリスガイド"
+
+msgid "Rover"
+msgstr "漂泊者"
+
+msgid "Yangyang: Xuanling"
+msgstr "秧秧・玄翎"
+
+msgid "Merge Discarded Echoes"
+msgstr "破棄済み音骸を融合"
+
+msgid ""
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
+"batches of 100."
+msgstr "実行には破棄済み音骸が1000個必要です。破棄済み音骸を100個単位で融合します。"
+
+msgid "Bag Key"
+msgstr "バッグキー"
+
+msgid "In-game hotkey used to open the Bag."
+msgstr "バッグを開くゲーム内ホットキー。"
+
+msgid "Echo"
+msgstr "音骸"
+
+msgid "Check Discarded Echo"
+msgstr "破棄済み音骸を確認"
+
+msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
+msgstr "デイリータスク後に破棄済み音骸が1000個あるか確認し、融合します。"
+
+msgid "Teleport and Farm 4C Echo"
+msgstr "テレポートしてコスト4音骸を収集"
+
+msgid "Merge Echo If discarded > 1000"
+msgstr "破棄済み音骸が1000個超なら融合"
+
+msgid "Additional Tasks to Run After Daily Task"
+msgstr "デイリータスク後に実行する追加タスク"
+
+msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
+msgstr "任意のタスクを選択します。悪夢の巣はデイリー達成を補助するためスタミナ消費前に実行し、その他のタスクはその後に実行します。"
+
+msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
+msgstr "「テレポートしてコスト4音骸を収集」を実行するには、音骸収集タスクの「ボスへテレポート」を有効にしてください。"
+
+msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgstr "「すべての悪夢の巣を自動周回」を実行するには、「周回対象」を1つ以上選択してください。"
+
+msgid "Daily Task Completed"
+msgstr "デイリータスク完了"
+
+msgid "Daily task completed, start teleport to farm 4C echo"
+msgstr "デイリータスク完了。テレポートしてコスト4音骸の収集を開始します"

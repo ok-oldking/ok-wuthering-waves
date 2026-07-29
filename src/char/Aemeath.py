@@ -8,7 +8,6 @@ class Aemeath(BaseChar):
     LIBERATION_FORCE_DURATION = 30
     LIB2_PREPARE_WINDOW = 8
     INTRO_LIBERATION_DELAY = 14
-    MORNYE_NAMES = {'char_moning', 'char_moning_new'}
     POST_LIB2_COMBO_TIME_OUT = 1.5  # lib2 收尾连招(3A+E)的硬时间上限(秒), 防卡死/异常
 
     def __init__(self, *args, **kwargs):
@@ -227,7 +226,7 @@ class Aemeath(BaseChar):
             self.continues_normal_attack(1.2)
             if self.check_outro() in {'char_linnai', 'char_lupa'}:
                 self.intro_time = 14
-            if self.check_outro() in {'chang_changli', 'char_changli2'}:
+            if self.check_outro() == 'chang_changli':
                 self.intro_time = 10
                 
         self.perform_everything()
@@ -322,7 +321,7 @@ class Aemeath(BaseChar):
             # Mornye 离场且队里有 Linnai 时让位: Linnai 要吃 Mornye 协奏入场, 优先级最高, Aemeath 此刻
             # 不抢 MUST(否则两者都 MUST、按"最久未上场"决胜会切到 Aemeath). lib2 顺延到下次轮到 Aemeath.
             from src.char.Linnai import Linnai
-            if current_char and current_char.char_name in self.MORNYE_NAMES and self.task.has_char(Linnai):
+            if current_char and current_char.char_name == 'char_moning' and self.task.has_char(Linnai):
                 return super().get_switch_priority(current_char, has_intro, target_low_con)
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)

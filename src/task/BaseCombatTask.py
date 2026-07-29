@@ -41,7 +41,8 @@ mismatched_names = {
     "Luhesi": "Luuk Herssen",
     "Xiangliyao": "Xiangli Yao",
     "ShoreKeeper": "Shorekeeper",
-    "HavocRover": "Rover: Havoc"
+    "HavocRover": "Rover",
+    "YangYangSp": "Yangyang: Xuanling",
 }
 
 
@@ -803,8 +804,11 @@ class BaseCombatTask(CombatCheck):
                 translated_names = []
                 for c in self.chars:
                     if c is not None:
-                        class_name = c.name
-                        official_name = mismatched_names.get(class_name, class_name)
+                        if hasattr(c, 'ensure_display_form'):
+                            c.ensure_display_form()
+                        official_name = getattr(c, 'display_name', None) or mismatched_names.get(
+                            c.name, c.name
+                        )
                         # 单元测试时 self._app 为 None，此时不进行翻译，直接回传原名
                         translated_name = self.tr(official_name) if self._app is not None else official_name
                         translated_names.append(translated_name)

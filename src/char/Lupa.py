@@ -20,7 +20,7 @@ class Lupa(BaseChar):
         in_outro = False
         if self.has_intro:
             self.continues_normal_attack(1)
-            if self.check_outro() in {'chang_changli', 'char_changli2'}:
+            if self.check_outro() == 'chang_changli':
                 in_outro = True
         self.click_echo(time_out=0)
         if self.res_wolf() and not in_outro:

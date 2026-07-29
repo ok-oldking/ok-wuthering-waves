@@ -19,7 +19,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.description = "Click Start after Entering Dungeon or Teleporting to The Boss"
         self.name = "Farm 4C Echo in Dungeon/World"
-        self.group_name = "Farm"
+        self.group_name = "Echo"
         self.group_icon = FluentIcon.SYNC
         self.default_config.update({
             'Teleport to Boss': 'No',

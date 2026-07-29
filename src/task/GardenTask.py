@@ -75,9 +75,11 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
                     self.log_info('garden end {}'.format(texts))
                     if self.is_garden_done(texts):
                         self.click(garden_back, after_sleep=1)
-                        self.wait_book('gray_book_quest', time_out=30)
-                        self.click(0.927, 0.893, after_sleep=2)
-                        self.click(0.927, 0.893, after_sleep=1)
+                        if self.wait_feature('garden_start_game', settle_time=1, time_out=5):
+                            self.back(after_sleep=1)
+                        if self.wait_book('gray_book_quest', time_out=30):
+                            self.click(0.927, 0.893, after_sleep=2)
+                            self.click(0.927, 0.893, after_sleep=1)
                         break
                     else:
                         self.click(garden_restart, after_sleep=1)
@@ -123,11 +125,12 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
     def _choose_first_blessing(self):
         """At Garden Entrance, choose first blessing"""
         # click blessing botton
-        self.click(965/1920, 860/1080, after_sleep=2)
+        self.click(965 / 1920, 860 / 1080, after_sleep=2)
         # choose blessing1(Add-on)
-        self.click(700/1920, 666/1080, after_sleep=2)
+        self.click(700 / 1920, 666 / 1080, after_sleep=2)
         # confirm
-        self.click(1600/1920, 900/1080, after_sleep=2)
+        self.click(1600 / 1920, 900 / 1080, after_sleep=2)
+
 
 if __name__ == "__main__":
     run_task(config, task=GardenTask, debug=True)

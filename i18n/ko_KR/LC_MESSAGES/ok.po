@@ -1120,8 +1120,63 @@ msgstr "SIFTGZ"
 msgid "Check Weekly Garden"
 msgstr "주간 정원 확인"
 
-msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
+msgid ""
+"After claiming daily rewards, check weekly Garden progress and run Garden "
+"Task if 6000 points has not been reached."
 msgstr "일일 보상을 수령한 뒤 주간 정원 진행도를 확인하고, 6000점에 도달하지 않았으면 정원 임무를 실행합니다."
 
 msgid "Guidebook Key"
 msgstr "솔라리스 가이드"
+
+msgid "Rover"
+msgstr "방랑자"
+
+msgid "Yangyang: Xuanling"
+msgstr "양양·현령"
+
+msgid "Merge Discarded Echoes"
+msgstr "폐기된 에코 합성"
+
+msgid ""
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
+"batches of 100."
+msgstr "실행하려면 폐기된 에코가 1000개 있어야 합니다. 폐기된 에코를 100개 단위로 합성합니다."
+
+msgid "Bag Key"
+msgstr "가방 키"
+
+msgid "In-game hotkey used to open the Bag."
+msgstr "가방을 여는 게임 내 단축키입니다."
+
+msgid "Echo"
+msgstr "에코"
+
+msgid "Check Discarded Echo"
+msgstr "폐기된 에코 확인"
+
+msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
+msgstr "일일 작업 후 폐기된 에코가 1000개 있는지 확인하고 합성합니다."
+
+msgid "Teleport and Farm 4C Echo"
+msgstr "순간이동 후 코스트 4 에코 파밍"
+
+msgid "Merge Echo If discarded > 1000"
+msgstr "폐기된 에코가 1000개 초과면 합성"
+
+msgid "Additional Tasks to Run After Daily Task"
+msgstr "일일 작업 후 실행할 추가 작업"
+
+msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
+msgstr "선택 작업을 고르세요. 악몽 둥지는 일일 작업 완료를 돕기 위해 스태미나 파밍 전에 실행하고, 다른 작업은 그 후에 실행합니다."
+
+msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
+msgstr "순간이동 후 코스트 4 에코 파밍을 실행하려면 에코 파밍 작업에서 \"보스로 순간이동\"을 활성화해야 합니다."
+
+msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgstr "모든 악몽 둥지 자동 파밍을 실행하려면 \"파밍 대상\"을 하나 이상 선택해야 합니다."
+
+msgid "Daily Task Completed"
+msgstr "일일 작업 완료"
+
+msgid "Daily task completed, start teleport to farm 4C echo"
+msgstr "일일 작업 완료. 순간이동 후 코스트 4 에코 파밍을 시작합니다"

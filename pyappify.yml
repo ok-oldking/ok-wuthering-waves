@@ -1,5 +1,7 @@
 name: "ok-ww"
 uac: true
+icon: "icons/icon.png"
+
 profiles:
   - name: "China"
     git_url: "https://cnb.cool/ok-oldking/ok-wuthering-waves.git"
