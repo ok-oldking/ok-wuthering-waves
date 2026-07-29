@@ -1153,5 +1153,16 @@ msgstr "「すべての悪夢の巣を自動周回」を実行するには、「
 msgid "Daily Task Completed"
 msgstr "デイリータスク完了"
 
+msgid ""
+"Treat the returned code as custom code. Save it under configs/custom_chars/"
+"{class_name}.py first. Do not modify src/char/{class_name}.py. Only "
+"synchronize the reviewed code to src/char/{class_name}.py after the user "
+"explicitly approves it."
+msgstr ""
+"返されたコードはカスタムコードとして扱ってください。確認済みの結果をまず "
+"configs/custom_chars/{class_name}.py に保存してください。 "
+"src/char/{class_name}.py は変更しないでください。ユーザーが確認して明示的に "
+"承認した後にのみ、確認済みのコードを src/char/{class_name}.py に同期してください。"
+
 msgid "Daily task completed, start teleport to farm 4C echo"
 msgstr "デイリータスク完了。テレポートしてコスト4音骸の収集を開始します"
