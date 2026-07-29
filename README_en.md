@@ -22,6 +22,8 @@
 
 </div>
 
+### English Readme | [中文说明](README.md) | [繁體中文說明](README_zh_TW.md) | [日本語Readme](README_ja.md)
+
 **Demo & Tutorial:** [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/h6P1KWjdnB4)
 
 ---
@@ -41,8 +43,8 @@ Please note, according to Kuro Games' official Fair Play Declaration for Wutheri
 
 ## 🚀 Quick Start
 
-1.  **Download the Installer**: From the "Downloads" section below, download the latest `ok-ww-win32-setup.exe` installer file.
-2.  **Install the Program**: Double-click the `ok-ww-win32-setup.exe` file and follow the on-screen instructions to complete the installation.
+1.  **Download the Installer**: From the "Downloads" section below, download the latest `ok-ww-win32-Global-setup.exe` installer file.
+2.  **Install the Program**: Double-click the `ok-ww-win32-Global-setup.exe` file and follow the on-screen instructions to complete the installation.
 3.  **Run the Program**: After installation, launch `ok-ww` from the desktop shortcut or the Start Menu.
 
 ## 📥 Downloads
@@ -52,7 +54,7 @@ Please note, according to Kuro Games' official Fair Play Declaration for Wutheri
 ## ✨ Main Features
 <img width="1778" height="1186" alt="QQ_1762961412161" src="https://github.com/user-attachments/assets/0109c68e-d714-4c34-b016-b4b45f9861fd" />
 
-*   **High-Resolution Support**: Runs smoothly on all 16:9 resolutions up to 4K (minimum 1600x900). Some features are also compatible with ultrawide resolutions like 21:9.
+*   **High-Resolution Support**: Runs smoothly on all 16:9 resolutions up to 4K (minimum 1280x720). Some features are also compatible with ultrawide resolutions like 21:9.
 *   **Background Mode**: Supports running in the background while the game window is minimized or obscured, allowing you to use your computer for other tasks.
 *   **Intelligent Recognition**: Automatically recognizes all characters, eliminating the need for manual skill sequence configuration. Start with a single click.
 *   **Auto-Mute**: Can automatically mute the game audio when running in the background.
@@ -61,17 +63,18 @@ Please note, according to Kuro Games' official Fair Play Declaration for Wutheri
 
 If you encounter issues, please check the following steps one by one before asking for help:
 
-1.  **Installation Path**: Ensure the software is installed in a path containing **only English characters** (e.g., `D:\Games\ok-ww`). Do not install it in `C:\Program Files` or folders with non-English characters.
-2.  **Antivirus Software**: Add the software's installation directory to the **exceptions or whitelist** of your antivirus software (including Windows Defender) to prevent files from being mistakenly deleted or blocked.
-3.  **Display Settings**:
-    *   Turn off all graphics card filters (like NVIDIA Game Filter) and sharpening features.
+1.  **Antivirus Software**: Add the software's installation directory to the **exceptions or whitelist** of your antivirus software (including Windows Defender) to prevent files from being mistakenly deleted or blocked.
+2.  **Display Settings**:
+    *   In-game filters can generally be enabled, but graphics driver filters such as NVIDIA RTX Dynamic Vibrance and AMD sharpening must be disabled.
     *   Use the game's default brightness settings.
     *   Disable any overlays that display information on the game screen (e.g., frame rates from MSI Afterburner, Fraps, etc.).
-4.  **Custom Keybinds**: If you have changed the default in-game keybinds, you must update them accordingly in the `ok-ww` settings. Only the keybinds listed in the settings are supported.
-5.  **Software Version**: Check and ensure you are using the latest version of `ok-ww`.
-6.  **Game Performance**: Make sure the game can run stably at **60 FPS**. If the frame rate is unstable, try lowering the game's graphics quality or resolution.
-7.  **Game Disconnections**: If you frequently get disconnected from the server, try launching the game manually and playing for 5 minutes before starting the tool. If you get disconnected, simply log back in without closing the game.
+3.  **Custom Keybinds**: If you have changed the default in-game keybinds, you must update them accordingly in the `ok-ww` settings. Only the keybinds listed in the settings are supported.
+4.  **Software Version**: Check and ensure you are using the latest version of `ok-ww`.
+5.  **Game Performance**: Make sure the game can run stably at **60 FPS**. If the frame rate is unstable, try lowering the game's graphics quality or resolution.
+6.  **Game Disconnections**: Enable "Close Launcher After Start" in the `ok-ww` settings and make sure the launcher process is not running, or run `ok-ww` from source.
+7.  **OpenVINO Error**: If you encounter error `0x000005` on an Intel CPU with an NPU, update to the latest Intel NPU driver.
 8.  **Getting Help**: If the steps above do not solve your problem, please submit a detailed bug report through our community channels.
+9.  **Disable Auto Sprint**: Turn off Auto Sprint in the game settings.
 
 ---
 
@@ -79,7 +82,7 @@ If you encounter issues, please check the following steps one by one before aski
 
 ### Running from Source (Python)
 
-This project only supports Python 3.12.
+Python 3.12 is recommended. Python 3.9 or later is required, but other versions have not been fully tested.
 
 ```bash
 # Install or update dependencies
@@ -106,7 +109,7 @@ ok-ww.exe -t 1 -e
 
 ## 💬 Join Us
 
-This project is developed based on the [ok-script](https://github.com/ok-oldking/ok-script) framework. The core code is only about 3000 lines (Python), making it simple and easy to maintain. Developers interested in creating their own automation projects are welcome to use [ok-script](https://github.com/ok-oldking/ok-script).
+This project is developed using the [ok-script](https://github.com/ok-oldking/ok-script) framework and is designed to be simple and easy to maintain. Developers interested in creating their own automation projects are welcome to use [ok-script](https://github.com/ok-oldking/ok-script).
 
 ## 🔗 Projects using ok-script:
 

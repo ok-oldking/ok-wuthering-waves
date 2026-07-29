@@ -8,7 +8,7 @@ class Cantarella(BaseChar):
         self.last_heavy = -1
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        if has_intro and current_char and current_char.char_name in {'char_roccia', 'char_sanhua', 'char_sanhua2'}:
+        if has_intro and current_char and current_char.char_name in {'char_roccia', 'char_sanhua'}:
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
 
@@ -16,7 +16,7 @@ class Cantarella(BaseChar):
         perform_under_outro = False
         if self.has_intro:
             self.continues_normal_attack(1.2)
-            if self.has_sub_dps_intro and self.check_outro() in {'char_roccia', 'char_sanhua', 'char_sanhua2'}:
+            if self.has_sub_dps_intro and self.check_outro() in {'char_roccia', 'char_sanhua'}:
                 perform_under_outro = True
         self.click_liberation()
         if self.is_mouse_forte_full() or not self.is_forte_full():

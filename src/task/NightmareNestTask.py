@@ -98,30 +98,42 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 self.wait_in_team_and_world(time_out=40, raise_if_not_found=False)
             self.sleep(2)
             self.run_until(self.in_combat, 'w', time_out=10, running=False, target=True)
-        need_find = False
-        try:
-            need_find = self.combat_once(wait_combat_time=10, target=True, raise_if_not_found=False)
-        except CharRevivedException:
-            self.log_info('nightmare nest: death recovered, re-enter from F2 book')
-            return
-        if self._capture_mode:
-            if self._capture_success or self.wait_until(self.has_echo_notification, time_out=3):
-                self.log_info("Captured echo during combat, skipping search.")
+        wait_combat_time = 10
+        while True:
+            try:
+                need_find = self.combat_once(wait_combat_time=wait_combat_time, target=True,
+                                             raise_if_not_found=False)
+            except CharRevivedException:
+                self.log_info('nightmare nest: death recovered, re-enter from F2 book')
                 return
-        else:
-            self.sleep(3)
-        if need_find and not self.walk_find_echo(time_out=5, backward_time=2.5):
-            dropped = self.yolo_find_echo(turn=True, use_color=False, time_out=30)[0]
-            logger.info(f'farm echo yolo find {dropped}')
-        else:
-            dropped = True
-            self.log_info(f'farm echo walk find true')
-        self._capture_success = dropped
+            captured_early = False
+            if self._capture_mode:
+                if self._capture_success or self.wait_until(self.has_echo_notification, time_out=3):
+                    self.log_info("Captured echo during combat, skipping search.")
+                    captured_early = True
+            if not captured_early:
+                self.sleep(3)
+                if need_find and not self.walk_find_echo(time_out=5, backward_time=2.5):
+                    dropped = self.yolo_find_echo(turn=True, use_color=False, time_out=30)[0]
+                    logger.info(f'farm echo yolo find {dropped}')
+                else:
+                    dropped = True
+                    self.log_info(f'farm echo walk find true')
+                self._capture_success = dropped
+            if not self._should_continue_combat_after_pickup():
+                break
+            self.log_info('nightmare nest: combat detected after pickup')
+            wait_combat_time = 1
+        # 与刷全部一致：退本后再结束 combat_nest，避免还在巢穴内回 Daily/开书
         if is_team:
             self.send_key('esc', after_sleep=1)
             self.click(0.652, 0.628, after_sleep=2)
             self.wait_in_team_and_world(time_out=120)
         self.sleep(1)
+
+    def _should_continue_combat_after_pickup(self):
+        return not self._capture_mode and self.wait_combat(
+            target=True, time_out=3, raise_if_not_found=False)
 
     def _travel_to_nest_or_skip(self, nest):
         travel = self.wait_until(self._find_travel_button, raise_if_not_found=False, time_out=1)
@@ -183,7 +195,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.open_boss_book('canxiang')
 
     def find_nest(self):
-        counts = self.ocr(0.36, 0.13, 0.98, 0.91, match=self.count_re)
+        counts = self.ocr(0.35, 0.13, 1, 0.96, match=self.count_re)
         for count_box in counts:
             for match in re.finditer(self.count_re, count_box.name):
                 numerator = match.group(1)

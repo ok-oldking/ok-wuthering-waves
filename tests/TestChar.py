@@ -4,7 +4,7 @@ from config import config
 from ok.test.TaskTestCase import TaskTestCase
 from src.Labels import Labels
 from src.char.BaseChar import BaseChar, CharType, SwitchPriority, get_default_buff_time
-from src.char.CharFactory import _get_buff_time, _get_char_type, char_dict, char_names
+from src.char.CharFactory import _get_buff_time, _get_char_type, char_dict, char_names, get_char_by_pos
 from src.char.Aemeath import Aemeath
 from src.char.Chisa import Chisa
 from src.char.Ciaccona import Ciaccona
@@ -58,6 +58,11 @@ class TestChar(TaskTestCase):
         self.assertEqual(char_dict[Labels.char_chisa2]['buff_time'], 12)
         self.assertEqual(char_dict[Labels.char_linnai2]['cls'], Linnai)
         self.assertEqual(char_dict[Labels.char_linnai2]['char_type'], CharType.SUB_DPS)
+        self.assertEqual(char_dict[Labels.char_linnai2]['canonical_name'], Labels.char_linnai)
+        self.assertEqual(
+            char_dict[Labels.char_linnai2]['template_names'],
+            (Labels.char_linnai, Labels.char_linnai2),
+        )
         self.assertEqual(char_dict[Labels.char_lucilla]['cls'], Lucilla)
         self.assertEqual(char_dict[Labels.char_lucilla]['char_type'], CharType.SUB_DPS)
         self.assertTrue(char_dict[Labels.char_lucilla]['target_box_short_combat_check'])
@@ -89,6 +94,38 @@ class TestChar(TaskTestCase):
         task.char_config = {'Iuno C6': False}
         self.assertEqual(iuno.char_type, CharType.SUB_DPS)
         self.assertEqual(iuno.buff_time, get_default_buff_time(CharType.SUB_DPS))
+
+    def test_factory_normalizes_alternate_template_to_canonical_name(self):
+        class FoundChar:
+            name = Labels.char_linnai2
+            confidence = 0.99
+
+        class Task:
+            debug = False
+
+            def __init__(self):
+                self.searches = []
+
+            def find_best_match_in_box(self, box, names, threshold=0.6):
+                self.searches.append(tuple(names))
+                return FoundChar()
+
+            def log_info(self, *args, **kwargs):
+                pass
+
+        task = Task()
+        char = get_char_by_pos(task, None, 0, None)
+
+        self.assertIsInstance(char, Linnai)
+        self.assertEqual(char.char_name, Labels.char_linnai)
+
+        char = get_char_by_pos(task, None, 0, char)
+
+        self.assertEqual(char.char_name, Labels.char_linnai)
+        self.assertEqual(
+            task.searches[-1],
+            (Labels.char_linnai, Labels.char_linnai2),
+        )
 
     def test_auto_combat_warms_char_features_only_once(self):
         task = AutoCombatTask.__new__(AutoCombatTask)

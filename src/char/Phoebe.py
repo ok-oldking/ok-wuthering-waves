@@ -104,12 +104,16 @@ class Phoebe(BaseChar):
         self.switch_next_char()
 
     def _ensure_first_rotation_con(self):
-        """第一轮切人前确保协奏打满，之后不再限制。"""
+        """完整输出轴切人前确保协奏打满（大招中途快切不会走到这里）。"""
         if not self.first_rotation_done:
             self.first_rotation_done = True
-            if not self.is_con_full():
-                self.logger.info('phoebe: first rotation, wait for full con')
-                self.continues_normal_attack(5.0, until_con_full=True)
+        if self.is_con_full():
+            return
+        # 赞妮大招态由 zani_linkage 提前 return；此处再挡一层
+        if self.get_zani_state() == 1:
+            return
+        self.logger.info('phoebe: wait for full con before switch')
+        self.continues_normal_attack(5.0, until_con_full=True)
 
     def zani_linkage(self):
         self.logger.debug('zani linkage')
