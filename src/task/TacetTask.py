@@ -75,7 +75,12 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                 self.combat_once(target=True)
                 self.walk_to_treasure()
                 self.pick_f(handle_claim=False)
+                self.sleep(2)
                 if not self.has_claim_stamina():
+                    if not self.in_team()[0]:
+                        self.back(after_sleep=2)
+                    if self.in_team()[0]:
+                        self.back(after_sleep=2)
                     self.click(0.352, 0.624, after_sleep=1)
                     self.log_info('is not claim treasure, restart challenge')
                     continue
