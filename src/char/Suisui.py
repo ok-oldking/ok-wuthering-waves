@@ -14,12 +14,6 @@ class Suisui(BaseChar):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._lock_after_switch = False
-        self.last_forte3_switch = -1
-
-    def reset_state(self):
-        super().reset_state()
-        self._lock_after_switch = False
         self.last_forte3_switch = -1
 
     def do_perform(self):
@@ -42,7 +36,6 @@ class Suisui(BaseChar):
             self.logger.warning('Suisui forte3 detection timed out')
             return
 
-        self._lock_after_switch = True
         self.click_liberation(wait_if_cd_ready=0)
 
         start = time.time()
@@ -61,26 +54,27 @@ class Suisui(BaseChar):
         return bool(self.task.find_one(Labels.suisui_forte3, threshold=0.6))
 
     def switch_out(self, con_full=False):
-        lock_after_switch = self._lock_after_switch
-        self._lock_after_switch = False
         super().switch_out(con_full=con_full)
-        if lock_after_switch:
+        if con_full:
             self.last_forte3_switch = time.time()
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        since_last = self.time_elapsed_accounting_for_freeze(self.last_forte3_switch)
+        if since_last > 40:
+            return SwitchPriority.MUST
         has_main_dps = any(
             char and char != self and char.is_main_dps
             for char in getattr(self.task, 'chars', [])
         )
         switch_lockout = (
-            self.MAIN_DPS_FORTE3_SWITCH_LOCKOUT
+            self.FORTE3_SWITCH_LOCKOUT
             if has_main_dps
             else self.FORTE3_SWITCH_LOCKOUT
         )
-        if self.time_elapsed_accounting_for_freeze(self.last_forte3_switch) < switch_lockout:
+        if since_last < switch_lockout:
             return SwitchPriority.NO
         if has_main_dps:
-            if current_char and current_char.is_main_dps and has_intro:
+            if current_char and has_intro:
                 return SwitchPriority.MUST
             return SwitchPriority.NO
         return SwitchPriority.MUST
