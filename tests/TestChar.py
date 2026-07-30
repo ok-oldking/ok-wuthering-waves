@@ -15,6 +15,7 @@ from src.char.Lucy import Lucy
 from src.char.Phrolova import Phrolova
 from src.char.Rebecca import Rebecca
 from src.char.ShoreKeeper import ShoreKeeper
+from src.char.Suisui import Suisui
 from src.char.Verina import Verina
 from src.char.YangYangSp import YangYangSp
 from src.task.BaseCombatTask import NotInCombatException
@@ -70,6 +71,8 @@ class TestChar(TaskTestCase):
         self.assertEqual(char_dict[Labels.char_lucy]['char_type'], CharType.MAIN_DPS)
         self.assertEqual(char_dict[Labels.char_rebecca]['cls'], Rebecca)
         self.assertEqual(char_dict[Labels.char_rebecca]['char_type'], CharType.SUB_DPS)
+        self.assertEqual(char_dict[Labels.char_suisui]['cls'], Suisui)
+        self.assertEqual(char_dict[Labels.char_suisui]['char_type'], CharType.HEALER)
         self.assertEqual(char_dict[Labels.yangyang_sp]['cls'], YangYangSp)
         self.assertEqual(char_dict[Labels.yangyang_sp]['char_type'], CharType.MAIN_DPS)
         self.assertEqual(_get_char_type(task, char_dict[Labels.char_iuno]), CharType.SUB_DPS)
@@ -94,6 +97,15 @@ class TestChar(TaskTestCase):
         task.char_config = {'Iuno C6': False}
         self.assertEqual(iuno.char_type, CharType.SUB_DPS)
         self.assertEqual(iuno.buff_time, get_default_buff_time(CharType.SUB_DPS))
+
+        suisui = Suisui(task, 0)
+        self.assertEqual(suisui.FORTE3_SWITCH_LOCKOUT, 26.0)
+        suisui.time_elapsed_accounting_for_freeze = lambda start: time.time() - start
+        suisui._lock_after_switch = True
+        suisui.switch_out(con_full=True)
+        self.assertEqual(suisui.get_switch_priority(), SwitchPriority.NO)
+        suisui.last_forte3_switch = -1
+        self.assertEqual(suisui.get_switch_priority(), SwitchPriority.NORMAL)
 
     def test_factory_normalizes_alternate_template_to_canonical_name(self):
         class FoundChar:

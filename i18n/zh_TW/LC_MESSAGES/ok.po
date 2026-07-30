@@ -1135,6 +1135,9 @@ msgstr "蕾貝卡"
 msgid "Lucilla"
 msgstr "洛瑟菈"
 
+msgid "Suisui"
+msgstr "穗穗"
+
 msgid "自动周常乐园"
 msgstr "自動週常樂園"
 

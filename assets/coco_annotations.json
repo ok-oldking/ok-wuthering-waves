@@ -1329,6 +1329,16 @@
             "id": 263,
             "name": "char_chisa2",
             "supercategory": ""
+        },
+        {
+            "id": 264,
+            "name": "char_suisui",
+            "supercategory": ""
+        },
+        {
+            "id": 265,
+            "name": "suisui_forte3",
+            "supercategory": ""
         }
     ],
     "images": [
@@ -1956,7 +1966,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/39.png",
+            "file_name": "images/40.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -1983,7 +1993,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/40.png",
+            "file_name": "images/41.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -1992,7 +2002,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/41.png",
+            "file_name": "images/42.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -2109,7 +2119,7 @@
         {
             "license": 0,
             "url": null,
-            "file_name": "images/42.png",
+            "file_name": "images/43.png",
             "height": 900,
             "width": 1600,
             "date_captured": null,
@@ -2348,7 +2358,7 @@
         },
         {
             "id": 241,
-            "file_name": "images/43.png",
+            "file_name": "images/44.png",
             "width": 2048,
             "height": 1152
         },
@@ -2487,6 +2497,12 @@
         {
             "id": 270,
             "file_name": "images/38.png",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "id": 272,
+            "file_name": "images/39.png",
             "width": 1920,
             "height": 1080
         }
@@ -4604,6 +4620,32 @@
                 41
             ],
             "area": 1722,
+            "iscrowd": 0
+        },
+        {
+            "id": 152,
+            "image_id": 272,
+            "category_id": 264,
+            "bbox": [
+                1773,
+                231,
+                43,
+                40
+            ],
+            "area": 1720,
+            "iscrowd": 0
+        },
+        {
+            "id": 153,
+            "image_id": 272,
+            "category_id": 265,
+            "bbox": [
+                1036,
+                981,
+                17,
+                22
+            ],
+            "area": 374,
             "iscrowd": 0
         },
         {
