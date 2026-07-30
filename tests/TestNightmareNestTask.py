@@ -105,6 +105,20 @@ class TestNightmareNestTask(unittest.TestCase):
         self.assertEqual([], world_waits)
         self.assertEqual([{'after_sleep': 1}], backs)
 
+    def test_travel_waits_up_to_120_seconds_for_loading(self):
+        task = NightmareNestTask.__new__(NightmareNestTask)
+        task._unreachable_nests = set()
+        travel = FakeBox('fast_travel_custom')
+        world_waits = []
+
+        task.wait_until = lambda *args, **kwargs: travel
+        task.find_one = lambda *args, **kwargs: None
+        task.click = lambda *args, **kwargs: None
+        task.wait_in_team_and_world = lambda *args, **kwargs: world_waits.append(kwargs) or True
+
+        self.assertTrue(task._travel_to_nest_or_skip(NestTarget(object(), 'go_nest:36:10')))
+        self.assertEqual([{'time_out': 120, 'raise_if_not_found': False}], world_waits)
+
     def test_find_nest_skips_cached_unreachable_row(self):
         task = NightmareNestTask.__new__(NightmareNestTask)
         task.count_re = re.compile(r"(\d{1,2})/(\d{1,2})")

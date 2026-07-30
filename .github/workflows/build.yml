@@ -20,7 +20,7 @@ env:
   PYTHONLEGACYWINDOWSSTDIO: 'UTF-8'
   SIGN_BUILD: 'true'
   BUILD_EXE: 'true'
-  USE_RELEASE: 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.5.15'
+#  USE_RELEASE: 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.5.15'
 
 jobs:
   validate:

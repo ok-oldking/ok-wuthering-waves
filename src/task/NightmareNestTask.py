@@ -144,7 +144,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
 
         button_still_visible = travel and self.find_one(travel.name, threshold=0.7)
         if travel and not button_still_visible and self.wait_in_team_and_world(
-                time_out=30, raise_if_not_found=False):
+                time_out=120, raise_if_not_found=False):
             return True
 
         if isinstance(nest, NestTarget):
