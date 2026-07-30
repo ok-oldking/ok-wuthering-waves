@@ -700,7 +700,10 @@ class BaseCombatTask(CombatCheck):
         """战斗结束时调用的清理方法。"""
         current_char = self.get_current_char(raise_exception=False)
         if current_char:
-            self.get_current_char().on_combat_end(self.chars)
+            current_char.on_combat_end(self.chars)
+        for char in self.chars:
+            if char:
+                char.reset_state()
 
     def switch_healer(self):
         if self.config.get('Switch to Healer after Combat'):

@@ -600,7 +600,7 @@ class BaseChar:
                 self.task.next_frame()
             if clicked:
                 if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4,
-                                        post_action=self.click_with_interval):
+                                        post_action=self.click_with_interval if send_click else None):
                     self.task.in_liberation = True
                     self.logger.debug(f'not in_team successfully casted liberation')
                 else:

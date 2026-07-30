@@ -100,12 +100,115 @@ class TestChar(TaskTestCase):
 
         suisui = Suisui(task, 0)
         self.assertEqual(suisui.FORTE3_SWITCH_LOCKOUT, 26.0)
+        self.assertEqual(suisui.MAIN_DPS_FORTE3_SWITCH_LOCKOUT, 24.0)
+        self.assertFalse(hasattr(Suisui, 'attack_once'))
         suisui.time_elapsed_accounting_for_freeze = lambda start: time.time() - start
         suisui._lock_after_switch = True
         suisui.switch_out(con_full=True)
         self.assertEqual(suisui.get_switch_priority(), SwitchPriority.NO)
         suisui.last_forte3_switch = -1
         self.assertEqual(suisui.get_switch_priority(), SwitchPriority.MUST)
+
+    def test_suisui_switch_priority_with_main_dps(self):
+        class Task:
+            chars = []
+
+        task = Task()
+        main_dps = BaseChar(task, 0, char_type=CharType.MAIN_DPS)
+        suisui = Suisui(task, 1, char_type=CharType.HEALER)
+        sub_dps = BaseChar(task, 2, char_type=CharType.SUB_DPS)
+        elapsed = [0]
+        suisui.time_elapsed_accounting_for_freeze = lambda start: elapsed[0]
+        task.chars = [main_dps, suisui, sub_dps]
+
+        elapsed[0] = 23.9
+        self.assertEqual(
+            suisui.get_switch_priority(current_char=main_dps, has_intro=True),
+            SwitchPriority.NO,
+        )
+
+        elapsed[0] = 24.0
+        self.assertEqual(
+            suisui.get_switch_priority(current_char=main_dps, has_intro=True),
+            SwitchPriority.MUST,
+        )
+        self.assertEqual(
+            suisui.get_switch_priority(current_char=main_dps, has_intro=False),
+            SwitchPriority.NO,
+        )
+        self.assertEqual(
+            suisui.get_switch_priority(current_char=sub_dps, has_intro=True),
+            SwitchPriority.NO,
+        )
+
+        task.chars = [suisui, sub_dps]
+        elapsed[0] = 25.9
+        self.assertEqual(
+            suisui.get_switch_priority(current_char=sub_dps, has_intro=False),
+            SwitchPriority.NO,
+        )
+        elapsed[0] = 26.0
+        self.assertEqual(
+            suisui.get_switch_priority(current_char=sub_dps, has_intro=False),
+            SwitchPriority.MUST,
+        )
+
+    def test_combat_end_resets_suisui_state_when_another_character_is_current(self):
+        class Task:
+            chars = []
+
+        task = Task()
+        current = BaseChar(task, 0, char_type=CharType.MAIN_DPS)
+        suisui = Suisui(task, 1, char_type=CharType.HEALER)
+        suisui._lock_after_switch = True
+        suisui.last_forte3_switch = time.time()
+
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        combat.chars = [current, suisui]
+        combat.get_current_char = lambda raise_exception=False: current
+        combat.combat_end()
+
+        self.assertFalse(suisui._lock_after_switch)
+        self.assertEqual(suisui.last_forte3_switch, -1)
+
+    def test_click_liberation_send_click_false_disables_wait_click(self):
+        class Task:
+            use_liberation = True
+            in_liberation = False
+
+            def __init__(self):
+                self.wait_post_action = object()
+
+            def wait_until(self, condition, time_out=0, post_action=None):
+                self.wait_post_action = post_action
+                return True
+
+            def in_team(self):
+                return True, 0, 3
+
+            def next_frame(self):
+                pass
+
+            def add_freeze_duration(self, start, duration=-1.0, freeze_time=0.1):
+                pass
+
+        class TestBaseChar(BaseChar):
+            def __init__(self, task):
+                super().__init__(task, 0)
+                self.available_checks = 0
+
+            def liberation_available(self, check_color=True):
+                self.available_checks += 1
+                return self.available_checks == 1
+
+            def send_liberation_key(self, after_sleep=0, interval=-1, down_time=0.01):
+                pass
+
+        task = Task()
+        char = TestBaseChar(task)
+
+        self.assertTrue(char.click_liberation(send_click=False, wait_if_cd_ready=0))
+        self.assertIsNone(task.wait_post_action)
 
     def test_factory_normalizes_alternate_template_to_canonical_name(self):
         class FoundChar:
