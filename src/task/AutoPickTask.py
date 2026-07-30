@@ -20,7 +20,7 @@ class AutoPickTask(TriggerTask, BaseWWTask):
         self.default_config.update({
             '_enabled': True,
             'Pick Up White List': ['吸收', 'Absorb'],
-            'Pick Up Black List': ['开始合成', '领取奖励', 'Claim', '合成台']
+            'Pick Up Black List': ['开始合成', '领取奖励', 'Claim', '合成台', '开始烹饪']
         })
 
     def send_fs(self):
