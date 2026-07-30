@@ -105,7 +105,7 @@ class TestChar(TaskTestCase):
         suisui.switch_out(con_full=True)
         self.assertEqual(suisui.get_switch_priority(), SwitchPriority.NO)
         suisui.last_forte3_switch = -1
-        self.assertEqual(suisui.get_switch_priority(), SwitchPriority.NORMAL)
+        self.assertEqual(suisui.get_switch_priority(), SwitchPriority.MUST)
 
     def test_factory_normalizes_alternate_template_to_canonical_name(self):
         class FoundChar:

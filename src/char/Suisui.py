@@ -68,4 +68,4 @@ class Suisui(BaseChar):
         if self.time_elapsed_accounting_for_freeze(
                 self.last_forte3_switch) < self.FORTE3_SWITCH_LOCKOUT:
             return SwitchPriority.NO
-        return super().get_switch_priority(current_char, has_intro, target_low_con)
+        return SwitchPriority.MUST
