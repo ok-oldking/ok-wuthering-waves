@@ -403,9 +403,11 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 if not self.in_world():
                     self.log_debug('manage_boss_interactions Lady of the Sea not self.in_world()')
                     self.send_key('esc', after_sleep=0.5)
-                    self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
-                                            post_action=lambda: self.send_key('esc', after_sleep=1),
-                                            settle_time=1)
+                    self.wait_click_feature(
+                        ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
+                        relative_x=-1, raise_if_not_found=True,
+                        post_action=lambda: self.send_key('esc', after_sleep=1),
+                        settle_time=1)
                     self.sleep(2)
                     self.wait_in_team_and_world(time_out=120)
                     self.sleep(2)

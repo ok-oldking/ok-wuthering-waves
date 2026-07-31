@@ -56,6 +56,7 @@ class Labels(str, Enum):
     btn_dialog_eye = 'btn_dialog_eye'
     camellya_budding = 'camellya_budding'
     cancel_button_hcenter_vcenter = 'cancel_button_hcenter_vcenter'
+    cancel_button_highlight_hcenter_vcenter = 'cancel_button_highlight_hcenter_vcenter'
     chang_changli = 'chang_changli'
     char_1_lib_check_mark = 'char_1_lib_check_mark'
     char_1_text = 'char_1_text'

@@ -1156,5 +1156,8 @@ msgstr "デイリータスク完了"
 msgid "Daily task completed, start teleport to farm 4C echo"
 msgstr "デイリータスク完了。テレポートしてコスト4音骸の収集を開始します"
 
-msgid "can't find esc exit dialog"
-msgstr "Esc終了ダイアログが見つかりません"
+msgid "can't find dialog right button"
+msgstr "ダイアログの右ボタンが見つかりません"
+
+msgid "can't find dialog left button"
+msgstr "ダイアログの左ボタンが見つかりません"

@@ -320,7 +320,8 @@ class CombatCheck(BaseWWTask):
             return True
         else:
             boxes = find_color_rectangles(self.frame, boss_health_color, min_width, min_height * 1.3,
-                                          box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 200 / 2160))
+                                          box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 200 / 2160,
+                                                                 hcenter=True, vcenter=True))
             if len(boxes) == 1:
                 self.boss_health_box = boxes[0]
                 self.boss_health_box.width = 10

@@ -560,6 +560,29 @@ class TestChar(TaskTestCase):
         aemeath.last_liber = time.time() - aemeath.LIBERATION_FORCE_DURATION
         self.assertTrue(aemeath.lib())
 
+    def test_aemeath_lib2_uses_wider_horizontal_search_on_ultrawide(self):
+        class Task:
+            def __init__(self):
+                self.find_calls = []
+
+            def find_one(self, template, **kwargs):
+                self.find_calls.append((template, kwargs))
+                return len(self.find_calls) == 2
+
+            def out_of_ratio(self):
+                return True
+
+        task = Task()
+        aemeath = Aemeath(task, 0)
+
+        self.assertTrue(aemeath.lib2_available())
+        self.assertEqual(len(task.find_calls), 2)
+        self.assertNotIn('horizontal_variance', task.find_calls[0][1])
+        self.assertEqual(
+            task.find_calls[1][1]['horizontal_variance'],
+            aemeath.LIB2_ULTRAWIDE_HORIZONTAL_VARIANCE,
+        )
+
     def test_aemeath_force_liberation_starts_at_combat_entry_and_lib2_bypasses_cooldown(self):
         class Task:
             def __init__(self):

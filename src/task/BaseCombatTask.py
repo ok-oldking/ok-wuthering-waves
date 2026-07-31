@@ -48,6 +48,7 @@ mismatched_names = {
 
 class BaseCombatTask(CombatCheck):
     """基础战斗任务类，封装了游戏"鸣潮"中角色自动化操作的通用逻辑。"""
+    CD_OCR_REFERENCE_ASPECT_RATIO = 16 / 9
     hot_key_verified = False  # 热键是否已验证
     con_full_size = None  # 不同角色协奏值充满时的大小记录
     freeze_durations = []  # 记录冻结/卡肉的持续时间
@@ -161,17 +162,29 @@ class BaseCombatTask(CombatCheck):
         cds['resonance'] = 0
         cds['liberation'] = 0
         cds['echo'] = 0
-        texts = self.ocr(0.81, 0.86, 0.97, 0.93, frame_processor=isolate_white_text_to_black, match=cd_regex)
+        cd_x = self._cd_ocr_relative_x
+        texts = self.ocr(cd_x(0.82), 0.86, cd_x(0.97), 0.93,
+                         frame_processor=isolate_white_text_to_black, match=cd_regex)
         for text in texts:
             cd = convert_cd(text)
-            if text.x < self.width_of_screen(0.86):
+            if text.x < self.width_of_screen(cd_x(0.86)):
                 cds['resonance'] = cd
-            elif text.x > self.width_of_screen(0.91):
+            elif text.x > self.width_of_screen(cd_x(0.91)):
                 cds['liberation'] = cd
             else:
                 cds['echo'] = cd
         self.scene.cd_refreshed = True
         self.log_debug(f'cd refreshed: {cds} {time.time() - cds["time"]}')
+
+    def _cd_ocr_relative_x(self, x):
+        """Translate a 16:9 HUD x-coordinate to the current screen width.
+
+        The skill row keeps its size relative to screen height, so ultrawide
+        displays add horizontal space outside the 16:9 HUD layout.
+        """
+        screen_width = self.width_of_screen(1)
+        reference_width = min(screen_width, self.height_of_screen(1) * self.CD_OCR_REFERENCE_ASPECT_RATIO)
+        return 1 - (1 - x) * reference_width / screen_width
 
     def get_cd(self, box_name, char_index=None):
         self.refresh_cd()
@@ -193,7 +206,8 @@ class BaseCombatTask(CombatCheck):
         Returns:
             bool: True 表示通过点击按钮关闭, False 表示回退到了 ESC。
         """
-        if self.wait_click_feature('cancel_button_hcenter_vcenter',
+        if self.wait_click_feature(['cancel_button_hcenter_vcenter',
+                                    'cancel_button_highlight_hcenter_vcenter'],
                                    raise_if_not_found=False,
                                    time_out=1.2,
                                    click_after_delay=0.2,

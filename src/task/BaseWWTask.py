@@ -6,7 +6,7 @@ from typing import List
 
 import numpy as np
 
-from ok import BaseTask, Logger, find_boxes_by_name, og, find_color_rectangles, mask_white
+from ok import BaseTask, Logger, find_boxes_by_name, og, find_color_rectangles, mask_white, Box
 from ok import CannotFindException
 import cv2
 
@@ -340,7 +340,8 @@ class BaseWWTask(BaseTask):
         return "w" if delta_y > 0 else "s"
 
     def find_treasure_icon(self):
-        return self.find_one('treasure_icon', box=self.box_of_screen(0.03, 0.1, 0.97, 0.81), threshold=0.8,
+        return self.find_one('treasure_icon', box=self.box_of_screen(0.03, 0.1, 0.97, 0.81, hcenter=True, vcenter=True),
+                             threshold=0.8,
                              target_height=720)
 
     def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1, move=False, down_time=0.01, after_sleep=0,
@@ -425,26 +426,28 @@ class BaseWWTask(BaseTask):
     def use_stamina(self, once=60, must_use=0):
         self.sleep(1)
         current, back_up, total = self.get_stamina()
-        y = 0.62
         if current >= once * 2:
             used = once * 2
-            x = 0.67
+            use_double = True
             logger.info(f"当前体力大于等于双倍, {current} >= {once * 2}")
         elif must_use > once and total >= once * 2:
             used = once * 2
-            x = 0.67
+            use_double = True
             logger.info(f"当前加备用大于日常剩余所需, 使用双倍, {must_use} >= {once} and {total} >= {once * 2}")
         else:
             used = once
-            x = 0.32
+            use_double = False
             logger.info(f"使用单倍体力")
-        self.click(x, y, after_sleep=1)
+        if use_double:
+            btn = self.click_dialog_right_button()
+        else:
+            btn = self.click_dialog_left_button()
         if self.wait_feature('gem_add_stamina', horizontal_variance=0.4, vertical_variance=0.05,
                              time_out=2, settle_time=0.5):  # 看是否需要使用备用体力
-            self.click(0.70, 0.71, after_sleep=1)  # 点击确认
-            self.click(0.70, 0.71, after_sleep=1)
+            self.click_relative(0.70, 0.71, hcenter=True, after_sleep=1)  # 点击确认
+            self.click_relative(0.70, 0.71, hcenter=True, after_sleep=1)
             self.back(after_sleep=1)
-            self.click(x, y, after_sleep=1)
+            self.click(btn, after_sleep=1)
 
         current -= used
         must_use -= used
@@ -676,21 +679,40 @@ class BaseWWTask(BaseTask):
         success = self.wait_until(self.in_team_and_world, time_out=time_out, raise_if_not_found=raise_if_not_found,
                                   post_action=lambda: self.back(after_sleep=2) if esc else None)
         if success:
-            self.sleep(0.1)
+            self.sleep(0.5)
         return success
 
-    def esc_world_confirm(self):
-        self.send_key('esc', after_sleep=1)
-        confirm = self.find_one(Labels.confirm_btn_hcenter_vcenter)
-        if not confirm:
-            raise CannotFindException(self.tr("can't find esc exit dialog"))
-        self.click(confirm, after_sleep=2)
+    def esc_world_confirm(self, send_esc=True):
+        if send_esc:
+            self.send_key('esc', after_sleep=1)
+        self.click_dialog_right_button()
         self.wait_in_team_and_world(time_out=120)
 
-    def esc_cancel(self):
-        self.send_key('esc', after_sleep=1)
-        self.wait_click_feature(Labels.claim_cancel_button_hcenter_vcenter,
-                                raise_if_not_found=True, after_sleep=1)
+    def click_dialog_right_button(self):
+        confirm = self.find_one([
+            Labels.confirm_btn_hcenter_vcenter,
+            Labels.confirm_btn_highlight_hcenter_vcenter,
+        ])
+        if not confirm:
+            raise CannotFindException(self.tr("can't find dialog right button"))
+        self.click(confirm, after_sleep=2)
+        return confirm
+
+    def esc_cancel(self, send_esc=True):
+        if send_esc:
+            self.send_key('esc', after_sleep=1)
+        self.click_dialog_left_button()
+        self.wait_in_team_and_world(time_out=120)
+
+    def click_dialog_left_button(self) -> Box:
+        cancel = self.find_one([
+            Labels.cancel_button_hcenter_vcenter,
+            Labels.cancel_button_highlight_hcenter_vcenter,
+        ])
+        if not cancel:
+            raise CannotFindException(self.tr("can't find dialog left button"))
+        self.click(cancel, after_sleep=2)
+        return cancel
 
     def ensure_main(self, esc=True, time_out=30):
         self.info_set('current task', f'wait main esc={esc}')
@@ -704,6 +726,8 @@ class BaseWWTask(BaseTask):
     def is_main(self, esc=True):
         if self.in_team_and_world():
             self.logged_in = True
+            if self.in_realm():
+                self.esc_world_confirm()
             return True
         if self.wait_login():
             return False
