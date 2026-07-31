@@ -1,22 +1,16 @@
 import unittest
 from types import SimpleNamespace
 
-from config import config as app_config
+from config import config
 from ok.test.TaskTestCase import TaskTestCase
 from src.task.AutoCombatTask import AutoCombatTask
 
-test_config = app_config.copy()
-test_config['debug'] = True
-test_config['ocr'] = app_config['ocr'].copy()
-test_config['ocr']['params'] = {
-    **app_config['ocr']['params'],
-    'use_npu': False,
-}
+config['debug'] = True
 
 
 class TestCD(TaskTestCase):
     task_class = AutoCombatTask
-    config = test_config
+    config = config
 
     def assert_cd_values(self, image, expected):
         self.task.do_reset_to_false()
