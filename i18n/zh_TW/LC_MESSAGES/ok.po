@@ -1294,3 +1294,6 @@ msgstr "每日任務已完成"
 
 msgid "Daily task completed, start teleport to farm 4C echo"
 msgstr "每日任務已完成，開始傳送並刷取4C聲骸"
+
+msgid "can't find esc exit dialog"
+msgstr "找不到Esc退出對話框"

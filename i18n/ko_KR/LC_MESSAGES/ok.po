@@ -1156,3 +1156,6 @@ msgstr "일일 작업 완료"
 
 msgid "Daily task completed, start teleport to farm 4C echo"
 msgstr "일일 작업 완료. 순간이동 후 코스트 4 에코 파밍을 시작합니다"
+
+msgid "can't find esc exit dialog"
+msgstr "Esc 종료 대화 상자를 찾을 수 없습니다"

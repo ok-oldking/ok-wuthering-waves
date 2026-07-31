@@ -181,7 +181,7 @@ config = {
         'default_threshold': 0.8,
         'feature_processor': process_feature,
         'vcenter_features': ['monthly_card'],
-        'hcenter_features': ['monthly_card']
+        'hcenter_features': ['monthly_card', 'suisui_forte3']
     },
     'windows': {  # required  when supporting windows game
         'top_hwnd_class': [re.compile('CAgreementDlg'), re.compile('CLoginDlg_P_'),

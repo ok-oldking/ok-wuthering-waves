@@ -679,6 +679,19 @@ class BaseWWTask(BaseTask):
             self.sleep(0.1)
         return success
 
+    def esc_world_confirm(self):
+        self.send_key('esc', after_sleep=1)
+        confirm = self.find_one(Labels.confirm_btn_hcenter_vcenter)
+        if not confirm:
+            raise CannotFindException(self.tr("can't find esc exit dialog"))
+        self.click(confirm, after_sleep=2)
+        self.wait_in_team_and_world(time_out=120)
+
+    def esc_cancel(self):
+        self.send_key('esc', after_sleep=1)
+        self.wait_click_feature(Labels.claim_cancel_button_hcenter_vcenter,
+                                raise_if_not_found=True, after_sleep=1)
+
     def ensure_main(self, esc=True, time_out=30):
         self.info_set('current task', f'wait main esc={esc}')
         if not self.logged_in:

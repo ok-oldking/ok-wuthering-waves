@@ -77,22 +77,18 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                 self.pick_f(handle_claim=False)
                 self.sleep(2)
                 if not self.has_claim_stamina():
-                    if not self.in_team()[0]:
-                        self.back(after_sleep=2)
-                    if self.in_team()[0]:
-                        self.back(after_sleep=2)
-                    self.click(0.352, 0.624, after_sleep=1)
+                    self.esc_cancel()
                     self.log_info('is not claim treasure, restart challenge')
                     continue
                 can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
                 self.info_incr('used stamina', used)
                 self.sleep(4)
                 if not can_continue:
-                    self.click(0.365, 0.853)
+                    self.click_relative(0.365, 0.853, hcenter=True)
                     self.wait_in_team_and_world(time_out=120)
                     return None
                 else:
-                    self.click(0.640, 0.851, after_sleep=0.2)
+                    self.click_relative(0.640, 0.851, hcenter=True, after_sleep=0.2)
                     self.wait_click_skip_dialog_confirm()
                 must_use -= used
 

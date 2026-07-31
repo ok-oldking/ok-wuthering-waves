@@ -1082,3 +1082,6 @@ msgstr "Tarea diaria completada"
 
 msgid "Daily task completed, start teleport to farm 4C echo"
 msgstr "Tarea diaria completada; iniciando teletransporte para farmear ecos de coste 4"
+
+msgid "can't find esc exit dialog"
+msgstr "No se puede encontrar el diálogo de salida de Esc"

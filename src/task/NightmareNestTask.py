@@ -126,9 +126,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             wait_combat_time = 1
         # 与刷全部一致：退本后再结束 combat_nest，避免还在巢穴内回 Daily/开书
         if is_team:
-            self.send_key('esc', after_sleep=1)
-            self.click(0.652, 0.628, after_sleep=2)
-            self.wait_in_team_and_world(time_out=120)
+            self.esc_world_confirm()
         self.sleep(1)
 
     def _should_continue_combat_after_pickup(self):
