@@ -1093,6 +1093,30 @@ msgstr "자동 주간 정원"
 msgid "Detect and click garden actions until the task is stopped."
 msgstr "작업이 중지될 때까지 정원 동작을 감지하고 클릭합니다."
 
+msgid "High-value items display"
+msgstr "고가치 아이템 표시"
+
+msgid "Get player position and display nearby high value items"
+msgstr "플레이어 위치를 가져와 주변 고가치 아이템을 표시합니다"
+
+msgid "Detect interval (ms)"
+msgstr "감지 간격(밀리초)"
+
+msgid "World map overlay"
+msgstr "월드 맵 오버레이"
+
+msgid "Item type filter"
+msgstr "아이템 유형 필터"
+
+msgid "SURF"
+msgstr "SURF"
+
+msgid "SIFT"
+msgstr "SIFT"
+
+msgid "SIFTGZ"
+msgstr "SIFTGZ"
+
 msgid "Check Weekly Garden"
 msgstr "주간 정원 확인"
 

@@ -1005,6 +1005,30 @@ msgid "Detect and click garden actions until the task is stopped."
 msgstr ""
 "Detecta y hace clic en acciones del jardín hasta que se detenga la tarea."
 
+msgid "High-value items display"
+msgstr "Objetos de alto valor"
+
+msgid "Get player position and display nearby high value items"
+msgstr "Obtener la posición del jugador y mostrar objetos de alto valor cercanos"
+
+msgid "Detect interval (ms)"
+msgstr "Intervalo de detección (ms)"
+
+msgid "World map overlay"
+msgstr "Superposición de mapa mundial"
+
+msgid "Item type filter"
+msgstr "Filtro de tipo de objeto"
+
+msgid "SURF"
+msgstr "SURF"
+
+msgid "SIFT"
+msgstr "SIFT"
+
+msgid "SIFTGZ"
+msgstr "SIFTGZ"
+
 msgid "Check Weekly Garden"
 msgstr "Comprobar jardín semanal"
 

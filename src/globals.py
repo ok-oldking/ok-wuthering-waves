@@ -36,6 +36,5 @@ class Globals(QObject):
     def yolo_detect(self, image, threshold=0.6, label=-1):
         return self.yolo_model.detect(image, threshold=threshold, label=label)
 
-
 if __name__ == "__main__":
     glbs = Globals(exit_event=None)
