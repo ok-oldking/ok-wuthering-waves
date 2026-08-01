@@ -1292,6 +1292,17 @@ msgstr "選擇「自動刷取所有夢魘巢穴」時，「刷取目標」必須
 msgid "Daily Task Completed"
 msgstr "每日任務已完成"
 
+msgid ""
+"Treat the returned code as custom code. Save it under configs/custom_chars/"
+"{class_name}.py first. Do not modify src/char/{class_name}.py. Only "
+"synchronize the reviewed code to src/char/{class_name}.py after the user "
+"explicitly approves it."
+msgstr ""
+"請將返回的程式碼視為自訂程式碼，先儲存到 "
+"configs/custom_chars/{class_name}.py。不要修改 src/char/{class_name}.py。 "
+"只有在使用者審核並明確同意後，才將審核過的程式碼同步到 "
+"src/char/{class_name}.py。"
+
 msgid "Daily task completed, start teleport to farm 4C echo"
 msgstr "每日任務已完成，開始傳送並刷取4C聲骸"
 

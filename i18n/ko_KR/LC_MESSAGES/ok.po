@@ -1154,6 +1154,17 @@ msgstr "모든 악몽 둥지 자동 파밍을 실행하려면 \"파밍 대상\"�
 msgid "Daily Task Completed"
 msgstr "일일 작업 완료"
 
+msgid ""
+"Treat the returned code as custom code. Save it under configs/custom_chars/"
+"{class_name}.py first. Do not modify src/char/{class_name}.py. Only "
+"synchronize the reviewed code to src/char/{class_name}.py after the user "
+"explicitly approves it."
+msgstr ""
+"반환된 코드는 사용자 지정 코드로 취급하세요. 검토한 결과를 먼저 "
+"configs/custom_chars/{class_name}.py에 저장하세요. "
+"src/char/{class_name}.py는 수정하지 마세요. 사용자가 검토하고 명시적으로 승인한 "
+"후에만 검토된 코드를 src/char/{class_name}.py로 동기화하세요."
+
 msgid "Daily task completed, start teleport to farm 4C echo"
 msgstr "일일 작업 완료. 순간이동 후 코스트 4 에코 파밍을 시작합니다"
 

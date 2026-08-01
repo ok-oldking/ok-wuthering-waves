@@ -1080,6 +1080,18 @@ msgstr "Farmear automáticamente todos los nidos de pesadilla requiere seleccion
 msgid "Daily Task Completed"
 msgstr "Tarea diaria completada"
 
+msgid ""
+"Treat the returned code as custom code. Save it under configs/custom_chars/"
+"{class_name}.py first. Do not modify src/char/{class_name}.py. Only "
+"synchronize the reviewed code to src/char/{class_name}.py after the user "
+"explicitly approves it."
+msgstr ""
+"Trata el código devuelto como código personalizado. Guarda primero el "
+"resultado revisado en configs/custom_chars/{class_name}.py. No modifiques "
+"src/char/{class_name}.py. Sincroniza el código revisado con "
+"src/char/{class_name}.py solo después de que el usuario lo revise y lo "
+"apruebe explícitamente."
+
 msgid "Daily task completed, start teleport to farm 4C echo"
 msgstr "Tarea diaria completada; iniciando teletransporte para farmear ecos de coste 4"
 
