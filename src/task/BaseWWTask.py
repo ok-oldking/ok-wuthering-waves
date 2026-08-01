@@ -1065,7 +1065,7 @@ class BaseWWTask(BaseTask):
 
     def click_skip_dialog_confirm(self):
         skip_dialog_confirm = self.find_one(
-            'skip_dialog_confirm',
+            ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
             horizontal_variance=0.1,
             vertical_variance=0.1,
         )
