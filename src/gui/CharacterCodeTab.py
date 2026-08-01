@@ -380,12 +380,6 @@ class CharacterCodeTab(CustomTab):
             class_name=class_name)
         class_line = self.tr("Keep the class name as {class_name}. Preserve imports that are still needed.").format(
             class_name=class_name)
-        scope_line = self.tr(
-            "Treat the returned code as custom code. Save it under "
-            "configs/custom_chars/{class_name}.py first. Do not modify "
-            "src/char/{class_name}.py. Only synchronize the reviewed code to "
-            "src/char/{class_name}.py after the user explicitly approves it."
-        ).format(class_name=class_name)
         template = f"""```python
 {code}
 ```
@@ -395,7 +389,6 @@ class CharacterCodeTab(CustomTab):
 {modify_line}
 
 {self.tr("Return only the complete modified Python code for the whole file, not a patch and not an explanation.")}
-{scope_line}
 {class_line}
 
 {self.tr("Use this BaseChar reference while reasoning about helper methods, task APIs, state, switching, cooldowns, and combat flow:")}
