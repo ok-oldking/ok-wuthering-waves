@@ -1,88 +1,173 @@
 import time
 
-from src.char.BaseChar import BaseChar, CharType, get_default_buff_time
+from src.char.BaseChar import BaseChar
 
 
 class Chisa(BaseChar):
-    def is_dps_config(self):
-        return self.task and self.task.char_config.get("Chisa DPS")
+    """Fixed-axis Chisa segments for the three-character rotation."""
 
-    def get_char_type(self):
-        if self.is_dps_config():
-            return CharType.MAIN_DPS
-        return super().get_char_type()
+    NORMAL_INTERVAL = 0.12
+    HEAVY_DURATION = 3.0
+    HEAVY_VERIFY_TIMEOUT = 1.0
+    SWITCH_TIMEOUT = 2.5
 
-    def get_buff_time(self):
-        if self.is_dps_config():
-            return get_default_buff_time(CharType.MAIN_DPS)
-        return super().get_buff_time()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._axis_count = 0
+        self._axis_combat_start = None
+
+    def _prepare_axis(self):
+        combat_start = getattr(self.task, 'combat_start', None)
+        if combat_start != self._axis_combat_start:
+            self._axis_combat_start = combat_start
+            self._axis_count = 0
+
+    def _normal_chain(self, count):
+        for _ in range(count):
+            self.normal_attack()
+            self.sleep(self.NORMAL_INTERVAL)
+
+    def _wait_ready(self, predicate):
+        while True:
+            self.check_combat()
+            if predicate():
+                return True
+            self.normal_attack()
+            self.sleep(self.NORMAL_INTERVAL)
+
+    def _resonance(self):
+        while True:
+            self._wait_ready(self.resonance_available)
+            if self.click_resonance(time_out=1.5)[0]:
+                return True
+            self.normal_attack()
+            self.sleep(self.NORMAL_INTERVAL)
+
+    def _liberation(self):
+        while True:
+            self._wait_ready(self.liberation_available)
+            if self.click_liberation(wait_if_cd_ready=0.2):
+                return True
+            self.normal_attack()
+            self.sleep(self.NORMAL_INTERVAL)
+
+    def _echo(self):
+        if self.echo_available():
+            self.click_echo(time_out=0)
+        return True
+
+    def _heavy(self):
+        forte_was_full = self.is_mouse_forte_full()
+        self.heavy_attack(self.HEAVY_DURATION)
+
+        if not forte_was_full:
+            self.logger.debug('Chisa heavy attack sent without a full mouse-forte state')
+            return True
+
+        end = time.time() + self.HEAVY_VERIFY_TIMEOUT
+        while time.time() < end:
+            if not self.is_mouse_forte_full():
+                return True
+            self.task.next_frame()
+        self.logger.warning('Chisa heavy attack did not consume the detected mouse-forte state')
+        return False
+
+    def _jump(self):
+        self.logger.debug('Chisa fixed-axis startup jump')
+        self.task.send_key('space')
+        return True
+
+    def _wait_after_jump(self):
+        self.sleep(0.15, False)
+        if getattr(self.task, 'has_lavitator', False):
+            self.task.wait_until(lambda: not self.flying(), time_out=2.0)
+        else:
+            self.sleep(0.45, False)
+        self.sleep(0.08, False)
+
+    def _reset_team_axis(self):
+        for char in getattr(self.task, 'chars', []):
+            if hasattr(char, '_axis_count'):
+                char._axis_count = 0
+
+    def _switch_to_slot(self, slot):
+        target_index = slot - 1
+        self.has_intro = False
+        self.has_sub_dps_intro = False
+        self._liberation_available = self.liberation_available()
+        self.use_tool_box()
+
+        start = time.time()
+        while time.time() - start < self.SWITCH_TIMEOUT:
+            in_team, current_index, _ = self.task.in_team()
+            if in_team and current_index == target_index:
+                now = time.time()
+                self.last_switch_time = now
+                for char in getattr(self.task, 'chars', []):
+                    if char:
+                        char.is_current_char = char.index == target_index
+                        if char.index == target_index:
+                            char.last_switch_in_time = now
+                return True
+            self.task.send_key(str(slot))
+            self.task.next_frame()
+            self.sleep(0.1, False)
+        return False
+
+    def _finish(self, success, next_slot):
+        if success:
+            self._axis_count += 1
+            self._switch_to_slot(next_slot)
+        else:
+            self.logger.warning('Chisa fixed-axis action failed; restarting from Chisa')
+            self._reset_team_axis()
+            self._switch_to_slot(3)
+
+    def _perform_segment(self, step):
+        if step < 6:
+            segment = step
+            startup = True
+        else:
+            segment = (step - 6) % 6
+            startup = False
+
+        if segment == 0:
+            if startup:
+                self._jump()
+                self._normal_chain(1)
+                self._wait_after_jump()
+                if not self._resonance():
+                    return False
+                self._normal_chain(1)
+                return True
+            self._normal_chain(1)
+            if not self._resonance():
+                return False
+            self._normal_chain(1)
+            return True
+
+        if segment in {1, 2, 5}:
+            self._normal_chain(1)
+            return True
+
+        if segment == 3:
+            if not self._liberation():
+                return False
+            return self._resonance()
+
+        self._heavy()
+        self._echo()
+        return True
 
     def do_perform(self):
-        if not self.is_dps_config():
-            return self.do_fast_support()
-        return self.do_dps_perform()
-
-    def do_fast_support(self):
-        self.check_f_on_switch = True
+        self._prepare_axis()
         if self.has_intro:
-            self.record_support_buff()
-            self.click_echo(time_out=0)
-            return self.switch_next_char()
+            self.wait_intro(1.2)
 
-        if self.flying() and not self.liberation_available() and not self.resonance_available():
-            self.wait_down()
-        self.click_echo(time_out=0)
-        if self.click_liberation():
-            self.record_support_buff()
-            return self.switch_next_char()
+        step = self._axis_count
+        next_slots = (1, 1, 2, 1, 2, 1)
+        self._finish(self._perform_segment(step), next_slots[step % 6])
 
-        self.click_resonance(time_out=0.5)
-        return self.switch_next_char()
-
-    def record_support_buff(self):
-        """Track the buff granted by Chisa's Intro Skill or Resonance Liberation."""
-        self.last_buff_time = time.time()
-
-    def switch_out(self, con_full=False):
-        support_buff_time = self.last_buff_time
-        super().switch_out(con_full=con_full)
-        if not self.is_dps_config():
-            self.last_buff_time = support_buff_time
-
-    def do_dps_perform(self):
-        timeout = 2.5
-        self.check_f_on_switch = True
-        if self.has_intro:
-            self.continues_normal_attack(0.8)
-            timeout = 2.3
-        if self.flying() and not self.liberation_available() and not self.resonance_available():
-            self.wait_down()
-        self.click_echo()
-        start = time.time()
-        under_liber = False
-        while time.time() - start < timeout:
-            if time.time() - start < 0.5 and self.click_liberation():
-                start = time.time()
-                under_liber = True
-                timeout = 10
-                self.sleep(0.2)
-            if time.time() - start < 0.5 and not self.is_forte_full() and self.click_resonance()[0]:
-                start = time.time()
-                if timeout != 10:
-                    timeout = 1.7
-            if (under_liber or self.is_dps_config()) and self.is_forte_full() and self.perform_forte():
-                self.check_f_on_switch = False
-                return self.switch_next_char()
-            self.click()
-            self.check_combat()
-            self.task.next_frame()
-        self.switch_next_char()
-
-    def perform_forte(self):
-        if self.flying():
-            self.wait_down()
-        self.task.send_key(self.get_resonance_key(), down_time=1.2)
-        if self.is_forte_full():
-            return False
-        self.heavy_attack(3.5)
-        return True
+    def on_combat_end(self, chars):
+        self._axis_count = 0
+        self._axis_combat_start = None
