@@ -7,6 +7,7 @@ from src.char.BaseChar import BaseChar
 class YangYangSp(BaseChar):
     INTRO_PERFORM_DURATION = 8.0
     PERFORM_DURATION = 3.2
+    LONG_PRESS_RELEASE_DELAY = 0.1
     DISPLAY_NAME = 'Yangyang: Xuanling'
 
     def __init__(self, *args, **kwargs):
@@ -45,4 +46,7 @@ class YangYangSp(BaseChar):
                 self.task.next_frame()
         finally:
             self.task.mouse_up()
+            # Let the released heavy attack settle before another character reads
+            # the shared long-action indicator.
+            self.sleep(self.LONG_PRESS_RELEASE_DELAY, check_combat=False)
         self.switch_next_char()

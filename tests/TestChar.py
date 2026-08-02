@@ -109,6 +109,38 @@ class TestChar(TaskTestCase):
         suisui.last_forte3_switch = -1
         self.assertEqual(suisui.get_switch_priority(), SwitchPriority.MUST)
 
+    def test_yangyang_sp_releases_and_settles_long_press_before_switching(self):
+        actions = []
+
+        class Task:
+            skip_combat_check = False
+
+            def mouse_down(self):
+                actions.append('mouse_down')
+
+            def mouse_up(self):
+                actions.append('mouse_up')
+
+            def sleep(self, duration):
+                actions.append(('sleep', duration))
+
+        class TrackingYangYangSp(YangYangSp):
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return self.PERFORM_DURATION
+
+            def switch_next_char(self, *args, **kwargs):
+                actions.append('switch')
+
+        yangyang = TrackingYangYangSp(Task(), 0)
+        yangyang.do_perform()
+
+        self.assertEqual(actions, [
+            'mouse_down',
+            'mouse_up',
+            ('sleep', YangYangSp.LONG_PRESS_RELEASE_DELAY),
+            'switch',
+        ])
+
     def test_suisui_switch_priority_with_main_dps(self):
         class Task:
             chars = []
