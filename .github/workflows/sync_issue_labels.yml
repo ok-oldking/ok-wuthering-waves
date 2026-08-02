@@ -21,6 +21,7 @@ jobs:
           script: |
             const labels = [
               ['more-information-needed', 'd4c5f9', 'More details are required before this can be investigated'],
+              ['faq-candidate', '7057ff', 'A recurring answered question that should be incorporated into the FAQ'],
               ['request-ai-triage', '5319e7', 'Apply this label to ask Copilot to re-triage an issue'],
               ['area: combat/character', 'b60205', 'Characters, rotations, switching, skills, echoes, or combat state'],
               ['area: daily/farming', 'fbca04', 'Daily tasks, farming, instances, bosses, routes, or weekly tasks'],
