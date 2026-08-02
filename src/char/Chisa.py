@@ -8,7 +8,7 @@ class Chisa(BaseChar):
     INTRO_NORMAL_ATTACK_TIME = 2.8
     INTRO_RESONANCE_WAIT_TIMEOUT = 1.5
     INTRO_RESONANCE_ATTEMPTS = 2
-    E2_ICON_CHANGE_TIMEOUT = 1.5
+    E2_ICON_CHANGE_TIMEOUT = 0.2
 
     def is_dps_config(self):
         return self.task and self.task.char_config.get("Chisa DPS")
@@ -178,11 +178,25 @@ class Chisa(BaseChar):
 
         e2_used = self.click_resonance(time_out=0.5)[0]
         if e2_used:
-            self.logger.info('Chisa [e2] used successfully, waiting for icon change')
-            self._wait_for_e2_icon_change()
+            self.logger.info('Chisa [e2] used successfully')
         else:
             self.logger.warning('Chisa [e2] detected but use failed')
         return e2_used
+
+    def _hold_heavy_and_dodge(self, wait_for_e2_icon):
+        dodge_key = self.task.key_config.get('Dodge Key')
+        if wait_for_e2_icon:
+            self._wait_for_e2_icon_change()
+        self.task.mouse_down()
+        try:
+            self.sleep(0.2)
+            self.task.send_key(dodge_key)
+            self.sleep(0.9)
+            self.task.send_key(dodge_key)
+            self.sleep(2.8)
+        finally:
+            self.task.mouse_up()
+        self.sleep(0.01)
 
     def _perform_support_tail(self):
         self.click_echo(time_out=0)
@@ -190,11 +204,14 @@ class Chisa(BaseChar):
         if self.click_liberation():
             self.record_support_buff()
 
-        self._use_e2_if_available()
-
-        self.heavy_attack(3.5)
-        if not self._perform_main_dps_interlude():
-            return False
+        e2_used = self._use_e2_if_available()
+        self._hold_heavy_and_dodge(e2_used)
+        if not self.is_con_full():
+            dodge_key = self.task.key_config.get('Dodge Key')
+            self.logger.info(
+                'Chisa support concerto not full, dodge then normal attack for 0.4s')
+            self.task.send_key(dodge_key)
+            self.continues_normal_attack(0.8)
         return self._switch_to_sub_dps()
 
     def _perform_intro_support(self):
@@ -216,6 +233,8 @@ class Chisa(BaseChar):
 
         if not self._ensure_support_skills_ready():
             return False
+        self.task.jump()
+        self.continues_normal_attack(1.0)
         self.click_resonance(time_out=0.5)
         self.continues_normal_attack(self.NO_INTRO_NORMAL_ATTACK_TIME)
         return self._perform_support_tail()
