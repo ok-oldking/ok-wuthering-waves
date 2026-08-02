@@ -16,6 +16,9 @@ engine: copilot
 tools:
   github:
     toolsets: [repos, issues, labels, search]
+    # Public issue triage must read reports from first-time and unaffiliated users.
+    # Writes remain restricted to the safe outputs declared below.
+    min-integrity: none
 
 safe-outputs:
   add-labels:
