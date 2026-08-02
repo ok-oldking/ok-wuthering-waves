@@ -1205,17 +1205,6 @@ msgstr "选择“自动刷取所有梦魇巢穴”时，“刷取目标”必须
 msgid "Daily Task Completed"
 msgstr "每日任务已完成"
 
-msgid ""
-"Treat the returned code as custom code. Save it under configs/custom_chars/"
-"{class_name}.py first. Do not modify src/char/{class_name}.py. Only "
-"synchronize the reviewed code to src/char/{class_name}.py after the user "
-"explicitly approves it."
-msgstr ""
-"请将返回的代码视为自定义代码，先保存到 "
-"configs/custom_chars/{class_name}.py。不要修改 src/char/{class_name}.py。 "
-"只有在用户审核并明确同意后，才将审核后的代码同步到 "
-"src/char/{class_name}.py。"
-
 msgid "Daily task completed, start teleport to farm 4C echo"
 msgstr "每日任务已完成，开始传送并刷取4C声骸"
 
