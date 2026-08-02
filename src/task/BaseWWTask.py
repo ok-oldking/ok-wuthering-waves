@@ -750,23 +750,25 @@ class BaseWWTask(BaseTask):
                 return False
             texts = self.ocr(log=self.debug)
 
-            if login := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7),
+            login_box = self.box_of_screen(0.3, 0.3, 0.7, 0.7, hcenter=True, vcenter=True)
+            if login := self.find_boxes(texts,
+                                        boundary=login_box,
                                         match=LOGIN_TEXTS):
-                if not self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match="+86"):
+                if not self.find_boxes(texts, boundary=login_box, match="+86"):
                     # the game may be auto logging in with saved credentials, wait and
                     # confirm the login button is still there before clicking (#1356)
                     self.sleep(LOGIN_CLICK_SETTLE_TIME)
                     texts = self.ocr(log=self.debug)
-                    login = self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7),
+                    login = self.find_boxes(texts, boundary=login_box,
                                             match=LOGIN_TEXTS)
-                    if login and not self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7),
+                    if login and not self.find_boxes(texts, boundary=login_box,
                                                      match="+86"):
                         self.click(login, after_sleep=1)
                         self.log_info('点击登录按钮!')
                 return False
-            if agree := self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match="同意"):
+            if agree := self.find_boxes(texts, boundary=login_box, match="同意"):
                 self.log_debug(f'found agree {agree}')
-                if self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.7), match=re.compile("隐私")):
+                if self.find_boxes(texts, boundary=login_box, match=re.compile("隐私")):
                     self.click(agree, after_sleep=1)
                     self.log_info('点击同意按钮!')
                 return False
@@ -785,9 +787,10 @@ class BaseWWTask(BaseTask):
                     self.log_info(f'点击开始游戏! {start}')
                     return False
             if switch_login := self.find_one(Labels.switch_account, vertical_variance=0.1, threshold=0.7):
-                if boxes := self.find_boxes(texts, boundary=self.box_of_screen(0.37, 0.63, 0.63, 0.99)):
+                if boxes := self.find_boxes(texts, boundary=self.box_of_screen(0.37, 0.63, 0.63, 0.99, hcenter=True,
+                                                                               vcenter=True)):
                     self.log_info(f'wait_login {switch_login} {boxes}')
-                    self.click(0.503, 0.926, after_sleep=3)
+                    self.click_relative(0.503, 0.926, hcenter=True, vcenter=True, after_sleep=3)
                     return False
 
     def in_team_and_world(self):
