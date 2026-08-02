@@ -1,7 +1,7 @@
 ---
 name: '报告Bug'
 about: 遇到的问题
-title: "[BUG]不符合规范的ISSUE会自动关闭"
+title: "[BUG]"
 labels: bug
 assignees: ok-oldking
 
@@ -11,7 +11,7 @@ assignees: ok-oldking
 [https://github.com/ok-oldking/ok-wuthering-waves/issues?q=](https://github.com/ok-oldking/ok-wuthering-waves/issues?q=)
 
 请先挨个检查:
-[常见问题](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/README_cn.md#出现问题请检查)
+[疑难解答](https://github.com/ok-oldking/ok-wuthering-waves#-疑难解答-troubleshooting)
 
 讨论区
 [https://github.com/ok-oldking/ok-wuthering-waves/discussions](https://github.com/ok-oldking/ok-wuthering-waves/discussions)
@@ -19,11 +19,17 @@ assignees: ok-oldking
 描述错误:
 [请清晰简洁地描述错误是什么]
 
+预期行为:
+[正常情况下应该发生什么]
+
 复现步骤：
 
 
 截图和日志:
 点击导出日志, 并上传.
+
+相关任务、角色、队伍和设置:
+[例如：日常一条龙 / 洛瑟菈 / 1920x1080 / 60 FPS]
 
 
 是否必现:
