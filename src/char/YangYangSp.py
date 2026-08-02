@@ -24,6 +24,7 @@ class YangYangSp(BaseChar):
     def do_perform(self):
         duration = self.INTRO_PERFORM_DURATION if self.has_intro else self.PERFORM_DURATION
         start = time.time()
+        self.click_echo(time_out=0)
         self.task.mouse_down()
         resonance_available = 0
         try:
