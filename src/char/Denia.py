@@ -128,33 +128,42 @@ class Denia(BaseChar):
         return False
 
     def _perform_lib2(self, has_intro):
-        # 常规后续轮次的 LIB2：连续普攻后执行闪避和第二段大招逻辑。
-        self.continues_normal_attack(self.LIB2_NORMAL_ATTACK_TIME)
-        if not has_intro:
+        # 有变奏入场的 LIB2：普攻、闪避、普攻后连续释放两次共鸣技能。
+        if has_intro:
+            self.continues_normal_attack(1.0)
             self.continues_right_click(0.05)
             self.check_combat()
-            self.continues_normal_attack(1.4)
+            self.continues_normal_attack(1.0)
+            self.click_resonance(time_out=2)
+            self.click_resonance(time_out=2)
+        else:
+            # 无变奏入场：两段普攻后检查战斗，再补闪避和一段普攻。
+            self.continues_normal_attack(1.0)
+            self.continues_right_click(0.05)
+            self.continues_normal_attack(1.0)
+            self.check_combat()
+            self.continues_right_click(0.05)
+            self.continues_normal_attack(1.0)
+            if not self.click_resonance(time_out=2)[0]:
+                return False
 
-        # 二次共鸣快败：成功才走二段大招。
-        lib_success = False
-        if self.click_resonance(time_out=2)[0]:
-            # 无论是否通过变奏入场，都等待 0.5 秒再释放第二段大招。
-            self.sleep(0.5)
-            # 二段大招：失败则普攻两下重试，最多重试两次。
+        # 共鸣技能完成后等待 0.5 秒，再释放第二段大招。
+        self.sleep(0.5)
+        # 二段大招失败后普攻 1.4 秒重试，最多重试两次。
+        lib_success = self.click_liberation()
+        retries = 0
+        while not lib_success and retries < 2:
+            self.continues_normal_attack(1.0)
             lib_success = self.click_liberation()
-            retries = 0
-            while not lib_success and retries < 2:
-                self.continues_normal_attack(1.2)
-                lib_success = self.click_liberation()
-                retries += 1
-            if lib_success:
-                self.sleep(0.01)
+            retries += 1
+        if lib_success:
+            self.sleep(0.01)
 
         return lib_success
 
     def do_perform(self):
         # 快照协奏入场标记，整条 rotation 以此为准：
-        # 协奏入场只打四下普攻；非协奏入场补闪避 + 两下普攻。
+        # LIB2 协奏入场走 1.4 秒普攻 + 闪避 + 1.4 秒普攻；无变奏走原流程。
         has_intro = self.has_intro
         if has_intro:
             self.wait_intro(1.2)
@@ -162,7 +171,7 @@ class Denia(BaseChar):
         if self.state == self.LIB1:
             # 所有出场统一走常规 LIB1 -> LIB2 状态机。
             if not self._perform_lib1(has_intro):
-                self.continues_normal_attack(1.4)
+                self.continues_normal_attack(1.0)
                 self._switch_to_main_dps()
                 return
             self.state = self.LIB2
