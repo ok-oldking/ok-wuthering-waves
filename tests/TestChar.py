@@ -141,6 +141,88 @@ class TestChar(TaskTestCase):
             'switch',
         ])
 
+    def test_yangyang_sp_uses_echo_once_and_sleeps_between_polls(self):
+        actions = []
+
+        class Task:
+            skip_combat_check = False
+            poll_count = 0
+
+            def mouse_down(self):
+                actions.append('mouse_down')
+
+            def mouse_up(self):
+                actions.append('mouse_up')
+
+            def sleep(self, duration):
+                actions.append(('sleep', duration))
+                if duration == 0.05:
+                    self.poll_count += 1
+
+        class TrackingYangYangSp(YangYangSp):
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return 0 if self.task.poll_count < 3 else self.PERFORM_DURATION
+
+            def click_echo(self, **kwargs):
+                actions.append(('echo', kwargs))
+                return True
+
+            def liberation_available(self):
+                return False
+
+            def resonance_available(self):
+                return False
+
+            def switch_next_char(self, *args, **kwargs):
+                actions.append('switch')
+
+        yangyang = TrackingYangYangSp(Task(), 0)
+        yangyang.do_perform()
+
+        self.assertEqual(actions.count(('echo', {'time_out': 0})), 1)
+        self.assertEqual(actions.count(('sleep', 0.05)), 3)
+
+    def test_yangyang_sp_releases_mouse_when_poll_sleep_raises(self):
+        actions = []
+
+        class Task:
+            skip_combat_check = False
+
+            def mouse_down(self):
+                actions.append('mouse_down')
+
+            def mouse_up(self):
+                actions.append('mouse_up')
+
+            def sleep(self, duration):
+                actions.append(('sleep', duration))
+                if not self.skip_combat_check:
+                    raise RuntimeError('combat check failed')
+
+        class TrackingYangYangSp(YangYangSp):
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return 0
+
+            def click_echo(self, **kwargs):
+                return False
+
+            def liberation_available(self):
+                return False
+
+            def resonance_available(self):
+                return False
+
+        yangyang = TrackingYangYangSp(Task(), 0)
+        with self.assertRaisesRegex(RuntimeError, 'combat check failed'):
+            yangyang.do_perform()
+
+        self.assertEqual(actions, [
+            'mouse_down',
+            ('sleep', 0.05),
+            'mouse_up',
+            ('sleep', YangYangSp.LONG_PRESS_RELEASE_DELAY),
+        ])
+
     def test_suisui_switch_priority_with_main_dps(self):
         class Task:
             chars = []
