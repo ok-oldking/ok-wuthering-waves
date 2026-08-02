@@ -24,11 +24,11 @@ class YangYangSp(BaseChar):
     def do_perform(self):
         duration = self.INTRO_PERFORM_DURATION if self.has_intro else self.PERFORM_DURATION
         start = time.time()
-        self.click_echo(time_out=0)
         self.task.mouse_down()
         resonance_available = 0
         try:
             while self.time_elapsed_accounting_for_freeze(start) < duration:
+                self.click_echo(time_out=0)
                 if self.liberation_available():
                     self.logger.debug('liberation_available')
                     if not self.click_liberation(send_click=False, wait_if_cd_ready=0):

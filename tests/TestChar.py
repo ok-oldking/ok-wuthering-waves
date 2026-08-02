@@ -125,10 +125,6 @@ class TestChar(TaskTestCase):
                 actions.append(('sleep', duration))
 
         class TrackingYangYangSp(YangYangSp):
-            def click_echo(self, duration=0, sleep_time=0, time_out=1):
-                actions.append(('echo', time_out))
-                return True
-
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 return self.PERFORM_DURATION
 
@@ -139,7 +135,6 @@ class TestChar(TaskTestCase):
         yangyang.do_perform()
 
         self.assertEqual(actions, [
-            ('echo', 0),
             'mouse_down',
             'mouse_up',
             ('sleep', YangYangSp.LONG_PRESS_RELEASE_DELAY),
