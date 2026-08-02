@@ -7,14 +7,22 @@ from typing import Tuple, Optional
 from .common import (
     KeyPoint, MapCache, MatchOutput, CoordsRef, grid_sample,
     save_npz, load_npz, desc_mat_from_slice_fast,
-    project_corners, compute_center, extract_scale_factor, _prepare_test_image
+    project_corners, compute_center, extract_scale_factor, _prepare_test_image,
+    resize_for_upscale
 )
 
 
-def _extract(cfg, map_path, out_path, grid, mpc):
+def _extract(cfg, map_path, out_path, grid, mpc, upscale=1.0):
+    """提取大地图特征。
+
+    ``upscale > 1`` 时先按该系数放大整图再检测，关键点坐标与 npz 中的
+    ``map_size`` 都位于放大后的像素空间（对应 coords 的 ``scale`` 需除以
+    ``upscale``，见 :func:`src.match_engine.common.apply_feature_upscale`）。
+    """
     img = cv2.imread(map_path, cv2.IMREAD_GRAYSCALE)
     if img is None:
         raise ValueError(f"cannot read: {map_path}")
+    img = resize_for_upscale(img, upscale)
     h, w = img.shape[:2]
 
     kps, desc = cfg.detectAndCompute(img, None)
@@ -136,13 +144,14 @@ class SurfEngine:
                  extended=True, upright=True,
                  grid=150, max_per_cell=200,
                  ratio=0.62, max_dist=0.50,
-                 coords_path=None):
+                 coords_path=None, upscale=1.0):
         self.map_id = map_id
         self.ratio = ratio
         self.max_dist = max_dist
         self.grid = grid
         self.mpc = max_per_cell
         self.crop_size = 350
+        self.upscale = float(upscale)
 
         npz_path = os.path.join(assets_dir, f"{map_id}_surf.npz")
         self.cfg = cv2.xfeatures2d.SURF_create(
@@ -152,7 +161,8 @@ class SurfEngine:
             self.cache = _load_cache(npz_path)
         else:
             os.makedirs(assets_dir, exist_ok=True)
-            kps, descs, h, w = _extract(self.cfg, map_path, npz_path, grid, max_per_cell)
+            kps, descs, h, w = _extract(self.cfg, map_path, npz_path, grid,
+                                        max_per_cell, upscale=self.upscale)
             desc_mat = desc_mat_from_slice_fast(descs)
             self.cache = MapCache(kps, descs, desc_mat, h, w)
 

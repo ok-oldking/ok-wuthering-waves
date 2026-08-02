@@ -18,12 +18,24 @@
 
 Param_Set_Name 仅由小写字母、数字与下划线组成（匹配 ``^[a-z0-9_]+$``），
 可直接用作目录名与数据库键。
+
+放大提取（``upscale``）
+----------------------
+
+``upscale`` 表示提取特征前对大地图做的放大系数（``1.0`` = 不放大，支持非整数，
+如 ``1.5``）。放大后关键点坐标保留在**放大后的像素空间**，npz 中的 ``map_size``
+也是放大后的尺寸，因此该地图的 ``map_coords.json`` 里 ``scale``
+（游戏单位/像素）需要同步除以放大系数，见
+:func:`src.match_engine.common.apply_feature_upscale`。
+
+命名上按 ``_us{round(upscale*100)}`` 追加在名字末尾，且**仅在 upscale != 1.0 时
+出现**，以保持历史参数集名称（不带 ``_us``）不变；解析时缺省视为 ``1.0``。
 """
 
 from __future__ import annotations
 
 import re
-from dataclasses import asdict, dataclass, fields
+from dataclasses import MISSING, asdict, dataclass, fields
 from typing import Union
 
 from .errors import MatchEngineError
@@ -33,6 +45,24 @@ NAME_PATTERN = re.compile(r"^[a-z0-9_]+$")
 SURF = "surf"
 SIFT = "sift"
 SIFTGZ = "siftgz"
+
+#: ``upscale`` 在名字中的编码倍数（保留两位小数，如 1.25 -> ``us125``）。
+UPSCALE_NAME_FACTOR = 100
+
+
+def _upscale_suffix(upscale) -> str:
+    """upscale == 1.0 时返回空串，保持历史名字不变。"""
+    try:
+        u = float(upscale)
+    except (TypeError, ValueError):
+        return f"_us{upscale}"
+    if u == 1.0:
+        return ""
+    return f"_us{round(u * UPSCALE_NAME_FACTOR)}"
+
+
+def _upscale_from_name(token) -> float:
+    return 1.0 if token is None else int(token) / float(UPSCALE_NAME_FACTOR)
 
 
 @dataclass(frozen=True)
@@ -46,6 +76,7 @@ class SurfParams:
     max_per_cell: int
     ratio: float
     max_dist: float
+    upscale: float = 1.0
 
 
 @dataclass(frozen=True)
@@ -57,6 +88,7 @@ class SiftParams:
     grid: int
     max_per_cell: int
     ratio: float
+    upscale: float = 1.0
 
 
 @dataclass(frozen=True)
@@ -74,6 +106,7 @@ class SiftGzParams:
     black_thresh: int
     edge_margin: int
     min_dist: float
+    upscale: float = 1.0
 
 
 _PARAM_TYPES = {SURF: SurfParams, SIFT: SiftParams, SIFTGZ: SiftGzParams}
@@ -92,6 +125,7 @@ class ParamSet:
                 f"surf_h{p.hessian}_o{p.octaves}_l{p.layers}"
                 f"_g{p.grid}_mpc{p.max_per_cell}"
                 f"_r{round(p.ratio * 100)}_md{round(p.max_dist * 100)}"
+                f"{_upscale_suffix(p.upscale)}"
             )
         if self.algo == SIFT and isinstance(p, SiftParams):
             return (
@@ -100,6 +134,7 @@ class ParamSet:
                 f"_s{round(p.sigma * 10)}"
                 f"_g{p.grid}_mpc{p.max_per_cell}"
                 f"_r{round(p.ratio * 100)}"
+                f"{_upscale_suffix(p.upscale)}"
             )
         if self.algo == SIFTGZ and isinstance(p, SiftGzParams):
             return (
@@ -111,6 +146,7 @@ class ParamSet:
                 f"_ds{p.downscale}_ts{p.tile_size}_to{p.tile_overlap}"
                 f"_bt{p.black_thresh}_em{p.edge_margin}"
                 f"_md{round(p.min_dist * 10)}"
+                f"{_upscale_suffix(p.upscale)}"
             )
         raise MatchEngineError(
             f"算法标识与参数类型不匹配：algo={self.algo!r}, "
@@ -141,7 +177,12 @@ class ParamSet:
                 name=str(algo),
             )
         expected = {f.name for f in fields(param_type)}
-        missing = expected - raw.keys()
+        # 带默认值的字段（如 upscale）允许缺省，兼容历史序列化数据。
+        required = {
+            f.name for f in fields(param_type)
+            if f.default is MISSING and f.default_factory is MISSING
+        }
+        missing = required - raw.keys()
         if missing:
             raise MatchEngineError(
                 f"Param_Set 缺少必需字段：{sorted(missing)}",
@@ -153,7 +194,7 @@ class ParamSet:
                 f"Param_Set 含未知字段：{sorted(extra)}",
                 name=str(algo),
             )
-        params = param_type(**{k: raw[k] for k in expected})
+        params = param_type(**{k: raw[k] for k in expected if k in raw})
         param_set = ParamSet(algo=algo, params=params)
         param_set.validate()
         return param_set
@@ -162,32 +203,34 @@ class ParamSet:
     def from_name(cls, name: str) -> "ParamSet":
         m = _SURF_NAME_RE.match(name)
         if m:
-            h, o, l, g, mpc, r, md = m.groups()
+            h, o, l, g, mpc, r, md, us = m.groups()
             ps = cls(algo=SURF, params=SurfParams(
                 hessian=int(h), octaves=int(o), layers=int(l),
                 extended=True, upright=True,
                 grid=int(g), max_per_cell=int(mpc),
                 ratio=int(r) / 100.0, max_dist=int(md) / 100.0,
+                upscale=_upscale_from_name(us),
             ))
             ps.validate()
             return ps
 
         m = _SIFT_NAME_RE.match(name)
         if m:
-            ct, et, ol, s, g, mpc, r = m.groups()
+            ct, et, ol, s, g, mpc, r, us = m.groups()
             ps = cls(algo=SIFT, params=SiftParams(
                 contrast_threshold=int(ct) / 1000.0,
                 edge_threshold=int(et), n_octave_layers=int(ol),
                 sigma=int(s) / 10.0,
                 grid=int(g), max_per_cell=int(mpc),
                 ratio=int(r) / 100.0,
+                upscale=_upscale_from_name(us),
             ))
             ps.validate()
             return ps
 
         m = _SIFTGZ_NAME_RE.match(name)
         if m:
-            ct, et, ol, s, g, mpc, r, ds, ts, to, bt, em, md = m.groups()
+            ct, et, ol, s, g, mpc, r, ds, ts, to, bt, em, md, us = m.groups()
             ps = cls(algo=SIFTGZ, params=SiftGzParams(
                 contrast_threshold=int(ct) / 1000.0,
                 edge_threshold=int(et), n_octave_layers=int(ol),
@@ -197,6 +240,7 @@ class ParamSet:
                 downscale=int(ds), tile_size=int(ts), tile_overlap=int(to),
                 black_thresh=int(bt), edge_margin=int(em),
                 min_dist=int(md) / 10.0,
+                upscale=_upscale_from_name(us),
             ))
             ps.validate()
             return ps
@@ -229,6 +273,7 @@ class ParamSet:
             self._require_positive_int(p.max_per_cell, "max_per_cell", name)
             self._require_ratio(p.ratio, "ratio", name)
             self._require_positive_float(p.max_dist, "max_dist", name)
+            self._require_upscale(p.upscale, name)
         elif self.algo == SIFT:
             self._require_positive_float(
                 p.contrast_threshold, "contrast_threshold", name
@@ -239,6 +284,7 @@ class ParamSet:
             self._require_positive_int(p.grid, "grid", name)
             self._require_positive_int(p.max_per_cell, "max_per_cell", name)
             self._require_ratio(p.ratio, "ratio", name)
+            self._require_upscale(p.upscale, name)
         elif self.algo == SIFTGZ:
             self._require_positive_float(
                 p.contrast_threshold, "contrast_threshold", name
@@ -258,6 +304,7 @@ class ParamSet:
             if p.edge_margin < 0:
                 raise MatchEngineError("edge_margin 必须为非负整数。", name=name)
             self._require_positive_float(p.min_dist, "min_dist", name)
+            self._require_upscale(p.upscale, name)
 
     def _safe_name(self) -> str:
         try:
@@ -299,6 +346,25 @@ class ParamSet:
             )
 
     @staticmethod
+    def _require_upscale(value: object, name: str) -> None:
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            raise MatchEngineError(
+                f"字段 upscale 必须为数值，得到 {value!r}", name=name
+            )
+        u = float(value)
+        if u < 1.0:
+            raise MatchEngineError(
+                f"字段 upscale 必须 >= 1.0（1.0 表示不放大），得到 {value!r}",
+                name=name,
+            )
+        scaled = u * UPSCALE_NAME_FACTOR
+        if abs(scaled - round(scaled)) > 1e-9:
+            raise MatchEngineError(
+                f"字段 upscale 最多保留两位小数（命名需可逆），得到 {value!r}",
+                name=name,
+            )
+
+    @staticmethod
     def _require_bool(value: object, field: str, name: str) -> None:
         if not isinstance(value, bool):
             raise MatchEngineError(
@@ -307,14 +373,17 @@ class ParamSet:
 
 
 _SURF_NAME_RE = re.compile(
-    r"^surf_h(\d+)_o(\d+)_l(\d+)_g(\d+)_mpc(\d+)_r(\d+)_md(\d+)$"
+    r"^surf_h(\d+)_o(\d+)_l(\d+)_g(\d+)_mpc(\d+)_r(\d+)_md(\d+)"
+    r"(?:_us(\d+))?$"
 )
 _SIFT_NAME_RE = re.compile(
-    r"^sift_ct(\d+)_et(\d+)_ol(\d+)_s(\d+)_g(\d+)_mpc(\d+)_r(\d+)$"
+    r"^sift_ct(\d+)_et(\d+)_ol(\d+)_s(\d+)_g(\d+)_mpc(\d+)_r(\d+)"
+    r"(?:_us(\d+))?$"
 )
 _SIFTGZ_NAME_RE = re.compile(
     r"^siftgz_ct(\d+)_et(\d+)_ol(\d+)_s(\d+)_g(\d+)_mpc(\d+)_r(\d+)"
-    r"_ds(\d+)_ts(\d+)_to(\d+)_bt(\d+)_em(\d+)_md(\d+)$"
+    r"_ds(\d+)_ts(\d+)_to(\d+)_bt(\d+)_em(\d+)_md(\d+)"
+    r"(?:_us(\d+))?$"
 )
 
 
@@ -326,6 +395,7 @@ def params_to_engine_kwargs(ps: "ParamSet") -> dict:
             extended=p.extended, upright=p.upright,
             grid=p.grid, max_per_cell=p.max_per_cell,
             ratio=p.ratio, max_dist=p.max_dist,
+            upscale=p.upscale,
         )
     if ps.algo == SIFT:
         return dict(
@@ -333,6 +403,7 @@ def params_to_engine_kwargs(ps: "ParamSet") -> dict:
             contrastThreshold=p.contrast_threshold,
             edgeThreshold=p.edge_threshold, sigma=p.sigma,
             grid=p.grid, max_per_cell=p.max_per_cell, ratio=p.ratio,
+            upscale=p.upscale,
         )
     if ps.algo == SIFTGZ:
         return dict(
@@ -343,6 +414,7 @@ def params_to_engine_kwargs(ps: "ParamSet") -> dict:
             downscale=p.downscale, tile_size=p.tile_size,
             tile_overlap=p.tile_overlap, black_thresh=p.black_thresh,
             edge_margin=p.edge_margin, min_dist=p.min_dist,
+            upscale=p.upscale,
         )
     raise MatchEngineError(f"未知算法：{ps.algo!r}", name=str(ps.algo))
 

@@ -59,7 +59,14 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import QWidget
 
 from src.utils.map_geometry import topmost_hit
-from src.utils.MapItemOverlay import ICON_SIZE, PATH_LINE_WIDTH, paint_icon_background, paint_path_layers
+from src.utils.MapItemOverlay import (
+    ICON_SIZE,
+    PATH_LINE_WIDTH,
+    paint_icon_background,
+    paint_path_layers,
+    paint_status_panel,
+    status_panel_rect,
+)
 from src.utils.overlay_types import Rect
 
 logger = logging.getLogger(__name__)
@@ -138,7 +145,7 @@ class InteractionOverlayWindow(QWidget):
     # 合并渲染帧信号：把内容 + 气泡 + 路线 + 命中区在同一个 GUI 事件里原子更新，
     # 避免 render_items / update_mask 两个独立排队信号产生的半更新中间帧
     # （不确定问题1：拖动路线卡顿/先画中间状态）。
-    _frame_requested = Signal(object, object, object, object, object)
+    _frame_requested = Signal(object, object, object, object, object, object)
     # 几何设置信号：set_window_geometry 可能在 ok 任务线程被调用，但 QWidget.setGeometry
     # 必须在 GUI 线程执行；拖动游戏窗口时几何持续变化，若在任务线程直接 setGeometry 会
     # 跨线程触发窗口系统调用而卡死（无栈挂起）。故经排队信号派发到 GUI 线程。
@@ -174,6 +181,10 @@ class InteractionOverlayWindow(QWidget):
         # 当前路线目标高亮点（窗口局部像素 ``(sx, sy)``）或 None（无目标）。存在时
         # paintEvent 会在该点周围画一个 3px 红色空心圆，圈住目标节点（问题3）。
         self._target_marker: Optional[Tuple[int, int]] = None
+        # 左下角 Status_Panel 文本行（``format_status_lines`` 的输出）。为空时不绘制。
+        # 大地图场景经 :meth:`render_frame` 每帧下发，绘制在客户区左下角
+        # （Requirements 12.1, 12.3, 12.9）。
+        self._status_lines: tuple = ()
         # Hit_Box rectangles paired with z order, for click hit-testing; aligned
         # by index with ``_draw_items``.
         self._hitboxes_with_z: List[Tuple[Rect, int]] = []
@@ -235,8 +246,8 @@ class InteractionOverlayWindow(QWidget):
         self._mask_requested.emit(list(hitboxes) if hitboxes else [])
 
     def render_frame(self, draw_items, bubble=None, path_layers=(),
-                     hitboxes=(), target_marker=None) -> None:
-        """一次性合并更新内容 + 气泡 + 路线 + 命中区 + 目标高亮（原子帧）。
+                     hitboxes=(), target_marker=None, status_lines=()) -> None:
+        """一次性合并更新内容 + 气泡 + 路线 + 命中区 + 目标高亮 + 状态面板（原子帧）。
 
         把原来 :meth:`render_items` 与 :meth:`update_mask` 两次跨线程排队信号合并为
         单个 ``_frame_requested``，使 GUI 线程在同一个事件里同时设置绘制内容和命中
@@ -245,6 +256,10 @@ class InteractionOverlayWindow(QWidget):
 
         ``target_marker`` 为路线当前目标节点的窗口局部像素点 ``(sx, sy)`` 或 None
         （无目标）。存在时会在该点周围绘制 3px 红色空心圆以圈住目标节点（问题3）。
+
+        ``status_lines`` 为左下角 Status_Panel 的文本行（``format_status_lines`` 的
+        输出）。大地图场景每帧下发，绘制在客户区左下角，且面板矩形会并入 ``setMask``
+        的 ``QRegion`` 以免被裁剪不显示（Requirements 12.1, 12.3, 12.8, 12.9）。
         """
         self._frame_requested.emit(
             list(draw_items) if draw_items else [],
@@ -252,6 +267,7 @@ class InteractionOverlayWindow(QWidget):
             tuple(path_layers) if path_layers else (),
             list(hitboxes) if hitboxes else [],
             tuple(target_marker) if target_marker is not None else None,
+            tuple(status_lines) if status_lines else (),
         )
 
     def show_overlay(self) -> None:
@@ -307,20 +323,22 @@ class InteractionOverlayWindow(QWidget):
         return normalized
 
     def _do_frame(self, draw_items, bubble, path_layers, hitboxes,
-                  target_marker=None) -> None:
-        """合并帧槽：在同一个 GUI 事件里原子设置内容 + 气泡 + 路线 + 命中掩码。
+                  target_marker=None, status_lines=()) -> None:
+        """合并帧槽：在同一个 GUI 事件里原子设置内容 + 气泡 + 路线 + 命中掩码 + 状态面板。
 
         等价于把 :meth:`_do_render` 与 :meth:`_do_mask` 的工作合并为一次：先设置
         ``_draw_items`` / ``_path_layers`` / ``_bubble``（这样命中区 z 回退能读到
         最新 draw items），再规范化并存 ``_hitboxes_with_z``，最后统一
         :meth:`_apply_composed_mask` 并只 ``update()`` 一次，避免半更新中间帧。
-        ``target_marker`` 为目标高亮点或 None，一并在本帧原子更新。
+        ``target_marker`` 为目标高亮点或 None，``status_lines`` 为状态面板文本行，
+        一并在本帧原子更新（状态面板矩形会在 :meth:`_compose_mask_region` 并入掩码）。
         """
         self._draw_items = list(draw_items)
         self._path_layers = tuple(path_layers)
         self._bubble = _normalize_bubble(bubble)
         self._hitboxes_with_z = self._normalize_hitboxes(hitboxes)
         self._target_marker = tuple(target_marker) if target_marker is not None else None
+        self._status_lines = tuple(status_lines) if status_lines else ()
         self._apply_composed_mask()
         self.update()
 
@@ -374,6 +392,16 @@ class InteractionOverlayWindow(QWidget):
         if bubble_rect is not None:
             region = region.united(bubble_rect)
 
+        # Status_Panel box: union the left-bottom panel rectangle so setMask does
+        # not clip it away. The panel sits at the client area's bottom-left; a
+        # click there is captured by the window, but because the window is
+        # WA_ShowWithoutActivating + WS_EX_NOACTIVATE it never steals the game's
+        # focus, so it does not interfere with the game (Requirements 12.1, 12.8).
+        panel_rect = status_panel_rect(self._status_lines, self)
+        if panel_rect is not None:
+            left, top, panel_w, panel_h = panel_rect
+            region = region.united(QRect(left, top, panel_w, panel_h))
+
         return region
 
     def _apply_composed_mask(self) -> None:
@@ -398,6 +426,7 @@ class InteractionOverlayWindow(QWidget):
         self._bubble = None
         self._hitboxes_with_z = []
         self._target_marker = None
+        self._status_lines = ()
         self.clearMask()
         if self.isVisible():
             self.hide()
@@ -533,6 +562,7 @@ class InteractionOverlayWindow(QWidget):
             self._paint_draw_items(painter)
             self._paint_target_marker(painter)
             self._paint_bubble(painter)
+            self._paint_status_panel(painter)
         finally:
             painter.setOpacity(1.0)
             painter.end()
@@ -589,6 +619,19 @@ class InteractionOverlayWindow(QWidget):
             painter.drawEllipse(QPoint(sx, sy), r, r)
         finally:
             painter.restore()
+
+    def _paint_status_panel(self, painter) -> None:
+        """Draw the left-bottom Status_Panel via the shared render-layer helper.
+
+        Delegates to :func:`~src.utils.MapItemOverlay.paint_status_panel` so the
+        big map and the minimap (ok ``OverlayWindow``) render the panel
+        identically. Nothing is drawn when ``_status_lines`` is empty. The panel
+        box is already unioned into the window mask by :meth:`_compose_mask_region`
+        so it is not clipped (Requirements 12.1, 12.2, 12.3, 12.9).
+        """
+        if not self._status_lines:
+            return
+        paint_status_panel(painter, self._status_lines, self)
 
     def _bubble_box_rect(self) -> Optional[QRect]:
         """Compute the current Description_Bubble box rectangle, or ``None``.

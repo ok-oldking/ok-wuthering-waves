@@ -4,7 +4,16 @@ import sqlite3
 from typing import Iterable, List, NamedTuple, Optional, Sequence, Set, Tuple
 
 from PySide6.QtCore import QPoint, QRect, Qt
-from PySide6.QtGui import QBrush, QColor, QFont, QPen, QPixmap, QPolygon, QRegion
+from PySide6.QtGui import (
+    QBrush,
+    QColor,
+    QFont,
+    QFontMetrics,
+    QPen,
+    QPixmap,
+    QPolygon,
+    QRegion,
+)
 
 from src.utils.map_geometry import distance_game_units, edge_arrow_position
 from src.utils.PathRoute import PATH_NODE_ICON_KEY
@@ -195,6 +204,144 @@ def player_target_distance(
     return distance_game_units(gx, gy, target_x, target_y)
 
 
+# --------------------------------------------------------------------------
+# Status_Panel text builders (pure logic, Qt-free) — task 14.1.
+#
+# These functions build the left-bottom Status_Panel text with no side effects
+# and no Qt dependency, so they are importable / testable on a development
+# machine (backing Property 20 and the field-existence unit tests). The actual
+# painting lives in the render layer (task 14.4); here we only shape strings.
+#
+# Feature: map-overlay-interaction
+# Requirements: 12.4, 12.5, 12.6, 12.7, 12.10, 12.11
+# --------------------------------------------------------------------------
+
+# Displayed when a field's value is unavailable (Requirements 12.10, 12.11).
+STATUS_UNKNOWN = "未知"
+
+# Tracking-target info when NOT in Path_Mode (Requirement 12.7).
+TARGET_INFO_NO_PATH_MODE = "无"
+
+# Tracking-target info in Path_Mode but without a Target (Requirement 12.6).
+TARGET_INFO_NO_TARGET = "无目标"
+
+# Field labels for the status lines. The tracking-target line uses no extra
+# label because its content already starts with "目标：" / "无目标" / "无"
+# (Requirements 12.5, 12.6, 12.7).
+STATUS_LABEL_PLAYER = "玩家坐标"
+STATUS_LABEL_MAP = "地图"
+STATUS_LABEL_SCALE = "比例"
+STATUS_LABEL_MODE = "模式"
+
+
+def _round_half_up(value) -> int:
+    """Round a non-negative distance to the nearest integer, halves rounding up.
+
+    Used for the target distance in :func:`format_target_info` so "四舍五入"
+    behaves as documented (e.g. 849.5 -> 850) rather than Python's banker's
+    rounding (Requirement 12.5). Distances are non-negative game units.
+    """
+    return int(math.floor(float(value) + 0.5))
+
+
+def _format_number(value) -> str:
+    """Format a number compactly: drop the decimal part for integral values.
+
+    Integer-valued inputs (``5`` or ``5.0``) render as ``"5"``; other floats are
+    rounded to 2 decimals with trailing zeros stripped (``12.30`` -> ``"12.3"``).
+    Non-numeric values fall back to ``str(value)``.
+    """
+    try:
+        f = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+    if f == int(f):
+        return str(int(f))
+    text = f"{f:.2f}".rstrip("0").rstrip(".")
+    return text
+
+
+def _player_pos_available(player_pos) -> bool:
+    """Whether ``player_pos`` carries usable numeric x/y coordinates.
+
+    ``None`` or non-numeric / too-short values are treated as unavailable so the
+    coordinate field falls back to "未知" (Requirement 12.10).
+    """
+    if player_pos is None:
+        return False
+    try:
+        float(player_pos[0])
+        float(player_pos[1])
+    except (TypeError, ValueError, IndexError):
+        return False
+    return True
+
+
+def format_target_info(mode_is_path, target, section_index, node_index,
+                       total, name, distance) -> str:
+    """Build the tracking-target info string for the Status_Panel (pure logic).
+
+    Three cases (Requirements 12.5, 12.6, 12.7):
+
+    - not in Path_Mode (``mode_is_path`` falsy) -> :data:`TARGET_INFO_NO_PATH_MODE`
+      ("无");
+    - in Path_Mode but without a Target (``target`` is ``None``) ->
+      :data:`TARGET_INFO_NO_TARGET` ("无目标");
+    - in Path_Mode with a Target -> ``目标：段{section_index} 第{node_index}/{total}
+      {name} 距离{dist}`` where ``section_index`` / ``node_index`` / ``total`` are
+      rendered as integers (all ≥1, ``node_index`` ≤ ``total``) and ``dist`` is the
+      distance rounded half-up to whole game units (e.g.
+      ``目标：段2 第3/12 风鳞蜃甲 距离850``).
+    """
+    if not mode_is_path:
+        return TARGET_INFO_NO_PATH_MODE
+    if target is None:
+        return TARGET_INFO_NO_TARGET
+    dist = _round_half_up(distance)
+    return (
+        f"目标：段{int(section_index)} 第{int(node_index)}/{int(total)} "
+        f"{name} 距离{dist}"
+    )
+
+
+def format_status_lines(player_pos, map_id, scale_per_1000, mode_desc,
+                        target_info) -> List[str]:
+    """Assemble the Status_Panel text lines (pure logic, Qt-free).
+
+    Produces one line per field in a fixed order: player coordinates, map id,
+    map scale, mode and tracking-target info (Requirement 12.4). Each field whose
+    value is unavailable renders as "未知": player coordinates when ``player_pos``
+    is ``None`` / non-numeric (Requirement 12.10), and map id / scale when
+    ``map_id`` / ``scale_per_1000`` is ``None`` (Requirement 12.11).
+
+    Preserving the "last valid value" for the remaining fields when one becomes
+    unavailable is the caller's responsibility: it passes the most recent valid
+    ``map_id`` / ``scale_per_1000`` / ``mode_desc`` here, so this function stays a
+    pure mapping from the supplied values to display strings.
+
+    ``target_info`` is the already-built string from :func:`format_target_info`
+    and is used verbatim as its own line (Requirements 12.5, 12.6, 12.7).
+    """
+    if _player_pos_available(player_pos):
+        coord = f"{_format_number(player_pos[0])}, {_format_number(player_pos[1])}"
+    else:
+        coord = STATUS_UNKNOWN
+
+    map_str = STATUS_UNKNOWN if map_id is None else str(map_id)
+    scale_str = (
+        STATUS_UNKNOWN if scale_per_1000 is None else _format_number(scale_per_1000)
+    )
+    mode_str = STATUS_UNKNOWN if mode_desc is None else str(mode_desc)
+
+    return [
+        f"{STATUS_LABEL_PLAYER}：{coord}",
+        f"{STATUS_LABEL_MAP}：{map_str}",
+        f"{STATUS_LABEL_SCALE}：{scale_str}",
+        f"{STATUS_LABEL_MODE}：{mode_str}",
+        str(target_info),
+    ]
+
+
 def _load_item_pixmaps(assets_dir):
     if ITEM_PIXMAPS:
         return
@@ -366,9 +513,17 @@ def paint_path_layers(painter, path_layers, draw_nodes=True) -> None:
         # 节点图标由交互窗口画，避免重复绘制）。
         if not draw_nodes:
             continue
+        # 每节点图标：优先用该节点下载得到的 pixmap（layer.node_pixmaps 与 points 同
+        # 序），未就绪（None）或整层未提供下载图标时回退统一的 qzx_04 图标
+        # （node_icon）。二者都不可用时画占位圆点，保证节点始终可见
+        # （Requirements 5.2, 11.7, 11.8, 11.9）。
         icon_key = getattr(layer, "node_icon", PATH_NODE_ICON_KEY)
-        node_pixmap = ITEM_PIXMAPS.get(icon_key)
-        for pt in points:
+        fallback_pixmap = ITEM_PIXMAPS.get(icon_key)
+        node_pixmaps = getattr(layer, "node_pixmaps", ()) or ()
+        for idx, pt in enumerate(points):
+            node_pixmap = node_pixmaps[idx] if idx < len(node_pixmaps) else None
+            if node_pixmap is None:
+                node_pixmap = fallback_pixmap
             if node_pixmap is not None:
                 paint_icon_background(painter, int(pt[0]), int(pt[1]), ICON_SIZE, 1.0)
                 painter.setOpacity(1.0)
@@ -417,6 +572,130 @@ def paint_edge_direction_arrow(painter, bearing_deg, minimap_box,
     painter.setPen(QPen(QColor(255, 0, 0), 3))
     painter.setBrush(Qt.NoBrush)
     painter.drawArc(rect, start16, span16)
+
+
+# Status_Panel styling (Requirements 12.1, 12.2).
+STATUS_PANEL_FONT_FAMILY = "Arial"
+STATUS_PANEL_FONT_SIZE = 10
+# Inner padding (px) between the panel border and the text on every side.
+STATUS_PANEL_PADDING = 6
+# Extra vertical spacing (px) added between consecutive text lines.
+STATUS_PANEL_LINE_SPACING = 2
+# 50%-opacity black background (alpha 128 of 255) and white text (Requirement 12.2).
+STATUS_PANEL_BG_COLOR = QColor(0, 0, 0, 128)
+STATUS_PANEL_TEXT_COLOR = QColor(255, 255, 255)
+
+
+def _client_size(view_or_geometry) -> Tuple[int, int]:
+    """Return the client area ``(width, height)`` from a view or geometry object.
+
+    Accepts either a Qt widget / view (as passed to the ok ``OverlayWindow`` paint
+    callback ``callback(QPainter, OverlayWindow)`` and to ``InteractionOverlayWindow``),
+    which exposes callable ``width()`` / ``height()`` methods, or a plain geometry
+    object exposing ``width`` / ``height`` attributes (e.g. the Qt-free ``Rect`` /
+    minimap box). Returns ``(0, 0)`` when the size cannot be determined so callers
+    can skip painting gracefully.
+    """
+    if view_or_geometry is None:
+        return 0, 0
+    width_attr = getattr(view_or_geometry, "width", None)
+    height_attr = getattr(view_or_geometry, "height", None)
+    try:
+        w = width_attr() if callable(width_attr) else width_attr
+        h = height_attr() if callable(height_attr) else height_attr
+        return int(w), int(h)
+    except (TypeError, ValueError):
+        return 0, 0
+
+
+def status_panel_rect(lines, view_or_geometry):
+    """Compute the left-bottom Status_Panel rectangle ``(left, top, w, h)`` or None.
+
+    Shared by :func:`paint_status_panel` (drawing) and the render targets'
+    masking code (``InteractionOverlayWindow._compose_mask_region``) so the drawn
+    panel box and the masked region stay identical. Returns ``None`` when there
+    is nothing to draw (no lines / unknown client size), so callers can skip both
+    the paint and the mask union.
+
+    The panel is measured from the text via ``QFontMetrics`` (widest line width +
+    padding for the width; per-line height * line count + padding for the height),
+    clamped so it never exceeds the client area (Requirement 12.1), then anchored
+    to the client area's left and bottom edges.
+    """
+    text_lines = [str(line) for line in (lines or [])]
+    if not text_lines:
+        return None
+
+    client_w, client_h = _client_size(view_or_geometry)
+    if client_w <= 0 or client_h <= 0:
+        return None
+
+    font = QFont(STATUS_PANEL_FONT_FAMILY, STATUS_PANEL_FONT_SIZE)
+    metrics = QFontMetrics(font)
+    pad = STATUS_PANEL_PADDING
+    line_h = metrics.height() + STATUS_PANEL_LINE_SPACING
+
+    text_w = max((metrics.horizontalAdvance(line) for line in text_lines), default=0)
+    panel_w = text_w + pad * 2
+    panel_h = line_h * len(text_lines) + pad * 2
+
+    # Clamp so the panel never exceeds the client area (Requirement 12.1).
+    panel_w = min(panel_w, client_w)
+    panel_h = min(panel_h, client_h)
+
+    # Anchor to the left edge and the bottom edge of the client area.
+    left = 0
+    top = client_h - panel_h
+    return int(left), int(top), int(panel_w), int(panel_h)
+
+
+def paint_status_panel(painter, lines, view_or_geometry) -> None:
+    """Paint the left-bottom Status_Panel shared by both overlay targets.
+
+    Draws the ``lines`` (already-built status strings from
+    :func:`format_status_lines`) in a fixed panel anchored to the client area's
+    left and bottom edges, without ever spilling outside the client area
+    (Requirement 12.1). The panel background is 50%-opacity black and the text is
+    white (Requirement 12.2).
+
+    ``view_or_geometry`` supplies the client area size: it is the ok
+    ``OverlayWindow`` (minimap) or the ``InteractionOverlayWindow`` (big map)
+    passed straight through, or any object exposing ``width`` / ``height``
+    (see :func:`_client_size`). Because both render targets call this same helper,
+    the panel drawing logic lives in one place and is not duplicated.
+
+    Panel geometry is resolved by :func:`status_panel_rect` (measured from the
+    text and clamped to the client area). Painter state (opacity, pen, brush,
+    font) is saved and restored, so callers may invoke this at any point in their
+    paint pass without side effects.
+    """
+    text_lines = [str(line) for line in (lines or [])]
+    rect = status_panel_rect(text_lines, view_or_geometry)
+    if rect is None:
+        return
+    left, top, panel_w, panel_h = rect
+
+    font = QFont(STATUS_PANEL_FONT_FAMILY, STATUS_PANEL_FONT_SIZE)
+    metrics = QFontMetrics(font)
+    pad = STATUS_PANEL_PADDING
+    line_h = metrics.height() + STATUS_PANEL_LINE_SPACING
+
+    painter.save()
+    try:
+        painter.setOpacity(1.0)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QBrush(STATUS_PANEL_BG_COLOR))
+        painter.drawRect(QRect(int(left), int(top), int(panel_w), int(panel_h)))
+
+        painter.setFont(font)
+        painter.setPen(QPen(STATUS_PANEL_TEXT_COLOR))
+        # First baseline sits one ascent below the top padding; each subsequent
+        # line advances by ``line_h``.
+        base_y = top + pad + metrics.ascent()
+        for i, line in enumerate(text_lines):
+            painter.drawText(int(left + pad), int(base_y + i * line_h), line)
+    finally:
+        painter.restore()
 
 
 class MapItemOverlay:
@@ -580,7 +859,7 @@ class MapItemOverlay:
     @staticmethod
     def make_paint_callback(draw_items, path_layers=(), edge_arrow=None,
                             clip_box=None, target_marker=None,
-                            draw_path_nodes=True):
+                            draw_path_nodes=True, status_lines=None):
         """Build the ok ``OverlayWindow`` paint callback for the minimap.
 
         Draws (in back-to-front order):
@@ -618,6 +897,12 @@ class MapItemOverlay:
         ``draw_nodes``：True 时路线层同时画连线 + 箭头 + 节点图标（小地图既有行为不变）；
         False 时**只画连线与箭头、跳过节点图标**，用于大地图把连线分流到穿透式 ok
         覆盖层、节点图标由交互窗口绘制的场景。
+
+        ``status_lines``（可选）为左下角 Status_Panel 的文本行（``format_status_lines``
+        的输出）。非空时在**裁剪区之外**（即整个客户区左下角，不受 ``clip_box`` 小地图
+        圆形裁剪影响）经 :func:`paint_status_panel` 绘制，使小地图场景也能在 ok
+        ``OverlayWindow`` 上显示状态面板（Requirements 12.3, 12.9）；``None`` / 空时不
+        绘制，保持既有行为。
         """
         def paint(painter, view):
             clipped = clip_box is not None
@@ -669,6 +954,11 @@ class MapItemOverlay:
             finally:
                 if clipped:
                     painter.restore()
+            # Status_Panel is drawn after restoring the clip so it lands at the
+            # client-area's bottom-left corner rather than inside the round
+            # minimap clip (Requirements 12.1, 12.3, 12.9).
+            if status_lines:
+                paint_status_panel(painter, status_lines, view)
 
         return paint
 

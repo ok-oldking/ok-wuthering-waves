@@ -9,6 +9,7 @@ from .common import (
     save_npz, load_npz, desc_mat_from_slice_fast,
     project_corners, compute_center, extract_scale_factor, _prepare_test_image,
     _failed_match, _filter_knn_matches, _estimate_homography,
+    resize_for_upscale, upscaled_size, knn_match_l2,
 )
 
 
@@ -25,25 +26,6 @@ def _compute_tile_positions(img_h, img_w, tile_size, overlap):
             x += step
         y += step
     return positions
-
-
-def _make_tile_mask(gray, x, y, tw, th, edge_margin, black_thresh):
-    if gray is None:
-        return None
-    tile = gray[y:y + th, x:x + tw]
-    if tile.size == 0:
-        return None
-    mask = np.ones((th, tw), dtype=np.uint8) * 255
-    if black_thresh >= 0:
-        mask[tile <= black_thresh] = 0
-    if edge_margin > 0:
-        mask[:edge_margin, :] = 0
-        mask[-edge_margin:, :] = 0
-        mask[:, :edge_margin] = 0
-        mask[:, -edge_margin:] = 0
-    if cv2.countNonZero(mask) < 100:
-        return None
-    return mask
 
 
 def _is_too_close(all_kps, grid, kpx, kpy, cell_size, min_dist_sq, cx, cy):
@@ -93,7 +75,18 @@ def _merge_and_dedup(all_kps, all_descs, min_dist, prefer_large=True):
 
 def _extract(cfg, map_path, out_path, grid, mpc,
              downscale=1, tile_size=0, tile_overlap=512,
-             black_thresh=5, edge_margin=8, min_dist=2.0):
+             black_thresh=5, edge_margin=8, min_dist=2.0, upscale=1.0):
+    """分块提取大地图特征，可选先放大。
+
+    ``upscale > 1`` 时放大发生在**每个分块内部**，因此超大图（如 28476×20609）
+    不会因为整图放大而爆内存：``tile_size`` / ``tile_overlap`` /
+    ``edge_margin`` / ``min_dist`` 都按“放大后像素”解释，单块峰值内存与
+    不放大时相同，只是分块数量随放大系数增加（放大后分更多块）。
+
+    输出的关键点坐标与 npz 中的 ``map_size`` 位于“原图 × upscale”的像素空间，
+    因此该地图 coords 的 ``scale`` 需要除以 ``upscale``，见
+    :func:`src.match_engine.common.apply_feature_upscale`。
+    """
     img = cv2.imread(map_path, cv2.IMREAD_GRAYSCALE)
     if img is None:
         raise ValueError(f"cannot read: {map_path}")
@@ -110,19 +103,28 @@ def _extract(cfg, map_path, out_path, grid, mpc,
 
     h, w = img.shape[:2]
     sf = float(downscale)
-    use_tile = tile_size > 0 and max(h, w) > tile_size
+    us = float(upscale)
+    out_h, out_w = upscaled_size(orig_h, orig_w, us)
+
+    # 分块几何以放大后像素为单位 -> 换算到当前（未放大）工作图空间。
+    work_tile = int(tile_size / us) if tile_size > 0 else 0
+    work_overlap = max(1, int(round(tile_overlap / us)))
+    use_tile = work_tile > 0 and max(h, w) > work_tile
 
     if use_tile:
         all_kps, all_descs = _extract_tiled(
-            cfg, img, tile_size, tile_overlap,
-            black_thresh, edge_margin, min_dist,
+            cfg, img, work_tile, work_overlap,
+            black_thresh, edge_margin, min_dist, upscale=us,
         )
     else:
-        mask = _make_whole_mask(img, black_thresh, edge_margin)
-        all_kps, all_descs = cfg.detectAndCompute(img, mask)
+        work = resize_for_upscale(img, us)
+        mask = _make_whole_mask(work, black_thresh, edge_margin)
+        all_kps, all_descs = cfg.detectAndCompute(work, mask)
         if not all_kps or all_descs is None:
             raise ValueError(f"no features: {map_path}")
         all_descs = [all_descs[i] for i in range(len(all_kps))]
+        if work is not img:
+            del work
 
     del img
 
@@ -131,18 +133,18 @@ def _extract(cfg, map_path, out_path, grid, mpc,
             kp.pt = (kp.pt[0] * sf, kp.pt[1] * sf)
             kp.size *= sf
 
-    grid_h = int(np.ceil(orig_h * grid / max(orig_h, 1)))
-    grid_w = int(np.ceil(orig_w * grid / max(orig_w, 1)))
+    grid_h = int(np.ceil(out_h * grid / max(out_h, 1)))
+    grid_w = int(np.ceil(out_w * grid / max(out_w, 1)))
     if grid_h < 1:
         grid_h = grid
     if grid_w < 1:
         grid_w = grid
 
     sel_kps, sel_descs = _grid_sample_kps(
-        all_kps, all_descs, orig_h, orig_w, grid_h, grid_w, mpc,
+        all_kps, all_descs, out_h, out_w, grid_h, grid_w, mpc,
     )
-    save_npz(out_path, sel_kps, sel_descs, orig_h, orig_w)
-    return sel_kps, sel_descs, orig_h, orig_w
+    save_npz(out_path, sel_kps, sel_descs, out_h, out_w)
+    return sel_kps, sel_descs, out_h, out_w
 
 
 def _make_whole_mask(gray, black_thresh, edge_margin):
@@ -160,19 +162,31 @@ def _make_whole_mask(gray, black_thresh, edge_margin):
     return mask
 
 
-def _extract_tiled(cfg, img, tile_size, overlap, black_thresh, edge_margin, min_dist=2.0):
+def _extract_tiled(cfg, img, tile_size, overlap, black_thresh, edge_margin,
+                   min_dist=2.0, upscale=1.0):
+    """逐块检测并合并去重。
+
+    ``tile_size`` / ``overlap`` 是 ``img`` 自身空间的分块几何；``upscale > 1``
+    时每块先放大再检测，返回的关键点坐标位于“``img`` 空间 × upscale”，
+    ``edge_margin`` / ``min_dist`` 同样按放大后像素解释。
+    """
     h, w = img.shape[:2]
+    us = float(upscale)
     positions = _compute_tile_positions(h, w, tile_size, overlap)
     all_kps = []
     all_descs_list = []
     for (x, y, tw, th) in positions:
         tile = img[y:y + th, x:x + tw]
-        mask = _make_tile_mask(img, x, y, tw, th, edge_margin, black_thresh)
+        if us != 1.0:
+            tile = resize_for_upscale(tile, us)
+        mask = _make_whole_mask(tile, black_thresh, edge_margin)
         kps, desc = cfg.detectAndCompute(tile, mask)
         if not kps or desc is None:
             continue
+        off_x = x * us
+        off_y = y * us
         for i, kp in enumerate(kps):
-            kp.pt = (kp.pt[0] + x, kp.pt[1] + y)
+            kp.pt = (kp.pt[0] + off_x, kp.pt[1] + off_y)
         all_kps.extend(kps)
         for i in range(len(kps)):
             all_descs_list.append(desc[i])
@@ -265,8 +279,7 @@ def _match_bf(cfg, test_src, cache, ratio_thresh, crop_size, region,
         if match_cache is None:
             return _failed_match((time.time() - start) * 1000)
 
-    matcher = cv2.BFMatcher(cv2.NORM_L2)
-    knn = matcher.knnMatch(desc, match_cache.desc_mat, 2)
+    knn = knn_match_l2(desc, match_cache.desc_mat, 2)
     good = _filter_knn_matches(knn, ratio_thresh)
 
     H, inlier_count = _estimate_homography(good, test_kps, match_cache, constrained)
@@ -295,9 +308,10 @@ class SiftGzEngine:
                  nfeatures=0, nOctaveLayers=2, contrastThreshold=0.02,
                  edgeThreshold=7, sigma=1.6,
                  grid=75, max_per_cell=100,
-                 ratio=0.75, coords_path=None,
+                 ratio=0.60, coords_path=None,
                  downscale=1, tile_size=14800, tile_overlap=512,
-                 black_thresh=5, edge_margin=8, min_dist=4.0):
+                 black_thresh=5, edge_margin=8, min_dist=4.0,
+                 upscale=1.0):
         self.map_id = map_id
         self.ratio = ratio
         self.grid = grid
@@ -306,6 +320,7 @@ class SiftGzEngine:
         self.downscale = downscale
         self.tile_size = tile_size
         self.tile_overlap = tile_overlap
+        self.upscale = float(upscale)
 
         npz_path = os.path.join(assets_dir, f"{map_id}_siftgz.npz")
         self.cfg = cv2.SIFT_create(
@@ -324,6 +339,7 @@ class SiftGzEngine:
                 black_thresh=black_thresh,
                 edge_margin=edge_margin,
                 min_dist=min_dist,
+                upscale=self.upscale,
             )
             desc_mat = desc_mat_from_slice_fast(descs)
             self.cache = MapCache(kps, descs, desc_mat, h, w)

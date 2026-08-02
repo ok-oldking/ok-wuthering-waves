@@ -5,6 +5,7 @@ import os
 import json
 import struct
 from typing import List, Tuple, Optional
+from collections import namedtuple
 from dataclasses import dataclass, field
 
 
@@ -248,6 +249,63 @@ def extract_scale_factor(H, cx, cy):
     return float(np.sqrt(np.linalg.det(J)))
 
 
+#: 大地图坐标参考文件名（``{map_id: {offset, scale, min, max, ...}}``）。
+COORDS_FILENAME = "map_coords.json"
+
+#: 坐标条目中记录“特征提取时使用的放大系数”的键，用于幂等地换算 ``scale``。
+COORDS_UPSCALE_KEY = "feature_upscale"
+
+
+def upscaled_size(h, w, upscale):
+    """返回放大后的 ``(h, w)``，与 :func:`resize_for_upscale` 保持一致的取整。"""
+    us = float(upscale)
+    if us == 1.0:
+        return int(h), int(w)
+    return max(1, int(round(h * us))), max(1, int(round(w * us)))
+
+
+def resize_for_upscale(img, upscale):
+    """按放大系数放大灰度图（``upscale == 1.0`` 时原样返回）。
+
+    使用 ``INTER_CUBIC``：放大场景下比 ``INTER_LINEAR`` 保留更多高频细节，
+    利于 SIFT/SURF 在大缩放比图上检出更多可用特征。
+    """
+    if img is None:
+        return None
+    us = float(upscale)
+    if us == 1.0:
+        return img
+    h, w = img.shape[:2]
+    new_h, new_w = upscaled_size(h, w, us)
+    return cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
+
+
+def coords_base_scale(entry):
+    """取出坐标条目里“未放大”的原始 scale（游戏单位/原图像素）。"""
+    applied = float(entry.get(COORDS_UPSCALE_KEY) or 1.0)
+    return (float(entry["scale"][0]) * applied,
+            float(entry["scale"][1]) * applied)
+
+
+def apply_feature_upscale(entry, upscale):
+    """返回按放大系数调整 ``scale`` 后的坐标条目副本（幂等）。
+
+    特征提取放大后，关键点坐标位于放大后的像素空间，故
+    ``scale`` = 原始 scale / upscale；``offset`` 与 ``min`` / ``max``
+    是游戏坐标，保持不变。重复调用不会累积除法，因为原始 scale
+    通过 :data:`COORDS_UPSCALE_KEY` 可还原。
+    """
+    out = dict(entry)
+    base_x, base_y = coords_base_scale(entry)
+    us = float(upscale)
+    out["scale"] = [base_x / us, base_y / us]
+    if us == 1.0:
+        out.pop(COORDS_UPSCALE_KEY, None)
+    else:
+        out[COORDS_UPSCALE_KEY] = us
+    return out
+
+
 def _prepare_test_image(src, crop_size):
     if isinstance(src, np.ndarray):
         img = src
@@ -268,6 +326,38 @@ def _prepare_test_image(src, crop_size):
             img = img[cy - half:cy + half, cx - half:cx + half].copy()
 
     return img
+
+
+#: OpenCV ``BFMatcher::knnMatchImpl`` 要求 ``trainDesc.rows < IMGIDX_ONE``
+#: （``1 << 18`` = 262144），超过会抛 ``cv2.error``。放大提取后大地图（如 ``8``）
+#: 的特征量很容易突破，这里分块匹配再合并，保留全局最近 k 个。
+BF_IMGIDX_LIMIT = 1 << 18
+BF_MAX_TRAIN_ROWS = 200000
+
+_Match = namedtuple("_Match", "queryIdx trainIdx distance")
+
+
+def knn_match_l2(query_desc, train_mat, k=2):
+    """L2 暴力 knn 匹配，训练集过大时自动分块，结果与不分块等价。"""
+    matcher = cv2.BFMatcher(cv2.NORM_L2)
+    rows = train_mat.shape[0] if getattr(train_mat, 'ndim', 0) == 2 else 0
+    if rows <= BF_MAX_TRAIN_ROWS:
+        return matcher.knnMatch(query_desc, train_mat, k)
+
+    pooled = [[] for _ in range(len(query_desc))]
+    for start in range(0, rows, BF_MAX_TRAIN_ROWS):
+        chunk = train_mat[start:start + BF_MAX_TRAIN_ROWS]
+        if not chunk.flags['C_CONTIGUOUS']:
+            chunk = np.ascontiguousarray(chunk)
+        for pairs in matcher.knnMatch(query_desc, chunk, k):
+            for m in pairs:
+                pooled[m.queryIdx].append((m.distance, m.trainIdx + start))
+
+    out = []
+    for qi, cands in enumerate(pooled):
+        cands.sort(key=lambda t: t[0])
+        out.append([_Match(qi, tidx, dist) for dist, tidx in cands[:k]])
+    return out
 
 
 def _failed_match(elapsed_ms):
@@ -333,27 +423,30 @@ if __name__ == "__main__":
         data[algo]["default"] = param_set_name
         _save_json(path, data)
 
-    def _build_default_ps(algo, grid, mpc):
+    def _build_default_ps(algo, grid, mpc, upscale=1.0):
         if algo == SURF:
             return ParamSet(algo=SURF, params=SurfParams(
                 hessian=40, octaves=8, layers=4,
                 extended=True, upright=True,
                 grid=grid, max_per_cell=mpc,
                 ratio=0.62, max_dist=0.50,
+                upscale=upscale,
             ))
         if algo == SIFT:
             return ParamSet(algo=SIFT, params=SiftParams(
                 contrast_threshold=0.02, edge_threshold=7,
                 n_octave_layers=5, sigma=1.6,
                 grid=grid, max_per_cell=mpc, ratio=0.75,
+                upscale=upscale,
             ))
         if algo == SIFTGZ:
             return ParamSet(algo=SIFTGZ, params=SiftGzParams(
                 contrast_threshold=0.02, edge_threshold=7,
                 n_octave_layers=2, sigma=1.6,
-                grid=grid, max_per_cell=mpc, ratio=0.75,
+                grid=grid, max_per_cell=mpc, ratio=0.60,
                 downscale=1, tile_size=14800, tile_overlap=512,
                 black_thresh=5, edge_margin=8, min_dist=4.0,
+                upscale=upscale,
             ))
         raise ValueError(f"unknown algo: {algo}")
 
@@ -371,6 +464,7 @@ if __name__ == "__main__":
                 downscale=p.downscale, tile_size=p.tile_size,
                 tile_overlap=p.tile_overlap, black_thresh=p.black_thresh,
                 edge_margin=p.edge_margin, min_dist=p.min_dist,
+                upscale=p.upscale,
             )
             return len(kps), h, w
         if algo == SURF:
@@ -385,6 +479,7 @@ if __name__ == "__main__":
         img = cv2.imread(png_path, cv2.IMREAD_GRAYSCALE)
         if img is None:
             raise ValueError(f"cannot read: {png_path}")
+        img = resize_for_upscale(img, p.upscale)
         h, w = img.shape[:2]
         kps, desc = cfg.detectAndCompute(img, None)
         if not kps or desc is None:
@@ -392,6 +487,43 @@ if __name__ == "__main__":
         sel_kps, sel_descs = grid_sample(kps, desc, h, w, p.grid, p.grid, p.max_per_cell)
         save_npz(out_path, sel_kps, sel_descs, h, w)
         return len(sel_kps), h, w
+
+    def _update_coords_json(src_dir, out_dir, upscale_by_map, explicit_path=None):
+        """把各地图的放大系数写进 ``map_coords.json``（scale 同步除以放大系数）。
+
+        源文件优先取 ``--coords``，否则依次在 ``--dir`` / ``--out`` 里找；
+        结果始终写到 ``--out``，多次执行幂等（放大系数记录在
+        ``feature_upscale``，可还原原始 scale）。
+        """
+        candidates = [explicit_path] if explicit_path else [
+            os.path.join(src_dir, COORDS_FILENAME),
+            os.path.join(out_dir, COORDS_FILENAME),
+        ]
+        base_path = next((p for p in candidates if p and os.path.exists(p)), None)
+        if base_path is None:
+            if any(float(u) != 1.0 for u in upscale_by_map.values()):
+                print(f"  WARNING: {COORDS_FILENAME} not found, coords scale NOT updated "
+                      f"(searched: {[p for p in candidates if p]})", file=sys.stderr)
+            return None
+
+        data = _load_json(base_path)
+        updated = {}
+        for map_id, upscale in upscale_by_map.items():
+            entry = data.get(map_id)
+            if entry is None or "scale" not in entry:
+                if float(upscale) != 1.0:
+                    print(f"  WARNING: no coords entry for map {map_id}, "
+                          f"scale NOT updated", file=sys.stderr)
+                continue
+            data[map_id] = apply_feature_upscale(entry, upscale)
+            updated[map_id] = data[map_id]["scale"][0]
+
+        dst = os.path.join(out_dir, COORDS_FILENAME)
+        _save_json(dst, data)
+        for map_id, scale in updated.items():
+            print(f"  coords {map_id}: upscale={upscale_by_map[map_id]} "
+                  f"scale -> {scale}", file=sys.stderr)
+        return dst
 
     def _cmd_extract(args):
         os.makedirs(args.out, exist_ok=True)
@@ -432,7 +564,8 @@ if __name__ == "__main__":
                 tasks.append((png_path, out_path, ps, param_set_name_arg))
         else:
             algo = args.algo.lower()
-            ps = _build_default_ps(algo, args.grid, args.max_per_cell)
+            ps = _build_default_ps(algo, args.grid, args.max_per_cell,
+                                   upscale=args.upscale)
             for png_path in sorted(png_files):
                 basename = os.path.splitext(os.path.basename(png_path))[0]
                 out_path = os.path.join(args.out, f"{basename}_{algo}.npz")
@@ -440,6 +573,7 @@ if __name__ == "__main__":
 
         results = []
         seen_algos = set()
+        upscale_by_map = {}
         for png_path, out_path, ps, ps_name in tasks:
             basename = os.path.splitext(os.path.basename(png_path))[0]
             try:
@@ -450,9 +584,17 @@ if __name__ == "__main__":
                     "algo": ps.algo,
                     "param_set": ps_name,
                     "size": [w, h],
+                    "upscale": float(ps.params.upscale),
                     "saved_features": total,
                 }
                 results.append(entry)
+                prev = upscale_by_map.get(basename)
+                if prev is not None and float(prev) != float(ps.params.upscale):
+                    print(f"  WARNING: map {basename} extracted with conflicting "
+                          f"upscale ({prev} vs {ps.params.upscale}); coords scale "
+                          f"keeps {prev}", file=sys.stderr)
+                else:
+                    upscale_by_map[basename] = float(ps.params.upscale)
                 print(f"  {basename} [{ps.algo}]: {total} features -> {out_path}", file=sys.stderr)
                 if not setting_path and ps.algo not in seen_algos:
                     _merge_setting_json(args.out, ps.algo, ps_name)
@@ -467,6 +609,10 @@ if __name__ == "__main__":
                 }
                 results.append(entry)
                 print(f"  {basename} [{ps.algo}]: ERROR: {e}", file=sys.stderr)
+
+        if upscale_by_map:
+            _update_coords_json(args.dir, args.out, upscale_by_map,
+                                explicit_path=getattr(args, 'coords', None))
 
         print(json.dumps(results, indent=2))
 
@@ -514,6 +660,13 @@ if __name__ == "__main__":
                     help="path to setting.json describing algorithms and params")
     ep.add_argument("--grid", type=int, default=100)
     ep.add_argument("--max-per-cell", type=int, default=160)
+    ep.add_argument("--upscale", type=float, default=1.0,
+                    help="upscale factor applied before extraction "
+                         "(1.0=off, non-integer allowed; ignored when "
+                         "--param-set/--setting provides one)")
+    ep.add_argument("--coords", default=None,
+                    help=f"path to {COORDS_FILENAME} to read as base; the updated "
+                         f"copy (scale / upscale) is always written to --out")
 
     mp = sub.add_parser("match", help="match a query image against a feature cache")
     mp.add_argument("--query", required=True, help="query image path")

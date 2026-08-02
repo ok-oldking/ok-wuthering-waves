@@ -9,13 +9,21 @@ from .common import (
     save_npz, load_npz, desc_mat_from_slice_fast,
     project_corners, compute_center, extract_scale_factor, _prepare_test_image,
     _failed_match, _filter_knn_matches, _estimate_homography,
+    resize_for_upscale, knn_match_l2,
 )
 
 
-def _extract(cfg, map_path, out_path, grid, mpc):
+def _extract(cfg, map_path, out_path, grid, mpc, upscale=1.0):
+    """提取大地图特征。
+
+    ``upscale > 1`` 时先按该系数放大整图再检测，关键点坐标与 npz 中的
+    ``map_size`` 都位于放大后的像素空间（对应 coords 的 ``scale`` 需除以
+    ``upscale``，见 :func:`src.match_engine.common.apply_feature_upscale`）。
+    """
     img = cv2.imread(map_path, cv2.IMREAD_GRAYSCALE)
     if img is None:
         raise ValueError(f"cannot read: {map_path}")
+    img = resize_for_upscale(img, upscale)
     h, w = img.shape[:2]
 
     kps, desc = cfg.detectAndCompute(img, None)
@@ -74,8 +82,7 @@ def _match_bf(cfg, test_src, cache, ratio_thresh, crop_size, region,
         if match_cache is None:
             return _failed_match((time.time() - start) * 1000)
 
-    matcher = cv2.BFMatcher(cv2.NORM_L2)
-    knn = matcher.knnMatch(desc, match_cache.desc_mat, 2)
+    knn = knn_match_l2(desc, match_cache.desc_mat, 2)
     good = _filter_knn_matches(knn, ratio_thresh)
 
     H, inlier_count = _estimate_homography(good, test_kps, match_cache, constrained)
@@ -104,12 +111,13 @@ class SiftEngine:
                  nfeatures=0, nOctaveLayers=5, contrastThreshold=0.02,
                  edgeThreshold=7, sigma=1.6,
                  grid=150, max_per_cell=200,
-                 ratio=0.75, coords_path=None):
+                 ratio=0.75, coords_path=None, upscale=1.0):
         self.map_id = map_id
         self.ratio = ratio
         self.grid = grid
         self.mpc = max_per_cell
         self.crop_size = 350
+        self.upscale = float(upscale)
 
         npz_path = os.path.join(assets_dir, f"{map_id}_sift.npz")
         self.cfg = cv2.SIFT_create(
@@ -120,7 +128,8 @@ class SiftEngine:
             self.cache = _load_cache(npz_path)
         else:
             os.makedirs(assets_dir, exist_ok=True)
-            kps, descs, h, w = _extract(self.cfg, map_path, npz_path, grid, max_per_cell)
+            kps, descs, h, w = _extract(self.cfg, map_path, npz_path, grid,
+                                        max_per_cell, upscale=self.upscale)
             desc_mat = desc_mat_from_slice_fast(descs)
             self.cache = MapCache(kps, descs, desc_mat, h, w)
 

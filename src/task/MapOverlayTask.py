@@ -1,6 +1,7 @@
 import json
 import math
 import os
+import threading
 import time
 from collections import deque
 from typing import NamedTuple, Optional
@@ -12,12 +13,17 @@ from qfluentwidgets import FluentIcon
 
 from ok import TriggerTask, Logger, og, get_path_relative_to_exe, Box
 from src.task.BaseWWTask import BaseWWTask
+from src.utils.AssetsDownloader import (
+    ASSETS_URL, download_and_extract, missing_required_assets, read_asset_version,
+)
 from src.utils.MapItemOverlay import (
     MapItemOverlay, ITEM_COLORS, ITEM_PIXMAPS, ICON_SIZE,
     DrawCandidate, build_overlay_draw_items, select_overlay_content,
     bubble_text, opacity_for, player_ocr_to_game_units, wrap_text,
+    format_status_lines, format_target_info, player_target_distance,
 )
 from src.utils.map_geometry import make_hitbox, bearing_degrees
+from src.utils.NodeIconCache import NodeIconCache
 from src.utils.PathRoute import load_path_route, build_path_layers, PathParseError, PathLayer, PATH_NODE_ICON_KEY
 from src.utils.TargetTracker import (
     THRESHOLD_MIN, THRESHOLD_MAX, validate_threshold, TargetTracker,
@@ -40,14 +46,37 @@ OVERLAY_DRAW_DURATION = 3.0
 
 MAP_DIR = get_path_relative_to_exe('assets', 'stitched')
 
+# 资源包（assets.zip）解压的根目录，即 MAP_DIR 的上一级 assets 目录。特征文件、物品
+# 数据库、坐标/参数配置与 version.txt 都在其 stitched/ 子目录内。
+ASSETS_DIR = os.path.dirname(MAP_DIR)
+
+# 资源下载/解压状态与版本号在面板上的 info_set 键。
+ASSETS_INFO_KEY = 'Map assets'
+ASSETS_VERSION_INFO_KEY = 'Map assets version'
+
+# 下载/解压前等待检测循环释放资源句柄（sqlite 连接、已加载特征）的最长秒数。检测循环
+# 未在运行时会自然超时，此时文件也不会被占用，可直接覆盖。
+ASSETS_SUSPEND_WAIT = 5.0
+
 # Fixed route file (Path_Mode source) and completion-marks database
 # (Requirements 4.2, 3.1). Resolved relative to the executable like MAP_DIR.
 PATH_FILE = get_path_relative_to_exe('assets', 'path.json')
 MARKS_DB_PATH = os.path.join(MAP_DIR, 'map_marks.db')
 
+# Local cache directory for downloaded route-node icons (Requirement 11.4).
+# Resolved relative to the executable like MAP_DIR / MARKS_DB_PATH so it lands
+# next to the stitched map assets.
+ICON_CACHE_DIR = os.path.join(MAP_DIR, 'icon_cache')
+
 # Hit_Box outward expansion in pixels for big-map clickable icons (the Hit_Box
 # definition allows 0..8px; Scheme C uses the upper bound for forgiving clicks).
 HITBOX_EXPAND = 8
+
+# 大地图图标的层级：已完成项置于底层（先绘制、命中优先级更低），未完成项在其上。
+# 绘制顺序按 draw_items 列表顺序（后画的盖在上面），点击命中用 z（topmost_hit 取最大
+# z），因此“置底”需要同时把已完成项排到列表最前并给更小的 z。
+COMPLETED_Z = 0
+ACTIVE_Z = 1
 
 
 class ClickTarget(NamedTuple):
@@ -77,6 +106,49 @@ class ClickTarget(NamedTuple):
     section_id: int = -1
     index: int = -1
     name: str = ""
+
+def sort_completed_to_bottom(draw_items, hitboxes, click_targets, completed_ids):
+    """把已完成项排到列表最前（先绘制=底层），返回重排后的三个同序列表。
+
+    大地图上已完成的物品/节点应该压在未完成项下面：绘制按 ``draw_items`` 顺序（后画的
+    盖在上面），点击命中按 z（:func:`~src.utils.map_geometry.topmost_hit` 取最大 z），
+    所以“置底”= 排到列表最前 + 给更小的 z。
+
+    - 稳定排序：同组内（都完成 / 都未完成）保持原有相对顺序，物品的距离排序与路线节点
+      的段内顺序都不被打乱；
+    - draw item 第 8 位的 z 与命中区的 z 一并改写为 :data:`COMPLETED_Z` /
+      :data:`ACTIVE_Z`，使重叠时点击优先落在未完成项上；
+    - 完成态优先用 :class:`ClickTarget` 的 ``ref_id`` 判定，缺失时回退 draw item 的
+      ``location_id``（第 7 位）；
+    - 三个列表长度不一致时原样返回（防御，避免点击索引错位）。
+    """
+    count = len(draw_items)
+    if count != len(hitboxes) or count != len(click_targets):
+        return list(draw_items), list(hitboxes), list(click_targets)
+    completed = completed_ids or set()
+    order = []
+    for index in range(count):
+        target = click_targets[index]
+        ref = getattr(target, 'ref_id', None)
+        if ref is None:
+            item = draw_items[index]
+            ref = item[6] if len(item) > 6 else None
+        done = ref is not None and ref in completed
+        order.append((COMPLETED_Z if done else ACTIVE_Z, index))
+    order.sort(key=lambda entry: (entry[0], entry[1]))
+    items, boxes, targets = [], [], []
+    for z, index in order:
+        item = draw_items[index]
+        if len(item) > 7:
+            item = tuple(item[:7]) + (z,)
+        items.append(item)
+        box = hitboxes[index]
+        if isinstance(box, tuple) and len(box) == 2:
+            box = (box[0], z)
+        boxes.append(box)
+        targets.append(click_targets[index])
+    return items, boxes, targets
+
 
 MAP_REGION_SIZE = 1000
 FRAME_CROP_SIZE = 400
@@ -119,6 +191,24 @@ BIG_MAP_COLOR_CHECKS = [
     ((0.035, 0.891), (236, 237, 235)),
 ]
 BIG_MAP_COLOR_TOLERANCE = 15
+
+
+def _map_region_size(coords_d, match_scale=None):
+    """搜索区域边长（大地图像素）。
+
+    区域只需覆盖「查询图投影到大地图上的尺寸」+ OCR 坐标误差余量，**不需要**随
+    ``feature_upscale`` 等比放大：放大后地图像素变多，但 OCR 给的中心点精度不变，
+    ``MAP_REGION_SIZE`` 在 ``us=2`` 下仍相当于原图 500 px（约 400 OCR 单位）的余量。
+    实测（906，``us=2``）把区域按放大系数放到 2000 只会让匹配从 ~40 ms 涨到 ~110 ms，
+    准确率反而略降（小地图 7/15 → 5/15），因此这里保持与 ``us=1`` 相同的基线。
+
+    ``match_scale`` 是上一次匹配得到的 ``map_scale``（大地图像素 / 查询像素，已经
+    包含放大系数），> 1 说明查询图比地图粗、投影后占更多地图像素，此时才需要放大区域。
+    """
+    size = MAP_REGION_SIZE
+    if match_scale is not None and match_scale > 1:
+        size = max(size, int(MAP_REGION_SIZE * match_scale))
+    return size
 
 
 def _filter_candidate_maps(ocr_pos, coords_dict):
@@ -168,6 +258,12 @@ class OverlayController:
         self._route = None
         self._tracker = None
         self._route_load_failed = False
+        # Route-node icon downloader/cache (Requirement 11). Created lazily on
+        # first entering Path_Mode (starts a background worker thread) and
+        # stopped in close(); ``None`` until then / when unavailable, in which
+        # case node rendering simply falls back to the qzx_04 icon.
+        self._icon_cache = None
+        self._icon_cache_failed = False
         # Completion marks (Requirement 3.5/3.6); loaded lazily, best-effort.
         self._marks_db = None
         self._completed_ids = set()
@@ -196,6 +292,11 @@ class OverlayController:
         # rebuilding from scratch on the task thread.
         self._last_draw_items: list = []
         self._last_path_layers: tuple = ()
+        # 与 _last_draw_items / _click_targets 同序的命中区，以及最近一帧的状态面板
+        # 文本。点击后重排（已完成项置底）需要三者一起换序，因此重绘走 render_frame
+        # 把内容 + 命中区 + 面板一次性下发，避免索引错位或面板丢失。
+        self._last_hitboxes: list = []
+        self._last_status_lines: tuple = ()
         # 大地图路线目标高亮点 (sx, sy) 或 None（无目标 / 找不到投影点）。每帧在
         # _build_bigmap_content 中根据 tracker.target 重算，传给交互窗口画 3px 红圈
         # （问题3）；右键取消目标后 tracker.target 变 None，下一帧此值即变 None，红圈消失。
@@ -203,6 +304,14 @@ class OverlayController:
         # 上一次设置到交互窗口的几何 (x, y, w, h)，未变化则跳过 set_window_geometry，
         # 减少多余 GUI 事件（额外优化）。
         self._last_geometry = None
+        # Status_Panel 最近一次的有效字段值（Requirement 12.10）：当玩家 OCR 坐标不可用
+        # 时，坐标显示「未知」而其余字段（地图 id / 比例 / 模式 / 目标信息）保留这些
+        # 最近有效值。地图 id / 比例仅在取到有效值（非 None）时更新；模式与目标信息在
+        # 玩家坐标可用时每帧更新（目标距离依赖玩家坐标）。
+        self._status_last_map_id = None
+        self._status_last_scale = None
+        self._status_last_mode = None
+        self._status_last_target_info = None
         # Connect the window's mouse signals to the controller exactly once.
         self._signals_connected = False
         # One-shot warning latches so the per-frame error paths surface their
@@ -278,12 +387,80 @@ class OverlayController:
             self._route_load_failed = True
             self.task.info_set('Path mode', f'路线加载失败，保持普通模式：{exc}')
             return False
-        threshold = self.task.config.get('Arrival threshold (game units)', 1000)
+        threshold = self.task.config.get('_Arrival threshold (game units)', 1000)
         if not validate_threshold(threshold):
             threshold = 1000
         self._tracker = TargetTracker(self._route, arrival_threshold=float(threshold))
         self._route_load_failed = False
+        # Route loaded successfully -> kick off node-icon prefetch for every
+        # node so their downloaded icons are ready (or being fetched) by the
+        # time they are rendered (Requirements 11.7, 5.2). Best-effort: any
+        # failure just leaves nodes on the qzx_04 fallback.
+        self._prefetch_node_icons()
         return True
+
+    # ------------------------------------------------------------------
+    # Route-node icons (Requirement 11): download/cache + per-node pixmap.
+    # ------------------------------------------------------------------
+    def _ensure_icon_cache(self):
+        """Lazily create the :class:`NodeIconCache`, failure-safe (Req 11).
+
+        The cache spins up a single background download thread on construction;
+        it is created only once, on first use in Path_Mode. If construction ever
+        fails the controller marks it unavailable and node rendering falls back
+        to the ``qzx_04`` icon everywhere -- the detection loop is never
+        interrupted (Requirement 11.12).
+        """
+        if self._icon_cache is not None:
+            return self._icon_cache
+        if self._icon_cache_failed:
+            return None
+        try:
+            self._icon_cache = NodeIconCache(cache_dir=ICON_CACHE_DIR)
+        except Exception as exc:
+            logger.warning(f"[Overlay] node icon cache create failed: {exc}")
+            self._icon_cache = None
+            self._icon_cache_failed = True
+            return None
+        return self._icon_cache
+
+    def _prefetch_node_icons(self) -> None:
+        """Enqueue a prefetch for every route node's ``positionImg`` (Req 11.7).
+
+        Gathers each node's ``position_img`` across all sections (blank/dupe
+        handling is done inside :meth:`NodeIconCache.prefetch`) and hands them to
+        the background downloader. Best-effort and non-fatal.
+        """
+        if self._route is None:
+            return
+        cache = self._ensure_icon_cache()
+        if cache is None:
+            return
+        position_imgs = [
+            node.position_img
+            for section in self._route.sections
+            for node in section.nodes
+        ]
+        try:
+            cache.prefetch(position_imgs)
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.warning(f"[Overlay] node icon prefetch failed: {exc}")
+
+    def _node_pixmap(self, position_img):
+        """Return the downloaded icon pixmap for ``position_img`` or ``None``.
+
+        Per-node lookup used by both the big-map node draw items and the minimap
+        route layers: returns the ready downloaded icon when available, else
+        ``None`` so callers fall back to the ``qzx_04`` icon (Requirements 5.2,
+        11.8, 11.9). Never raises -- a lookup failure yields ``None``.
+        """
+        cache = self._icon_cache
+        if cache is None:
+            return None
+        try:
+            return cache.get_pixmap(position_img)
+        except Exception:  # pragma: no cover - defensive, get_pixmap is safe
+            return None
 
     # ------------------------------------------------------------------
     # Completion marks (Requirements 3.5, 3.6, 3.7).
@@ -340,13 +517,19 @@ class OverlayController:
             # the edge direction arrow reflects the (possibly) advanced target
             # (Requirements 8.2, 9.1, 9.2). No target -> no-op (Requirement 9.4).
             self.maybe_auto_advance(player_pos)
-            self._draw_minimap_path(player_pos, state_id)
+            # Status_Panel text built after auto-advance so target info reflects
+            # the (possibly) advanced target; drawn on the ok OverlayWindow
+            # (Requirements 12.3, 12.9).
+            status_lines = self.compute_status_lines(player_pos, minimap=True)
+            self._draw_minimap_path(player_pos, state_id, status_lines=status_lines)
         else:
             # 普通模式：先加载完成集合再绘制，使小地图排除已完成物品（问题1a）。
             # build_draw_items(minimap=True) 会剔除 completed_ids 中的项。
             self._ensure_marks()
+            status_lines = self.compute_status_lines(player_pos, minimap=True)
             self.task._draw_overlay(
-                player_pos, state_id=state_id, completed_ids=self._completed_ids
+                player_pos, state_id=state_id, completed_ids=self._completed_ids,
+                status_lines=status_lines,
             )
 
     def on_bigmap(self, player_pos, game_scale) -> None:
@@ -383,9 +566,15 @@ class OverlayController:
         if window is None:
             # Create-failure fallback (Requirement 1.9): render the big map with
             # the ok OverlayWindow (not clickable) and surface a one-time message,
-            # without blocking map drag/zoom or background matching.
+            # without blocking map drag/zoom or background matching. The
+            # Status_Panel still renders on this fallback overlay (Requirement 12.9).
             self._warn_interaction()
-            self.task._draw_overlay_screen_center(player_pos, game_scale)
+            status_lines = self.compute_status_lines(
+                player_pos, minimap=False, game_scale=game_scale
+            )
+            self.task._draw_overlay_screen_center(
+                player_pos, game_scale, status_lines=status_lines
+            )
             return
         # A big-map pan/move closes any open Description_Bubble (Requirement 2.5).
         self._close_bubble_if_panned(player_pos)
@@ -404,19 +593,29 @@ class OverlayController:
         # 交互窗口不再画线，故缓存的 path_layers 恒为空，_rerender_bigmap 也不带线。
         self._last_draw_items = list(window_draw_items)
         self._last_path_layers = ()
+        self._last_hitboxes = list(hitboxes)
         # 几何仅在变化时才重设，减少多余 GUI 事件（额外优化）。
         geometry = self._client_geometry()
         if geometry != self._last_geometry:
             self._last_geometry = geometry
             window.set_window_geometry(*geometry)
         window.show_overlay()
-        # 合并为单次渲染帧：内容 + 气泡 + 命中区在同一个 GUI 事件里原子更新，避免
-        # render_items / update_mask 两次排队信号产生的半更新中间帧。连线已分流到 ok
-        # 覆盖层，故 path_layers 传空 () —— 交互窗口 _compose_mask_region 里路线 stroker
-        # 部分为空，掩码只剩节点命中区(+气泡)。
+        # Status_Panel text for the big map (Requirements 12.3, 12.9), built after
+        # the (possible) auto-advance above so target info reflects the current
+        # target; rendered on the InteractionOverlayWindow and its box unioned
+        # into setMask so it is not clipped (Requirement 12.8).
+        status_lines = self.compute_status_lines(
+            player_pos, minimap=False, game_scale=game_scale
+        )
+        self._last_status_lines = tuple(status_lines) if status_lines else ()
+        # 合并为单次渲染帧：内容 + 气泡 + 命中区 + 状态面板在同一个 GUI 事件里原子更新，
+        # 避免 render_items / update_mask 两次排队信号产生的半更新中间帧。连线已分流到
+        # ok 覆盖层，故 path_layers 传空 () —— 交互窗口 _compose_mask_region 里路线
+        # stroker 部分为空，掩码只剩节点命中区(+气泡+状态面板)。
         window.render_frame(
             window_draw_items, bubble=self._bubble, path_layers=(),
             hitboxes=hitboxes, target_marker=self._last_target_marker,
+            status_lines=status_lines,
         )
 
     def on_idle(self) -> None:
@@ -526,6 +725,8 @@ class OverlayController:
             self._completed_ids, new_completed
         )
         self._refresh_completion_opacity()
+        # 标记/取消标记后立即把已完成项压到底层（含命中区同步换序），无需等下一帧。
+        self._reorder_completed_to_bottom()
         self._rerender_bigmap()
 
     def close_bubble(self) -> None:
@@ -670,13 +871,20 @@ class OverlayController:
         Used by click handlers (running on the GUI thread) to reflect a bubble
         or completion-opacity change immediately, without rebuilding content on
         the task thread.
+
+        走 ``render_frame`` 下发完整一帧（内容 + 气泡 + 命中区 + 目标高亮 + 状态面板）：
+        标记完成/取消完成后已完成项会被排到底层，绘制顺序与命中区必须同步换序，否则
+        点击索引会错位；同时状态面板也不会因为重绘而消失。
         """
         window = self._interaction_window
         if window is None:
             return
-        window.render_items(
+        window.render_frame(
             self._last_draw_items, bubble=self._bubble,
             path_layers=self._last_path_layers,
+            hitboxes=self._last_hitboxes,
+            target_marker=self._last_target_marker,
+            status_lines=self._last_status_lines,
         )
 
     def _refresh_completion_opacity(self) -> None:
@@ -689,6 +897,21 @@ class OverlayController:
                 item = item[:5] + (opacity,) + item[6:]
             refreshed.append(item)
         self._last_draw_items = refreshed
+
+    def _reorder_completed_to_bottom(self) -> None:
+        """把缓存帧里的已完成项排到底层（点击后即时生效）。
+
+        对 ``_last_draw_items`` / ``_last_hitboxes`` / ``_click_targets`` 三个同序列表
+        一起做稳定重排（见 :func:`sort_completed_to_bottom`），保证绘制顺序、命中掩码与
+        点击索引到 :class:`ClickTarget` 的映射始终对应。
+        """
+        items, boxes, targets = sort_completed_to_bottom(
+            self._last_draw_items, self._last_hitboxes, self._click_targets,
+            self._completed_ids,
+        )
+        self._last_draw_items = items
+        self._last_hitboxes = boxes
+        self._click_targets = targets
 
     def _persist_mark_change(self, old_completed, new_completed) -> set:
         """Write the add/remove implied by a completion-set change to Marks_DB.
@@ -802,7 +1025,7 @@ class OverlayController:
         else:
             scale = task._get_default_scale_per_1000() / 1000.0
 
-        type_filter = task.config.get('Item type filter')
+        type_filter = task.config.get('_Item type filter')
         player_x = player_pos[0] * 100
         player_y = player_pos[1] * 100
 
@@ -855,6 +1078,10 @@ class OverlayController:
             window_draw_items = db_items
             line_layers = ()
 
+        # 初次/每帧渲染都把已完成项压到底层（绘制顺序 + 命中 z 同步换序）。
+        window_draw_items, hitboxes, click_targets = sort_completed_to_bottom(
+            window_draw_items, hitboxes, click_targets, completed
+        )
         self._click_targets = click_targets
         self._last_target_marker = self._compute_target_marker(click_targets)
         return window_draw_items, line_layers, hitboxes
@@ -900,9 +1127,10 @@ class OverlayController:
             return (), node_draw_items, node_hitboxes, node_click_targets
 
         overlay = self.task._overlay
-        # 节点图标统一使用 qzx_04（Requirement 5.2）；颜色/图标从 MapItemOverlay 常量取，
-        # opacity 依完成集合决定（完成路线节点变暗 0.4）。
-        node_pixmap = ITEM_PIXMAPS.get(PATH_NODE_ICON_KEY)
+        # 节点图标：优先使用该节点从网络下载的专属图标（NodeIconCache），未就绪 / 无
+        # positionImg / 下载失败时回退统一的 qzx_04（Requirements 5.2, 11.8, 11.9）。
+        # 颜色从 MapItemOverlay 常量取，opacity 依完成集合决定（完成路线节点变暗 0.4）。
+        fallback_pixmap = ITEM_PIXMAPS.get(PATH_NODE_ICON_KEY)
         node_color = ITEM_COLORS.get(PATH_NODE_ICON_KEY)
         for section in self._route.sections:
             nodes = section.nodes
@@ -953,6 +1181,10 @@ class OverlayController:
                     )
                     # 可见节点的绘制项（交互窗口画节点图标）：8-tuple 顺序与命中区/
                     # ClickTarget 完全一致；opacity 依完成集合（完成路线节点变暗 0.4）。
+                    # 每节点优先用下载图标，未就绪回退 qzx_04（Requirements 5.2, 11.8）。
+                    node_pixmap = self._node_pixmap(node.position_img)
+                    if node_pixmap is None:
+                        node_pixmap = fallback_pixmap
                     node_draw_items.append(
                         (int(px), int(py), node_pixmap, node.position_name,
                          node_color,
@@ -1003,8 +1235,13 @@ class OverlayController:
             )
         return boxes, targets
 
-    def _draw_minimap_path(self, player_pos, state_id) -> None:
-        """Draw route layers on the minimap via the ok OverlayWindow."""
+    def _draw_minimap_path(self, player_pos, state_id, status_lines=None) -> None:
+        """Draw route layers on the minimap via the ok OverlayWindow.
+
+        ``status_lines`` (optional) is the Status_Panel text drawn at the client
+        area's bottom-left corner, outside the round-minimap clip
+        (Requirements 12.3, 12.9).
+        """
         task = self.task
         overlay_view = task.get_overlay_view()
         if overlay_view is None:
@@ -1025,9 +1262,13 @@ class OverlayController:
         # 自身的 state_id 构建层（问题1b/1c）。这样只要 OCR 坐标匹配即可绘制路线，
         # 远处的点投影后会被下方 clip_box 的小地图圆形裁剪自然隐藏。
         if self._route is not None:
+            # 每节点传入下载图标（NodeIconCache），未就绪回退 qzx_04：build_path_layers
+            # 会对每个节点调用 getter 填充 PathLayer.node_pixmaps，paint_path_layers 优先
+            # 用之、否则回退 node_icon（Requirements 5.2, 11.8, 11.9）。
             layers = build_path_layers(
                 self._route, self._route.state_id,
                 player_x, player_y, scale, center_x, center_y,
+                node_pixmap_getter=self._node_pixmap,
             )
         edge_arrow = self._edge_arrow(player_pos, minimap_box)
         # 目标红圈（问题1b）：tracker 有目标时取目标节点，投影到小地图坐标作为
@@ -1042,7 +1283,7 @@ class OverlayController:
         # minimap_box 即上面通过 get_box_by_name('box_minimap') 获取的小地图框。
         callback = MapItemOverlay.make_paint_callback(
             [], path_layers=layers, edge_arrow=edge_arrow, clip_box=minimap_box,
-            target_marker=target_marker,
+            target_marker=target_marker, status_lines=status_lines,
         )
         overlay_view.draw(OVERLAY_DRAW_KEY, callback, duration=OVERLAY_DRAW_DURATION)
         task._overlay_registered = True
@@ -1104,6 +1345,133 @@ class OverlayController:
             return int(lid)
         except (TypeError, ValueError):
             return None
+
+    # ------------------------------------------------------------------
+    # Status_Panel text (Requirement 12): built each frame and dispatched to
+    # both render targets (minimap ok OverlayWindow / big-map InteractionWindow).
+    # ------------------------------------------------------------------
+    def compute_status_lines(self, player_pos, *, minimap, game_scale=None):
+        """Build the left-bottom Status_Panel text lines for the current frame.
+
+        Assembles the player coordinates, locked map id, map scale (pixels per
+        1000 game units), mode (大地图/小地图 + 普通/路线) and tracking-target info
+        into the fixed line order via :func:`format_status_lines`
+        (Requirement 12.4). Called every frame from ``on_minimap`` / ``on_bigmap``
+        and handed to the matching render target (Requirement 12.9).
+
+        Field availability follows Requirements 12.10 / 12.11:
+
+        - when the player's OCR coordinates are unavailable the coordinate field
+          shows "未知" and the remaining fields keep their most recent valid
+          values (Requirement 12.10);
+        - when the map is not locked / the scale is unavailable those fields show
+          "未知" (Requirement 12.11).
+
+        面板开关（配置项 ``Show status panel``）关闭时直接返回空序列，两个渲染目标
+        （小地图 ok 覆盖层 / 大地图交互窗口）都会因此跳过面板绘制。
+        """
+        if not self.task.config.get('Show status panel', True):
+            return ()
+
+        map_mode = '小地图' if minimap else '大地图'
+        path_desc = '路线模式' if self._path_mode else '普通模式'
+        mode_desc = f'{map_mode} / {path_desc}'
+
+        map_id = self.task._locked_map_id
+        scale_per_1000 = self._status_scale_per_1000(minimap, game_scale)
+        target_info = self._compute_target_info(player_pos)
+
+        if self._valid_player_pos(player_pos):
+            # Player coordinates available -> reflect current values (an unlocked
+            # map / unavailable scale renders "未知" via format_status_lines,
+            # Requirement 12.11) and refresh the last-valid cache.
+            if map_id is not None:
+                self._status_last_map_id = map_id
+            if scale_per_1000 is not None:
+                self._status_last_scale = scale_per_1000
+            self._status_last_mode = mode_desc
+            self._status_last_target_info = target_info
+            return format_status_lines(
+                player_pos, map_id, scale_per_1000, mode_desc, target_info
+            )
+
+        # Player coordinates unavailable -> coordinate "未知", keep the other
+        # fields' last valid values (Requirement 12.10).
+        last_mode = self._status_last_mode if self._status_last_mode is not None else mode_desc
+        last_target = (
+            self._status_last_target_info
+            if self._status_last_target_info is not None
+            else target_info
+        )
+        return format_status_lines(
+            None, self._status_last_map_id, self._status_last_scale,
+            last_mode, last_target,
+        )
+
+    def _status_scale_per_1000(self, minimap, game_scale):
+        """Resolve the map scale (pixels per 1000 game units) for the panel.
+
+        Uses the same metric each render path already relies on so the panel
+        matches what is drawn: the minimap reuses
+        :meth:`MapOverlayTask._minimap_scale_per_1000`; the big map derives it
+        from ``game_scale`` (pixels per game unit -> ``1000 / game_scale``),
+        falling back to the default when ``game_scale`` is unavailable (mirroring
+        ``on_bigmap`` / ``_draw_overlay_screen_center``). Returns ``None`` only on
+        a genuine failure so the panel shows "未知" (Requirement 12.11).
+        """
+        try:
+            if minimap:
+                scale = self.task._minimap_scale_per_1000()
+            elif game_scale is not None and 0.01 < game_scale:
+                scale = 1000.0 / game_scale
+            else:
+                scale = self.task._get_default_scale_per_1000()
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.warning(f"[Overlay] status scale unavailable: {exc}")
+            return None
+        if scale is None or scale <= 0:
+            return None
+        return scale
+
+    def _compute_target_info(self, player_pos):
+        """Build the tracking-target info string for the Status_Panel.
+
+        Delegates the three-way formatting to :func:`format_target_info`
+        (Requirements 12.5, 12.6, 12.7): "无" outside Path_Mode, "无目标" in
+        Path_Mode without a Target, and the ``目标：段.. 第../..  距离..`` string
+        when a Target is set. ``sectionIndex`` is the owning Section's 1-based
+        position in ``route.sections``; ``nodeIndex`` is ``tracker.target.index +
+        1`` (1-based); ``total`` is the Section's node count; the distance is the
+        player-to-target distance in game units (player OCR coords x100).
+        """
+        if not self._path_mode:
+            return format_target_info(False, None, 0, 0, 0, "", 0)
+        tracker = self._tracker
+        target = tracker.target if tracker is not None else None
+        if target is None:
+            return format_target_info(True, None, 0, 0, 0, "", 0)
+        node = self._target_node()
+        if node is None or self._route is None:
+            # Target set but its node can't be resolved -> treat as no target.
+            return format_target_info(True, None, 0, 0, 0, "", 0)
+        section_index = None
+        total = 0
+        for idx, section in enumerate(self._route.sections, start=1):
+            if section.section_id == target.section_id:
+                section_index = idx
+                total = len(section.nodes)
+                break
+        if section_index is None:
+            return format_target_info(True, None, 0, 0, 0, "", 0)
+        node_index = target.index + 1
+        if self._valid_player_pos(player_pos):
+            distance = player_target_distance(player_pos, node.x, node.y)
+        else:
+            distance = 0
+        return format_target_info(
+            True, target, section_index, node_index, total,
+            node.position_name, distance,
+        )
 
     # ------------------------------------------------------------------
     # Interaction window lifecycle (cross-thread safe)
@@ -1230,8 +1598,14 @@ class OverlayController:
             self._interaction_window.hide_overlay()
 
     def close(self) -> None:
-        """Release the interaction window and marks DB (task on_destroy)."""
+        """Release the interaction window, node icon cache and marks DB."""
         self._stop_hotkey()
+        if self._icon_cache is not None:
+            try:
+                self._icon_cache.stop()
+            except Exception:  # pragma: no cover - thread/runtime specific
+                pass
+            self._icon_cache = None
         if self._interaction_window is not None:
             try:
                 self._interaction_window.hide_overlay()
@@ -1261,16 +1635,20 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             '_Auto map scale': True,
             '_Map scale (pixels per 1000 units)': 11.45,
             'World map overlay': True,
-            'Item type filter': ['qzx_01', 'qzx_02', 'qzx_03', 'qzx_04'],
+            # 下划线前缀 = 不在面板显示（保留可配置能力，默认全选四类物品）
+            '_Item type filter': ['qzx_01', 'qzx_02', 'qzx_03', 'qzx_04'],
             '_Feature algorithm': 'SIFTGZ',
             # Path Mode 开关：Normal_Mode(False) <-> Path_Mode(True)（需求 4.1）
             'Path mode': False,
             # 到达阈值（游戏单位），默认 1000，有效范围 1..100000（需求 9.7、9.8）
-            'Arrival threshold (game units)': 1000,
+            # 下划线前缀 = 不在面板显示
+            '_Arrival threshold (game units)': 1000,
             # 推进热键，pynput GlobalHotKeys 格式，默认 Ctrl+F9（需求 9.9）
             'Advance hotkey': '<ctrl>+<f9>',
+            # 左下角信息面板（Status_Panel）开关，默认显示
+            'Show status panel': True,
         })
-        self.config_type['Item type filter'] = {'type': 'multi_selection', 'options': [
+        self.config_type['_Item type filter'] = {'type': 'multi_selection', 'options': [
             'qzx_01', 'qzx_02', 'qzx_03', 'qzx_04',
         ]}
         self.config_type['_Feature algorithm'] = {'type': 'drop_down', 'options': [
@@ -1278,13 +1656,23 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         ]}
         # SpinBox 控件按此范围限制输入；越界值在 validate_config 中由
         # validate_threshold 再次校验并拒绝（需求 9.7、9.8）。
-        self.config_type['Arrival threshold (game units)'] = {
+        self.config_type['_Arrival threshold (game units)'] = {
             'min': THRESHOLD_MIN, 'max': THRESHOLD_MAX,
         }
+        # 资源下载按钮：点击后后台下载 assets.zip 并覆盖解压到 assets 目录。该键不写入
+        # default_config，因此不会被持久化，仅作为面板上的一个操作按钮。
+        self.config_type['Download map assets'] = {
+            'type': 'button',
+            'text': 'Download Map Assets',
+            'icon': FluentIcon.CLOUD_DOWNLOAD,
+            'callback': self.start_assets_download,
+        }
+        # 面板可见文案统一用英文源串，由 i18n/<locale>/LC_MESSAGES/ok.po 提供翻译。
         self.config_description = {
-            'Path mode': '路线模式：仅显示 assets/path.json 路线，不显示高价值物品',
-            'Arrival threshold (game units)': f'自动推进到达阈值（游戏单位），范围 {THRESHOLD_MIN}..{THRESHOLD_MAX}',
-            'Advance hotkey': '手动推进目标的热键（pynput 格式，如 <ctrl>+<f9>）',
+            'Path mode': 'Show only the route from assets/path.json, hide high-value items',
+            'Advance hotkey': 'Hotkey to advance the target manually (pynput format, e.g. <ctrl>+<f9>)',
+            'Show status panel': 'Show the info panel at the bottom-left corner of the game window',
+            'Download map assets': 'Download the latest map assets and extract them into the assets folder',
         }
         self._window = None
         self._last_valid = None
@@ -1312,6 +1700,49 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         self._fallback_log_counter = 0
         self._ocr_noresult_counter = 0
         self._position_detector = None
+        # 资源下载：后台线程 + 与检测循环的挂起握手。
+        # ``_assets_suspend``：下载线程置位，要求检测循环释放对资源文件的占用；
+        # ``_assets_released``：检测循环释放完成后置位，下载线程据此开始写文件。
+        self._assets_lock = threading.Lock()
+        self._assets_thread = None
+        self._assets_suspend = threading.Event()
+        self._assets_released = threading.Event()
+        # 资源下载的 GUI 助手（进度弹窗 + 手动下载提示），归属 GUI 线程，惰性创建。
+        self._assets_gui = None
+        self._assets_gui_unavailable = False
+        # 启用附加功能后的一次性检查（展示版本号 + 资源缺失时自动下载）是否已做过。
+        self._feature_started = False
+
+    def on_create(self):
+        super().on_create()
+        # 程序启动后模式总是重置回普通模式，避免上次退出时残留在路线模式。
+        if self.config.get('Path mode', False):
+            self.config['Path mode'] = False
+        # 用户点“停止”只会让执行器暂停（不会走 disable/on_destroy），run() 随之停摆，
+        # 交互窗口若不主动隐藏就会残留在游戏画面上，因此在这里挂一次暂停回调。
+        try:
+            from ok.gui.Communicate import communicate
+
+            communicate.executor_paused.connect(self._on_executor_paused)
+        except Exception as e:  # pragma: no cover - Qt 运行时相关
+            logger.warning(f'[Overlay] connect executor_paused failed: {e}')
+
+    def _on_executor_paused(self, paused):
+        """执行器暂停时强制清一遍附加层；恢复运行时由检测循环重新绘制。"""
+        if paused:
+            self._force_clear_overlay()
+
+    def enable(self):
+        super().enable()
+        # enable() 会 info_clear()，因此版本号等信息在其之后重新写入。
+        self._ensure_feature_started()
+
+    def disable(self):
+        super().disable()
+        # 下次启用时重新检查资源与版本号。
+        self._feature_started = False
+        # 停用附加功能时强制清一遍附加层，避免最后一帧残留在游戏画面上。
+        self._force_clear_overlay()
 
     def validate_config(self, key, value):
         """校验配置项；返回非空消息表示拒绝该值。
@@ -1321,13 +1752,166 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         ``validate_threshold`` 做范围判定（1..100000 游戏单位），并经 ``info_set``
         额外提示一条配置无效信息。
         """
-        if key == 'Arrival threshold (game units)':
+        if key == '_Arrival threshold (game units)':
             if not validate_threshold(value):
                 message = (f"到达阈值无效：{value!r}，须为 "
                            f"{THRESHOLD_MIN}..{THRESHOLD_MAX} 游戏单位，已保留上一有效值")
                 self.info_set('Config error', message)
                 return message
         return None
+
+    # ------------------------------------------------------------------
+    # 资源包（assets.zip）下载 / 覆盖解压
+    # ------------------------------------------------------------------
+    def _ensure_feature_started(self):
+        """启用附加功能后的一次性处理：展示资源版本号，缺资源时自动下载。
+
+        版本号取自资源包内的 ``assets/stitched/version.txt``；当特征文件、物品数据库
+        等关键资源缺失时，等价于自动点击一次“下载资源”按钮。
+        """
+        if self._feature_started:
+            return
+        self._feature_started = True
+        self.info_set(ASSETS_VERSION_INFO_KEY, read_asset_version(ASSETS_DIR) or '未知')
+        missing = missing_required_assets(ASSETS_DIR)
+        if missing:
+            logger.warning(f'[MapAssets] missing resources: {missing}')
+            self.info_set(ASSETS_INFO_KEY,
+                          f'资源缺失（{", ".join(missing)}），开始自动下载')
+            self.start_assets_download()
+
+    def start_assets_download(self, *args):
+        """下载资源按钮的回调（GUI 线程）：在后台线程下载并覆盖解压资源包。
+
+        ``*args`` 吸收 Qt ``clicked`` 信号可能带的 checked 参数。防重复：线程句柄的
+        创建与 ``is_alive()`` 判定都在 ``_assets_lock`` 内完成，重复点击（或点击时自动
+        下载已在跑）只会提示“已在进行中”，同一时间最多一个下载任务。进度与解压状态通过
+        :meth:`_assets_progress` 写入面板。
+        """
+        with self._assets_lock:
+            if self._assets_thread is not None and self._assets_thread.is_alive():
+                self.info_set(ASSETS_INFO_KEY, '资源下载已在进行中')
+                return
+            thread = threading.Thread(
+                target=self._download_assets, name='MapAssetsDownload', daemon=True
+            )
+            self._assets_thread = thread
+            self.info_set(ASSETS_INFO_KEY, '准备下载资源包')
+            # 唤出带进度条的弹窗（GUI 线程执行；无 GUI 时静默跳过，只走面板状态）。
+            helper = self._ensure_assets_gui()
+            if helper is not None:
+                helper.started.emit()
+            thread.start()
+
+    def _download_assets(self):
+        """后台线程：挂起检测循环 -> 下载 -> 覆盖解压 -> 恢复检测循环。
+
+        解压会覆盖 ``map_items.db`` / ``*_siftgz.npz`` 等正在被使用的文件，因此先请求
+        检测循环释放这些句柄（见 :meth:`_release_map_resources`）；检测循环未运行时
+        等待超时后直接继续，此时文件本就没有被占用。进度、解压状态与最终结果通过
+        :class:`~src.utils.AssetsProgressDialog.AssetsGuiHelper` 的信号同步到进度弹窗。
+        """
+        self._assets_suspend.set()
+        self._assets_released.wait(ASSETS_SUSPEND_WAIT)
+        helper = self._assets_gui
+        try:
+            version = download_and_extract(
+                ASSETS_DIR, progress=self._assets_progress
+            )
+            self.info_set(ASSETS_VERSION_INFO_KEY, version or '未知')
+            if helper is not None:
+                helper.finished.emit(f'资源更新完成，版本 {version or "未知"}', True)
+        except Exception as e:
+            # 不做自动重试：弹窗提示用户手动下载并解压（需求：失败即提示）。
+            logger.error(f'[MapAssets] download failed: {e}')
+            self.info_set(ASSETS_INFO_KEY, f'资源下载失败：{e}')
+            if helper is not None:
+                helper.finished.emit(f'资源下载失败：{e}', False)
+            self._alert_manual_download(e)
+        finally:
+            self._assets_released.clear()
+            self._assets_suspend.clear()
+
+    def _assets_progress(self, stage, message, percent=-1.0):
+        """把下载进度 / 解压状态写到面板（``info_set``）并同步到进度弹窗。"""
+        self.info_set(ASSETS_INFO_KEY, message)
+        if stage in ('done', 'extract'):
+            logger.info(f'[MapAssets] {message}')
+        helper = self._assets_gui
+        if helper is not None:
+            helper.progress.emit(message, float(percent))
+
+    def _alert_manual_download(self, error):
+        """下载失败时弹窗提示手动下载：给出下载链接与要解压到的目录。
+
+        文案经 :meth:`tr` 走 gettext 翻译；弹窗必须在 GUI 线程弹出，因此通过
+        :class:`~src.utils.AssetsProgressDialog.AssetsGuiHelper` 的 ``alert`` 信号投递。
+        """
+        title = self.tr('Map assets download failed')
+        template = self.tr(
+            'Failed to download map assets: {error}\n\n'
+            'Please download it manually:\n{url}\n\n'
+            'Then extract it into this folder (overwrite):\n{path}'
+        )
+        try:
+            message = template.format(error=error, url=ASSETS_URL, path=ASSETS_DIR)
+        except (KeyError, IndexError):  # pragma: no cover - 翻译占位符错误时的兜底
+            message = (f'Failed to download map assets: {error}\n\n{ASSETS_URL}\n\n'
+                       f'{ASSETS_DIR}')
+        helper = self._ensure_assets_gui()
+        if helper is None:
+            logger.warning('[MapAssets] no GUI available for manual download alert')
+            return
+        helper.alert.emit(title, message)
+
+    def _ensure_assets_gui(self):
+        """惰性创建资源下载的 GUI 助手（归属 GUI 线程），无 Qt 时返回 ``None``。"""
+        if self._assets_gui is not None:
+            return self._assets_gui
+        if self._assets_gui_unavailable:
+            return None
+        try:
+            from src.utils.AssetsProgressDialog import create_gui_helper
+
+            helper = create_gui_helper()
+        except Exception as e:  # pragma: no cover - Qt 运行时相关
+            logger.warning(f'[MapAssets] create gui helper failed: {e}')
+            helper = None
+        if helper is None:
+            self._assets_gui_unavailable = True
+            return None
+        self._assets_gui = helper
+        return helper
+
+    def _release_map_resources(self):
+        """释放对资源文件的占用，供覆盖解压使用。
+
+        关闭覆盖层控制器（含标记数据库、节点图标缓存、交互窗口）与物品数据库连接，
+        丢弃已加载的特征引擎与坐标缓存，并解除地图锁定；解压完成后这些对象都会在下一
+        帧按需重新创建，从而用上新资源。
+        """
+        self._clear_overlay()
+        if self._overlay_controller is not None:
+            try:
+                self._overlay_controller.close()
+            except Exception as e:  # pragma: no cover - 运行时相关
+                logger.warning(f'[MapAssets] close overlay controller failed: {e}')
+            self._overlay_controller = None
+        if self._overlay is not None:
+            try:
+                self._overlay.close()
+            except Exception as e:  # pragma: no cover - 运行时相关
+                logger.warning(f'[MapAssets] close overlay db failed: {e}')
+            self._overlay = None
+        self._engines.clear()
+        self._coords_dict = None
+        self._engine_settings = None
+        self._locked_map_id = None
+        self._minimap_match_scale = None
+        self._last_minimap_scale_per_1000 = None
+        self._last_match_scale = None
+        self._lock_ocr_pos = None
+        self._second_check_done = False
 
     def _get_position_detector(self):
         if self._position_detector is None:
@@ -1567,9 +2151,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                 pixel_x = (game_x - offset_x) / scale
                 pixel_y = (game_y - offset_y) / scale
 
-                region_size = MAP_REGION_SIZE
-                if self._last_match_scale is not None and self._last_match_scale > 1:
-                    region_size = max(MAP_REGION_SIZE, int(MAP_REGION_SIZE * self._last_match_scale))
+                region_size = _map_region_size(coords_d, self._last_match_scale)
                 half_r = region_size // 2
                 region = (int(pixel_x - half_r), int(pixel_y - half_r), region_size, region_size)
                 region_str = f"region=({region[0]},{region[1]},{region[2]}x{region[3]})"
@@ -1657,7 +2239,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             pixel_x = (game_x - offset_x) / scale
             pixel_y = (game_y - offset_y) / scale
 
-            region_size = MAP_REGION_SIZE
+            region_size = _map_region_size(coords_d, self._minimap_match_scale)
             half_r = region_size // 2
             region = (int(pixel_x - half_r), int(pixel_y - half_r), region_size, region_size)
 
@@ -1721,7 +2303,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         pixel_x = (game_x - offset_x) / scale
         pixel_y = (game_y - offset_y) / scale
 
-        region_size = MAP_REGION_SIZE
+        region_size = _map_region_size(coords_d, self._minimap_match_scale)
         half_r = region_size // 2
         region = (int(pixel_x - half_r), int(pixel_y - half_r), region_size, region_size)
 
@@ -1758,6 +2340,17 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         return matches >= 3
 
     def run(self):
+        # 资源下载/解压期间挂起检测：先释放数据库与特征文件句柄再让解压覆盖它们。
+        if self._assets_suspend.is_set():
+            if not self._assets_released.is_set():
+                self._release_map_resources()
+                self._assets_released.set()
+            self.sleep(0.5)
+            return
+
+        # 启用附加功能后的一次性检查（版本号展示 + 资源缺失自动下载）。配置里已启用、
+        # 程序启动后直接进入循环的情况也会在这里覆盖到。
+        self._ensure_feature_started()
 
         if self.scene.in_team(self.in_team_and_world):
             self._fallback_failures = 0
@@ -1877,9 +2470,12 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                     logger.warning(
                         f"[MapFallback] failed {self._fallback_failures}/{FALLBACK_MAX_FAILURES}"
                     )
-                    # 大地图匹配失败（丢失定位）：清理交互窗口绘制（问题3b）。
-                    # 不改变回退计数与重试逻辑。
-                    self._overlay_ctl().on_idle()
+                    # 前几次失败只保留当前附加层，继续进行回退匹配，避免在
+                    # “本次失败、下一次成功”之间隐藏/重新显示而产生闪烁。
+                    # 连续达到最大失败次数后，才清理完整附加层。
+                    if self._fallback_failures >= FALLBACK_MAX_FAILURES:
+                        self._clear_overlay()
+                        self._overlay_ctl().on_idle()
                 else:
                     self._last_match_scale = result.map_scale
                     self._fallback_failures = 0
@@ -1965,7 +2561,8 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
 
     _scale_log_counter = 0
 
-    def _draw_overlay(self, player_pos, state_id=None, completed_ids=None):
+    def _draw_overlay(self, player_pos, state_id=None, completed_ids=None,
+                      status_lines=None):
         overlay_view = self.get_overlay_view()
         if overlay_view is None:
             return
@@ -1991,7 +2588,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                 f"search_radius={radius:.0f}"
             )
 
-        type_filter = self.config.get('Item type filter')
+        type_filter = self.config.get('_Item type filter')
         player_x = player_pos[0] * 100
         player_y = player_pos[1] * 100
 
@@ -2000,7 +2597,9 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             state_id=state_id, completed_ids=completed_ids
         )
 
-        callback = MapItemOverlay.make_paint_callback(draw_items)
+        callback = MapItemOverlay.make_paint_callback(
+            draw_items, status_lines=status_lines
+        )
         overlay_view.draw(OVERLAY_DRAW_KEY, callback, duration=OVERLAY_DRAW_DURATION)
         self._overlay_registered = True
 
@@ -2014,7 +2613,8 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         game_scale = result.map_scale * coords_scale[0]
         return game_scale
 
-    def _draw_overlay_screen_center(self, player_pos, game_scale=None):
+    def _draw_overlay_screen_center(self, player_pos, game_scale=None,
+                                    status_lines=None):
         overlay_view = self.get_overlay_view()
         if overlay_view is None:
             return
@@ -2025,7 +2625,7 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         else:
             scale_per_1000 = self._get_default_scale_per_1000()
             scale = scale_per_1000 / 1000.0
-        type_filter = self.config.get('Item type filter')
+        type_filter = self.config.get('_Item type filter')
         player_x = player_pos[0] * 100
         player_y = player_pos[1] * 100
 
@@ -2049,7 +2649,9 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             color = ITEM_COLORS.get(type_id)
             draw_items.append((sx, sy, pixmap, name, color))
 
-        callback = MapItemOverlay.make_paint_callback(draw_items)
+        callback = MapItemOverlay.make_paint_callback(
+            draw_items, status_lines=status_lines
+        )
         overlay_view.draw(OVERLAY_DRAW_KEY, callback, duration=OVERLAY_DRAW_DURATION)
         self._overlay_registered = True
 
@@ -2061,10 +2663,31 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             overlay_view.clear_draw(OVERLAY_DRAW_KEY)
         self._overlay_registered = False
 
-    def on_destroy(self):
+    def _force_clear_overlay(self):
+        """无条件清一遍附加层：ok 覆盖层 + 可点击的大地图交互窗口。
+
+        与 :meth:`_clear_overlay` 的区别是不看 ``_overlay_registered`` 标记，因此即使
+        标记与实际绘制不一致（例如刚画完一帧就被停用）也不会残留。``clear_draw`` 与交互
+        窗口的 ``hide_overlay`` 都经排队信号派发到 GUI 线程，可从任意线程调用。
+        """
         overlay_view = self.get_overlay_view()
         if overlay_view is not None:
-            overlay_view.clear_draw(OVERLAY_DRAW_KEY)
+            try:
+                overlay_view.clear_draw(OVERLAY_DRAW_KEY)
+            except Exception as e:  # pragma: no cover - Qt 运行时相关
+                logger.warning(f'[Overlay] force clear draw failed: {e}')
+        self._overlay_registered = False
+        controller = self._overlay_controller
+        if controller is not None:
+            try:
+                controller.on_idle()
+            except Exception as e:  # pragma: no cover - Qt 运行时相关
+                logger.warning(f'[Overlay] force hide interaction window failed: {e}')
+
+    def on_destroy(self):
+        self._force_clear_overlay()
+        if self._assets_gui is not None:
+            self._assets_gui.close_dialog()
         if self._overlay_controller is not None:
             self._overlay_controller.close()
         if self._overlay is not None:

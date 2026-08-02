@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from typing import Any, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple
 
 from src.utils.map_geometry import project_game_to_screen
 from src.utils.overlay_types import ColorTuple, Point
@@ -54,6 +54,10 @@ class PathNode:
     ``x`` / ``y`` are the game-unit coordinates taken from the JSON's
     ``xposition`` / ``yposition`` fields (same coordinate system as
     ``location.x/y``).
+
+    ``position_img`` is the raw ``positionImg`` string from the JSON node (an
+    empty string when missing). It is later used to build the per-node icon
+    download URL / cache filename (Requirements 11.2, 11.3).
     """
 
     position_id: str
@@ -61,6 +65,7 @@ class PathNode:
     position_type: str
     x: float
     y: float
+    position_img: str = ""
 
 
 @dataclass(frozen=True)
@@ -147,6 +152,7 @@ def _parse_node(raw: Any) -> Optional[PathNode]:
         position_type=str(raw.get("positionType") or ""),
         x=x,
         y=y,
+        position_img=str(raw.get("positionImg") or ""),
     )
 
 
@@ -251,14 +257,23 @@ class PathLayer:
       (Requirement 5.3); a single point draws only the node icon (Requirement
       5.7).
     - ``node_ids``: the ``position_id`` of each node, aligned with ``points``.
-    - ``node_icon``: the uniform icon key for every node, always
-      :data:`PATH_NODE_ICON_KEY` (Requirement 5.2).
+    - ``node_icon``: the fallback icon key for a node when it has no downloaded
+      icon, always :data:`PATH_NODE_ICON_KEY` (``qzx_04``) (Requirement 5.2).
+    - ``node_pixmaps``: optional per-node downloaded-icon objects aligned with
+      ``points``. Each entry is the node's downloaded icon (an opaque pixmap
+      object passed straight through to the render layer) or ``None`` when the
+      node has no downloaded icon yet; the render layer then falls back to
+      :data:`node_icon` (``qzx_04``). The tuple stays empty ``()`` when no
+      downloaded icons are supplied, preserving the previous ``qzx_04``-only
+      behavior. Kept Qt-free: this module never inspects the pixmap objects
+      (Requirements 5.2, 11.7, 11.8, 11.9).
     """
 
     color: ColorTuple
     points: Tuple[Point, ...]
     node_ids: Tuple[str, ...]
     node_icon: str = field(default=PATH_NODE_ICON_KEY)
+    node_pixmaps: Tuple[Any, ...] = ()
 
     @property
     def segments(self) -> Tuple[Tuple[Point, Point], ...]:
@@ -281,6 +296,7 @@ def build_path_layers(
     scale: float,
     center_x: float,
     center_y: float,
+    node_pixmap_getter: Optional[Callable[[str], Any]] = None,
 ) -> Tuple[PathLayer, ...]:
     """Build one :class:`PathLayer` per Section from a parsed route.
 
@@ -288,8 +304,18 @@ def build_path_layers(
     :func:`~src.utils.map_geometry.project_game_to_screen` using the supplied
     player/scale/center context, so the resulting ``points`` are ready for the
     render layer. A Section with ``n`` nodes yields ``n`` points and therefore
-    ``max(0, n - 1)`` ordered segments (Requirements 5.3, 5.7); every node uses
-    the uniform :data:`PATH_NODE_ICON_KEY` icon (Requirement 5.2).
+    ``max(0, n - 1)`` ordered segments (Requirements 5.3, 5.7).
+
+    Node icons (Requirement 5.2): when ``node_pixmap_getter`` is supplied it is
+    called once per node with the node's ``position_img`` and its return value
+    (a downloaded-icon object, or ``None`` when not ready) is stored, aligned
+    with ``points``, in :attr:`PathLayer.node_pixmaps`. The render layer uses a
+    node's downloaded icon when present and falls back to
+    :data:`PATH_NODE_ICON_KEY` (``qzx_04``) otherwise (Requirements 11.8, 11.9).
+    When ``node_pixmap_getter`` is ``None`` (the default) ``node_pixmaps`` stays
+    empty and every node renders with the uniform ``qzx_04`` icon, preserving
+    the previous behavior. The getter's return value is passed through opaquely,
+    so this module stays Qt-free and easily testable.
 
     State filtering (Requirements 5.5, 5.6): layers are produced **only** when
     the route's ``state_id`` matches ``context_state_id``. When they differ this
@@ -308,8 +334,19 @@ def build_path_layers(
             for node in section.nodes
         )
         node_ids = tuple(node.position_id for node in section.nodes)
+        if node_pixmap_getter is None:
+            node_pixmaps: Tuple[Any, ...] = ()
+        else:
+            node_pixmaps = tuple(
+                node_pixmap_getter(node.position_img) for node in section.nodes
+            )
         layers.append(
-            PathLayer(color=section.color, points=points, node_ids=node_ids)
+            PathLayer(
+                color=section.color,
+                points=points,
+                node_ids=node_ids,
+                node_pixmaps=node_pixmaps,
+            )
         )
     return tuple(layers)
 
