@@ -25,6 +25,9 @@ Relevant task, character, or configuration:
 Acceptance examples:
 [Give one or two concrete examples of how the feature should behave]
 
+Evidence of demand and related requests:
+[Link similar issues or discussions and describe reactions, comments, or users who need this]
+
 Alternatives considered:
 [Describe any current workaround or alternative]
 
