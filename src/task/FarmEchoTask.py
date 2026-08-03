@@ -2,7 +2,6 @@ import re
 import cv2
 import time
 
-from qfluentwidgets import FluentIcon
 import numpy as np
 
 from ok import Logger, TaskDisabledException, color_range_to_bound
@@ -18,9 +17,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.description = "Click Start after Entering Dungeon or Teleporting to The Boss"
-        self.name = "Farm 4C Echo in Dungeon/World"
-        self.group_name = "Echo"
-        self.group_icon = FluentIcon.SYNC
+        self.name = "🌀 Farm 4C Echo in Dungeon/World"
         self.default_config.update({
             'Teleport to Boss': 'No',
             'Boss Level': "80",
@@ -57,7 +54,6 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.boss_list = ['Other', 'Hyvatia', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory',
                           'Nightmare: Hecate', 'Fenrico', 'Nameless Explorer']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
-        self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
         self.total_weekly_number = 9
         self.total_boss_number = 20

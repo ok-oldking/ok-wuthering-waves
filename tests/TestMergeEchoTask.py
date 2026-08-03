@@ -17,7 +17,7 @@ from src.task.NightmareNestTask import NightmareNestTask
 
 class TestMergeEchoTask(unittest.TestCase):
 
-    def test_echo_group_and_global_bag_hotkey_metadata(self):
+    def test_ungrouped_tasks_and_global_bag_hotkey_metadata(self):
         executor = Mock()
         executor.scene = None
         executor.global_config.get_config.return_value = {}
@@ -26,8 +26,8 @@ class TestMergeEchoTask(unittest.TestCase):
         merge_task = MergeEchoTask(executor, app)
         farm_task = FarmEchoTask(executor, app)
 
-        self.assertEqual(merge_task.group_name, "Echo")
-        self.assertEqual(farm_task.group_name, "Echo")
+        self.assertIsNone(merge_task.group_name)
+        self.assertIsNone(farm_task.group_name)
         self.assertNotIn("Bag Key", merge_task.default_config)
         self.assertEqual(key_config_option.default_config["Bag Key"], "b")
         self.assertIn("Bag Key", key_config_option.config_description)

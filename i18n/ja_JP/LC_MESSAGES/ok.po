@@ -651,7 +651,7 @@ msgid "Yes if Farming Nightmare: Hecate"
 msgstr "悪夢・ヘカテを周回する場合は「はい」を選択"
 
 msgid "Auto Farm all Nightmare Nest"
-msgstr ""
+msgstr "すべてのナイトメア・ネストを自動周回します。"
 
 msgid "Default"
 msgstr ""
@@ -678,7 +678,7 @@ msgid "Wait time before each combat (seconds), overrides Boss profile if set"
 msgstr ""
 
 msgid "Auto Click Fast Travel in Map"
-msgstr ""
+msgstr "マップ上のファストトラベルを自動でクリックします。"
 
 msgid "Character Config"
 msgstr "キャラクター設定"
@@ -1161,3 +1161,72 @@ msgstr "ダイアログの右ボタンが見つかりません"
 
 msgid "can't find dialog left button"
 msgstr "ダイアログの左ボタンが見つかりません"
+
+msgid "⚔️ Auto Combat"
+msgstr "⚔️ 自動戦闘"
+
+msgid "🔑 Auto Login"
+msgstr "🔑 自動ログイン"
+
+msgid "🌸 Auto Pick"
+msgstr "🌸 自動採集"
+
+msgid "🎛️ 批量修改声骸主属性(仅支持简中游戏语言)"
+msgstr "🎛️ 音骸メインステータス一括変更（簡体字中国語のみ）"
+
+msgid "📅 Daily Task"
+msgstr "📅 デイリータスク"
+
+msgid "🩺 Diagnosis"
+msgstr "🩺 診断"
+
+msgid "⬆️ 批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
+msgstr "⬆️ 音骸一括強化（ゲームとokwwは簡体字/繁体字中国語が必要）"
+
+msgid "🌀 Farm 4C Echo in Dungeon/World"
+msgstr "🌀 ダンジョン/フィールドでコスト4音骸を周回"
+
+msgid "🗺️ Farm Map with Star Path"
+msgstr "🗺️ 星のルートでマップ周回"
+
+msgid "✈️ Fast Travel"
+msgstr "✈️ ファストトラベル"
+
+msgid "♻️ 数据坞五合一"
+msgstr "♻️ データドック5個合成"
+
+msgid "⚒️ Forgery Challenge"
+msgstr "⚒️ 凝素領域"
+
+msgid "🎡 自动周常乐园"
+msgstr "🎡 週間楽園を自動進行"
+
+msgid "♻️ Merge Discarded Echoes"
+msgstr "♻️ 廃棄済み音骸を合成"
+
+msgid "🖱️ Prevent Wuthering Waves from moving the mouse"
+msgstr "🖱️ Wuthering Wavesによるマウス移動を防止"
+
+msgid "👥 Multi Account Daily Task"
+msgstr "👥 複数アカウントのデイリータスク"
+
+msgid "🌙 Nightmare Nest Task"
+msgstr "🌙 ナイトメア・ネストタスク"
+
+msgid "🧪 Simulation Challenge"
+msgstr "🧪 仮想訓練チャレンジ"
+
+msgid "⏭️ Skip Dialog during Quests"
+msgstr "⏭️ 任務中の会話をスキップ"
+
+msgid "🌊 Tacet Suppression"
+msgstr "🌊 無音区"
+
+msgid "点击B进入背包, 在过滤器中选择需要修改主属性的声骸, 并按照等级从0排序后开始."
+msgstr "Bキーでバッグを開き、フィルターでメインステータスを変更する音骸を選択し、レベル0から昇順に並べて開始してください。"
+
+msgid "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按照等级从0排序后开始."
+msgstr "Bキーでバッグを開き、フィルターで強化する音骸を選択し、レベル0から昇順に並べて開始してください。"
+
+msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
+msgstr "ゲームとokwwの言語は簡体字/繁体字中国語、解像度は16:9かつ1600x900以上が必要です。必要なものにチェックを入れると、未チェックのものは自動合成されます。"

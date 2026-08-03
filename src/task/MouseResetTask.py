@@ -1,7 +1,6 @@
 import math
 
 import win32api
-from qfluentwidgets import FluentIcon
 
 from ok import TriggerTask, Logger
 
@@ -13,12 +12,9 @@ class MouseResetTask(TriggerTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.default_config = {'_enabled': True}
-        self.group_name = "Diagnosis"
-        self.group_icon = FluentIcon.ROBOT
         self.trigger_interval = 10
-        self.name = "Prevent Wuthering Waves from moving the mouse"
+        self.name = "🖱️ Prevent Wuthering Waves from moving the mouse"
         self.description = "Turn on if you mouse jumps around"
-        self.icon = FluentIcon.MOVE
         self.running_reset = False
         self.mouse_pos = None
 

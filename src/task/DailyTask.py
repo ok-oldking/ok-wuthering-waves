@@ -1,6 +1,5 @@
 import re
 
-from qfluentwidgets import FluentIcon
 
 from ok import Logger, TaskDisabledException
 from src.task.BaseWWTask import number_re
@@ -27,10 +26,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "Daily Task"
-        self.group_name = "Daily"
-        self.group_icon = FluentIcon.CALENDAR
-        self.icon = FluentIcon.CAR
+        self.name = "📅 Daily Task"
         self.support_schedule_task = True
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
         self.default_config = {

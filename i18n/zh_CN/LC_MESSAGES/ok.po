@@ -1213,3 +1213,72 @@ msgstr "找不到对话框右侧按钮"
 
 msgid "can't find dialog left button"
 msgstr "找不到对话框左侧按钮"
+
+msgid "⚔️ Auto Combat"
+msgstr "⚔️ 自动战斗"
+
+msgid "🔑 Auto Login"
+msgstr "🔑 自动登录"
+
+msgid "🌸 Auto Pick"
+msgstr "🌸 自动拾取"
+
+msgid "🎛️ 批量修改声骸主属性(仅支持简中游戏语言)"
+msgstr "🎛️ 批量修改声骸主属性（仅支持简中游戏语言）"
+
+msgid "📅 Daily Task"
+msgstr "📅 每日任务"
+
+msgid "🩺 Diagnosis"
+msgstr "🩺 诊断"
+
+msgid "⬆️ 批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
+msgstr "⬆️ 批量强化声骸（游戏与okww语言必须为简体/繁体中文）"
+
+msgid "🌀 Farm 4C Echo in Dungeon/World"
+msgstr "🌀 副本/大世界刷4C声骸"
+
+msgid "🗺️ Farm Map with Star Path"
+msgstr "🗺️ 按星标路径刷大地图"
+
+msgid "✈️ Fast Travel"
+msgstr "✈️ 快速旅行"
+
+msgid "♻️ 数据坞五合一"
+msgstr "♻️ 数据坞五合一"
+
+msgid "⚒️ Forgery Challenge"
+msgstr "⚒️ 凝素领域挑战"
+
+msgid "🎡 自动周常乐园"
+msgstr "🎡 自动周常乐园"
+
+msgid "♻️ Merge Discarded Echoes"
+msgstr "♻️ 合成弃置声骸"
+
+msgid "🖱️ Prevent Wuthering Waves from moving the mouse"
+msgstr "🖱️ 防止鸣潮移动鼠标"
+
+msgid "👥 Multi Account Daily Task"
+msgstr "👥 多账号每日任务"
+
+msgid "🌙 Nightmare Nest Task"
+msgstr "🌙 噩梦巢穴任务"
+
+msgid "🧪 Simulation Challenge"
+msgstr "🧪 模拟领域挑战"
+
+msgid "⏭️ Skip Dialog during Quests"
+msgstr "⏭️ 任务中跳过对话"
+
+msgid "🌊 Tacet Suppression"
+msgstr "🌊 无音区"
+
+msgid "点击B进入背包, 在过滤器中选择需要修改主属性的声骸, 并按照等级从0排序后开始."
+msgstr "点击B进入背包，在过滤器中选择需要修改主属性的声骸，并按等级从0开始排序后运行。"
+
+msgid "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按照等级从0排序后开始."
+msgstr "点击B进入背包，在过滤器中选择需要强化的声骸，并按等级从0开始排序后运行。"
+
+msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
+msgstr "游戏与okww语言必须为简体/繁体中文，分辨率必须为16:9且不低于1600x900。勾选需要保留的声骸，未勾选的会自动合成。"

@@ -1,7 +1,5 @@
 import time
 
-from qfluentwidgets import FluentIcon
-
 from ok import TriggerTask, Logger
 from src.char.CharFactory import char_names
 from src.scene.WWScene import WWScene
@@ -16,9 +14,8 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         super().__init__(*args, **kwargs)
         self.default_config = {'_enabled': True}
         self.trigger_interval = 0.1
-        self.name = "Auto Combat"
+        self.name = "⚔️ Auto Combat"
         self.description = "Enable auto combat in Abyss, Game World etc"
-        self.icon = FluentIcon.CALORIES
         self.last_is_click = False
         self.default_config.update({
             'Auto Target': True,

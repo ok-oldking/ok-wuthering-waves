@@ -1162,3 +1162,72 @@ msgstr "대화 상자의 오른쪽 버튼을 찾을 수 없습니다"
 
 msgid "can't find dialog left button"
 msgstr "대화 상자의 왼쪽 버튼을 찾을 수 없습니다"
+
+msgid "⚔️ Auto Combat"
+msgstr "⚔️ 자동 전투"
+
+msgid "🔑 Auto Login"
+msgstr "🔑 자동 로그인"
+
+msgid "🌸 Auto Pick"
+msgstr "🌸 자동 채집"
+
+msgid "🎛️ 批量修改声骸主属性(仅支持简中游戏语言)"
+msgstr "🎛️ 에코 주 옵션 일괄 변경(중국어 간체만 지원)"
+
+msgid "📅 Daily Task"
+msgstr "📅 일일 작업"
+
+msgid "🩺 Diagnosis"
+msgstr "🩺 진단"
+
+msgid "⬆️ 批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
+msgstr "⬆️ 에코 일괄 강화(게임과 okww는 중국어 간체/번체 필요)"
+
+msgid "🌀 Farm 4C Echo in Dungeon/World"
+msgstr "🌀 던전/월드에서 코스트 4 에코 파밍"
+
+msgid "🗺️ Farm Map with Star Path"
+msgstr "🗺️ 별 경로로 맵 파밍"
+
+msgid "✈️ Fast Travel"
+msgstr "✈️ 빠른 이동"
+
+msgid "♻️ 数据坞五合一"
+msgstr "♻️ 데이터 뱅크 5개 합성"
+
+msgid "⚒️ Forgery Challenge"
+msgstr "⚒️ 응소 영역 도전"
+
+msgid "🎡 自动周常乐园"
+msgstr "🎡 주간 낙원 자동 진행"
+
+msgid "♻️ Merge Discarded Echoes"
+msgstr "♻️ 폐기 에코 합성"
+
+msgid "🖱️ Prevent Wuthering Waves from moving the mouse"
+msgstr "🖱️ Wuthering Waves의 마우스 이동 방지"
+
+msgid "👥 Multi Account Daily Task"
+msgstr "👥 다중 계정 일일 작업"
+
+msgid "🌙 Nightmare Nest Task"
+msgstr "🌙 악몽 둥지 작업"
+
+msgid "🧪 Simulation Challenge"
+msgstr "🧪 시뮬레이션 도전"
+
+msgid "⏭️ Skip Dialog during Quests"
+msgstr "⏭️ 퀘스트 대화 건너뛰기"
+
+msgid "🌊 Tacet Suppression"
+msgstr "🌊 무음 구역"
+
+msgid "点击B进入背包, 在过滤器中选择需要修改主属性的声骸, 并按照等级从0排序后开始."
+msgstr "B를 눌러 가방을 열고 필터에서 주 옵션을 변경할 에코를 선택한 뒤, 레벨 0부터 오름차순으로 정렬하고 시작하세요."
+
+msgid "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按照等级从0排序后开始."
+msgstr "B를 눌러 가방을 열고 필터에서 강화할 에코를 선택한 뒤, 레벨 0부터 오름차순으로 정렬하고 시작하세요."
+
+msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
+msgstr "게임과 okww 언어는 중국어 간체/번체여야 하며, 16:9 비율의 1600x900 이상 해상도가 필요합니다. 필요한 항목을 체크하면 체크하지 않은 항목은 자동으로 합성됩니다."

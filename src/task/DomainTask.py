@@ -1,6 +1,5 @@
 import re
 
-from qfluentwidgets import FluentIcon
 
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharDeadException
@@ -15,8 +14,6 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.teleport_timeout = 100
         self.stamina_once = 0
-        self.group_name = "Dungeon"
-        self.group_icon = FluentIcon.HOME
 
     def revive_action(self):
         """副本内死亡恢复：关闭弹窗 → 退出副本 → 传最近传送点回血。"""

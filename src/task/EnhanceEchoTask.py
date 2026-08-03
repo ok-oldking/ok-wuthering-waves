@@ -3,7 +3,6 @@ import re
 import time
 import os
 
-from qfluentwidgets import FluentIcon
 
 from ok import FindFeature, Logger
 from ok.feature.Box import get_bounding_box
@@ -21,11 +20,8 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
+        self.name = "⬆️ 批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
         self.description = "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按照等级从0排序后开始."
-        self.icon = FluentIcon.ADD
-        self.group_name = "强化声骸"
-        self.group_icon = FluentIcon.ADD
         self.fail_reason = ""
         self.supported_languages = ["zh_CN", "zh_TW"]
         self.default_config.update({

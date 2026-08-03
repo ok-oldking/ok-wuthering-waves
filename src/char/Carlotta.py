@@ -175,7 +175,7 @@ class Carlotta(BaseChar):
     def decide_teammate(self):
         from src.char.Zhezhi import Zhezhi
         self.press_w = 0
-        if self.task.name and self.task.name == "Farm 4C Echo in Dungeon/World":
+        if self.task.name and self.task.name == "🌀 Farm 4C Echo in Dungeon/World":
             self.press_w = 1
         elif char := self.task.has_char(Zhezhi):
             self.char_zhezhi = char

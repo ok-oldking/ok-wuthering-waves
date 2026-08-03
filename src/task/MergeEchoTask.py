@@ -1,6 +1,5 @@
 import re
 
-from qfluentwidgets import FluentIcon
 
 from src.task.BaseWWTask import BaseWWTask
 
@@ -11,14 +10,11 @@ class MergeEchoTask(BaseWWTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "Merge Discarded Echoes"
+        self.name = "♻️ Merge Discarded Echoes"
         self.description = (
             "Must have 1000 discarded Echo to Run, "
             "Merge discarded Echoes in full batches of 100."
         )
-        self.icon = FluentIcon.SYNC
-        self.group_name = "Echo"
-        self.group_icon = FluentIcon.SYNC
         self.notify_if_not_enough = True
 
     def run(self):
