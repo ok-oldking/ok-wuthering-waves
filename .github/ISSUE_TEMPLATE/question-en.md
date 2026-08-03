@@ -16,6 +16,9 @@ Search existing issues:
 Question:
 [Clearly describe what you want to know]
 
+FAQ result:
+[Which troubleshooting/FAQ entry did you check, and why did it not answer the question?]
+
 What you have already tried:
 [List documentation, settings, or troubleshooting steps you checked]
 
@@ -24,3 +27,6 @@ OK-WW version:
 
 Windows version and relevant settings:
 [Include only information related to the question]
+
+Related screenshots or links (optional):
+[Attach only what helps explain the question]

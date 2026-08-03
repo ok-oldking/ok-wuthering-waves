@@ -68,6 +68,15 @@ safe-outputs:
   add-comment:
     max: 1
     hide-older-comments: true
+  assign-to-user:
+    allowed:
+      - ok-oldking
+      - ${{ github.event.issue.user.login }}
+    max: 1
+    unassign-first: true
+  close-issue:
+    max: 1
+    state-reason: not_planned
 
 max-ai-credits: 50
 timeout-minutes: 10
@@ -115,6 +124,25 @@ Choose exactly one `area: ...` label and one priority label:
 
 Add `more-information-needed` only when critical evidence is missing. For a bug, useful evidence commonly includes clear reproduction steps, actual versus expected behavior, OK-WW version, Windows version, relevant settings/team, and logs or screenshots. Ask only for information that is actually needed. On an edited or reopened issue, remove `more-information-needed` if the requested evidence is now present. Remove conflicting type, area, or priority labels left by templates or earlier triage.
 
+## Decide whether the issue is actionable
+
+Only assign an issue to `ok-oldking` when all of the following are true:
+
+- It is a genuine `bug`, not a question, feature request, duplicate, unsupported setup, or usage/configuration mistake.
+- It contains enough information to reproduce or diagnose the failure: clear actual and expected behavior, meaningful reproduction steps or strong diagnostic evidence, the affected OK-WW version, the affected task/character/configuration, and logs, screenshots, or exact error text when those are needed for this failure.
+- Repository code, documentation, or issue history identifies a plausible affected component and gives the maintainer a concrete next step. A speculative symptom without diagnostic evidence is not sufficient.
+
+For an actionable bug, assign exactly `ok-oldking`, remove `more-information-needed`, keep the issue open, and post the investigation summary.
+
+For any issue that needs a reply or critical information from the submitter before work can proceed:
+
+1. Add `more-information-needed`.
+2. Address the submitter by `@login` and list only the exact missing information needed for the next investigation step, in the submitter's language.
+3. Assign the issue to the submitter only if GitHub permits that user to be assigned. External reporters are often not assignable; if assignment is rejected, the `@login` request is the required fallback. Never assign an incomplete issue to `ok-oldking` or another maintainer.
+4. Close the issue with reason `not_planned` and include the information request in the closing message. Explain that the submitter can edit the report with the requested evidence and ask for it to be reopened.
+
+Do not assign enhancements, questions, documentation reports, duplicates, or invalid issues to `ok-oldking`. Do not close an otherwise complete question merely because it is a question: answer it from the FAQ, code, and issue history. Close only when a submitter response or missing evidence is required before useful work can continue.
+
 Add `faq-candidate` only when the answer is not adequately covered by the existing Troubleshooting/FAQ sections and one of these is true:
 
 - The same question or confusion appears in at least two related issues.
@@ -123,9 +151,9 @@ Add `faq-candidate` only when the answer is not adequately covered by the existi
 
 Do not use `faq-candidate` for a one-off configuration problem, an unverified hypothesis, or a question that still needs critical information.
 
-## Comment once, in the reporter's language
+## Respond once, in the reporter's language
 
-Post one concise, useful comment in the language used by the reporter (Simplified Chinese, Traditional Chinese, or English). If the report mixes languages, use its primary language; if that is unclear, use English:
+Post one concise, useful response in the language used by the reporter (Simplified Chinese, Traditional Chinese, or English). If the report mixes languages, use its primary language; if that is unclear, use English. For an incomplete report, put the response in the `close-issue` body so the request and closure appear together; otherwise use `add-comment`:
 
 - State the classification and affected area.
 - For a question already answered by the FAQ, answer directly and link the relevant README heading. Do not add `faq-candidate`.
@@ -136,6 +164,6 @@ Post one concise, useful comment in the language used by the reporter (Simplifie
 - For a duplicate, link the strongest matching issue and explain the specific overlap. Do not mark an issue duplicate merely because titles share a keyword.
 - Keep the response focused and respectful. Do not promise a fix, schedule, or maintainer decision. Do not expose private reasoning or repeat the entire report.
 
-Never close the issue, change its title/body, assign it, push code, or add labels outside the allowlist. If the evidence is insufficient, say so and use `more-information-needed` instead of guessing.
+Never change the issue title/body, push code, or add labels outside the allowlist. Never assign anyone except `ok-oldking` for an actionable bug or the triggering issue's submitter for an incomplete report. If the evidence is insufficient, request the missing evidence and close the issue instead of guessing.
 
 If this run was triggered by the `request-ai-triage` label, remove that command label after completing the triage so it can be applied again later.

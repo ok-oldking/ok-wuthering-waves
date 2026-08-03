@@ -3,7 +3,7 @@ name: 'Bug report (English)'
 about: Report behavior that is not working as expected
 title: "[BUG]"
 labels: bug
-assignees: ok-oldking
+assignees: ''
 
 ---
 
@@ -13,8 +13,11 @@ Search existing issues first:
 Check the troubleshooting guide:
 [README troubleshooting](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/README_en.md#-troubleshooting)
 
-Bug description:
-[Clearly and concisely describe what went wrong]
+Bug summary:
+[In one sentence, what is broken?]
+
+Actual behavior:
+[What happened? Include the exact error text if there is one]
 
 Expected behavior:
 [Describe what should normally happen]
@@ -24,14 +27,20 @@ Steps to reproduce:
 2.
 3.
 
-Screenshots and logs:
-[Use Export Logs in OK-WW and attach the resulting file]
-
-Related task, characters, team, and settings:
-[For example: Daily Routine / Lucilla / 1920x1080 / 60 FPS]
-
 Frequency:
 [Always / Often / Sometimes / Once]
+
+Affected task or feature:
+[For example: Auto Combat / Daily Routine / Echo Farming]
+
+Characters, team order, and relevant settings:
+[List the full team, task settings, resolution, display mode, and FPS]
+
+Main Echo check for Auto Combat:
+[Confirm whether every character in the team has a Main Echo equipped and its Echo Skill icon is visible]
+
+Input and display environment:
+[Game and OK-WW key mappings; controller use; GPU filters; overlays; multiple monitors, if relevant]
 
 Affected OK-WW version:
 [For example] 3.5.23
@@ -41,3 +50,9 @@ Last known working OK-WW version:
 
 Windows version:
 [For example] Windows 11 Pro 23H2
+
+Logs and screenshots:
+[Use Export Logs in OK-WW and attach the ZIP directly to this issue. Add screenshots showing the state or error]
+
+Video (optional):
+[Drag a short recording directly into this issue when timing or combat behavior matters]
