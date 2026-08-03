@@ -8,6 +8,7 @@ from src.char.CharFactory import _get_buff_time, _get_char_type, char_dict, char
 from src.char.Aemeath import Aemeath
 from src.char.Chisa import Chisa
 from src.char.Ciaccona import Ciaccona
+from src.char.Denia import Denia
 from src.char.Iuno import Iuno
 from src.char.Linnai import Linnai
 from src.char.Lucilla import Lucilla
@@ -497,7 +498,7 @@ class TestChar(TaskTestCase):
         self.assertTrue(current.has_intro)
         self.assertFalse(current.has_sub_dps_intro)
 
-    def test_chisa_support_intro_records_buff_and_switches_immediately(self):
+    def test_chisa_support_intro_runs_team_rotation(self):
         class Task:
             char_config = {'Chisa DPS': False}
 
@@ -516,6 +517,9 @@ class TestChar(TaskTestCase):
             def click_resonance(self, **kwargs):
                 self.actions.append(('resonance', kwargs))
 
+            def enter_chainsaw_and_saw(self):
+                self.actions.append(('chainsaw', {}))
+
             def switch_next_char(self):
                 self.actions.append(('switch', {}))
 
@@ -524,7 +528,12 @@ class TestChar(TaskTestCase):
         chisa.do_perform()
 
         self.assertGreater(chisa.last_buff_time, 0)
-        self.assertEqual(chisa.actions, [('echo', {'time_out': 0}), ('switch', {})])
+        self.assertEqual(chisa.actions, [
+            ('echo', {'time_out': 0}),
+            ('liberation', {}),
+            ('chainsaw', {}),
+            ('switch', {}),
+        ])
 
     def test_verina_heavy_attack_has_eight_second_interval(self):
         class Task:
@@ -602,6 +611,9 @@ class TestChar(TaskTestCase):
             def click_resonance(self, **kwargs):
                 self.actions.append(('resonance', kwargs))
 
+            def enter_chainsaw_and_saw(self):
+                self.actions.append(('chainsaw', {}))
+
             def switch_next_char(self):
                 self.actions.append(('switch', {}))
 
@@ -610,8 +622,97 @@ class TestChar(TaskTestCase):
 
         self.assertGreater(chisa.last_buff_time, 0)
         self.assertEqual(chisa.actions, [
+            ('resonance', {'time_out': 0.5}),
             ('echo', {'time_out': 0}),
             ('liberation', {}),
+            ('chainsaw', {}),
+            ('switch', {}),
+        ])
+
+    def test_chisa_chainsaw_releases_mouse_when_interrupted(self):
+        class Task:
+            char_config = {'Chisa DPS': False}
+
+            def __init__(self):
+                self.actions = []
+
+            def send_key(self, key, **kwargs):
+                self.actions.append(('resonance', key, kwargs))
+
+            def mouse_down(self):
+                self.actions.append(('mouse_down',))
+
+            def mouse_up(self):
+                self.actions.append(('mouse_up',))
+
+        class TrackingChisa(Chisa):
+            def flying(self):
+                return False
+
+            def is_forte_full(self):
+                return True
+
+            def get_resonance_key(self):
+                return 'e'
+
+            def sleep(self, duration, **kwargs):
+                if duration == self.CHAINSAW_SAW_TIME:
+                    raise RuntimeError('interrupted')
+
+        task = Task()
+        chisa = TrackingChisa(task, 0)
+
+        with self.assertRaisesRegex(RuntimeError, 'interrupted'):
+            chisa.enter_chainsaw_and_saw()
+
+        self.assertEqual(task.actions[-2:], [('mouse_down',), ('mouse_up',)])
+
+    def test_denia_runs_two_stage_liberation_rotation(self):
+        class TrackingDenia(Denia):
+            def __init__(self):
+                super().__init__(object(), 0)
+                self.actions = []
+
+            def wait_intro(self, time_out=1.2, click=True):
+                self.actions.append(('intro', time_out))
+
+            def click(self, **kwargs):
+                self.actions.append(('normal', kwargs))
+
+            def flying(self):
+                return False
+
+            def click_resonance(self, **kwargs):
+                self.actions.append(('resonance', kwargs))
+                return True, 0
+
+            def click_liberation(self, **kwargs):
+                self.actions.append(('liberation', kwargs))
+                return len([action for action in self.actions if action[0] == 'liberation']) == 1
+
+            def continues_normal_attack(self, duration, **kwargs):
+                self.actions.append(('normal_chain', duration))
+
+            def click_echo(self, **kwargs):
+                self.actions.append(('echo', kwargs))
+
+            def switch_next_char(self):
+                self.actions.append(('switch', {}))
+
+        denia = TrackingDenia()
+        denia.has_intro = True
+        denia.do_perform()
+
+        self.assertEqual(denia.actions, [
+            ('intro', 1.2),
+            ('normal', {}),
+            ('resonance', {'time_out': 0.5}),
+            ('liberation', {}),
+            ('resonance', {'has_animation': True, 'animation_min_duration': 0.3, 'time_out': 1.2}),
+            ('resonance', {'has_animation': True, 'animation_min_duration': 0.3, 'time_out': 1.2}),
+            ('normal_chain', 1.5),
+            ('liberation', {}),
+            ('echo', {'time_out': 0}),
             ('switch', {}),
         ])
 
@@ -696,9 +797,6 @@ class TestChar(TaskTestCase):
             def f_break(self):
                 pass
 
-            def _execute_post_lib2_combo(self):
-                self.check_combat()
-
         task = Task()
         aemeath = TrackingAemeath(task, 0)
         task.combat_start = time.time() - aemeath.LIBERATION_FORCE_DURATION + 0.1
@@ -738,10 +836,6 @@ class TestChar(TaskTestCase):
 
             def f_break(self):
                 pass
-
-            def _execute_post_lib2_combo(self):
-                self.check_combat()
-                self.record_enhance_e()
 
         task = Task()
         aemeath = TrackingAemeath(task, 0)

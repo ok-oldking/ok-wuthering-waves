@@ -4,6 +4,8 @@ from src.char.BaseChar import BaseChar, CharType, get_default_buff_time
 
 
 class Chisa(BaseChar):
+    CHAINSAW_SAW_TIME = 1.3
+
     def is_dps_config(self):
         return self.task and self.task.char_config.get("Chisa DPS")
 
@@ -23,21 +25,40 @@ class Chisa(BaseChar):
         return self.do_dps_perform()
 
     def do_fast_support(self):
+        """聚爆队辅助轴：E上标记 → 声骸 → 大招 → 进电锯模式锯几下 → 切走
+
+        大招后立刻接强化E进入电锯模式（大招使电锯攻击+120%且+40回路能量），
+        电锯攻击视为共鸣解放伤害、攒协奏最快，打满协奏触发延奏
+        （聚爆层数上限+3），随后马上把输出窗口让给队友。
+        """
         self.check_f_on_switch = True
         if self.has_intro:
             self.record_support_buff()
-            self.click_echo(time_out=0)
-            return self.switch_next_char()
-
-        if self.flying() and not self.liberation_available() and not self.resonance_available():
-            self.wait_down()
+        else:
+            if self.flying() and not self.liberation_available() and not self.resonance_available():
+                self.wait_down()
+            self.click_resonance(time_out=0.5)
         self.click_echo(time_out=0)
         if self.click_liberation():
             self.record_support_buff()
-            return self.switch_next_char()
-
-        self.click_resonance(time_out=0.5)
+        self.enter_chainsaw_and_saw()
         return self.switch_next_char()
+
+    def enter_chainsaw_and_saw(self):
+        """回路满则长按共鸣键强化E进入电锯模式，再按住普攻锯几下攒协奏。"""
+        if self.flying():
+            self.wait_down()
+        if self.is_forte_full():
+            self.task.send_key(self.get_resonance_key(), down_time=1.2)
+            self.sleep(0.15, check_combat=False)
+            self.task.mouse_down()
+            try:
+                self.sleep(self.CHAINSAW_SAW_TIME, check_combat=False)
+            finally:
+                self.task.mouse_up()
+            return True
+        self.continues_normal_attack(0.5)
+        return False
 
     def record_support_buff(self):
         """Track the buff granted by Chisa's Intro Skill or Resonance Liberation."""
