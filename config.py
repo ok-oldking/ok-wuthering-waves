@@ -180,8 +180,9 @@ config = {
         'default_vertical_variance': 0.002,
         'default_threshold': 0.8,
         'feature_processor': process_feature,
-        'vcenter_features': ['monthly_card'],
-        'hcenter_features': ['monthly_card', 'suisui_forte3', 'message_dialog', 'claim_stamina_sign']
+        'vcenter_features': ['monthly_card', 'skip_dialog_check'],
+        'hcenter_features': ['monthly_card', 'suisui_forte3', 'message_dialog', 'claim_stamina_sign',
+                             'skip_dialog_check', 'login_close']
     },
     'windows': {  # required  when supporting windows game
         'top_hwnd_class': [re.compile('CAgreementDlg'), re.compile('CLoginDlg_P_'),

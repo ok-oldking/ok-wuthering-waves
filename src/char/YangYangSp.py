@@ -7,6 +7,7 @@ from src.char.BaseChar import BaseChar
 class YangYangSp(BaseChar):
     INTRO_PERFORM_DURATION = 8.0
     PERFORM_DURATION = 3.2
+    LONG_PRESS_RELEASE_DELAY = 0.1
     DISPLAY_NAME = 'Yangyang: Xuanling'
 
     def __init__(self, *args, **kwargs):
@@ -25,6 +26,7 @@ class YangYangSp(BaseChar):
         start = time.time()
         self.task.mouse_down()
         resonance_available = 0
+        echo_used = False
         try:
             while self.time_elapsed_accounting_for_freeze(start) < duration:
                 if self.liberation_available():
@@ -40,9 +42,15 @@ class YangYangSp(BaseChar):
                     if resonance_available != 0 and time.time() - resonance_available > 0.2:
                         self.logger.debug('resonance available for 0.2')
                         self.click_resonance(send_click=False, time_out=1)
+                elif not echo_used:
+                    resonance_available = 0
+                    echo_used = self.click_echo(time_out=0)
                 else:
                     resonance_available = 0
-                self.task.next_frame()
+                self.sleep(0.05)
         finally:
             self.task.mouse_up()
+            # Let the released heavy attack settle before another character reads
+            # the shared long-action indicator.
+            self.sleep(self.LONG_PRESS_RELEASE_DELAY, check_combat=False)
         self.switch_next_char()

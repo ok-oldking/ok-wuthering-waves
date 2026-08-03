@@ -67,6 +67,7 @@ class TestNightmareNestTask(unittest.TestCase):
                 task.wait_combat = lambda **kwargs: next(combat_results)
                 task.log_info = lambda *args, **kwargs: None
                 task.send_key = lambda *args, **kwargs: None
+                task.esc_world_confirm = lambda *args, **kwargs: None
 
                 task.combat_nest(FakeBox('nest'))
 

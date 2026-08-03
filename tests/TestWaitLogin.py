@@ -32,7 +32,7 @@ class FakeLoginTask:
     def find_one(self, *args, **kwargs):
         return None
 
-    def box_of_screen(self, *args):
+    def box_of_screen(self, *args, **kwargs):
         return args
 
     def ocr(self, log=False):

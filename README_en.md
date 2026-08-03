@@ -75,6 +75,7 @@ If you encounter issues, please check the following steps one by one before aski
 7.  **OpenVINO Error**: If you encounter error `0x000005` on an Intel CPU with an NPU, update to the latest Intel NPU driver.
 8.  **Getting Help**: If the steps above do not solve your problem, please submit a detailed bug report through our community channels.
 9.  **Disable Auto Sprint**: Turn off Auto Sprint in the game settings.
+10. **Equip a Main Echo on Every Character**: Every character in the team must have a main Echo equipped (the Echo Skill icon should appear in the bottom-right corner). If any character does not have one, Auto Combat will not function correctly and may repeatedly lock onto enemies without attacking.
 
 ---
 
