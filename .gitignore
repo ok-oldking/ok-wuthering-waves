@@ -71,3 +71,5 @@ working_images/
 repo/
 
 assets/result.json
+# Windows artifact
+nul
