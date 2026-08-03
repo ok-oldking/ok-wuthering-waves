@@ -5,8 +5,6 @@ from typing import List
 
 import cv2
 import numpy as np
-from qfluentwidgets import FluentIcon
-
 from ok import Logger, Box, get_bounding_box
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.BaseWWTask import calculate_angle_clockwise
@@ -150,9 +148,8 @@ class FarmMapTask(BigMap):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.icon = FluentIcon.GLOBE
         self.description = "Farm world map with a marked path of stars (diamond as the starting point), start in the map screen"
-        self.name = "Farm Map with Star Path"
+        self.name = "🗺️ Farm Map with Star Path"
         self.max_star_distance = 1000
         self.stuck_keys = [['space', 0.02], ['a', 2], ['d', 2], ['t', 0.02]]
         self.stuck_index = 0

@@ -10,7 +10,7 @@ class FastTravelTask(BaseWWTask, TriggerTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.default_config = {'_enabled': False}
-        self.name = "Fast Travel"
+        self.name = "✈️ Fast Travel"
         self.description = 'Auto Click Fast Travel in Map'
         self.match = [re.compile(r'Travel'), '快速旅行', '前往', 'Proceed']
 

@@ -1,7 +1,5 @@
 import re
 
-from qfluentwidgets import FluentIcon
-
 from ok import Logger
 from src.task.DomainTask import DomainTask
 
@@ -12,8 +10,7 @@ class SimulationTask(DomainTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.icon = FluentIcon.FLAG
-        self.name = 'Simulation Challenge'
+        self.name = '🧪 Simulation Challenge'
         self.description = 'Farms the selected Simulation Challenge. Must be able to teleport (F2).'
         self.support_schedule_task = True
         self.default_config = {

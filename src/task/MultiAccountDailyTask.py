@@ -1,6 +1,5 @@
 import re
 
-from qfluentwidgets import FluentIcon
 
 from ok import Box
 from src.task.DailyTask import DailyTask
@@ -22,10 +21,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "Multi Account Daily Task"
-        self.group_name = "Daily"
-        self.group_icon = FluentIcon.CALENDAR
-        self.icon = FluentIcon.PEOPLE
+        self.name = "👥 Multi Account Daily Task"
         self.description = "Automatically switch accounts and run Daily Task for each account"
         self.add_exit_after_config()
         self.done_set = set()

@@ -1,4 +1,3 @@
-from qfluentwidgets import FluentIcon
 
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException
@@ -11,11 +10,8 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.icon = FluentIcon.FLAG
-        self.group_name = "Dungeon"
-        self.group_icon = FluentIcon.HOME
         self.description = "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
-        self.name = "Tacet Suppression"
+        self.name = "🌊 Tacet Suppression"
         self.support_schedule_task = True
         default_config = {
             'Which Tacet Suppression to Farm': 1,  # starts with 1

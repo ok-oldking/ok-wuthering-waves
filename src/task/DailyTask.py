@@ -1,6 +1,5 @@
 import re
 
-from qfluentwidgets import FluentIcon
 
 from ok import Logger, TaskDisabledException
 from src.task.BaseWWTask import number_re
@@ -27,10 +26,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "Daily Task"
-        self.group_name = "Daily"
-        self.group_icon = FluentIcon.CALENDAR
-        self.icon = FluentIcon.CAR
+        self.name = "📅 Daily Task"
         self.support_schedule_task = True
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
         self.default_config = {
@@ -213,10 +209,10 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         if not self.wait_ocr(0.2, 0.13, 0.32, 0.22, match=re.compile(r'\d+'), settle_time=1, raise_if_not_found=False):
             self.log_error('can not battle pass, maybe ended')
         else:
-            self.click(0.04, 0.3, after_sleep=1)
-            self.click(0.68, 0.91, after_sleep=3)
-            self.click(0.04, 0.17, after_sleep=2)
-            self.click(0.68, 0.91, after_sleep=2)
+            self.click_relative(0.04, 0.3, after_sleep=1)
+            self.click_relative(0.68, 0.91, hcenter=True, after_sleep=3)
+            self.click_relative(0.04, 0.17, after_sleep=2)
+            self.click_relative(0.68, 0.91, hcenter=True, after_sleep=2)
             self.wait_ocr(0.2, 0.13, 0.32, 0.22, match=re.compile(r'\d+'),
                           post_action=lambda: self.click(0.68, 0.91, after_sleep=1), settle_time=1,
                           raise_if_not_found=False)

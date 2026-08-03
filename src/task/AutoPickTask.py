@@ -1,7 +1,5 @@
 import time
 
-from qfluentwidgets import FluentIcon
-
 from ok import FindFeature, Logger
 from ok import TriggerTask
 from src.scene.WWScene import WWScene
@@ -14,9 +12,8 @@ class AutoPickTask(TriggerTask, BaseWWTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "Auto Pick"
+        self.name = "🌸 Auto Pick"
         self.description = "Auto Pick Flowers in Game World"
-        self.icon = FluentIcon.SHOPPING_CART
         self.default_config.update({
             '_enabled': True,
             'Pick Up White List': ['吸收', 'Absorb'],

@@ -701,7 +701,7 @@ msgid "Yes if Farming Nightmare: Hecate"
 msgstr "Sí si farmeas Pesadilla: Hécate"
 
 msgid "Auto Farm all Nightmare Nest"
-msgstr ""
+msgstr "Farmea automáticamente todos los Nidos de Pesadilla."
 
 msgid "Default"
 msgstr ""
@@ -728,7 +728,7 @@ msgid "Wait time before each combat (seconds), overrides Boss profile if set"
 msgstr ""
 
 msgid "Auto Click Fast Travel in Map"
-msgstr ""
+msgstr "Hace clic automáticamente en Viaje rápido en el mapa."
 
 msgid "Character Config"
 msgstr ""
@@ -1088,3 +1088,72 @@ msgstr "No se puede encontrar el botón derecho del diálogo"
 
 msgid "can't find dialog left button"
 msgstr "No se puede encontrar el botón izquierdo del diálogo"
+
+msgid "⚔️ Auto Combat"
+msgstr "⚔️ Combate automático"
+
+msgid "🔑 Auto Login"
+msgstr "🔑 Inicio de sesión automático"
+
+msgid "🌸 Auto Pick"
+msgstr "🌸 Recolección automática"
+
+msgid "🎛️ 批量修改声骸主属性(仅支持简中游戏语言)"
+msgstr "🎛️ Modificar atributos principales de Ecos por lotes (solo chino simplificado)"
+
+msgid "📅 Daily Task"
+msgstr "📅 Tarea diaria"
+
+msgid "🩺 Diagnosis"
+msgstr "🩺 Diagnóstico"
+
+msgid "⬆️ 批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
+msgstr "⬆️ Mejorar Ecos por lotes (el juego y okww deben usar chino simplificado/tradicional)"
+
+msgid "🌀 Farm 4C Echo in Dungeon/World"
+msgstr "🌀 Farmear Eco 4C en mazmorra/mundo"
+
+msgid "🗺️ Farm Map with Star Path"
+msgstr "🗺️ Farmear el mapa siguiendo una ruta de estrellas"
+
+msgid "✈️ Fast Travel"
+msgstr "✈️ Viaje rápido"
+
+msgid "♻️ 数据坞五合一"
+msgstr "♻️ Fusión 5 a 1 del Banco de Datos"
+
+msgid "⚒️ Forgery Challenge"
+msgstr "⚒️ Desafío de Forja"
+
+msgid "🎡 自动周常乐园"
+msgstr "🎡 Parque semanal automático"
+
+msgid "♻️ Merge Discarded Echoes"
+msgstr "♻️ Fusionar Ecos descartados"
+
+msgid "🖱️ Prevent Wuthering Waves from moving the mouse"
+msgstr "🖱️ Impedir que Wuthering Waves mueva el ratón"
+
+msgid "👥 Multi Account Daily Task"
+msgstr "👥 Tarea diaria de varias cuentas"
+
+msgid "🌙 Nightmare Nest Task"
+msgstr "🌙 Tarea de Nidos de Pesadilla"
+
+msgid "🧪 Simulation Challenge"
+msgstr "🧪 Desafío de Simulación"
+
+msgid "⏭️ Skip Dialog during Quests"
+msgstr "⏭️ Omitir diálogos durante misiones"
+
+msgid "🌊 Tacet Suppression"
+msgstr "🌊 Supresión Tacet"
+
+msgid "点击B进入背包, 在过滤器中选择需要修改主属性的声骸, 并按照等级从0排序后开始."
+msgstr "Pulsa B para abrir la mochila, selecciona en el filtro los Ecos cuyo atributo principal quieras modificar y ordénalos por nivel desde 0 antes de comenzar."
+
+msgid "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按照等级从0排序后开始."
+msgstr "Pulsa B para abrir la mochila, selecciona en el filtro los Ecos que quieras mejorar y ordénalos por nivel desde 0 antes de comenzar."
+
+msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
+msgstr "El juego y okww deben estar en chino simplificado/tradicional; se requiere una resolución 16:9 de al menos 1600x900. Marca lo que quieras conservar; lo no marcado se fusionará automáticamente."
