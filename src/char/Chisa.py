@@ -9,6 +9,9 @@ class Chisa(BaseChar):
     INTRO_RESONANCE_WAIT_TIMEOUT = 1.5
     INTRO_RESONANCE_ATTEMPTS = 2
     E2_ICON_CHANGE_TIMEOUT = 0.2
+    E2_READY_TIMEOUT = 8.0
+    E2_ATTACK_INTERVAL = 0.2
+    CONCERTO_ATTACK_TIMEOUT = 10.0
 
     def is_dps_config(self):
         return self.task and self.task.char_config.get("Chisa DPS")
@@ -48,6 +51,25 @@ class Chisa(BaseChar):
         else:
             self.logger.warning('Chisa [e2] icon change not detected after use')
         return changed
+
+    def _wait_for_e2_with_normal_attack(self):
+        self.logger.warning(
+            'Chisa [e2] template not detected, normal attack until it becomes available')
+        start = time.time()
+        while time.time() - start < self.E2_READY_TIMEOUT:
+            self.continues_normal_attack(self.E2_ATTACK_INTERVAL)
+            if self.e2_available():
+                self.logger.info('Chisa [e2] template detected after normal-attack fallback')
+                return True
+        self.logger.warning(
+            f'Chisa [e2] template still not detected after {self.E2_READY_TIMEOUT:.1f}s')
+        return False
+
+    def _is_live_con_full(self):
+        self.current_con = 0
+        current_con = self.task.get_current_con()
+        self.logger.debug(f'Chisa support live concerto={current_con}')
+        return current_con == 1
 
     def _switch_to_sub_dps(self):
         sub_dps = next(
@@ -174,7 +196,8 @@ class Chisa(BaseChar):
 
     def _use_e2_if_available(self):
         if not self.e2_available():
-            return False
+            if not self._wait_for_e2_with_normal_attack():
+                return False
 
         e2_used = self.click_resonance(time_out=0.5)[0]
         if e2_used:
@@ -193,7 +216,13 @@ class Chisa(BaseChar):
             self.task.send_key(dodge_key)
             self.sleep(0.9)
             self.task.send_key(dodge_key)
-            self.sleep(2.8)
+            hold_start = time.time()
+            while time.time() - hold_start < 2.8:
+                if self._is_live_con_full():
+                    self.logger.info(
+                        'Chisa support concerto became full during heavy hold')
+                    break
+                self.sleep(0.1, check_combat=False)
         finally:
             self.task.mouse_up()
         self.sleep(0.01)
@@ -206,16 +235,20 @@ class Chisa(BaseChar):
 
         e2_used = self._use_e2_if_available()
         self._hold_heavy_and_dodge(e2_used)
-        if not self.is_con_full():
+        if not self._is_live_con_full():
             dodge_key = self.task.key_config.get('Dodge Key')
             self.logger.info(
-                'Chisa support concerto not full, dodge then normal attack for 0.4s')
+                'Chisa support concerto not full, dodge then attack until full')
             self.task.send_key(dodge_key)
-            self.continues_normal_attack(0.8)
+            self.current_con = 0
+            self.continues_normal_attack(
+                self.CONCERTO_ATTACK_TIMEOUT,
+                until_con_full=True,
+            )
         return self._switch_to_sub_dps()
 
     def _perform_intro_support(self):
-        """变奏入场辅助连段；只在 ``Chisa DPS`` 关闭时调用。"""
+        """变奏入场辅助连段；仅在辅助模式调用。"""
         self.wait_intro(1.2)
         self.check_f_on_switch = True
         self.logger.info('Chisa intro support rotation start')
@@ -227,7 +260,7 @@ class Chisa(BaseChar):
         return self._perform_support_tail()
 
     def _perform_no_intro_support(self):
-        """无变奏入场辅助连段；只在 ``Chisa DPS`` 关闭时调用。"""
+        """无变奏入场辅助连段；仅在辅助模式调用。"""
         self.check_f_on_switch = True
         self.logger.info('Chisa no-intro support rotation start')
 

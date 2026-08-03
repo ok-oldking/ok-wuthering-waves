@@ -11,7 +11,7 @@ class Denia(BaseChar):
     # 常规后续轮次中，LIB2 的连续普攻时长。
     LIB2_NORMAL_ATTACK_TIME = 2.8
     # LIB2 动作结果不明确时，用 46.png 做 LIB1 兜底确认。
-    E1_FALLBACK_TIMEOUT = 0.6
+    E1_FALLBACK_TIMEOUT = 0.7
     E1_FALLBACK_REQUIRED_HITS = 2
 
     def __init__(self, *args, **kwargs):
@@ -110,9 +110,9 @@ class Denia(BaseChar):
         # 共鸣不可用则交给外层执行普攻后切人。
         if not self._wait_skill_ready(self.resonance_available, 2):
             return False
-        # 只有通过变奏入场时，释放共鸣技能前才先普攻 0.6 秒。
+        # 只有通过变奏入场时，释放共鸣技能前才先普攻 0.7 秒。
         if has_intro:
-            self.continues_normal_attack(0.6)
+            self.continues_normal_attack(0.7)
         if not self._use_lib1_resonance():
             return False
 
@@ -130,20 +130,20 @@ class Denia(BaseChar):
     def _perform_lib2(self, has_intro):
         # 有变奏入场的 LIB2：普攻、闪避、普攻后连续释放两次共鸣技能。
         if has_intro:
-            self.continues_normal_attack(1.0)
+            self.continues_normal_attack(1.1)
             self.continues_right_click(0.05)
             self.check_combat()
-            self.continues_normal_attack(1.0)
+            self.continues_normal_attack(1.1)
             self.click_resonance(time_out=2)
             self.click_resonance(time_out=2)
         else:
             # 无变奏入场：两段普攻后检查战斗，再补闪避和一段普攻。
-            self.continues_normal_attack(1.0)
+            self.continues_normal_attack(1.1)
             self.continues_right_click(0.05)
-            self.continues_normal_attack(1.0)
+            self.continues_normal_attack(1.1)
             self.check_combat()
             self.continues_right_click(0.05)
-            self.continues_normal_attack(1.0)
+            self.continues_normal_attack(1.1)
             if not self.click_resonance(time_out=2)[0]:
                 return False
 
@@ -153,7 +153,7 @@ class Denia(BaseChar):
         lib_success = self.click_liberation()
         retries = 0
         while not lib_success and retries < 2:
-            self.continues_normal_attack(1.0)
+            self.continues_normal_attack(1.1)
             lib_success = self.click_liberation()
             retries += 1
         if lib_success:
