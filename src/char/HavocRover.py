@@ -1,6 +1,6 @@
 import time
 from ok import Logger
-from src.char.BaseChar import BaseChar, Elements, SwitchPriority
+from src.char.BaseChar import BaseChar, Elements
 
 _ROVER_FORM_NAMES = {
     Elements.SPECTRO: 'Rover: Spectro',
@@ -12,14 +12,10 @@ _ROVER_FORM_NAMES = {
 class HavocRover(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.zani_liber_insert = False
-        self._force_switch_me = False
         self._bind_form_logger()
 
     def reset_state(self):
         self.ring_index = -1
-        self.zani_liber_insert = False
-        self._force_switch_me = False
         super().reset_state()
         self._bind_form_logger()
 
@@ -42,29 +38,16 @@ class HavocRover(BaseChar):
             self.task._ensure_ring_index()
             self._bind_form_logger()
 
-    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        if self._force_switch_me:
-            return SwitchPriority.MUST
-        for char in self.task.chars:
-            if char is not None and char is not self and getattr(char, "_force_switch_me", False):
-                return SwitchPriority.NO
-        return super().get_switch_priority(current_char, has_intro, target_low_con)
-
-    def _force_switch_to(self, target):
-        if target is None:
-            return super().switch_next_char()
-        for char in self.task.chars:
-            if char is not None:
-                char._force_switch_me = char is target
-        try:
-            return super().switch_next_char()
-        finally:
-            for char in self.task.chars:
-                if char is not None:
-                    char._force_switch_me = False
+    def _in_zani_liber_insert_window(self):
+        """赞妮大招插队窗口：phase 2/3 且仍在 liberation 时跑 insert 短轴。"""
+        from src.char.Zani import Zani
+        zani = self.task.has_char(Zani)
+        if zani is None or not getattr(zani, '_zanfei_guang', False):
+            return False
+        return bool(zani.try_consume_insert_handoff())
 
     def do_perform(self):
-        if self.zani_liber_insert:
+        if self._in_zani_liber_insert_window():
             return self._do_zani_liber_insert()
         self.init()
         if not self.has_intro:
@@ -84,8 +67,7 @@ class HavocRover(BaseChar):
 
     def _do_zani_liber_insert(self):
         """赞妮大招插入：E + Q + 大招，然后切回赞妮。"""
-        self.zani_liber_insert = False
-        self.logger.info("rover: zani liber insert short axis (E+Q+R)")
+        self.logger.info('rover: zani liber insert short axis (E+Q+R)')
         self.init()
         if self.has_intro:
             self.continues_normal_attack(0.2)
@@ -98,13 +80,13 @@ class HavocRover(BaseChar):
             self.sleep(0.05)
         attempts = 0
         recovery_elapsed = 0
-        result = "disabled"
+        result = 'disabled'
         if self.task.use_liberation:
             attempts = 1
             if self.click_liberation(send_click=True):
-                result = "first-success"
+                result = 'first-success'
             else:
-                result = "retry-timeout"
+                result = 'retry-timeout'
                 retry_start = time.time()
                 while time.time() - retry_start < 2:
                     remaining = 2 - (time.time() - retry_start)
@@ -114,13 +96,15 @@ class HavocRover(BaseChar):
                         break
                     attempts += 1
                     if self.click_liberation(send_click=True, wait_if_cd_ready=0):
-                        result = "retry-success"
+                        result = 'retry-success'
                         break
-        self.logger.info(f"rover: liber insert result={result} attempts={attempts} recovery={recovery_elapsed:.2f}s")
+        self.logger.info(f'rover: liber insert result={result} attempts={attempts} recovery={recovery_elapsed:.2f}s')
+        if self.buff_time > 0:
+            self.last_buff_time = time.time()
+            self.logger.info(f'rover: insert buff refreshed buff_time={self.buff_time}')
         from src.char.Zani import Zani
-
         zani = self.task.has_char(Zani)
-        return self._force_switch_to(zani)
+        return super().switch_next_char()
 
     def init(self):
         if self.ring_index == -1:
@@ -133,7 +117,9 @@ class HavocRover(BaseChar):
         if self.has_intro:
             self.continues_normal_attack(1)
         self.wait_down()
-        self.spectro_routine_aftertune_combo()
+        self.heavy_attack()
+        self.sleep(0.4)
+        self.continues_normal_attack(0.7)
         self.click_echo(time_out=0)
         if self.is_forte_full():
             self.check_combat()
@@ -143,11 +129,6 @@ class HavocRover(BaseChar):
         self.check_combat()
         if not self.click_liberation(send_click=True):
             self.click_resonance()
-
-    def spectro_routine_aftertune_combo(self):
-        self.heavy_attack()
-        self.sleep(0.4)
-        self.continues_normal_attack(0.7)
 
     def perform_havoc_routine(self):
         self.wait_down()
@@ -162,34 +143,25 @@ class HavocRover(BaseChar):
     def init_wind(self):
         from src.char.Cartethyia import Cartethyia
         from src.char.Phoebe import Phoebe
-        self.use_skyfall_severance = False
-        if self.task.has_char(Cartethyia) and self.task.has_char(Phoebe):
-            self.use_skyfall_severance = True
+        self.use_skyfall_severance = bool(self.task.has_char(Cartethyia) and self.task.has_char(Phoebe))
 
     def perform_wind_routine(self):
-        if self.has_intro:
-            if self.wind_routine_click_while_flying(2):
-                self.click_liberation(send_click=True)
-                self.wind_routine_wait_down()
-                return
-        self.wind_routine_wait_down(check_forte_full=False)
-        if self.resonance_available() and not self.is_forte_full():
-            self.click_echo(time_out=0)
-            start = time.time()
-            flying = False
-            while time.time() - start < 1:
-                self.send_resonance_key(interval=0.1)
-                self.task.next_frame()
-                self.click(interval=0.1)
-                if flying := self.wind_routine_flying():
-                    break
-            if not self.use_skyfall_severance:
+        if not (self.has_intro and self.wind_routine_click_while_flying(2)):
+            self.wind_routine_wait_down(check_forte_full=False)
+            if self.resonance_available() and not self.is_forte_full():
+                self.click_echo(time_out=0)
+                start = time.time()
+                flying = False
+                while time.time() - start < 1:
+                    self.send_resonance_key(interval=0.1)
+                    self.task.next_frame()
+                    self.click(interval=0.1)
+                    if flying := self.wind_routine_flying():
+                        break
+                use_skyfall_severance = self.use_skyfall_severance
                 if flying:
-                    self.wind_routine_click_while_flying(1.74)
-            else:
-                if flying:
-                    self.wind_routine_click_while_flying(1.6)
-                if self.click_resonance(send_click=False)[0]:
+                    self.wind_routine_click_while_flying(1.6 if use_skyfall_severance else 1.74)
+                if use_skyfall_severance and self.click_resonance(send_click=False)[0]:
                     self.wind_routine_click_while_flying(1)
         self.click_liberation(send_click=True)
         self.wind_routine_wait_down()
@@ -233,41 +205,3 @@ class HavocRover(BaseChar):
         res = self.click_resonance(send_click=True)[0]
         if not (liber or res):
             self.continues_normal_attack(1)
-
-    def do_fast_perform(self):
-        if self.zani_liber_insert:
-            return self._do_zani_liber_insert()
-        self.init()
-        if not self.has_intro:
-            self.sleep(0.01)
-        if self.ring_index == Elements.WIND:
-            self.fast_perform_wind_routine()
-        else:
-            self.do_perform()
-            return
-        self.switch_next_char()
-
-    def fast_perform_wind_routine(self):
-        if self.has_intro:
-            if self.wind_routine_click_while_flying(0.5):
-                return
-        if self.wind_routine_flying():
-            self.click_liberation(send_click=True)
-            self.wind_routine_wait_down(check_forte_full=False)
-            self.sleep(0.03)
-        if self.is_forte_full():
-            self.send_resonance_key()
-            return
-        self.click_echo(time_out=0)
-        if self.resonance_available() and not self.wind_routine_flying():
-            self.send_resonance_key()
-            self.sleep(0.1)
-        att_time = 1 - (time.time() - self.last_perform)
-        if att_time > 0 and self.wind_routine_flying():
-            self.wind_routine_click_while_flying(att_time)
-        if self.use_skyfall_severance:
-            self.click_resonance(send_click=False)
-        if self.click_liberation(send_click=True):
-            self.sleep(0.03)
-        if self.is_forte_full():
-            self.send_resonance_key()
