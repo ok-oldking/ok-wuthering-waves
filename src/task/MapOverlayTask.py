@@ -46,6 +46,10 @@ OVERLAY_DRAW_DURATION = 3.0
 
 MAP_DIR = get_path_relative_to_exe('assets', 'stitched')
 
+# 视图输入探针（鼠标动作 + 匹配结果配对采集）的落地目录，见
+# src/utils/ViewInputProbe.py。默认关闭，由 '_View input probe' 配置开启。
+VIEW_PROBE_DIR = get_path_relative_to_exe('logs', 'view_probe')
+
 # 资源包（assets.zip）解压的根目录，即 MAP_DIR 的上一级 assets 目录。特征文件、物品
 # 数据库、坐标/参数配置与 version.txt 都在其 stitched/ 子目录内。
 ASSETS_DIR = os.path.dirname(MAP_DIR)
@@ -1643,6 +1647,10 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             # 到达阈值（游戏单位），默认 1000，有效范围 1..100000（需求 9.7、9.8）
             # 下划线前缀 = 不在面板显示
             '_Arrival threshold (game units)': 1000,
+            # 视图输入探针：把鼠标拖动/滚轮与匹配结果配对写入 logs/view_probe/*.jsonl，
+            # 供"渲染层自行响应拖动缩放（降低匹配频率）"方案做参数标定。默认关闭，
+            # 只读不干预（pynput 非侵入监听），见 src/utils/ViewInputProbe.py
+            '_View input probe': False,
             # 推进热键，pynput GlobalHotKeys 格式，默认 Ctrl+F9（需求 9.9）
             'Advance hotkey': '<ctrl>+<f9>',
             # 左下角信息面板（Status_Panel）开关，默认显示
@@ -1698,6 +1706,10 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         self._lock_ocr_pos = None
         self._second_check_done = False
         self._fallback_log_counter = 0
+        # 视图输入探针：仅在 '_View input probe' 开启时创建，记录鼠标动作与匹配结果
+        # 的配对数据，供"渲染层航位推算"方案标定用。默认 None，不影响任何现有逻辑。
+        self._view_probe = None
+        self._view_probe_in_big_map = False
         self._ocr_noresult_counter = 0
         self._position_detector = None
         # 资源下载：后台线程 + 与检测循环的挂起握手。
@@ -2021,6 +2033,49 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             self._engine_settings = {}
         return self._engine_settings
 
+    def _ensure_view_probe(self):
+        """按配置惰性创建/销毁视图输入探针，返回探针或 None。"""
+        want = bool(self.config.get('_View input probe'))
+        if not want:
+            if self._view_probe is not None:
+                try:
+                    self._view_probe.stop()
+                except Exception as e:
+                    logger.warning(f"[ViewProbe] stop failed: {e}")
+                self._view_probe = None
+                self._view_probe_in_big_map = False
+            return None
+        if self._view_probe is None:
+            try:
+                from src.utils.ViewInputProbe import ViewInputProbe
+                probe = ViewInputProbe(VIEW_PROBE_DIR)
+                frame = self.frame
+                extra = {'algo': self.config.get('_Feature algorithm', 'SIFTGZ'),
+                         'interval_ms': self.config.get('Detect interval (ms)', 500)}
+                if frame is not None:
+                    extra['frame'] = [int(frame.shape[1]), int(frame.shape[0])]
+                if probe.start(extra):
+                    self._view_probe = probe
+            except Exception as e:
+                logger.warning(f"[ViewProbe] init failed: {e}")
+                self._view_probe = None
+        return self._view_probe
+
+    def _view_probe_mark_big_map(self, on):
+        """大地图进入/离开的边沿事件，用于切分采集会话段。"""
+        probe = self._view_probe
+        if probe is None or on == self._view_probe_in_big_map:
+            return
+        self._view_probe_in_big_map = on
+        probe.log_bigmap(on)
+
+    #: 纯匹配期参数：改了**不需要**重新生成 npz 缓存，因此不能由资产包里的
+    #: ``setting.json`` 决定——否则旧资产包一覆盖，代码里的调优结果就被冲掉
+    #: （实机上就发生过：ratio 调到 0.60 后被资源包的 ``_r75_`` 覆盖回 0.75）。
+    #: 这里把它们从资产包参数里剔除，交给引擎的代码默认值。
+    #: 其余参数（ct/ol/sigma/et/grid/mpc/ds/ts/md/upscale…）必须与 npz 绑定，仍取资产包的值。
+    MATCH_TIME_PARAMS = ('ratio', 'max_dist')
+
     def _resolve_engine_kwargs(self, algo, map_id):
         from src.match_engine.params import ParamSet, params_to_engine_kwargs
 
@@ -2039,7 +2094,11 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             try:
                 ps = ParamSet.from_name(param_name)
                 kwargs = params_to_engine_kwargs(ps)
-                logger.info(f"[MapFallback] setting.json resolved {algo_key}/{map_id} → {param_name}")
+                dropped = {k: kwargs.pop(k) for k in self.MATCH_TIME_PARAMS
+                           if k in kwargs}
+                logger.info(f"[MapFallback] setting.json resolved {algo_key}/{map_id} → {param_name}"
+                            + (f"（忽略资产包里的匹配期参数 {dropped}，改用代码默认值）"
+                               if dropped else ""))
                 return kwargs
             except Exception as e:
                 logger.warning(f"[MapFallback] failed to parse param name {param_name!r}: {e}")
@@ -2442,7 +2501,11 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             self.sleep(interval / 1000)
             return
 
-        if self._in_big_map():
+        in_big_map = self._in_big_map()
+        self._ensure_view_probe()
+        self._view_probe_mark_big_map(in_big_map)
+
+        if in_big_map:
             if self.config.get('World map overlay') and self._last_valid is not None:
                 attempt = self._fallback_failures + 1
                 is_third = (self._fallback_failures == 2)
@@ -2466,6 +2529,10 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                     )
                 result = self._try_map_match(self._last_valid, full_map=use_full_map, crop_size=crop_size)
                 if result is None or not result.success:
+                    if self._view_probe is not None:
+                        self._view_probe.log_match_failed(
+                            crop_size=crop_size, full_map=use_full_map,
+                            reason='no result' if result is None else 'not success')
                     self._fallback_failures += 1
                     logger.warning(
                         f"[MapFallback] failed {self._fallback_failures}/{FALLBACK_MAX_FAILURES}"
@@ -2485,6 +2552,11 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                         new_z = self._last_valid[2] if len(self._last_valid) > 2 else 0
                         self._last_valid = (new_x, new_y, new_z)
                     game_scale = self._compute_game_scale(result)
+                    if self._view_probe is not None:
+                        self._view_probe.log_match(
+                            map_id=self._locked_map_id, result=result,
+                            game_scale=game_scale, crop_size=crop_size,
+                            full_map=use_full_map)
                     self._overlay_ctl().on_bigmap(self._last_valid, game_scale)
 
                 if self._fallback_failures >= FALLBACK_MAX_FAILURES:
@@ -2686,6 +2758,12 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
 
     def on_destroy(self):
         self._force_clear_overlay()
+        if self._view_probe is not None:
+            try:
+                self._view_probe.stop()
+            except Exception as e:  # pragma: no cover - 运行时相关
+                logger.warning(f'[ViewProbe] stop failed: {e}')
+            self._view_probe = None
         if self._assets_gui is not None:
             self._assets_gui.close_dialog()
         if self._overlay_controller is not None:
