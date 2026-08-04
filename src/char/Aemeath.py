@@ -18,8 +18,8 @@ class Aemeath(BaseChar):
         self.last_enhance_e = -1
         self.intro_liberation_time = -1
         self.pending_lib2 = False
-        self._lib1_cast_count = 0   # 本轮 lib1 释放次数
-        self._lib2_cast_count = 0   # 本轮 lib2 释放次数
+        self._lib1_cast_count = 0  # 本轮 lib1 释放次数
+        self._lib2_cast_count = 0  # 本轮 lib2 释放次数
 
     def lib2_cooldown_anchor(self):
         if self.last_liber >= 0:
@@ -203,7 +203,6 @@ class Aemeath(BaseChar):
         else:
             self.logger.info('Aemeath [post-lib2 combo] E not available, skipping')
 
-
     def _process_end_of_turn_liberations(self) -> None:
         """根据当前回合的解放技能释放状态，进行决策路由并执行相应的收尾动作。"""
         if self._lib1_cast_this_turn() and not self._lib2_cast_this_turn():
@@ -315,16 +314,6 @@ class Aemeath(BaseChar):
                 self.record_heavy_liberation()
             return True
         return False
-
-    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        if self.should_wait_for_lib2():
-            # Mornye 离场且队里有 Linnai 时让位: Linnai 要吃 Mornye 协奏入场, 优先级最高, Aemeath 此刻
-            # 不抢 MUST(否则两者都 MUST、按"最久未上场"决胜会切到 Aemeath). lib2 顺延到下次轮到 Aemeath.
-            from src.char.Linnai import Linnai
-            if current_char and current_char.char_name == 'char_moning' and self.task.has_char(Linnai):
-                return super().get_switch_priority(current_char, has_intro, target_low_con)
-            return SwitchPriority.MUST
-        return super().get_switch_priority(current_char, has_intro, target_low_con)
 
     def on_combat_end(self, chars):
         self.switch_other_char()

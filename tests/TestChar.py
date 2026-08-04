@@ -18,7 +18,7 @@ from src.char.ShoreKeeper import ShoreKeeper
 from src.char.Suisui import Suisui
 from src.char.Verina import Verina
 from src.char.YangYangSp import YangYangSp
-from src.task.BaseCombatTask import NotInCombatException
+from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
 from src.task.AutoCombatTask import AutoCombatTask
 
 config['debug'] = True
@@ -41,6 +41,67 @@ class ForcedChar(BaseChar):
 class TestChar(TaskTestCase):
     task_class = AutoCombatTask
     config = config
+
+    def test_combat_once_switches_to_healer_before_and_after_combat(self):
+        combat = BaseCombatTask.__new__(BaseCombatTask)
+        events = []
+        combat.info = {}
+        combat.wait_combat = lambda **kwargs: events.append('wait_combat') or True
+        combat.load_chars = lambda: events.append('load_chars')
+        combat.switch_healer = lambda: events.append('switch_healer')
+        combat.in_combat = lambda: False
+        combat.combat_end = lambda: events.append('combat_end')
+        combat.wait_in_team_and_world = lambda **kwargs: events.append('wait_in_team')
+
+        self.assertTrue(combat.combat_once(wait_combat_time=1))
+        self.assertEqual(events, [
+            'wait_combat',
+            'load_chars',
+            'switch_healer',
+            'combat_end',
+            'switch_healer',
+            'wait_in_team',
+        ])
+
+    def test_auto_combat_switches_to_healer_before_and_after_combat(self):
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        events = []
+        combat.scene = type('Scene', (), {'in_team': lambda self, check: True})()
+        combat.in_team_and_world = lambda: True
+        combat.config = {
+            'Use Liberation': True,
+            'Switch to Healer after Combat': True,
+        }
+        combat.warm_up_char_features = lambda: None
+        combat.in_world = lambda: True
+        combat.switch_healer = lambda: events.append('switch_healer')
+        combat.combat_end = lambda: events.append('combat_end')
+        in_combat_results = iter((True, False))
+        combat.in_combat = lambda: next(in_combat_results)
+        current = type('CurrentChar', (), {'perform': lambda self: events.append('perform')})()
+        combat.get_current_char = lambda: current
+
+        self.assertTrue(combat.run())
+        self.assertEqual(events, [
+            'switch_healer',
+            'perform',
+            'combat_end',
+            'switch_healer',
+        ])
+
+    def test_switch_healer_does_nothing_when_team_has_no_healer(self):
+        combat = BaseCombatTask.__new__(BaseCombatTask)
+        combat.config = {'Switch to Healer after Combat': True}
+        current = BaseChar(None, 0, char_type=CharType.MAIN_DPS)
+        teammate = BaseChar(None, 1, char_type=CharType.SUB_DPS)
+        combat.chars = [current, teammate]
+        combat.get_current_char = lambda: current
+        switched = []
+        current.switch_other_char = lambda **kwargs: switched.append(kwargs)
+
+        combat.switch_healer()
+
+        self.assertEqual(switched, [])
 
     def test_char_type_config(self):
         class Task:
@@ -468,7 +529,7 @@ class TestChar(TaskTestCase):
         healer.last_buff_time = time.time()
         sub_dps.last_buff_time = -1
         self.assertEqual(combat._choose_switch_target(current, False), sub_dps)
-        self.assertEqual(combat._choose_switch_target(current, True), main_dps)
+        self.assertEqual(combat._choose_switch_target(current, True), sub_dps)
         current.last_perform = 0
 
         forced = ForcedChar(task, 4, char_type=CharType.MAIN_DPS)
@@ -1076,7 +1137,7 @@ class TestChar(TaskTestCase):
         combat.chars = [main_dps, healer, sub_dps]
 
         self.assertEqual(combat._choose_switch_target(healer, False), sub_dps)
-        self.assertEqual(combat._choose_switch_target(healer, True), main_dps)
+        self.assertEqual(combat._choose_switch_target(healer, True), sub_dps)
         self.assertEqual(combat._choose_switch_target(sub_dps, False), healer)
         self.assertEqual(combat._choose_switch_target(sub_dps, True), main_dps)
 
@@ -1164,7 +1225,7 @@ class TestChar(TaskTestCase):
         main_dps.last_switch_time = time.time()
         self.assertEqual(combat._choose_switch_target(ciaccona, False), main_dps)
 
-    def test_intro_switches_to_main_dps_ignoring_target_switch_cd(self):
+    def test_intro_switches_from_healer_to_sub_dps_ignoring_target_switch_cd(self):
         class Task:
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 if start < 0:
@@ -1178,9 +1239,9 @@ class TestChar(TaskTestCase):
         main_dps = BaseChar(task, 2, char_type=CharType.MAIN_DPS)
         combat.chars = [healer, sub_dps, main_dps]
 
-        main_dps.last_switch_time = time.time()
         self.assertEqual(combat._choose_switch_target(healer, False), sub_dps)
-        self.assertEqual(combat._choose_switch_target(healer, True), main_dps)
+        sub_dps.last_switch_time = time.time()
+        self.assertEqual(combat._choose_switch_target(healer, True), sub_dps)
 
     def test_intro_switch_target_order_and_blocked_targets_are_respected(self):
         class Task:
@@ -1203,13 +1264,16 @@ class TestChar(TaskTestCase):
         self.assertEqual(combat._choose_switch_target(current, True), forced)
 
         combat.chars = [current, healer, sub_dps, main_dps]
-        self.assertEqual(combat._choose_switch_target(current, True), main_dps)
+        self.assertEqual(combat._choose_switch_target(current, True), sub_dps)
 
         blocked_main_dps = BlockedChar(task, 3, char_type=CharType.MAIN_DPS)
         combat.chars = [current, healer, sub_dps, blocked_main_dps]
         self.assertEqual(combat._choose_switch_target(current, True), sub_dps)
 
         blocked_sub_dps = BlockedChar(task, 2, char_type=CharType.SUB_DPS)
+        combat.chars = [current, healer, blocked_sub_dps, main_dps]
+        self.assertEqual(combat._choose_switch_target(current, True), main_dps)
+
         combat.chars = [current, healer, blocked_sub_dps, blocked_main_dps]
         self.assertEqual(combat._choose_switch_target(current, True), healer)
 

@@ -375,6 +375,7 @@ class BaseCombatTask(CombatCheck):
         if wait_combat_time > 0:
             result = self.wait_combat(target=target, time_out=wait_combat_time, raise_if_not_found=raise_if_not_found)
         self.load_chars()
+        self.switch_healer()
         self.info['Combat Count'] = self.info.get('Combat Count', 0) + 1
         try:
             while self.in_combat():
@@ -466,10 +467,15 @@ class BaseCombatTask(CombatCheck):
         ]
         return self._oldest_switch_target(unbuffed_non_main)
 
-    def _choose_intro_switch_target(self, must_targets, normal_targets):
+    def _choose_intro_switch_target(self, current_char, must_targets, normal_targets):
         if must_targets:
             return self._oldest_switch_target(must_targets)
-        for char_type in ('is_main_dps', 'is_sub_dps', 'is_healer'):
+
+        role_order = ('is_main_dps', 'is_sub_dps', 'is_healer')
+        if current_char.is_healer:
+            role_order = ('is_sub_dps', 'is_main_dps', 'is_healer')
+
+        for char_type in role_order:
             target = self._oldest_switch_target([char for char in normal_targets if getattr(char, char_type)])
             if target:
                 return target
@@ -518,7 +524,7 @@ class BaseCombatTask(CombatCheck):
                 normal_targets.append(char)
 
         if has_intro:
-            return self._choose_intro_switch_target(must_targets, normal_targets) or current_char
+            return self._choose_intro_switch_target(current_char, must_targets, normal_targets) or current_char
 
         if must_targets:
             candidates = must_targets
@@ -722,8 +728,9 @@ class BaseCombatTask(CombatCheck):
     def switch_healer(self):
         if self.config.get('Switch to Healer after Combat'):
             current_char = self.get_current_char()
-            if current_char and not current_char.is_healer:
-                current_char.switch_other_char()
+            has_healer = any(char and char.is_healer for char in self.chars)
+            if current_char and not current_char.is_healer and has_healer:
+                current_char.switch_other_char(allow_auto_combat=True)
 
     def sleep_check(self):
         """休眠指定时间, 并在休眠前后检查战斗状态。

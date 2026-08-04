@@ -169,6 +169,7 @@ class BaseChar:
 
     def cycle_sleep(self, duration=0.1):
         to_sleep = duration - (time.time() - self.cycle_start_time)
+        self.task.check_f_break()
         self.sleep(to_sleep)
 
     def flying_based_on_resonance(self):
@@ -916,7 +917,7 @@ class BaseChar:
         """检查是否要暂缓切人。"""
         return False
 
-    def switch_other_char(self):
+    def switch_other_char(self, allow_auto_combat=False):
         target_index = (self.index + 1) % len(self.task.chars)
         for char in self.task.chars:
             if char and char.is_healer and char.index != self.index:
@@ -925,7 +926,7 @@ class BaseChar:
         next_char = str(target_index + 1)
 
         from src.task.AutoCombatTask import AutoCombatTask
-        if isinstance(self.task, AutoCombatTask):
+        if isinstance(self.task, AutoCombatTask) and not allow_auto_combat:
             self.logger.debug('AutoCombatTask, skip switch_other_char')
             return
         self.logger.debug(f'{self.char_name} on_combat_end {self.index} switch next char: {next_char}')
