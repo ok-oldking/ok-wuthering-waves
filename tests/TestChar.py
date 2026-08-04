@@ -497,14 +497,41 @@ class TestChar(TaskTestCase):
         self.assertTrue(current.has_intro)
         self.assertFalse(current.has_sub_dps_intro)
 
-    def test_chisa_support_intro_records_buff_and_switches_immediately(self):
+    def _make_support_chisa(self, has_intro):
         class Task:
             char_config = {'Chisa DPS': False}
+            key_config = {'Dodge Key': 'lshift'}
+            chars = []
+
+            def wait_until(self, *args, **kwargs):
+                return True
+
+            def find_one(self, *args, **kwargs):
+                return None
+
+            def get_box_by_name(self, *args, **kwargs):
+                return None
+
+            def mouse_down(self):
+                pass
+
+            def mouse_up(self):
+                pass
+
+            def send_key(self, *args, **kwargs):
+                pass
+
+            def jump(self):
+                pass
+
+            def get_current_con(self):
+                return 1
 
         class TrackingChisa(Chisa):
             def __init__(self, task):
                 super().__init__(task, 0)
                 self.actions = []
+                self.resonance_ready = True
 
             def click_echo(self, **kwargs):
                 self.actions.append(('echo', kwargs))
@@ -515,16 +542,42 @@ class TestChar(TaskTestCase):
 
             def click_resonance(self, **kwargs):
                 self.actions.append(('resonance', kwargs))
+                self.resonance_ready = False
+                return True, None
 
-            def switch_next_char(self):
+            def switch_next_char(self, *args, **kwargs):
                 self.actions.append(('switch', {}))
 
+            def resonance_available(self):
+                return self.resonance_ready
+
+            def liberation_available(self):
+                return True
+
+            def continues_normal_attack(self, *args, **kwargs):
+                pass
+
+            def _wait_for_e2_with_normal_attack(self):
+                return False
+
+            def sleep(self, *args, **kwargs):
+                pass
+
         chisa = TrackingChisa(Task())
-        chisa.has_intro = True
+        chisa.has_intro = has_intro
+        return chisa
+
+    def test_chisa_support_intro_records_buff_and_switches_immediately(self):
+        chisa = self._make_support_chisa(has_intro=True)
         chisa.do_perform()
 
         self.assertGreater(chisa.last_buff_time, 0)
-        self.assertEqual(chisa.actions, [('echo', {'time_out': 0}), ('switch', {})])
+        self.assertEqual(chisa.actions, [
+            ('resonance', {'time_out': 0.5}),
+            ('echo', {'time_out': 0}),
+            ('liberation', {}),
+            ('switch', {}),
+        ])
 
     def test_verina_heavy_attack_has_eight_second_interval(self):
         class Task:
@@ -581,35 +634,12 @@ class TestChar(TaskTestCase):
         self.assertEqual(verina.heavy_count, 2)
 
     def test_chisa_support_liberation_records_buff_without_dps_sequence(self):
-        class Task:
-            char_config = {'Chisa DPS': False}
-
-        class TrackingChisa(Chisa):
-            def __init__(self, task):
-                super().__init__(task, 0)
-                self.actions = []
-
-            def flying(self):
-                return False
-
-            def click_echo(self, **kwargs):
-                self.actions.append(('echo', kwargs))
-
-            def click_liberation(self):
-                self.actions.append(('liberation', {}))
-                return True
-
-            def click_resonance(self, **kwargs):
-                self.actions.append(('resonance', kwargs))
-
-            def switch_next_char(self):
-                self.actions.append(('switch', {}))
-
-        chisa = TrackingChisa(Task())
+        chisa = self._make_support_chisa(has_intro=False)
         chisa.do_perform()
 
         self.assertGreater(chisa.last_buff_time, 0)
         self.assertEqual(chisa.actions, [
+            ('resonance', {'time_out': 0.5}),
             ('echo', {'time_out': 0}),
             ('liberation', {}),
             ('switch', {}),
