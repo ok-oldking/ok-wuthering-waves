@@ -182,7 +182,11 @@ config = {
         'feature_processor': process_feature,
         'vcenter_features': ['monthly_card', 'skip_dialog_check'],
         'hcenter_features': ['monthly_card', 'suisui_forte3', 'message_dialog', 'claim_stamina_sign',
-                             'skip_dialog_check', 'login_close']
+                             'skip_dialog_check', 'login_close', 'garden_confirm', 'garden_continue_game',
+                             'garden_unpause', 'garden_get_gold', 'garden_get_purple', 'garden_get_skip',
+                             'garden_not_interested_confirm', 'garden_not_interested', 'a_garden_back',
+                             'garden_get_confirm_gray', 'the_garden_max', 'garden_shop_close', 'garden_new_stage',
+                             'a_garden_restart']
     },
     'windows': {  # required  when supporting windows game
         'top_hwnd_class': [re.compile('CAgreementDlg'), re.compile('CLoginDlg_P_'),
