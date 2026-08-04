@@ -28,7 +28,7 @@ class Suisui(BaseChar):
     def perform_forte3_rotation(self):
         start = time.time()
         while self.time_elapsed_accounting_for_freeze(start) < self.FORTE_TIMEOUT:
-            if self.forte3_available():
+            if self.forte2_available() or self.forte3_available():
                 self.logger.debug('forte3 available')
                 break
             self.cycle_start()
@@ -59,12 +59,21 @@ class Suisui(BaseChar):
         self.logger.warning('Suisui concerto fill timed out')
 
     def do_cycle(self):
-        if self.resonance_available():
-            return self.click_resonance()
+        if self.has_intro or (self.is_e_forte_full() and self.resonance_available()):
+            start = time.time()
+            if not self.has_intro:
+                while self.task.find_one(Labels.suisui_e1) and self.time_elapsed_accounting_for_freeze(start) < 2:
+                    self.send_resonance_key()
+                    self.sleep(0.05)
+            self.heavy_attack(1)
+            self.click_resonance()
         self.click()
 
     def forte3_available(self):
-        return bool(self.task.find_one(Labels.suisui_forte3, threshold=0.6))
+        return bool(self.task.find_one(Labels.suisui_forte3, threshold=0.75))
+
+    def forte2_available(self):
+        return bool(self.task.find_one(Labels.suisui_forte2, threshold=0.75))
 
     def switch_out(self, con_full=False):
         super().switch_out(con_full=con_full)
