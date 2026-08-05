@@ -1,6 +1,7 @@
 name: "ok-ww"
 uac: true
 icon: "icons/icon.png"
+auto_start: true
 
 profiles:
   - name: "China"
