@@ -502,6 +502,7 @@ class TestChar(TaskTestCase):
             char_config = {'Chisa DPS': False}
             key_config = {'Dodge Key': 'lshift'}
             chars = []
+            has_lavitator = False
 
             def wait_until(self, *args, **kwargs):
                 return True
@@ -573,9 +574,7 @@ class TestChar(TaskTestCase):
 
         self.assertGreater(chisa.last_buff_time, 0)
         self.assertEqual(chisa.actions, [
-            ('resonance', {'time_out': 0.5}),
             ('echo', {'time_out': 0}),
-            ('liberation', {}),
             ('switch', {}),
         ])
 
@@ -639,7 +638,6 @@ class TestChar(TaskTestCase):
 
         self.assertGreater(chisa.last_buff_time, 0)
         self.assertEqual(chisa.actions, [
-            ('resonance', {'time_out': 0.5}),
             ('echo', {'time_out': 0}),
             ('liberation', {}),
             ('switch', {}),
