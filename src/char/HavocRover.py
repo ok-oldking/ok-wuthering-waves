@@ -78,27 +78,16 @@ class HavocRover(BaseChar):
         if self.echo_available():
             self.click_echo(time_out=0)
             self.sleep(0.05)
-        attempts = 0
-        recovery_elapsed = 0
-        result = 'disabled'
         if self.task.use_liberation:
-            attempts = 1
-            if self.click_liberation(send_click=True):
-                result = 'first-success'
-            else:
-                result = 'retry-timeout'
+            if not self.click_liberation(send_click=True):
                 retry_start = time.time()
                 while time.time() - retry_start < 2:
                     remaining = 2 - (time.time() - retry_start)
                     self.continues_normal_attack(min(0.25, remaining))
-                    recovery_elapsed = min(time.time() - retry_start, 2)
-                    if recovery_elapsed >= 2:
+                    if time.time() - retry_start >= 2:
                         break
-                    attempts += 1
                     if self.click_liberation(send_click=True, wait_if_cd_ready=0):
-                        result = 'retry-success'
                         break
-        self.logger.info(f'rover: liber insert result={result} attempts={attempts} recovery={recovery_elapsed:.2f}s')
         if self.buff_time > 0:
             self.last_buff_time = time.time()
             self.logger.info(f'rover: insert buff refreshed buff_time={self.buff_time}')

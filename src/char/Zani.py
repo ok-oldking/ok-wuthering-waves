@@ -80,36 +80,7 @@ class Zani(BaseChar):
             else:
                 self.nightfall_combo()
             return self.switch_next_char()
-        forte_full, e_available, liber_avail, predicted = self._sample_non_liber_rotation()
-        self.logger.info(
-            f'Zani entry: blazes={self.blazes} threshold={self.blazes_threshold} '
-            f'forte_full={forte_full} e_avail={e_available} predicted={predicted:.2f} '
-            f'liber_avail={liber_avail} has_intro={self.has_intro}'
-        )
-        # 场景3：焰光拉满（1.0）且 R 可用 → 直接开大
-        if self.blazes >= 1 and liber_avail:
-            if not self._try_liberation():
-                self.sleep(0.1)
-                self._try_liberation()
-            return self.switch_next_char()
-        # 场景4：强化E已就绪 → 蓄力后预测达标（一个强化E后能到阈值）则开大
-        if forte_full:
-            should_liberate = predicted >= self.blazes_threshold
-            success = self.crisis_response_protocol_combo()
-            if success and should_liberate and self.liberation_available():
-                self._try_liberation(wait_crisis=True)
-            return self.switch_next_char()
-        # 场景1：普通E 可用，焰光未满 → crisis 蓄力（强化e）后达标则开大
-        if e_available:
-            success = self.crisis_response_protocol_combo()
-            if success and self.blazes >= self.blazes_threshold:
-                # liberation_available 找图失败时返回 None：视为可用尝试开大（失败无害）
-                if self.liberation_available() is not False:
-                    self._try_liberation(wait_crisis=True)
-            return self.switch_next_char()
-        # 场景2：E 在 CD → 普攻直到可切人
-        self.normal_attack_until_can_switch()
-        return self.switch_next_char()
+        return self._non_liber_rotation(zanfei=False)
 
     def _sample_non_liber_rotation(self, reset_liber_phase=False):
         self.state = 0
@@ -133,47 +104,54 @@ class Zani(BaseChar):
         if self.in_liberation:
             self.state = 1
             return self._do_liber_zanfei()
-        forte_full, e_available, liber_avail, predicted = self._sample_non_liber_rotation(
-            reset_liber_phase=True
-        )
-        if self.has_intro:
-            if self._try_liberation(zanfei=True):
-                return
-        elif liber_avail and self.blazes >= 1:
-            if self._try_liberation(zanfei=True):
-                return self._zanfei_post_liber_or_switch()
-        return self._zanfei_hold_until_liber()
+        return self._non_liber_rotation(zanfei=True, reset_liber_phase=True)
 
-    def _zanfei_hold_until_liber(self):
-        """赞菲光非大招：场上用 E/平A 过渡，直到大招可用并开大。"""
-        start = time.time()
-        while time.time() - start < 25:
-            self.check_combat()
-            self.check_liber()
-            if self.in_liberation:
-                return self._do_liber_zanfei()
-            if self.liberation_available():
-                if self._try_liberation(wait_crisis=self.crisis_time_left() > 0, zanfei=True):
-                    return self._zanfei_post_liber_or_switch()
-            self.update_blazes()
-            forte_full = self.is_e_forte_full()
-            e_available = self.current_resonance() > 0.05
+
+    def _non_liber_rotation(self, zanfei=False, reset_liber_phase=False):
+        """非大招轮换（赞菲守/赞菲光共用，沿用 do_perform 场景体系）。
+        zanfei=True（赞菲光）：crisis 动作只作过渡（加焰光/等大招 CD），动作完直接开大——
+        大招 CD 经验上已好，焰光不设门槛；成功内部已 handoff 切人，失败留场下轮再判。
+        zanfei=False（赞菲守）：行为与原 do_perform 完全一致（焰光达标才开大，尝试后切走）。"""
+        forte_full, e_available, liber_avail, predicted = self._sample_non_liber_rotation(
+            reset_liber_phase=reset_liber_phase
+        )
+        # 场景3：有大（zanfei 光不看焰光；赞菲守需焰光满）→ 直接开大
+        if (zanfei or self.blazes >= 1) and liber_avail:
+            if not self._try_liberation(zanfei=zanfei):
+                self.sleep(0.1)
+                self._try_liberation(zanfei=zanfei)
+            if zanfei:
+                return
+            return self.switch_next_char()
+        if zanfei:
+            # 赞菲光没大：crisis 动作作过渡（强化E图标在→scene4 快路径直接按强化E；
+            # 否则→scene1 E+普攻蓄力；两者顺便加焰光/等大招 CD）→ 动作完无条件开大。
+            # 大招 CD 经验上已好（R2 到下次入场 >20s），失败（R 按空）无害，留场下轮再判。
             if forte_full or e_available:
                 self.crisis_response_protocol_combo()
-                if self.liberation_available():
-                    if self._try_liberation(wait_crisis=True, zanfei=True):
-                        return self._zanfei_post_liber_or_switch()
-            else:
-                self.continues_normal_attack(0.35)
-        self.logger.warning('zanfei: hold until liber timeout, switch')
+                self._try_liberation(wait_crisis=True, zanfei=True)
+                return
+            # 场景2：E 在 CD → 普攻过渡后切走（菲比补协奏再入场）
+            self.normal_attack_until_can_switch()
+            return self.switch_next_char()
+        # 场景4：强化E已就绪 → 蓄力后预测达标（一个强化E后能到阈值）则开大
+        if forte_full:
+            should_liberate = predicted >= self.blazes_threshold
+            success = self.crisis_response_protocol_combo()
+            if success and should_liberate and self.liberation_available():
+                self._try_liberation(wait_crisis=True)
+            return self.switch_next_char()
+        # 场景1：普通E 可用，焰光未满 → crisis 蓄力（强化e）后达标则开大
+        if e_available:
+            success = self.crisis_response_protocol_combo()
+            if success and self.blazes >= self.blazes_threshold:
+                # liberation_available 找图失败时返回 None：视为可用尝试开大（失败无害）
+                if self.liberation_available() is not False:
+                    self._try_liberation(wait_crisis=True)
+            return self.switch_next_char()
+        # 场景2：E 在 CD → 普攻直到可切人
+        self.normal_attack_until_can_switch()
         return self.switch_next_char()
-
-    def _zanfei_post_liber_or_switch(self):
-        """开大 followup 若已切走则直接 return；否则正常切人。"""
-        if self._liber_phase in (2, 3, 4) and (not self.is_current_char):
-            return
-        return self.switch_next_char()
-
     def _handoff_liber_insert(self, next_phase):
         """phase1/2 插队切人：不指定目标，默认 switch；落地角色靠 phase 跑 insert 短轴。"""
         self._liber_phase = next_phase
@@ -272,10 +250,16 @@ class Zani(BaseChar):
             self.wait_until(lambda : self.time_elapsed_accounting_for_freeze(self.crisis_time, intro_motion_freeze=True) >= 2.0, time_out=3.0)
             elapsed = self.time_elapsed_accounting_for_freeze(self.crisis_time, intro_motion_freeze=True)
         self.update_blazes()
+        # 强化E命中结算存在延迟（实机观测 2~6s，见 2026-08-02 23:13:49 日志）：
+        # 2.0s 首验未涨时轮询重验至总窗口 4.5s，焰光一到账立即通过；
+        # 窗口耗尽仍未涨才判未命中（有界，不无限等待）。
+        while self.blazes <= before_blazes and elapsed >= 2.0 and elapsed < 4.5:
+            self.sleep(0.4)
+            self.update_blazes()
+            elapsed = self.time_elapsed_accounting_for_freeze(self.crisis_time, intro_motion_freeze=True)
         # committed 同时要求焰光增量：强化E未命中（blazes 不涨）时不开大，
         # 避免「焰光不足直接开大」；crisis 场景 blazes<1，命中必 +0.04 可检测。
         committed = elapsed >= 2.0 and self.blazes > before_blazes
-        self.logger.info(f'zani: enhanced E commit elapsed={elapsed:.2f}s blazes={before_blazes}->{self.blazes} committed={committed}')
         return committed
 
     def _start_liberation(self):
@@ -345,12 +329,14 @@ class Zani(BaseChar):
             return True
         if time_only or self.is_nightfall_ready():
             return False
-        if self.wait_resonance_not_gray(send_click=True, liber_time_check=True) == State.INTERRUPTED:
-            self.logger.info('Nightfall interrupted, perform liberation2')
-            return True
         if not self.is_mouse_forte_full():
-            self.logger.info('Cannot perform another nightfall, perform liberation2')
-            return True
+            # 重击条未满 → 站桩重读（1.0s 无输入）：给重击条恢复机会（恢复则打砸多一轮），
+            # 未恢复则 R2。已删除 v13 遗留的 E 检查（无 return 从不触发 R2、大招内无按 E、
+            # 唯一效果是 E 灰时普攻 1.34s，见 23:28:40 日志 clicks=60；站桩替代该普攻作为延后手段）。
+            if not self.task.wait_until(self.is_mouse_forte_full, time_out=1.0, settle_time=0.1):
+                self.logger.info('Cannot perform another nightfall, perform liberation2')
+                return True
+            return False
         return False
 
 
@@ -589,7 +575,6 @@ class Zani(BaseChar):
         if not self._zanfei_guang and has_intro:
             from src.char.Phoebe import Phoebe
             if not isinstance(current_char, Phoebe):
-                self.logger.info(f'zani: reject intro source current={type(current_char).__name__} expected=Phoebe')
                 return SwitchPriority.NO
         if has_intro and self.crisis_time_left() > 0:
             return SwitchPriority.NO

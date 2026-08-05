@@ -22,6 +22,7 @@ class Phoebe(BaseChar):
         self.first_rotation_done = False
         self._zanfei_guang = False
         self._force_switch_me = False
+        self._shou_full_tail_pending = False
         self.state = {'enter_status': 0, 'starflash_combo': 0, 'liberation': 0, 'outro': 0, 'priority_liberation_cast': 0}
 
     def reset_state(self):
@@ -33,6 +34,7 @@ class Phoebe(BaseChar):
         self.first_rotation_done = False
         self._zanfei_guang = False
         self._force_switch_me = False
+        self._shou_full_tail_pending = False
         # 跨战斗必须清掉抢大招成功标记，避免 pre-switch 误判 duplicate
         self.state = {'enter_status': 0, 'starflash_combo': 0, 'liberation': 0, 'outro': 0, 'priority_liberation_cast': 0}
 
@@ -75,6 +77,11 @@ class Phoebe(BaseChar):
         return bool(zani.try_consume_insert_handoff())
 
     def do_perform(self):
+        if self._shou_full_tail_pending:
+            if not self._ensure_shou_full_tail():
+                return None
+            self._shou_full_tail_pending = False
+            return self.switch_next_char(_zanfei_shou_full_tail=True)
         if self._zanfei_guang and self._in_zani_liber_insert_window():
             return self._do_liber_insert()
         return self._do_regular_rotation()
@@ -89,7 +96,10 @@ class Phoebe(BaseChar):
         else:
             # 非变奏切人后会自然接一段普攻，先等它结算协奏，再抢大招。
             self.sleep(0.01)
-        self._try_liberation_now()
+        if not self.has_intro:
+            # 变奏入场跳过入场 R 优先：先稳定进告解，R 由告解后既有流程释放。
+            # （避免大招动画结束后蓝环 UI 恢复竞态导致进不去告解，见 19:25:05/19:37:42 日志）
+            self._try_liberation_now()
         if self.attribute == 1:
             self.click_echo(time_out=0)
         return start
@@ -101,7 +111,7 @@ class Phoebe(BaseChar):
         attribute_mismatch = self.check_attribute_mismatch()
         if self.attribute == 2 and self.char_zani is not None:
             if not self.star_available:
-                self.absolution_or_confession()
+                self.absolution_or_confession(wait_team=False)
             if self.zani_linkage():
                 return True, self.switch_next_char(), attribute_mismatch
         return False, None, attribute_mismatch
@@ -125,8 +135,14 @@ class Phoebe(BaseChar):
         max_starflash = 1 if self._zanfei_guang else 2
         if self.attribute == 2 and self.state['starflash_combo'] < max_starflash and self.get_zani_state() != 1:
             self.starflash_combo()
+        # 赞菲光：打 1 段后充能回满并保存（满条离场不清）——赞妮大招 insert 切出时
+        # 左键直接变蓝 → 立即蓄力重击给赞妮回能量，免去 insert 内充能延迟（用户机制确认）。
+        # stop_on_condition=False：告解蓝条在也不提前停，必须充到满才算保存成功。
+        if self._zanfei_guang and not self.is_forte_full():
+            self._charge_starflash_until_full(stop_on_condition=False)
 
     def _finish_regular_rotation(self):
+        shou_full_tail = self.attribute == 2 and not self._zanfei_guang
         if self.resonance_available():
             if self.attribute == 2:
                 if not self._zanfei_guang and not self.confession_ready() and self.first_rotation_done:
@@ -134,10 +150,16 @@ class Phoebe(BaseChar):
             else:
                 self.click_resonance()
             self._ensure_first_rotation_con()
-            return self.switch_next_char(_zanfei_full_tail=self._zanfei_guang)
+            return self.switch_next_char(
+                _zanfei_full_tail=self._zanfei_guang,
+                _zanfei_shou_full_tail=shou_full_tail,
+            )
         self.continues_normal_attack(0.1)
         self._ensure_first_rotation_con()
-        self.switch_next_char(_zanfei_full_tail=self._zanfei_guang)
+        return self.switch_next_char(
+            _zanfei_full_tail=self._zanfei_guang,
+            _zanfei_shou_full_tail=shou_full_tail,
+        )
 
     def _do_regular_rotation(self):
         start = self._prepare_regular_rotation()
@@ -147,7 +169,7 @@ class Phoebe(BaseChar):
         wait_ui_time = 0.35 - (time.time() - start)
         if wait_ui_time > 0 and self.star_available and self.judge_forte() == 0:
             self.continues_normal_attack(wait_ui_time)
-        status_entered = self.absolution_or_confession()
+        status_entered = self.absolution_or_confession(wait_team=False)
         self.check_combat()
         if (not attribute_mismatch or status_entered == State.SUCCESS) and self.star_available:
             if self._click_liberation_reliable(tag=' do-perform'):
@@ -165,30 +187,18 @@ class Phoebe(BaseChar):
         return self._finish_regular_rotation()
 
     def _do_liber_insert(self):
-        """赞妮大招插入：starflash + 长按定身E + 有大招则放，切回赞妮（禁止短按传送/闪避起飞）。"""
+        """赞妮大招插入（极简）：切入后立即核心动作——starflash 蓄力重击（保存的满条直接打，
+        给赞妮回能量）→ 长按 E 定身 → 切回。不做落地轮询/sleep/告解/开大等前置（用户批准：
+        蓄力与长按动作时长本身覆盖切入动画；菲比大招留到 R2 后 do-perform 放）。"""
         self.logger.info('phoebe: zani liber insert short axis')
         if self.attribute == 0:
             self.decide_teammate()
-        self._ensure_grounded('insert enter')
-        self.sleep(0.5)
-        if self.has_intro:
-            self.continues_normal_attack(0.8)
-            self._ensure_grounded('insert after intro na')
-        if not self.star_available:
-            self.absolution_or_confession(dodge_cancel=False)
-            self._ensure_grounded('insert after confession')
-        if self._try_liberation_now():
-            self.logger.info('phoebe: liber insert cast liberation')
-            self._ensure_grounded('insert after liber')
-        starflash_recovered = False
-        if self.judge_forte() > 0 or self.is_forte_full():
-            starflash_recovered = self.starflash_combo()
+        self.sleep(0.2)
+        if self.is_forte_full():
+            self.continues_right_click(0.05, direction_key='s')  # 向后闪避（同赞妮开大首动作），落定后再蓄力重击
+            self.starflash_combo()
             self._ensure_grounded('insert after heavy')
-        if self._try_liberation_now():
-            self.logger.info('phoebe: liber insert cast liberation after starflash')
-            self._ensure_grounded('insert after liber2')
-        if not starflash_recovered:
-            self._insert_long_press_dingshen_e()
+        self._insert_long_press_dingshen_e()
         self._ensure_grounded('insert before switch')
         if self.buff_time > 0:
             self.last_buff_time = time.time()
@@ -402,42 +412,53 @@ class Phoebe(BaseChar):
         self.continues_right_click(0.1)
         return True
 
-    def starflash_combo(self):
+    def _charge_starflash_until_full(self, stop_on_condition=True):
+        """左键单点充能直到变蓝（可打蓄力重击），最多 5s；充能无效（forte 归零）1s 即退。
+        充能来源（用户机制）：长按 E 进告解得满 2 段；告解形态下左键单点（普攻）充能回蓝。
+        stop_on_condition=True（starflash_combo 原行为）：prayer 条件满足即停；
+        False（开大前保存满条）：只管充到满/无效退出——告解形态下蓝条在但不因 condition 提前停。"""
         start = time.time()
         check_forte = start
         condition = self.get_prayer_condition()
         recover_used = False
         recover_tried = False
-        if not condition() and not self.is_forte_full():
-            while not self.is_forte_full():
-                if self.flying():
-                    self.shorekeeper_auto_dodge()
-                self.click()
-                if time.time() - start > 5:
-                    return recover_used
-                if (
-                    not recover_tried
-                    and self._zanfei_guang
-                    and time.time() - start > self.STARFLASH_RECOVER_AFTER
-                ):
-                    recover_tried = True
-                    if self._starflash_recover_with_e():
-                        recover_used = True
-                        check_forte = time.time()
-                        self.task.next_frame()
-                        continue
-                if time.time() - check_forte > 1:
-                    if condition() or self.judge_forte() == 0:
-                        return recover_used
-                else:
+        while not self.is_forte_full():
+            if self.flying():
+                self.shorekeeper_auto_dodge()
+            self.click()
+            if time.time() - start > 5:
+                return recover_used
+            if (
+                not recover_tried
+                and self._zanfei_guang
+                and time.time() - start > self.STARFLASH_RECOVER_AFTER
+            ):
+                recover_tried = True
+                if self._starflash_recover_with_e():
+                    recover_used = True
                     check_forte = time.time()
-                self.check_combat()
-                self.task.next_frame()
-            self.continues_right_click(0.05)
+                    self.task.next_frame()
+                    continue
+            if time.time() - check_forte > 1:
+                if (stop_on_condition and condition()) or self.judge_forte() == 0:
+                    return recover_used
+                check_forte = time.time()
+            self.check_combat()
+            self.task.next_frame()
+        self.continues_right_click(0.05)
+        return recover_used
+
+    def starflash_combo(self):
+        recover_used = False
+        # 充能 = 一直左键到变蓝（用户机制），不看 condition：蓝条识别在（告解中）也照常充能到满。
+        # v13 原代码的 condition 前置/中断会让赞菲守第 2 段（半条→充能→蓄力）充能被掐断，
+        # 导致只打 1 段（13:46 日志）；forte 不满即充能，无效（forte 归零）由内部 1s 检查兜底。
+        if not self.is_forte_full():
+            recover_used = self._charge_starflash_until_full(stop_on_condition=False)
         if self.star_available:
-            if not self.confession_ready():
-                # 星标字段在但蓝条未识别：实机可能已退出告解形态，重新进入（避免重复告解乱轴）
-                self.absolution_or_confession(dodge_cancel=False)
+            # 沿用上游（非赞菲光）行为：不做蓝条重进保护——充能闪避后直接蓄力。
+            # 蓝条识别失败（返回 0.0）与真退出无法区分，误判重进是"闪避后发呆"主源；
+            # 真退出告解时 forte 条消失 → is_forte_full False → 蓄力段自然跳过（与上游一致）。
             if self.is_forte_full():
                 cast = False
                 flying = False
@@ -481,8 +502,9 @@ class Phoebe(BaseChar):
         else:
             return lambda: False
 
-    def absolution_or_confession(self, dodge_cancel=True):
-        self.task.wait_in_team_and_world(time_out=3, raise_if_not_found=False)
+    def absolution_or_confession(self, dodge_cancel=True, wait_team=True):
+        if wait_team:
+            self.task.wait_in_team_and_world(time_out=3, raise_if_not_found=False)
         condition = self.get_prayer_condition()
         if self.attribute == 2:
             key_down = lambda: self.task.send_key_down(self.get_resonance_key())
@@ -514,6 +536,7 @@ class Phoebe(BaseChar):
                 self.continues_right_click(0.05)
             self.star_available = True
             self.reset_action()
+            self._shou_full_tail_pending = False
             self.state['enter_status'] += 1
             return State.SUCCESS
         return State.UNAVAILABLE
@@ -527,20 +550,19 @@ class Phoebe(BaseChar):
         return False
 
     def _try_cast_liberation_before_switch(self):
-        if (
-            self.attribute != 2
-            or self.state.get('priority_liberation_cast')
-            or not self.star_available
-            or self.flying()
-            or not self.liberation_available()
-        ):
-            self.logger.info('phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=not-ready')
+        if self.attribute != 2:
+            return False
+        if self.state.get('priority_liberation_cast'):
+            return False
+        if not self.star_available:
+            return False
+        if self.flying():
+            return False
+        if not self.liberation_available():
             return False
         if self._click_liberation_reliable(tag=' soft'):
             self._record_liberation_cast()
-            self.logger.info('phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=cast-success')
             return True
-        self.logger.info('phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=cast-failed')
         return False
 
     def _resolve_pending_liberation(self, timeout, tag, max_attempts=None, stop_on_star_loss=False):
@@ -576,31 +598,39 @@ class Phoebe(BaseChar):
         settled, attempts, result = self._resolve_pending_liberation(
             self.LIBER_SETTLE_TIMEOUT, ' settle', max_attempts=3
         )
-        elapsed = min(time.time() - start, self.LIBER_SETTLE_TIMEOUT)
-        self.logger.info(
-            f'phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=settlement '
-            f'result={result} elapsed={elapsed:.2f}s attempts={attempts}'
-        )
         return settled
 
     def _block_switch_until_liber_resolved(self):
         """Settlement failed while pending: bounded retry before full-con outro to Zani."""
-        self.logger.info(
-            f'phoebe: block switch until liber resolved pending={self._liber_pending()} '
-            f'avail={self.liberation_available()} timeout={self.LIBER_RESOLVE_TIMEOUT}'
-        )
         resolved, _, result = self._resolve_pending_liberation(
             self.LIBER_RESOLVE_TIMEOUT, ' block-switch', stop_on_star_loss=True
         )
         if resolved or result == 'star-unavailable':
-            if result == 'cast-success':
-                self.logger.info('phoebe: liber resolved before switch')
             return True
-        self.logger.info(
-            f'phoebe: liber resolve timeout, allow switch pending={self._liber_pending()} '
-            f'avail={self.liberation_available()}'
-        )
         return False
+
+    def _ensure_shou_full_tail(self):
+        """Complete the authoritative Shou regular tail before allowing a switch."""
+        if self.attribute != 2 or self._zanfei_guang:
+            return True
+
+        if not self.state.get('priority_liberation_cast'):
+            self._try_liberation_now()
+
+        for _ in range(2):
+            if self.state.get('starflash_combo', 0) >= 2:
+                break
+            before = self.state.get('starflash_combo', 0)
+            self.starflash_combo()
+            if self.state.get('starflash_combo', 0) <= before:
+                break
+
+        if not self.state.get('priority_liberation_cast'):
+            self._try_liberation_now()
+
+        liberation_done = bool(self.state.get('priority_liberation_cast'))
+        starflash_done = self.state.get('starflash_combo', 0) >= 2
+        return liberation_done and starflash_done
 
     def _prepare_exit(self, full_tail):
         self._try_cast_liberation_before_switch()
@@ -611,7 +641,12 @@ class Phoebe(BaseChar):
 
     def switch_next_char(self, *args, **kwargs):
         full_tail = bool(kwargs.pop('_zanfei_full_tail', False))
+        shou_full_tail = bool(kwargs.pop('_zanfei_shou_full_tail', False))
         self._prepare_exit(full_tail)
+        if shou_full_tail and not self._ensure_shou_full_tail():
+            self._shou_full_tail_pending = True
+            return None
+        self._shou_full_tail_pending = False
         if self.attribute == 2 and self.is_con_full():
             self.click_echo()
             self.state['outro'] += 1
