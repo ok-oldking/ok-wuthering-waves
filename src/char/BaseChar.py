@@ -132,6 +132,15 @@ class BaseChar:
         return self.char_type == CharType.HEALER
 
     @property
+    def is_potential_healer(self):
+        """原始注册类型是否为治疗位 (不受 DPS 配置覆盖影响)。
+
+        用于紧急切治疗位: 千咲开 DPS 配置后 is_healer 为 False,
+        但 is_potential_healer 仍为 True, 可被 switch_to_healer 找到。
+        """
+        return self._char_type == CharType.HEALER
+
+    @property
     def is_main_dps(self):
         return self.char_type == CharType.MAIN_DPS
 
@@ -827,6 +836,7 @@ class BaseChar:
         start = time.time()
         while time.time() - start < duration:
             self.task.send_key(key, interval=interval)
+            self.task.next_frame()  # 补 next_frame 缺口，使低血量检测能打断此紧循环
 
     def continues_right_click(self, duration, interval=0.1, direction_key=None):
         """持续进行鼠标右键点击操作一段时间，可选同时按住方向键。
@@ -842,6 +852,7 @@ class BaseChar:
         start = time.time()
         while time.time() - start < duration:
             self.task.click(interval=interval, key="right")
+            self.task.next_frame()  # 补 next_frame 缺口，使低血量检测能打断此紧循环
         if direction_key is not None:
             self.task.send_key_up(direction_key)
 

@@ -34,6 +34,15 @@ class CharRevivedException(CharDeadException):
     pass
 
 
+class LowHpException(Exception):
+    """前台角色血量低于阈值，用于中断当前 perform 序列并切换治疗位。
+
+    独立继承 Exception (非 NotInCombatException)，避免被 run() 的
+    ``except NotInCombatException`` 误捕导致 break 退出战斗。
+    """
+    pass
+
+
 mismatched_names = {
     "Douling": "Buling",
     "Xigelika": "Sigrika",
@@ -78,6 +87,16 @@ class BaseCombatTask(CombatCheck):
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.add_text_fix({'Ｅ': 'e'})
         self.use_liberation = True
+        # 低血量检测相关字段
+        self._hp_check_enabled = False  # 是否启用低血量检测
+        self._hp_check_paused = False  # 切治疗位期间暂停检测，防止递归 LowHpException
+        self._hp_check_interval = 0.1  # HP 检测节流间隔 (秒)
+        self._last_hp_check = 0  # 上次 HP 检测时间戳
+        self._hp_threshold = 0.3  # 触发切治疗位的血量百分比阈值
+        self._low_hp_count = 0  # 连续低血量计数 (防 OCR 单次误读)
+        self._hp_confidence_threshold = 0.8  # OCR 置信度阈值，低于此值丢弃
+        self._low_hp_retry_cooldown = 3  # 切换失败后的短冷却 (秒)，防死循环
+        self._last_low_hp_trigger = 0  # 上次切换失败的时间戳
 
     def add_freeze_duration(self, start, duration=-1.0, freeze_time=0.1):
         """添加冻结持续时间。用于精确计算技能冷却等。
@@ -724,6 +743,129 @@ class BaseCombatTask(CombatCheck):
             current_char = self.get_current_char()
             if current_char and not current_char.is_healer:
                 current_char.switch_other_char()
+
+    def next_frame(self):
+        """重写 next_frame，在抓帧后顺带检测前台角色血量。
+
+        perform 循环内显式调用 next_frame 的路径都会在此统一检测低血量，
+        节流到 _hp_check_interval 避免每帧都算。
+        注意: send_key/click/sleep 本身不经过这里, 紧循环需在循环内显式补 next_frame。
+        """
+        frame = super().next_frame()
+        if (frame is not None and self._hp_check_enabled
+                and not self._hp_check_paused):
+            now = time.time()
+            if now - self._last_hp_check > self._hp_check_interval:
+                self._last_hp_check = now
+                self._check_hp_interrupt()
+        return frame
+
+    def _detect_player_hp(self):
+        """通过 OCR 读取血条上的 "current/max" 数字，返回血量百分比 (0.0-1.0)，检测失败返回 None。
+
+        血条区域坐标来自 working/color.toml (1920x1080 下 888,1031 - 1020,1080)。
+        格式为 "current/max" (如 "15324/15324")，直接提取两个数字计算百分比。
+        只采用置信度 >= _hp_confidence_threshold 的 OCR 结果，丢弃低质量读数。
+        """
+        try:
+            box = self.box_of_screen(888 / 1920, 1031 / 1080, 1020 / 1920, 1080 / 1080,
+                                     name='box_player_hp')
+            results = self.ocr(box=box, log=self.debug)
+        except Exception as e:
+            logger.warning(f'OCR failed in _detect_player_hp: {e}')
+            return None
+        if not results:
+            return None
+        # 过滤低置信度结果，合并高置信度文本
+        text = ' '.join(r.name or '' for r in results
+                        if r.confidence >= self._hp_confidence_threshold)
+        if not text:
+            return None
+        m = re.search(r'(\d+)\s*/\s*(\d+)', text)
+        if m and int(m.group(2)) > 0:
+            return int(m.group(1)) / int(m.group(2))
+        return None
+
+    def _check_hp_interrupt(self):
+        """检测血量，连续 2 次低于阈值才抛出 LowHpException (防 OCR 单次误读)。
+
+        已在治疗位时不检测，让治疗位执行 perform() 回血不被打断。
+        切换失败后进入短冷却 _low_hp_retry_cooldown 秒，防止无治疗位时死循环。
+        """
+        # 已在治疗位 → 不打断，让治疗位执行回血
+        current = self.get_current_char(raise_exception=False)
+        if current and current.is_potential_healer:
+            self._low_hp_count = 0
+            return
+        # 切换失败后的短冷却，防死循环 (无治疗位 / 切换超时)
+        if time.time() - self._last_low_hp_trigger < self._low_hp_retry_cooldown:
+            self._low_hp_count = 0
+            return
+        hp = self._detect_player_hp()
+        if hp is None:
+            self._low_hp_count = 0  # 检测失败，重置计数
+            return
+        if hp < self._hp_threshold:
+            self._low_hp_count += 1
+            if self._low_hp_count >= 2:
+                self._low_hp_count = 0
+                raise LowHpException(f'player HP {hp:.0%} < threshold {self._hp_threshold:.0%}')
+        else:
+            self._low_hp_count = 0  # 血量正常，重置计数
+
+    def switch_to_healer(self):
+        """紧急切到治疗位 (战斗中低血量时调用)。
+
+        仿 switch_next_char 的等待逻辑，但直接定位治疗位 index。
+        不复用 switch_next_char：它按协奏值/入场技/最优目标选下一个角色，
+        紧急低血量时需跳过这些判断直接切到治疗位保命，且不触发入场技。
+        切换期间暂停 HP 检测，防止 next_frame 递归抛 LowHpException。
+
+        Returns:
+            True: 已在治疗位或切换成功
+            False: 无治疗位 / 切换超时 / 战斗结束
+        """
+        healer = None
+        for char in self.chars:
+            if char and char.is_potential_healer:
+                healer = char
+                break
+        if healer is None:
+            logger.warning('no healer in team, cannot switch to healer')
+            return False
+        current = self.get_current_char(raise_exception=False)
+        if current and current.index == healer.index:
+            return True  # 已在治疗位
+        self._hp_check_paused = True
+        try:
+            logger.info(f'low HP, switching to healer {healer}')
+            start = time.time()
+            last_click = 0
+            while time.time() - start < 5:
+                self.check_combat()
+                now = time.time()
+                if now - last_click > 0.1:
+                    self.send_key(healer.index + 1)
+                    last_click = now
+                in_team, current_index, _ = self.in_team()
+                if not in_team:
+                    logger.warning('not in team while switching to healer, abort')
+                    return False
+                if current_index == healer.index:
+                    for c in self.chars:
+                        if c:
+                            c.is_current_char = (c.index == current_index)
+                    healer.has_intro = False  # 紧急切换，无入场技
+                    logger.info(f'low HP switched to healer {healer}')
+                    return True
+                self.next_frame()
+            logger.warning(f'switch to healer {healer} timed out')
+            return False
+        except NotInCombatException:
+            logger.warning('out of combat while switching to healer, abort')
+            return False
+        finally:
+            self._hp_check_paused = False
 
     def sleep_check(self):
         """休眠指定时间, 并在休眠前后检查战斗状态。

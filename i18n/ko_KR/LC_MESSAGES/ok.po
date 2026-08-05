@@ -1114,8 +1114,8 @@ msgid "Merge Discarded Echoes"
 msgstr "폐기된 에코 합성"
 
 msgid ""
-"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
-"batches of 100."
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full batches"
+" of 100."
 msgstr "실행하려면 폐기된 에코가 1000개 있어야 합니다. 폐기된 에코를 100개 단위로 합성합니다."
 
 msgid "Bag Key"
@@ -1142,13 +1142,19 @@ msgstr "폐기된 에코가 1000개 초과면 합성"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "일일 작업 후 실행할 추가 작업"
 
-msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
-msgstr "선택 작업을 고르세요. 악몽 둥지는 일일 작업 완료를 돕기 위해 스태미나 파밍 전에 실행하고, 다른 작업은 그 후에 실행합니다."
+msgid ""
+"Select optional tasks. Nightmare Nest runs before stamina farming to help "
+"complete the daily task; the other tasks run afterward."
+msgstr ""
+"선택 작업을 고르세요. 악몽 둥지는 일일 작업 완료를 돕기 위해 스태미나 파밍 전에 실행하고, 다른 작업은 그 후에 실행합니다."
 
-msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
+msgid ""
+"Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in "
+"Farm Echo Task."
 msgstr "순간이동 후 코스트 4 에코 파밍을 실행하려면 에코 파밍 작업에서 \"보스로 순간이동\"을 활성화해야 합니다."
 
-msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgid ""
+"Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
 msgstr "모든 악몽 둥지 자동 파밍을 실행하려면 \"파밍 대상\"을 하나 이상 선택해야 합니다."
 
 msgid "Daily Task Completed"
@@ -1162,3 +1168,16 @@ msgstr "대화 상자의 오른쪽 버튼을 찾을 수 없습니다"
 
 msgid "can't find dialog left button"
 msgstr "대화 상자의 왼쪽 버튼을 찾을 수 없습니다"
+
+msgid "Low HP Healer Switch"
+msgstr "낮은 HP 힐러 전환"
+
+msgid "Low HP Threshold"
+msgstr "낮은 HP 임계값"
+
+msgid ""
+"Interrupt current action and switch to healer when front character HP is low"
+msgstr "전방 캐릭터의 HP가 낮아지면 현재 동작을 중단하고 힐러로 전환"
+
+msgid "HP ratio (0-1) to trigger the switch"
+msgstr "전환을 발동할 HP 비율(0-1)"

@@ -181,6 +181,9 @@ class CombatCheck(BaseWWTask):
         try:
             return self.do_check_in_combat(target)
         except Exception as e:
+            from src.task.BaseCombatTask import LowHpException
+            if isinstance(e, LowHpException):
+                raise  # 低血量中断: 不在此吞掉, 交由战斗循环处理切治疗位
             logger.error(f'do_check_in_combat:', e)
         finally:
             self.in_sleep_check = False

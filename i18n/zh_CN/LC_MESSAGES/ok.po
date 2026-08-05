@@ -1165,8 +1165,8 @@ msgid "Merge Discarded Echoes"
 msgstr "融合已弃置声骸"
 
 msgid ""
-"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
-"batches of 100."
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full batches"
+" of 100."
 msgstr "运行前必须有1000个已弃置声骸，每批融合100个。"
 
 msgid "Bag Key"
@@ -1193,13 +1193,18 @@ msgstr "已弃置声骸超过1000时融合"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "每日任务后运行的附加任务"
 
-msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
+msgid ""
+"Select optional tasks. Nightmare Nest runs before stamina farming to help "
+"complete the daily task; the other tasks run afterward."
 msgstr "选择可选任务。梦魇巢穴会在消耗体力前运行，以协助完成每日任务；其他任务将在之后运行。"
 
-msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
+msgid ""
+"Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in "
+"Farm Echo Task."
 msgstr "选择“传送并刷取4C声骸”时，必须在刷取声骸任务中启用“传送至首领”。"
 
-msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgid ""
+"Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
 msgstr "选择“自动刷取所有梦魇巢穴”时，“刷取目标”必须至少选择一项。"
 
 msgid "Daily Task Completed"
@@ -1213,3 +1218,16 @@ msgstr "找不到对话框右侧按钮"
 
 msgid "can't find dialog left button"
 msgstr "找不到对话框左侧按钮"
+
+msgid "Low HP Healer Switch"
+msgstr "低血量切治疗"
+
+msgid "Low HP Threshold"
+msgstr "低血量阈值"
+
+msgid ""
+"Interrupt current action and switch to healer when front character HP is low"
+msgstr "前台角色血量低时打断当前动作并切换到治疗位"
+
+msgid "HP ratio (0-1) to trigger the switch"
+msgstr "触发切换的血量比例(0-1)"
