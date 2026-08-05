@@ -186,7 +186,7 @@ config = {
                              'garden_unpause', 'garden_get_gold', 'garden_get_purple', 'garden_get_skip',
                              'garden_not_interested_confirm', 'garden_not_interested', 'a_garden_back',
                              'garden_get_confirm_gray', 'the_garden_max', 'garden_shop_close', 'garden_new_stage',
-                             'a_garden_restart']
+                             'a_garden_restart', 'suisui_forte2', 'suisui_e1', 'e_forte']
     },
     'windows': {  # required  when supporting windows game
         'top_hwnd_class': [re.compile('CAgreementDlg'), re.compile('CLoginDlg_P_'),
