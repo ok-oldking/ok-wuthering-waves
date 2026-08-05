@@ -8,6 +8,7 @@ cache/
 models
 fonts
 # Byte-compiled / optimized / DLL files
+.trae/
 .idea/
 __pycache__/
 issue*.json
