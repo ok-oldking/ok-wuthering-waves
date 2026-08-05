@@ -425,20 +425,21 @@ class BaseCombatTask(CombatCheck):
             return None
         return min(chars, key=lambda char: (char.last_switch_in_time, char.index))
 
-    def _switch_rule_3_target(self, candidates, allow_healer=True):
-        healers_without_buff = [
-            char for char in candidates
-            if allow_healer and char.is_healer and char.buff_time > 0 and not char.has_buff()
-        ]
-        if healers_without_buff:
-            return self._oldest_switch_target(healers_without_buff)
+    def _unbuffed_support_target(self, candidates, allow_healer=True):
+        role_order = ('is_healer', 'is_sub_dps') if allow_healer else ('is_sub_dps',)
+        for role in role_order:
+            target = self._oldest_switch_target([
+                char for char in candidates
+                if getattr(char, role) and char.buff_time > 0 and not char.has_buff()
+            ])
+            if target:
+                return target
+        return None
 
-        sub_dps_without_buff = [
-            char for char in candidates
-            if char.is_sub_dps and char.buff_time > 0 and not char.has_buff()
-        ]
-        if sub_dps_without_buff:
-            return self._oldest_switch_target(sub_dps_without_buff)
+    def _switch_rule_3_target(self, candidates, allow_healer=True):
+        unbuffed_support = self._unbuffed_support_target(candidates, allow_healer)
+        if unbuffed_support:
+            return unbuffed_support
 
         main_dps = [char for char in candidates if char.is_main_dps]
         if main_dps:
@@ -448,6 +449,22 @@ class BaseCombatTask(CombatCheck):
 
     def _target_has_switch_cd(self, char):
         return char.time_elapsed_accounting_for_freeze(char.last_switch_time) <= 1
+
+    def _log_switch_candidate(self, char, priority):
+        buff_active = char.has_buff()
+        buff_remaining = self._buff_remaining(char) if buff_active else 0
+        switch_cd = char.last_switch_time >= 0 and self._target_has_switch_cd(char)
+        logger.debug(
+            f'switch selection candidate={char} index={char.index} role={char.char_type} '
+            f'priority={priority} buff_active={buff_active} buff_remaining={buff_remaining:.2f} '
+            f'buff_time={char.buff_time} last_buff_time={char.last_buff_time:.3f} '
+            f'switch_cd={switch_cd} last_switch_time={char.last_switch_time:.3f}')
+
+    def _log_switch_choice(self, current_char, target, has_intro, reason):
+        logger.info(
+            f'switch selection result current={current_char}({current_char.char_type}) '
+            f'target={target}({target.char_type}) has_intro={has_intro} reason={reason}')
+        return target
 
     def _buff_remaining(self, char):
         if char.buff_time <= 0 or not char.has_buff():
@@ -470,16 +487,14 @@ class BaseCombatTask(CombatCheck):
         ]
         return self._oldest_switch_target(unbuffed_non_main)
 
-    def _choose_intro_switch_target(self, current_char, must_targets, normal_targets):
-        if must_targets:
-            return self._oldest_switch_target(must_targets)
+    def _choose_intro_switch_target(self, candidates):
+        unbuffed_support = self._unbuffed_support_target(candidates)
+        if unbuffed_support:
+            return unbuffed_support
 
         role_order = ('is_main_dps', 'is_sub_dps', 'is_healer')
-        if current_char.is_healer:
-            role_order = ('is_sub_dps', 'is_main_dps', 'is_healer')
-
         for char_type in role_order:
-            target = self._oldest_switch_target([char for char in normal_targets if getattr(char, char_type)])
+            target = self._oldest_switch_target([char for char in candidates if getattr(char, char_type)])
             if target:
                 return target
         return None
@@ -512,35 +527,47 @@ class BaseCombatTask(CombatCheck):
         if not candidates:
             return current_char
 
-        must_targets = []
-        normal_targets = []
-        no_targets = []
+        prioritized_candidates = []
         for char in candidates:
             switch_priority = char.get_switch_priority(current_char=current_char, has_intro=has_intro,
                                                        target_low_con=target_low_con)
-            logger.debug(f'switch_next_char hook: {char} priority {switch_priority}')
-            if switch_priority == SwitchPriority.MUST:
-                must_targets.append(char)
-            elif switch_priority == SwitchPriority.NO:
-                no_targets.append(char)
-            else:
-                normal_targets.append(char)
+            self._log_switch_candidate(char, switch_priority)
+            if switch_priority > SwitchPriority.NO:
+                prioritized_candidates.append((switch_priority, char))
+
+        if not prioritized_candidates:
+            return self._log_switch_choice(
+                current_char, current_char, has_intro, 'no_candidate_above_no_priority')
+
+        highest_priority = max(priority for priority, _ in prioritized_candidates)
+        candidates = [char for priority, char in prioritized_candidates if priority == highest_priority]
 
         if has_intro:
-            return self._choose_intro_switch_target(current_char, must_targets, normal_targets) or current_char
-
-        if must_targets:
-            candidates = must_targets
-        else:
-            candidates = normal_targets
-            if not candidates:
-                return current_char
+            if highest_priority >= SwitchPriority.MUST:
+                target = self._oldest_switch_target(candidates) or current_char
+                return self._log_switch_choice(
+                    current_char, target, has_intro, f'priority_{highest_priority}')
+            target = self._choose_intro_switch_target(candidates) or current_char
+            if target != current_char and not target.is_main_dps and not target.has_buff():
+                reason = f'intro_unbuffed_{target.char_type.value.lower()}'
+            else:
+                reason = 'intro_role_order_main_sub_healer'
+            return self._log_switch_choice(current_char, target, has_intro, reason)
 
         candidates_without_switch_cd = [char for char in candidates if not self._target_has_switch_cd(char)]
         if candidates_without_switch_cd:
             candidates = candidates_without_switch_cd
 
-        return self._choose_switch_target_by_buff_time(current_char, candidates)
+        target = self._choose_switch_target_by_buff_time(current_char, candidates)
+        if target != current_char and not target.is_main_dps and not target.has_buff():
+            reason = f'unbuffed_{target.char_type.value.lower()}'
+        elif current_char.is_main_dps and not target.is_main_dps:
+            reason = 'lowest_support_buff_remaining'
+        elif not current_char.is_main_dps and target.is_main_dps:
+            reason = 'support_buffs_active_return_to_main_dps'
+        else:
+            reason = 'fallback_role_order'
+        return self._log_switch_choice(current_char, target, has_intro, reason)
 
     def _apply_intro_flags(self, current_char, switch_to, has_intro):
         switch_to.has_intro = has_intro

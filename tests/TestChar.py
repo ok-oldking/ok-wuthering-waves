@@ -43,6 +43,10 @@ class TestChar(TaskTestCase):
     task_class = AutoCombatTask
     config = config
 
+    def test_healer_disables_f_check_on_switch_by_default(self):
+        self.assertFalse(BaseChar(None, 0, char_type=CharType.HEALER).check_f_on_switch)
+        self.assertTrue(BaseChar(None, 0, char_type=CharType.MAIN_DPS).check_f_on_switch)
+
     def test_combat_once_switches_to_healer_before_and_after_combat(self):
         combat = BaseCombatTask.__new__(BaseCombatTask)
         events = []
@@ -156,6 +160,7 @@ class TestChar(TaskTestCase):
         self.assertEqual(char_dict[Labels.char_chisa]['buff_time'], 12)
         self.assertEqual(char_dict[Labels.char_chisa2]['cls'], Chisa)
         self.assertEqual(char_dict[Labels.char_chisa2]['buff_time'], 12)
+
         self.assertEqual(char_dict[Labels.char_linnai2]['cls'], Linnai)
         self.assertEqual(char_dict[Labels.char_linnai2]['char_type'], CharType.SUB_DPS)
         self.assertEqual(char_dict[Labels.char_linnai2]['canonical_name'], Labels.char_linnai)
@@ -207,6 +212,26 @@ class TestChar(TaskTestCase):
         self.assertEqual(suisui.get_switch_priority(), SwitchPriority.NO)
         suisui.last_forte3_switch = -1
         self.assertEqual(suisui.get_switch_priority(), SwitchPriority.MUST)
+
+    def test_has_all_buff_requires_intro_and_two_active_timed_buffs(self):
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+        task = Task()
+        current = BaseChar(task, 0)
+        healer = BaseChar(task, 1, char_type=CharType.HEALER)
+        sub_dps = BaseChar(task, 2, char_type=CharType.SUB_DPS)
+        task.chars = [current, healer, sub_dps]
+        healer.last_buff_time = time.time()
+        sub_dps.last_buff_time = time.time()
+
+        self.assertFalse(current.has_all_buff())
+        current.has_intro = True
+        self.assertTrue(current.has_all_buff())
+
+        sub_dps.last_buff_time = time.time() - sub_dps.buff_time
+        self.assertFalse(current.has_all_buff())
 
     def test_yangyang_sp_releases_and_settles_long_press_before_switching(self):
         actions = []
@@ -423,6 +448,181 @@ class TestChar(TaskTestCase):
         self.assertTrue(char.click_liberation(send_click=False, wait_if_cd_ready=0))
         self.assertIsNone(task.wait_post_action)
 
+    def test_click_liberation_clicks_f_during_animation_after_min_duration(self):
+        class Clock:
+            def __init__(self):
+                self.now = 1.0
+
+            def time(self):
+                return self.now
+
+            def advance(self, seconds):
+                self.now += seconds
+
+        class Task:
+            use_liberation = True
+
+            def __init__(self, clock):
+                self.clock = clock
+                self.in_liberation = True
+                self.animation_start = clock.now
+                self.sent_keys = []
+
+            def in_team(self):
+                return self.clock.now - self.animation_start >= 0.55, 0, 3
+
+            def next_frame(self):
+                self.clock.advance(0.05)
+
+            def send_key(self, key):
+                self.sent_keys.append((key, self.clock.now))
+
+            def add_freeze_duration(self, start, duration=-1.0, freeze_time=0.1):
+                pass
+
+        base_char_globals = BaseChar.click_liberation.__globals__
+        original_time = base_char_globals['time']
+        try:
+            clock = Clock()
+            base_char_globals['time'] = clock
+            task = Task(clock)
+            self.assertTrue(BaseChar(task, 0).click_liberation(animation_min_duration=0.2))
+
+            f_times = [sent_at for key, sent_at in task.sent_keys if key == 'f']
+            self.assertGreaterEqual(len(f_times), 2)
+            self.assertGreaterEqual(f_times[0] - task.animation_start, 0.2)
+            self.assertTrue(all(later - earlier >= 0.1 for earlier, later in zip(f_times, f_times[1:])))
+
+            clock = Clock()
+            base_char_globals['time'] = clock
+            task = Task(clock)
+            self.assertTrue(BaseChar(task, 0).click_liberation(click_f=False))
+            self.assertNotIn('f', [key for key, _ in task.sent_keys])
+        finally:
+            base_char_globals['time'] = original_time
+
+    def test_click_resonance_clicks_f_during_animation_after_min_duration(self):
+        class Clock:
+            now = 1.0
+
+            def time(self):
+                return self.now
+
+            def advance(self, seconds):
+                self.now += seconds
+
+        class Task:
+            in_liberation = False
+            skip_combat_check = False
+
+            def __init__(self, clock):
+                self.clock = clock
+                self.animation_started = False
+                self.animation_start = 0
+                self.sent_keys = []
+
+            def in_team(self):
+                if not self.animation_started:
+                    return True, 0, 3
+                return self.clock.now - self.animation_start >= 0.55, 0, 3
+
+            def next_frame(self):
+                self.clock.advance(0.05)
+
+            def sleep(self, seconds):
+                self.clock.advance(seconds)
+
+            def send_key(self, key):
+                self.sent_keys.append((key, self.clock.now))
+
+        class TestBaseChar(BaseChar):
+            def __init__(self, task):
+                super().__init__(task, 0)
+                self.resonance_ready = True
+
+            def check_combat(self):
+                pass
+
+            def resonance_available(self):
+                return self.resonance_ready
+
+            def record_resonance_use(self):
+                pass
+
+            def send_resonance_key(self, *args, **kwargs):
+                self.resonance_ready = False
+                self.task.animation_started = True
+                self.task.animation_start = self.task.clock.now + 0.2
+
+            def add_freeze_duration(self, *args, **kwargs):
+                pass
+
+        clock = Clock()
+        task = Task(clock)
+        char = TestBaseChar(task)
+        base_char_globals = BaseChar.click_resonance.__globals__
+        original_time = base_char_globals['time']
+        base_char_globals['time'] = clock
+        try:
+            result = char.click_resonance(
+                has_animation=True,
+                animation_min_duration=0.2,
+                time_out=2,
+            )
+        finally:
+            base_char_globals['time'] = original_time
+
+        f_times = [sent_at for key, sent_at in task.sent_keys if key == 'f']
+        self.assertTrue(result[2])
+        self.assertGreaterEqual(len(f_times), 2)
+        self.assertGreaterEqual(f_times[0] - task.animation_start, 0.2)
+        self.assertTrue(all(later - earlier >= 0.1 for earlier, later in zip(f_times, f_times[1:])))
+
+    def test_click_resonance_click_f_can_be_disabled(self):
+        class Task:
+            in_liberation = False
+            skip_combat_check = False
+
+            def __init__(self):
+                self.frames = 0
+                self.sent_keys = []
+
+            def in_team(self):
+                return self.frames != 1, 0, 3
+
+            def next_frame(self):
+                self.frames += 1
+
+            def sleep(self, seconds):
+                pass
+
+            def send_key(self, key):
+                self.sent_keys.append(key)
+
+        class TestBaseChar(BaseChar):
+            def __init__(self, task):
+                super().__init__(task, 0)
+
+            def check_combat(self):
+                pass
+
+            def resonance_available(self):
+                return True
+
+            def record_resonance_use(self):
+                pass
+
+            def send_resonance_key(self, *args, **kwargs):
+                pass
+
+            def add_freeze_duration(self, *args, **kwargs):
+                pass
+
+        task = Task()
+        TestBaseChar(task).click_resonance(has_animation=True, click_f=False, time_out=1)
+
+        self.assertNotIn('f', task.sent_keys)
+
     def test_factory_normalizes_alternate_template_to_canonical_name(self):
         class FoundChar:
             name = Labels.char_linnai2
@@ -542,7 +742,7 @@ class TestChar(TaskTestCase):
 
         sub_dps.last_buff_time = time.time()
         healer.last_buff_time = time.time() - 10
-        self.assertEqual(combat._choose_switch_target(current, False), healer)
+        self.assertEqual(combat._choose_switch_target(current, False), sub_dps)
 
         combat.chars = [current, healer, sub_dps]
         healer.last_switch_in_time = 1
@@ -553,7 +753,7 @@ class TestChar(TaskTestCase):
         combat.chars = [current, healer, sub_dps, main_dps]
         current.set_char_type(CharType.SUB_DPS)
         self.assertEqual(combat._choose_switch_target(current, False), healer)
-        self.assertEqual(combat._choose_switch_target(current, True), main_dps)
+        self.assertEqual(combat._choose_switch_target(current, True), healer)
 
         current.last_perform = time.time()
         healer.last_buff_time = -1
@@ -578,11 +778,11 @@ class TestChar(TaskTestCase):
 
         current.set_char_type(CharType.MAIN_DPS)
         healer.last_buff_time = -1
-        self.assertEqual(combat._choose_switch_target(current, True), main_dps)
+        self.assertEqual(combat._choose_switch_target(current, True), healer)
 
         healer.last_buff_time = time.time()
         sub_dps.last_buff_time = -1
-        self.assertEqual(combat._choose_switch_target(current, True), main_dps)
+        self.assertEqual(combat._choose_switch_target(current, True), sub_dps)
 
         combat.chars = [current, healer, sub_dps]
         self.assertEqual(combat._choose_switch_target(current, True), sub_dps)
@@ -596,47 +796,44 @@ class TestChar(TaskTestCase):
         self.assertTrue(current.has_intro)
         self.assertFalse(current.has_sub_dps_intro)
 
-    def _make_support_chisa(self, has_intro):
+    def _make_support_chisa(self, has_intro, buffed=False):
         class Task:
             char_config = {'Chisa DPS': False}
-            key_config = {'Dodge Key': 'lshift'}
-            chars = []
-
-            def wait_until(self, *args, **kwargs):
-                return True
-
-            def find_one(self, *args, **kwargs):
-                return None
-
-            def get_box_by_name(self, *args, **kwargs):
-                return None
-
-            def mouse_down(self):
-                pass
-
-            def mouse_up(self):
-                pass
-
-            def send_key(self, *args, **kwargs):
-                pass
-
-            def jump(self):
-                pass
-
-            def get_current_con(self):
-                return 1
 
         class TrackingChisa(Chisa):
             def __init__(self, task):
                 super().__init__(task, 0)
                 self.actions = []
+                self.elapsed = 0
+                self.buffed = buffed
                 self.resonance_ready = True
+                self.liberation_ready = True
+                self.con_full_at = None
+
+            def has_buff(self):
+                return self.buffed
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return self.elapsed
+
+            def cycle_start(self):
+                pass
+
+            def cycle_sleep(self, min_sleep=0.1):
+                self.elapsed += min_sleep
+
+            def flying(self):
+                return False
+
+            def is_con_full(self):
+                return self.con_full_at is not None and self.elapsed >= self.con_full_at
 
             def click_echo(self, **kwargs):
                 self.actions.append(('echo', kwargs))
 
-            def click_liberation(self):
-                self.actions.append(('liberation', {}))
+            def click_liberation(self, **kwargs):
+                self.actions.append(('liberation', kwargs))
+                self.liberation_ready = False
                 return True
 
             def click_resonance(self, **kwargs):
@@ -651,32 +848,31 @@ class TestChar(TaskTestCase):
                 return self.resonance_ready
 
             def liberation_available(self):
-                return True
+                return self.liberation_ready
 
-            def continues_normal_attack(self, *args, **kwargs):
-                pass
-
-            def _wait_for_e2_with_normal_attack(self):
+            def is_forte_full(self):
                 return False
 
-            def sleep(self, *args, **kwargs):
-                pass
+            def continues_normal_attack(self, duration, **kwargs):
+                self.actions.append(('normal', duration))
+
+            def click(self, *args, **kwargs):
+                self.actions.append(('click', {}))
 
         chisa = TrackingChisa(Task())
         chisa.has_intro = has_intro
         return chisa
 
-    def test_chisa_support_intro_records_buff_and_switches_immediately(self):
+    def test_chisa_support_intro_without_buff_uses_long_actions(self):
         chisa = self._make_support_chisa(has_intro=True)
         chisa.do_perform()
 
-        self.assertGreater(chisa.last_buff_time, 0)
-        self.assertEqual(chisa.actions, [
-            ('resonance', {'time_out': 0.5}),
-            ('echo', {'time_out': 0}),
-            ('liberation', {}),
-            ('switch', {}),
-        ])
+        self.assertEqual(chisa.last_buff_time, -1)
+        self.assertGreaterEqual(chisa.elapsed, Chisa.SUPPORT_LONG_ACTION_DURATION)
+        self.assertEqual(chisa.actions[:2], [('normal', 2.0), ('echo', {'time_out': 0})])
+        self.assertIn(('liberation', {'wait_if_cd_ready': 0}), chisa.actions)
+        self.assertIn(('resonance', {'time_out': 0}), chisa.actions)
+        self.assertEqual(chisa.actions[-1], ('switch', {}))
 
     def test_verina_heavy_attack_has_eight_second_interval(self):
         class Task:
@@ -732,30 +928,45 @@ class TestChar(TaskTestCase):
         verina.perform_combat()
         self.assertEqual(verina.heavy_count, 2)
 
-    def test_chisa_support_liberation_records_buff_without_dps_sequence(self):
+    def test_chisa_support_liberation_without_intro_does_not_record_buff(self):
         chisa = self._make_support_chisa(has_intro=False)
         chisa.do_perform()
 
-        self.assertGreater(chisa.last_buff_time, 0)
-        self.assertEqual(chisa.actions, [
-            ('resonance', {'time_out': 0.5}),
-            ('echo', {'time_out': 0}),
-            ('liberation', {}),
-            ('switch', {}),
-        ])
+        self.assertEqual(chisa.last_buff_time, -1)
+        self.assertGreaterEqual(chisa.elapsed, Chisa.SUPPORT_ACTION_DURATION)
+        self.assertLess(chisa.elapsed, Chisa.SUPPORT_LONG_ACTION_DURATION)
+        self.assertNotIn(('normal', 2.0), chisa.actions)
+        self.assertIn(('liberation', {'wait_if_cd_ready': 0}), chisa.actions)
+        self.assertEqual(chisa.actions[-1], ('switch', {}))
 
-    def test_chisa_support_outro_does_not_invent_skill_buff(self):
+    def test_chisa_support_intro_with_active_buff_uses_short_actions(self):
+        chisa = self._make_support_chisa(has_intro=True, buffed=True)
+        chisa.do_perform()
+
+        self.assertGreaterEqual(chisa.elapsed, Chisa.SUPPORT_ACTION_DURATION)
+        self.assertLess(chisa.elapsed, Chisa.SUPPORT_LONG_ACTION_DURATION)
+        self.assertEqual(chisa.actions[:2], [('normal', 2.0), ('echo', {'time_out': 0})])
+        self.assertEqual(chisa.actions[-1], ('switch', {}))
+
+    def test_chisa_support_switches_early_when_concerto_is_full(self):
+        chisa = self._make_support_chisa(has_intro=True)
+        chisa.con_full_at = 0.2
+        chisa.do_perform()
+
+        self.assertEqual(chisa.elapsed, 0.2)
+        self.assertLess(chisa.elapsed, Chisa.SUPPORT_LONG_ACTION_DURATION)
+        self.assertEqual(chisa.actions[-1], ('switch', {}))
+
+    def test_chisa_uses_default_outro_buff_tracking(self):
         class Task:
             char_config = {'Chisa DPS': False}
 
         chisa = Chisa(Task(), 0, char_type=CharType.HEALER, buff_time=12)
-        chisa.switch_out(con_full=True)
+        chisa.switch_out(con_full=False)
         self.assertEqual(chisa.last_buff_time, -1)
 
-        chisa.record_support_buff()
-        buff_time = chisa.last_buff_time
         chisa.switch_out(con_full=True)
-        self.assertEqual(chisa.last_buff_time, buff_time)
+        self.assertGreater(chisa.last_buff_time, 0)
 
     def test_chisa_dps_config_keeps_dps_rotation(self):
         class Task:
@@ -804,6 +1015,104 @@ class TestChar(TaskTestCase):
 
         aemeath.last_liber = time.time() - aemeath.LIBERATION_FORCE_DURATION
         self.assertTrue(aemeath.lib())
+
+    def test_aemeath_intro_requires_enhance_e_and_all_buffs_require_lib2(self):
+        class Task:
+            def __init__(self):
+                self.lib2 = True
+                self.chars = []
+
+            def find_one(self, template, threshold=None):
+                return self.lib2 and template == 'aemeath_lib2'
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+        class TrackingAemeath(Aemeath):
+            def __init__(self, task):
+                super().__init__(task, 0)
+                self.liberations = 0
+
+            def click_liberation(self, **kwargs):
+                self.liberations += 1
+                return True
+
+            def f_break(self):
+                pass
+
+        task = Task()
+        aemeath = TrackingAemeath(task)
+        healer = BaseChar(task, 1, char_type=CharType.HEALER)
+        sub_dps = BaseChar(task, 2, char_type=CharType.SUB_DPS)
+        task.chars = [aemeath, healer, sub_dps]
+        aemeath.has_intro = True
+        healer.last_buff_time = time.time()
+        sub_dps.last_buff_time = time.time()
+
+        self.assertTrue(aemeath.has_all_buff())
+        self.assertFalse(aemeath.lib())
+        self.assertEqual(aemeath.liberations, 0)
+
+        aemeath.record_enhance_e()
+        self.assertTrue(aemeath.required_action_pending())
+        sub_dps.last_buff_time = time.time() - sub_dps.buff_time
+        self.assertFalse(aemeath.has_all_buff())
+        self.assertTrue(aemeath.required_action_pending())
+        self.assertTrue(aemeath.lib())
+        self.assertTrue(aemeath.lib2_cast_this_turn)
+        self.assertFalse(aemeath.required_action_pending())
+
+    def test_aemeath_all_buff_rotation_casts_enhance_e_before_lib2(self):
+        class Task:
+            chars = []
+
+            def find_one(self, template, threshold=None):
+                return template in {'aemeath_e1', 'aemeath_lib2'}
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+            def next_frame(self):
+                pass
+
+        class TrackingAemeath(Aemeath):
+            def __init__(self, task):
+                super().__init__(task, 0)
+                self.actions = []
+
+            def click_resonance(self, **kwargs):
+                self.actions.append('enhance_e')
+                return True, None
+
+            def click_echo(self, **kwargs):
+                pass
+
+            def click_liberation(self, **kwargs):
+                self.actions.append('lib2')
+                return True
+
+            def f_break(self):
+                pass
+
+            def handle_heavy(self):
+                return False
+
+            def cycle_start(self):
+                pass
+
+        task = Task()
+        aemeath = TrackingAemeath(task)
+        healer = BaseChar(task, 1, char_type=CharType.HEALER)
+        sub_dps = BaseChar(task, 2, char_type=CharType.SUB_DPS)
+        task.chars = [aemeath, healer, sub_dps]
+        aemeath.has_intro = True
+        healer.last_buff_time = time.time()
+        sub_dps.last_buff_time = time.time()
+
+        aemeath.perform_everything()
+
+        self.assertEqual(aemeath.actions, ['enhance_e', 'lib2', 'lib2'])
+        self.assertTrue(aemeath.lib2_cast_this_turn)
 
     def test_aemeath_force_liberation_starts_at_combat_entry_and_lib2_bypasses_cooldown(self):
         class Task:
@@ -1066,6 +1375,42 @@ class TestChar(TaskTestCase):
         combat.chars = [current, blocked_main_dps, allowed_sub_dps]
         self.assertEqual(combat._choose_switch_target(current, True), allowed_sub_dps)
 
+    def test_switch_priority_integer_bands_and_offsets(self):
+        self.assertEqual(
+            [SwitchPriority.NO, SwitchPriority.LOW, SwitchPriority.NORMAL,
+             SwitchPriority.HIGH, SwitchPriority.MUST],
+            [0, 100, 200, 300, 400],
+        )
+        self.assertGreater(SwitchPriority.HIGH + 1, SwitchPriority.HIGH)
+        self.assertLess(SwitchPriority.HIGH + 1, SwitchPriority.MUST)
+        self.assertLess(SwitchPriority.LOW - 1, SwitchPriority.LOW)
+        self.assertGreater(SwitchPriority.LOW - 1, SwitchPriority.NO)
+
+        class PriorityChar(BaseChar):
+            def __init__(self, task, index, priority, char_type):
+                super().__init__(task, index, char_type=char_type)
+                self.priority = priority
+
+            def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+                return self.priority
+
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return 10000
+
+        task = Task()
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        current = BaseChar(task, 0, char_type=CharType.MAIN_DPS)
+        high = PriorityChar(task, 1, SwitchPriority.HIGH, CharType.MAIN_DPS)
+        boosted_high = PriorityChar(task, 2, SwitchPriority.HIGH + 1, CharType.SUB_DPS)
+        low = PriorityChar(task, 3, SwitchPriority.LOW - 1, CharType.HEALER)
+        combat.chars = [current, high, boosted_high, low]
+
+        self.assertEqual(combat._choose_switch_target(current, True), boosted_high)
+
+        boosted_high.priority = SwitchPriority.NO
+        self.assertEqual(combat._choose_switch_target(current, True), high)
+
     def test_intro_refresh_reselects_must_target_before_switch_key_is_sent(self):
         class Task:
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
@@ -1214,7 +1559,7 @@ class TestChar(TaskTestCase):
         combat.chars = [main_dps, healer, sub_dps]
 
         self.assertEqual(combat._choose_switch_target(healer, False), sub_dps)
-        self.assertEqual(combat._choose_switch_target(healer, True), sub_dps)
+        self.assertEqual(combat._choose_switch_target(healer, True), main_dps)
         self.assertEqual(combat._choose_switch_target(sub_dps, False), healer)
         self.assertEqual(combat._choose_switch_target(sub_dps, True), main_dps)
 
@@ -1265,6 +1610,29 @@ class TestChar(TaskTestCase):
         sub_dps.last_switch_time = time.time()
         self.assertEqual(combat._choose_switch_target(main_dps, False), healer)
 
+    def test_intro_prefers_unbuffed_supports_before_main_dps(self):
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                if start < 0:
+                    return 10000
+                return time.time() - start
+
+        task = Task()
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        current = BaseChar(task, 0, char_type=CharType.MAIN_DPS)
+        healer = BaseChar(task, 1, char_type=CharType.HEALER)
+        sub_dps = BaseChar(task, 2, char_type=CharType.SUB_DPS)
+        main_dps = BaseChar(task, 3, char_type=CharType.MAIN_DPS)
+        combat.chars = [current, healer, sub_dps, main_dps]
+
+        self.assertEqual(combat._choose_switch_target(current, True), healer)
+
+        healer.last_buff_time = time.time()
+        self.assertEqual(combat._choose_switch_target(current, True), sub_dps)
+
+        sub_dps.last_buff_time = time.time()
+        self.assertEqual(combat._choose_switch_target(current, True), main_dps)
+
     def test_non_main_chain_does_not_target_char_in_switch_cd(self):
         class Task:
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
@@ -1302,7 +1670,7 @@ class TestChar(TaskTestCase):
         main_dps.last_switch_time = time.time()
         self.assertEqual(combat._choose_switch_target(ciaccona, False), main_dps)
 
-    def test_intro_switches_from_healer_to_sub_dps_ignoring_target_switch_cd(self):
+    def test_intro_switches_from_healer_to_unbuffed_sub_dps(self):
         class Task:
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 if start < 0:
@@ -1317,7 +1685,7 @@ class TestChar(TaskTestCase):
         combat.chars = [healer, sub_dps, main_dps]
 
         self.assertEqual(combat._choose_switch_target(healer, False), sub_dps)
-        sub_dps.last_switch_time = time.time()
+        main_dps.last_switch_time = time.time()
         self.assertEqual(combat._choose_switch_target(healer, True), sub_dps)
 
     def test_intro_switch_target_order_and_blocked_targets_are_respected(self):
@@ -1341,15 +1709,15 @@ class TestChar(TaskTestCase):
         self.assertEqual(combat._choose_switch_target(current, True), forced)
 
         combat.chars = [current, healer, sub_dps, main_dps]
-        self.assertEqual(combat._choose_switch_target(current, True), sub_dps)
+        self.assertEqual(combat._choose_switch_target(current, True), healer)
 
         blocked_main_dps = BlockedChar(task, 3, char_type=CharType.MAIN_DPS)
         combat.chars = [current, healer, sub_dps, blocked_main_dps]
-        self.assertEqual(combat._choose_switch_target(current, True), sub_dps)
+        self.assertEqual(combat._choose_switch_target(current, True), healer)
 
         blocked_sub_dps = BlockedChar(task, 2, char_type=CharType.SUB_DPS)
         combat.chars = [current, healer, blocked_sub_dps, main_dps]
-        self.assertEqual(combat._choose_switch_target(current, True), main_dps)
+        self.assertEqual(combat._choose_switch_target(current, True), healer)
 
         combat.chars = [current, healer, blocked_sub_dps, blocked_main_dps]
         self.assertEqual(combat._choose_switch_target(current, True), healer)

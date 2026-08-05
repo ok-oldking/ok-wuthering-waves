@@ -1,6 +1,6 @@
 import time
 
-from src.char.BaseChar import BaseChar, SwitchPriority
+from src.char.BaseChar import BaseChar
 
 
 class Aemeath(BaseChar):
@@ -11,16 +11,22 @@ class Aemeath(BaseChar):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.should_wait = False
-
-    def can_cast_lib1(self):
-        return self.has_intro
+        self.enhance_e_cast_this_turn = False
+        self.lib2_cast_this_turn = False
+        self.must_cast_lib2_this_turn = False
 
     def lib2_available(self):
         return bool(self.task.find_one('aemeath_lib2', threshold=0.7))
 
     def do_perform(self):
-        self.should_wait = False
+        self.enhance_e_cast_this_turn = False
+        self.lib2_cast_this_turn = False
+        self.must_cast_lib2_this_turn = self.has_all_buff() and self.has_intro
+        if not self.must_cast_lib2_this_turn:
+            return self.switch_next_char()
+        if self.has_intro:
+            self.continues_normal_attack(0.9)
+            self.sleep(0.1)
 
         self.perform_everything()
 
@@ -28,42 +34,59 @@ class Aemeath(BaseChar):
 
     def lib(self):
         is_lib2 = self.lib2_available()
-        if not is_lib2 and not self.can_cast_lib1():
+        if not is_lib2 and not self.enhance_e_cast_this_turn:
             return False
-        if not self.click_liberation(wait_if_cd_ready=0):
-            return False
-        self.f_break()
-        return True
+        liberated = self.click_liberation(wait_if_cd_ready=0)
+        if liberated:
+            if is_lib2:
+                self.lib2_cast_this_turn = True
+        return liberated
+
+    def record_enhance_e(self):
+        self.enhance_e_cast_this_turn = True
+
+    def required_action_pending(self):
+        return (self.has_intro and not self.enhance_e_cast_this_turn) or (
+                self.must_cast_lib2_this_turn and not self.lib2_cast_this_turn)
+
+    def continue_after_action(self, start):
+        if self.has_long_action():
+            return time.time()
+        if self.required_action_pending():
+            return start
+        return None
 
     def perform_everything(self):
         start = time.time()
-        self.should_wait = self.has_intro
-        while self.time_elapsed_accounting_for_freeze(start) < 1.2 or (
-                self.should_wait and self.time_elapsed_accounting_for_freeze(start) < 4.6):
+        while self.time_elapsed_accounting_for_freeze(start) < 12:
             self.cycle_start()
             if self.handle_heavy():
-                self.f_break()
                 start = time.time()
-                self.task.next_frame()
+                if not self.f_break():
+                    self.sleep(0.1)
+                self.check_combat()
                 continue
             if self.enhance_e_available():
                 if self.click_resonance(has_animation=True, send_click=True, animation_min_duration=0.5,
                                         time_out=1.5)[0]:
+                    self.record_enhance_e()
                     self.click_echo(time_out=0)
-                    self.f_break()
                     self.task.next_frame()
-                if self.lib():
-                    pass
-                if self.has_long_action():
-                    start = time.time()
-                else:
-                    self.click(after_sleep=0.01)
+                self.lib()
+                if self.lib2_cast_this_turn:
                     return
+                action_performed = True
             elif self.lib():
-                if self.has_long_action():
-                    start = time.time()
+                if self.lib2_cast_this_turn:
+                    return
+                action_performed = True
             else:
                 self.click()
+                action_performed = False
+            if action_performed:
+                start = self.continue_after_action(start)
+                if start is None:
+                    return
             self.cycle_sleep()
 
     def enhance_e_available(self):

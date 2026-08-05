@@ -96,10 +96,11 @@ class CombatCheck(BaseWWTask):
     def f_break(self):
         if self.can_break or self.check_f_break():
             start = time.time()
-            while time.time() - start < 2 or (time.time() - start < 5 and (self.can_break or self.check_f_break())):
+            while time.time() - start < 0.5 or (time.time() - start < 5 and (self.can_break or self.check_f_break())):
                 self.send_key('f', after_sleep=0.1)
                 self.click(after_sleep=0.1)
                 self.can_break = False
+            return True
 
     def check_count_down(self):
         count_down_area = self.box_of_screen_scaled(3840, 2160, 1820, 266, 2100,
