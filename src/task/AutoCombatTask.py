@@ -9,6 +9,7 @@ logger = Logger.get_logger(__name__)
 
 
 class AutoCombatTask(BaseCombatTask, TriggerTask):
+    owns_switch_healer_config = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -21,13 +22,13 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
             'Auto Target': True,
             'Use Liberation': True,
             'Check Levitator': True,
-            'Switch to Healer after Combat': True,
+            'Switch to Healer before and after Combat': True,
         })
         self.config_description = {
             'Auto Target': 'Turn off to enable auto combat only when manually target enemy using middle click',
             'Use Liberation': 'Do not use Liberation in Open World to Save Time',
             'Check Levitator': 'Toggle the levitator and verify if the character is floating',
-            'Switch to Healer after Combat': 'Better Chance to Keep Character Alive',
+            'Switch to Healer before and after Combat': 'Better Chance to Keep Character Alive',
         }
         self.op_index = 0
         self.char_features_warmed_up = False

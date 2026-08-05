@@ -1157,3 +1157,6 @@ msgstr "Pulsa B para abrir la mochila, selecciona en el filtro los Ecos que quie
 
 msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
 msgstr "El juego y okww deben estar en chino simplificado/tradicional; se requiere una resolución 16:9 de al menos 1600x900. Marca lo que quieras conservar; lo no marcado se fusionará automáticamente."
+
+msgid "Switch to Healer before and after Combat"
+msgstr "Cambiar al sanador antes y después del combate"

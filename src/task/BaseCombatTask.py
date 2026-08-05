@@ -47,6 +47,7 @@ mismatched_names = {
 
 
 class BaseCombatTask(CombatCheck):
+    owns_switch_healer_config = False
     """基础战斗任务类，封装了游戏"鸣潮"中角色自动化操作的通用逻辑。"""
     CD_OCR_REFERENCE_ASPECT_RATIO = 16 / 9
     hot_key_verified = False  # 热键是否已验证
@@ -374,8 +375,9 @@ class BaseCombatTask(CombatCheck):
         """
         if wait_combat_time > 0:
             result = self.wait_combat(target=target, time_out=wait_combat_time, raise_if_not_found=raise_if_not_found)
-        self.load_chars()
-        self.switch_healer()
+        if self.switch_healer_enabled():
+            self.load_chars()
+            self.switch_healer()
         self.info['Combat Count'] = self.info.get('Combat Count', 0) + 1
         try:
             while self.in_combat():
@@ -386,7 +388,8 @@ class BaseCombatTask(CombatCheck):
         except NotInCombatException as e:
             logger.info(f'combat_once out of combat break {e}')
         self.combat_end()
-        self.switch_healer()
+        if self.switch_healer_enabled():
+            self.switch_healer()
         self.wait_in_team_and_world(time_out=10, raise_if_not_found=False)
         return result
 
@@ -726,11 +729,18 @@ class BaseCombatTask(CombatCheck):
                 char.reset_state()
 
     def switch_healer(self):
-        if self.config.get('Switch to Healer after Combat'):
+        if self.switch_healer_enabled():
             current_char = self.get_current_char()
             has_healer = any(char and char.is_healer for char in self.chars)
             if current_char and not current_char.is_healer and has_healer:
                 current_char.switch_other_char(allow_auto_combat=True)
+
+    def switch_healer_enabled(self):
+        config_task = self
+        if not self.owns_switch_healer_config:
+            from src.task.AutoCombatTask import AutoCombatTask
+            config_task = self.get_task_by_class(AutoCombatTask)
+        return bool(config_task and config_task.config.get('Switch to Healer before and after Combat'))
 
     def sleep_check(self):
         """休眠指定时间, 并在休眠前后检查战斗状态。

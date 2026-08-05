@@ -766,8 +766,8 @@ msgstr "夢魘拔除"
 msgid "Tacet Discord Nest"
 msgstr "殘像聚落"
 
-msgid "Switch to Healer after Combat"
-msgstr "戰鬥結束後切換到治療角色"
+msgid "Switch to Healer before and after Combat"
+msgstr "戰鬥前後切換到治療角色"
 
 msgid "Better Chance to Keep Character Alive"
 msgstr "提高角色生存率"

@@ -20,6 +20,7 @@ from src.char.Verina import Verina
 from src.char.YangYangSp import YangYangSp
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
 from src.task.AutoCombatTask import AutoCombatTask
+from src.task.FarmEchoTask import FarmEchoTask
 
 config['debug'] = True
 
@@ -45,6 +46,7 @@ class TestChar(TaskTestCase):
     def test_combat_once_switches_to_healer_before_and_after_combat(self):
         combat = BaseCombatTask.__new__(BaseCombatTask)
         events = []
+        combat.switch_healer_enabled = lambda: True
         combat.info = {}
         combat.wait_combat = lambda **kwargs: events.append('wait_combat') or True
         combat.load_chars = lambda: events.append('load_chars')
@@ -63,6 +65,21 @@ class TestChar(TaskTestCase):
             'wait_in_team',
         ])
 
+    def test_combat_once_skips_healer_setup_when_disabled(self):
+        combat = BaseCombatTask.__new__(BaseCombatTask)
+        events = []
+        combat.switch_healer_enabled = lambda: False
+        combat.info = {}
+        combat.wait_combat = lambda **kwargs: True
+        combat.load_chars = lambda: events.append('load_chars')
+        combat.switch_healer = lambda: events.append('switch_healer')
+        combat.in_combat = lambda: False
+        combat.combat_end = lambda: events.append('combat_end')
+        combat.wait_in_team_and_world = lambda **kwargs: events.append('wait_in_team')
+
+        self.assertTrue(combat.combat_once(wait_combat_time=1))
+        self.assertEqual(events, ['combat_end', 'wait_in_team'])
+
     def test_auto_combat_switches_to_healer_before_and_after_combat(self):
         combat = AutoCombatTask.__new__(AutoCombatTask)
         events = []
@@ -70,7 +87,7 @@ class TestChar(TaskTestCase):
         combat.in_team_and_world = lambda: True
         combat.config = {
             'Use Liberation': True,
-            'Switch to Healer after Combat': True,
+            'Switch to Healer before and after Combat': True,
         }
         combat.warm_up_char_features = lambda: None
         combat.in_world = lambda: True
@@ -91,7 +108,7 @@ class TestChar(TaskTestCase):
 
     def test_switch_healer_does_nothing_when_team_has_no_healer(self):
         combat = BaseCombatTask.__new__(BaseCombatTask)
-        combat.config = {'Switch to Healer after Combat': True}
+        combat.switch_healer_enabled = lambda: True
         current = BaseChar(None, 0, char_type=CharType.MAIN_DPS)
         teammate = BaseChar(None, 1, char_type=CharType.SUB_DPS)
         combat.chars = [current, teammate]
@@ -102,6 +119,27 @@ class TestChar(TaskTestCase):
         combat.switch_healer()
 
         self.assertEqual(switched, [])
+
+    def test_other_combat_tasks_use_auto_combat_healer_config(self):
+        combat = BaseCombatTask.__new__(BaseCombatTask)
+        auto_combat = AutoCombatTask.__new__(AutoCombatTask)
+        auto_combat.config = {'Switch to Healer before and after Combat': False}
+        combat.get_task_by_class = lambda cls: auto_combat
+
+        self.assertFalse(combat.switch_healer_enabled())
+
+        auto_combat.config['Switch to Healer before and after Combat'] = True
+        self.assertTrue(combat.switch_healer_enabled())
+
+    def test_farm_echo_uses_its_own_healer_config(self):
+        farm_echo = FarmEchoTask.__new__(FarmEchoTask)
+        farm_echo.config = {'Switch to Healer before and after Combat': False}
+        farm_echo.get_task_by_class = lambda cls: self.fail('Farm Echo should not read Auto Combat config')
+
+        self.assertFalse(farm_echo.switch_healer_enabled())
+
+        farm_echo.config['Switch to Healer before and after Combat'] = True
+        self.assertTrue(farm_echo.switch_healer_enabled())
 
     def test_char_type_config(self):
         class Task:

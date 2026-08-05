@@ -13,6 +13,7 @@ logger = Logger.get_logger(__name__)
 
 
 class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
+    owns_switch_healer_config = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -26,7 +27,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Combat Wait Time': 0,
             'Echo Pickup Method': 'Walk',
             'Use Liberation': True,
-            'Switch to Healer after Combat': True,
+            'Switch to Healer before and after Combat': True,
             'Which Weekly Boss to Teleport': 1,
             'Which Boss Challenge to Teleport': 1,
         })
@@ -36,7 +37,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Boss Level': "Choose the Lowest that Drop a Echo",
             'Combat Wait Time': 'Wait time before each combat (seconds), overrides Boss profile if set',
             'Use Liberation': 'Do not use Liberation to Save Time',
-            'Switch to Healer after Combat': 'Better Chance to Keep Character Alive',
+            'Switch to Healer before and after Combat': 'Better Chance to Keep Character Alive',
             'Which Weekly Boss to Teleport': 'From Top to Bottom, Starting with 1',
             'Which Boss Challenge to Teleport': 'From Top to Bottom, Starting with 1'
         })
