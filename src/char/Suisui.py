@@ -8,7 +8,7 @@ class Suisui(BaseChar):
     ATTACK_INTERVAL = 0.1
     FORTE_TIMEOUT = 26.0
     CONCERTO_TIMEOUT = 12.0
-    FORTE3_SWITCH_LOCKOUT = 20.0
+    FORTE3_SWITCH_LOCKOUT = 16.0
     MAIN_DPS_FORTE3_SWITCH_LOCKOUT = 32
 
     def __init__(self, *args, **kwargs):
@@ -30,7 +30,8 @@ class Suisui(BaseChar):
     def perform_forte3_rotation(self):
         start = time.time()
         if self.should_heavy:
-            self.heavy_attack(1.5 if self.has_intro else 1)
+            if self.has_intro:
+                self.heavy_attack(1.5)
             self.click_resonance()
             self.should_heavy = False
         while self.time_elapsed_accounting_for_freeze(start) < self.FORTE_TIMEOUT:

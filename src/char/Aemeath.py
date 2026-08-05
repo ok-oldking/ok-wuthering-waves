@@ -23,10 +23,12 @@ class Aemeath(BaseChar):
         self.lib2_cast_this_turn = False
         self.must_cast_lib2_this_turn = self.has_all_buff() and self.has_intro
         if not self.must_cast_lib2_this_turn:
+            while self.has_long_action():
+                if self.handle_heavy():
+                    self.sleep(0.3)
             return self.switch_next_char()
-        if self.has_intro:
-            self.continues_normal_attack(0.9)
-            self.sleep(0.1)
+        elif self.has_intro:
+            self.continues_normal_attack(2.1)
 
         self.perform_everything()
 
@@ -34,8 +36,6 @@ class Aemeath(BaseChar):
 
     def lib(self):
         is_lib2 = self.lib2_available()
-        if not is_lib2 and not self.enhance_e_cast_this_turn:
-            return False
         liberated = self.click_liberation(wait_if_cd_ready=0)
         if liberated:
             if is_lib2:
@@ -66,17 +66,17 @@ class Aemeath(BaseChar):
                     self.sleep(0.1)
                 self.check_combat()
                 continue
-            if self.enhance_e_available():
+            if self.lib():
+                if self.lib2_cast_this_turn:
+                    return
+                action_performed = True
+            elif self.enhance_e_available():
                 if self.click_resonance(has_animation=True, send_click=True, animation_min_duration=0.5,
                                         time_out=1.5)[0]:
                     self.record_enhance_e()
                     self.click_echo(time_out=0)
                     self.task.next_frame()
                 self.lib()
-                if self.lib2_cast_this_turn:
-                    return
-                action_performed = True
-            elif self.lib():
                 if self.lib2_cast_this_turn:
                     return
                 action_performed = True
