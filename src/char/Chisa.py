@@ -4,6 +4,7 @@ from src.char.BaseChar import BaseChar, CharType, get_default_buff_time
 
 
 class Chisa(BaseChar):
+    SUPPORT_REQUIRED_CHAR_NAMES = frozenset({'char_denia', 'char_aemeath'})
     NO_INTRO_NORMAL_ATTACK_TIME = 2.8
     INTRO_NORMAL_ATTACK_TIME = 2.8
     INTRO_RESONANCE_WAIT_TIMEOUT = 1.5
@@ -11,7 +12,7 @@ class Chisa(BaseChar):
     E2_ICON_CHANGE_TIMEOUT = 0.2
     E2_READY_TIMEOUT = 8.0
     E2_ATTACK_INTERVAL = 0.2
-    CONCERTO_ATTACK_TIMEOUT = 10.0
+    CONCERTO_ATTACK_TIMEOUT = 5.0
 
     def is_dps_config(self):
         return self.task and self.task.char_config.get("Chisa DPS")
@@ -25,6 +26,19 @@ class Chisa(BaseChar):
         if self.is_dps_config():
             return get_default_buff_time(CharType.MAIN_DPS)
         return super().get_buff_time()
+
+    def _has_bound_support_team(self):
+        team_names = {
+            getattr(char, 'char_name', None)
+            for char in getattr(self.task, 'chars', ())
+            if char is not None
+        }
+        missing = self.SUPPORT_REQUIRED_CHAR_NAMES - team_names
+        if missing:
+            self.logger.info(
+                f'Chisa support rotation disabled, missing teammates: {sorted(missing)}')
+            return False
+        return True
 
     def _find_e2_match(self):
         return self.task.find_one(
@@ -57,10 +71,15 @@ class Chisa(BaseChar):
             'Chisa [e2] template not detected, normal attack until it becomes available')
         start = time.time()
         while time.time() - start < self.E2_READY_TIMEOUT:
-            self.continues_normal_attack(self.E2_ATTACK_INTERVAL)
+            if self._continues_support_normal_attack(self.E2_ATTACK_INTERVAL):
+                return False
             if self.e2_available():
+                if self._switch_if_support_con_full():
+                    return False
                 self.logger.info('Chisa [e2] template detected after normal-attack fallback')
                 return True
+            if self._switch_if_support_con_full():
+                return False
         self.logger.warning(
             f'Chisa [e2] template still not detected after {self.E2_READY_TIMEOUT:.1f}s')
         return False
@@ -70,6 +89,32 @@ class Chisa(BaseChar):
         current_con = self.task.get_current_con()
         self.logger.debug(f'Chisa support live concerto={current_con}')
         return current_con == 1
+
+    def _switch_if_support_con_full(self):
+        if getattr(self, '_support_switched', False):
+            return True
+        if not self._is_live_con_full():
+            return False
+
+        self._support_switched = True
+        self.logger.info('Chisa support concerto full, switch to SubDps')
+        self._switch_to_sub_dps()
+        return True
+
+    def _continues_support_normal_attack(self, duration):
+        start = time.time()
+        while time.time() - start < duration:
+            if self._switch_if_support_con_full():
+                return True
+
+            remaining = duration - (time.time() - start)
+            self.continues_normal_attack(
+                min(0.1, remaining),
+                until_con_full=True,
+            )
+            if self._switch_if_support_con_full():
+                return True
+        return self._switch_if_support_con_full()
 
     def _switch_to_sub_dps(self):
         sub_dps = next(
@@ -139,6 +184,8 @@ class Chisa(BaseChar):
         """变奏动画结束后释放共鸣技能，动画吞键时最多尝试两次。"""
         resonance_used = False
         for attempt in range(1, self.INTRO_RESONANCE_ATTEMPTS + 1):
+            if self._switch_if_support_con_full():
+                return resonance_used
             ready = self.task.wait_until(
                 self.resonance_available,
                 time_out=self.INTRO_RESONANCE_WAIT_TIMEOUT,
@@ -148,8 +195,12 @@ class Chisa(BaseChar):
                     f'Chisa intro resonance not available on attempt {attempt}')
                 break
 
+            if self._switch_if_support_con_full():
+                return resonance_used
             used = self.click_resonance(time_out=0.5)[0]
             resonance_used = resonance_used or used
+            if self._switch_if_support_con_full():
+                return resonance_used
             if used:
                 self.logger.info(f'Chisa intro resonance key sent, attempt {attempt}')
             else:
@@ -180,12 +231,17 @@ class Chisa(BaseChar):
         return resonance_ready and liberation_ready
 
     def _ensure_support_skills_ready(self):
+        if self._switch_if_support_con_full():
+            return False
         if self._support_skills_available():
             return True
 
         self.logger.warning(
             'Chisa support skills not ready, normal attack for 2.0s before retry')
-        self.continues_normal_attack(2.0)
+        if self._continues_support_normal_attack(2.0):
+            return False
+        if self._switch_if_support_con_full():
+            return False
         if self._support_skills_available():
             self.logger.info('Chisa support skills became ready after fallback wait')
             return True
@@ -195,21 +251,28 @@ class Chisa(BaseChar):
         return False
 
     def _use_e2_if_available(self):
+        if self._switch_if_support_con_full():
+            return False
         if not self.e2_available():
             if not self._wait_for_e2_with_normal_attack():
                 return False
 
+        if self._switch_if_support_con_full():
+            return False
         e2_used = self.click_resonance(time_out=0.5)[0]
         if e2_used:
             self.logger.info('Chisa [e2] used successfully')
         else:
             self.logger.warning('Chisa [e2] detected but use failed')
+        self._switch_if_support_con_full()
         return e2_used
 
     def _hold_heavy_and_dodge(self, wait_for_e2_icon):
         dodge_key = self.task.key_config.get('Dodge Key')
         if wait_for_e2_icon:
             self._wait_for_e2_icon_change()
+            if self._switch_if_support_con_full():
+                return True
         self.task.mouse_down()
         try:
             self.sleep(0.2)
@@ -226,55 +289,102 @@ class Chisa(BaseChar):
         finally:
             self.task.mouse_up()
         self.sleep(0.01)
+        return self._switch_if_support_con_full()
 
     def _perform_support_tail(self):
+        if self._switch_if_support_con_full():
+            return True
         self.click_echo(time_out=0)
+        if self._switch_if_support_con_full():
+            return True
 
         if self.click_liberation():
             self.record_support_buff()
+        if self._switch_if_support_con_full():
+            return True
 
         e2_used = self._use_e2_if_available()
+        if self._support_switched:
+            return True
         self._hold_heavy_and_dodge(e2_used)
-        if not self._is_live_con_full():
-            dodge_key = self.task.key_config.get('Dodge Key')
-            self.logger.info(
-                'Chisa support concerto not full, dodge then attack until full')
-            self.task.send_key(dodge_key)
-            self.current_con = 0
-            self.continues_normal_attack(
-                self.CONCERTO_ATTACK_TIMEOUT,
-                until_con_full=True,
-            )
+        if self._support_switched:
+            return True
+        if self._switch_if_support_con_full():
+            return True
+
+        dodge_key = self.task.key_config.get('Dodge Key')
+        self.logger.info(
+            'Chisa support concerto not full, dodge then attack until full')
+        self.task.send_key(dodge_key)
+        if self._switch_if_support_con_full():
+            return True
+
+        self.current_con = 0
+        if self._continues_support_normal_attack(self.CONCERTO_ATTACK_TIMEOUT):
+            return True
         return self._switch_to_sub_dps()
+
+    def do_fast_support(self):
+        self.check_f_on_switch = True
+        if self.has_intro:
+            self.record_support_buff()
+            self.click_echo(time_out=0)
+            return self.switch_next_char()
+
+        if self.flying() and not self.liberation_available() and not self.resonance_available():
+            self.wait_down()
+        self.click_echo(time_out=0)
+        if self.click_liberation():
+            self.record_support_buff()
+            return self.switch_next_char()
+
+        self.click_resonance(time_out=0.5)
+        return self.switch_next_char()
 
     def _perform_intro_support(self):
         """变奏入场辅助连段；仅在辅助模式调用。"""
         self.wait_intro(1.2)
+        if self._switch_if_support_con_full():
+            return True
         self.check_f_on_switch = True
         self.logger.info('Chisa intro support rotation start')
 
         if not self._ensure_support_skills_ready():
             return False
         self._use_resonance_after_intro()
-        self.continues_normal_attack(self.INTRO_NORMAL_ATTACK_TIME)
+        if self._support_switched:
+            return True
+        if self._continues_support_normal_attack(self.INTRO_NORMAL_ATTACK_TIME):
+            return True
         return self._perform_support_tail()
 
     def _perform_no_intro_support(self):
         """无变奏入场辅助连段；仅在辅助模式调用。"""
+        if self._switch_if_support_con_full():
+            return True
         self.check_f_on_switch = True
         self.logger.info('Chisa no-intro support rotation start')
 
         if not self._ensure_support_skills_ready():
             return False
         self.task.jump()
-        self.continues_normal_attack(1.0)
+        if self._switch_if_support_con_full():
+            return True
+        if self._continues_support_normal_attack(1.0):
+            return True
         self.click_resonance(time_out=0.5)
-        self.continues_normal_attack(self.NO_INTRO_NORMAL_ATTACK_TIME)
+        if self._switch_if_support_con_full():
+            return True
+        if self._continues_support_normal_attack(self.NO_INTRO_NORMAL_ATTACK_TIME):
+            return True
         return self._perform_support_tail()
 
     def do_perform(self):
         # 输出模式保持原逻辑；辅助模式区分变奏与无变奏入场。
         if not self.is_dps_config():
+            self._support_switched = False
+            if not self._has_bound_support_team():
+                return self.do_fast_support()
             if self.has_intro:
                 return self._perform_intro_support()
             return self._perform_no_intro_support()
