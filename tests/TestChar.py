@@ -755,6 +755,8 @@ class TestChar(TaskTestCase):
         aemeath = TrackingAemeath(Task(), 0)
         aemeath.has_intro = True
         aemeath.record_intro_liberation()
+        self.assertFalse(aemeath.lib())
+        aemeath.record_enhance_e()
         self.assertTrue(aemeath.lib())
         self.assertEqual(aemeath.intro_liberation_time, -1)
 
@@ -786,9 +788,6 @@ class TestChar(TaskTestCase):
 
             def f_break(self):
                 pass
-
-            def _execute_post_lib2_combo(self):
-                self.check_combat()
 
         task = Task()
         aemeath = TrackingAemeath(task, 0)
@@ -830,10 +829,6 @@ class TestChar(TaskTestCase):
             def f_break(self):
                 pass
 
-            def _execute_post_lib2_combo(self):
-                self.check_combat()
-                self.record_enhance_e()
-
         task = Task()
         aemeath = TrackingAemeath(task, 0)
         self.assertTrue(aemeath.handle_heavy())
@@ -854,6 +849,36 @@ class TestChar(TaskTestCase):
         self.assertTrue(aemeath.lib())
         self.assertFalse(aemeath.pending_lib2)
         self.assertFalse(aemeath.should_wait_for_enhance_e())
+
+    def test_aemeath_switches_immediately_after_lib2(self):
+        class Task:
+            def find_one(self, template, threshold=None):
+                return template == 'aemeath_lib2'
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+        class TrackingAemeath(Aemeath):
+            def __init__(self, task):
+                super().__init__(task, 0)
+                self.actions = []
+
+            def perform_everything(self):
+                self.lib()
+
+            def click_liberation(self, **kwargs):
+                self.actions.append('lib2')
+                return True
+
+            def f_break(self):
+                pass
+
+            def switch_next_char(self):
+                self.actions.append('switch')
+
+        aemeath = TrackingAemeath(Task())
+        aemeath.do_perform()
+        self.assertEqual(aemeath.actions, ['lib2', 'switch'])
 
     def test_aemeath_switch_priority_and_wait_near_lib2_cooldown(self):
         class Task:
@@ -915,22 +940,35 @@ class TestChar(TaskTestCase):
         self.assertTrue(aemeath.should_wait_for_lib2())
         self.assertEqual(aemeath.get_switch_priority(), SwitchPriority.MUST)
 
-    def test_aemeath_recent_stored_intro_attempts_lib1_before_enhance_e(self):
+    def test_aemeath_recent_stored_intro_casts_enhance_e_before_lib1(self):
         class Task:
             def find_one(self, template, threshold=None):
                 return template == 'aemeath_e1'
+
+            def next_frame(self):
+                pass
 
         class TrackingAemeath(Aemeath):
             def __init__(self, task):
                 super().__init__(task, 0)
                 self.actions = []
-                self.done = False
+                self.cycles = 0
 
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
-                return 100 if self.done else time.time() - start
+                return 100 if self.cycles >= 2 else time.time() - start
 
             def click_liberation(self, **kwargs):
                 self.actions.append('lib1')
+                return True
+
+            def click_resonance(self, **kwargs):
+                self.actions.append('enhance_e')
+                return True, None
+
+            def click_echo(self, **kwargs):
+                return False
+
+            def liberation_available(self):
                 return True
 
             def handle_heavy(self):
@@ -940,15 +978,16 @@ class TestChar(TaskTestCase):
                 pass
 
             def cycle_sleep(self):
-                self.done = True
+                self.cycles += 1
 
             def f_break(self):
                 pass
 
         aemeath = TrackingAemeath(Task())
+        aemeath.record_intro_liberation()
         aemeath.intro_liberation_time = time.time() - aemeath.INTRO_LIBERATION_DELAY + 0.1
         aemeath.perform_everything()
-        self.assertEqual(aemeath.actions, ['lib1'])
+        self.assertEqual(aemeath.actions, ['enhance_e', 'lib1'])
         self.assertEqual(aemeath.intro_liberation_time, -1)
 
     def test_switch_priority_hooks(self):

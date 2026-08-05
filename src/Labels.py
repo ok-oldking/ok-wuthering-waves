@@ -143,6 +143,7 @@ class Labels(str, Enum):
     custom_teleport_hcenter_vcenter = 'custom_teleport_hcenter_vcenter'
     data_merge_hcenter_vcenter = 'data_merge_hcenter_vcenter'
     denia_e1 = 'denia_e1'
+    denia_end_lib = 'denia_end_lib'
     denia_lib2 = 'denia_lib2'
     dialog_3_dots = 'dialog_3_dots'
     douling_heavy = 'douling_heavy'

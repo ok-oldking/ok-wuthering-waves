@@ -8,7 +8,7 @@ class Suisui(BaseChar):
     ATTACK_INTERVAL = 0.1
     FORTE_TIMEOUT = 26.0
     CONCERTO_TIMEOUT = 12.0
-    FORTE3_SWITCH_LOCKOUT = 28.0
+    FORTE3_SWITCH_LOCKOUT = 24.0
     MAIN_DPS_FORTE3_SWITCH_LOCKOUT = 32
 
     def __init__(self, *args, **kwargs):
@@ -91,4 +91,11 @@ class Suisui(BaseChar):
             return SwitchPriority.MUST
         elif since_last < self.FORTE3_SWITCH_LOCKOUT:
             return SwitchPriority.NO
+        has_main_dps = any(
+            char and char != self and char.is_main_dps
+            for char in getattr(self.task, 'chars', [])
+        )
+        if has_main_dps:
+            if current_char and current_char.is_main_dps and has_intro:
+                return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)

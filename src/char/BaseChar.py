@@ -957,11 +957,13 @@ class BaseChar:
             return self.task.has_short_action()
         return self.task.find_one(self.task.get_target_names()[0], box='target_box_short', threshold=0.6)
 
-    def f_break(self, check_f_on_switch=False):
+    def f_break(self, check_f_on_switch=False, force=False):
         """使用F进行击破
            若self.check_f_on_switch为False则不在切走前自动按F,须在逻辑中手动添加。
            另外击破动画带全局时停且目前无法识别动画,可能会出现计时问题
         """
+        if force:
+            self.task.send_key('f', after_sleep=0.05)
         if check_f_on_switch and not self.check_f_on_switch:
             return
         self.task.f_break()
