@@ -67,7 +67,8 @@ class Carlotta(BaseChar):
         else:
             return self.click_liberation()
 
-    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0.1):
+    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0.1,
+                         animation_min_duration=0, click_f=True):
         self.logger.debug('click_liberation start')
         start = time.time()
         last_click = 0
@@ -95,11 +96,17 @@ class Carlotta(BaseChar):
         else:
             return clicked
         start = time.time()
+        last_f_click = 0
         while not self.task.in_team()[0]:
             self.task.in_liberation = True
             if not clicked:
                 clicked = True
-            if time.time() - start > 7:
+            now = time.time()
+            if (click_f and now - start >= animation_min_duration
+                    and now - last_f_click >= 0.1):
+                self.task.send_key('f')
+                last_f_click = now
+            if now - start > 7:
                 self.task.in_liberation = False
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
             self.task.next_frame()
@@ -175,7 +182,7 @@ class Carlotta(BaseChar):
     def decide_teammate(self):
         from src.char.Zhezhi import Zhezhi
         self.press_w = 0
-        if self.task.name and self.task.name == "Farm 4C Echo in Dungeon/World":
+        if self.task.name and self.task.name == "🌀 Farm 4C Echo in Dungeon/World":
             self.press_w = 1
         elif char := self.task.has_char(Zhezhi):
             self.char_zhezhi = char

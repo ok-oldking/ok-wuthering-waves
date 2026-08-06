@@ -4,6 +4,10 @@ from src.char.BaseChar import BaseChar, CharType, get_default_buff_time
 
 
 class Chisa(BaseChar):
+    SUPPORT_ACTION_DURATION = 1.2
+    SUPPORT_LONG_ACTION_DURATION = 10.0
+    INTRO_NORMAL_ATTACK_DURATION = 2.0
+
     def is_dps_config(self):
         return self.task and self.task.char_config.get("Chisa DPS")
 
@@ -18,36 +22,38 @@ class Chisa(BaseChar):
         return super().get_buff_time()
 
     def do_perform(self):
-        if not self.is_dps_config():
-            return self.do_fast_support()
-        return self.do_dps_perform()
+        if self.is_dps_config():
+            return self.do_dps_perform()
+        return self.do_support_perform()
 
-    def do_fast_support(self):
-        self.check_f_on_switch = True
+    def do_support_perform(self):
+        needs_long_actions = self.has_intro and not self.has_buff()
         if self.has_intro:
-            self.record_support_buff()
-            self.click_echo(time_out=0)
-            return self.switch_next_char()
+            self.continues_normal_attack(self.INTRO_NORMAL_ATTACK_DURATION)
 
+        duration = (self.SUPPORT_LONG_ACTION_DURATION
+                    if needs_long_actions else self.SUPPORT_ACTION_DURATION)
         if self.flying() and not self.liberation_available() and not self.resonance_available():
             self.wait_down()
         self.click_echo(time_out=0)
-        if self.click_liberation():
-            self.record_support_buff()
-            return self.switch_next_char()
 
-        self.click_resonance(time_out=0.5)
+        start = time.time()
+        while self.time_elapsed_accounting_for_freeze(start) < duration:
+            self.cycle_start()
+            if self.is_con_full():
+                return self.switch_next_char()
+            if self.liberation_available():
+                self.click_liberation(wait_if_cd_ready=0)
+            elif self.is_forte_full():
+                if self.perform_forte():
+                    break
+            elif self.click_resonance(time_out=0)[0]:
+                pass
+            else:
+                self.click()
+            self.cycle_sleep()
+
         return self.switch_next_char()
-
-    def record_support_buff(self):
-        """Track the buff granted by Chisa's Intro Skill or Resonance Liberation."""
-        self.last_buff_time = time.time()
-
-    def switch_out(self, con_full=False):
-        support_buff_time = self.last_buff_time
-        super().switch_out(con_full=con_full)
-        if not self.is_dps_config():
-            self.last_buff_time = support_buff_time
 
     def do_dps_perform(self):
         timeout = 2.5

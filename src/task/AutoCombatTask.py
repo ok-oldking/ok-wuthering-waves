@@ -1,7 +1,5 @@
 import time
 
-from qfluentwidgets import FluentIcon
-
 from ok import TriggerTask, Logger
 from src.char.CharFactory import char_names
 from src.scene.WWScene import WWScene
@@ -11,24 +9,26 @@ logger = Logger.get_logger(__name__)
 
 
 class AutoCombatTask(BaseCombatTask, TriggerTask):
+    owns_switch_healer_config = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.default_config = {'_enabled': True}
         self.trigger_interval = 0.1
-        self.name = "Auto Combat"
+        self.name = "⚔️ Auto Combat"
         self.description = "Enable auto combat in Abyss, Game World etc"
-        self.icon = FluentIcon.CALORIES
         self.last_is_click = False
         self.default_config.update({
             'Auto Target': True,
             'Use Liberation': True,
             'Check Levitator': True,
+            'Switch to Healer before and after Combat': True,
         })
         self.config_description = {
             'Auto Target': 'Turn off to enable auto combat only when manually target enemy using middle click',
             'Use Liberation': 'Do not use Liberation in Open World to Save Time',
             'Check Levitator': 'Toggle the levitator and verify if the character is floating',
+            'Switch to Healer before and after Combat': 'Better Chance to Keep Character Alive',
         }
         self.op_index = 0
         self.char_features_warmed_up = False
@@ -54,9 +54,13 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
         if not self.use_liberation and not self.in_world():  # 仅大世界生效
             self.use_liberation = True
         combat_start = time.time()
+        switched_to_healer = False
         while self.in_combat():
             ret = True
             try:
+                if not switched_to_healer:
+                    self.switch_healer()
+                    switched_to_healer = True
                 self.get_current_char().perform()
             except CharDeadException:
                 self.log_error(f'Characters dead', notify=True)
@@ -66,6 +70,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                 break
         if ret:
             self.combat_end()
+            self.switch_healer()
         return ret
 
     def realm_perform(self):

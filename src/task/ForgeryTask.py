@@ -1,7 +1,5 @@
 import cv2
 
-from qfluentwidgets import FluentIcon
-
 from ok import Logger, find_color_rectangles
 from src.task.DomainTask import DomainTask
 
@@ -12,8 +10,7 @@ class ForgeryTask(DomainTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.icon = FluentIcon.FLAG
-        self.name = 'Forgery Challenge'
+        self.name = '⚒️ Forgery Challenge'
         self.description = 'Farms the selected Forgery Challenge. Must be able to teleport (F2).'
         self.support_schedule_task = True
         self.default_config = {

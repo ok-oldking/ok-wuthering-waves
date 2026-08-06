@@ -73,3 +73,4 @@ repo/
 assets/result.json
 # Windows artifact
 nul
+src/gui/CharacterCodeTab.py

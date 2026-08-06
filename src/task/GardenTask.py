@@ -1,6 +1,5 @@
 import re
 
-from qfluentwidgets import FluentIcon
 
 from ok import Logger, run_task
 from config import config
@@ -16,11 +15,8 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "自动周常乐园"
+        self.name = "🎡 自动周常乐园"
         self.description = "Detect and click garden actions until the task is stopped."
-        self.icon = FluentIcon.GAME
-        self.group_name = "Daily"
-        self.group_icon = FluentIcon.CALENDAR
         self.garden_features = [
             label.value for label in Labels
             if label.value.startswith("garden_")
