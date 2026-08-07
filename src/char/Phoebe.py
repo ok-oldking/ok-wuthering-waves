@@ -749,14 +749,11 @@ class Phoebe(BaseChar):
         return super().switch_next_char(*args, **kwargs)
 
     def f_break(self, check_f_on_switch=False, force=False):
-        """赞菲光：菲比不做处决（用户决定 2026-08-08）。
-        菲比切走（→赞妮）时 BaseCombatTask 665 行 current_char.f_break(check_f_on_switch=True)
+        """赞菲队（赞菲光/赞菲守）：菲比不做处决（用户决定 2026-08-08，赞菲光实机验证后上升全局）。
+        菲比切走时 BaseCombatTask 665 行 current_char.f_break(check_f_on_switch=True)
         F+左键连打触发处决动画 2.4s（00:07 场实证 switch_next_char end 2.427s），
-        清空赞妮大招重击条致 phase3 动作丢失（夜闪/打砸不执行直接 R2）。
-        赞菲守保留默认行为（无实机问题）。"""
-        if self._zanfei_guang:
-            return False
-        return super().f_break(check_f_on_switch=check_f_on_switch, force=force)
+        清空赞妮大招重击条致 phase3 动作丢失（夜闪/打砸不执行直接 R2）。"""
+        return False
 
     def _zanfei_switch_on_full_con(self):
         from src.char.Zani import Zani
