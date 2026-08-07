@@ -158,6 +158,7 @@ class Labels(str, Enum):
     echo_merge = 'echo_merge'
     echo_not_dropped = 'echo_not_dropped'
     echo_not_locked = 'echo_not_locked'
+    echo_select_all = 'echo_select_all'
     edge_levitator = 'edge_levitator'
     esc_setting = 'esc_setting'
     f_break = 'f_break'
