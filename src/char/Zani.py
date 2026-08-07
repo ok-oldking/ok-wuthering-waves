@@ -66,6 +66,21 @@ class Zani(BaseChar):
                 if char is not None:
                     char._force_switch_me = False
 
+    def switch_next_char(self, *args, **kwargs):
+        # 3.5.27 适配（399ae3e adaptation #2）：BaseCombatTask 的 intro 目标选择改为
+        # unbuffed_support 优先（守岸人），3.5.25 是 sub_dps 优先（菲比）。
+        # 仅赞菲守队（无 Rover）需要 force 切回菲比（防止守岸人被 intro 选中打乱轮换）；
+        # 赞菲光无守岸人，force 是误伤（21:53:57 先菲比根因）——2026-08-08 撤回：
+        # 赞菲光走 runtime 默认（_unbuffed_support_target 自动先漂泊者再菲比，同 v16）。
+        if not self._zanfei_guang and self.is_con_full() and self.char_phoebe is not None:
+            return self._force_switch_to(self.char_phoebe)
+        return super().switch_next_char(*args, **kwargs)
+
+    def f_break(self, check_f_on_switch=False, force=False):
+        """赞妮不做处决（用户决定）：3.5.27 的 f_break 在切人时 F+左键连打 0.5-5s，
+        会打断赞妮开场动作（强化 E/夜闪）并可能触发处决动画导致 target lost。"""
+        return False
+
     def do_perform(self):
         if self.blazes_threshold == -1:
             self.decide_teammate()
@@ -260,6 +275,7 @@ class Zani(BaseChar):
         # committed 同时要求焰光增量：强化E未命中（blazes 不涨）时不开大，
         # 避免「焰光不足直接开大」；crisis 场景 blazes<1，命中必 +0.04 可检测。
         committed = elapsed >= 2.0 and self.blazes > before_blazes
+        self.logger.info(f'zani: enhanced E commit elapsed={elapsed:.2f}s blazes={before_blazes}->{self.blazes} committed={committed}')
         return committed
 
     def _start_liberation(self):
@@ -331,7 +347,10 @@ class Zani(BaseChar):
             return False
         if not self.is_mouse_forte_full():
             # 重击条未满 → 站桩重读（1.0s 无输入）：给重击条恢复机会（恢复则打砸多一轮），
-            # 未恢复则 R2。已删除 v13 遗留的 E 检查（无 return 从不触发 R2、大招内无按 E、
+            # 未恢复则 R2。此等待是防提前 R2 的（删除后出现提前 R2——21:25 场
+            # 21:26:23 实证），2026-08-07 fb28b3a 误删，已恢复；0.5s 实测不够
+            # （用户 2026-08-07 每个 R2 前场景不同，1s 能兜住所有场景）。
+            # 已删除 v13 遗留的 E 检查（无 return 从不触发 R2、大招内无按 E、
             # 唯一效果是 E 灰时普攻 1.34s，见 23:28:40 日志 clicks=60；站桩替代该普攻作为延后手段）。
             if not self.task.wait_until(self.is_mouse_forte_full, time_out=1.0, settle_time=0.1):
                 self.logger.info('Cannot perform another nightfall, perform liberation2')
@@ -429,10 +448,10 @@ class Zani(BaseChar):
                 sleep = 0.3 - (time.time() - self.dodge_time)
                 if (result := self.wait_forte_full(sleep)) != State.DONE:
                     return result
-                self.task.mouse_down()
-                if (result := self.wait_forte_full(0.6)) != State.DONE:
-                    return result
-                self.task.mouse_up()
+                # 2026-08-07 用户要求：蓄力重击（mouse_down 按住 0.6s）改轻击连点——
+                # 按住左键被误认为强化E且释放到命中时间人为拉长；轻击连点同样充能，
+                # 风险：一轮充不满则强化E不出（2s 超时兑底普通E，blazes 增量把关）。
+                self.continues_normal_attack(0.6)
                 wait_chair = 1.15
                 if (result := self.wait_forte_full(0.85, send_click=True)) != State.DONE:
                     return result
@@ -575,6 +594,7 @@ class Zani(BaseChar):
         if not self._zanfei_guang and has_intro:
             from src.char.Phoebe import Phoebe
             if not isinstance(current_char, Phoebe):
+                self.logger.info(f'zani: reject intro source current={type(current_char).__name__} expected=Phoebe')
                 return SwitchPriority.NO
         if has_intro and self.crisis_time_left() > 0:
             return SwitchPriority.NO

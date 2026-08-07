@@ -76,10 +76,13 @@ class HavocRover(BaseChar):
             self.click_resonance(send_click=True)
             self.sleep(0.05)
         if self.echo_available():
-            self.click_echo(time_out=0)
-            self.sleep(0.05)
+            # 声骸释放完毕再开大：time_out=1 等到声骸按钮进 CD（确认已释放登记），
+            # 再固定 0.3s 覆盖脱手声骸动画窗口，避免 R 吞掉声骸动画。
+            self.click_echo(time_out=1)
+            self.sleep(0.3)
         if self.task.use_liberation:
             if not self.click_liberation(send_click=True):
+                self.logger.info('rover: liber insert R first-fail, retry loop')
                 retry_start = time.time()
                 while time.time() - retry_start < 2:
                     remaining = 2 - (time.time() - retry_start)
@@ -87,7 +90,10 @@ class HavocRover(BaseChar):
                     if time.time() - retry_start >= 2:
                         break
                     if self.click_liberation(send_click=True, wait_if_cd_ready=0):
+                        self.logger.info(f'rover: liber insert R retry-success elapsed={time.time() - retry_start:.2f}s')
                         break
+            else:
+                self.logger.info('rover: liber insert R first-success')
         if self.buff_time > 0:
             self.last_buff_time = time.time()
             self.logger.info(f'rover: insert buff refreshed buff_time={self.buff_time}')

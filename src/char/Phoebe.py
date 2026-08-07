@@ -23,6 +23,7 @@ class Phoebe(BaseChar):
         self._zanfei_guang = False
         self._force_switch_me = False
         self._shou_full_tail_pending = False
+        self._shou_full_tail_pending_at = 0
         self.state = {'enter_status': 0, 'starflash_combo': 0, 'liberation': 0, 'outro': 0, 'priority_liberation_cast': 0}
 
     def reset_state(self):
@@ -35,6 +36,7 @@ class Phoebe(BaseChar):
         self._zanfei_guang = False
         self._force_switch_me = False
         self._shou_full_tail_pending = False
+        self._shou_full_tail_pending_at = 0
         # 跨战斗必须清掉抢大招成功标记，避免 pre-switch 误判 duplicate
         self.state = {'enter_status': 0, 'starflash_combo': 0, 'liberation': 0, 'outro': 0, 'priority_liberation_cast': 0}
 
@@ -96,6 +98,12 @@ class Phoebe(BaseChar):
         else:
             # 非变奏切人后会自然接一段普攻，先等它结算协奏，再抢大招。
             self.sleep(0.01)
+            # 3.5.27 适配：普攻进场动画 >0.4s——star_available 缓存时立即抢 R
+            # 会撞上进场动画未完成 → 0.4s no-effect（21:18:16/21:18:59 try-now 日志）。
+            # 等待进场稳定（同 insert 的 down 判定）后再抢；开局 star=False 不受影响。
+            if self.star_available:
+                self.task.wait_until(self.down, time_out=2.0)
+                self.sleep(0.3)
         if not self.has_intro:
             # 变奏入场跳过入场 R 优先：先稳定进告解，R 由告解后既有流程释放。
             # （避免大招动画结束后蓝环 UI 恢复竞态导致进不去告解，见 19:25:05/19:37:42 日志）
@@ -146,9 +154,9 @@ class Phoebe(BaseChar):
         if self.resonance_available():
             if self.attribute == 2:
                 if not self._zanfei_guang and not self.confession_ready() and self.first_rotation_done:
-                    self.click_resonance(send_click=False, time_out=0.5)
+                    self.click_resonance(send_click=False, time_out=0.5, click_f=False)
             else:
-                self.click_resonance()
+                self.click_resonance(click_f=False)
             self._ensure_first_rotation_con()
             return self.switch_next_char(
                 _zanfei_full_tail=self._zanfei_guang,
@@ -163,13 +171,20 @@ class Phoebe(BaseChar):
 
     def _do_regular_rotation(self):
         start = self._prepare_regular_rotation()
+        enter_before = self.state['enter_status']
         exited, result, attribute_mismatch = self._resolve_linkage_or_exit()
         if exited:
             return result
         wait_ui_time = 0.35 - (time.time() - start)
         if wait_ui_time > 0 and self.star_available and self.judge_forte() == 0:
             self.continues_normal_attack(wait_ui_time)
-        status_entered = self.absolution_or_confession(wait_team=False)
+        if self.state['enter_status'] > enter_before:
+            # 已进告解（开局：_resolve_linkage_or_exit 走 is_forte_full 路径先进告解成功）——
+            # 跳过重复进告解：已进告解蓝条熄灭，重复判定必失败且等待窗口白费
+            # （20:53:03 Enters → 20:53:05 unavailable 2s 白等 日志实证）。
+            status_entered = State.SUCCESS
+        else:
+            status_entered = self.absolution_or_confession(wait_team=False)
         self.check_combat()
         if (not attribute_mismatch or status_entered == State.SUCCESS) and self.star_available:
             if self._click_liberation_reliable(tag=' do-perform'):
@@ -188,17 +203,27 @@ class Phoebe(BaseChar):
 
     def _do_liber_insert(self):
         """赞妮大招插入（极简）：切入后立即核心动作——starflash 蓄力重击（保存的满条直接打，
-        给赞妮回能量）→ 长按 E 定身 → 切回。不做落地轮询/sleep/告解/开大等前置（用户批准：
+        给赞妮回能量）→ 长按 E 定身 → 切回。不做告解/开大等前置（用户批准：
         蓄力与长按动作时长本身覆盖切入动画；菲比大招留到 R2 后 do-perform 放）。"""
         self.logger.info('phoebe: zani liber insert short axis')
+        insert_start = time.time()
         if self.attribute == 0:
             self.decide_teammate()
-        self.sleep(0.2)
+        # 贴脸切人会让菲比短暂滞空（仅赞菲光插入路径触发）；滞空时左键会触发空中滑翔且落不了地。
+        # 空中共鸣/大招 UI 变灰 → down() 可检测：零输入等到技能可用=已落地，再补 0.3s 稳定，
+        # 之后才允许 starflash 的第一个左键输入（sleep/闪避均无法消除该空中窗口，见实测）。
+        self.task.wait_until(self.down, time_out=2.0)
+        self.sleep(0.3)
+        self.logger.info(f'phoebe: insert grounded wait elapsed={time.time() - insert_start:.2f}s')
         if self.is_forte_full():
-            self.continues_right_click(0.05, direction_key='s')  # 向后闪避（同赞妮开大首动作），落定后再蓄力重击
+            self.logger.info('phoebe: insert starflash cast')
             self.starflash_combo()
             self._ensure_grounded('insert after heavy')
-        self._insert_long_press_dingshen_e()
+        else:
+            self.logger.info(f'phoebe: insert starflash skip forte_judge={self.judge_forte()}')
+        self._insert_dingshen_e()
+        # 镜之环定身效果需约 0.3s 生效（00:22:31 日志实测 E 后 0.26s 就切人导致定身未生效）
+        self.sleep(0.3)
         self._ensure_grounded('insert before switch')
         if self.buff_time > 0:
             self.last_buff_time = time.time()
@@ -224,15 +249,16 @@ class Phoebe(BaseChar):
         self.task.send_key_up(key)
         self.sleep(0.05)
 
-    def _insert_long_press_dingshen_e(self):
-        """大招插入定身：E 可用则长按；绝不用短按二段传送。"""
+    def _insert_dingshen_e(self):
+        """大招插入定身：短按 E 召唤镜之环定身 2s。
+        不能长按：长按会被游戏判定为显明告解（进告解），失去定身效果。
+        已确认解除显明告解需长按 E 二段，0.55s 实测超过判定阈值（08-06 00:04 日志实证）。
+        风险：镜之环存在时长 30s，短按会触发二段传送，用户已确认接受。"""
         if not self.resonance_available():
             return False
-        if self.confession_ready() or self.star_available:
-            self.logger.info('phoebe: insert long-press E dingshen')
-            self._hold_resonance_key_055()
-            return True
-        return False
+        self.logger.info('phoebe: insert short-press E dingshen')
+        self.task.send_key(self.get_resonance_key(), after_sleep=0.1)
+        return True
 
     LIBER_HOLD_GRACE = 3.0
     LIBER_NO_EFFECT_HOLD = 2.0
@@ -270,7 +296,9 @@ class Phoebe(BaseChar):
 
     def _click_liberation_reliable(self, send_click=True, tag=''):
         """Base no-effect is only a 0.4s animation miss - confirm longer and retry once."""
-        if self.click_liberation(send_click=send_click):
+        # 3.5.27 适配：click_f=False——3.5.27 的 click_liberation 动画中每 0.1s 按 F，
+        # 会打断菲比 R 动画导致 no-effect（20:53:51/20:55:07 日志实证）
+        if self.click_liberation(send_click=send_click, click_f=False):
             self.state['liber_no_effect_at'] = 0
             return True
         self.logger.info(f'phoebe: liber no-effect, extended confirm{tag}')
@@ -278,7 +306,7 @@ class Phoebe(BaseChar):
             return True
         if self.liberation_available():
             self.logger.info(f'phoebe: liber retry after no-effect{tag}')
-            if self.click_liberation(send_click=send_click):
+            if self.click_liberation(send_click=send_click, click_f=False):
                 self.state['liber_no_effect_at'] = 0
                 return True
             if self._confirm_liberation_transition('after retry', tag):
@@ -347,7 +375,7 @@ class Phoebe(BaseChar):
                 if result == 0 or self.char_zani.liberation_time_left() > 3:
                     self.continues_normal_attack(1, interval=0.15)
             elif not self._zanfei_guang and self.first_rotation_done and (not self.confession_ready()):
-                self.click_resonance(send_click=False)
+                self.click_resonance(send_click=False, click_f=False)
             return True
 
     def check_attribute_mismatch(self):
@@ -382,7 +410,7 @@ class Phoebe(BaseChar):
             return start
         for _ in range(skill_count):
             if liber and self.state['liberation'] < 1:
-                if self.liberation_available() and self.click_liberation(send_click=False):
+                if self.liberation_available() and self.click_liberation(send_click=False, click_f=False):
                     self.state['liberation'] += 1
             # 告解态 starflash 依赖重击就绪；仅 prayer 格 >0 会漏掉已可重击的情况
             if self.judge_forte() > 0 or self.is_forte_full():
@@ -397,6 +425,7 @@ class Phoebe(BaseChar):
             forte = self.calculate_forte_num(phoebe_forte_light_color, box, 4, 25)
         else:
             forte = self.calculate_forte_num(phoebe_forte_blue_color, box, 2, 50)
+        self.logger.debug(f'phoebe: judge_forte attribute={self.attribute} segments={forte}')
         return forte
 
     STARFLASH_RECOVER_AFTER = 2.0
@@ -449,6 +478,7 @@ class Phoebe(BaseChar):
         return recover_used
 
     def starflash_combo(self):
+        self.logger.info('perform starflash_combo')
         recover_used = False
         # 充能 = 一直左键到变蓝（用户机制），不看 condition：蓝条识别在（告解中）也照常充能到满。
         # v13 原代码的 condition 前置/中断会让赞菲守第 2 段（半条→充能→蓄力）充能被掐断，
@@ -492,14 +522,20 @@ class Phoebe(BaseChar):
         self.task.draw_boxes(box.name, box)
         from src.char.Zani import Zani
         blue_percent = Zani.calculate_color_percentage_in_masked(self, phoebe_blue_color, box, 0.425, 0.490)
+        # TEMP-DIAG（3.5.27 告解发呆诊断，验证后删除）：输出蓝条识别值
+        self.logger.info(f'phoebe: TEMP-DIAG confession_ready blue_percent {blue_percent:.3f} box={box}')
+        self.logger.debug(f'phoebe: confession_ready blue_percent {blue_percent:.3f}')
         return blue_percent > 0.15
 
     def get_prayer_condition(self):
         if not self.check_middle_star():
+            self.logger.debug('phoebe: prayer condition is_forte_full')
             return self.is_forte_full
         elif self.confession_ready():
+            self.logger.debug('phoebe: prayer condition confession_ready')
             return self.confession_ready
         else:
+            self.logger.debug('phoebe: prayer condition blocked (star cached but no blue)')
             return lambda: False
 
     def absolution_or_confession(self, dodge_cancel=True, wait_team=True):
@@ -511,10 +547,21 @@ class Phoebe(BaseChar):
             key_up = lambda: self.task.send_key_up(self.get_resonance_key())
         else:
             key_down, key_up = (self.task.mouse_down, self.task.mouse_up)
+        # 3.5.27 适配：切人进场（赞菲守：守岸人→菲比）动画中星 UI 先渲染、告解蓝条后渲染，
+        # 进场 0.2-0.5s 内判定蓝条会错过（赞菲光开场在场无此问题）；有界等待蓝条出现，
+        # 超时才真正判 unavailable（逻辑不变，仅补时序宽容窗口）。
+        if not condition():
+            retry_start = time.time()
+            while time.time() - retry_start < 2.0:
+                if condition():
+                    break
+                self.sleep(0.2)
+                self.task.next_frame()
         if condition():
             outer_start = time.time()
             while condition():
                 if time.time() - outer_start > 2:
+                    self.logger.info('phoebe: confession entry timeout')
                     return State.TIMEOUT
                 key_down()
                 key_hold_start = time.time()
@@ -524,14 +571,18 @@ class Phoebe(BaseChar):
                     self.task.next_frame()
                 key_up()
                 if self.flying():
+                    self.logger.info('flying')
                     self.task.wait_until(lambda : not self.flying(),
                                          post_action=lambda : self.click(interval=0.1, after_sleep=0.1), time_out=2)
                     outer_start = time.time()
                 self.task.next_frame()
             if self.attribute == 2:
                 self.logger.info('Enters confession status')
+                # 告解判定：进入后福音回复满 2 段（用户机制），段数 < 2 说明长按 E 未真正进入
+                self.logger.info(f'phoebe: confession entry verify forte_segments={self.judge_forte()}')
             else:
                 self.logger.info('Enters absolution status')
+                self.logger.info(f'phoebe: absolution entry verify forte_segments={self.judge_forte()}')
             if dodge_cancel:
                 self.continues_right_click(0.05)
             self.star_available = True
@@ -539,6 +590,10 @@ class Phoebe(BaseChar):
             self._shou_full_tail_pending = False
             self.state['enter_status'] += 1
             return State.SUCCESS
+        self.logger.info(
+            f'phoebe: confession entry unavailable star={self.star_available} '
+            f'flying={self.flying()} intro={self.has_intro} att={self.attribute}'
+        )
         return State.UNAVAILABLE
 
     def _try_liberation_now(self):
@@ -551,18 +606,25 @@ class Phoebe(BaseChar):
 
     def _try_cast_liberation_before_switch(self):
         if self.attribute != 2:
+            self.logger.info('phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=attribute')
             return False
         if self.state.get('priority_liberation_cast'):
+            self.logger.info('phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=duplicate')
             return False
         if not self.star_available:
+            self.logger.info('phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=star-unavailable')
             return False
         if self.flying():
+            self.logger.info('phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=airborne')
             return False
         if not self.liberation_available():
+            self.logger.info('phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=liberation-unavailable')
             return False
         if self._click_liberation_reliable(tag=' soft'):
             self._record_liberation_cast()
+            self.logger.info('phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=cast-success')
             return True
+        self.logger.info('phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=soft outcome=cast-failed')
         return False
 
     def _resolve_pending_liberation(self, timeout, tag, max_attempts=None, stop_on_star_loss=False):
@@ -598,20 +660,42 @@ class Phoebe(BaseChar):
         settled, attempts, result = self._resolve_pending_liberation(
             self.LIBER_SETTLE_TIMEOUT, ' settle', max_attempts=3
         )
+        elapsed = min(time.time() - start, self.LIBER_SETTLE_TIMEOUT)
+        self.logger.info(
+            f'phoebe: pre-switch liber diag=v5-pre-switch-r2 stage=settlement '
+            f'result={result} elapsed={elapsed:.2f}s attempts={attempts}'
+        )
         return settled
 
     def _block_switch_until_liber_resolved(self):
         """Settlement failed while pending: bounded retry before full-con outro to Zani."""
+        self.logger.info(
+            f'phoebe: block switch until liber resolved pending={self._liber_pending()} '
+            f'avail={self.liberation_available()} timeout={self.LIBER_RESOLVE_TIMEOUT}'
+        )
         resolved, _, result = self._resolve_pending_liberation(
             self.LIBER_RESOLVE_TIMEOUT, ' block-switch', stop_on_star_loss=True
         )
         if resolved or result == 'star-unavailable':
+            if result == 'cast-success':
+                self.logger.info('phoebe: liber resolved before switch')
             return True
+        self.logger.info(
+            f'phoebe: liber resolve timeout, allow switch pending={self._liber_pending()} '
+            f'avail={self.liberation_available()}'
+        )
         return False
 
     def _ensure_shou_full_tail(self):
         """Complete the authoritative Shou regular tail before allowing a switch."""
         if self.attribute != 2 or self._zanfei_guang:
+            return True
+        # 3.5.27 适配：防 pending 死锁——R 释放失败（能量不足/识别失败）时无限重试
+        # 会卡死战斗（怪不死 in_combat 永真 → 后续自动战斗不触发，必须重启）。
+        # pending 超 10s 放弃并强制切人（恢复轮换，损失一次大招但保战斗继续）。
+        if self._shou_full_tail_pending and time.time() - self._shou_full_tail_pending_at > 10.0:
+            self.logger.info('phoebe: shou full-tail timeout 10s, force switch')
+            self._shou_full_tail_pending = False
             return True
 
         if not self.state.get('priority_liberation_cast'):
@@ -645,14 +729,34 @@ class Phoebe(BaseChar):
         self._prepare_exit(full_tail)
         if shou_full_tail and not self._ensure_shou_full_tail():
             self._shou_full_tail_pending = True
+            self._shou_full_tail_pending_at = time.time()
             return None
         self._shou_full_tail_pending = False
-        if self.attribute == 2 and self.is_con_full():
+        # 3.5.27 适配：is_con_full 在 percent>1 时被 BaseCombatTask clamp 到 0.99（视觉已满但判定 False），
+        # current_con>=0.98 兑底；赞菲守队（无 Rover）_zanfei_guang=False，但队里有 Zani 时
+        # full-con 必须切回 Zani（恢复 3.5.25 main_dps 优先行为，3.5.27 unbuffed_support 优先会切守岸人）
+        if self.attribute == 2 and (self.is_con_full() or self.current_con >= 0.98):
             self.click_echo()
             self.state['outro'] += 1
-            if self._zanfei_guang:
+            if self._zanfei_guang or self.char_zani is not None:
                 return self._zanfei_switch_on_full_con()
+        # 3.5.27 适配：runtime `_unbuffed_support_target` 把 unbuffed 守岸人提到最高优先，
+        # 菲比协奏接近满（0.85+，21:38:11/21:38:19 实机 0.897/0.968 被抢切）时留下打满，
+        # 避免协奏白打一轮（runtime 的 almost-full 只 sleep 一次仍会切）。
+        if self.attribute == 2 and self.current_con >= 0.85:
+            self.logger.info(f'phoebe: con {self.current_con:.2f} almost full, stay to finish')
+            return None
         return super().switch_next_char(*args, **kwargs)
+
+    def f_break(self, check_f_on_switch=False, force=False):
+        """赞菲光：菲比不做处决（用户决定 2026-08-08）。
+        菲比切走（→赞妮）时 BaseCombatTask 665 行 current_char.f_break(check_f_on_switch=True)
+        F+左键连打触发处决动画 2.4s（00:07 场实证 switch_next_char end 2.427s），
+        清空赞妮大招重击条致 phase3 动作丢失（夜闪/打砸不执行直接 R2）。
+        赞菲守保留默认行为（无实机问题）。"""
+        if self._zanfei_guang:
+            return False
+        return super().f_break(check_f_on_switch=check_f_on_switch, force=force)
 
     def _zanfei_switch_on_full_con(self):
         from src.char.Zani import Zani
@@ -666,11 +770,13 @@ class Phoebe(BaseChar):
         box = self.task.box_of_screen_scaled(3840, 2160, 1890, 2010, 1915, 2030, name='phoebe_middle_star', hcenter=True)
         if self.attribute == 1:
             forte_percent = self.task.calculate_color_percentage(phoebe_star_light_color, box)
+            self.logger.debug(f'middle_star_light_percent {forte_percent}')
             if forte_percent > 0.25:
                 self.star_available = True
                 return True
         elif self.attribute == 2:
             forte_percent = self.task.calculate_color_percentage(phoebe_star_blue_color, box)
+            self.logger.debug(f'middle_star_blue_percent {forte_percent}')
             if forte_percent > 0.25:
                 self.star_available = True
                 return True
@@ -734,6 +840,7 @@ class Phoebe(BaseChar):
             left += step
         if warning:
             self.logger.debug('Frequncy analysis error, return the forte before mistake.')
+        self.logger.debug(f'Frequncy analysis with forte {forte}')
         return forte
 
     def get_zani_state(self):
