@@ -17,40 +17,36 @@ class State(Enum):
 
 class Zani(BaseChar):
 
+    def _reset_zani_state(self):
+        """共用状态重置：__init__ 与 reset_state 各字段保持一致。"""
+        self.char_phoebe = None
+        self.char_rover = None
+        self.blazes_threshold = -1
+        self.chair_time = -1
+        self._zanfei_guang = False
+        self._force_switch_me = False
+        self.in_liberation = False
+        self._liber_phase = 0
+        self._liber_handoff_token = 0
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.intro_motion_freeze_duration = 1.42
         self.liberation_time = 0
-        self.in_liberation = False
         self.blazes = -1
-        self.blazes_threshold = -1
-        self.char_phoebe = None
-        self.char_rover = None
         self.crisis_time = -1
         self.nightfall_time = -1
         self.state = 0
-        self.chair_time = -1
         self.last_liber2 = -1
         self.dodge_time = -1
         self.attack_breakthrough_time = -1
         self.check_f_on_switch = False
-        self._zanfei_guang = False
-        self._force_switch_me = False
-        self._liber_phase = 0
-        self._liber_handoff_token = 0
+        self._reset_zani_state()
 
     def reset_state(self):
-        self.char_phoebe = None
-        self.char_rover = None
-        self.blazes_threshold = -1
-        self.chair_time = -1
-        self._zanfei_guang = False
-        self._force_switch_me = False
         # 大招标记必须跨战斗清零：load_chars 复用实例时若残留 True，
         # get_switch_priority 会把开场切人强行锁到赞妮。
-        self.in_liberation = False
-        self._liber_phase = 0
-        self._liber_handoff_token = 0
+        self._reset_zani_state()
         super().reset_state()
 
     def _force_switch_to(self, target):
@@ -67,11 +63,9 @@ class Zani(BaseChar):
                     char._force_switch_me = False
 
     def switch_next_char(self, *args, **kwargs):
-        # 3.5.27 适配（399ae3e adaptation #2）：BaseCombatTask 的 intro 目标选择改为
-        # unbuffed_support 优先（守岸人），3.5.25 是 sub_dps 优先（菲比）。
-        # 仅赞菲守队（无 Rover）需要 force 切回菲比（防止守岸人被 intro 选中打乱轮换）；
-        # 赞菲光无守岸人，force 是误伤（21:53:57 先菲比根因）——2026-08-08 撤回：
-        # 赞菲光走 runtime 默认（_unbuffed_support_target 自动先漂泊者再菲比，同 v16）。
+        # 3.5.27 适配：intro 目标改为 unbuffed_support 优先（守岸人）——仅赞菲守
+        # （无 Rover）需要 force 切回菲比；赞菲光走 runtime 默认（21:53:57 先菲比
+        # 根因，2026-08-08 撤回 force）。
         if not self._zanfei_guang and self.is_con_full() and self.char_phoebe is not None:
             return self._force_switch_to(self.char_phoebe)
         return super().switch_next_char(*args, **kwargs)
@@ -346,12 +340,8 @@ class Zani(BaseChar):
         if time_only or self.is_nightfall_ready():
             return False
         if not self.is_mouse_forte_full():
-            # 重击条未满 → 站桩重读（1.0s 无输入）：给重击条恢复机会（恢复则打砸多一轮），
-            # 未恢复则 R2。此等待是防提前 R2 的（删除后出现提前 R2——21:25 场
-            # 21:26:23 实证），2026-08-07 fb28b3a 误删，已恢复；0.5s 实测不够
-            # （用户 2026-08-07 每个 R2 前场景不同，1s 能兜住所有场景）。
-            # 已删除 v13 遗留的 E 检查（无 return 从不触发 R2、大招内无按 E、
-            # 唯一效果是 E 灰时普攻 1.34s，见 23:28:40 日志 clicks=60；站桩替代该普攻作为延后手段）。
+            # 重击条未满 → 站桩重读 1.0s：给重击条恢复机会，未恢复则 R2。
+            # 防提前 R2（fb28b3a 误删后 21:26:23 实证；0.5s 不够，1s 兜住所有场景）。
             if not self.task.wait_until(self.is_mouse_forte_full, time_out=1.0, settle_time=0.1):
                 self.logger.info('Cannot perform another nightfall, perform liberation2')
                 return True
@@ -436,7 +426,13 @@ class Zani(BaseChar):
         if self.resonance_available():
             self.click_resonance(send_click=False)
             self.sleep(0.2)
-            self.continues_normal_attack(0.2)
+            # 普通 E 后持续普攻直到强化 E 图标亮（用户机制：E 被怪闪现规避时
+            # forte 不涨——普攻充能直接抢出强化 E，不再固定 0.2s 后交给外层 2 轮兑底）。
+            # 5s 有界：怪死/无目标/找图失败时防卡死（外层循环仍有兑底）。
+            end = time.time() + 5.0
+            while not self.is_e_forte_full() and time.time() < end:
+                self.task.click()
+                self.sleep(0.1)
             return State.DONE
         return State.FAILED
 
@@ -491,12 +487,8 @@ class Zani(BaseChar):
         if send_click:
             kwargs['post_action'] = self.click_with_interval
         result = self.wait_until(**kwargs)
-        if result == State.INTERRUPTED:
-            pass
-        elif result:
-            result = State.FORTE_FULL
-        else:
-            result = State.DONE
+        if result != State.INTERRUPTED:
+            result = State.FORTE_FULL if result else State.DONE
         return result
 
     def wait_until(self, condition: Callable, condition2: Callable=lambda : None,
