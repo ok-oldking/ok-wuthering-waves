@@ -1189,7 +1189,23 @@ class BaseWWTask(BaseTask):
         if not btns:
             raise Exception("can't find boss_proceed")
         if target_index > -1:
-            target = btns[target_index]
+            if target_index < len(btns):
+                target = btns[target_index]
+            else:
+                # Fallback: not enough visible rows, scroll to bring target into view
+                container_h = bar_bottom - bar_top
+                if structure:
+                    cross_count = get_cross_count(structure, serial_number)
+                    cross_count += 1
+                    container_h -= len(structure) * separator
+                item_h = container_h / total_number
+                height = item_h * serial_number
+                to_click_y = min(bar_top + height + cross_count * separator, bar_bottom)
+                self.click(bar_x, to_click_y, after_sleep=1)
+                btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
+                if not btns:
+                    raise Exception("can't find boss_proceed after scroll")
+                target = max(btns, key=lambda box: box.y)
         else:
             target = max(btns, key=lambda box: box.y)
         self.draw_boxes(boxes=target, color="red")
