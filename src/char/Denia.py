@@ -64,6 +64,10 @@ class Denia(BaseChar):
     #         return [False]
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if has_intro:
+            from src.char.Aemeath import Aemeath
+
+            if isinstance(current_char, Aemeath) and not self.has_buff():
+                return SwitchPriority.NORMAL
             return SwitchPriority.NO
         elif self.has_buff():
             return SwitchPriority.LOW
