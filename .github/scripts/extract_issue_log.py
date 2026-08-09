@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import json
+import re
 import shutil
 import sys
 import tempfile
@@ -19,16 +21,37 @@ MAX_LOG_BYTES = 16 * 1024 * 1024
 MAX_SCREENSHOT_BYTES = 8 * 1024 * 1024
 MAX_SCREENSHOTS_BYTES = 32 * 1024 * 1024
 MAX_SCREENSHOT_COUNT = 40
+MAX_SCREENSHOTS_TO_ANALYZE = 8
 MAX_COMPRESSION_RATIO = 250
 DOWNLOAD_TIMEOUT_SECONDS = 300
 OUTPUT_ROOT = Path(".gh-aw/issue-logs")
 LOG_OUTPUT_PATH = OUTPUT_ROOT / "logs" / "ok-script.log"
 SCREENSHOTS_OUTPUT_PATH = OUTPUT_ROOT / "screenshots"
+DIAGNOSTICS_OUTPUT_PATH = OUTPUT_ROOT / "diagnostics.json"
+SCREENSHOTS_MANIFEST_OUTPUT_PATH = OUTPUT_ROOT / "screenshots-manifest.json"
 SUPPORTED_SCREENSHOT_SUFFIXES = {".jpeg", ".jpg", ".png", ".webp"}
+APP_METADATA_PATTERN = re.compile(
+    r"app_version:(?P<app_version>[^,\s]+)\s*,\s*"
+    r"app_profile:(?P<app_profile>[^,]*?)\s*,\s*"
+    r"pyappify_version:(?P<pyappify_version>[^,\s]+)"
+)
+PYAPPIFY_UPGRADEABLE_PATTERN = re.compile(
+    r"pyappify_upgradeable:(?P<pyappify_upgradeable>True|False)"
+)
+DEVICE_WIDTH_PATTERN = re.compile(r"['\"]width['\"]\s*:\s*\**(?P<width>\d+)\**")
+DEVICE_HEIGHT_PATTERN = re.compile(r"['\"]height['\"]\s*:\s*\**(?P<height>\d+)\**")
 
 
 class UnsafeArchiveError(ValueError):
     """Raised when an issue attachment is not safe to process."""
+
+
+def normalize_metadata_value(value: str) -> str | None:
+    """Normalize formatting artifacts and unavailable metadata sentinels."""
+    normalized = value.strip().replace("*", "")
+    if normalized.casefold() in {"", "none", "null"}:
+        return None
+    return normalized
 
 
 def validate_attachment_url(url: str) -> str:
@@ -165,6 +188,55 @@ def has_valid_image_header(suffix: str, header: bytes) -> bool:
     }[suffix]
 
 
+def parse_log_diagnostics(log_path: Path) -> dict[str, object]:
+    """Return metadata from the last matching application and device log lines."""
+    diagnostics: dict[str, object] = {
+        "app_version": None,
+        "app_profile": None,
+        "pyappify_version": None,
+        "pyappify_upgradeable": None,
+        "resolution": None,
+        "source_lines": {
+            "app_metadata": None,
+            "device_manager": None,
+        },
+    }
+    source_lines = diagnostics["source_lines"]
+    assert isinstance(source_lines, dict)
+
+    with log_path.open("r", encoding="utf-8", errors="replace") as log:
+        for line_number, line in enumerate(log, start=1):
+            app_match = APP_METADATA_PATTERN.search(line)
+            if app_match:
+                diagnostics.update(
+                    {
+                        key: normalize_metadata_value(value)
+                        for key, value in app_match.groupdict().items()
+                    }
+                )
+                upgradeable_match = PYAPPIFY_UPGRADEABLE_PATTERN.search(line)
+                diagnostics["pyappify_upgradeable"] = (
+                    upgradeable_match.group("pyappify_upgradeable") == "True"
+                    if upgradeable_match
+                    else None
+                )
+                source_lines["app_metadata"] = line_number
+
+            if "DeviceManager:update_pc_device pc_device:" in line:
+                width_match = DEVICE_WIDTH_PATTERN.search(line)
+                height_match = DEVICE_HEIGHT_PATTERN.search(line)
+                source_lines["device_manager"] = line_number
+                if width_match and height_match:
+                    diagnostics["resolution"] = {
+                        "width": int(width_match.group("width")),
+                        "height": int(height_match.group("height")),
+                    }
+                else:
+                    diagnostics["resolution"] = None
+
+    return diagnostics
+
+
 def extract_archive(
     archive_path: Path, output_root: Path = OUTPUT_ROOT
 ) -> tuple[Path, list[Path]]:
@@ -185,6 +257,32 @@ def extract_archive(
                 shutil.copyfileobj(source, output, length=1024 * 1024)
             if staged_log.stat().st_size != log.file_size:
                 raise UnsafeArchiveError("logs/ok-script.log size does not match ZIP metadata")
+            diagnostics = parse_log_diagnostics(staged_log)
+            (staging_root / "diagnostics.json").write_text(
+                json.dumps(diagnostics, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+
+            analysis_candidates = sorted(
+                screenshots,
+                key=lambda item: (
+                    item[0].date_time,
+                    "/".join(item[1]).casefold(),
+                ),
+                reverse=True,
+            )[:MAX_SCREENSHOTS_TO_ANALYZE]
+            screenshot_manifest = {
+                "total_extracted": len(screenshots),
+                "analysis_limit": MAX_SCREENSHOTS_TO_ANALYZE,
+                "analysis_candidates": [
+                    str(PurePosixPath("screenshots", *relative_parts))
+                    for _, relative_parts in analysis_candidates
+                ],
+            }
+            (staging_root / "screenshots-manifest.json").write_text(
+                json.dumps(screenshot_manifest, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
 
             for screenshot, relative_parts in screenshots:
                 staged_image = staging_root / "screenshots" / Path(*relative_parts)
@@ -236,7 +334,9 @@ def main() -> int:
 
     print(
         f"Extracted {log_output} ({log_output.stat().st_size} bytes) "
-        f"and {len(screenshots)} screenshot(s) to {SCREENSHOTS_OUTPUT_PATH}"
+        f"and {len(screenshots)} screenshot(s) to {SCREENSHOTS_OUTPUT_PATH}; "
+        f"parsed metadata to {DIAGNOSTICS_OUTPUT_PATH}; "
+        f"wrote the bounded review list to {SCREENSHOTS_MANIFEST_OUTPUT_PATH}"
     )
     return 0
 
