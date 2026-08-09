@@ -221,14 +221,14 @@ config = {
             'discord': 'https://discord.gg/vVyCatEBgA',
             'sponsor': 'https://patreon.com/ok_oldking',
             'share': 'Download OK-WW from https://github.com/ok-oldking/ok-wuthering-waves/releases/latest',
-            'faq': 'https://github.com/ok-oldking/ok-wuthering-waves/blob/master/README_en.md'
+            'faq': 'https://ok-oldking.github.io/ok-wuthering-waves/en/'
         },
         'zh_CN': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
             'sponsor': 'https://afdian.com/a/ok-oldking',
             'share': 'GitHub: https://github.com/ok-oldking 百度网盘: https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww 夸克网盘: https://pan.quark.cn/s/d080413c87ac Mirror酱：https://mirrorchyan.com/zh/projects?source=okbilibili',
-            'faq': 'https://cnb.cool/ok-oldking/ok-wuthering-waves/-/blob/main/README.md',
+            'faq': 'https://ok-oldking.github.io/ok-wuthering-waves/zh-CN/',
             'qq_group': 'https://qm.qq.com/q/SUQpIpmq4',
             'qq_channel': 'https://pd.qq.com/s/djmm6l44y',
         },
