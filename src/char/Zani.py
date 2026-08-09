@@ -44,8 +44,7 @@ class Zani(BaseChar):
         self._reset_zani_state()
 
     def reset_state(self):
-        # 大招标记必须跨战斗清零：load_chars 复用实例时若残留 True，
-        # get_switch_priority 会把开场切人强行锁到赞妮。
+        # 大招标记跨战斗清零：load_chars 复用实例残留 True 会把开场切人锁到赞妮
         self._reset_zani_state()
         super().reset_state()
 
@@ -63,21 +62,33 @@ class Zani(BaseChar):
                     char._force_switch_me = False
 
     def switch_next_char(self, *args, **kwargs):
-        # 3.5.27 适配：intro 目标改为 unbuffed_support 优先（守岸人）——仅赞菲守
-        # （无 Rover）需要 force 切回菲比；赞菲光走 runtime 默认（21:53:57 先菲比
-        # 根因，2026-08-08 撤回 force）。
+        # 仅赞菲守（无 Rover）需要 force 切回菲比；赞菲光走 runtime 默认
         if not self._zanfei_guang and self.is_con_full() and self.char_phoebe is not None:
+            # 大招中满协奏切菲比发 insert token（菲比普攻 1.5s 后切回；R2 后退大不发→普通轮转）
+            if self.in_liberation:
+                self._liber_phase = 2
+                self._liber_handoff_token += 1
+                self.logger.info(f'zanfei: liber insert handoff phase=2 token={self._liber_handoff_token} default switch')
             return self._force_switch_to(self.char_phoebe)
         return super().switch_next_char(*args, **kwargs)
 
     def f_break(self, check_f_on_switch=False, force=False):
-        """赞妮不做处决（用户决定）：3.5.27 的 f_break 在切人时 F+左键连打 0.5-5s，
+        """赞妮不做处决：f_break 在切人时 F+左键连打 0.5-5s，
         会打断赞妮开场动作（强化 E/夜闪）并可能触发处决动画导致 target lost。"""
         return False
 
     def do_perform(self):
         if self.blazes_threshold == -1:
             self.decide_teammate()
+        # target lost 防护（非大招）：连续 3 轮无目标主动出战斗（runtime 每轮 3s 重试会永久站桩）
+        if not self.in_liberation and not self.task.has_target():
+            self._no_target_streak = getattr(self, '_no_target_streak', 0) + 1
+            if self._no_target_streak >= 3:
+                self._no_target_streak = 0
+                self.logger.info('zanfei: no target 3 rounds, exit combat')
+                self.task.raise_not_in_combat('zanfei no target 3 rounds')
+            return
+        self._no_target_streak = 0
         if self._zanfei_guang:
             return self._do_perform_zanfei()
         self.wait_down()
@@ -133,9 +144,7 @@ class Zani(BaseChar):
                 return
             return self.switch_next_char()
         if zanfei:
-            # 赞菲光没大：crisis 动作作过渡（强化E图标在→scene4 快路径直接按强化E；
-            # 否则→scene1 E+普攻蓄力；两者顺便加焰光/等大招 CD）→ 动作完无条件开大。
-            # 大招 CD 经验上已好（R2 到下次入场 >20s），失败（R 按空）无害，留场下轮再判。
+            # 赞菲光没大：crisis 动作作过渡（强化E图标在→scene4 快路径；否则→scene1 E+普攻）→ 动作完无条件开大
             if forte_full or e_available:
                 self.crisis_response_protocol_combo()
                 self._try_liberation(wait_crisis=True, zanfei=True)
@@ -258,16 +267,12 @@ class Zani(BaseChar):
         if 0 <= elapsed < 2.0:
             self.wait_until(lambda : self.time_elapsed_accounting_for_freeze(self.crisis_time, intro_motion_freeze=True) >= 2.0, time_out=3.0)
             elapsed = self.time_elapsed_accounting_for_freeze(self.crisis_time, intro_motion_freeze=True)
-        self.update_blazes()
-        # 强化E命中结算存在延迟（实机观测 2~6s，见 2026-08-02 23:13:49 日志）：
-        # 2.0s 首验未涨时轮询重验至总窗口 4.5s，焰光一到账立即通过；
-        # 窗口耗尽仍未涨才判未命中（有界，不无限等待）。
+        # 强化E命中结算延迟 2~6s：2.0s 首验未涨时轮询重验至 4.5s，焰光到账立即通过（有界不无限等）
         while self.blazes <= before_blazes and elapsed >= 2.0 and elapsed < 4.5:
             self.sleep(0.4)
             self.update_blazes()
             elapsed = self.time_elapsed_accounting_for_freeze(self.crisis_time, intro_motion_freeze=True)
-        # committed 同时要求焰光增量：强化E未命中（blazes 不涨）时不开大，
-        # 避免「焰光不足直接开大」；crisis 场景 blazes<1，命中必 +0.04 可检测。
+        # committed 同时要求焰光增量：强化E未命中（blazes 不涨）不开大——crisis 命中必 +0.04 可检测
         committed = elapsed >= 2.0 and self.blazes > before_blazes
         self.logger.info(f'zani: enhanced E commit elapsed={elapsed:.2f}s blazes={before_blazes}->{self.blazes} committed={committed}')
         return committed
@@ -308,8 +313,7 @@ class Zani(BaseChar):
         while not self.task.find_one('box_target_enemy_inner', box=not_liber_box, threshold=0.75):
             if time.time() - start > 6:
                 self.task.in_liberation = False
-                # 默认认定已退出大招，只有当前帧明确显示仍在大招时
-                # check_liber() 才会把它置回 True，避免保留上一场的旧值。
+                # 默认已退大，仅当前帧明确显示仍在大招时 check_liber() 置回 True（避免保留旧值）
                 self.in_liberation = False
                 if not self.check_liber():
                     self.update_blazes()
@@ -340,8 +344,7 @@ class Zani(BaseChar):
         if time_only or self.is_nightfall_ready():
             return False
         if not self.is_mouse_forte_full():
-            # 重击条未满 → 站桩重读 1.0s：给重击条恢复机会，未恢复则 R2。
-            # 防提前 R2（fb28b3a 误删后 21:26:23 实证；0.5s 不够，1s 兜住所有场景）。
+            # 重击条未满站桩重读 1.0s（防提前 R2——0.5s 不够，1s 兜底）
             if not self.task.wait_until(self.is_mouse_forte_full, time_out=1.0, settle_time=0.1):
                 self.logger.info('Cannot perform another nightfall, perform liberation2')
                 return True
@@ -426,9 +429,7 @@ class Zani(BaseChar):
         if self.resonance_available():
             self.click_resonance(send_click=False)
             self.sleep(0.2)
-            # 普通 E 后持续普攻直到强化 E 图标亮（用户机制：E 被怪闪现规避时
-            # forte 不涨——普攻充能直接抢出强化 E，不再固定 0.2s 后交给外层 2 轮兑底）。
-            # 5s 有界：怪死/无目标/找图失败时防卡死（外层循环仍有兑底）。
+            # 普通 E 后普攻直到强化 E 图标亮（E 被怪规避时 forte 不涨——普攻充能抢出）；5s 有界防卡死
             end = time.time() + 5.0
             while not self.is_e_forte_full() and time.time() < end:
                 self.task.click()
@@ -444,9 +445,7 @@ class Zani(BaseChar):
                 sleep = 0.3 - (time.time() - self.dodge_time)
                 if (result := self.wait_forte_full(sleep)) != State.DONE:
                     return result
-                # 2026-08-07 用户要求：蓄力重击（mouse_down 按住 0.6s）改轻击连点——
-                # 按住左键被误认为强化E且释放到命中时间人为拉长；轻击连点同样充能，
-                # 风险：一轮充不满则强化E不出（2s 超时兑底普通E，blazes 增量把关）。
+                # 蓄力重击改轻击连点（按住被误认强化E且命中时间拉长）
                 self.continues_normal_attack(0.6)
                 wait_chair = 1.15
                 if (result := self.wait_forte_full(0.85, send_click=True)) != State.DONE:
@@ -463,9 +462,7 @@ class Zani(BaseChar):
 
     def crisis_response_protocol_combo(self):
         self.check_combat()
-        # 蓄力：一轮「普通E+普攻」涨一半 forte，两轮满（用户机制：E+普攻无缝按，
-        # 普攻后到强化E出现之间有时间差）。循环最多 2 轮，每轮检查强化E出现。
-        # 找图失败（None）与「条不满」无法区分：循环兜底 2 轮，不阻断后续阶段。
+        # 蓄力：一轮「E+普攻」涨一半，两轮满；找图失败与条不满无法区分——循环兜底不阻断
         if not self.is_e_forte_full():
             for _ in range(2):
                 if self.is_e_forte_full():
@@ -473,8 +470,7 @@ class Zani(BaseChar):
                 result = self.basic_attack_breakthrough()
                 if result == State.FORTE_FULL:
                     break
-        # 等强化E出现（普攻后到出现的时间差），再一次点击触发动作。
-        # 找图失败时 2s 超时兜底（按 E 可能为普通 E，由 blazes 增量验证把关）。
+        # 等强化E出现（普攻后时间差）再点击；找图失败 2s 超时兜底（blazes 增量把关）
         self.wait_until(self.is_e_forte_full, time_out=2, settle_time=0.15)
         self.send_resonance_key()
         self.crisis_time = time.time()
@@ -541,7 +537,7 @@ class Zani(BaseChar):
             self.blazes_threshold = 0.4
         self.char_rover = self.task.has_char(HavocRover)
         self._zanfei_guang = bool(self.char_phoebe and self.char_rover)
-        # 试验：赞菲光下光主参与默认切人 buff 池（工厂全形态仍是 MainDps，不改 CharFactory）
+        # 赞菲光下光主参与默认切人 buff 池（工厂全形态仍是 MainDps，不改 CharFactory）
         if self._zanfei_guang and self.char_rover is not None:
             self.char_rover.set_char_type(CharType.SUB_DPS)
             # 工厂显式喂过 buff_time=0（_buff_time_configured=True），set_char_type 不会重算，此处强制 14
@@ -577,7 +573,8 @@ class Zani(BaseChar):
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if self._force_switch_me:
-            return SwitchPriority.MUST
+            # MUST+1：force 语义=必须切，避免与无条件 MUST（如开场 40s 未切过的角色）平级被 _oldest 截胡
+            return SwitchPriority.MUST + 1
         for char in self.task.chars:
             if char is not None and char is not self and getattr(char, '_force_switch_me', False):
                 return SwitchPriority.NO
