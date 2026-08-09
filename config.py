@@ -156,6 +156,7 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
 
 config = {
     'debug': False,  # Optional, default: False
+    'custom_tasks': True,
     'use_gui': True,
     'config_folder': 'configs',
     'blur_area': blur_area,
