@@ -22,3 +22,19 @@
   color: var(--md-accent-fg-color);
   transform: translateY(-2px);
 }
+
+.md-typeset img {
+  height: auto;
+}
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.badge-row > a {
+  display: inline-flex;
+}

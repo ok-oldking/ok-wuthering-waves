@@ -1,8 +1,8 @@
 # 贡献指南 / Contributing Guide
 
-感谢你愿意为 `ok-ww` 做贡献。本项目是基于图像识别的《鸣潮》自动化工具，使用 [ok-script](https://github.com/ok-oldking/ok-script) 开发，仅供个人学习与交流使用。提交贡献前，请先阅读[简体中文文档](../zh-CN/index.md)中的免责声明、开发者专区和社区信息。
+感谢你愿意为 `ok-ww` 做贡献。本项目是基于图像识别的《鸣潮》自动化工具，使用 [ok-script](https://ok-script.com) 开发，仅供个人学习与交流使用。提交贡献前，请先阅读[简体中文文档](../zh-CN/index.md)中的免责声明、开发者专区和社区信息。
 
-Thank you for contributing to `ok-ww`. This project is an image-recognition-based automation tool for Wuthering Waves, developed with [ok-script](https://github.com/ok-oldking/ok-script), and is intended only for personal learning and communication. Before contributing, please read the disclaimer, developer section, and community information in the [English documentation](../en/index.md).
+Thank you for contributing to `ok-ww`. This project is an image-recognition-based automation tool for Wuthering Waves, developed with [ok-script](https://ok-script.com), and is intended only for personal learning and communication. Before contributing, please read the disclaimer, developer section, and community information in the [English documentation](../en/index.md).
 
 ## 提交 PR 前 / Before Opening a PR
 
