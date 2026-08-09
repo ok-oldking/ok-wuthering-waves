@@ -1374,6 +1374,11 @@
             "id": 272,
             "name": "denia_end_lib",
             "supercategory": ""
+        },
+        {
+            "id": 273,
+            "name": "echo_select_all",
+            "supercategory": ""
         }
     ],
     "images": [
@@ -2574,6 +2579,12 @@
         {
             "id": 281,
             "file_name": "images/5.png",
+            "width": 3840,
+            "height": 2160
+        },
+        {
+            "id": 282,
+            "file_name": "images/0.png",
             "width": 3840,
             "height": 2160
         }
@@ -4933,6 +4944,19 @@
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
+        },
+        {
+            "id": 169,
+            "image_id": 282,
+            "category_id": 273,
+            "bbox": [
+                1060,
+                1948,
+                70,
+                76
+            ],
+            "area": 5320,
+            "iscrowd": 0
         },
         {
             "id": 174,

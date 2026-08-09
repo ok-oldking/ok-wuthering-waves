@@ -1,28 +1,28 @@
 <div align="center">
   <h1 align="center">
-    <img src="icon.png" width="200" alt="ok-ww logo"/>
+    <img src="https://raw.githubusercontent.com/ok-oldking/ok-wuthering-waves/master/icons/icon.png" width="200" alt="ok-ww logo"/>
     <br/>
     ok-ww
   </h1> 
   
   <p>
-    <a href="https://github.com/ok-oldking/ok-script">ok-script</a> で開発された、鳴潮（Wuthering Waves）向けの画像認識ベースの自動化ツールです。バックグラウンドモードに対応しています。
+    <a href="https://ok-script.com">ok-script</a> で開発された、鳴潮（Wuthering Waves）向けの画像認識ベースの自動化ツールです。バックグラウンドモードに対応しています。
   </p>
   
   <p><i>Windows のユーザーインターフェースをシミュレートして動作し、メモリの読み取りやファイルの改変は一切行いません。</i></p>
 </div>
 
 <!-- Badges -->
-<div align="center">
-  
-![Platform](https://img.shields.io/badge/platform-Windows-blue)
-[![GitHub release](https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
-[![Total Downloads](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
-[![Discord](https://img.shields.io/discord/296598043787132928?color=5865f2&label=%20Discord)](https://discord.gg/vVyCatEBgA)
-
+<div class="badge-row">
+  <img src="https://img.shields.io/badge/platform-Windows-blue" alt="Platform" />
+  <a href="https://github.com/ok-oldking/ok-wuthering-waves/releases"><img src="https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves" alt="GitHub release" /></a>
+  <a href="https://github.com/ok-oldking/ok-wuthering-waves/releases"><img src="https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total" alt="Total Downloads" /></a>
+  <a href="https://discord.gg/vVyCatEBgA"><img src="https://img.shields.io/discord/296598043787132928?color=5865f2&amp;label=%20Discord" alt="Discord" /></a>
 </div>
 
-### [English Readme](README_en.md) | [中文说明](README.md) | [繁體中文說明](README_zh_TW.md) | 日本語Readme
+<p align="center"><strong>公式サイト:</strong> <a href="https://ok-script.com/ok-ww">https://ok-script.com/ok-ww</a></p>
+
+### [English](../en/index.md) | [简体中文](../zh-CN/index.md) | [繁體中文](../zh-TW/index.md) | 日本語
 
 **デモ＆チュートリアル:** [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/h6P1KWjdnB4)
 
@@ -110,7 +110,7 @@ ok-ww.exe -t 1 -e
 
 ## 💬 参加しよう
 
-本プロジェクトは [ok-script](https://github.com/ok-oldking/ok-script) フレームワークをベースに開発されており、シンプルでメンテナンスしやすい構成です。独自の自動化プロジェクトを作成したい開発者の方は、ぜひ [ok-script](https://github.com/ok-oldking/ok-script) をご利用ください。
+本プロジェクトは [ok-script](https://ok-script.com) フレームワークをベースに開発されており、シンプルでメンテナンスしやすい構成です。独自の自動化プロジェクトを作成したい開発者の方は、ぜひ [ok-script](https://ok-script.com) をご利用ください。
 
 ## 🔗 ok-script を使用しているプロジェクト:
 

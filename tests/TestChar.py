@@ -8,6 +8,7 @@ from src.char.CharFactory import _get_buff_time, _get_char_type, char_dict, char
 from src.char.Aemeath import Aemeath
 from src.char.Chisa import Chisa
 from src.char.Ciaccona import Ciaccona
+from src.char.Denia import Denia
 from src.char.Iuno import Iuno
 from src.char.Linnai import Linnai
 from src.char.Lucilla import Lucilla
@@ -1265,6 +1266,28 @@ class TestChar(TaskTestCase):
         allowed_sub_dps = BaseChar(task, 2, char_type=CharType.SUB_DPS)
         combat.chars = [current, blocked_main_dps, allowed_sub_dps]
         self.assertEqual(combat._choose_switch_target(current, True), allowed_sub_dps)
+
+    def test_unbuffed_denia_accepts_aemeath_intro_as_deadlock_recovery(self):
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+        task = Task()
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        aemeath = Aemeath(task, 0, char_type=CharType.MAIN_DPS)
+        denia = Denia(task, 1, char_type=CharType.SUB_DPS)
+        healer = BlockedChar(task, 2, char_type=CharType.HEALER)
+        combat.chars = task.chars = [aemeath, denia, healer]
+
+        self.assertEqual(combat._choose_switch_target(aemeath, True), denia)
+
+        denia.last_buff_time = time.time()
+        self.assertEqual(combat._choose_switch_target(aemeath, True), aemeath)
+
+        denia.last_buff_time = -1
+        other_main_dps = BaseChar(task, 0, char_type=CharType.MAIN_DPS)
+        combat.chars = task.chars = [other_main_dps, denia, healer]
+        self.assertEqual(combat._choose_switch_target(other_main_dps, True), other_main_dps)
 
     def test_switch_priority_integer_bands_and_offsets(self):
         self.assertEqual(

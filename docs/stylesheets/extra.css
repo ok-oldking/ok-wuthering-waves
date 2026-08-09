@@ -1,0 +1,40 @@
+.language-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.language-card {
+  display: block;
+  padding: 1.5rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  color: var(--md-typeset-color);
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  transition: border-color 125ms, transform 125ms;
+}
+
+.language-card:hover {
+  border-color: var(--md-accent-fg-color);
+  color: var(--md-accent-fg-color);
+  transform: translateY(-2px);
+}
+
+.md-typeset img {
+  height: auto;
+}
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.badge-row > a {
+  display: inline-flex;
+}

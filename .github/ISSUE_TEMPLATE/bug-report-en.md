@@ -11,7 +11,7 @@ Search existing issues first:
 [https://github.com/ok-oldking/ok-wuthering-waves/issues?q=](https://github.com/ok-oldking/ok-wuthering-waves/issues?q=)
 
 Check the troubleshooting guide:
-[README troubleshooting](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/README_en.md#-troubleshooting)
+[Documentation troubleshooting](https://ok-oldking.github.io/ok-wuthering-waves/en/#troubleshooting)
 
 Bug summary:
 [In one sentence, what is broken?]

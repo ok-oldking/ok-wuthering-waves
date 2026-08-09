@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 Check the troubleshooting guide:
-[README troubleshooting](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/README_en.md#-troubleshooting)
+[Documentation troubleshooting](https://ok-oldking.github.io/ok-wuthering-waves/en/#troubleshooting)
 
 Search existing issues:
 [https://github.com/ok-oldking/ok-wuthering-waves/issues?q=](https://github.com/ok-oldking/ok-wuthering-waves/issues?q=)
