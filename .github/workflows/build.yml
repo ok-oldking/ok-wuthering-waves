@@ -420,6 +420,7 @@ jobs:
               * [夸克网盘](https://pan.quark.cn/s/418018ddf7a0) 免费下载
           draft: false
           prerelease: false
+          make_latest: true
           files: pyappify_dist/*
 
       - name: Trigger distribution workflows
