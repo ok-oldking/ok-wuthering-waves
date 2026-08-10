@@ -76,8 +76,7 @@ class HavocRover(BaseChar):
             self.click_resonance(send_click=True)
             self.sleep(0.05)
         if self.echo_available():
-            # 声骸释放完毕再开大：time_out=1 等到声骸按钮进 CD（确认已释放登记），
-            # 再固定 0.3s 覆盖脱手声骸动画窗口，避免 R 吞掉声骸动画。
+            # 声骸释放完再开大：time_out=1 等声骸按钮进 CD + 0.3s 覆盖脱手动画，避免 R 吞声骸
             self.click_echo(time_out=1)
             self.sleep(0.3)
         if self.task.use_liberation:
