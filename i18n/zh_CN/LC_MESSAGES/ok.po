@@ -1282,3 +1282,318 @@ msgstr "点击B进入背包，在过滤器中选择需要强化的声骸，并�
 
 msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
 msgstr "游戏与okww语言必须为简体/繁体中文，分辨率必须为16:9且不低于1600x900。勾选需要保留的声骸，未勾选的会自动合成。"
+
+msgid "Active"
+msgstr "当前激活"
+
+msgid "Code saved"
+msgstr "代码已保存"
+
+msgid "Create from Current Config"
+msgstr "从当前配置创建"
+
+msgid "Custom Code"
+msgstr "自定义代码"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Delete Team Preset"
+msgstr "删除队伍配对"
+
+msgid "Delete this team preset and its custom code?"
+msgstr "删除该队伍配对及其自定义代码?"
+
+msgid "Discard unsaved preset character code changes?"
+msgstr "放弃未保存的配对角色代码修改?"
+
+msgid "Discard unsaved team preset changes?"
+msgstr "放弃未保存的队伍配对修改?"
+
+msgid "Duplicate"
+msgstr "复制"
+
+msgid "Enabled"
+msgstr "启用"
+
+msgid "Export"
+msgstr "导出"
+
+msgid "Export Team Preset"
+msgstr "导出队伍配对"
+
+msgid "Import"
+msgstr "导入"
+
+msgid "Import Team Preset"
+msgstr "导入队伍配对"
+
+msgid "Invalid params JSON for slot {index}: {error}"
+msgstr "角色位 {index} 的参数 JSON 无效: {error}"
+
+msgid "JSON Files (*.json);;All Files (*)"
+msgstr "JSON 文件 (*.json);;所有文件 (*)"
+
+msgid "Name:"
+msgstr "名称:"
+
+msgid "New"
+msgstr "新建"
+
+msgid "New Team Preset"
+msgstr "新建队伍配对"
+
+msgid "Note (e.g. resonance efficiency 120%)"
+msgstr "说明(如共鸣效率 120%)"
+
+msgid "Notes (e.g. resonance efficiency 120%)"
+msgstr "说明(如共鸣效率 120%)"
+
+msgid "Notice"
+msgstr "提示"
+
+msgid "Params (JSON), e.g. {\"Iuno C6\": true}"
+msgstr "参数(JSON), 如 {\"Iuno C6\": true}"
+
+msgid "Preset Details"
+msgstr "配对详情"
+
+msgid "Preset character code saved."
+msgstr "配对角色代码已保存。"
+
+msgid "Preset name:"
+msgstr "配对名称:"
+
+msgid "Remove Active"
+msgstr "取消激活"
+
+msgid "Reset Code"
+msgstr "重置代码"
+
+msgid "Reset to builtin"
+msgstr "已重置为内置"
+
+msgid "Save Code"
+msgstr "保存代码"
+
+msgid "Save the preset before making it active."
+msgstr "激活前请先保存配对。"
+
+msgid "Saved"
+msgstr "已保存"
+
+msgid "Select a character first"
+msgstr "请先选择角色"
+
+msgid "Set as Active"
+msgstr "设为当前"
+
+msgid "Slot {index}"
+msgstr "角色位 {index}"
+
+msgid "Team Presets"
+msgstr "队伍配对"
+
+msgid "Team preset created from current config."
+msgstr "已从当前配置创建队伍配对。"
+
+msgid "Team preset exported."
+msgstr "队伍配对已导出。"
+
+msgid "Team preset imported."
+msgstr "队伍配对已导入。"
+
+msgid "Team preset saved."
+msgstr "队伍配对已保存。"
+
+msgid "Advanced Parameters (JSON)"
+msgstr "高级参数 (JSON)"
+
+msgid "Auto saved"
+msgstr "已自动保存"
+
+msgid "Character Settings"
+msgstr "角色设置"
+
+msgid "Character already used in slot {index}"
+msgstr "该角色已在位置 {index} 使用"
+
+msgid "Collapse Code"
+msgstr "收起代码"
+
+msgid "Copy"
+msgstr "复制"
+
+msgid "Create My First Team"
+msgstr "创建我的第一支队伍"
+
+msgid "Create a new team preset."
+msgstr "创建一支新的队伍配对。"
+
+msgid "Create a team from the current global character config (advanced)."
+msgstr "从当前全局角色配置生成一支队伍(高级功能)。"
+
+msgid "Create a team to save a character lineup and switch between lineups with one click."
+msgstr "创建一支队伍,把常用的角色组合保存下来,一键切换。"
+
+msgid "Delete the current team and its custom code."
+msgstr "删除当前队伍及其自定义代码。"
+
+msgid "Disable This Team"
+msgstr "停用此队伍"
+
+msgid "Done"
+msgstr "完成"
+
+msgid "Duplicate the current team."
+msgstr "复制当前队伍。"
+
+msgid "Editing…"
+msgstr "编辑中…"
+
+msgid "Enable This Team"
+msgstr "启用此队伍"
+
+msgid "Enabled team: {name}"
+msgstr "当前启用: {name}"
+
+msgid "Export the current team to a JSON file."
+msgstr "把当前队伍导出为 JSON 文件。"
+
+msgid "From Config"
+msgstr "从配置创建"
+
+msgid "Hide Advanced Parameters"
+msgstr "收起高级参数"
+
+msgid "Import a team preset from a JSON file."
+msgstr "从 JSON 文件导入队伍配对。"
+
+msgid "Invalid params JSON in slot {index}: {error}"
+msgstr "位置 {index} 的参数 JSON 不合法: {error}"
+
+msgid "My Teams"
+msgstr "我的队伍"
+
+msgid "No extra settings for this character."
+msgstr "该角色没有额外设置。"
+
+msgid "No team enabled — tasks use the global character config."
+msgstr "未启用队伍 — 任务将使用全局角色配置。"
+
+msgid "No teams yet"
+msgstr "还没有队伍"
+
+msgid "Not Saved"
+msgstr "未保存"
+
+msgid "Not saved: {error}"
+msgstr "未保存: {error}"
+
+msgid "Note (optional)"
+msgstr "备注(可选)"
+
+msgid "Optional JSON, e.g. {\"Iuno C6\": false}"
+msgstr "可选 JSON,如 {\"Iuno C6\": false}"
+
+msgid "Pick a character first"
+msgstr "请先选择角色"
+
+msgid "Pick a character…"
+msgstr "选择角色…"
+
+msgid "Pick characters, press Enable, then start a task."
+msgstr "选好角色,点击「启用此队伍」,然后启动任务即可。"
+
+msgid "Running tasks will use this team's settings."
+msgstr "启用后,运行中的任务将使用这支队伍的配置。"
+
+msgid "Save failed: {error}"
+msgstr "保存失败: {error}"
+
+msgid "Team Name:"
+msgstr "队伍名称:"
+
+msgid "Team disabled — tasks use the global config again."
+msgstr "已停用队伍 — 任务将恢复使用全局配置。"
+
+msgid "Team enabled — running tasks will use its settings."
+msgstr "已启用队伍 — 运行中的任务将使用它的配置。"
+
+msgid "Team name:"
+msgstr "队伍名称:"
+
+msgid "Team {number}"
+msgstr "队伍 {number}"
+
+msgid "Use this slot"
+msgstr "使用此位置"
+
+msgid "e.g. 苏格拉塔 1, 今州日常"
+msgstr "例如: 苏格拉塔 1、今州日常"
+
+msgid "Open a full editor window for this character's code."
+msgstr "打开此角色代码的独立编辑窗口。"
+
+msgid "No custom code yet - editing a copy of the builtin code. Save to create one for this team."
+msgstr "暂无自定义代码 - 正在编辑内置代码的副本，保存后即为本队伍创建自定义版本。"
+
+msgid "Editing this team's custom code for this character."
+msgstr "正在编辑此角色在本队伍中的自定义代码。"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Force This Team"
+msgstr "强制使用此队伍"
+
+msgid "Always use this team, ignoring auto-match."
+msgstr "始终使用此队伍，忽略自动匹配。"
+
+msgid "Unforce This Team"
+msgstr "取消强制此队伍"
+
+msgid "Move Up"
+msgstr "上移"
+
+msgid "Move Down"
+msgstr "下移"
+
+msgid "Higher teams win when multiple match the in-game team."
+msgstr "多个队伍同时匹配游戏内队伍时，列表靠上的优先。"
+
+msgid "Lower teams win when multiple match the in-game team."
+msgstr "多个队伍同时匹配游戏内队伍时，列表靠下的优先。"
+
+msgid "Auto match in-game team"
+msgstr "自动匹配游戏内队伍"
+
+msgid "This team is auto-selected when its characters match the in-game team."
+msgstr "当此队伍的角色与游戏内队伍匹配时自动选用。"
+
+msgid "Forced team: {name}"
+msgstr "强制队伍: {name}"
+
+msgid "Auto-matched: {name}"
+msgstr "自动匹配: {name}"
+
+msgid "Auto-match on - tasks use the preset matching your in-game team."
+msgstr "自动匹配已开启 - 任务将使用与游戏内队伍匹配的配置。"
+
+msgid "Pick characters - the team matching your in-game lineup is used automatically."
+msgstr "选择角色 - 与游戏内队伍匹配的配置将自动生效。"
+
+msgid "Team unforced - auto-match is active again."
+msgstr "已取消强制 - 自动匹配恢复生效。"
+
+msgid "Team forced - tasks always use its settings."
+msgstr "已强制使用此队伍 - 任务始终使用它的设置。"
+
+msgid "Forced team: {name} · {roles}"
+msgstr "强制队伍: {name} · {roles}"
+
+msgid "Auto-matched: {name} · {roles}"
+msgstr "自动匹配: {name} · {roles}"
+
+msgid "No preset matches: {roles} - using global config"
+msgstr "未匹配到预设: {roles} - 使用全局配置"

@@ -12,6 +12,7 @@ import cv2
 
 from src.Labels import Labels
 from src.scene.WWScene import WWScene
+from src.team_preset.TeamPresetStore import TeamPresetStore
 
 logger = Logger.get_logger(__name__)
 number_re = re.compile(r'(\d+)')
@@ -35,8 +36,22 @@ class BaseWWTask(BaseTask):
         self.monthly_card_config = self.get_global_config('Monthly Card Config')
         self.char_config = self.get_global_config('Character Config')
         self.key_config = self.get_global_config('Game Hotkey')  # 游戏热键配置
+        self.active_preset = None
+        try:
+            preset = TeamPresetStore.get_forced_preset()
+            if preset is not None:
+                self.active_preset = preset
+                merged = preset.merged_char_config()
+                if merged:
+                    self.char_config = merged
+        except Exception as e:
+            logger.error(f'load team preset failed: {e}')
         self.next_monthly_card_start = 0
         self.scene: WWScene | None = None
+
+    @property
+    def active_preset_name(self):
+        return self.active_preset.id if self.active_preset else None
 
     @property
     def logged_in(self):

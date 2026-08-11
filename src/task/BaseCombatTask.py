@@ -14,6 +14,7 @@ from src.char.BaseChar import SwitchPriority, dot_color  # noqa
 from src.char.CharFactory import get_char_by_pos
 from src.combat.CombatCheck import CombatCheck
 from src.task.BaseWWTask import isolate_white_text_to_black, binarize_for_matching
+from src.team_preset.TeamPresetStore import TeamPresetStore
 
 logger = Logger.get_logger(__name__)
 cd_regex = re.compile(r'\d{1,2}\.\d')
@@ -852,6 +853,15 @@ class BaseCombatTask(CombatCheck):
                 self.chars = self.chars[:2]
                 logger.info(f'team size changed to 2')
 
+        if self._apply_preset_match():
+            self.chars = [None, None]
+            self.chars[0] = get_char_by_pos(self, self.get_box_by_name('box_char_1'), 0, None)
+            self.chars[1] = get_char_by_pos(self, self.get_box_by_name('box_char_2'), 1, None)
+            if count == 3:
+                self.chars.append(get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2, None))
+            else:
+                self.chars = self.chars[:2]
+
         for char in self.chars:
             if char is not None:
                 char.reset_state()
@@ -881,6 +891,59 @@ class BaseCombatTask(CombatCheck):
     @staticmethod
     def _char_identity(chars):
         return tuple((char.char_name, char.name) if char is not None else None for char in chars)
+
+    def _preset_pre_match(self):
+        """任务启动时尝试立即匹配预设(静默,失败不影响任务)。
+
+        只做一次;无强制预设且角色条可见时才真正识别,识别不到则跳过,
+        留给战斗中的 load_chars 兜底。
+        """
+        if getattr(self, '_preset_pre_matched', False):
+            return
+        self._preset_pre_matched = True
+        try:
+            if TeamPresetStore.get_forced_preset() is not None:
+                return
+            if self.load_chars():
+                self.log_info('team preset pre-matched at task start')
+        except Exception as e:
+            logger.debug(f'team preset pre-match skipped: {e}')
+
+    def _apply_preset_match(self):
+        """根据已检测到的队伍自动匹配预设。
+
+        强制预设优先;否则按列表顺序(优先级)取第一个匹配的预设。
+        无预设匹配时:若当前挂的是自动匹配来的预设,则回退到全局配置。
+        返回是否切换到了新预设(需要重建角色对象)。
+        """
+        detected = TeamPresetStore.char_names_to_classes(
+            [char.char_name for char in self.chars if char is not None])
+        if not detected:
+            return False
+        if TeamPresetStore.get_last_detected_team() != detected:
+            TeamPresetStore.record_detected_team(detected)
+        try:
+            matched = TeamPresetStore.resolve_preset_for_team(detected)
+        except Exception as e:
+            logger.error(f'resolve team preset failed: {e}')
+            return False
+        if matched is None:
+            if self.active_preset is None:
+                return False
+            self.active_preset = None
+            TeamPresetStore.record_auto_match('')
+            self.char_config = self.get_global_config('Character Config')
+            self.log_info('no team preset matched, fell back to global character config')
+            return True
+        if self.active_preset is not None and self.active_preset.id == matched.id:
+            return False
+        self.active_preset = matched
+        merged = matched.merged_char_config()
+        if merged:
+            self.char_config = merged
+        TeamPresetStore.record_auto_match(matched.id)
+        self.log_info(f'auto-matched team preset {matched.name or matched.id}')
+        return True
 
     @staticmethod
     def should_update(the_char, old_char):

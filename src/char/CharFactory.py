@@ -49,7 +49,8 @@ from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
 from src.char.Zani import Zani
 from src.char.Zhezhi import Zhezhi
-from src.char.CustomCharLoader import load_custom_char_class
+from src.char.CustomCharLoader import load_custom_char_class, load_custom_char_class_with_preset
+import cv2
 
 _char_dict_raw = {
     Labels.yangyang_sp: {'cls': YangYangSp, 'char_type': CharType.MAIN_DPS,
@@ -162,11 +163,34 @@ def _apply_char_config(task, char, info):
     return char
 
 
-def _find_registered_char(task, box, info):
+def _find_registered_char(task, box, info, frame=None):
     template_names = info['template_names']
     if len(template_names) == 1:
-        return task.find_one(template_names[0], box=box, threshold=0.6)
+        return task.find_one(template_names[0], box=box, threshold=0.6, frame=frame)
     return task.find_best_match_in_box(box, template_names, threshold=0.6)
+
+
+def _box_frame_hash(frame, box):
+    """角色条区域画面的低分辨率指纹;画面发生变化时指纹必然改变。"""
+    try:
+        if frame is None or box is None:
+            return None
+        x, y = int(round(box.x)), int(round(box.y))
+        w, h = max(1, int(round(box.w))), max(1, int(round(box.h)))
+        crop = frame[y:y + h, x:x + w]
+        if crop is None or crop.size == 0:
+            return None
+        small = cv2.resize(crop, (16, 16))
+        if small.ndim == 3:
+            small = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+        return small.tobytes()
+    except Exception:
+        return None
+
+
+def _load_char_cls(task, base_cls):
+    preset_name = getattr(task, 'active_preset_name', None)
+    return load_custom_char_class_with_preset(base_cls, preset_name)
 
 
 def get_char_by_pos(task, box, index, old_char):
@@ -174,30 +198,38 @@ def get_char_by_pos(task, box, index, old_char):
     info = None
     name = "unknown"
     char = None
-    if old_char and old_char.confidence > 0.92 and old_char.char_name in char_names:
+    frame = getattr(task, 'frame', None)
+    frame_hash = _box_frame_hash(frame, box)
+    if old_char and old_char.confidence > 0.92 and old_char.char_name in char_names \
+            and getattr(old_char, 'frame_hash', None) == frame_hash:
         info = char_dict.get(old_char.char_name)
-        char = _find_registered_char(task, box, info)
+        char = _find_registered_char(task, box, info, frame)
         if char:
-            cls = load_custom_char_class(info.get('cls'))
+            cls = _load_char_cls(task, info.get('cls'))
             if type(old_char) is not cls:
-                return _apply_char_config(task, cls(task, index, char_name=info['canonical_name'],
-                                                    confidence=char.confidence,
-                                                    ring_index=info.get('ring_index', -1),
-                                                    char_type=_get_char_type(task, info),
-                                                    buff_time=_get_buff_time(task, info)), info)
+                new_char = _apply_char_config(task, cls(task, index, char_name=info['canonical_name'],
+                                                        confidence=char.confidence,
+                                                        ring_index=info.get('ring_index', -1),
+                                                        char_type=_get_char_type(task, info),
+                                                        buff_time=_get_buff_time(task, info)), info)
+                new_char.frame_hash = frame_hash
+                return new_char
             _apply_char_config(task, old_char, info)
+            old_char.frame_hash = frame_hash
             return old_char
     if not char:
         char = task.find_best_match_in_box(box, char_names, threshold=0.6)
         if char:
             info = char_dict.get(char.name)
             name = char.name
-            cls = load_custom_char_class(info.get('cls'))
-            return _apply_char_config(task, cls(task, index, char_name=info['canonical_name'],
-                                                confidence=char.confidence,
-                                                ring_index=info.get('ring_index', -1),
-                                                char_type=_get_char_type(task, info),
-                                                buff_time=_get_buff_time(task, info)), info)
+            cls = _load_char_cls(task, info.get('cls'))
+            new_char = _apply_char_config(task, cls(task, index, char_name=info['canonical_name'],
+                                                    confidence=char.confidence,
+                                                    ring_index=info.get('ring_index', -1),
+                                                    char_type=_get_char_type(task, info),
+                                                    buff_time=_get_buff_time(task, info)), info)
+            new_char.frame_hash = frame_hash
+            return new_char
     task.log_info(f'could not find char {index} {info} {highest_confidence}')
     if old_char:
         return old_char

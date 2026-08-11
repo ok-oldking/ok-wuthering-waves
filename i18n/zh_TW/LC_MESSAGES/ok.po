@@ -1252,8 +1252,8 @@ msgid "Merge Discarded Echoes"
 msgstr "融合已棄置聲骸"
 
 msgid ""
-"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
-"batches of 100."
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full batches"
+" of 100."
 msgstr "執行前必須有1000個已棄置聲骸，每批融合100個。"
 
 msgid "Bag Key"
@@ -1280,13 +1280,18 @@ msgstr "已棄置聲骸超過1000時融合"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "每日任務後執行的附加任務"
 
-msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
+msgid ""
+"Select optional tasks. Nightmare Nest runs before stamina farming to help "
+"complete the daily task; the other tasks run afterward."
 msgstr "選擇可選任務。夢魘巢穴會在消耗體力前執行，以協助完成每日任務；其他任務將在之後執行。"
 
-msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
+msgid ""
+"Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in "
+"Farm Echo Task."
 msgstr "選擇「傳送並刷取4C聲骸」時，必須在刷取聲骸任務中啟用「傳送至首領」。"
 
-msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgid ""
+"Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
 msgstr "選擇「自動刷取所有夢魘巢穴」時，「刷取目標」必須至少選擇一項。"
 
 msgid "Daily Task Completed"
@@ -1360,3 +1365,318 @@ msgstr "⏭️ 任務中跳過對話"
 
 msgid "🌊 Tacet Suppression"
 msgstr "🌊 無音區"
+
+msgid "Active"
+msgstr "目前啟用"
+
+msgid "Code saved"
+msgstr "程式碼已儲存"
+
+msgid "Create from Current Config"
+msgstr "從目前設定建立"
+
+msgid "Custom Code"
+msgstr "自訂程式碼"
+
+msgid "Delete"
+msgstr "刪除"
+
+msgid "Delete Team Preset"
+msgstr "刪除隊伍配對"
+
+msgid "Delete this team preset and its custom code?"
+msgstr "刪除此隊伍配對及其自訂程式碼?"
+
+msgid "Discard unsaved preset character code changes?"
+msgstr "捨棄未儲存的配對角色程式碼變更?"
+
+msgid "Discard unsaved team preset changes?"
+msgstr "捨棄未儲存的隊伍配對變更?"
+
+msgid "Duplicate"
+msgstr "複製"
+
+msgid "Enabled"
+msgstr "啟用"
+
+msgid "Export"
+msgstr "匯出"
+
+msgid "Export Team Preset"
+msgstr "匯出隊伍配對"
+
+msgid "Import"
+msgstr "匯入"
+
+msgid "Import Team Preset"
+msgstr "匯入隊伍配對"
+
+msgid "Invalid params JSON for slot {index}: {error}"
+msgstr "角色位 {index} 的參數 JSON 無效: {error}"
+
+msgid "JSON Files (*.json);;All Files (*)"
+msgstr "JSON 檔案 (*.json);;所有檔案 (*)"
+
+msgid "Name:"
+msgstr "名稱:"
+
+msgid "New"
+msgstr "新增"
+
+msgid "New Team Preset"
+msgstr "新增隊伍配對"
+
+msgid "Note (e.g. resonance efficiency 120%)"
+msgstr "備註(如共鳴效率 120%)"
+
+msgid "Notes (e.g. resonance efficiency 120%)"
+msgstr "備註(如共鳴效率 120%)"
+
+msgid "Notice"
+msgstr "提示"
+
+msgid "Params (JSON), e.g. {\"Iuno C6\": true}"
+msgstr "參數(JSON), 如 {\"Iuno C6\": true}"
+
+msgid "Preset Details"
+msgstr "配對詳細資料"
+
+msgid "Preset character code saved."
+msgstr "配對角色程式碼已儲存。"
+
+msgid "Preset name:"
+msgstr "配對名稱:"
+
+msgid "Remove Active"
+msgstr "取消啟用"
+
+msgid "Reset Code"
+msgstr "重設程式碼"
+
+msgid "Reset to builtin"
+msgstr "已重設為內建"
+
+msgid "Save Code"
+msgstr "儲存程式碼"
+
+msgid "Save the preset before making it active."
+msgstr "啟用前請先儲存配對。"
+
+msgid "Saved"
+msgstr "已儲存"
+
+msgid "Select a character first"
+msgstr "請先選擇角色"
+
+msgid "Set as Active"
+msgstr "設為目前"
+
+msgid "Slot {index}"
+msgstr "角色位 {index}"
+
+msgid "Team Presets"
+msgstr "隊伍配對"
+
+msgid "Team preset created from current config."
+msgstr "已從目前設定建立隊伍配對。"
+
+msgid "Team preset exported."
+msgstr "隊伍配對已匯出。"
+
+msgid "Team preset imported."
+msgstr "隊伍配對已匯入。"
+
+msgid "Team preset saved."
+msgstr "隊伍配對已儲存。"
+
+msgid "Advanced Parameters (JSON)"
+msgstr "進階參數 (JSON)"
+
+msgid "Auto saved"
+msgstr "已自動儲存"
+
+msgid "Character Settings"
+msgstr "角色設定"
+
+msgid "Character already used in slot {index}"
+msgstr "此角色已在位置 {index} 使用"
+
+msgid "Collapse Code"
+msgstr "收合程式碼"
+
+msgid "Copy"
+msgstr "複製"
+
+msgid "Create My First Team"
+msgstr "建立我的第一支隊伍"
+
+msgid "Create a new team preset."
+msgstr "建立一支新的隊伍配對。"
+
+msgid "Create a team from the current global character config (advanced)."
+msgstr "從目前全域角色設定產生一支隊伍(進階功能)。"
+
+msgid "Create a team to save a character lineup and switch between lineups with one click."
+msgstr "建立一支隊伍,把常用的角色組合保存下來,一鍵切換。"
+
+msgid "Delete the current team and its custom code."
+msgstr "刪除目前隊伍及其自訂程式碼。"
+
+msgid "Disable This Team"
+msgstr "停用此隊伍"
+
+msgid "Done"
+msgstr "完成"
+
+msgid "Duplicate the current team."
+msgstr "複製目前隊伍。"
+
+msgid "Editing…"
+msgstr "編輯中…"
+
+msgid "Enable This Team"
+msgstr "啟用此隊伍"
+
+msgid "Enabled team: {name}"
+msgstr "目前啟用: {name}"
+
+msgid "Export the current team to a JSON file."
+msgstr "把目前隊伍匯出為 JSON 檔。"
+
+msgid "From Config"
+msgstr "從設定建立"
+
+msgid "Hide Advanced Parameters"
+msgstr "收合進階參數"
+
+msgid "Import a team preset from a JSON file."
+msgstr "從 JSON 檔匯入隊伍配對。"
+
+msgid "Invalid params JSON in slot {index}: {error}"
+msgstr "位置 {index} 的參數 JSON 不合法: {error}"
+
+msgid "My Teams"
+msgstr "我的隊伍"
+
+msgid "No extra settings for this character."
+msgstr "此角色沒有額外設定。"
+
+msgid "No team enabled — tasks use the global character config."
+msgstr "未啟用隊伍 — 任務將使用全域角色設定。"
+
+msgid "No teams yet"
+msgstr "還沒有隊伍"
+
+msgid "Not Saved"
+msgstr "未儲存"
+
+msgid "Not saved: {error}"
+msgstr "未儲存: {error}"
+
+msgid "Note (optional)"
+msgstr "備註(選填)"
+
+msgid "Optional JSON, e.g. {\"Iuno C6\": false}"
+msgstr "選填 JSON,如 {\"Iuno C6\": false}"
+
+msgid "Pick a character first"
+msgstr "請先選擇角色"
+
+msgid "Pick a character…"
+msgstr "選擇角色…"
+
+msgid "Pick characters, press Enable, then start a task."
+msgstr "選好角色,點擊「啟用此隊伍」,然後啟動任務即可。"
+
+msgid "Running tasks will use this team's settings."
+msgstr "啟用後,執行中的任務將使用這支隊伍的設定。"
+
+msgid "Save failed: {error}"
+msgstr "儲存失敗: {error}"
+
+msgid "Team Name:"
+msgstr "隊伍名稱:"
+
+msgid "Team disabled — tasks use the global config again."
+msgstr "已停用隊伍 — 任務將恢復使用全域設定。"
+
+msgid "Team enabled — running tasks will use its settings."
+msgstr "已啟用隊伍 — 執行中的任務將使用它的設定。"
+
+msgid "Team name:"
+msgstr "隊伍名稱:"
+
+msgid "Team {number}"
+msgstr "隊伍 {number}"
+
+msgid "Use this slot"
+msgstr "使用此位置"
+
+msgid "e.g. 苏格拉塔 1, 今州日常"
+msgstr "例如: 蘇格拉塔 1、今州日常"
+
+msgid "Open a full editor window for this character's code."
+msgstr "開啟此角色程式碼的獨立編輯視窗。"
+
+msgid "No custom code yet - editing a copy of the builtin code. Save to create one for this team."
+msgstr "尚無自訂程式碼 - 正在編輯內建程式碼的副本，儲存後即為此隊伍建立自訂版本。"
+
+msgid "Editing this team's custom code for this character."
+msgstr "正在編輯此角色在此隊伍中的自訂程式碼。"
+
+msgid "Close"
+msgstr "關閉"
+
+msgid "Force This Team"
+msgstr "強制使用此隊伍"
+
+msgid "Always use this team, ignoring auto-match."
+msgstr "始終使用此隊伍，忽略自動比對。"
+
+msgid "Unforce This Team"
+msgstr "取消強制此隊伍"
+
+msgid "Move Up"
+msgstr "上移"
+
+msgid "Move Down"
+msgstr "下移"
+
+msgid "Higher teams win when multiple match the in-game team."
+msgstr "多個隊伍同時比對到遊戲內隊伍時，列表靠上的優先。"
+
+msgid "Lower teams win when multiple match the in-game team."
+msgstr "多個隊伍同時比對到遊戲內隊伍時，列表靠下的優先。"
+
+msgid "Auto match in-game team"
+msgstr "自動比對遊戲內隊伍"
+
+msgid "This team is auto-selected when its characters match the in-game team."
+msgstr "當此隊伍的角色與遊戲內隊伍比對相符時自動選用。"
+
+msgid "Forced team: {name}"
+msgstr "強制隊伍: {name}"
+
+msgid "Auto-matched: {name}"
+msgstr "自動比對: {name}"
+
+msgid "Auto-match on - tasks use the preset matching your in-game team."
+msgstr "自動比對已開啟 - 任務將使用與遊戲內隊伍相符的設定。"
+
+msgid "Pick characters - the team matching your in-game lineup is used automatically."
+msgstr "選擇角色 - 與遊戲內隊伍相符的設定將自動生效。"
+
+msgid "Team unforced - auto-match is active again."
+msgstr "已取消強制 - 自動比對恢復生效。"
+
+msgid "Team forced - tasks always use its settings."
+msgstr "已強制使用此隊伍 - 任務一律使用它的設定。"
+
+msgid "Forced team: {name} · {roles}"
+msgstr "強制隊伍: {name} · {roles}"
+
+msgid "Auto-matched: {name} · {roles}"
+msgstr "自動比對: {name} · {roles}"
+
+msgid "No preset matches: {roles} - using global config"
+msgstr "未比對到預設: {roles} - 使用全域設定"

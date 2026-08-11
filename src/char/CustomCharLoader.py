@@ -112,11 +112,16 @@ def save_custom_char_code(char_cls, code, use_custom=True):
     return path
 
 
-def clear_custom_char_cache(char_cls_or_name=None):
+def clear_custom_char_cache(char_cls_or_name=None, preset_id=None):
     if char_cls_or_name is None:
         _custom_class_cache.clear()
-    else:
-        _custom_class_cache.pop(_get_class_name(char_cls_or_name), None)
+        return
+    name = _get_class_name(char_cls_or_name)
+    for key in list(_custom_class_cache):
+        if key == name:
+            _custom_class_cache.pop(key, None)
+        elif isinstance(key, tuple) and key[0] == name and (preset_id is None or key[1] == preset_id):
+            _custom_class_cache.pop(key, None)
 
 
 def load_custom_char_class(char_cls):
@@ -135,8 +140,25 @@ def load_custom_char_class(char_cls):
         return char_cls
 
 
-def _load_custom_char_class_from_file(char_cls, path):
-    cache_key = char_cls.__name__
+def load_custom_char_class_with_preset(char_cls, preset_name=None):
+    """Prefer the per-preset custom code for a character, then global custom, then builtin."""
+    if not preset_name:
+        return load_custom_char_class(char_cls)
+    from src.team_preset.TeamPresetStore import TeamPresetStore
+    path = TeamPresetStore.get_custom_code_path(preset_name, char_cls.__name__)
+    if not path.exists():
+        return load_custom_char_class(char_cls)
+    try:
+        return _load_custom_char_class_from_file(char_cls, path,
+                                                 cache_key=(char_cls.__name__, preset_name))
+    except Exception as e:
+        logger.error(f"load preset custom char class failed for {char_cls.__name__}: {e}")
+        clear_custom_char_cache(char_cls.__name__, preset_id=preset_name)
+        return load_custom_char_class(char_cls)
+
+
+def _load_custom_char_class_from_file(char_cls, path, cache_key=None):
+    cache_key = cache_key or char_cls.__name__
     stat = path.stat()
     cached = _custom_class_cache.get(cache_key)
     if cached and cached[0] == stat.st_mtime_ns and cached[1] == stat.st_size:

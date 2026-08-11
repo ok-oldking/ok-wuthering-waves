@@ -5,6 +5,7 @@ from src.task.MouseResetTask import MouseResetTask
 class WWOneTimeTask:
 
     def run(self):
+        self._preset_pre_match()
         mouse_reset_task = self.executor.get_task_by_class(MouseResetTask)
         mouse_reset_task.run()
         if isinstance(self.executor.interaction, PostMessageInteraction):
