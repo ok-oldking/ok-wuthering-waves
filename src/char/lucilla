@@ -1,0 +1,352 @@
+import time
+
+from src.char.BaseChar import BaseChar, SwitchPriority
+
+
+class Lucilla(BaseChar):
+    """洛瑟菈 —— 副C, 回路充能型 + 大招变身型。
+
+    站场流程:
+      接穗穗延奏入场(自带两格回路) → 长按 E 攒满第三格 → 开 R 变身
+      → 变身动画 → 长按输出期间放 Q → 打满固定时长 → 切绯雪
+
+    几个反直觉的点(都是实测踩出来的):
+      - 开大【什么时候开】数 E 的次数, 不看图标(她的 R 要三格回路打满才高亮,
+        liberation_available() 在她身上会误读成"放不出来"); 但【开出来没有】还是看图标 ——
+        图标消失 = 已进变身形态。两件事分开判, 见 perform_liberation()。
+      - 只用 E 攒回路, 不用重击填: 混着来顺序不固定, 每轮站场节奏都不一样。
+      - 变身时长固定, 不查协奏归零: 变身期间能量环显示的是变身条, 读数会抖,
+        实测出现过变身早结束了 10.6 秒才发现。
+      - Q 不查图标: 变身形态下技能栏被整个替换, echo_available() 恒为 False。
+      - 她完全不按处决(F): 连框架的"切人时自动按F"也关掉了。全队的处决归绯雪,
+        由她在自己轴上那个固定点按 —— 谁都可以按的话就是抢跑, 顿感条一破就被先到的
+        用掉, 绯雪走到那一步只剩空气。
+    """
+
+    # ---- 变身 ----
+    LIBERATION_ANIMATION_TIME: float = 3.0  # 变身动画 (秒)
+    LIBERATION_HEAVY_TIME: float = 5.0  # 变身后脉冲重击的固定时长 (秒)
+    HEAVY_PULSE_TIME: float = 0.6  # 脉冲重击每拍按住多久 (秒)
+    # Q 的按键【窗口】, 相对脉冲重击开始的秒数。
+    # 原来是"第 0.6 秒连按两下"就完事, 实测放不出来 —— 那一下正卡在变身收招上被吞掉,
+    # 而且一次性的, 吞了就没有第二次机会。改成在整个"长按攻击打空三段能量"的过程里
+    # 持续按, 只要中间有任何一帧 Q 是可用的就能放出去。
+    # 窗口末端留 1 秒余量, 别让 Q 压到脉冲重击结束、准备切人的那一段
+    ECHO_WINDOW_START: float = 0.6
+    ECHO_WINDOW_END: float = 4.0
+    ECHO_PRESS_INTERVAL: float = 0.3  # 窗口内每隔多久补按一次 Q (秒)
+    FORCE_LIB_PRESS_TIME: float = 1.5  # 连按 R 的最长时间 (秒)
+    FORCE_LIB_PRESS_INTERVAL: float = 0.15
+
+    # ---- 攒回路 ----
+    # 长按 E 的时长 (秒)。
+    # 历史注释写的是"0.6 太短会退化成点按" —— 那条测的其实不是充能时长, 是【能不能熬过
+    # 变奏入场动画】: 以前第一下 E 就压在动画里, 1.0 秒能蒙对只是因为动画结束时键还按着。
+    # 现在入场动画由 INTRO_SETTLE 单独等掉了, 这里就只剩真正的充能时长, 按实测压到 0.2。
+    # 注意压过头的失败是【无声】的: charge_once() 只要 E 可用就把 e_count 加一, 从不确认
+    # 这一下真攒到了回路, E 退化成点按她照样顶着不够的回路强行开 R。所以下面留了 CD 读数
+    # 实测记录 (读的是长按之后 resonance 的 CD, 进CD=这下真放出去了):
+    #   0.2 秒 → 5 次中 2 次;  0.3 秒 → 3 次中 2 次;  1.3 秒 → 稳。
+    # 0.8 是往回收一档: 1.0 本来就是能跑的原始值, 0.8 试探下限在哪。
+    # 成败看日志那行 "E #1 held X.XXs, resonance cd now Y" —— Y 是正数才算真放出去了
+    RES_HOLD_TIME: float = 0.8
+    E_WAIT_POLL: float = 0.15  # 等 E 转好的轮询间隔 (秒)
+    LIB_AFTER_E_COUNT: int = 1  # 接延奏入场(自带两格)时, 放几个 E 就开大
+    LIB_AFTER_E_COUNT_NO_INTRO: int = 3  # 空手入场(从零攒)时
+    CHARGE_TIME_OUT: float = 7.2  # 攒回路的总上限 (秒)
+    LIBERATION_CD_SKIP: float = 1.5  # 大招 CD 超过这个值就认为不值得等
+
+    # ---- 上/下场 ----
+    IN_TEAM_WAIT: float = 0.2  # 上场后等 in_team 确认的上限 (秒)
+    SWITCH_IN_SETTLE: float = 0.0  # 上场后到第一个输入之间的缓冲 (秒)
+    # 变奏入场后额外等多久才发第一个输入 (秒)。入场动画期间发的键会被整个吞掉 ——
+    # 实测 holding field 之后 +0.24s 那一下 E 完全没进 CD。
+    # 0.9 取自框架自己对入场动画的估计 (BaseChar.intro_motion_freeze_duration)
+    INTRO_SETTLE: float = 0.9
+    # 上场后至少站这么久才允许走"提前切人"的捷径 (秒)。
+    # 刚切回来 UI 还没渲染完时判定会读假, 那时立刻切人 = 刚上场就走, 和下一个角色乒乓
+    MIN_FIELD_TIME: float = 2.0
+    # 变身结束到切人之间的 settle (秒)。不能省: 变身形态下 in_team() 还没恢复就切人,
+    # 框架会报 "not in_team while switching" 并把这一轮战斗判定成脱战
+    POST_LIB_SETTLE: float = 0.4
+    # 等协奏【读数】回来的上限 (秒)。注意等的不是协奏本身 —— 放完R打完三段A协奏一定是满的,
+    # 等的是能量环从"变身条"画回"协奏环"。这段窗口里读数是 0, 不是真的没协奏
+    CON_SETTLE_WAIT: float = 1.5
+    CON_SETTLE_POLL: float = 0.1
+    # 等过 CON_SETTLE_WAIT 协奏还不满时, 继续【打】到满的总预算 (秒, 含前面那段等待)。
+    # 被怪打断过的轮次协奏是真的没满, 干等等不出来 —— 而绯雪拿不到变奏, 心念起点低一截,
+    # 整轮都跟着慢, 所以宁可多站几秒
+    CON_FILL_EXTRA: float = 5.0
+    # 变身能量没打空时, 在 LIBERATION_HEAVY_TIME 之外最多再补多久 (秒)。
+    # 判据是普攻键还高不高亮 —— 亮着就说明还有能量没打出去
+    LIB_DRAIN_EXTRA: float = 4.0
+
+    # 从这些角色的延奏入场时, 不走"大招长CD就提前切人"的捷径 —— 手里握着 50% 攻击,
+    # 提前走等于白扔。站场上限仍然是 CHARGE_TIME_OUT, 不会拖轴
+    HOLD_FIELD_OUTRO = {'char_suisui'}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.hold_field = False
+        self.e_count = 0  # 本次站场放出的 E 数量, 每个 E 攒 1 格回路
+        # 关掉框架的"切人时自动按F"(默认 not is_healer, 对副C是 True)。
+        # 她交棒给绯雪那一刻按下去的 F, 会把绯雪轴上那个处决位提前用掉 ——
+        # 实测绯雪走到那一步只剩 skip F (f_break=False bar_full=False)。
+        # 处决现在归绯雪的 macro_execute() 一家管
+        self.check_f_on_switch = False
+
+    def do_perform(self):
+        if self.perform_combat():
+            return
+        self.switch_next_char()
+
+    def perform_combat(self):
+        """攒回路 → 放够 E 就开大 → 变身输出 → 切人。
+
+        Returns:
+            bool: 放出了大招(并已在内部切人)返回 True。
+        """
+        start = time.time()
+
+        self.task.wait_until(lambda: self.task.in_team()[0], time_out=self.IN_TEAM_WAIT)
+        self.sleep(self.SWITCH_IN_SETTLE, check_combat=False)
+        if self.has_intro:
+            # 先让变奏入场动画演完再发键 —— 动画期间的输入是被吞的, 不是被延后的
+            self.sleep(self.INTRO_SETTLE, check_combat=False)
+        self.task.next_frame()
+
+        self.e_count = 0
+        self.hold_field = self.has_intro and self.check_outro() in self.HOLD_FIELD_OUTRO
+        if self.hold_field:
+            self.logger.info('Lucilla holding field: carrying suisui outro buff')
+
+        while time.time() - start < self.CHARGE_TIME_OUT:
+            # 放够 E 了就开大
+            if self.e_count >= self.lib_e_target():
+                self.logger.info(f'Lucilla {self.e_count} E done, forcing liberation')
+                if self.perform_liberation():  # Q 在它内部、脉冲重击期间就放掉了
+                    self.sleep(self.POST_LIB_SETTLE, check_combat=False)
+                    # 先等能量环画回来再交棒, 确认满了就直接告诉框架别再自己读一遍
+                    con_full = self.wait_con_reading()
+                    self.switch_next_char(free_intro=con_full)
+                    return True
+                # 保底: 大招没放出来 = 回路其实没满(多半有一下 E 被吞了)。
+                # 这时候最亏的做法是照旧睡完 9.6 秒的变身+脉冲再切人 —— 那一轮什么都没有,
+                # 协奏也攒不满, 绯雪跟着没变奏。退一格计数, 回去补一个 E 再来
+                self.e_count = max(0, self.e_count - 1)
+                self.logger.info('Lucilla liberation did not fire, charge one more E and retry')
+
+            # 回路没满且大招在较长 CD -> 没必要攒, 切人省时间。
+            # 但手上有穗穗延奏 buff 时例外: 提前走 = 白扔 50% 攻击, 而且绯雪没变奏可吃
+            if time.time() - start >= self.MIN_FIELD_TIME and not self.hold_field \
+                    and not self.liberation_available() \
+                    and self.task.get_cd('liberation') > self.LIBERATION_CD_SKIP:
+                self.logger.info('Lucilla liberation on long cd, switch to save time')
+                break
+
+            self.charge_once()
+
+        return False
+
+    def wait_con_reading(self):
+        """交棒之前等协奏【读数】回来。
+
+        等的不是协奏本身: 放完 R、脉冲重击打完, 协奏在游戏里一定是满的。等的是能量环
+        从变身条画回普通协奏环 —— 这段窗口里 get_current_con() 读到的是 0。
+
+        框架自己那道保险救不了这种情况: switch_next_char() 只在读数【大于 0.8】时才
+        多睡 0.05 秒重读一次 (BaseCombatTask.py:590)。而这里读到的是 0.0, 不满足条件,
+        直接就当"没协奏"提交给 _choose_switch_target 了。日志里那些 current_con 0.0
+        和 0.67 / 0.70 都是这个 —— 环还没画完, 不是真的只有七成。
+
+        实测全天 23 次交棒约一半栽在这上面, 能救回来的都是靠切人循环里那句
+        refreshed_has_intro 在 0.2~0.8 秒后碰巧读到了 —— 而 POST_LIB_SETTLE 只有 0.4 秒,
+        正好卡在这个区间中间, 所以表现成掷硬币。
+
+        【第二段是真的在补协奏, 不只是等读数】: 前 CON_SETTLE_WAIT 秒只等(那时多半只是
+        环没画回来), 还不满就接着打 —— 被怪打断过的轮次协奏是真的没满, 干等等不出来。
+        绯雪拿不到变奏, 她的心念起点就低一截, 整轮都跟着慢, 所以宁可多站几秒。
+
+        Returns:
+            bool: 读到满没有。
+        """
+        start = time.time()
+        while time.time() - start < self.CON_SETTLE_WAIT:
+            if self.is_con_full():
+                self.logger.info(f'Lucilla con reading back after {time.time() - start:.1f}s')
+                return True
+            self.sleep(self.CON_SETTLE_POLL, check_combat=False)
+
+        # 读数早该回来了还不满 —— 那就是真的没满, 打出来
+        self.logger.info(f'Lucilla con reads {self.get_current_con():.2f} after settle, '
+                         f'attacking to fill it')
+        pulses = 0
+        while self.time_elapsed_accounting_for_freeze(start) < self.CON_FILL_EXTRA:
+            if self.is_con_full():
+                self.logger.info(f'Lucilla con full after {pulses} extra pulse(s), '
+                                 f'{self.time_elapsed_accounting_for_freeze(start):.1f}s')
+                return True
+            self.heavy_pulse_once()
+            pulses += 1
+        self.logger.warning(f'Lucilla con still reads {self.get_current_con():.2f} after '
+                            f'{self.CON_FILL_EXTRA:.1f}s, next char gets no intro')
+        return False
+
+    def lib_e_target(self):
+        """这次站场要放几个 E 才开大。
+
+        接穗穗延奏入场时自带两格回路, 一个 E 就满; 空手入场要从零攒, 需要三个。
+        """
+        return self.LIB_AFTER_E_COUNT if self.has_intro else self.LIB_AFTER_E_COUNT_NO_INTRO
+
+    def charge_once(self):
+        """攒 1 格回路: 长按 E。E 在 CD 就等着, 不拿重击填, 也不按处决。
+
+        以前这里在"等 E 转好"的空档里按 F —— 那时全队的处决归她管。现在处决改由绯雪
+        在自己轴上那个固定点按, 她再按就是抢跑: 顿感条一破就被她用掉, 绯雪走到那一步
+        只剩空气。所以这条支路只等 E, 不做别的。
+        """
+        if self.resonance_available():
+            self.hold_resonance(self.RES_HOLD_TIME)
+            # 保底: E 进 CD 才算数。压短 RES_HOLD_TIME 时唯一的失败方式是退化成点按,
+            # 那种失败不报错、不掉帧 —— 只有这个读数能看出来。以前不看读数直接 e_count += 1,
+            # 于是被吞的那一下照样计数, 她顶着不够的回路去开大招, 整轮白站
+            cd = self.task.get_cd('resonance')
+            if cd <= 0:
+                self.logger.warning(f'Lucilla E swallowed (held {self.RES_HOLD_TIME:.2f}s, '
+                                    f'cd still {cd:.1f}s), not counted')
+                return
+            self.e_count += 1
+            self.logger.info(f'Lucilla E #{self.e_count} held {self.RES_HOLD_TIME:.2f}s, '
+                             f'resonance cd now {cd:.1f}s')
+        else:
+            self.sleep(self.E_WAIT_POLL)  # 外层 while 有 CHARGE_TIME_OUT 兜底, 不会死等
+        self.task.next_frame()
+
+    def hold_resonance(self, duration):
+        """长按共鸣技能键 (攒 1 格回路)。
+
+        长按期间用 check_combat=False: 攒回路在正常态, in_combat() 偶发误判不该打断长按。
+        """
+        self.task.send_key_down(self.get_resonance_key())
+        try:
+            self.sleep(duration, check_combat=False)
+        finally:
+            self.task.send_key_up(self.get_resonance_key())
+        self.record_resonance_use()
+
+    # ------------------------------------------------------------------ 大招
+
+    def perform_liberation(self):
+        """放大招进入变身形态, 按住左键固定时长输出。
+
+        不调用 BaseChar.click_liberation(): 它内部 ``while not in_team()`` 在变身形态下
+        会因 in_team 误判卡死到超时抛异常。
+
+        保底: 用【大招图标消失】当"确实放出去了"的信号 —— 这是上游 perform_liberation
+        的做法(变身形态下技能栏被替换, 图标没了 = 已进形态)。原来这里是"不看图标, 连按到
+        时间用完", 于是回路没满时也照样往下走: 睡 3 秒变身动画 + 5 秒脉冲重击, 整整 9.6 秒
+        什么都没打, 协奏也攒不满, 绯雪跟着没变奏, 而日志里照样是一行漂亮的 perform lib end。
+
+        Returns:
+            bool: 大招是否真的放出去了。没放出来时不会去睡动画/脉冲, 直接把控制权还给
+                调用方, 让它补一个 E 再试。
+        """
+        if not self.task.use_liberation:
+            return False
+
+        start = time.time()
+        sent = 0
+        while time.time() - start < self.FORCE_LIB_PRESS_TIME:
+            if sent and not self.liberation_available():
+                break  # 图标没了 = 已经进变身形态
+            self.send_liberation_key()
+            sent += 1
+            self.sleep(self.FORCE_LIB_PRESS_INTERVAL, check_combat=False)
+
+        if self.liberation_available():
+            self.logger.warning(f'Lucilla liberation icon still lit after {sent} presses, '
+                                f'not fired (forte not full)')
+            return False
+
+        self.record_liberation_use()
+        self.logger.info(f'Lucilla perform lib ({sent} presses)')
+
+        self.sleep(self.LIBERATION_ANIMATION_TIME, check_combat=False)
+        self.pulse_heavy_attack(self.LIBERATION_HEAVY_TIME)
+        self.drain_forte()  # 保底: 被打断的话固定时长不够, 接着打到能量真的空
+        self.logger.info(f'Lucilla perform lib end ({time.time() - start:.1f}s total)')
+        return True
+
+    def drain_forte(self):
+        """保底: 只要普攻键还高亮, 就说明变身能量没打空, 继续脉冲重击。
+
+        LIBERATION_HEAVY_TIME 那个固定时长是按"全程不被打断"标定的。实战被怪打断几下,
+        剩下的能量就留在手里了 —— 而变身一结束它们就作废, 那几段伤害白丢。
+        高亮消失才是"真的打完了"。
+
+        Returns:
+            bool: 是否在预算内打空了。
+        """
+        start = time.time()
+        pulses = 0
+        while self.time_elapsed_accounting_for_freeze(start) < self.LIB_DRAIN_EXTRA:
+            if not self.is_mouse_forte_full():
+                if pulses:
+                    self.logger.info(f'Lucilla drained forte with {pulses} extra pulse(s), '
+                                     f'{self.time_elapsed_accounting_for_freeze(start):.1f}s')
+                return True
+            self.heavy_pulse_once()
+            pulses += 1
+        self.logger.warning(f'Lucilla forte still lit after {pulses} extra pulse(s) / '
+                            f'{self.LIB_DRAIN_EXTRA:.1f}s, moving on')
+        return False
+
+    def heavy_pulse_once(self):
+        """一拍脉冲重击。按住 HEAVY_PULSE_TIME 再松开。"""
+        self.task.mouse_down()
+        try:
+            self.sleep(self.HEAVY_PULSE_TIME, check_combat=False)
+        finally:
+            self.task.mouse_up()
+        self.sleep(0.02, check_combat=False)
+
+    def pulse_heavy_attack(self, total_time):
+        """变身后脉冲式重击 total_time 秒: 反复 mouse_down/sleep/mouse_up。
+
+        每拍重新 mouse_down —— 某拍被打断, 下一拍自动重按恢复, 保证持续输出。
+        固定时长, 不查协奏归零: 变身期间能量环显示的是变身条, 读数会抖, 那个判定卡不准。
+
+        Q 也在这里放, 而且是在 [ECHO_WINDOW_START, ECHO_WINDOW_END] 这个窗口里【持续补按】:
+        变身动画期间按会被吞、变身结束之后按又吃不到加成, 中间这段才是唯一的窗口。
+        原来只在第 0.6 秒按两下, 一旦那两下正好撞上收招就永远放不出来 —— 没有第二次机会。
+        补按是发在两拍重击的间隙里的(那时左键是松开的), 不会打断脉冲节奏。
+        """
+        start = time.time()
+        end = start + total_time
+        last_echo = 0.0
+        echo_sends = 0
+        while time.time() < end:
+            elapsed = time.time() - start
+            if self.ECHO_WINDOW_START <= elapsed <= self.ECHO_WINDOW_END \
+                    and time.time() - last_echo >= self.ECHO_PRESS_INTERVAL:
+                self.send_echo_key()
+                last_echo = time.time()
+                echo_sends += 1
+
+            self.task.mouse_down()
+            try:
+                self.sleep(min(self.HEAVY_PULSE_TIME, end - time.time()), check_combat=False)
+            finally:
+                self.task.mouse_up()
+            self.sleep(0.02, check_combat=False)
+
+        self.logger.info(f'Lucilla echo key sent x{echo_sends} in window '
+                         f'{self.ECHO_WINDOW_START:.1f}~{self.ECHO_WINDOW_END:.1f}s')
+
+    def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
+        # 穗穗的延奏(50% 攻击)是给她的, 这一棒必须接住
+        if has_intro and current_char and current_char.char_name in {'char_verina', 'char_shorekeeper',
+                                                                    'char_suisui'}:
+            return SwitchPriority.MUST
+        return super().get_switch_priority(current_char, has_intro, target_low_con)
