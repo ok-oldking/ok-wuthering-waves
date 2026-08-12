@@ -2,12 +2,7 @@ import os
 import re
 from pathlib import Path
 
-# WA: set empty PATH to resolve qfluentwidgets/PySide6 access os.environ['PATH'] issue
-if 'PATH' not in os.environ:
-    os.environ['PATH'] = ""
-from qfluentwidgets import FluentIcon
-
-from ok import Box, ConfigOption
+from ok import Box, ConfigOption, Icon
 from src.task.process_feature import process_feature
 
 version = "dev"
@@ -139,12 +134,12 @@ key_config_option = ConfigOption('Game Hotkey', {
     'Bag Key': 'b',
 }, description='In Game Hotkey for Skills', config_description={
     'Bag Key': 'In-game hotkey used to open the Bag.',
-}, show_at_tab=True, icon=FluentIcon.GAME)
+}, show_at_tab=True, icon=Icon.GAME)
 
 char_config_option = ConfigOption('Character Config', {
     'Iuno C6': False,
     'Chisa DPS': False,
-}, description='Character Config', show_at_tab=True, icon=FluentIcon.PEOPLE)
+}, description='Character Config', show_at_tab=True, icon=Icon.PEOPLE)
 
 monthly_card_config_option = ConfigOption('Monthly Card Config', {
     'Check Monthly Card': True,
@@ -220,15 +215,15 @@ config = {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
             'sponsor': 'https://patreon.com/ok_oldking',
-            'share': 'Download OK-WW from https://github.com/ok-oldking/ok-wuthering-waves/releases/latest',
-            'faq': 'https://ok-oldking.github.io/ok-wuthering-waves/en/'
+            'share': 'Download OK-WW from https://ok-script.com/ok-ww',
+            'faq': 'https://ok-script.com/ok-ww/'
         },
         'zh_CN': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
             'sponsor': 'https://afdian.com/a/ok-oldking',
-            'share': 'GitHub: https://github.com/ok-oldking 百度网盘: https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww 夸克网盘: https://pan.quark.cn/s/d080413c87ac Mirror酱：https://mirrorchyan.com/zh/projects?source=okbilibili',
-            'faq': 'https://ok-oldking.github.io/ok-wuthering-waves/zh-CN/',
+            'share': '下载okww https://ok-script.com/ok-ww',
+            'faq': 'https://ok-script.com/ok-ww',
             'qq_group': 'https://qm.qq.com/q/SUQpIpmq4',
             'qq_channel': 'https://pd.qq.com/s/djmm6l44y',
         },

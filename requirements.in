@@ -1,5 +1,5 @@
 ok-script
-onnxocr-ppocrv4==0.0.5
+onnxocr-ppocrv5>=0.0.20
 openvino
 opencv-python
 gitpython

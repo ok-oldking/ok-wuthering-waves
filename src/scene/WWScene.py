@@ -1,5 +1,3 @@
-from qfluentwidgets import FluentIcon
-
 from ok import Logger, BaseScene
 
 logger = Logger.get_logger(__name__)
