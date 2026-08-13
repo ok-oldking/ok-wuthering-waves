@@ -1,6 +1,8 @@
 import json
+from pathlib import Path
 
 from PySide6.QtCore import QTimer, Qt
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QDialog, QFileDialog, QFrame, QHBoxLayout, QInputDialog, QListWidgetItem,
     QSplitter, QVBoxLayout, QWidget,
@@ -88,6 +90,11 @@ class _SlotEditor(QWidget):
         self.enabled_check = CheckBox(self.tab.tr("Use this slot"), self.card)
         self.enabled_check.setChecked(True)
         header.addWidget(self.enabled_check)
+        self.required_check = CheckBox(self.tab.tr("Required"), self.card)
+        self.required_check.setToolTip(self.tab.tr(
+            "This team only auto-matches when this character is in your team."))
+        self.required_check.setChecked(False)
+        header.addWidget(self.required_check)
         layout.addLayout(header)
 
         self.setting_title = BodyLabel(self.tab.tr("Character Settings"), self.card)
@@ -127,6 +134,7 @@ class _SlotEditor(QWidget):
         self.char_combo.currentIndexChanged.connect(self._slot_char_changed)
         self.enabled_check.toggled.connect(self._apply_enabled_state)
         self.enabled_check.toggled.connect(self.tab._schedule_auto_save)
+        self.required_check.toggled.connect(self.tab._schedule_auto_save)
         self.params_edit.textChanged.connect(self.tab._schedule_auto_save)
         self.note_edit.textChanged.connect(self.tab._schedule_auto_save)
 
@@ -221,6 +229,7 @@ class _SlotEditor(QWidget):
             row.setEnabled(checked)
         self.params_edit.setEnabled(checked)
         self.note_edit.setEnabled(checked)
+        self.required_check.setEnabled(checked)
         self.advanced_button.setEnabled(checked)
         for widget in self.code_widgets:
             widget.setEnabled(checked)
@@ -260,6 +269,7 @@ class _SlotEditor(QWidget):
         self._set_combo_to(char_name)
         self.char_combo.blockSignals(False)
         self.enabled_check.setChecked(not slot or slot.enabled)
+        self.required_check.setChecked(bool(slot and slot.required))
         self.note_edit.setText(slot.note if slot else "")
         params = dict(slot.params) if slot and slot.params else {}
         checked_keys = [k for k, v in params.items() if v]
@@ -302,6 +312,7 @@ class _SlotEditor(QWidget):
             note=self.note_edit.text(),
             params=params,
             custom_code=custom_code,
+            required=self.required_check.isChecked(),
         )
 
     def reset_widgets(self):
@@ -309,6 +320,7 @@ class _SlotEditor(QWidget):
         self._set_combo_to("")
         self.char_combo.blockSignals(False)
         self.enabled_check.setChecked(True)
+        self.required_check.setChecked(False)
         self.note_edit.setText("")
         self.params_edit.setText("")
         self.advanced_visible = False
@@ -349,6 +361,9 @@ class _CodeEditorDialog(QDialog):
 
         self.status_label = BodyLabel("", self)
 
+        import_button = PushButton(FluentIcon.FOLDER, self.tr("Import .py"), self)
+        import_button.setToolTip(self.tr("Import a script file and save it for this character."))
+        import_button.clicked.connect(self._import_file)
         reset_button = PushButton(self.tr("Reset Code"), self)
         reset_button.clicked.connect(self._reset_code)
         save_button = PrimaryPushButton(self.tr("Save Code"), self)
@@ -363,6 +378,8 @@ class _CodeEditorDialog(QDialog):
         layout.addWidget(self.code_editor, 1)
         footer = QHBoxLayout()
         footer.addWidget(self.status_label, 1)
+        footer.addWidget(import_button)
+        footer.addSpacing(6)
         footer.addWidget(reset_button)
         footer.addSpacing(6)
         footer.addWidget(save_button)
@@ -422,6 +439,31 @@ class _CodeEditorDialog(QDialog):
         self._set_status(self.tr("Code saved"))
         self.tab._reload_live_char_code(self.preset.id, self.char_name)
 
+    def _import_file(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, self.tr("Import Script (.py)"), "",
+            self.tr("Python Files (*.py);;All Files (*)"))
+        if not path:
+            return
+        try:
+            code = Path(path).read_text(encoding="utf-8")
+        except Exception as e:
+            self.tab.logger.error(f"read script file failed: {e}")
+            self._set_status(str(e), error=True)
+            return
+        try:
+            TeamPresetStore.save_custom_code(self.preset.id, self.char_name, code)
+        except Exception as e:
+            self.tab.logger.error(f"save imported script failed: {e}")
+            self._set_status(str(e), error=True)
+            return
+        self.code_editor.setPlainText(code)
+        self.clean_code = code
+        self.code_has_unsaved_changes = False
+        self._refresh_title()
+        self._set_status(self.tr("Imported from file and saved"))
+        self.tab._reload_live_char_code(self.preset.id, self.char_name)
+
     def _reset_code(self):
         if self.code_has_unsaved_changes:
             box = MessageBox(self.tr("Unsaved Changes"),
@@ -438,6 +480,266 @@ class _CodeEditorDialog(QDialog):
         self._refresh_title()
         self._set_status(self.tr("Reset to builtin"))
         self.tab._reload_live_char_code(self.preset.id, self.char_name)
+
+    def closeEvent(self, event):
+        if self.code_has_unsaved_changes:
+            box = MessageBox(self.tr("Unsaved Changes"),
+                             self.tr("Discard unsaved preset character code changes?"),
+                             self)
+            if not box.exec():
+                event.ignore()
+                return
+        event.accept()
+        super().closeEvent(event)
+
+
+_TEAM_LOGIC_API_REF = '''队伍逻辑(BaseTeamCombat)API 速查
+================================
+子类实现 perform() 即可;每 tick 调用一次,用 self.* 实例属性跨 tick 记状态。
+
+基础:
+  self.task            任务对象(截图 / 按键 / 日志等)
+  self.chars           [0..2] 三个角色对象(未配置的槽位为 None)
+  self.char(i)         第 i 个角色对象(0 基),越界返回 None
+  self.current_char    当前在场角色
+  self.current_index   当前在场槽位(0 基),无人时 None
+  self.is_current(i)   i 槽是否在场
+
+切换:
+  self.switch_to(i)                直接切换到 i 槽(自带超时与状态更新)
+  self.switch_next_char(i)         让 i 槽按优先级选择下一个角色切换
+  self.switch_out(i, con_full=)    切出(con_full=True 表示协奏满切)
+  self.wait_intro(i, **kw)         等待入场技
+  self.wait_down(i, click=True)    等待被击倒后的起身
+  self.next_frame()                推进一帧并刷新状态(循环里必须调用)
+
+技能/动作(i 是 0 基槽位):
+  self.click(i)               普攻
+  self.click_resonance(i)     共鸣技能
+  self.click_liberation(i)    共鸣解放
+  self.click_echo(i)          声骸
+  self.heavy_click_forte(i)   长按重击/共鸣回路
+  self.use_tool_box(i)        工具盒
+
+状态查询(i 是 0 基槽位):
+  self.liberation_available(i=None)  共鸣解放就绪(默认当前在场角色)
+  self.resonance_available(i)        共鸣技能就绪
+  self.echo_available(i)             声骸就绪
+  self.con_percent(i=None)           协奏值 0~1(仅在场角色可测)
+  self.con_full(i=None)              协奏值是否已满(仅在场角色)
+  self.cd_remaining(i, box_name)     剩余冷却秒(box_name: resonance/echo/liberation)
+  self.is_available(i, percent, box_name)  按百分比判断可用
+  self.has_cd(i, box_name)           是否在冷却
+  self.has_buff(i) / self.has_all_buff(i)  增益状态
+  self.char_is(i, "Rover")           槽位是否是指定角色
+
+其他:
+  self.check_combat()   不在战斗时抛异常(任务自动兜底)
+  self.sleep(sec, check_combat=)  等待(sec 秒)
+  self.log_info / log_debug / log_error(msg)  日志
+'''
+
+_TEAM_LOGIC_EXAMPLE = '''class MyTeamLogic(BaseTeamCombat):
+    """示例逻辑:谁在场看谁,技能好了就放,协奏值满就切人。"""
+
+    def perform(self):
+        me = self.current_char              # 当前在场角色
+        if me is None:
+            return
+        i = me.index
+        if self.liberation_available(i):    # 共鸣解放就绪
+            self.click_liberation(i)
+            return
+        if self.echo_available(i):          # 声骸就绪
+            self.click_echo(i)
+        if self.resonance_available(i):     # 共鸣技能就绪
+            self.click_resonance(i)
+            return
+        if self.con_full(i):                # 协奏值满,切走
+            self.switch_next_char(i)
+            return
+        self.click(i)                       # 普攻
+'''
+
+
+class _TeamLogicDialog(QDialog):
+    """Full-window editor for a preset's team-level combat logic."""
+
+    def __init__(self, tab, parent=None):
+        super().__init__(parent)
+        self.tab = tab
+        self.preset = tab.current_preset
+        self.clean_code = ""
+        self.code_has_unsaved_changes = False
+        self.setModal(True)
+        self.setMinimumSize(720, 520)
+        self.resize(900, 680)
+
+        self.code_editor = CodeEditor(self)
+        self.code_editor.setLineWrapMode(PlainTextEdit.NoWrap)
+        font = self.code_editor.font()
+        font.setFamily("Consolas")
+        font.setPointSize(11)
+        self.code_editor.setFont(font)
+        PythonHighlighter(self.code_editor.document())
+        self.code_editor.textChanged.connect(self._on_text_changed)
+
+        self.source_label = BodyLabel("", self)
+        self.source_label.setStyleSheet("color:rgba(140,140,140,0.9);")
+        self.source_label.setWordWrap(True)
+
+        self.status_label = BodyLabel("", self)
+
+        import_button = PushButton(FluentIcon.FOLDER, self.tr("Import .py"), self)
+        import_button.setToolTip(self.tr("Import a script file and save it as this team's logic."))
+        import_button.clicked.connect(self._import_file)
+        api_button = PushButton(self.tr("API Quick Ref"), self)
+        api_button.setToolTip(self.tr("Show available team logic API (Chinese)."))
+        api_button.clicked.connect(self._show_api_ref)
+        example_button = PushButton(self.tr("Insert Example"), self)
+        example_button.clicked.connect(self._insert_example)
+        reset_button = PushButton(self.tr("Reset Code"), self)
+        reset_button.clicked.connect(self._reset_code)
+        save_button = PrimaryPushButton(self.tr("Save Code"), self)
+        save_button.clicked.connect(self._save_code)
+        close_button = PushButton(self.tr("Close"), self)
+        close_button.clicked.connect(self.close)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(10)
+        layout.addWidget(self.source_label)
+        layout.addWidget(self.code_editor, 1)
+        footer = QHBoxLayout()
+        footer.addWidget(self.status_label, 1)
+        footer.addWidget(import_button)
+        footer.addSpacing(6)
+        footer.addWidget(api_button)
+        footer.addSpacing(6)
+        footer.addWidget(example_button)
+        footer.addSpacing(6)
+        footer.addWidget(reset_button)
+        footer.addSpacing(6)
+        footer.addWidget(save_button)
+        footer.addWidget(close_button)
+        layout.addLayout(footer)
+
+        self._load_code()
+
+    def _load_code(self):
+        code = TeamPresetStore.read_team_code(self.preset.id)
+        if code is None:
+            self.source_label.setText(self.tr(
+                "No team logic yet - each character fights on its own. "
+                "Write a BaseTeamCombat subclass to take full control of the team."))
+        else:
+            self.source_label.setText(self.tr(
+                "This team logic fully replaces the characters' own combat logic."))
+        self.code_editor.setPlainText(code or "")
+        self.clean_code = self.code_editor.toPlainText()
+        self.code_has_unsaved_changes = False
+        preset_name = self.preset.name if self.preset and self.preset.name else ""
+        self.base_title = self.tr("Team Logic")
+        if preset_name:
+            self.base_title += f" ({preset_name})"
+        self._refresh_title()
+
+    def _refresh_title(self):
+        title = self.base_title
+        if self.code_has_unsaved_changes:
+            title = "* " + title
+        self.setWindowTitle(title)
+
+    def _on_text_changed(self):
+        self.code_has_unsaved_changes = self.code_editor.toPlainText() != self.clean_code
+        self._refresh_title()
+
+    def _insert_example(self):
+        self.code_editor.setPlainText(_TEAM_LOGIC_EXAMPLE)
+        self._set_status(self.tr("Example inserted - edit and save"))
+
+    def _show_api_ref(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle(self.tr("Team Logic API Quick Reference"))
+        dialog.setMinimumSize(560, 420)
+        dialog.resize(680, 560)
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(16, 16, 16, 16)
+        editor = CodeEditor(dialog)
+        editor.setReadOnly(True)
+        editor.setLineWrapMode(PlainTextEdit.NoWrap)
+        font = editor.font()
+        font.setFamily("Consolas")
+        font.setPointSize(10)
+        editor.setFont(font)
+        editor.setPlainText(_TEAM_LOGIC_API_REF)
+        close_button = PrimaryPushButton(self.tr("Close"), dialog)
+        close_button.clicked.connect(dialog.accept)
+        layout.addWidget(editor, 1)
+        button_row = QHBoxLayout()
+        button_row.addStretch(1)
+        button_row.addWidget(close_button)
+        layout.addLayout(button_row)
+        dialog.exec()
+
+    def _import_file(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, self.tr("Import Script (.py)"), "",
+            self.tr("Python Files (*.py);;All Files (*)"))
+        if not path:
+            return
+        try:
+            code = Path(path).read_text(encoding="utf-8")
+        except Exception as e:
+            self.tab.logger.error(f"read script file failed: {e}")
+            self._set_status(str(e), error=True)
+            return
+        try:
+            TeamPresetStore.save_team_code(self.preset.id, code)
+        except Exception as e:
+            self.tab.logger.error(f"save imported team logic failed: {e}")
+            self._set_status(str(e), error=True)
+            return
+        self.code_editor.setPlainText(code)
+        self.clean_code = code
+        self.code_has_unsaved_changes = False
+        self._refresh_title()
+        self._set_status(self.tr("Imported from file and saved"))
+        self.tab._update_team_logic_button()
+
+    def _set_status(self, text, error=False):
+        self.status_label.setText(text)
+        self.status_label.setStyleSheet(
+            "color:#cf4d4d;" if error else "color:#2fa86f;")
+
+    def _save_code(self):
+        code = self.code_editor.toPlainText()
+        try:
+            TeamPresetStore.save_team_code(self.preset.id, code)
+        except Exception as e:
+            self.tab.logger.error(f"save team logic failed: {e}")
+            self._set_status(str(e), error=True)
+            return
+        self.clean_code = code
+        self.code_has_unsaved_changes = False
+        self._refresh_title()
+        self._set_status(self.tr("Code saved"))
+        self.tab._update_team_logic_button()
+
+    def _reset_code(self):
+        if self.code_has_unsaved_changes:
+            box = MessageBox(self.tr("Unsaved Changes"),
+                             self.tr("Discard unsaved preset character code changes?"),
+                             self)
+            if not box.exec():
+                return
+        TeamPresetStore.remove_team_code(self.preset.id)
+        self.code_editor.setPlainText("")
+        self.clean_code = ""
+        self.code_has_unsaved_changes = False
+        self._refresh_title()
+        self._set_status(self.tr("Reset to builtin"))
+        self.tab._update_team_logic_button()
 
     def closeEvent(self, event):
         if self.code_has_unsaved_changes:
@@ -501,6 +803,12 @@ class TeamPresetTab(CustomTab):
         left_layout.setSpacing(8)
         left_layout.addWidget(BodyLabel(self.tr("My Teams")))
 
+        self.search_edit = LineEdit(left)
+        self.search_edit.setPlaceholderText(self.tr("Search teams…"))
+        self.search_edit.setClearButtonEnabled(True)
+        self.search_edit.textChanged.connect(lambda _: self._refresh_preset_list())
+        left_layout.addWidget(self.search_edit)
+
         self.preset_list = ListWidget(left)
         self.preset_list.setMinimumWidth(210)
         self.preset_list.setMaximumWidth(300)
@@ -535,6 +843,12 @@ class TeamPresetTab(CustomTab):
         tool_row_2.addWidget(self.export_button)
         tool_row_2.addWidget(self.from_current_button)
         left_layout.addLayout(tool_row_2)
+
+        self.template_button = PushButton(FluentIcon.BOOK_SHELF, self.tr("From Template"))
+        self.template_button.setToolTip(self.tr(
+            "Create a new team from a built-in template with ready-to-run scripts."))
+        self.template_button.clicked.connect(self._from_template)
+        left_layout.addWidget(self.template_button)
 
         tool_row_3 = QHBoxLayout()
         self.move_up_button = PushButton(FluentIcon.UP, self.tr("Move Up"))
@@ -583,6 +897,18 @@ class TeamPresetTab(CustomTab):
         self.auto_match_check.toggled.connect(self._schedule_auto_save)
         name_layout.addWidget(self.auto_match_check)
         editor_layout.addLayout(name_layout)
+
+        self.description_edit = LineEdit(self.editor_panel)
+        self.description_edit.setPlaceholderText(
+            self.tr("Description (optional) - shown when sharing as a template or file"))
+        self.description_edit.textChanged.connect(self._schedule_auto_save)
+        editor_layout.addWidget(self.description_edit)
+
+        self.team_logic_button = PushButton(FluentIcon.CODE, self.tr("Team Logic"), self.editor_panel)
+        self.team_logic_button.setToolTip(self.tr(
+            "Team-level combat logic - takes full control when the team is matched or forced."))
+        self.team_logic_button.clicked.connect(self._open_team_logic_dialog)
+        editor_layout.addWidget(self.team_logic_button)
 
         for index in range(MAX_SLOTS):
             editor = _SlotEditor(self, index)
@@ -667,19 +993,41 @@ class TeamPresetTab(CustomTab):
 
     def _refresh_preset_list(self, selected_id=None):
         presets = TeamPresetStore.list_presets()
+        query = self.search_edit.text().strip().lower()
         selected_name = selected_id or (self.current_preset.id if self.current_preset else None)
+        detected = set(TeamPresetStore.get_last_detected_team() or [])
         self.suppress_selection_guard = True
         try:
             self.preset_list.clear()
             selected_row = 0
             active = TeamPresetStore.get_forced_name()
             for row, preset in enumerate(presets):
-                label = f"{'✓ ' if preset.id == active else ''}{preset.name or preset.id}"
-                item = QListWidgetItem(label)
+                label = f"{preset.name or preset.id}"
+                if query:
+                    haystack = " ".join([
+                        label.lower(), preset.note.lower(), preset.description.lower(),
+                        " ".join(slot.char for slot in preset.slots)])
+                    if query not in haystack:
+                        continue
+                full_hit, partial, note = self._preset_hit_info(preset, detected)
+                suffix = ""
+                if preset.id == active:
+                    suffix = " ✓"
+                elif full_hit:
+                    suffix = f" · {self.tr('full match')}"
+                elif partial:
+                    suffix = f" · {note}"
+                elif detected and note:
+                    suffix = f" · {note}"
+                item = QListWidgetItem(f"{label}{suffix}")
                 item.setData(Qt.UserRole, preset.id)
+                if full_hit:
+                    item.setForeground(QColor("#4cc38a"))
+                elif preset.id == active:
+                    item.setForeground(QColor("#6cb8ff"))
                 self.preset_list.addItem(item)
                 if preset.id == selected_name:
-                    selected_row = row
+                    selected_row = self.preset_list.count() - 1
             self.preset_list.blockSignals(True)
             self.preset_list.setCurrentRow(min(selected_row, self.preset_list.count() - 1))
             self.preset_list.blockSignals(False)
@@ -693,6 +1041,21 @@ class TeamPresetTab(CustomTab):
                 self._load_preset_into_widgets()
         self._preset_loaded_selection(selected_name)
         self._update_banner()
+
+    def _preset_hit_info(self, preset, detected):
+        """返回 (full_hit, partial, note):基于检测队伍的角色命中标注。"""
+        if not detected:
+            return False, False, ""
+        score, missing_required, hits = TeamPresetStore._preset_match(preset, detected)
+        if score <= 0:
+            if missing_required:
+                missing = " · ".join(self._display_char_name(c) for c in missing_required)
+                return False, False, self.tr("needs {chars}").format(chars=missing)
+            return False, False, ""
+        enabled = [slot for slot in preset.slots if slot.enabled and slot.char]
+        full = len(hits) == len(enabled)
+        note = self.tr("matched {hits}/{total}").format(hits=len(hits), total=len(enabled))
+        return full, not full, note
 
     def _preset_loaded_selection(self, selected_id):
         has_any = self.preset_list.count() > 0
@@ -720,13 +1083,27 @@ class TeamPresetTab(CustomTab):
     def _load_preset_into_widgets(self):
         preset = self.current_preset
         self.name_edit.setText(preset.name)
+        self.description_edit.setText(preset.description)
         self.auto_match_check.setChecked(preset.auto_match)
         slots = list(preset.slots) + [None] * (MAX_SLOTS - len(preset.slots))
         for editor, slot in zip(self.slot_editors, slots):
             editor.load_slot(slot)
+        self._update_team_logic_button()
         self._update_banner()
         self._update_force_state()
         self.status_label.setText(self.tr("Auto saved"))
+
+    def _open_team_logic_dialog(self):
+        if self.current_preset is None:
+            return
+        _TeamLogicDialog(self, self.window()).exec()
+
+    def _update_team_logic_button(self):
+        has = self.current_preset is not None and TeamPresetStore.has_team_code(self.current_preset.id)
+        self.team_logic_button.setText(
+            self.tr("Team Logic: On") if has else self.tr("Team Logic"))
+        self.team_logic_button.setStyleSheet(
+            "QPushButton{color:#2fa86f;border-color:#4cc38a;}" if has else "")
 
     def _update_force_state(self):
         forced = TeamPresetStore.get_forced_name()
@@ -734,6 +1111,13 @@ class TeamPresetTab(CustomTab):
         self.force_button.setText(self.tr("Unforce This Team") if is_forced else self.tr("Force This Team"))
 
     def _update_banner(self):
+        error = TeamPresetStore.get_last_team_logic_error()
+        if error:
+            message = str(error.get("message", ""))[:60]
+            self._set_badge(True, self.tr(
+                "Team logic error: {msg} - fell back to per-character logic").format(msg=message),
+                            error=True)
+            return
         detected = TeamPresetStore.get_last_detected_team()
         roles = ' · '.join(self._display_char_name(c) for c in detected)
         forced_preset = TeamPresetStore.get_forced_preset()
@@ -755,14 +1139,34 @@ class TeamPresetTab(CustomTab):
             self._set_badge(True, text)
             return
         if roles:
-            self._set_badge(False, self.tr(
-                "No preset matches: {roles} - using global config").format(roles=roles))
+            text = self.tr(
+                "No preset matches: {roles} - using global config").format(roles=roles)
+            self._set_badge(False, text,
+                            tooltip=self._match_attempts_text(
+                                TeamPresetStore.get_last_match_attempts()))
             return
         self._set_badge(False, self.tr(
             "Auto-match on - tasks use the preset matching your in-game team."))
 
-    def _set_badge(self, highlighted, text):
-        if highlighted:
+    def _match_attempts_text(self, attempts):
+        if not attempts:
+            return ""
+        lines = []
+        for attempt in attempts:
+            percent = int(round((attempt.get("score") or 0.0) * 100))
+            parts = [f"{attempt.get('preset', '')}: {percent}%"]
+            missing = attempt.get("missing_required") or []
+            if missing:
+                parts.append(self.tr("missing {chars}").format(chars=", ".join(missing)))
+            lines.append(" · ".join(parts))
+        return "\n".join(lines)
+
+    def _set_badge(self, highlighted, text, error=False, tooltip=""):
+        if error:
+            self.active_badge.setStyleSheet(
+                "QFrame{background:rgba(207,77,77,0.22);border:1px solid #cf4d4d;border-radius:15px;}")
+            self.active_badge_text.setStyleSheet("color:#cf4d4d;font-weight:600;")
+        elif highlighted:
             self.active_badge.setStyleSheet(
                 "QFrame{background:rgba(76,195,138,0.22);border:1px solid #4cc38a;border-radius:15px;}")
             self.active_badge_text.setStyleSheet("color:#2fa86f;font-weight:600;")
@@ -771,6 +1175,10 @@ class TeamPresetTab(CustomTab):
                 "QFrame{background:rgba(140,140,140,0.12);border:1px solid rgba(140,140,140,0.35);border-radius:15px;}")
             self.active_badge_text.setStyleSheet("color:rgba(140,140,140,0.95);")
         self.active_badge_text.setText(text)
+        if tooltip:
+            self.active_badge.setToolTip(tooltip)
+        else:
+            self.active_badge.setToolTip("")
 
     # ---------- auto save ----------
 
@@ -800,9 +1208,8 @@ class TeamPresetTab(CustomTab):
         if name_changed:
             item = self.preset_list.item(self.current_row)
             if item is not None:
-                active = TeamPresetStore.get_forced_name()
-                prefix = "✓ " if pending.id == active else ""
-                item.setText(f"{prefix}{pending.name or pending.id}")
+                active = TeamPresetStore.get_forced_name() == pending.id
+                item.setText(f"{pending.name or pending.id}{' ✓' if active else ''}")
         self.status_label.setText(self.tr("Auto saved"))
 
     def _invalid_json_block(self):
@@ -827,8 +1234,36 @@ class TeamPresetTab(CustomTab):
             note=self.current_preset.note,
             created_from=self.current_preset.created_from,
             auto_match=self.auto_match_check.isChecked(),
+            description=self.description_edit.text().strip(),
             slots=slots,
         )
+
+    def _from_template(self):
+        templates = TeamPresetStore.list_builtin_templates()
+        if not templates:
+            show_info_bar(self.window(), self.tr("No built-in templates available."),
+                          title=self.tr("Info"))
+            return
+        items = [f"{t['name']} - {t['description']}" if t["description"] else t["name"]
+                 for t in templates]
+        choice, ok = QInputDialog.getItem(
+            self, self.tr("Create from Template"),
+            self.tr("Choose a template:"), items, 0, False)
+        if not ok or not choice:
+            return
+        template = templates[items.index(choice)]
+        try:
+            preset = TeamPresetStore.install_builtin_template(template["folder"])
+        except Exception as e:
+            self.logger.error(f"install builtin template failed: {e}")
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+            return
+        self._refresh_preset_list(preset.id)
+        self.current_preset = TeamPresetStore.get_preset(preset.id)
+        self.current_row = self._row_of_preset(preset.id)
+        self._load_preset_into_widgets()
+        show_info_bar(self.window(), self.tr("Template installed: {name}").format(
+            name=preset.name), title=self.tr("Success"))
 
     # ---------- buttons ----------
 
@@ -927,10 +1362,17 @@ class TeamPresetTab(CustomTab):
         if not path:
             return
         try:
-            TeamPresetStore.export_preset_to_file(self.current_preset.id, path)
+            data = TeamPresetStore.export_preset_to_file(self.current_preset.id, path)
         except Exception as e:
             self.logger.error(f"export team preset failed: {e}")
             show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+            return
+        if data.get("team_code_error"):
+            show_info_bar(self.window(),
+                          self.tr("Team logic code failed to compile: {error} - "
+                                  "it was exported but will not load.")
+                          .format(error=str(data["team_code_error"])[:80]),
+                          title=self.tr("Warning"))
             return
         show_info_bar(self.window(), self.tr("Team preset exported."), title=self.tr("Success"))
 
@@ -972,6 +1414,7 @@ class TeamPresetTab(CustomTab):
 
     def _reset_widgets(self):
         self.name_edit.setText("")
+        self.description_edit.setText("")
         self.status_label.setText("")
         self._update_banner()
         self._update_force_state()
@@ -1025,10 +1468,10 @@ class TeamPresetTab(CustomTab):
             forced = TeamPresetStore.get_forced_name()
             item = self.preset_list.item(self.current_row)
             if item is not None and item.data(Qt.UserRole) == current_id:
-                prefix = "✓ " if current_id and current_id == forced else ""
-                label = self.current_preset.name or self.current_preset.id
-                if item.text() != f"{prefix}{label}":
-                    item.setText(f"{prefix}{label}")
+                suffix = " ✓" if current_id and current_id == forced else ""
+                label = f"{self.current_preset.name or self.current_preset.id}{suffix}"
+                if item.text() != label:
+                    item.setText(label)
 
     def showEvent(self, event):
         super().showEvent(event)

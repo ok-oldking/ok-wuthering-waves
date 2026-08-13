@@ -1,0 +1,37 @@
+{
+  "type": "ok_ww_team_preset",
+  "version": 1,
+  "name": "Echo Opening",
+  "description": "声骸起手流:每次换人进场优先用声骸起手(叠势/触发协同),再接共鸣输出,适合声骸冷却短、靠声骸起手的队伍。",
+  "preset": {
+    "id": "echo_opening",
+    "name": "Echo Opening",
+    "note": "",
+    "created_from": "builtin template",
+    "auto_match": true,
+    "description": "声骸起手流:每次换人进场优先用声骸起手(叠势/触发协同),再接共鸣输出,适合声骸冷却短、靠声骸起手的队伍。",
+    "slots": [
+      {
+        "char": "",
+        "enabled": true,
+        "note": "主C(填你的主C)",
+        "params": {},
+        "custom_code": ""
+      },
+      {
+        "char": "",
+        "enabled": true,
+        "note": "副C",
+        "params": {},
+        "custom_code": ""
+      },
+      {
+        "char": "",
+        "enabled": true,
+        "note": "奶妈",
+        "params": {},
+        "custom_code": ""
+      }
+    ]
+  }
+}

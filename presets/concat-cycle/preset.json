@@ -1,0 +1,37 @@
+{
+  "type": "ok_ww_team_preset",
+  "version": 1,
+  "name": "Concat Cycle",
+  "description": "协奏循环流:主C/副C轮流站场,协奏(变奏)值满即切人灌能量,适合双C轮转队伍。槽位 0/1 填主C/副C,槽位 2 填奶妈(仅协奏满时出场)。",
+  "preset": {
+    "id": "concat_cycle",
+    "name": "Concat Cycle",
+    "note": "",
+    "created_from": "builtin template",
+    "auto_match": true,
+    "description": "协奏循环流:主C/副C轮流站场,协奏(变奏)值满即切人灌能量,适合双C轮转队伍。槽位 0/1 填主C/副C,槽位 2 填奶妈(仅协奏满时出场)。",
+    "slots": [
+      {
+        "char": "",
+        "enabled": true,
+        "note": "主C(填你的主C)",
+        "params": {},
+        "custom_code": ""
+      },
+      {
+        "char": "",
+        "enabled": true,
+        "note": "副C(协奏满灌主C)",
+        "params": {},
+        "custom_code": ""
+      },
+      {
+        "char": "",
+        "enabled": true,
+        "note": "奶妈(协奏满出场)",
+        "params": {},
+        "custom_code": ""
+      }
+    ]
+  }
+}

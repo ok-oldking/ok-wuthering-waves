@@ -1160,3 +1160,33 @@ msgstr "El juego y okww deben estar en chino simplificado/tradicional; se requie
 
 msgid "Switch to Healer before and after Combat"
 msgstr "Cambiar al sanador antes y después del combate"
+
+msgid "Required"
+msgstr "Obligatorio"
+
+msgid "This team only auto-matches when this character is in your team."
+msgstr "Solo se empareja automáticamente cuando este personaje está en tu equipo."
+
+msgid "Search teams…"
+msgstr "Buscar equipos…"
+
+msgid "full match"
+msgstr "coincidencia total"
+
+msgid "needs {chars}"
+msgstr "necesita {chars}"
+
+msgid "matched {hits}/{total}"
+msgstr "coincide {hits}/{total}"
+
+msgid "missing {chars}"
+msgstr "falta {chars}"
+
+msgid "API Quick Ref"
+msgstr "Referencia rápida de API"
+
+msgid "Show available team logic API (Chinese)."
+msgstr "Mostrar las APIs disponibles para la lógica de equipo (chino)."
+
+msgid "Team Logic API Quick Reference"
+msgstr "Referencia rápida de API de lógica de equipo"

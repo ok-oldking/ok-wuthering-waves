@@ -61,7 +61,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                 if not switched_to_healer:
                     self.switch_healer()
                     switched_to_healer = True
-                self.get_current_char().perform()
+                self._perform_current()
             except CharDeadException:
                 self.log_error(f'Characters dead', notify=True)
                 break

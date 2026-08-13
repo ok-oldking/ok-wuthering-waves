@@ -37,6 +37,7 @@ class BaseWWTask(BaseTask):
         self.char_config = self.get_global_config('Character Config')
         self.key_config = self.get_global_config('Game Hotkey')  # 游戏热键配置
         self.active_preset = None
+        self.active_team_logic = None
         try:
             preset = TeamPresetStore.get_forced_preset()
             if preset is not None:

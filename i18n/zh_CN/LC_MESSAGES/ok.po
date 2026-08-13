@@ -1597,3 +1597,108 @@ msgstr "自动匹配: {name} · {roles}"
 
 msgid "No preset matches: {roles} - using global config"
 msgstr "未匹配到预设: {roles} - 使用全局配置"
+
+msgid "Team Logic"
+msgstr "队伍出招逻辑"
+
+msgid "Team Logic: On"
+msgstr "队伍出招逻辑: 已启用"
+
+msgid "Team-level combat logic - takes full control when the team is matched or forced."
+msgstr "队伍级出招逻辑 - 队伍被匹配或强制选中时,完全接管三个角色的出招。"
+
+msgid "No team logic yet - each character fights on its own. Write a BaseTeamCombat subclass to take full control of the team."
+msgstr "尚未编写队伍逻辑 - 各角色将按自身逻辑战斗。编写继承 BaseTeamCombat 的类即可完全接管队伍。"
+
+msgid "This team logic fully replaces the characters' own combat logic."
+msgstr "此队伍逻辑将完全替代三个角色自身的战斗逻辑。"
+
+msgid "Insert Example"
+msgstr "插入示例"
+
+msgid "Example inserted - edit and save"
+msgstr "已插入示例 - 编辑后保存"
+
+msgid "Team logic error: {msg} - fell back to per-character logic"
+msgstr "队伍逻辑出错: {msg} - 已回退到逐角色逻辑"
+
+msgid "Team logic code failed to compile: {error} - it was exported but will not load."
+msgstr "队伍逻辑代码编译失败: {error} - 已导出,但加载时会失败。"
+
+msgid "Warning"
+msgstr "警告"
+
+msgid "Import .py"
+msgstr "导入 .py"
+
+msgid "Import a script file and save it for this character."
+msgstr "导入脚本文件并保存为该角色的自定义代码。"
+
+msgid "Import a script file and save it as this team's logic."
+msgstr "导入脚本文件并保存为这支队伍的出招逻辑。"
+
+msgid "Import a .py script file for this character."
+msgstr "为该角色导入一个 .py 脚本文件。"
+
+msgid "Import Script (.py)"
+msgstr "导入脚本 (.py)"
+
+msgid "Python Files (*.py);;All Files (*)"
+msgstr "Python 文件 (*.py);;所有文件 (*)"
+
+msgid "Imported from file and saved"
+msgstr "已从文件导入并保存"
+
+msgid "Imported and applied to {name}"
+msgstr "已导入并应用到 {name}"
+
+msgid "From Template"
+msgstr "从模板创建"
+
+msgid "Create a new team from a built-in template with ready-to-run scripts."
+msgstr "从内置模板创建新队伍,自带可运行的出招脚本。"
+
+msgid "No built-in templates available."
+msgstr "没有可用的内置模板。"
+
+msgid "Create from Template"
+msgstr "从模板创建"
+
+msgid "Choose a template:"
+msgstr "选择模板:"
+
+msgid "Template installed: {name}"
+msgstr "模板已安装: {name}"
+
+msgid "Description (optional) - shown when sharing as a template or file"
+msgstr "简介(可选) - 作为模板或文件分享时会显示"
+
+msgid "Required"
+msgstr "必选"
+
+msgid "This team only auto-matches when this character is in your team."
+msgstr "勾选后, 只有该角色在你的游戏队伍中时, 这个队伍才会被自动匹配。"
+
+msgid "Search teams…"
+msgstr "搜索队伍…"
+
+msgid "full match"
+msgstr "全匹配"
+
+msgid "needs {chars}"
+msgstr "缺 {chars}"
+
+msgid "matched {hits}/{total}"
+msgstr "命中 {hits}/{total}"
+
+msgid "missing {chars}"
+msgstr "缺 {chars}"
+
+msgid "API Quick Ref"
+msgstr "API 速查"
+
+msgid "Show available team logic API (Chinese)."
+msgstr "查看队伍逻辑可用的接口速查表(中文)。"
+
+msgid "Team Logic API Quick Reference"
+msgstr "队伍逻辑 API 速查"

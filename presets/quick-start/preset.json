@@ -1,0 +1,37 @@
+{
+  "type": "ok_ww_team_preset",
+  "version": 1,
+  "name": "Quick Start",
+  "description": "自带完整示例队伍逻辑的通用模板。安装后在预设编辑器点 Team Logic 即可查看示例代码,把三个槽位填成你自己的角色就能用。",
+  "preset": {
+    "id": "quick_start",
+    "name": "Quick Start",
+    "note": "",
+    "created_from": "builtin template",
+    "auto_match": true,
+    "description": "自带完整示例队伍逻辑的通用模板。安装后在预设编辑器点 Team Logic 即可查看示例代码,把三个槽位填成你自己的角色就能用。",
+    "slots": [
+      {
+        "char": "",
+        "enabled": true,
+        "note": "主C(填你的主C)",
+        "params": {},
+        "custom_code": ""
+      },
+      {
+        "char": "",
+        "enabled": true,
+        "note": "副C",
+        "params": {},
+        "custom_code": ""
+      },
+      {
+        "char": "",
+        "enabled": true,
+        "note": "奶妈",
+        "params": {},
+        "custom_code": ""
+      }
+    ]
+  }
+}

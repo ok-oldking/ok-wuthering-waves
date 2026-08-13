@@ -36,7 +36,9 @@ theme:
 nav:
   - Home: index.md
   - English: en/index.md
-  - 简体中文: zh-CN/index.md
+  - 简体中文:
+      - 主页: zh-CN/index.md
+      - 队伍预设: zh-CN/team-preset.md
   - 繁體中文: zh-TW/index.md
   - 日本語: ja/index.md
   - Development:

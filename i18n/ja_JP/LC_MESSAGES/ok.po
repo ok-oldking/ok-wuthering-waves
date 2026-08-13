@@ -1233,3 +1233,33 @@ msgstr "ゲームとokwwの言語は簡体字/繁体字中国語、解像度は1
 
 msgid "Switch to Healer before and after Combat"
 msgstr "戦闘前後にヒーラーへ切り替える"
+
+msgid "Required"
+msgstr "必須"
+
+msgid "This team only auto-matches when this character is in your team."
+msgstr "このキャラがチームにいる場合のみ、このチームプリセットが自動マッチ対象になります。"
+
+msgid "Search teams…"
+msgstr "チームを検索…"
+
+msgid "full match"
+msgstr "完全一致"
+
+msgid "needs {chars}"
+msgstr "{chars} が必要"
+
+msgid "matched {hits}/{total}"
+msgstr "一致 {hits}/{total}"
+
+msgid "missing {chars}"
+msgstr "{chars} が不足"
+
+msgid "API Quick Ref"
+msgstr "API 早見表"
+
+msgid "Show available team logic API (Chinese)."
+msgstr "チームロジックで使える API の早見表(中国語)を表示します。"
+
+msgid "Team Logic API Quick Reference"
+msgstr "チームロジック API 早見表"

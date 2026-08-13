@@ -383,7 +383,7 @@ class BaseCombatTask(CombatCheck):
         try:
             while self.in_combat():
                 logger.debug(f'combat_once loop {self.chars}')
-                self.get_current_char().perform()
+                self._perform_current()
         except CharDeadException as e:
             raise e
         except NotInCombatException as e:
@@ -861,6 +861,10 @@ class BaseCombatTask(CombatCheck):
                 self.chars.append(get_char_by_pos(self, self.get_box_by_name('box_char_3'), 2, None))
             else:
                 self.chars = self.chars[:2]
+            self._reload_team_logic()
+
+        if self.active_team_logic is not None:
+            self.active_team_logic.chars = self.chars
 
         for char in self.chars:
             if char is not None:
@@ -891,6 +895,49 @@ class BaseCombatTask(CombatCheck):
     @staticmethod
     def _char_identity(chars):
         return tuple((char.char_name, char.name) if char is not None else None for char in chars)
+
+    def _perform_current(self):
+        """执行当前操作:队伍级逻辑优先,出错则回退到逐角色逻辑。"""
+        logic = self.active_team_logic
+        if logic is None:
+            return self.get_current_char().perform()
+        try:
+            return logic.perform()
+        except NotInCombatException:
+            raise
+        except Exception as e:
+            self._fail_team_logic(e)
+            return self.get_current_char().perform()
+
+    def _fail_team_logic(self, e):
+        """队伍级逻辑运行出错:记录错误、禁用队伍逻辑并回退逐角色。"""
+        logger.error(f'team logic perform failed: {e}')
+        preset_id = getattr(self.active_preset, 'id', None)
+        if preset_id:
+            try:
+                TeamPresetStore.record_team_logic_error(preset_id, str(e))
+            except Exception as record_error:
+                logger.error(f'record team logic error failed: {record_error}')
+        try:
+            self.info_set('Team Logic', f'Error: {str(e)[:40]}')
+        except Exception:
+            pass
+        self.active_team_logic = None
+
+    def _reload_team_logic(self):
+        """按当前匹配/强制预设加载队伍级出招逻辑;无代码或失败则禁用。"""
+        from src.team_preset.TeamLogicLoader import load_team_logic
+        self.active_team_logic = None
+        preset = self.active_preset
+        if preset is None:
+            return
+        TeamPresetStore.record_team_logic_error(preset.id, None)
+        if not TeamPresetStore.has_team_code(preset.id):
+            return
+        cls = load_team_logic(preset.id)
+        if cls is not None:
+            self.active_team_logic = cls(self, self.chars)
+            self.log_info(f'team logic loaded for preset {preset.name or preset.id}')
 
     def _preset_pre_match(self):
         """任务启动时尝试立即匹配预设(静默,失败不影响任务)。
@@ -933,7 +980,9 @@ class BaseCombatTask(CombatCheck):
             self.active_preset = None
             TeamPresetStore.record_auto_match('')
             self.char_config = self.get_global_config('Character Config')
-            self.log_info('no team preset matched, fell back to global character config')
+            detail = self._match_attempts_summary()
+            self.log_info('no team preset matched, fell back to global character config'
+                          + (f'; tried: {detail}' if detail else ''))
             return True
         if self.active_preset is not None and self.active_preset.id == matched.id:
             return False
@@ -944,6 +993,22 @@ class BaseCombatTask(CombatCheck):
         TeamPresetStore.record_auto_match(matched.id)
         self.log_info(f'auto-matched team preset {matched.name or matched.id}')
         return True
+
+    def _match_attempts_summary(self):
+        """把最近一次自动匹配的评分详情压缩成一行日志文本。"""
+        attempts = TeamPresetStore.get_last_match_attempts()
+        if not attempts:
+            return ""
+        parts = []
+        for attempt in attempts:
+            percent = int(round((attempt.get("score") or 0.0) * 100))
+            name = attempt.get("preset", "")
+            missing = " | ".join(attempt.get("missing_required") or [])
+            if missing:
+                parts.append(f"{name}={percent}% missing:{missing}")
+            else:
+                parts.append(f"{name}={percent}%")
+        return ", ".join(parts)
 
     @staticmethod
     def should_update(the_char, old_char):

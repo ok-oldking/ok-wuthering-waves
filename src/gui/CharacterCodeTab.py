@@ -4,7 +4,9 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QColor, QDesktopServices, QPixmap, QTextCursor, QTextFormat
-from PySide6.QtWidgets import QApplication, QButtonGroup, QHBoxLayout, QLabel, QListWidgetItem, QSplitter, QTextEdit, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (QApplication, QButtonGroup, QFileDialog, QHBoxLayout,
+                               QLabel, QListWidgetItem, QSplitter, QTextEdit,
+                               QVBoxLayout, QWidget)
 from qfluentwidgets import BodyLabel, FluentIcon, ListWidget, MessageBox, PlainTextEdit, PrimaryPushButton, PushButton, RadioButton
 
 from ok.gui.tasks.EditTaskTab import CodeEditor
@@ -111,11 +113,15 @@ class CharacterCodeTab(CustomTab):
 
         bottom_layout = QHBoxLayout()
         self.status_label = BodyLabel("")
+        self.import_button = PushButton(FluentIcon.FOLDER, self.tr("Import .py"))
+        self.import_button.setToolTip(self.tr("Import a .py script file for this character."))
+        self.import_button.clicked.connect(self._import_script_file)
         self.reset_button = PushButton(FluentIcon.SYNC, self.tr("Reset"))
         self.reset_button.clicked.connect(self._reset_current)
         self.save_button = PrimaryPushButton(FluentIcon.SAVE, self.tr("Save"))
         self.save_button.clicked.connect(self._save_current)
         bottom_layout.addWidget(self.status_label, 1)
+        bottom_layout.addWidget(self.import_button)
         bottom_layout.addWidget(self.reset_button)
         bottom_layout.addWidget(self.save_button)
         right_layout.addLayout(bottom_layout)
@@ -301,6 +307,35 @@ class CharacterCodeTab(CustomTab):
             selection.format.setProperty(QTextFormat.FullWidthSelection, True)
             selections.append(selection)
         self.editor.setExtraSelections(selections)
+
+    def _import_script_file(self):
+        if self.current_char_cls is None:
+            return
+        path, _ = QFileDialog.getOpenFileName(
+            self, self.tr("Import Script (.py)"), "",
+            self.tr("Python Files (*.py);;All Files (*)"))
+        if not path:
+            return
+        try:
+            code = Path(path).read_text(encoding="utf-8")
+        except Exception as e:
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+            return
+        if not self.custom_radio.isChecked():
+            self.custom_radio.setChecked(True)
+        try:
+            save_custom_char_code(self.current_char_cls, code, use_custom=True)
+        except Exception as e:
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+            return
+        self._reload_live_char_code()
+        self._load_editor_code()
+        self._refresh_char_list(self.current_char_cls)
+        self._update_mode_status()
+        show_info_bar(self.window(),
+                      self.tr("Imported and applied to {name}").format(
+                          name=self._display_char_name(self.current_char_cls)),
+                      title=self.tr("Success"))
 
     def _save_current(self):
         if self.current_char_cls is None:

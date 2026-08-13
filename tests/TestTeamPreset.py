@@ -6,6 +6,7 @@ from pathlib import Path
 from src.team_preset.TeamPresetStore import (
     TeamPreset, TeamPresetSlot, TeamPresetStore,
 )
+from src.team_preset.TeamLogicLoader import load_team_logic, clear_team_logic_cache
 
 
 class TestTeamPresetStore(unittest.TestCase):
@@ -202,6 +203,71 @@ class TestTeamPresetStore(unittest.TestCase):
         TeamPresetStore.record_detected_team([])
         self.assertEqual(TeamPresetStore.get_last_detected_team(), [])
 
+    def test_team_code_roundtrip(self):
+        preset = self._add_preset("logic")
+        self.assertFalse(TeamPresetStore.has_team_code(preset.id))
+        self.assertIsNone(TeamPresetStore.read_team_code(preset.id))
+        code = "class MyLogic(BaseTeamCombat):\n    def perform(self):\n        pass\n"
+        TeamPresetStore.save_team_code(preset.id, code)
+        self.assertTrue(TeamPresetStore.has_team_code(preset.id))
+        self.assertEqual(TeamPresetStore.read_team_code(preset.id), code)
+        TeamPresetStore.remove_team_code(preset.id)
+        self.assertFalse(TeamPresetStore.has_team_code(preset.id))
+        self.assertIsNone(TeamPresetStore.read_team_code(preset.id))
+
+    def test_team_code_invalid_rejected(self):
+        preset = self._add_preset("badlogic")
+        with self.assertRaises(SyntaxError):
+            TeamPresetStore.save_team_code(preset.id, "def broken(:\n")
+        self.assertFalse(TeamPresetStore.has_team_code(preset.id))
+
+    def test_team_code_copy_and_export_import(self):
+        preset = self._add_preset("share")
+        code = "class MyLogic(BaseTeamCombat):\n    def perform(self):\n        pass\n"
+        TeamPresetStore.save_team_code(preset.id, code)
+        dup = TeamPresetStore.duplicate_preset(preset.id)
+        self.assertTrue(TeamPresetStore.has_team_code(dup.id))
+        data = TeamPresetStore.export_preset(preset.id)
+        self.assertEqual(data["custom_code"].get("team_code.py"), code)
+        TeamPresetStore.delete_preset(dup.id)
+        imported = TeamPresetStore.import_preset(data)
+        self.assertTrue(TeamPresetStore.has_team_code(imported.id))
+        self.assertEqual(TeamPresetStore.read_team_code(imported.id), code)
+
+    def test_team_logic_loader_valid(self):
+        preset = self._add_preset("loader")
+        TeamPresetStore.save_team_code(preset.id,
+                                       "class MyLogic(BaseTeamCombat):\n"
+                                       "    def perform(self):\n"
+                                       "        self.task._hits += 1\n")
+        cls = load_team_logic(preset.id)
+        self.assertIsNotNone(cls)
+        self.assertTrue(issubclass(cls, __import__(
+            "src.team_preset.BaseTeamCombat", fromlist=["BaseTeamCombat"]).BaseTeamCombat))
+        logic = cls(task=None, chars=[None, None, None])
+        self.assertIsNotNone(logic.perform)
+
+    def test_team_logic_loader_invalid_fallback(self):
+        preset = self._add_preset("brokenlogic")
+        TeamPresetStore.save_team_code(preset.id, "x = 1\n")
+        self.assertIsNone(load_team_logic(preset.id))
+        TeamPresetStore.save_team_code(preset.id, "raise RuntimeError('boom')\n")
+        self.assertIsNone(load_team_logic(preset.id))
+        self.assertIsNone(load_team_logic("no_such_preset"))
+
+    def test_team_logic_loader_cache_invalidation(self):
+        preset = self._add_preset("cachelogic")
+        TeamPresetStore.save_team_code(preset.id,
+                                       "class A(BaseTeamCombat):\n    def perform(self):\n        pass\n")
+        first = load_team_logic(preset.id)
+        self.assertIsNotNone(first)
+        TeamPresetStore.save_team_code(preset.id,
+                                       "class B(BaseTeamCombat):\n    def perform(self):\n        pass\n")
+        second = load_team_logic(preset.id)
+        self.assertIsNotNone(second)
+        self.assertIsNot(first, second)
+        clear_team_logic_cache(preset.id)
+
     def test_move_preset_bounds(self):
         a = self._add_preset("a")
         b = self._add_preset("b")
@@ -227,6 +293,510 @@ class TestTeamPresetStore(unittest.TestCase):
         self.assertTrue(index_path.exists())
         data = json.loads(index_path.read_text(encoding="utf-8"))
         self.assertEqual(data["presets"][0]["id"], preset.id)
+
+    def test_team_logic_error_roundtrip(self):
+        preset = self._add_preset("err")
+        TeamPresetStore.set_forced(preset.id)
+        self.assertIsNone(TeamPresetStore.get_last_team_logic_error())
+        TeamPresetStore.record_team_logic_error(preset.id, "boom")
+        error = TeamPresetStore.get_last_team_logic_error()
+        self.assertIsNotNone(error)
+        self.assertEqual(error["message"], "boom")
+        TeamPresetStore.record_team_logic_error(preset.id, None)
+        self.assertIsNone(TeamPresetStore.get_last_team_logic_error())
+
+    def test_export_invalid_team_code_warns_but_continues(self):
+        preset = self._add_preset("badcode")
+        path = TeamPresetStore.get_team_code_path(preset.id)
+        path.write_text("def broken(:\n", encoding="utf-8")
+        data = TeamPresetStore.export_preset(preset.id)
+        self.assertIsNotNone(data["team_code_error"])
+        self.assertEqual(data["custom_code"]["team_code.py"], "def broken(:\n")
+        imported = TeamPresetStore.import_preset(data)
+        self.assertTrue(TeamPresetStore.has_team_code(imported.id))
+
+    def test_description_roundtrip(self):
+        preset = self._add_preset("desc")
+        preset.description = "奶妈+副C+主C,通用轮换"
+        TeamPresetStore.save_preset(preset)
+        loaded = TeamPresetStore.get_preset(preset.id)
+        self.assertEqual(loaded.description, "奶妈+副C+主C,通用轮换")
+        data = TeamPresetStore.export_preset(preset.id)
+        self.assertEqual(data["description"], "奶妈+副C+主C,通用轮换")
+        imported = TeamPresetStore.import_preset(data)
+        self.assertEqual(imported.description, "奶妈+副C+主C,通用轮换")
+
+    def test_builtin_templates_scan_and_install(self):
+        templates = TeamPresetStore.list_builtin_templates()
+        names = [t["name"] for t in templates]
+        self.assertIn("Quick Start", names)
+        template = next(t for t in templates if t["name"] == "Quick Start")
+        self.assertTrue(template["description"])
+        preset = TeamPresetStore.install_builtin_template(template["folder"])
+        self.assertIsNotNone(TeamPresetStore.get_preset(preset.id))
+        self.assertTrue(TeamPresetStore.has_team_code(preset.id))
+        self.assertEqual(preset.description, template["description"])
+        from src.team_preset.TeamLogicLoader import load_team_logic
+        self.assertIsNotNone(load_team_logic(preset.id))
+
+    def test_slot_required_roundtrip(self):
+        preset = self._add_preset("req")
+        preset.slots = [TeamPresetSlot(char="Iuno", enabled=True, required=True)]
+        TeamPresetStore.save_preset(preset)
+        loaded = TeamPresetStore.get_preset(preset.id)
+        self.assertTrue(loaded.slots[0].required)
+        data = TeamPresetStore.export_preset(preset.id)
+        self.assertTrue(data["preset"]["slots"][0]["required"])
+        imported = TeamPresetStore.import_preset(data)
+        self.assertTrue(imported.slots[0].required)
+
+    def test_required_slot_blocks_auto_match(self):
+        preset = self._add_preset("x", slots=[
+            TeamPresetSlot(char="Iuno", enabled=True, required=True),
+            TeamPresetSlot(char="Chisa", enabled=True),
+        ])
+        self.assertIsNone(TeamPresetStore.resolve_preset_for_team(["Chisa", "Galbrena"]))
+        resolved = TeamPresetStore.resolve_preset_for_team(["Iuno", "Chisa"])
+        self.assertEqual(resolved.id, preset.id)
+        resolved = TeamPresetStore.resolve_preset_for_team(["Iuno"])
+        self.assertEqual(resolved.id, preset.id)
+
+    def test_required_slot_does_not_block_forced(self):
+        preset = self._add_preset("x", slots=[
+            TeamPresetSlot(char="Iuno", enabled=True, required=True)])
+        TeamPresetStore.set_forced(preset.id)
+        resolved = TeamPresetStore.resolve_preset_for_team(["Chisa"])
+        self.assertEqual(resolved.id, preset.id)
+
+    def test_resolve_best_score_wins(self):
+        low = self._add_preset("low", slots=[
+            TeamPresetSlot(char="Iuno", enabled=True),
+            TeamPresetSlot(char="Chisa", enabled=True),
+        ])
+        high = self._add_preset("high", slots=[
+            TeamPresetSlot(char="Iuno", enabled=True),
+            TeamPresetSlot(char="Verina", enabled=True),
+        ])
+        resolved = TeamPresetStore.resolve_preset_for_team(["Iuno", "Verina", "Galbrena"])
+        self.assertEqual(resolved.id, high.id)
+        self.assertNotEqual(resolved.id, low.id)
+
+    def test_resolve_full_match_preferred(self):
+        exact = self._add_preset("exact", slots=[
+            TeamPresetSlot(char="Iuno", enabled=True),
+            TeamPresetSlot(char="Chisa", enabled=True),
+            TeamPresetSlot(char="Verina", enabled=True),
+        ])
+        partial = self._add_preset("partial", slots=[
+            TeamPresetSlot(char="Iuno", enabled=True),
+            TeamPresetSlot(char="Chisa", enabled=True),
+        ])
+        resolved = TeamPresetStore.resolve_preset_for_team(["Iuno", "Chisa", "Verina"])
+        self.assertEqual(resolved.id, exact.id)
+        self.assertNotEqual(resolved.id, partial.id)
+
+    def test_match_attempts_recorded(self):
+        self._add_preset("a", slots=[TeamPresetSlot(char="Iuno", enabled=True)])
+        TeamPresetStore.resolve_preset_for_team(["Iuno"])
+        attempts = TeamPresetStore.get_last_match_attempts()
+        self.assertEqual(len(attempts), 1)
+        self.assertEqual(attempts[0]["score"], 1.0)
+        self.assertEqual(attempts[0]["hits"], ["Iuno"])
+
+    def test_match_attempts_recorded_on_fail(self):
+        self._add_preset("a", slots=[
+            TeamPresetSlot(char="Iuno", enabled=True, required=True)])
+        TeamPresetStore.resolve_preset_for_team(["Chisa"])
+        attempts = TeamPresetStore.get_last_match_attempts()
+        self.assertEqual(len(attempts), 1)
+        self.assertEqual(attempts[0]["score"], 0.0)
+        self.assertEqual(attempts[0]["missing_required"], ["Iuno"])
+
+    def test_meta_file_written_on_add_and_save(self):
+        preset = self._add_preset("meta")
+        meta = self.base / "team_presets" / preset.id / "preset.json"
+        self.assertTrue(meta.exists())
+        data = json.loads(meta.read_text(encoding="utf-8"))
+        self.assertEqual(data["name"], "meta")
+        preset.name = "renamed"
+        TeamPresetStore.save_preset(preset)
+        data = json.loads(meta.read_text(encoding="utf-8"))
+        self.assertEqual(data["name"], "renamed")
+
+    def test_rebuild_index_recovers_presets(self):
+        a = self._add_preset("alpha")
+        b = self._add_preset("beta")
+        index_path = self.base / "team_presets" / "index.json"
+        index_path.unlink()
+        index = TeamPresetStore.rebuild_index()
+        self.assertEqual(len(index["presets"]), 2)
+        ids = {p["id"] for p in index["presets"]}
+        self.assertEqual(ids, {a.id, b.id})
+        self.assertEqual([p.name for p in TeamPresetStore.list_presets()],
+                         ["alpha", "beta"])
+
+    def test_load_index_recovers_broken_json(self):
+        self._add_preset("alpha")
+        index_path = self.base / "team_presets" / "index.json"
+        index_path.write_text("not valid json {{{", encoding="utf-8")
+        loaded = TeamPresetStore.get_preset("alpha")
+        self.assertIsNotNone(loaded)
+        self.assertEqual(loaded.name, "alpha")
+
+    def test_rebuild_index_preserves_forced(self):
+        preset = self._add_preset("alpha")
+        TeamPresetStore.set_forced(preset.id)
+        TeamPresetStore.rebuild_index()
+        self.assertEqual(TeamPresetStore.get_forced_name(), preset.id)
+
+
+class _FakeChar:
+    def __init__(self, index, char_name="Fake"):
+        self.index = index
+        self.char_name = char_name
+        self.is_current_char = False
+        self.perform_calls = 0
+        self.switch_out_calls = 0
+        self.last_switch_in_time = 0
+        self._liberation_available = False
+
+    def perform(self):
+        self.perform_calls += 1
+
+    def switch_out(self, con_full=False):
+        self.switch_out_calls += 1
+
+    def liberation_available(self):
+        return True
+
+
+class TestTeamLogicDriving(unittest.TestCase):
+    """BaseCombatTask._perform_current 的三级优先级驱动测试。"""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.base = Path(self.tmp.name)
+        TeamPresetStore.override_folder = self.base
+        TeamPresetStore.set_forced("")
+        self.preset = TeamPreset(id=TeamPresetStore.generate_id("driving"), name="driving")
+        TeamPresetStore.add_preset(self.preset)
+        TeamPresetStore.set_forced(self.preset.id)
+        self.char_a = _FakeChar(0, "A")
+        self.char_b = _FakeChar(1, "B")
+        self.char_a.is_current_char = True
+        from src.task.BaseCombatTask import BaseCombatTask
+        self.task = object.__new__(BaseCombatTask)
+        self.task.chars = [self.char_a, self.char_b]
+        self.task.active_team_logic = None
+        self.task.active_preset = self.preset
+        self.task.info = {}
+
+    def tearDown(self):
+        TeamPresetStore.override_folder = None
+        self.tmp.cleanup()
+
+    def _load_logic(self, code):
+        TeamPresetStore.save_team_code(self.preset.id, code)
+        cls = load_team_logic(self.preset.id)
+        self.assertIsNotNone(cls)
+        return cls(self.task, self.task.chars)
+
+    def test_team_logic_takes_precedence(self):
+        logic = self._load_logic(
+            "class L(BaseTeamCombat):\n"
+            "    def perform(self):\n"
+            "        self.task._logic_calls = getattr(self.task, '_logic_calls', 0) + 1\n")
+        self.task.active_team_logic = logic
+        self.task._perform_current()
+        self.assertEqual(self.task._logic_calls, 1)
+        self.assertEqual(self.char_a.perform_calls, 0)
+
+    def test_team_logic_error_falls_back_and_records(self):
+        logic = self._load_logic(
+            "class L(BaseTeamCombat):\n"
+            "    def perform(self):\n"
+            "        raise RuntimeError('boom')\n")
+        self.task.active_team_logic = logic
+        self.task._perform_current()
+        self.assertEqual(self.char_a.perform_calls, 1)
+        self.assertIsNone(self.task.active_team_logic)
+        error = TeamPresetStore.get_last_team_logic_error()
+        self.assertIsNotNone(error)
+        self.assertIn("boom", error["message"])
+
+    def test_team_logic_not_in_combat_propagates(self):
+        logic = self._load_logic(
+            "class L(BaseTeamCombat):\n"
+            "    def perform(self):\n"
+            "        from src.task.BaseCombatTask import NotInCombatException\n"
+            "        raise NotInCombatException('out')\n")
+        self.task.active_team_logic = logic
+        from src.task.BaseCombatTask import NotInCombatException
+        with self.assertRaises(NotInCombatException):
+            self.task._perform_current()
+        self.assertIsNone(TeamPresetStore.get_last_team_logic_error())
+        self.assertEqual(self.char_a.perform_calls, 0)
+
+    def test_no_team_logic_uses_char(self):
+        self.task._perform_current()
+        self.assertEqual(self.char_a.perform_calls, 1)
+
+
+class _FakeSwitchTask:
+    def __init__(self, chars, current_index):
+        self.chars = chars
+        self.current_index = current_index
+        self.pressed = []
+        self.next_frames = 0
+
+    def check_combat(self):
+        pass
+
+    def in_team(self):
+        return True, self.current_index, len(self.chars)
+
+    def raise_not_in_combat(self, msg):
+        raise RuntimeError(msg)
+
+    def send_key(self, key, after_sleep=0):
+        self.pressed.append(key)
+
+    def click(self, x=-1, y=-1, move_back=False, name=None, interval=-1,
+              move=False, down_time=0.01, after_sleep=0, **kwargs):
+        self.current_index = 1 if self.current_index == 0 else 0
+
+    def sleep(self, sec):
+        pass
+
+    def next_frame(self):
+        self.next_frames += 1
+
+    def log_error(self, msg):
+        self.last_error = msg
+
+
+class TestTeamLogicSwitch(unittest.TestCase):
+
+    def test_switch_to_changes_current_char(self):
+        a = _FakeChar(0, "A")
+        b = _FakeChar(1, "B")
+        a.is_current_char = True
+        task = _FakeSwitchTask([a, b], 0)
+        from src.team_preset.BaseTeamCombat import BaseTeamCombat
+        logic = BaseTeamCombat(task, [a, b])
+        self.assertTrue(logic.switch_to(1))
+        self.assertTrue(b.is_current_char)
+        self.assertFalse(a.is_current_char)
+        self.assertEqual(a.switch_out_calls, 1)
+        self.assertGreater(b.last_switch_in_time, 0)
+        self.assertIn(2, task.pressed)
+        self.assertGreater(task.next_frames, 0)
+
+    def test_switch_to_same_char_is_noop(self):
+        a = _FakeChar(0, "A")
+        a.is_current_char = True
+        task = _FakeSwitchTask([a], 0)
+        from src.team_preset.BaseTeamCombat import BaseTeamCombat
+        logic = BaseTeamCombat(task, [a])
+        self.assertTrue(logic.switch_to(0))
+        self.assertEqual(a.switch_out_calls, 0)
+
+    def test_switch_to_missing_slot_returns_false(self):
+        a = _FakeChar(0, "A")
+        a.is_current_char = True
+        task = _FakeSwitchTask([a], 0)
+        from src.team_preset.BaseTeamCombat import BaseTeamCombat
+        logic = BaseTeamCombat(task, [a])
+        self.assertFalse(logic.switch_to(2))
+
+
+class TestTeamLogicPrimitives(unittest.TestCase):
+
+    def test_char_is_and_current_index(self):
+        a = _FakeChar(0, "Verina")
+        b = _FakeChar(1, "Iuno")
+        a.is_current_char = True
+        task = _FakeSwitchTask([a, b], 0)
+        from src.team_preset.BaseTeamCombat import BaseTeamCombat
+        logic = BaseTeamCombat(task, [a, b])
+        self.assertTrue(logic.char_is(0, "Verina"))
+        self.assertFalse(logic.char_is(0, "Iuno"))
+        self.assertFalse(logic.char_is(2, "Verina"))
+        self.assertEqual(logic.current_index, 0)
+        b.is_current_char = True
+        a.is_current_char = False
+        self.assertEqual(logic.current_index, 1)
+
+    def test_log_helpers_fallback_to_logger(self):
+        task = _FakeSwitchTask([], 0)
+        from src.team_preset.BaseTeamCombat import BaseTeamCombat
+        logic = BaseTeamCombat(task, [])
+        logic.log_info("hi")
+        logic.log_debug("hi")
+        logic.log_error("hi")
+
+
+class _FakeCombatTask:
+    def __init__(self, chars):
+        self.chars = chars
+        self.active_preset = None
+        self.char_config = None
+        self.global_config = {"Global": True}
+        self.logs = []
+
+    def log_info(self, msg):
+        self.logs.append(msg)
+
+    def get_global_config(self, name):
+        return self.global_config
+
+
+class TestTeamPresetSwitching(unittest.TestCase):
+    """BaseCombatTask._apply_preset_match 的三态切换测试:
+    全局配置 → 自动匹配预设 → 换预设 → 回退全局,以及强制预设覆盖。"""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.base = Path(self.tmp.name)
+        TeamPresetStore.override_folder = self.base
+        TeamPresetStore.set_forced("")
+        from src.task.BaseCombatTask import BaseCombatTask
+        self.task = object.__new__(BaseCombatTask)
+        self.task.chars = [_FakeChar(0, "char_iuno"), _FakeChar(1, "char_chisa")]
+        self.task.active_preset = None
+        self.task.char_config = None
+        self.task.global_config = {"Global": True}
+        self.task.logs = []
+        self.task.log_info = self.task.logs.append
+        self.task.get_global_config = lambda name: self.task.global_config
+
+    def tearDown(self):
+        TeamPresetStore.override_folder = None
+        self.tmp.cleanup()
+
+    def _preset(self, name, char, required=False):
+        preset = TeamPreset(id=TeamPresetStore.generate_id(name), name=name,
+                            slots=[TeamPresetSlot(char=char, enabled=True,
+                                                  params={f"{char} C6": True},
+                                                  required=required)])
+        TeamPresetStore.add_preset(preset)
+        return preset
+
+    def test_global_to_auto_match(self):
+        preset = self._preset("p", "Iuno")
+        self.assertTrue(self.task._apply_preset_match())
+        self.assertEqual(self.task.active_preset.id, preset.id)
+        self.assertEqual(self.task.char_config, {"Iuno C6": True})
+        self.assertEqual(TeamPresetStore.get_last_auto_match().id, preset.id)
+
+    def test_auto_to_different_preset(self):
+        first = self._preset("first", "Iuno")
+        second = self._preset("second", "Chisa")
+        self.task.chars = [_FakeChar(0, "char_chisa")]
+        self.task.active_preset = first
+        self.assertTrue(self.task._apply_preset_match())
+        self.assertEqual(self.task.active_preset.id, second.id)
+
+    def test_auto_to_global_fallback(self):
+        self._preset("p", "Iuno")
+        self.task.chars = [_FakeChar(0, "char_verina")]
+        preset = TeamPresetStore.get_preset(TeamPresetStore.list_preset_ids().pop())
+        self.task.active_preset = preset
+        self.task.char_config = {"old": True}
+        self.assertTrue(self.task._apply_preset_match())
+        self.assertIsNone(self.task.active_preset)
+        self.assertEqual(self.task.char_config, self.task.global_config)
+        self.assertIsNone(TeamPresetStore.get_last_auto_match())
+        self.assertTrue(any("fell back" in log for log in self.task.logs))
+
+    def test_forced_preset_overrides_auto(self):
+        forced = self._preset("forced", "Iuno", required=True)
+        self._preset("auto", "Chisa")
+        TeamPresetStore.set_forced(forced.id)
+        self.assertTrue(self.task._apply_preset_match())
+        self.assertEqual(self.task.active_preset.id, forced.id)
+
+    def test_no_detected_chars_noop(self):
+        self.task.chars = []
+        self.assertFalse(self.task._apply_preset_match())
+        self.assertIsNone(self.task.active_preset)
+
+
+class _FakeBaseChar:
+    MARKER = "base"
+
+
+class TestCustomCodePriority(unittest.TestCase):
+    """全局自定义代码 vs 预设自定义代码的加载优先级:
+    预设自定义 > 全局自定义(启用时)> 内置。"""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.base = Path(self.tmp.name)
+        TeamPresetStore.override_folder = self.base
+        from ok.util.config import Config
+        self._old_config_folder = Config.config_folder
+        Config.config_folder = str(self.base)
+        from src.char.CustomCharLoader import clear_custom_char_cache
+        clear_custom_char_cache()
+        self.preset = TeamPreset(id=TeamPresetStore.generate_id("code"), name="code")
+        TeamPresetStore.add_preset(self.preset)
+
+    def tearDown(self):
+        from ok.util.config import Config
+        Config.config_folder = self._old_config_folder
+        from src.char.CustomCharLoader import clear_custom_char_cache
+        clear_custom_char_cache()
+        TeamPresetStore.override_folder = None
+        self.tmp.cleanup()
+
+    def _code(self, marker):
+        return (f"from src.char.BaseChar import BaseChar\n"
+                f"class _FakeBaseChar(BaseChar):\n"
+                f"    MARKER = '{marker}'\n")
+
+    def test_preset_code_beats_global(self):
+        from src.char.CustomCharLoader import (
+            load_custom_char_class_with_preset, save_custom_char_code,
+        )
+        TeamPresetStore.save_custom_code(self.preset.id, "_FakeBaseChar",
+                                         self._code("preset"))
+        save_custom_char_code(_FakeBaseChar, self._code("global"), use_custom=True)
+        cls = load_custom_char_class_with_preset(_FakeBaseChar, self.preset.id)
+        self.assertEqual(cls.MARKER, "preset")
+
+    def test_global_custom_when_no_preset_code(self):
+        from src.char.CustomCharLoader import (
+            load_custom_char_class_with_preset, save_custom_char_code,
+        )
+        save_custom_char_code(_FakeBaseChar, self._code("global"), use_custom=True)
+        cls = load_custom_char_class_with_preset(_FakeBaseChar, self.preset.id)
+        self.assertEqual(cls.MARKER, "global")
+
+    def test_builtin_when_global_disabled(self):
+        from src.char.CustomCharLoader import (
+            load_custom_char_class_with_preset, save_custom_char_code,
+        )
+        save_custom_char_code(_FakeBaseChar, self._code("global"), use_custom=False)
+        cls = load_custom_char_class_with_preset(_FakeBaseChar, self.preset.id)
+        self.assertIs(cls, _FakeBaseChar)
+
+    def test_builtin_without_any_custom(self):
+        from src.char.CustomCharLoader import load_custom_char_class_with_preset
+        cls = load_custom_char_class_with_preset(_FakeBaseChar, self.preset.id)
+        self.assertIs(cls, _FakeBaseChar)
+
+    def test_preset_code_fallback_to_global_on_error(self):
+        from src.char.CustomCharLoader import (
+            load_custom_char_class_with_preset, save_custom_char_code,
+        )
+        save_custom_char_code(_FakeBaseChar, self._code("global"), use_custom=True)
+        TeamPresetStore.save_custom_code(
+            self.preset.id, "_FakeBaseChar",
+            "class _FakeBaseChar:\n"      # 不继承 BaseChar → 加载失败
+            "    MARKER = 'broken'\n")
+        cls = load_custom_char_class_with_preset(_FakeBaseChar, self.preset.id)
+        self.assertEqual(cls.MARKER, "global")
 
 
 if __name__ == "__main__":
