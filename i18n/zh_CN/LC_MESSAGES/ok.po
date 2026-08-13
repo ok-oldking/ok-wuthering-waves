@@ -329,7 +329,7 @@ msgid ""
 msgstr "必须16:9分辨率, 没有勾选的都会标记为弃置, 大世界启动"
 
 msgid "Boss"
-msgstr ""
+msgstr "Boss"
 
 msgid "Celestial Light"
 msgstr "浮星祛暗"
@@ -631,13 +631,13 @@ msgid "Need mankind help"
 msgstr "自动肉鸽失败, 需要手动操作到下一节点!"
 
 msgid "current task"
-msgstr ""
+msgstr "当前任务"
 
 msgid "in main"
-msgstr ""
+msgstr "主线中"
 
 msgid "wait main"
-msgstr ""
+msgstr "等待主线"
 
 msgid "Stop When Treasure Found"
 msgstr "出现声骸奖励时停止运行"
@@ -749,16 +749,16 @@ msgid ""
 msgstr "在完成日常任务活跃度之后仍然刷取体力直到体力耗尽"
 
 msgid "F10"
-msgstr ""
+msgstr "F10"
 
 msgid "F11"
-msgstr ""
+msgstr "F11"
 
 msgid "F12"
-msgstr ""
+msgstr "F12"
 
 msgid "F9"
-msgstr ""
+msgstr "F9"
 
 msgid "Nightmare Purification"
 msgstr "梦魇拔除"

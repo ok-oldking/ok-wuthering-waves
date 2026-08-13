@@ -704,79 +704,79 @@ msgid "Auto Farm all Nightmare Nest"
 msgstr "Farmea automáticamente todos los Nidos de Pesadilla."
 
 msgid "Default"
-msgstr ""
+msgstr "Por defecto"
 
 msgid "Fenrico"
-msgstr ""
+msgstr "Fenrico"
 
 msgid "Nameless Explorer"
-msgstr ""
+msgstr "Exploradora sin nombre"
 
 msgid "Lady of the Sea"
-msgstr ""
+msgstr "Dama del Mar"
 
 msgid "Lioness of Glory"
-msgstr ""
+msgstr "Leona de la Gloria"
 
 msgid "Nightmare Nest Task"
-msgstr ""
+msgstr "Tarea Nido de Pesadilla"
 
 msgid "Select boss profile (includes Combat Wait Time)"
-msgstr ""
+msgstr "Seleccionar perfil de jefe (incluye tiempo de espera antes del combate)"
 
 msgid "Wait time before each combat (seconds), overrides Boss profile if set"
-msgstr ""
+msgstr "Si es mayor que 0, anula el perfil de jefe"
 
 msgid "Auto Click Fast Travel in Map"
 msgstr "Hace clic automáticamente en Viaje rápido en el mapa."
 
 msgid "Character Config"
-msgstr ""
+msgstr "Configuración de personajes"
 
 msgid "Check Levitator"
-msgstr ""
+msgstr "Verificar si la herramienta de exploración es el elevador"
 
 msgid "Do not use Liberation in Open World to Save Time"
-msgstr ""
+msgstr "No usar la Liberación en el mundo abierto para ahorrar tiempo"
 
 msgid "Do not use Liberation to Save Time"
-msgstr ""
+msgstr "Si tu nivel es alto, no usar la Liberación para ahorrar tiempo"
 
 msgid "Fast Travel"
-msgstr ""
+msgstr "Viaje rápido"
 
 msgid "Iuno C6"
-msgstr ""
+msgstr "Iuno C6"
 
 msgid "Verina C2"
-msgstr ""
+msgstr "Verina C2"
 
 msgid "Chisa DPS"
-msgstr ""
+msgstr "Chisa DPS"
 
 msgid "Nightmare: Hecate"
-msgstr ""
+msgstr "Pesadilla: Hécate"
 
 msgid "Hyvatia"
-msgstr ""
+msgstr "Hyvatia"
 
 msgid "Other"
-msgstr ""
+msgstr "Otros"
 
 msgid "Toggle the levitator and verify if the character is floating"
-msgstr ""
+msgstr "Cambiar al elevador en el combate automático para verificar si el personaje está en el aire"
 
 msgid "Use Liberation"
-msgstr ""
+msgstr "Usar la Liberación"
 
 msgid "Daily"
-msgstr ""
+msgstr "Diarias semanales"
 
 msgid "Dungeon"
-msgstr ""
+msgstr "Tarea de mazmorra"
 
 msgid "Farm"
-msgstr ""
+msgstr "Tarea 4C"
 
 msgid "Multi Account Daily Task"
 msgstr "Tarea diaria multi cuenta"

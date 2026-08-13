@@ -654,28 +654,28 @@ msgid "Auto Farm all Nightmare Nest"
 msgstr "すべてのナイトメア・ネストを自動周回します。"
 
 msgid "Default"
-msgstr ""
+msgstr "デフォルト"
 
 msgid "Fenrico"
-msgstr ""
+msgstr "フェンリコ"
 
 msgid "Nameless Explorer"
 msgstr "名もない探索者"
 
 msgid "Lady of the Sea"
-msgstr ""
+msgstr "海の貴婦人"
 
 msgid "Lioness of Glory"
-msgstr ""
+msgstr "栄光の獅子"
 
 msgid "Nightmare Nest Task"
-msgstr ""
+msgstr "ナイトメアの巣"
 
 msgid "Select boss profile (includes Combat Wait Time)"
-msgstr ""
+msgstr "ボスプロフィールを選択 (戦闘開始前の待機時間を含む)"
 
 msgid "Wait time before each combat (seconds), overrides Boss profile if set"
-msgstr ""
+msgstr "0より大きい場合、ボスプロフィールを上書きする"
 
 msgid "Auto Click Fast Travel in Map"
 msgstr "マップ上のファストトラベルを自動でクリックします。"
@@ -684,16 +684,16 @@ msgid "Character Config"
 msgstr "キャラクター設定"
 
 msgid "Check Levitator"
-msgstr ""
+msgstr "探索ツールが浮遊装置か確認"
 
 msgid "Do not use Liberation in Open World to Save Time"
-msgstr ""
+msgstr "オープンワールドで時間節約のため共鳴解放を使わない"
 
 msgid "Do not use Liberation to Save Time"
-msgstr ""
+msgstr "高練度の場合、時間節約のため共鳴解放を使わない"
 
 msgid "Fast Travel"
-msgstr ""
+msgstr "高速移動"
 
 msgid "Iuno C6"
 msgstr "ユーノ完凸"
@@ -705,28 +705,28 @@ msgid "Chisa DPS"
 msgstr "千咲 アタッカー"
 
 msgid "Nightmare: Hecate"
-msgstr ""
+msgstr "ナイトメア・ヘカテ"
 
 msgid "Hyvatia"
 msgstr "ハイヴェイシャ"
 
 msgid "Other"
-msgstr ""
+msgstr "その他"
 
 msgid "Toggle the levitator and verify if the character is floating"
-msgstr ""
+msgstr "秘境の自動戦闘時に浮遊装置を切り替えてキャラが空中にいるか確認する"
 
 msgid "Use Liberation"
-msgstr ""
+msgstr "共鳴解放を使う"
 
 msgid "Daily"
-msgstr ""
+msgstr "週間デイリー"
 
 msgid "Dungeon"
-msgstr ""
+msgstr "ダンジョンタスク"
 
 msgid "Farm"
-msgstr ""
+msgstr "4Cタスク"
 
 msgid "Multi Account Daily Task"
 msgstr "マルチアカウントデイリータスク"

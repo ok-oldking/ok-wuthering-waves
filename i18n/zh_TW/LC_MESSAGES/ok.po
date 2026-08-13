@@ -631,13 +631,13 @@ msgid "Need mankind help"
 msgstr "自動肉鴿失敗，需要手動操作至下一節點！"
 
 msgid "current task"
-msgstr ""
+msgstr "目前任務"
 
 msgid "in main"
-msgstr ""
+msgstr "主線中"
 
 msgid "wait main"
-msgstr ""
+msgstr "等待主線"
 
 msgid "Stop When Treasure Found"
 msgstr "出現聲骸獎勵時停止執行"
@@ -749,16 +749,16 @@ msgid ""
 msgstr "在完成日常任務活躍度之後仍然刷取體力直到體力耗盡"
 
 msgid "F10"
-msgstr ""
+msgstr "F10"
 
 msgid "F11"
-msgstr ""
+msgstr "F11"
 
 msgid "F12"
-msgstr ""
+msgstr "F12"
 
 msgid "F9"
-msgstr ""
+msgstr "F9"
 
 msgid "Nightmare Purification"
 msgstr "夢魘拔除"
