@@ -1,0 +1,56 @@
+name: Sync issue triage labels
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - .github/workflows/issue-triage.md
+      - .github/workflows/sync_issue_labels.yml
+
+permissions:
+  issues: write
+
+jobs:
+  sync-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create or update issue triage labels
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const labels = [
+              ['more-information-needed', 'd4c5f9', 'More details are required before this can be investigated'],
+              ['faq-candidate', '7057ff', 'A recurring answered question that should be incorporated into the FAQ'],
+              ['request-ai-triage', '5319e7', 'Apply this label to ask Copilot to re-triage an issue'],
+              ['area: combat/character', 'b60205', 'Characters, rotations, switching, skills, echoes, or combat state'],
+              ['area: daily/farming', 'fbca04', 'Daily tasks, farming, instances, bosses, routes, or weekly tasks'],
+              ['area: startup/update', 'd93f0b', 'Installation, updates, startup, crashes, dependencies, or packaging'],
+              ['area: recognition/input', '0e8a16', 'OCR, image recognition, capture, resolution, or input mapping'],
+              ['area: account', '1d76db', 'Login, launcher, disconnects, or multi-account behavior'],
+              ['area: ui/config', '006b75', 'Application UI, settings, language, notifications, or configuration'],
+              ['area: other', 'c5def5', 'Repository work outside the established issue areas'],
+              ['priority: high', 'b60205', 'Blocks a core workflow, affects many users, or carries serious risk'],
+              ['priority: normal', 'fbca04', 'Normal priority defect or feature request'],
+              ['priority: low', 'c5def5', 'Narrow, cosmetic, or low-impact work'],
+            ];
+
+            for (const [name, color, description] of labels) {
+              try {
+                await github.rest.issues.updateLabel({
+                  ...context.repo,
+                  name,
+                  new_name: name,
+                  color,
+                  description,
+                });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                await github.rest.issues.createLabel({
+                  ...context.repo,
+                  name,
+                  color,
+                  description,
+                });
+              }
+            }

@@ -1,28 +1,28 @@
 <div align="center">
   <h1 align="center">
-    <img src="icon.png" width="200" alt="ok-ww logo"/>
+    <img src="https://raw.githubusercontent.com/ok-oldking/ok-wuthering-waves/master/icons/icon.png" width="200" alt="ok-ww logo"/>
     <br/>
     ok-ww
   </h1> 
   
   <p>
-    一個基於圖像辨識的鳴潮自動化程式，支援背景執行，基於 <a href="https://github.com/ok-oldking/ok-script">ok-script</a> 開發。
+    一個基於圖像辨識的鳴潮自動化程式，支援背景執行，基於 <a href="https://ok-script.com">ok-script</a> 開發。
   </p>
   
   <p><i>透過 Windows 介面模擬使用者操作，無記憶體讀取、無檔案修改</i></p>
 </div>
 
 <!-- Badges -->
-<div align="center">
-  
-![平台](https://img.shields.io/badge/platform-Windows-blue)
-[![GitHub release](https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
-[![總下載量](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
-[![Discord](https://img.shields.io/discord/296598043787132928?color=5865f2&label=%20Discord)](https://discord.gg/vVyCatEBgA)
-
+<div class="badge-row">
+  <img src="https://img.shields.io/badge/platform-Windows-blue" alt="平台" />
+  <a href="https://github.com/ok-oldking/ok-wuthering-waves/releases"><img src="https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves" alt="GitHub release" /></a>
+  <a href="https://github.com/ok-oldking/ok-wuthering-waves/releases"><img src="https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total" alt="總下載量" /></a>
+  <a href="https://discord.gg/vVyCatEBgA"><img src="https://img.shields.io/discord/296598043787132928?color=5865f2&amp;label=%20Discord" alt="Discord" /></a>
 </div>
 
-### [English Readme](README_en.md) | [中文说明](README.md) | 繁體中文說明 | [日本語Readme](README_ja.md)
+<p align="center"><strong>官方網站：</strong> <a href="https://ok-script.com/ok-ww">https://ok-script.com/ok-ww</a></p>
+
+### [English](../en/index.md) | [简体中文](../zh-CN/index.md) | 繁體中文 | [日本語](../ja/index.md)
 
 **示範與教學:** [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/h6P1KWjdnB4)
 
@@ -75,6 +75,7 @@
 7.  **OpenVINO 錯誤**：如果遇到 `0x000005` 錯誤，並且使用的是配備 NPU 的 Intel CPU，請更新至 Intel 最新的 NPU 驅動程式。
 8.  **尋求協助**：如果以上步驟都無法解決您的問題，請透過社群管道提交詳細的錯誤回報。
 9.  **關閉自動奔跑**：在遊戲設定裡關閉自動奔跑。
+10. **為所有角色裝備主聲骸**：隊伍中的每個角色都必須裝備主聲骸（畫面右下角應顯示聲骸技能圖示）。任何一個角色未裝備主聲骸時，自動戰鬥將無法正常運作，並可能反覆鎖定敵人而不攻擊。
 
 ---
 
@@ -111,7 +112,7 @@ ok-ww.exe -t 1 -e
 
 *   **Discord**: [點擊加入](https://discord.gg/vVyCatEBgA)
 
-本專案基於 [ok-script](https://github.com/ok-oldking/ok-script) 框架開發，簡單易維護。歡迎有興趣的開發者使用 [ok-script](https://github.com/ok-oldking/ok-script) 開發您自己的自動化專案。
+本專案基於 [ok-script](https://ok-script.com) 框架開發，簡單易維護。歡迎有興趣的開發者使用 [ok-script](https://ok-script.com) 開發您自己的自動化專案。
 
 ## 🔗 使用 ok-script 的專案：
 

@@ -1,0 +1,61 @@
+site_name: ok-ww
+site_description: Documentation for the ok-ww Wuthering Waves automation tool
+site_url: https://ok-script.com/ok-ww/
+repo_url: https://github.com/ok-oldking/ok-wuthering-waves
+repo_name: ok-oldking/ok-wuthering-waves
+edit_uri: edit/master/docs/
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - content.action.edit
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - English: en/index.md
+  - 简体中文: zh-CN/index.md
+  - 繁體中文: zh-TW/index.md
+  - 日本語: ja/index.md
+  - Development:
+      - Contributing: development/contributing.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences
+
+extra_css:
+  - stylesheets/extra.css
+
+exclude_docs: |
+  README.md
+
+plugins:
+  - search
+
+strict: true

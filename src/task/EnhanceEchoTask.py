@@ -3,8 +3,6 @@ import re
 import time
 import os
 
-from qfluentwidgets import FluentIcon
-
 from ok import FindFeature, Logger
 from ok.feature.Box import get_bounding_box
 from ok.util.file import clear_folder
@@ -21,11 +19,8 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = "批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
+        self.name = "⬆️ 批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
         self.description = "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按照等级从0排序后开始."
-        self.icon = FluentIcon.ADD
-        self.group_name = "强化声骸"
-        self.group_icon = FluentIcon.ADD
         self.fail_reason = ""
         self.supported_languages = ["zh_CN", "zh_TW"]
         self.default_config.update({
@@ -105,7 +100,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                 if not have_add_mat:
                     raise Exception('强化设置需要开启阶段放入!')
 
-                if not self.wait_click_ocr(0.17, 0.88, 0.29, 0.96, match=['强化并调谐'],
+                if not self.wait_click_ocr(0.1, 0.88, 0.29, 0.96, match=['强化并调谐'],
                                            settle_time=0.1,
                                            after_sleep=1.5):
                     if self.ocr(0.17, 0.88, 0.29, 0.96, match=['强化']):
@@ -116,11 +111,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                                               match=[re.compile('不再提示'), '调谐成功', re.compile('点击任')],
                                               time_out=2):
                     if handle[0].name in ['本次登录不再提示', '本次登入不再提示']:
-                        click = handle[0]
-                        click.width = 1
-                        click.x -= click.height * 1.1
-                        self.click(click, after_sleep=0.5)
-                        self.click(self.find_confirm(), after_sleep=0.5)
+                        self.click_skip_dialog_confirm()
                     elif handle[0].name in ['点击任意位置返回', '调谐成功']:
                         self.click(handle, after_sleep=1)
                     else:

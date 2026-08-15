@@ -1,22 +1,22 @@
 <div align="center">
   <h1 align="center">
-    <img src="icon.png" width="200" alt="ok-ww logo"/>
+    <img src="icons/icon.png" width="200" alt="ok-ww logo"/>
     <br/>
     ok-ww
-  </h1> 
-  
+  </h1>
+
   <p>
-    一个基于图像识别的鸣潮自动化程序，支持后台运行，基于 <a href="https://github.com/ok-oldking/ok-script">ok-script</a> 开发。
+    一个基于图像识别的鸣潮自动化程序，支持后台运行，基于 <a href="https://ok-script.com">ok-script</a> 开发。
     <br />
-    An image-recognition-based automation tool for Wuthering Waves, with background mode support, developed with <a href="https://github.com/ok-oldking/ok-script">ok-script</a>.
+    An image-recognition-based automation tool for Wuthering Waves, with background mode support, developed with <a href="https://ok-script.com">ok-script</a>.
   </p>
-  
+
   <p><i>通过 Windows 接口模拟用户进行操作，无内存读取、无文件修改</i></p>
 </div>
 
 <!-- Badges -->
 <div align="center">
-  
+
 ![平台](https://img.shields.io/badge/platform-Windows-blue)
 [![GitHub release](https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
 [![总下载量](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
@@ -24,7 +24,9 @@
 
 </div>
 
-### [English Readme](README_en.md) | 中文说明 | [繁體中文說明](README_zh_TW.md) | [日本語Readme](README_ja.md)
+<p align="center"><strong>官方网站：</strong> <a href="https://ok-script.com/ok-ww">https://ok-script.com/ok-ww</a></p>
+
+### [English](docs/en/index.md) | 中文说明 | [繁體中文](docs/zh-TW/index.md) | [日本語](docs/ja/index.md)
 
 **演示与教程:** [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/h6P1KWjdnB4)
 
@@ -80,6 +82,7 @@
 7.  **OpenVINO 报错**：如果遇到 `0x000005` 报错，并且使用的是带 NPU 的 Intel CPU，请更新至 Intel 最新的 NPU 驱动。
 8.  **寻求帮助**：如果以上步骤都无法解决您的问题，请通过社区渠道提交详细的错误报告。
 9.  **关闭自动奔跑**：游戏设置里关闭自动奔跑。
+10. **为所有角色装备主声骸**：队伍中的每个角色都必须装备主声骸（画面右下角应显示声骸技能图标）。任何一个角色未装备主声骸时，自动战斗将无法正常运行，并可能反复锁定敌人而不攻击。
 
 ---
 
@@ -118,7 +121,7 @@ ok-ww.exe -t 1 -e
 *   **QQ 频道**: [点击加入](https://pd.qq.com/s/djmm6l44y) (群满或获取最新资讯)
 *   **开发者群**: `926858895` ( **注意**: 此群仅面向有开发能力、希望参与贡献的开发者，入群前请确保您已能够从源码成功运行项目。)
 
-本项目基于 [ok-script](https://github.com/ok-oldking/ok-script) 框架开发，简单易维护。欢迎有兴趣的开发者使用 [ok-script](https://github.com/ok-oldking/ok-script) 开发您自己的自动化项目。
+本项目基于 [ok-script](https://ok-script.com) 框架开发，简单易维护。欢迎有兴趣的开发者使用 [ok-script](https://ok-script.com) 开发您自己的自动化项目。
 
 ## 🔗 使用ok-script的项目：
 

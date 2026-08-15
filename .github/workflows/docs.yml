@@ -1,0 +1,59 @@
+name: Documentation
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - docs/**
+      - mkdocs.yml
+      - requirements-docs.txt
+      - .github/workflows/docs.yml
+  pull_request:
+    paths:
+      - docs/**
+      - mkdocs.yml
+      - requirements-docs.txt
+      - .github/workflows/docs.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-docs.txt
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+      - run: pip install -r requirements-docs.txt
+      - run: mkdocs build --strict
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

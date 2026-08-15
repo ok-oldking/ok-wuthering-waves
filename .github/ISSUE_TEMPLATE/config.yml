@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discussions / 讨论区
+    url: https://github.com/ok-oldking/ok-wuthering-waves/discussions
+    about: Ask general questions or discuss ideas that are not yet ready for an issue. / 一般讨论或尚未明确的想法请发到讨论区。

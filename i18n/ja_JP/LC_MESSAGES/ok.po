@@ -651,7 +651,7 @@ msgid "Yes if Farming Nightmare: Hecate"
 msgstr "悪夢・ヘカテを周回する場合は「はい」を選択"
 
 msgid "Auto Farm all Nightmare Nest"
-msgstr ""
+msgstr "すべてのナイトメア・ネストを自動周回します。"
 
 msgid "Default"
 msgstr ""
@@ -678,7 +678,7 @@ msgid "Wait time before each combat (seconds), overrides Boss profile if set"
 msgstr ""
 
 msgid "Auto Click Fast Travel in Map"
-msgstr ""
+msgstr "マップ上のファストトラベルを自動でクリックします。"
 
 msgid "Character Config"
 msgstr "キャラクター設定"
@@ -1092,107 +1092,144 @@ msgstr "自動週間ガーデン"
 msgid "Detect and click garden actions until the task is stopped."
 msgstr "タスクが停止するまでガーデン操作を検出してクリックします。"
 
-msgid "High-value items display"
-msgstr "高価値アイテム表示"
-
-msgid "Get player position and display nearby high value items"
-msgstr "プレイヤーの位置を取得し、近くの高価値アイテムを表示する"
-
-msgid "Detect interval (ms)"
-msgstr "検出間隔(ミリ秒)"
-
-msgid "World map overlay"
-msgstr "ワールドマップオーバーレイ"
-
-msgid "Item type filter"
-msgstr "アイテムタイプフィルター"
-
-msgid "SURF"
-msgstr "SURF"
-
-msgid "SIFT"
-msgstr "SIFT"
-
-msgid "SIFTGZ"
-msgstr "SIFTGZ"
-
 msgid "Check Weekly Garden"
 msgstr "ウィークリーガーデンを確認"
 
-msgid "After claiming daily rewards, check weekly Garden progress and run Garden Task if 6000 points has not been reached."
+msgid ""
+"After claiming daily rewards, check weekly Garden progress and run Garden "
+"Task if 6000 points has not been reached."
 msgstr "デイリー報酬の受取後、ウィークリーガーデンの進捗を確認し、6000ポイント未達ならガーデンタスクを実行します。"
 
 msgid "Guidebook Key"
 msgstr "ソラリスガイド"
 
-msgid "Path mode"
-msgstr "ルートモード"
+msgid "Rover"
+msgstr "漂泊者"
 
-msgid "Advance hotkey"
-msgstr "目標送りホットキー"
+msgid "Yangyang: Xuanling"
+msgstr "秧秧・玄翎"
 
-msgid "Download map assets"
-msgstr "マップ素材のダウンロード"
-
-msgid "Download Map Assets"
-msgstr "マップ素材をダウンロード"
-
-msgid "Show only the route from assets/path.json, hide high-value items"
-msgstr "assets/path.json のルートのみ表示し、高価値アイテムは非表示"
+msgid "Merge Discarded Echoes"
+msgstr "破棄済み音骸を融合"
 
 msgid ""
-"Hotkey to advance the target manually (pynput format, e.g. <ctrl>+<f9>)"
-msgstr "目標を手動で送るホットキー（pynput 形式、例: <ctrl>+<f9>）"
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
+"batches of 100."
+msgstr "実行には破棄済み音骸が1000個必要です。破棄済み音骸を100個単位で融合します。"
 
-msgid "Download the latest map assets and extract them into the assets folder"
-msgstr "最新のマップ素材をダウンロードし、assets フォルダーに上書き展開します"
+msgid "Bag Key"
+msgstr "バッグキー"
 
-msgid "Map assets"
-msgstr "マップ素材"
+msgid "In-game hotkey used to open the Bag."
+msgstr "バッグを開くゲーム内ホットキー。"
 
-msgid "Map assets version"
-msgstr "マップ素材バージョン"
+msgid "Echo"
+msgstr "音骸"
 
-msgid "Map assets download failed"
-msgstr "マップ素材のダウンロードに失敗しました"
+msgid "Check Discarded Echo"
+msgstr "破棄済み音骸を確認"
 
-msgid ""
-"Failed to download map assets: {error}\n"
-"\n"
-"Please download it manually:\n"
-"{url}\n"
-"\n"
-"Then extract it into this folder (overwrite):\n"
-"{path}"
-msgstr ""
-"マップ素材のダウンロードに失敗しました: {error}\n"
-"\n"
-"手動でダウンロードしてください:\n"
-"{url}\n"
-"\n"
-"次のフォルダーに上書き展開してください:\n"
-"{path}"
+msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
+msgstr "デイリータスク後に破棄済み音骸が1000個あるか確認し、融合します。"
 
-msgid "OCR check"
-msgstr "座標認識"
+msgid "Teleport and Farm 4C Echo"
+msgstr "テレポートしてコスト4音骸を収集"
 
-msgid "Overlay"
-msgstr "オーバーレイ"
+msgid "Merge Echo If discarded > 1000"
+msgstr "破棄済み音骸が1000個超なら融合"
 
-msgid "Config error"
-msgstr "設定エラー"
+msgid "Additional Tasks to Run After Daily Task"
+msgstr "デイリータスク後に実行する追加タスク"
 
-msgid "Show status panel"
-msgstr "情報パネルを表示"
+msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
+msgstr "任意のタスクを選択します。悪夢の巣はデイリー達成を補助するためスタミナ消費前に実行し、その他のタスクはその後に実行します。"
 
-msgid "Show the info panel at the bottom-left corner of the game window"
-msgstr "ゲームウィンドウの左下に情報パネルを表示します"
+msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
+msgstr "「テレポートしてコスト4音骸を収集」を実行するには、音骸収集タスクの「ボスへテレポート」を有効にしてください。"
 
-msgid "Downloading map assets"
-msgstr "マップ素材をダウンロード中"
+msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgstr "「すべての悪夢の巣を自動周回」を実行するには、「周回対象」を1つ以上選択してください。"
 
-msgid "Map assets updated"
-msgstr "マップ素材を更新しました"
+msgid "Daily Task Completed"
+msgstr "デイリータスク完了"
 
-msgid "Close"
-msgstr "閉じる"
+msgid "Daily task completed, start teleport to farm 4C echo"
+msgstr "デイリータスク完了。テレポートしてコスト4音骸の収集を開始します"
+
+msgid "can't find dialog right button"
+msgstr "ダイアログの右ボタンが見つかりません"
+
+msgid "can't find dialog left button"
+msgstr "ダイアログの左ボタンが見つかりません"
+
+msgid "⚔️ Auto Combat"
+msgstr "⚔️ 自動戦闘"
+
+msgid "🔑 Auto Login"
+msgstr "🔑 自動ログイン"
+
+msgid "🌸 Auto Pick"
+msgstr "🌸 自動採集"
+
+msgid "🎛️ 批量修改声骸主属性(仅支持简中游戏语言)"
+msgstr "🎛️ 音骸メインステータス一括変更（簡体字中国語のみ）"
+
+msgid "📅 Daily Task"
+msgstr "📅 デイリータスク"
+
+msgid "🩺 Diagnosis"
+msgstr "🩺 診断"
+
+msgid "⬆️ 批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
+msgstr "⬆️ 音骸一括強化（ゲームとokwwは簡体字/繁体字中国語が必要）"
+
+msgid "🌀 Farm 4C Echo in Dungeon/World"
+msgstr "🌀 ダンジョン/フィールドでコスト4音骸を周回"
+
+msgid "🗺️ Farm Map with Star Path"
+msgstr "🗺️ 星のルートでマップ周回"
+
+msgid "✈️ Fast Travel"
+msgstr "✈️ ファストトラベル"
+
+msgid "♻️ 数据坞五合一"
+msgstr "♻️ データドック5個合成"
+
+msgid "⚒️ Forgery Challenge"
+msgstr "⚒️ 凝素領域"
+
+msgid "🎡 自动周常乐园"
+msgstr "🎡 週間楽園を自動進行"
+
+msgid "♻️ Merge Discarded Echoes"
+msgstr "♻️ 廃棄済み音骸を合成"
+
+msgid "🖱️ Prevent Wuthering Waves from moving the mouse"
+msgstr "🖱️ Wuthering Wavesによるマウス移動を防止"
+
+msgid "👥 Multi Account Daily Task"
+msgstr "👥 複数アカウントのデイリータスク"
+
+msgid "🌙 Nightmare Nest Task"
+msgstr "🌙 ナイトメア・ネストタスク"
+
+msgid "🧪 Simulation Challenge"
+msgstr "🧪 仮想訓練チャレンジ"
+
+msgid "⏭️ Skip Dialog during Quests"
+msgstr "⏭️ 任務中の会話をスキップ"
+
+msgid "🌊 Tacet Suppression"
+msgstr "🌊 無音区"
+
+msgid "点击B进入背包, 在过滤器中选择需要修改主属性的声骸, 并按照等级从0排序后开始."
+msgstr "Bキーでバッグを開き、フィルターでメインステータスを変更する音骸を選択し、レベル0から昇順に並べて開始してください。"
+
+msgid "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按照等级从0排序后开始."
+msgstr "Bキーでバッグを開き、フィルターで強化する音骸を選択し、レベル0から昇順に並べて開始してください。"
+
+msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
+msgstr "ゲームとokwwの言語は簡体字/繁体字中国語、解像度は16:9かつ1600x900以上が必要です。必要なものにチェックを入れると、未チェックのものは自動合成されます。"
+
+msgid "Switch to Healer before and after Combat"
+msgstr "戦闘前後にヒーラーへ切り替える"

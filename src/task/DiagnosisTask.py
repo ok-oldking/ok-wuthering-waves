@@ -1,6 +1,5 @@
 import time
 
-from qfluentwidgets import FluentIcon
 
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.WWOneTimeTask import WWOneTimeTask
@@ -10,10 +9,8 @@ class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.group_name = "Diagnosis"
-        self.group_icon = FluentIcon.UNIT
         self.description = "Diagnosis Problem, Performance Test, Run in Game World"
-        self.name = "Diagnosis"
+        self.name = "🩺 Diagnosis"
         self.start = 0
 
     def run(self):

@@ -2,7 +2,6 @@ import re
 import cv2
 import time
 
-from qfluentwidgets import FluentIcon
 import numpy as np
 
 from ok import Logger, TaskDisabledException, color_range_to_bound
@@ -14,13 +13,12 @@ logger = Logger.get_logger(__name__)
 
 
 class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
+    owns_switch_healer_config = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.description = "Click Start after Entering Dungeon or Teleporting to The Boss"
-        self.name = "Farm 4C Echo in Dungeon/World"
-        self.group_name = "Echo"
-        self.group_icon = FluentIcon.SYNC
+        self.name = "🌀 Farm 4C Echo in Dungeon/World"
         self.default_config.update({
             'Teleport to Boss': 'No',
             'Boss Level': "80",
@@ -29,7 +27,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Combat Wait Time': 0,
             'Echo Pickup Method': 'Walk',
             'Use Liberation': True,
-            'Switch to Healer after Combat': True,
+            'Switch to Healer before and after Combat': True,
             'Which Weekly Boss to Teleport': 1,
             'Which Boss Challenge to Teleport': 1,
         })
@@ -39,7 +37,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Boss Level': "Choose the Lowest that Drop a Echo",
             'Combat Wait Time': 'Wait time before each combat (seconds), overrides Boss profile if set',
             'Use Liberation': 'Do not use Liberation to Save Time',
-            'Switch to Healer after Combat': 'Better Chance to Keep Character Alive',
+            'Switch to Healer before and after Combat': 'Better Chance to Keep Character Alive',
             'Which Weekly Boss to Teleport': 'From Top to Bottom, Starting with 1',
             'Which Boss Challenge to Teleport': 'From Top to Bottom, Starting with 1'
         })
@@ -52,12 +50,11 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                                     'Boss Challenge': ['Which Boss Challenge to Teleport',
                                                                        'Boss Level'],
                                                 }}
-        self.config_type['Boss Level'] = {'type': "drop_down", 'options': ['50', '60', '70', '80'], }
+        self.config_type['Boss Level'] = {'type': "drop_down", 'options': ['50', '60', '70', '80', '90'], }
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
         self.boss_list = ['Other', 'Hyvatia', 'Fallacy of No Return', 'Sentry Construct', 'Lorelei', 'Lioness of Glory',
                           'Nightmare: Hecate', 'Fenrico', 'Nameless Explorer']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
-        self.icon = FluentIcon.ALBUM
         self.combat_end_condition = self.find_echos
         self.total_weekly_number = 9
         self.total_boss_number = 20
@@ -403,9 +400,11 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 if not self.in_world():
                     self.log_debug('manage_boss_interactions Lady of the Sea not self.in_world()')
                     self.send_key('esc', after_sleep=0.5)
-                    self.wait_click_feature('confirm_btn_hcenter_vcenter', relative_x=-1, raise_if_not_found=True,
-                                            post_action=lambda: self.send_key('esc', after_sleep=1),
-                                            settle_time=1)
+                    self.wait_click_feature(
+                        ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
+                        relative_x=-1, raise_if_not_found=True,
+                        post_action=lambda: self.send_key('esc', after_sleep=1),
+                        settle_time=1)
                     self.sleep(2)
                     self.wait_in_team_and_world(time_out=120)
                     self.sleep(2)

@@ -18,10 +18,12 @@ class CharType(StrEnum):
     HEALER = 'Healer'  # 治疗者
 
 
-class SwitchPriority(StrEnum):
-    NORMAL = 'normal'
-    MUST = 'must'
-    NO = 'no'
+class SwitchPriority(IntEnum):
+    NO = 0
+    LOW = 100
+    NORMAL = 200
+    HIGH = 300
+    MUST = 400
 
 
 class Elements(IntEnum):
@@ -37,9 +39,9 @@ Role = CharType
 role_values = [role for role in CharType]  # 角色定位枚举值的列表
 
 DEFAULT_BUFF_TIME_BY_TYPE = {
-    CharType.MAIN_DPS: 0,
+    CharType.MAIN_DPS: 14,
     CharType.SUB_DPS: 14,
-    CharType.HEALER: 24,
+    CharType.HEALER: 28,
 }
 
 
@@ -100,7 +102,7 @@ class BaseChar:
         self.set_buff_time(buff_time)
         self.last_buff_time = -1
         self.logger = Logger.get_logger(self.name)
-        self.check_f_on_switch = True
+        self.check_f_on_switch = not self.is_healer
         self.cycle_start_time = 0.0
         self.cycle_time_out = 1.1
         self.cycle_intro_time = 1.2
@@ -150,6 +152,13 @@ class BaseChar:
         return self.buff_time > 0 and self.last_buff_time > 0 and (
                 self.time_elapsed_accounting_for_freeze(self.last_buff_time) < self.buff_time)
 
+    def has_all_buff(self):
+        """Return whether an intro arrives with both teammates' timed buffs active."""
+        if not self.has_intro:
+            return False
+        other_chars = [char for char in getattr(self.task, 'chars', []) if char and char is not self]
+        return len(other_chars) == 2 and all(char.buff_time > 0 and char.has_buff() for char in other_chars)
+
     def cycle(self):
         self.cycle_start()
         while self.time_elapsed_accounting_for_freeze(
@@ -169,6 +178,7 @@ class BaseChar:
 
     def cycle_sleep(self, duration=0.1):
         to_sleep = duration - (time.time() - self.cycle_start_time)
+        self.task.check_f_break()
         self.sleep(to_sleep)
 
     def flying_based_on_resonance(self):
@@ -351,7 +361,7 @@ class BaseChar:
         self.task.screenshot('click_resonance too long, breaking')
 
     def click_resonance(self, post_sleep=0, has_animation=False, send_click=True, animation_min_duration=0,
-                        check_cd=False, time_out=0):
+                        check_cd=False, time_out=0, click_f=True):
         """尝试点击并释放共鸣技能。
 
         Args:
@@ -360,6 +370,7 @@ class BaseChar:
             send_click (bool, optional): 在释放技能前是否发送普通点击。默认为 True。
             animation_min_duration (float, optional): 动画的最短持续时间。默认为 0。
             check_cd (bool, optional): 是否严格检查冷却时间。默认为 False。
+            click_f (bool, optional): 进入动画且达到最短动画时长后，是否每 0.1 秒发送 F。默认为 True。
 
         Returns:
             tuple: (是否成功点击 (bool), 技能持续时间 (float), 是否检测到动画 (bool))。
@@ -371,6 +382,7 @@ class BaseChar:
         resonance_click_time = 0
         start = time.time()
         animation_start = 0
+        last_f_click = 0
         if time_out == 0:
             the_time_out = SKILL_TIME_OUT
         else:
@@ -387,11 +399,17 @@ class BaseChar:
             if has_animation:
                 if not self.task.in_team()[0]:
                     self.task.in_liberation = True
-                    animation_start = time.time()
+                    now = time.time()
+                    if animation_start == 0:
+                        animation_start = now
                     the_time_out = SKILL_TIME_OUT
-                    if time.time() - resonance_click_time > 6:
+                    if now - resonance_click_time > 6:
                         self.task.in_liberation = False
                         self.logger.error(f'resonance animation too long, breaking')
+                    if (click_f and now - animation_start >= animation_min_duration
+                            and now - last_f_click >= 0.1):
+                        self.task.send_key('f')
+                        last_f_click = now
                     self.task.next_frame()
                     self.check_combat()
                     continue
@@ -563,13 +581,16 @@ class BaseChar:
         self._echo_available = False
         self._resonance_available = False
 
-    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0.1):
+    def click_liberation(self, con_less_than=-1, send_click=False, wait_if_cd_ready=0.1,
+                         animation_min_duration=0, click_f=True):
         """尝试点击并释放共鸣解放。
 
         Args:
             con_less_than (float, optional): 仅当协奏值小于此值时释放。默认为 -1 (不检查)。
             send_click (bool, optional): 进入动画后是否发送普通点击。默认为 False。
             wait_if_cd_ready (float, optional): 如果技能冷却即将完成, 等待多少秒。默认为 0。
+            animation_min_duration (float, optional): 动画的最短持续时间。默认为 0。
+            click_f (bool, optional): 进入动画且达到最短动画时长后，是否每 0.1 秒发送 F。默认为 True。
 
         Returns:
             bool: 如果成功释放则返回 True。
@@ -600,7 +621,7 @@ class BaseChar:
                 self.task.next_frame()
             if clicked:
                 if self.task.wait_until(lambda: not self.task.in_team()[0], time_out=0.4,
-                                        post_action=self.click_with_interval):
+                                        post_action=self.click_with_interval if send_click else None):
                     self.task.in_liberation = True
                     self.logger.debug(f'not in_team successfully casted liberation')
                 else:
@@ -617,13 +638,19 @@ class BaseChar:
                 if not self.task.in_liberation:
                     return False
         start = time.time()
+        last_f_click = 0
         while not self.task.in_team()[0]:
             self.task.in_liberation = True
             if not clicked:
                 clicked = True
             if send_click:
                 self.click(interval=0.1)
-            if time.time() - start > 7:
+            now = time.time()
+            if (click_f and now - start >= animation_min_duration
+                    and now - last_f_click >= 0.1):
+                self.task.send_key('f')
+                last_f_click = now
+            if now - start > 7:
                 self.task.in_liberation = False
                 self.task.raise_not_in_combat('too long a liberation, the boss was killed by the liberation')
             self.task.next_frame()
@@ -667,9 +694,9 @@ class BaseChar:
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         """Return whether this character is a normal, required, or blocked switch target.
 
-        Override this for special team logic. Return ``SwitchPriority.MUST`` to
-        force a switch target, ``SwitchPriority.NO`` to block switching in, or
-        ``SwitchPriority.NORMAL`` for the default role-based selection.
+        Override this for special team logic. Higher integer values are selected
+        first; the named priority bands are spaced by 100 so callers can return
+        values such as ``SwitchPriority.HIGH + 1``.
         """
         return SwitchPriority.NORMAL
 
@@ -785,7 +812,7 @@ class BaseChar:
             if char is None or char == current_char:
                 continue
             if char.get_switch_priority(current_char=current_char, has_intro=False,
-                                        target_low_con=False) == SwitchPriority.MUST:
+                                        target_low_con=False) >= SwitchPriority.MUST:
                 self.logger.info(f'In lock with {char}')
                 return True
         return False
@@ -916,7 +943,7 @@ class BaseChar:
         """检查是否要暂缓切人。"""
         return False
 
-    def switch_other_char(self):
+    def switch_other_char(self, allow_auto_combat=False):
         target_index = (self.index + 1) % len(self.task.chars)
         for char in self.task.chars:
             if char and char.is_healer and char.index != self.index:
@@ -925,7 +952,7 @@ class BaseChar:
         next_char = str(target_index + 1)
 
         from src.task.AutoCombatTask import AutoCombatTask
-        if isinstance(self.task, AutoCombatTask):
+        if isinstance(self.task, AutoCombatTask) and not allow_auto_combat:
             self.logger.debug('AutoCombatTask, skip switch_other_char')
             return
         self.logger.debug(f'{self.char_name} on_combat_end {self.index} switch next char: {next_char}')
@@ -956,14 +983,16 @@ class BaseChar:
             return self.task.has_short_action()
         return self.task.find_one(self.task.get_target_names()[0], box='target_box_short', threshold=0.6)
 
-    def f_break(self, check_f_on_switch=False):
+    def f_break(self, check_f_on_switch=False, force=False):
         """使用F进行击破
            若self.check_f_on_switch为False则不在切走前自动按F,须在逻辑中手动添加。
            另外击破动画带全局时停且目前无法识别动画,可能会出现计时问题
         """
+        if force:
+            self.task.send_key('f', after_sleep=0.05)
         if check_f_on_switch and not self.check_f_on_switch:
-            return
-        self.task.f_break()
+            return False
+        return self.task.f_break()
 
 
 forte_white_color = {  # 用于检测共鸣回路UI元素可用状态的白色颜色范围。

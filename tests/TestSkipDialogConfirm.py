@@ -22,7 +22,7 @@ class TestSkipDialogConfirm(unittest.TestCase):
         self.assertTrue(clicked)
         self.task.find_one.assert_has_calls([
             call(
-                'skip_dialog_confirm',
+                ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
                 horizontal_variance=0.1,
                 vertical_variance=0.1,
             ),

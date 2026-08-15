@@ -79,22 +79,28 @@ class CombatCheck(BaseWWTask):
         return False
 
     def check_f_break(self):
+        if self.can_break:
+            return True
+        if self.find_one(Labels.f_break_full, threshold=0.92):
+            self.logger.debug('found f_break_full')
+            self.can_break = True
+            return True
         if not self.can_break and not self._in_liberation and time.time() - self.last_break_check_time > 1:
             self.last_break_check_time = time.time()
-            if self.find_one(Labels.f_break_full, threshold=0.9):
-                self.logger.debug('found f_break_full')
-                self.can_break = True
-                return True
             if self.find_one('f_break', box=self.box_of_screen(0.2, 0.2, 0.75,
-                                                               0.8), target_height=720):
+                                                               0.8, hcenter=True, vcenter=True), target_height=720):
                 if not self.is_pick_f():
                     self.can_break = True
                     return True
 
     def f_break(self):
         if self.can_break or self.check_f_break():
-            self.send_key('f', after_sleep=0.1)
-            self.can_break = False
+            start = time.time()
+            while time.time() - start < 0.5 or (time.time() - start < 5 and (self.can_break or self.check_f_break())):
+                self.send_key('f', after_sleep=0.1)
+                self.click(after_sleep=0.1)
+                self.can_break = False
+            return True
 
     def check_count_down(self):
         count_down_area = self.box_of_screen_scaled(3840, 2160, 1820, 266, 2100,
@@ -320,7 +326,8 @@ class CombatCheck(BaseWWTask):
             return True
         else:
             boxes = find_color_rectangles(self.frame, boss_health_color, min_width, min_height * 1.3,
-                                          box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 200 / 2160))
+                                          box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 200 / 2160,
+                                                                 hcenter=True, vcenter=True))
             if len(boxes) == 1:
                 self.boss_health_box = boxes[0]
                 self.boss_health_box.width = 10

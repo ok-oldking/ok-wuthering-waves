@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import Mock, call
 
 from config import key_config_option
+from src.Labels import Labels
 from src.task.DailyTask import (
     ADDITIONAL_TASKS,
     AUTO_FARM_NIGHTMARE_NEST,
@@ -17,7 +18,7 @@ from src.task.NightmareNestTask import NightmareNestTask
 
 class TestMergeEchoTask(unittest.TestCase):
 
-    def test_echo_group_and_global_bag_hotkey_metadata(self):
+    def test_ungrouped_tasks_and_global_bag_hotkey_metadata(self):
         executor = Mock()
         executor.scene = None
         executor.global_config.get_config.return_value = {}
@@ -26,8 +27,8 @@ class TestMergeEchoTask(unittest.TestCase):
         merge_task = MergeEchoTask(executor, app)
         farm_task = FarmEchoTask(executor, app)
 
-        self.assertEqual(merge_task.group_name, "Echo")
-        self.assertEqual(farm_task.group_name, "Echo")
+        self.assertIsNone(merge_task.group_name)
+        self.assertIsNone(farm_task.group_name)
         self.assertNotIn("Bag Key", merge_task.default_config)
         self.assertEqual(key_config_option.default_config["Bag Key"], "b")
         self.assertIn("Bag Key", key_config_option.config_description)
@@ -43,6 +44,7 @@ class TestMergeEchoTask(unittest.TestCase):
         )
         self.task.sleep = Mock()
         self.task.wait_click_skip_dialog_confirm = Mock(return_value=True)
+        self.task.wait_click_feature = Mock(return_value=True)
         self.task.click_relative = Mock()
         self.task.ocr = Mock(return_value=[])
         self.task.log_info = Mock()
@@ -67,11 +69,16 @@ class TestMergeEchoTask(unittest.TestCase):
             0.958,
             match=FULL_BATCH_PATTERN,
         )
+        self.task.wait_click_feature.assert_called_once_with(
+            Labels.echo_select_all,
+            horizontal_variance=0.3,
+            after_sleep=1,
+        )
         self.assertEqual(
             self.task.click_relative.call_args_list,
             [
-                call(0.602, 0.124, after_sleep=0.5),
-                call(0.520, 0.904, after_sleep=2),
+                call(0.602, 0.124, after_sleep=0.5, hcenter=True),
+                call(0.520, 0.904, after_sleep=2, hcenter=True),
                 call(0.041, 0.918, after_sleep=1),
                 call(0.826, 0.840, after_sleep=0.5),
                 call(0.717, 0.204, after_sleep=0.5),
@@ -95,11 +102,18 @@ class TestMergeEchoTask(unittest.TestCase):
         )
         self.assertEqual(self.task.sleep.call_args_list, [call(1), call(2), call(3)])
         self.assertEqual(
+            self.task.wait_click_feature.call_args_list,
+            [
+                call(Labels.echo_select_all, horizontal_variance=0.3, after_sleep=1),
+                call(Labels.echo_select_all, horizontal_variance=0.3, after_sleep=1),
+            ],
+        )
+        self.assertEqual(
             self.task.click_relative.call_args_list[-4:],
             [
                 call(0.310, 0.915, after_sleep=0.5),
                 call(0.782, 0.910),
-                call(0.496, 0.972, after_sleep=1),
+                call(0.496, 0.972, after_sleep=1, hcenter=True),
                 call(0.310, 0.915, after_sleep=0.5),
             ],
         )

@@ -766,8 +766,8 @@ msgstr "夢魘拔除"
 msgid "Tacet Discord Nest"
 msgstr "殘像聚落"
 
-msgid "Switch to Healer after Combat"
-msgstr "戰鬥結束後切換到治療角色"
+msgid "Switch to Healer before and after Combat"
+msgstr "戰鬥前後切換到治療角色"
 
 msgid "Better Chance to Keep Character Alive"
 msgstr "提高角色生存率"
@@ -1135,35 +1135,14 @@ msgstr "蕾貝卡"
 msgid "Lucilla"
 msgstr "洛瑟菈"
 
+msgid "Suisui"
+msgstr "穗穗"
+
 msgid "自动周常乐园"
 msgstr "自動週常樂園"
 
 msgid "Detect and click garden actions until the task is stopped."
 msgstr "自動偵測並點擊樂園操作，直到任務停止。"
-
-msgid "High-value items display"
-msgstr "高價值物品顯示"
-
-msgid "Get player position and display nearby high value items"
-msgstr "獲取玩家位置並顯示附近高價值物品"
-
-msgid "Detect interval (ms)"
-msgstr "檢測間隔(毫秒)"
-
-msgid "World map overlay"
-msgstr "世界地圖覆蓋"
-
-msgid "Item type filter"
-msgstr "物品類型篩選"
-
-msgid "SURF"
-msgstr "SURF"
-
-msgid "SIFT"
-msgstr "SIFT"
-
-msgid "SIFTGZ"
-msgstr "SIFTGZ"
 
 msgid "Check Weekly Garden"
 msgstr "檢查每週樂園"
@@ -1263,74 +1242,121 @@ msgstr "遊戲與okww語言必須為簡體/繁體中文,必須16:9解析度,使�
 msgid "数据坞五合一"
 msgstr "資料塢五合一"
 
-msgid "Path mode"
-msgstr "路線模式"
+msgid "Rover"
+msgstr "漂泊者"
 
-msgid "Advance hotkey"
-msgstr "推進目標熱鍵"
+msgid "Yangyang: Xuanling"
+msgstr "秧秧·玄翎"
 
-msgid "Download map assets"
-msgstr "下載地圖資源"
-
-msgid "Download Map Assets"
-msgstr "下載地圖資源"
-
-msgid "Show only the route from assets/path.json, hide high-value items"
-msgstr "僅顯示 assets/path.json 中的路線，不顯示高價值物品"
+msgid "Merge Discarded Echoes"
+msgstr "融合已棄置聲骸"
 
 msgid ""
-"Hotkey to advance the target manually (pynput format, e.g. <ctrl>+<f9>)"
-msgstr "手動推進目標的熱鍵（pynput 格式，如 <ctrl>+<f9>）"
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
+"batches of 100."
+msgstr "執行前必須有1000個已棄置聲骸，每批融合100個。"
 
-msgid "Download the latest map assets and extract them into the assets folder"
-msgstr "下載最新地圖資源（特徵檔案/物品資料庫），覆蓋解壓到 assets 目錄"
+msgid "Bag Key"
+msgstr "背包按鍵"
 
-msgid "Map assets"
-msgstr "地圖資源"
+msgid "In-game hotkey used to open the Bag."
+msgstr "用於開啟背包的遊戲內快捷鍵。"
 
-msgid "Map assets version"
-msgstr "地圖資源版本"
+msgid "Echo"
+msgstr "聲骸"
 
-msgid "Map assets download failed"
-msgstr "地圖資源下載失敗"
+msgid "Check Discarded Echo"
+msgstr "檢查已棄置聲骸"
 
-msgid ""
-"Failed to download map assets: {error}\n"
-"\n"
-"Please download it manually:\n"
-"{url}\n"
-"\n"
-"Then extract it into this folder (overwrite):\n"
-"{path}"
-msgstr ""
-"地圖資源下載失敗：{error}\n"
-"\n"
-"請手動下載：\n"
-"{url}\n"
-"\n"
-"然後解壓覆蓋到此目錄：\n"
-"{path}"
+msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
+msgstr "完成每日任務後，檢查是否有1000個已棄置聲骸並進行融合。"
 
-msgid "OCR check"
-msgstr "座標識別"
+msgid "Teleport and Farm 4C Echo"
+msgstr "傳送並刷取4C聲骸"
 
-msgid "Overlay"
-msgstr "覆蓋層"
+msgid "Merge Echo If discarded > 1000"
+msgstr "已棄置聲骸超過1000時融合"
 
-msgid "Config error"
-msgstr "設定錯誤"
+msgid "Additional Tasks to Run After Daily Task"
+msgstr "每日任務後執行的附加任務"
 
-msgid "Show status panel"
-msgstr "顯示資訊面板"
+msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
+msgstr "選擇可選任務。夢魘巢穴會在消耗體力前執行，以協助完成每日任務；其他任務將在之後執行。"
 
-msgid "Show the info panel at the bottom-left corner of the game window"
-msgstr "在遊戲視窗左下角顯示資訊面板（座標/地圖/模式/目標）"
+msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
+msgstr "選擇「傳送並刷取4C聲骸」時，必須在刷取聲骸任務中啟用「傳送至首領」。"
 
-msgid "Downloading map assets"
-msgstr "正在下載地圖資源"
+msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgstr "選擇「自動刷取所有夢魘巢穴」時，「刷取目標」必須至少選擇一項。"
 
-msgid "Map assets updated"
-msgstr "地圖資源已更新"
+msgid "Daily Task Completed"
+msgstr "每日任務已完成"
 
-msgid "Close"
-msgstr "關閉"
+msgid "Daily task completed, start teleport to farm 4C echo"
+msgstr "每日任務已完成，開始傳送並刷取4C聲骸"
+
+msgid "can't find dialog right button"
+msgstr "找不到對話框右側按鈕"
+
+msgid "can't find dialog left button"
+msgstr "找不到對話框左側按鈕"
+
+msgid "⚔️ Auto Combat"
+msgstr "⚔️ 自動戰鬥"
+
+msgid "🔑 Auto Login"
+msgstr "🔑 自動登入"
+
+msgid "🌸 Auto Pick"
+msgstr "🌸 自動拾取"
+
+msgid "🎛️ 批量修改声骸主属性(仅支持简中游戏语言)"
+msgstr "🎛️ 批次修改聲骸主屬性（僅支援簡中遊戲語言）"
+
+msgid "📅 Daily Task"
+msgstr "📅 每日任務"
+
+msgid "🩺 Diagnosis"
+msgstr "🩺 診斷"
+
+msgid "⬆️ 批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
+msgstr "⬆️ 批次強化聲骸（遊戲與okww語言必須為簡體/繁體中文）"
+
+msgid "🌀 Farm 4C Echo in Dungeon/World"
+msgstr "🌀 副本/大世界刷4C聲骸"
+
+msgid "🗺️ Farm Map with Star Path"
+msgstr "🗺️ 按星標路徑刷大地圖"
+
+msgid "✈️ Fast Travel"
+msgstr "✈️ 快速旅行"
+
+msgid "♻️ 数据坞五合一"
+msgstr "♻️ 資料塢五合一"
+
+msgid "⚒️ Forgery Challenge"
+msgstr "⚒️ 凝素領域挑戰"
+
+msgid "🎡 自动周常乐园"
+msgstr "🎡 自動週常樂園"
+
+msgid "♻️ Merge Discarded Echoes"
+msgstr "♻️ 合成棄置聲骸"
+
+msgid "🖱️ Prevent Wuthering Waves from moving the mouse"
+msgstr "🖱️ 防止鳴潮移動滑鼠"
+
+msgid "👥 Multi Account Daily Task"
+msgstr "👥 多帳號每日任務"
+
+msgid "🌙 Nightmare Nest Task"
+msgstr "🌙 噩夢巢穴任務"
+
+msgid "🧪 Simulation Challenge"
+msgstr "🧪 模擬領域挑戰"
+
+msgid "⏭️ Skip Dialog during Quests"
+msgstr "⏭️ 任務中跳過對話"
+
+msgid "🌊 Tacet Suppression"
+msgstr "🌊 無音區"

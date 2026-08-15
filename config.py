@@ -2,12 +2,7 @@ import os
 import re
 from pathlib import Path
 
-# WA: set empty PATH to resolve qfluentwidgets/PySide6 access os.environ['PATH'] issue
-if 'PATH' not in os.environ:
-    os.environ['PATH'] = ""
-from qfluentwidgets import FluentIcon
-
-from ok import Box, ConfigOption
+from ok import Box, ConfigOption, Icon
 from src.task.process_feature import process_feature
 
 version = "dev"
@@ -139,12 +134,12 @@ key_config_option = ConfigOption('Game Hotkey', {
     'Bag Key': 'b',
 }, description='In Game Hotkey for Skills', config_description={
     'Bag Key': 'In-game hotkey used to open the Bag.',
-}, show_at_tab=True, icon=FluentIcon.GAME)
+}, show_at_tab=True, icon=Icon.GAME)
 
 char_config_option = ConfigOption('Character Config', {
     'Iuno C6': False,
     'Chisa DPS': False,
-}, description='Character Config', show_at_tab=True, icon=FluentIcon.PEOPLE)
+}, description='Character Config', show_at_tab=True, icon=Icon.PEOPLE)
 
 monthly_card_config_option = ConfigOption('Monthly Card Config', {
     'Check Monthly Card': True,
@@ -156,6 +151,7 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
 
 config = {
     'debug': False,  # Optional, default: False
+    'custom_tasks': True,
     'use_gui': True,
     'config_folder': 'configs',
     'blur_area': blur_area,
@@ -180,8 +176,13 @@ config = {
         'default_vertical_variance': 0.002,
         'default_threshold': 0.8,
         'feature_processor': process_feature,
-        'vcenter_features': ['monthly_card'],
-        'hcenter_features': ['monthly_card']
+        'vcenter_features': ['monthly_card', 'skip_dialog_check'],
+        'hcenter_features': ['monthly_card', 'suisui_forte3', 'message_dialog', 'claim_stamina_sign',
+                             'skip_dialog_check', 'login_close', 'garden_confirm', 'garden_continue_game',
+                             'garden_unpause', 'garden_get_gold', 'garden_get_purple', 'garden_get_skip',
+                             'garden_not_interested_confirm', 'garden_not_interested', 'a_garden_back',
+                             'garden_get_confirm_gray', 'the_garden_max', 'garden_shop_close', 'garden_new_stage',
+                             'a_garden_restart', 'suisui_forte2', 'suisui_e1', 'e_forte', 'f_break_full']
     },
     'windows': {  # required  when supporting windows game
         'top_hwnd_class': [re.compile('CAgreementDlg'), re.compile('CLoginDlg_P_'),
@@ -214,15 +215,15 @@ config = {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
             'sponsor': 'https://patreon.com/ok_oldking',
-            'share': 'Download OK-WW from https://github.com/ok-oldking/ok-wuthering-waves/releases/latest',
-            'faq': 'https://github.com/ok-oldking/ok-wuthering-waves/blob/master/README_en.md'
+            'share': 'Download OK-WW from https://ok-script.com/ok-ww',
+            'faq': 'https://ok-script.com/ok-ww/'
         },
         'zh_CN': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
             'sponsor': 'https://afdian.com/a/ok-oldking',
-            'share': 'GitHub: https://github.com/ok-oldking 百度网盘: https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww 夸克网盘: https://pan.quark.cn/s/418018ddf7a0 Mirror酱：https://mirrorchyan.com/zh/projects?source=okbilibili',
-            'faq': 'https://cnb.cool/ok-oldking/ok-wuthering-waves/-/blob/main/README.md',
+            'share': '下载okww https://ok-script.com/ok-ww',
+            'faq': 'https://ok-script.com/ok-ww',
             'qq_group': 'https://qm.qq.com/q/SUQpIpmq4',
             'qq_channel': 'https://pd.qq.com/s/djmm6l44y',
         },
@@ -248,12 +249,12 @@ config = {
     'version': version,
     'onetime_tasks': [  # tasks to execute
         ["src.task.DailyTask", "DailyTask"],
-        ["src.task.MultiAccountDailyTask", "MultiAccountDailyTask"],
         ["src.task.FarmEchoTask", "FarmEchoTask"],
-        ["src.task.ForgeryTask", "ForgeryTask"],
         ["src.task.NightmareNestTask", "NightmareNestTask"],
-        ["src.task.SimulationTask", "SimulationTask"],
         ["src.task.TacetTask", "TacetTask"],
+        ["src.task.ForgeryTask", "ForgeryTask"],
+        ["src.task.SimulationTask", "SimulationTask"],
+        ["src.task.MultiAccountDailyTask", "MultiAccountDailyTask"],
         ["src.task.MergeEchoTask", "MergeEchoTask"],
         ["src.task.EnhanceEchoTask", "EnhanceEchoTask"],
         ["src.task.ChangeEchoTask", "ChangeEchoTask"],
@@ -262,10 +263,10 @@ config = {
     ], 'trigger_tasks': [
         ["src.task.AutoCombatTask", "AutoCombatTask"],
         ["src.task.AutoPickTask", "AutoPickTask"],
-        ["src.task.SkipDialogTask", "AutoDialogTask"],
         ["src.task.AutoLoginTask", "AutoLoginTask"],
-        ["src.task.MouseResetTask", "MouseResetTask"],
+        ["src.task.SkipDialogTask", "AutoDialogTask"],
         ["src.task.FastTravelTask", "FastTravelTask"],
+        ["src.task.MouseResetTask", "MouseResetTask"],
         ["src.task.MapOverlayTask", "MapOverlayTask"],
     ], 'scene': ["src.scene.WWScene", "WWScene"],
     'update_pyappify': {
