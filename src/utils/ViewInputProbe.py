@@ -74,12 +74,11 @@ class ViewInputProbe:
         self._move_min = move_min_interval
         self._fp = None
         self._path: Optional[str] = None
-        self._listener = None
+        self._watcher = None
+        self._owns_watcher = False
         self._lock = threading.Lock()
-        self._pressed = set()
         self._last_drag_t = 0.0
         self._last_move_t = 0.0
-        self._last_xy = None
         self._started = False
         self._counts = {}
 
@@ -92,8 +91,12 @@ class ViewInputProbe:
     def started(self) -> bool:
         return self._started
 
-    def start(self, extra: Optional[dict] = None) -> bool:
-        """打开日志文件并启动全局鼠标监听；返回是否成功。"""
+    def start(self, extra: Optional[dict] = None, watcher=None) -> bool:
+        """打开日志文件并订阅鼠标事件；返回是否成功。
+
+        ``watcher`` 为 :class:`src.utils.MouseWatcher.MouseWatcher`。缺省时自建一个，
+        但推荐由调用方传入共享实例（与视图推算共用同一个监听线程）。
+        """
         if self._started:
             return True
         try:
@@ -109,21 +112,22 @@ class ViewInputProbe:
         self._write('session', state='start', wall=time.time(),
                     log_moves=self._log_moves, **(extra or {}))
         try:
-            from pynput import mouse
-            self._listener = mouse.Listener(
-                on_move=self._on_move, on_click=self._on_click,
-                on_scroll=self._on_scroll)
-            self._listener.daemon = True
-            self._listener.start()
+            if watcher is None:
+                from src.utils.MouseWatcher import MouseWatcher
+                watcher = MouseWatcher(emit_moves=self._log_moves)
+                self._owns_watcher = True
+            self._watcher = watcher
+            watcher.subscribe(self)
+            if watcher.available is False:
+                self._write('session', state='mouse_unavailable')
         except Exception as exc:
-            # 监听失败仍保留 match 记录能力（比如独占全屏下监听不可用）
-            logger.warning(f'[ViewProbe] 鼠标监听启动失败，只记录匹配事件: {exc}')
-            self._listener = None
+            logger.warning(f'[ViewProbe] 订阅鼠标事件失败，只记录匹配事件: {exc}')
+            self._watcher = None
             self._write('session', state='mouse_unavailable', error=str(exc))
 
         self._started = True
         logger.info(f'[ViewProbe] 采集中 -> {self._path}'
-                    + ('（无鼠标监听）' if self._listener is None else ''))
+                    + ('（无鼠标监听）' if self._watcher is None else ''))
         return True
 
     def stop(self) -> None:
@@ -131,11 +135,13 @@ class ViewInputProbe:
             return
         self._started = False
         try:
-            if self._listener is not None:
-                self._listener.stop()
+            if self._watcher is not None:
+                self._watcher.unsubscribe(self)
+                if self._owns_watcher:
+                    self._watcher.stop()
         except Exception as exc:  # pragma: no cover
-            logger.warning(f'[ViewProbe] 停止监听失败: {exc}')
-        self._listener = None
+            logger.warning(f'[ViewProbe] 退订鼠标事件失败: {exc}')
+        self._watcher = None
         self._write('session', state='stop', counts=dict(self._counts))
         try:
             if self._fp is not None:
@@ -160,43 +166,34 @@ class ViewInputProbe:
         except Exception:
             pass
 
-    # ------------------------------------------------------------------ 鼠标回调
-    def _on_move(self, x, y):
+    # ------------------------------------------------ MouseWatcher 订阅者回调
+    def on_mouse_drag(self, x, y, dx, dy, buttons, t):
         if not self._started:
             return
-        now = time.perf_counter()
-        if self._pressed:
-            if self._drag_min and now - self._last_drag_t < self._drag_min:
-                self._last_xy = (x, y)
-                return
-            dx = dy = None
-            if self._last_xy is not None:
-                dx = x - self._last_xy[0]
-                dy = y - self._last_xy[1]
-            self._last_drag_t = now
-            self._last_xy = (x, y)
-            self._write('drag', x=x, y=y, dx=dx, dy=dy,
-                        btn=sorted(self._pressed))
+        if self._drag_min and t - self._last_drag_t < self._drag_min:
             return
-        self._last_xy = (x, y)
-        if self._log_moves and now - self._last_move_t >= self._move_min:
-            self._last_move_t = now
+        self._last_drag_t = t
+        self._write('drag', x=x, y=y, dx=dx, dy=dy, btn=list(buttons))
+
+    def on_mouse_move(self, x, y, t):
+        if not self._started:
+            return
+        if t - self._last_move_t >= self._move_min:
+            self._last_move_t = t
             self._write('move', x=x, y=y)
 
-    def _on_click(self, x, y, button, pressed):
+    def on_mouse_press(self, x, y, button, t):
         if not self._started:
             return
-        name = getattr(button, 'name', str(button))
-        if pressed:
-            self._pressed.add(name)
-            self._last_xy = (x, y)
-            self._last_drag_t = 0.0
-            self._write('press', x=x, y=y, btn=name)
-        else:
-            self._pressed.discard(name)
-            self._write('release', x=x, y=y, btn=name)
+        self._last_drag_t = 0.0
+        self._write('press', x=x, y=y, btn=button)
 
-    def _on_scroll(self, x, y, dx, dy):
+    def on_mouse_release(self, x, y, button, t):
+        if not self._started:
+            return
+        self._write('release', x=x, y=y, btn=button)
+
+    def on_mouse_scroll(self, x, y, dx, dy, t):
         if not self._started:
             return
         self._write('scroll', x=x, y=y, dx=dx, dy=dy)

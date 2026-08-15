@@ -1651,6 +1651,11 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             # 供"渲染层自行响应拖动缩放（降低匹配频率）"方案做参数标定。默认关闭，
             # 只读不干预（pynput 非侵入监听），见 src/utils/ViewInputProbe.py
             '_View input probe': False,
+            # 视图航位推算：用鼠标拖动/滚轮在两次匹配之间推算视图状态，匹配降级为
+            # 纠偏。解决两个实测问题：匹配间隔造成的渲染滞后（中位 67px / p90 106px）
+            # 与操作瞬态下的定位丢失（76~90% 的匹配失败集中在鼠标操作 0.5s 内）。
+            # 匹配成功即吸附，最坏情况不差于关闭时。见 src/utils/ViewStateEstimator.py
+            '_View dead reckoning': True,
             # 推进热键，pynput GlobalHotKeys 格式，默认 Ctrl+F9（需求 9.9）
             'Advance hotkey': '<ctrl>+<f9>',
             # 左下角信息面板（Status_Panel）开关，默认显示
@@ -1710,6 +1715,10 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         # 的配对数据，供"渲染层航位推算"方案标定用。默认 None，不影响任何现有逻辑。
         self._view_probe = None
         self._view_probe_in_big_map = False
+        # 视图状态推算（航位推算）：鼠标拖动/滚轮驱动视图状态，匹配降级为纠偏。
+        # 与探针共用同一个全局鼠标监听（MouseWatcher）。
+        self._mouse_watcher = None
+        self._view_est = None
         self._ocr_noresult_counter = 0
         self._position_detector = None
         # 资源下载：后台线程 + 与检测循环的挂起握手。
@@ -2033,6 +2042,16 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             self._engine_settings = {}
         return self._engine_settings
 
+    def _ensure_mouse_watcher(self):
+        """全局鼠标监听（探针与视图推算共用一个监听线程）。"""
+        if self._mouse_watcher is None:
+            try:
+                from src.utils.MouseWatcher import MouseWatcher
+                self._mouse_watcher = MouseWatcher()
+            except Exception as e:
+                logger.warning(f"[MouseWatcher] init failed: {e}")
+        return self._mouse_watcher
+
     def _ensure_view_probe(self):
         """按配置惰性创建/销毁视图输入探针，返回探针或 None。"""
         want = bool(self.config.get('_View input probe'))
@@ -2054,12 +2073,56 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                          'interval_ms': self.config.get('Detect interval (ms)', 500)}
                 if frame is not None:
                     extra['frame'] = [int(frame.shape[1]), int(frame.shape[0])]
-                if probe.start(extra):
+                if probe.start(extra, watcher=self._ensure_mouse_watcher()):
                     self._view_probe = probe
             except Exception as e:
                 logger.warning(f"[ViewProbe] init failed: {e}")
                 self._view_probe = None
         return self._view_probe
+
+    def _ensure_view_estimator(self):
+        """按配置惰性创建/销毁视图状态推算器，返回推算器或 None。"""
+        want = bool(self.config.get('_View dead reckoning'))
+        if not want:
+            if self._view_est is not None:
+                watcher = self._mouse_watcher
+                if watcher is not None:
+                    try:
+                        watcher.unsubscribe(self._view_est)
+                    except Exception as e:
+                        logger.warning(f"[ViewEst] unsubscribe failed: {e}")
+                logger.info(f"[ViewEst] 关闭，{self._view_est.summary()}")
+                self._view_est = None
+            return None
+        if self._view_est is None:
+            try:
+                from src.utils.ViewStateEstimator import ViewStateEstimator
+                est = ViewStateEstimator()
+                watcher = self._ensure_mouse_watcher()
+                if watcher is None:
+                    return None
+                watcher.subscribe(est)
+                if watcher.available is False:
+                    watcher.unsubscribe(est)
+                    logger.warning('[ViewEst] 鼠标监听不可用，视图推算不生效')
+                    return None
+                self._view_est = est
+                logger.info('[ViewEst] 视图推算已启用')
+            except Exception as e:
+                logger.warning(f"[ViewEst] init failed: {e}")
+                self._view_est = None
+        return self._view_est
+
+    def _view_est_sync_screen_center(self, est):
+        """把游戏窗口客户区中心的屏幕绝对坐标同步给推算器（缩放锚点要用）。"""
+        if est is None or self.frame is None:
+            return
+        h, w = self.frame.shape[:2]
+        try:
+            sx, sy = self.executor.interaction.capture.get_abs_cords(w // 2, h // 2)
+            est.set_screen_center(sx, sy)
+        except Exception as e:
+            logger.warning(f"[ViewEst] 获取窗口中心失败，缩放锚点将不补偿: {e}")
 
     def _view_probe_mark_big_map(self, on):
         """大地图进入/离开的边沿事件，用于切分采集会话段。"""
@@ -2504,9 +2567,14 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
         in_big_map = self._in_big_map()
         self._ensure_view_probe()
         self._view_probe_mark_big_map(in_big_map)
+        est = self._ensure_view_estimator()
+        if not in_big_map and est is not None and est.is_valid:
+            # 离开大地图后视图状态失效（下次进入会重新以匹配结果播种）
+            est.invalidate('离开大地图')
 
         if in_big_map:
             if self.config.get('World map overlay') and self._last_valid is not None:
+                self._view_est_sync_screen_center(est)
                 attempt = self._fallback_failures + 1
                 is_third = (self._fallback_failures == 2)
                 is_fourth = (self._fallback_failures == 3)
@@ -2527,12 +2595,29 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                         f"[MapFallback] big map attempt {attempt}/{FALLBACK_MAX_FAILURES}"
                         f"{', full-map' if use_full_map else ''}, crop={crop_size}"
                     )
-                result = self._try_map_match(self._last_valid, full_map=use_full_map, crop_size=crop_size)
+                # region 中心优先用推算值：拖动/缩放瞬态下它比"上次匹配结果"准得多，
+                # 实测 76~90% 的匹配失败都发生在鼠标操作 0.5s 内。
+                est_state = est.state() if est is not None else None
+                search_pos = self._last_valid
+                if est_state is not None and est_state.source != 'match':
+                    ex, ey = est_state.ocr_pos
+                    z = self._last_valid[2] if len(self._last_valid) > 2 else 0
+                    search_pos = (ex, ey, z)
+
+                result = self._try_map_match(search_pos, full_map=use_full_map, crop_size=crop_size)
                 if result is None or not result.success:
                     if self._view_probe is not None:
                         self._view_probe.log_match_failed(
                             crop_size=crop_size, full_map=use_full_map,
                             reason='no result' if result is None else 'not success')
+                    # 匹配失败但推算状态还新鲜 -> 用推算值继续渲染，避免叠加层在
+                    # 拖动/缩放瞬态里闪断（原有失败计数与兜底清理逻辑保持不变）
+                    if est_state is not None and est_state.confidence >= 0.25:
+                        self._last_valid = (est_state.ocr_pos[0], est_state.ocr_pos[1],
+                                            self._last_valid[2]
+                                            if len(self._last_valid) > 2 else 0)
+                        self._overlay_ctl().on_bigmap(self._last_valid,
+                                                      est_state.game_scale)
                     self._fallback_failures += 1
                     logger.warning(
                         f"[MapFallback] failed {self._fallback_failures}/{FALLBACK_MAX_FAILURES}"
@@ -2557,6 +2642,12 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
                             map_id=self._locked_map_id, result=result,
                             game_scale=game_scale, crop_size=crop_size,
                             full_map=use_full_map)
+                    # 匹配成功即吸附推算状态（残差用于观察推算精度）
+                    if est is not None and result.game_center and game_scale:
+                        resid = est.on_match(result.game_center, game_scale)
+                        if resid is not None and verbose:
+                            logger.info(f'[ViewEst] 推算残差 {resid:.1f}px, '
+                                        f'{est.summary()}')
                     self._overlay_ctl().on_bigmap(self._last_valid, game_scale)
 
                 if self._fallback_failures >= FALLBACK_MAX_FAILURES:
@@ -2764,6 +2855,15 @@ class MapOverlayTask(TriggerTask, BaseWWTask):
             except Exception as e:  # pragma: no cover - 运行时相关
                 logger.warning(f'[ViewProbe] stop failed: {e}')
             self._view_probe = None
+        if self._view_est is not None:
+            logger.info(f'[ViewEst] 退出，{self._view_est.summary()}')
+            self._view_est = None
+        if self._mouse_watcher is not None:
+            try:
+                self._mouse_watcher.stop()
+            except Exception as e:  # pragma: no cover - 运行时相关
+                logger.warning(f'[MouseWatcher] stop failed: {e}')
+            self._mouse_watcher = None
         if self._assets_gui is not None:
             self._assets_gui.close_dialog()
         if self._overlay_controller is not None:
