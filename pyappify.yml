@@ -10,6 +10,7 @@ profiles:
     requires_python: "3.12"
     requirements: "requirements.txt"
     use_pythonw: true
+    pip_args: "--no-deps"
     show_add_defender: true
     # PYTHONPATH: "your/default/path" # Optional, will be "" if missing
 

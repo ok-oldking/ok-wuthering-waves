@@ -152,7 +152,9 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
 config = {
     'debug': False,  # Optional, default: False
     'custom_tasks': True,
-    'use_gui': True,
+    "gui": {
+        "type": "qt",
+    },
     'config_folder': 'configs',
     'blur_area': blur_area,
     'gui_icon': 'icons/icon.png',
