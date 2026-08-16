@@ -216,6 +216,7 @@ config = {
         'default': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
+            'download': 'https://ok-script.com/ok-ww',
             'sponsor': 'https://patreon.com/ok_oldking',
             'share': 'Download OK-WW from https://ok-script.com/ok-ww',
             'faq': 'https://ok-script.com/ok-ww/'
