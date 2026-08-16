@@ -16,9 +16,11 @@ Navigation and theme settings live in `mkdocs.yml` at the repository root.
 From the repository root:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements-docs.txt
+.\.venv\Scripts\python.exe -m pip install ".[docs]"
 .\.venv\Scripts\python.exe -m mkdocs serve
 ```
+
+The `web-test` extra is only needed when testing the web interface; it is not required for normal development or documentation builds.
 
 Open `http://127.0.0.1:8000/` in a browser. Changes are rebuilt automatically.
 

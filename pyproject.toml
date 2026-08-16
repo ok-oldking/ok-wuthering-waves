@@ -11,3 +11,15 @@ dependencies = [
     "openvino",
     "opencv-python",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "polib",
+    "pytest",
+]
+docs = [
+    "mkdocs-material>=9.5,<10",
+]
+web-test = [
+    "ok-script[web]==2.0.0b7",
+]
