@@ -1,6 +1,7 @@
 name: "ok-ww"
 uac: true
 icon: "icons/icon.png"
+website: "http://ok-script.com/ok-ww"
 
 profiles:
   - name: "China"
