@@ -48,16 +48,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: Microsoft :: Windows",
     ],
-    install_requires=[
-        'pywin32>=306',
-        'darkdetect>=0.8.0',
-        'PySideSix-Frameless-Window>=0.4.3',
-        'typing-extensions>=4.11.0',
-        'PySide6-Essentials>=6.7.0',
-        'GitPython>=3.1.43',
-        'requests>=2.32.3',
-        'psutil>=6.0.0'
-    ],
-    python_requires='>=3.9',
     ext_modules=cythonize(extensions, compiler_directives={'language_level': "3"})
 )

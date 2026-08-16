@@ -172,10 +172,11 @@ jobs:
           show_author: true
 
   package:
-    name: 3 · Build and sign
+    name: 3 · Build and optionally sign
     needs: synchronize
-    if: needs.synchronize.outputs.is_release == 'true'
     runs-on: windows-latest
+    env:
+      SIGN_BUILD: ${{ needs.synchronize.outputs.is_release }}
 
     steps:
       - name: Configure runner
@@ -392,7 +393,6 @@ jobs:
   publish:
     name: 4 · Publish
     needs: [ synchronize, package ]
-    if: needs.synchronize.outputs.is_release == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -419,11 +419,11 @@ jobs:
               * [百度网盘](https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww) 免费下载
               * [夸克网盘](https://pan.quark.cn/s/418018ddf7a0) 免费下载
           draft: false
-          prerelease: false
+          prerelease: ${{ needs.synchronize.outputs.is_release != 'true' }}
           files: pyappify_dist/*
 
       - name: Trigger distribution workflows
-        if: env.SIGN_BUILD == 'true'
+        if: needs.synchronize.outputs.is_release == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
