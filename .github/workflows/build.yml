@@ -159,6 +159,7 @@ jobs:
         with:
           repos: |
             https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-wuthering-waves.git
+            https://cnb:${{ secrets.CNB_TOKEN }}@cnb.cool/ok-oldking/ok-ww-update2.git
             https://ok-oldking:${{ secrets.OK_GH }}@github.com/ok-oldking/ok-ww-update
           sync_list: 'deploy.txt'
           tag: ${{ github.ref_name }}
