@@ -39,7 +39,7 @@ psutil==7.2.2
     # via
     #   ok-script
     #   pycaw
-pyappify==1.0.11
+pyappify==1.0.12
     # via ok-script
 pycaw==20240210
     # via ok-script
