@@ -38,7 +38,10 @@ This project only supports Python 3.12. Prefer using the repository-local virtua
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt --upgrade
 
 # 如需开发测试依赖 / For development test dependencies
-.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt --upgrade
+.\.venv\Scripts\python.exe -m pip install ".[dev]" --upgrade
+
+# 仅进行 Web 测试时需要 / Only for web testing
+.\.venv\Scripts\python.exe -m pip install ".[dev,web-test]" --upgrade
 
 # 运行 Release 版本 / Run release version
 .\.venv\Scripts\python.exe main.py

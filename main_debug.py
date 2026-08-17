@@ -1,3 +1,6 @@
+import os
+
+os.environ["PYAPPIFY_PYTHON_TEST"] = "1"
 if __name__ == '__main__':
     from config import config
     from ok import OK

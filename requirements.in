@@ -1,5 +1,0 @@
-ok-script
-onnxocr-ppocrv5>=0.0.20
-openvino
-opencv-python
-gitpython

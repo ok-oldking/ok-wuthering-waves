@@ -152,7 +152,9 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
 config = {
     'debug': False,  # Optional, default: False
     'custom_tasks': True,
-    'use_gui': True,
+    "gui": {
+        "type": "qt",
+    },
     'config_folder': 'configs',
     'blur_area': blur_area,
     'gui_icon': 'icons/icon.png',
@@ -215,6 +217,7 @@ config = {
         'default': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
+            'download': 'https://ok-script.com/ok-ww',
             'sponsor': 'https://patreon.com/ok_oldking',
             'share': 'Download OK-WW from https://ok-script.com/ok-ww',
             'faq': 'https://ok-script.com/ok-ww/'
@@ -270,9 +273,9 @@ config = {
         ["src.task.MouseResetTask", "MouseResetTask"],
     ], 'scene': ["src.scene.WWScene", "WWScene"],
     'update_pyappify': {
-        'to_version': '1.1.9',
-        'zip_url': 'https://github.com/ok-oldking/ok-wuthering-waves/releases/download/v3.5.17/ok-ww-win32.zip',
-        'sha256': '0ad4d89aae5995641136eb977536a05d2f9c567c9a43ab16c670a947bc301531',
+        'to_version': '1.2.3',
+        'zip_url': 'https://github.com/ok-oldking/ok-wuthering-waves/releases/download/v3.5.30/ok-ww-win32.zip',
+        'sha256': '447207edbfb6944beb994347048e155df99775eb18c87dcae54dda125071c94a',
     }
 
 }
