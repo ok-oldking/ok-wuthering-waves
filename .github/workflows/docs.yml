@@ -39,7 +39,10 @@ jobs:
           cache-dependency-path: pyproject.toml
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
-      - run: pip install ".[docs]"
+      - name: Install documentation dependencies
+        run: |
+          python -m pip install "mkdocs-material>=9.5,<10"
+          python -m pip install --no-deps ".[docs]"
       - run: mkdocs build --strict
       - if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v5
