@@ -1,0 +1,37 @@
+{
+  "type": "ok_ww_team_preset",
+  "version": 1,
+  "name": "Echo Burst Opening",
+  "description": "声骸爆发开场:进战斗先声骸→共鸣技能→解放打一轮爆发,之后按协奏循环。展示进场爆发与 switch_to 切奶妈补状态的写法。",
+  "preset": {
+    "id": "echo_burst",
+    "name": "Echo Burst Opening",
+    "note": "",
+    "created_from": "builtin template",
+    "auto_match": true,
+    "description": "声骸爆发开场:进战斗先声骸→共鸣技能→解放打一轮爆发,之后按协奏循环。展示进场爆发与 switch_to 切奶妈补状态的写法。",
+    "slots": [
+      {
+        "char": "",
+        "enabled": true,
+        "note": "爆发位(开场站场)",
+        "params": {},
+        "custom_code": ""
+      },
+      {
+        "char": "",
+        "enabled": true,
+        "note": "副C",
+        "params": {},
+        "custom_code": ""
+      },
+      {
+        "char": "",
+        "enabled": true,
+        "note": "奶妈/辅助(低血量切上来)",
+        "params": {},
+        "custom_code": ""
+      }
+    ]
+  }
+}

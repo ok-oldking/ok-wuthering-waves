@@ -1,4 +1,3 @@
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
@@ -1788,3 +1787,78 @@ msgstr "隊伍邏輯 API 速查"
 
 msgid "Info"
 msgstr "提示"
+
+msgid "Create a team from the currently detected in-game team."
+msgstr "從當前偵測到的遊戲內隊伍建立隊伍。"
+
+msgid "Create from Detected Team"
+msgstr "從偵測到的隊伍建立"
+
+msgid "Export All"
+msgstr "全部匯出"
+
+msgid "Export All Teams"
+msgstr "匯出全部隊伍"
+
+msgid "Export all teams to one JSON file."
+msgstr "將所有隊伍匯出到一個 JSON 檔案。"
+
+msgid "Exported {n} teams."
+msgstr "已匯出 {n} 支隊伍。"
+
+msgid "From Team"
+msgstr "從隊伍建立"
+
+msgid "From URL"
+msgstr "從 URL 安裝"
+
+msgid "Import teams from a JSON file (single or batch)."
+msgstr "從 JSON 檔案匯入隊伍(單個或批次)。"
+
+msgid "Imported {n} teams."
+msgstr "已匯入 {n} 支隊伍。"
+
+msgid "Install a team preset from a JSON URL."
+msgstr "從 JSON URL 安裝隊伍配對。"
+
+msgid "Install from URL"
+msgstr "從 URL 安裝"
+
+msgid "No in-game team detected yet - run a combat task once."
+msgstr "尚未偵測到遊戲內隊伍 - 請先執行一次戰鬥任務。"
+
+msgid "No teams to export."
+msgstr "沒有可匯出的隊伍。"
+
+msgid "Once"
+msgstr "一次"
+
+msgid "Only full match"
+msgstr "僅全匹配"
+
+msgid "Persistent"
+msgstr "持續"
+
+msgid "Preset JSON URL:"
+msgstr "預設 JSON URL:"
+
+msgid "Save code before testing"
+msgstr "測試前請先儲存程式碼"
+
+msgid "Team preset created from the detected team."
+msgstr "已根據偵測到的隊伍建立隊伍配對。"
+
+msgid "Team preset installed from URL."
+msgstr "已從 URL 安裝隊伍配對。"
+
+msgid "Test Run"
+msgstr "試執行"
+
+msgid "Until match"
+msgstr "直到匹配"
+
+msgid "Used {n} times"
+msgstr "使用 {n} 次"
+
+msgid "{n} errors"
+msgstr "{n} 次錯誤"

@@ -23,7 +23,9 @@ from src.char.CustomCharLoader import (
     read_builtin_char_code,
 )
 from src.gui.CharacterCodeTab import CHARACTER_DISPLAY_NAMES
+from src.team_preset.TeamLogicLoader import test_run_team_logic
 from src.team_preset.TeamPresetStore import (
+    FORCE_SCOPE_ONCE, FORCE_SCOPE_PERSIST, FORCE_SCOPE_UNTIL_MATCH,
     TeamPreset, TeamPresetSlot, TeamPresetStore,
 )
 
@@ -598,6 +600,10 @@ class _TeamLogicDialog(QDialog):
         api_button.clicked.connect(self._show_api_ref)
         example_button = PushButton(self.tr("Insert Example"), self)
         example_button.clicked.connect(self._insert_example)
+        test_button = PushButton(self.tr("Test Run"), self)
+        test_button.setToolTip(self.tr(
+            "Run the logic in a safe simulator without fighting or clicking."))
+        test_button.clicked.connect(self._test_run)
         reset_button = PushButton(self.tr("Reset Code"), self)
         reset_button.clicked.connect(self._reset_code)
         save_button = PrimaryPushButton(self.tr("Save Code"), self)
@@ -617,6 +623,8 @@ class _TeamLogicDialog(QDialog):
         footer.addWidget(api_button)
         footer.addSpacing(6)
         footer.addWidget(example_button)
+        footer.addSpacing(6)
+        footer.addWidget(test_button)
         footer.addSpacing(6)
         footer.addWidget(reset_button)
         footer.addSpacing(6)
@@ -657,6 +665,13 @@ class _TeamLogicDialog(QDialog):
     def _insert_example(self):
         self.code_editor.setPlainText(_TEAM_LOGIC_EXAMPLE)
         self._set_status(self.tr("Example inserted - edit and save"))
+
+    def _test_run(self):
+        if self.code_editor.toPlainText() != self.clean_code:
+            self._set_status(self.tr("Save code before testing"), error=True)
+            return
+        ok, message = test_run_team_logic(self.preset.id)
+        self._set_status(message, error=not ok)
 
     def _show_api_ref(self):
         dialog = QDialog(self)
@@ -818,7 +833,28 @@ class TeamPresetTab(CustomTab):
         self.force_button = PrimaryPushButton(FluentIcon.ACCEPT, self.tr("Force This Team"))
         self.force_button.clicked.connect(self._set_forced)
         self.force_button.setToolTip(self.tr("Always use this team, ignoring auto-match."))
-        left_layout.addWidget(self.force_button)
+        force_row = QHBoxLayout()
+        force_row.addWidget(self.force_button, 1)
+        self.force_scope_combo = ComboBox()
+        self._force_scopes = [
+            (FORCE_SCOPE_PERSIST, self.tr("Persistent")),
+            (FORCE_SCOPE_ONCE, self.tr("Once")),
+            (FORCE_SCOPE_UNTIL_MATCH, self.tr("Until match")),
+        ]
+        for scope_key, label in self._force_scopes:
+            self.force_scope_combo.addItem(label, scope_key)
+        self.force_scope_combo.setToolTip(self.tr(
+            "How long the forced team stays forced: persistent, once, or until "
+            "auto-match finds another team."))
+        self.force_scope_combo.currentIndexChanged.connect(self._force_scope_changed)
+        force_row.addWidget(self.force_scope_combo)
+        left_layout.addLayout(force_row)
+
+        self.only_full_check = CheckBox(self.tr("Only full match"), left)
+        self.only_full_check.setToolTip(self.tr(
+            "Only auto-match teams whose every enabled character is in the in-game team."))
+        self.only_full_check.toggled.connect(self._only_full_changed)
+        left_layout.addWidget(self.only_full_check)
 
         tool_row_1 = QHBoxLayout()
         self.new_button = PushButton(FluentIcon.ADD, self.tr("New"))
@@ -834,33 +870,46 @@ class TeamPresetTab(CustomTab):
 
         tool_row_2 = QHBoxLayout()
         self.import_button = PushButton(FluentIcon.FOLDER, self.tr("Import"))
-        self.import_button.setToolTip(self.tr("Import a team preset from a JSON file."))
+        self.import_button.setToolTip(self.tr("Import teams from a JSON file (single or batch)."))
         self.export_button = PushButton(FluentIcon.SHARE, self.tr("Export"))
         self.export_button.setToolTip(self.tr("Export the current team to a JSON file."))
-        self.from_current_button = PushButton(FluentIcon.DOWNLOAD, self.tr("From Config"))
-        self.from_current_button.setToolTip(self.tr("Create a team from the current global character config (advanced)."))
+        self.from_team_button = PushButton(FluentIcon.PEOPLE, self.tr("From Team"))
+        self.from_team_button.setToolTip(self.tr("Create a team from the currently detected in-game team."))
         tool_row_2.addWidget(self.import_button)
         tool_row_2.addWidget(self.export_button)
-        tool_row_2.addWidget(self.from_current_button)
+        tool_row_2.addWidget(self.from_team_button)
         left_layout.addLayout(tool_row_2)
 
+        tool_row_2b = QHBoxLayout()
+        self.from_current_button = PushButton(FluentIcon.DOWNLOAD, self.tr("From Config"))
+        self.from_current_button.setToolTip(self.tr("Create a team from the current global character config (advanced)."))
         self.template_button = PushButton(FluentIcon.BOOK_SHELF, self.tr("From Template"))
         self.template_button.setToolTip(self.tr(
             "Create a new team from a built-in template with ready-to-run scripts."))
         self.template_button.clicked.connect(self._from_template)
-        left_layout.addWidget(self.template_button)
+        self.from_url_button = PushButton(FluentIcon.LINK, self.tr("From URL"))
+        self.from_url_button.setToolTip(self.tr("Install a team preset from a JSON URL."))
+        tool_row_2b.addWidget(self.from_current_button)
+        tool_row_2b.addWidget(self.template_button)
+        tool_row_2b.addWidget(self.from_url_button)
+        left_layout.addLayout(tool_row_2b)
 
         tool_row_3 = QHBoxLayout()
+        self.export_all_button = PushButton(FluentIcon.EXPORT, self.tr("Export All"))
+        self.export_all_button.setToolTip(self.tr("Export all teams to one JSON file."))
         self.move_up_button = PushButton(FluentIcon.UP, self.tr("Move Up"))
         self.move_up_button.setToolTip(self.tr("Higher teams win when multiple match the in-game team."))
         self.move_down_button = PushButton(FluentIcon.DOWN, self.tr("Move Down"))
         self.move_down_button.setToolTip(self.tr("Lower teams win when multiple match the in-game team."))
+        tool_row_3.addWidget(self.export_all_button)
         tool_row_3.addWidget(self.move_up_button)
         tool_row_3.addWidget(self.move_down_button)
         tool_row_3.addStretch(1)
         left_layout.addLayout(tool_row_3)
         for button in (self.new_button, self.duplicate_button, self.delete_button,
-                       self.import_button, self.export_button, self.from_current_button,
+                       self.import_button, self.export_button, self.from_team_button,
+                       self.from_current_button, self.template_button,
+                       self.from_url_button, self.export_all_button,
                        self.move_up_button, self.move_down_button):
             button.setFixedHeight(30)
             button.installEventFilter(ToolTipFilter(button))
@@ -870,7 +919,10 @@ class TeamPresetTab(CustomTab):
         self.delete_button.clicked.connect(self._delete_preset)
         self.import_button.clicked.connect(self._import_preset)
         self.export_button.clicked.connect(self._export_preset)
+        self.from_team_button.clicked.connect(self._create_from_detected)
         self.from_current_button.clicked.connect(self._create_from_current)
+        self.from_url_button.clicked.connect(self._install_from_url)
+        self.export_all_button.clicked.connect(self._export_all)
         self.move_up_button.clicked.connect(lambda: self._move_preset(-1))
         self.move_down_button.clicked.connect(lambda: self._move_preset(1))
 
@@ -960,6 +1012,8 @@ class TeamPresetTab(CustomTab):
         outer.addWidget(splitter, 1)
         self.add_widget(container, stretch=1)
 
+        self.only_full_check.setChecked(TeamPresetStore.get_only_full_match())
+        self._sync_force_scope_combo()
         self._refresh_preset_list()
 
     @property
@@ -1009,6 +1063,8 @@ class TeamPresetTab(CustomTab):
                         " ".join(slot.char for slot in preset.slots)])
                     if query not in haystack:
                         continue
+                error = TeamPresetStore.get_preset_error(preset.id)
+                stats = TeamPresetStore.get_preset_stats(preset.id)
                 full_hit, partial, note = self._preset_hit_info(preset, detected)
                 suffix = ""
                 if preset.id == active:
@@ -1019,12 +1075,27 @@ class TeamPresetTab(CustomTab):
                     suffix = f" · {note}"
                 elif detected and note:
                     suffix = f" · {note}"
+                if error:
+                    suffix += " ⚠"
                 item = QListWidgetItem(f"{label}{suffix}")
                 item.setData(Qt.UserRole, preset.id)
-                if full_hit:
+                if error:
+                    item.setForeground(QColor("#cf4d4d"))
+                elif full_hit:
                     item.setForeground(QColor("#4cc38a"))
                 elif preset.id == active:
                     item.setForeground(QColor("#6cb8ff"))
+                tip_lines = []
+                if stats.get("uses"):
+                    tip_lines.append(self.tr("Used {n} times").format(n=stats["uses"]))
+                if stats.get("errors"):
+                    tip_lines.append(self.tr("{n} errors").format(n=stats["errors"]))
+                if error:
+                    tip_lines.append(str(error.get("message", ""))[:80])
+                if preset.description:
+                    tip_lines.append(preset.description)
+                if tip_lines:
+                    item.setToolTip("\n".join(tip_lines))
                 self.preset_list.addItem(item)
                 if preset.id == selected_name:
                     selected_row = self.preset_list.count() - 1
@@ -1091,7 +1162,11 @@ class TeamPresetTab(CustomTab):
         self._update_team_logic_button()
         self._update_banner()
         self._update_force_state()
-        self.status_label.setText(self.tr("Auto saved"))
+        stats = TeamPresetStore.get_preset_stats(preset.id)
+        if stats.get("uses"):
+            self.status_label.setText(self.tr("Used {n} times").format(n=stats["uses"]))
+        else:
+            self.status_label.setText(self.tr("Auto saved"))
 
     def _open_team_logic_dialog(self):
         if self.current_preset is None:
@@ -1109,6 +1184,26 @@ class TeamPresetTab(CustomTab):
         forced = TeamPresetStore.get_forced_name()
         is_forced = self.current_preset is not None and self.current_preset.id == forced
         self.force_button.setText(self.tr("Unforce This Team") if is_forced else self.tr("Force This Team"))
+        self._sync_force_scope_combo()
+
+    def _sync_force_scope_combo(self):
+        scope = TeamPresetStore.get_force_scope()
+        for i in range(self.force_scope_combo.count()):
+            if self.force_scope_combo.itemData(i) == scope:
+                self.force_scope_combo.blockSignals(True)
+                self.force_scope_combo.setCurrentIndex(i)
+                self.force_scope_combo.blockSignals(False)
+                return
+
+    def _force_scope_changed(self, index):
+        scope = self.force_scope_combo.itemData(index)
+        if scope:
+            TeamPresetStore.set_force_scope(scope)
+            self._update_banner()
+
+    def _only_full_changed(self, checked):
+        TeamPresetStore.set_only_full_match(checked)
+        self._refresh_preset_list()
 
     def _update_banner(self):
         error = TeamPresetStore.get_last_team_logic_error()
@@ -1342,16 +1437,90 @@ class TeamPresetTab(CustomTab):
         if not path:
             return
         try:
-            preset = TeamPresetStore.import_preset_from_file(path)
+            imported, warnings = TeamPresetStore.import_presets_from_file(path)
         except Exception as e:
-            self.logger.error(f"import team preset failed: {e}")
+            self.logger.error(f"import team presets failed: {e}")
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+            return
+        if not imported:
+            return
+        self._refresh_preset_list(imported[0].id)
+        self.current_preset = TeamPresetStore.get_preset(imported[0].id)
+        self.current_row = self._row_of_preset(imported[0].id)
+        self._load_preset_into_widgets()
+        message = self.tr("Imported {n} teams.").format(n=len(imported))
+        for warning in warnings:
+            chars = ", ".join(warning["unknown_chars"])
+            message += " " + self.tr("{name}: unknown characters {chars} "
+                                     "(from a newer version?)").format(
+                name=warning["preset"], chars=chars)
+        show_info_bar(self.window(), message,
+                      title=self.tr("Success") if not warnings else self.tr("Warning"),
+                      error=bool(warnings))
+
+    def _export_all(self):
+        presets = TeamPresetStore.list_presets()
+        if not presets:
+            show_info_bar(self.window(), self.tr("No teams to export."),
+                          title=self.tr("Info"))
+            return
+        path, _ = QFileDialog.getSaveFileName(self, self.tr("Export All Teams"),
+                                              "teams.json",
+                                              self.tr("JSON Files (*.json);;All Files (*)"))
+        if not path:
+            return
+        try:
+            TeamPresetStore.export_presets_to_file([p.id for p in presets], path)
+        except Exception as e:
+            self.logger.error(f"export all team presets failed: {e}")
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+            return
+        show_info_bar(self.window(),
+                      self.tr("Exported {n} teams.").format(n=len(presets)),
+                      title=self.tr("Success"))
+
+    def _create_from_detected(self):
+        detected = TeamPresetStore.get_last_detected_team()
+        if not detected:
+            show_info_bar(self.window(),
+                          self.tr("No in-game team detected yet - run a combat task once."),
+                          title=self.tr("Info"))
+            return
+        default_name = " · ".join(self._display_char_name(c) for c in detected)
+        name, ok = QInputDialog.getText(self, self.tr("Create from Detected Team"),
+                                        self.tr("Team name:"), text=default_name)
+        if not ok or not name.strip():
+            return
+        try:
+            preset = TeamPresetStore.create_from_detected_team(name.strip())
+        except Exception as e:
+            self.logger.error(f"create preset from detected team failed: {e}")
             show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
             return
         self._refresh_preset_list(preset.id)
         self.current_preset = TeamPresetStore.get_preset(preset.id)
         self.current_row = self._row_of_preset(preset.id)
         self._load_preset_into_widgets()
-        show_info_bar(self.window(), self.tr("Team preset imported."), title=self.tr("Success"))
+        show_info_bar(self.window(), self.tr("Team preset created from the detected team."),
+                      title=self.tr("Success"))
+
+    def _install_from_url(self):
+        url, ok = QInputDialog.getText(self, self.tr("Install from URL"),
+                                       self.tr("Preset JSON URL:"))
+        if not ok or not url.strip():
+            return
+        try:
+            preset = TeamPresetStore.install_preset_from_url(url.strip())
+        except Exception as e:
+            self.logger.error(f"install preset from url failed: {e}")
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+            return
+        self._refresh_preset_list(preset.id)
+        self.current_preset = TeamPresetStore.get_preset(preset.id)
+        self.current_row = self._row_of_preset(preset.id)
+        self._load_preset_into_widgets()
+        show_info_bar(self.window(), self.tr("Team preset installed from URL."),
+                      title=self.tr("Success"))
 
     def _export_preset(self):
         if self.current_preset is None:

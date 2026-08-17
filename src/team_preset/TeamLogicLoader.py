@@ -59,3 +59,94 @@ def _load_team_logic_from_file(preset_id, path):
 
     _team_logic_cache[preset_id] = (stat.st_mtime_ns, stat.st_size, candidates[0])
     return candidates[0]
+
+
+# ---------- 试运行 ----------
+
+class _FakeChar:
+    """试运行用的假角色:所有动作 no-op,只有状态字段可读。"""
+
+    def __init__(self, index, char_name):
+        self.index = index
+        self.char_name = char_name
+        self.is_current_char = index == 0
+        self.last_switch_in_time = 0.0
+        self.has_intro = False
+        self.has_sub_dps_intro = False
+
+    def __getattr__(self, name):
+        def _noop(*args, **kwargs):
+            return False
+        return _noop
+
+
+class _FakeTask:
+    """试运行用的假任务:不截图、不发按键,只计数帧数。"""
+
+    skip_combat_check = False
+    in_liberation = False
+
+    def __init__(self):
+        self.frames = 0
+
+    def next_frame(self):
+        self.frames += 1
+
+    def sleep(self, sec, check_combat=True):
+        pass
+
+    def check_combat(self):
+        pass
+
+    def send_key(self, key):
+        pass
+
+    def click(self):
+        pass
+
+    def in_team(self):
+        return True, 0, 3
+
+    def raise_not_in_combat(self, msg):
+        raise RuntimeError(msg)
+
+    def get_cd(self, box_name, index):
+        return 0.0
+
+    def update_lib_portrait_icon(self):
+        pass
+
+    def log_info(self, msg):
+        pass
+
+    def log_debug(self, msg):
+        pass
+
+    def log_error(self, msg):
+        logger.debug(f"team logic test run log: {msg}")
+
+    def __getattr__(self, name):
+        def _noop(*args, **kwargs):
+            return None
+        return _noop
+
+
+def test_run_team_logic(preset_id, frames=120):
+    """在无战斗的模拟环境里试运行队伍逻辑。
+
+    编译失败或第 n 帧抛异常返回 (False, 消息);跑满 frames 帧返回 (True, 消息)。
+    不产生任何真实按键/截图,可安全在 GUI 中同步调用。
+    """
+    cls = load_team_logic(preset_id)
+    if cls is None:
+        return False, "failed to load team logic (see logs)"
+    task = _FakeTask()
+    chars = [_FakeChar(i, f"Char{i + 1}") for i in range(3)]
+    logic = cls(task, chars)
+    try:
+        for _ in range(frames):
+            logic.perform()
+            task.next_frame()
+    except Exception as e:
+        return False, f"frame {task.frames}: {type(e).__name__}: {e}"
+    return True, f"ran {frames} frames without error"

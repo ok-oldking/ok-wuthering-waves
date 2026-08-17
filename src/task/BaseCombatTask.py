@@ -916,6 +916,7 @@ class BaseCombatTask(CombatCheck):
         if preset_id:
             try:
                 TeamPresetStore.record_team_logic_error(preset_id, str(e))
+                TeamPresetStore.record_preset_error(preset_id)
             except Exception as record_error:
                 logger.error(f'record team logic error failed: {record_error}')
         try:
@@ -991,6 +992,10 @@ class BaseCombatTask(CombatCheck):
         if merged:
             self.char_config = merged
         TeamPresetStore.record_auto_match(matched.id)
+        try:
+            TeamPresetStore.record_preset_use(matched.id)
+        except Exception as e:
+            logger.debug(f'record preset use failed: {e}')
         self.log_info(f'auto-matched team preset {matched.name or matched.id}')
         return True
 

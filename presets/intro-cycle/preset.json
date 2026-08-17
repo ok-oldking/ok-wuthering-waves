@@ -1,0 +1,37 @@
+{
+  "type": "ok_ww_team_preset",
+  "version": 1,
+  "name": "Intro Cycle",
+  "description": "入场技循环流:每个角色靠入场技(变奏)登场打一轮,协奏值满就切下一个,三个角色形成闭环。展示 switch_to / wait_intro 的用法。",
+  "preset": {
+    "id": "intro_cycle",
+    "name": "Intro Cycle",
+    "note": "",
+    "created_from": "builtin template",
+    "auto_match": true,
+    "description": "入场技循环流:每个角色靠入场技(变奏)登场打一轮,协奏值满就切下一个,三个角色形成闭环。展示 switch_to / wait_intro 的用法。",
+    "slots": [
+      {
+        "char": "",
+        "enabled": true,
+        "note": "主C(开场站场)",
+        "params": {},
+        "custom_code": ""
+      },
+      {
+        "char": "",
+        "enabled": true,
+        "note": "副C(入场技后打一轮)",
+        "params": {},
+        "custom_code": ""
+      },
+      {
+        "char": "",
+        "enabled": true,
+        "note": "奶妈/辅助(入场技后切回主C)",
+        "params": {},
+        "custom_code": ""
+      }
+    ]
+  }
+}

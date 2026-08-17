@@ -722,7 +722,8 @@ msgid "Nightmare Nest Task"
 msgstr "Tarea Nido de Pesadilla"
 
 msgid "Select boss profile (includes Combat Wait Time)"
-msgstr "Seleccionar perfil de jefe (incluye tiempo de espera antes del combate)"
+msgstr ""
+"Seleccionar perfil de jefe (incluye tiempo de espera antes del combate)"
 
 msgid "Wait time before each combat (seconds), overrides Boss profile if set"
 msgstr "Si es mayor que 0, anula el perfil de jefe"
@@ -764,7 +765,9 @@ msgid "Other"
 msgstr "Otros"
 
 msgid "Toggle the levitator and verify if the character is floating"
-msgstr "Cambiar al elevador en el combate automático para verificar si el personaje está en el aire"
+msgstr ""
+"Cambiar al elevador en el combate automático para verificar si el personaje "
+"está en el aire"
 
 msgid "Use Liberation"
 msgstr "Usar la Liberación"
@@ -948,15 +951,15 @@ msgid ""
 "Custom code matches built in code. Removed custom code and switched to built"
 " in."
 msgstr ""
-"El c?digo personalizado coincide con el integrado. Se elimin? el c?digo "
-"personalizado y se cambi? al integrado."
+"El código personalizado coincide con el integrado. Se eliminó y se cambió al"
+" integrado."
 
 msgid ""
 "Custom code matches built in code. Removed custom code, switched to built "
 "in, and reloaded loaded characters."
 msgstr ""
-"El c?digo personalizado coincide con el integrado. Se elimin?, se cambi? al "
-"integrado y se recargaron los personajes cargados."
+"El código personalizado coincide con el integrado. Se eliminó, se cambió al "
+"integrado y se recargaron los personajes."
 
 msgid "Custom code reset to built in code."
 msgstr "Código personalizado restablecido al código integrado."
@@ -981,22 +984,21 @@ msgid ""
 "Return only the complete modified Python code for the whole file, not a "
 "patch and not an explanation."
 msgstr ""
-"Devuelve solo el código Python completo modificado de todo el archivo, no un"
-" parche ni una explicación."
+"Devuelve solo el código Python completo modificado de todo el archivo, sin "
+"parches ni explicaciones."
 
 msgid ""
 "Keep the class name as {class_name}. Preserve imports that are still needed."
 msgstr ""
-"Mantén el nombre de la clase como {class_name}. Conserva las importaciones "
-"que sigan siendo necesarias."
+"Mantén el nombre de clase {class_name}. Conserva las importaciones que sigan"
+" siendo necesarias."
 
 msgid ""
 "Use this BaseChar reference while reasoning about helper methods, task APIs,"
 " state, switching, cooldowns, and combat flow:"
 msgstr ""
-"Usa esta referencia de BaseChar para razonar sobre m?todos auxiliares, API "
-"de tareas, estado, cambios de personaje, tiempos de recarga y flujo de "
-"combate:"
+"Usa esta referencia de BaseChar al razonar sobre métodos auxiliares, APIs de"
+" tarea, estado, cambios, enfriamientos y flujo de combate:"
 
 msgid "自动周常乐园"
 msgstr "Jardín semanal automático"
@@ -1038,8 +1040,8 @@ msgid "Merge Discarded Echoes"
 msgstr "Fusionar ecos descartados"
 
 msgid ""
-"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
-"batches of 100."
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full batches"
+" of 100."
 msgstr ""
 "Debe haber 1000 ecos descartados para ejecutarse. Fusiona ecos descartados "
 "en lotes completos de 100."
@@ -1057,7 +1059,9 @@ msgid "Check Discarded Echo"
 msgstr "Comprobar ecos descartados"
 
 msgid "After daily tasks, check for 1000 discarded Echoes and merge them."
-msgstr "Después de las tareas diarias, comprueba si hay 1000 ecos descartados y fusiónalos."
+msgstr ""
+"Después de las tareas diarias, comprueba si hay 1000 ecos descartados y "
+"fusiónalos."
 
 msgid "Teleport and Farm 4C Echo"
 msgstr "Teletransportarse y farmear eco de coste 4"
@@ -1068,20 +1072,34 @@ msgstr "Fusionar ecos si hay más de 1000 descartados"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "Tareas adicionales para ejecutar después de la tarea diaria"
 
-msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
-msgstr "Selecciona tareas opcionales. Nido de pesadilla se ejecuta antes de gastar energía para ayudar a completar la tarea diaria; las demás se ejecutan después."
+msgid ""
+"Select optional tasks. Nightmare Nest runs before stamina farming to help "
+"complete the daily task; the other tasks run afterward."
+msgstr ""
+"Selecciona tareas opcionales. Nido de pesadilla se ejecuta antes de gastar "
+"energía para ayudar a completar la tarea diaria; las demás se ejecutan "
+"después."
 
-msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
-msgstr "Teletransportarse y farmear eco de coste 4 requiere activar \"Teletransportarse al jefe\" en la tarea de farmeo de ecos."
+msgid ""
+"Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in "
+"Farm Echo Task."
+msgstr ""
+"Teletransportarse y farmear eco de coste 4 requiere activar "
+"\"Teletransportarse al jefe\" en la tarea de farmeo de ecos."
 
-msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
-msgstr "Farmear automáticamente todos los nidos de pesadilla requiere seleccionar al menos una opción en \"Qué farmear\"."
+msgid ""
+"Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgstr ""
+"Farmear automáticamente todos los nidos de pesadilla requiere seleccionar al"
+" menos una opción en \"Qué farmear\"."
 
 msgid "Daily Task Completed"
 msgstr "Tarea diaria completada"
 
 msgid "Daily task completed, start teleport to farm 4C echo"
-msgstr "Tarea diaria completada; iniciando teletransporte para farmear ecos de coste 4"
+msgstr ""
+"Tarea diaria completada; iniciando teletransporte para farmear ecos de coste"
+" 4"
 
 msgid "can't find dialog right button"
 msgstr "No se puede encontrar el botón derecho del diálogo"
@@ -1099,7 +1117,9 @@ msgid "🌸 Auto Pick"
 msgstr "🌸 Recolección automática"
 
 msgid "🎛️ 批量修改声骸主属性(仅支持简中游戏语言)"
-msgstr "🎛️ Modificar atributos principales de Ecos por lotes (solo chino simplificado)"
+msgstr ""
+"🎛️ Modificar atributos principales de Ecos por lotes (solo chino "
+"simplificado)"
 
 msgid "📅 Daily Task"
 msgstr "📅 Tarea diaria"
@@ -1108,7 +1128,9 @@ msgid "🩺 Diagnosis"
 msgstr "🩺 Diagnóstico"
 
 msgid "⬆️ 批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
-msgstr "⬆️ Mejorar Ecos por lotes (el juego y okww deben usar chino simplificado/tradicional)"
+msgstr ""
+"⬆️ Mejorar Ecos por lotes (el juego y okww deben usar chino "
+"simplificado/tradicional)"
 
 msgid "🌀 Farm 4C Echo in Dungeon/World"
 msgstr "🌀 Farmear Eco 4C en mazmorra/mundo"
@@ -1150,13 +1172,21 @@ msgid "🌊 Tacet Suppression"
 msgstr "🌊 Supresión Tacet"
 
 msgid "点击B进入背包, 在过滤器中选择需要修改主属性的声骸, 并按照等级从0排序后开始."
-msgstr "Pulsa B para abrir la mochila, selecciona en el filtro los Ecos cuyo atributo principal quieras modificar y ordénalos por nivel desde 0 antes de comenzar."
+msgstr ""
+"Pulsa B para abrir la mochila, selecciona en el filtro los Ecos cuyo "
+"atributo principal quieras modificar y ordénalos por nivel desde 0 antes de "
+"comenzar."
 
 msgid "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按照等级从0排序后开始."
-msgstr "Pulsa B para abrir la mochila, selecciona en el filtro los Ecos que quieras mejorar y ordénalos por nivel desde 0 antes de comenzar."
+msgstr ""
+"Pulsa B para abrir la mochila, selecciona en el filtro los Ecos que quieras "
+"mejorar y ordénalos por nivel desde 0 antes de comenzar."
 
 msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
-msgstr "El juego y okww deben estar en chino simplificado/tradicional; se requiere una resolución 16:9 de al menos 1600x900. Marca lo que quieras conservar; lo no marcado se fusionará automáticamente."
+msgstr ""
+"El juego y okww deben estar en chino simplificado/tradicional; se requiere "
+"una resolución 16:9 de al menos 1600x900. Marca lo que quieras conservar; lo"
+" no marcado se fusionará automáticamente."
 
 msgid "Switch to Healer before and after Combat"
 msgstr "Cambiar al sanador antes y después del combate"
@@ -1165,7 +1195,8 @@ msgid "Required"
 msgstr "Obligatorio"
 
 msgid "This team only auto-matches when this character is in your team."
-msgstr "Solo se empareja automáticamente cuando este personaje está en tu equipo."
+msgstr ""
+"Solo se empareja automáticamente cuando este personaje está en tu equipo."
 
 msgid "Search teams…"
 msgstr "Buscar equipos…"
@@ -1190,3 +1221,366 @@ msgstr "Mostrar las APIs disponibles para la lógica de equipo (chino)."
 
 msgid "Team Logic API Quick Reference"
 msgstr "Referencia rápida de API de lógica de equipo"
+
+msgid "Create a team from the currently detected in-game team."
+msgstr "Crear un equipo a partir del equipo actual detectado en el juego."
+
+msgid "Create from Detected Team"
+msgstr "Crear desde el equipo detectado"
+
+msgid "Export All"
+msgstr "Exportar todo"
+
+msgid "Export All Teams"
+msgstr "Exportar todos los equipos"
+
+msgid "Export all teams to one JSON file."
+msgstr "Exporta todos los equipos a un solo archivo JSON."
+
+msgid "Exported {n} teams."
+msgstr "Se exportaron {n} equipos."
+
+msgid "From Team"
+msgstr "Desde el equipo"
+
+msgid "From URL"
+msgstr "Desde URL"
+
+msgid "Import teams from a JSON file (single or batch)."
+msgstr "Importa equipos desde un archivo JSON (individual o por lotes)."
+
+msgid "Imported {n} teams."
+msgstr "Se importaron {n} equipos."
+
+msgid "Install a team preset from a JSON URL."
+msgstr "Instala un preset de equipo desde una URL JSON."
+
+msgid "Install from URL"
+msgstr "Instalar desde URL"
+
+msgid "No in-game team detected yet - run a combat task once."
+msgstr ""
+"Aún no se ha detectado un equipo en el juego: ejecuta una tarea de combate "
+"una vez."
+
+msgid "No teams to export."
+msgstr "No hay equipos para exportar."
+
+msgid "Once"
+msgstr "Una vez"
+
+msgid "Only full match"
+msgstr "Solo coincidencia completa"
+
+msgid "Persistent"
+msgstr "Persistente"
+
+msgid "Preset JSON URL:"
+msgstr "URL JSON del preset:"
+
+msgid "Save code before testing"
+msgstr "Guarda el código antes de probar"
+
+msgid "Team preset created from the detected team."
+msgstr "Preset de equipo creado a partir del equipo detectado."
+
+msgid "Team preset installed from URL."
+msgstr "Preset de equipo instalado desde URL."
+
+msgid "Test Run"
+msgstr "Prueba de ejecución"
+
+msgid "Until match"
+msgstr "Hasta coincidir"
+
+msgid "Used {n} times"
+msgstr "Usado {n} veces"
+
+msgid "{n} errors"
+msgstr "{n} errores"
+
+msgid "e.g. 苏格拉塔 1, 今州日常"
+msgstr "p. ej. Sugrata 1, diaria de Jinzhou"
+
+msgid "Create from Template"
+msgstr "Crear desde plantilla"
+
+msgid "Import a .py script file for this character."
+msgstr "Importa un archivo de script .py para este personaje."
+
+msgid "Auto-matched: {name}"
+msgstr "Coincidencia automática: {name}"
+
+msgid "Editing…"
+msgstr "Editando…"
+
+msgid "Example inserted - edit and save"
+msgstr "Ejemplo insertado: edítalo y guárdalo"
+
+msgid "Team preset exported."
+msgstr "Preset de equipo exportado."
+
+msgid "Hide Advanced Parameters"
+msgstr "Ocultar parámetros avanzados"
+
+msgid "Copy"
+msgstr "Duplicar"
+
+msgid "Delete"
+msgstr "Eliminar"
+
+msgid "Auto-matched: {name} · {roles}"
+msgstr "Coincidencia automática: {name} · {roles}"
+
+msgid "Save failed: {error}"
+msgstr "Error al guardar: {error}"
+
+msgid "New"
+msgstr "Nuevo"
+
+msgid "Discard unsaved preset character code changes?"
+msgstr ""
+"¿Descartar los cambios sin guardar del código de personaje del preset?"
+
+msgid "Insert Example"
+msgstr "Insertar ejemplo"
+
+msgid "Pick a character…"
+msgstr "Elige un personaje…"
+
+msgid "Team Logic"
+msgstr "Lógica de equipo"
+
+msgid ""
+"Pick characters - the team matching your in-game lineup is used "
+"automatically."
+msgstr ""
+"Elige personajes: el equipo que coincida con tu alineación se usará "
+"automáticamente."
+
+msgid "Always use this team, ignoring auto-match."
+msgstr "Usar siempre este equipo, ignorando la coincidencia automática."
+
+msgid "Unforce This Team"
+msgstr "Dejar de forzar este equipo"
+
+msgid "Delete Team Preset"
+msgstr "Eliminar preset de equipo"
+
+msgid "Auto saved"
+msgstr "Guardado automáticamente"
+
+msgid "Imported from file and saved"
+msgstr "Importado desde archivo y guardado"
+
+msgid "Auto match in-game team"
+msgstr "Coincidir automáticamente con el equipo"
+
+msgid "Export the current team to a JSON file."
+msgstr "Exporta el equipo actual a un archivo JSON."
+
+msgid "Higher teams win when multiple match the in-game team."
+msgstr ""
+"Los equipos superiores ganan cuando varios coinciden con el equipo del "
+"juego."
+
+msgid "Lower teams win when multiple match the in-game team."
+msgstr ""
+"Los equipos inferiores ganan cuando varios coinciden con el equipo del "
+"juego."
+
+msgid "Delete the current team and its custom code."
+msgstr "Elimina el equipo actual y su código personalizado."
+
+msgid "Warning"
+msgstr "Advertencia"
+
+msgid "Create My First Team"
+msgstr "Crear mi primer equipo"
+
+msgid "Done"
+msgstr "Hecho"
+
+msgid "Invalid params JSON in slot {index}: {error}"
+msgstr "JSON de parámetros no válido en la ranura {index}: {error}"
+
+msgid "Reset to builtin"
+msgstr "Restablecido al integrado"
+
+msgid "Note (optional)"
+msgstr "Nota (opcional)"
+
+msgid "Create from Current Config"
+msgstr "Crear desde la configuración actual"
+
+msgid "Pick a character first"
+msgstr "Selecciona primero un personaje"
+
+msgid "Forced team: {name} · {roles}"
+msgstr "Equipo forzado: {name} · {roles}"
+
+msgid "Use this slot"
+msgstr "Usar esta ranura"
+
+msgid "Choose a template:"
+msgstr "Elige una plantilla:"
+
+msgid "Save Code"
+msgstr "Guardar código"
+
+msgid "From Template"
+msgstr "Desde plantilla"
+
+msgid "Team preset created from current config."
+msgstr "Preset de equipo creado desde la configuración actual."
+
+msgid "Character Settings"
+msgstr "Ajustes de personaje"
+
+msgid "Create a team from the current global character config (advanced)."
+msgstr ""
+"Crear un equipo desde la configuración global actual de personajes "
+"(avanzado)."
+
+msgid "Info"
+msgstr "Información"
+
+msgid "Forced team: {name}"
+msgstr "Equipo forzado: {name}"
+
+msgid "Move Down"
+msgstr "Bajar"
+
+msgid "Team unforced - auto-match is active again."
+msgstr "Equipo desforzado: la coincidencia automática vuelve a estar activa."
+
+msgid "Custom Code"
+msgstr "Código personalizado"
+
+msgid "Character already used in slot {index}"
+msgstr "El personaje ya se usa en la ranura {index}"
+
+msgid "Import"
+msgstr "Importar"
+
+msgid "Import .py"
+msgstr "Importar .py"
+
+msgid "Close"
+msgstr "Cerrar"
+
+msgid "Code saved"
+msgstr "Código guardado"
+
+msgid "Team name:"
+msgstr "Nombre del equipo:"
+
+msgid "No built-in templates available."
+msgstr "No hay plantillas integradas disponibles."
+
+msgid "Team Name:"
+msgstr "Nombre del equipo:"
+
+msgid "Move Up"
+msgstr "Subir"
+
+msgid ""
+"Create a team to save a character lineup and switch between lineups with one"
+" click."
+msgstr ""
+"Crea un equipo para guardar una alineación de personajes y cambiar entre "
+"alineaciones con un clic."
+
+msgid "Imported and applied to {name}"
+msgstr "Importado y aplicado a {name}"
+
+msgid "Notice"
+msgstr "Aviso"
+
+msgid "Description (optional) - shown when sharing as a template or file"
+msgstr ""
+"Descripción (opcional): se muestra al compartir como plantilla o archivo"
+
+msgid "Import a script file and save it as this team's logic."
+msgstr "Importa un archivo de script y guárdalo como lógica de este equipo."
+
+msgid "My Teams"
+msgstr "Mis equipos"
+
+msgid "Template installed: {name}"
+msgstr "Plantilla instalada: {name}"
+
+msgid "Python Files (*.py);;All Files (*)"
+msgstr "Archivos Python (*.py);;Todos los archivos (*)"
+
+msgid "Import Script (.py)"
+msgstr "Importar script (.py)"
+
+msgid "Advanced Parameters (JSON)"
+msgstr "Parámetros avanzados (JSON)"
+
+msgid "Team forced - tasks always use its settings."
+msgstr "Equipo forzado: las tareas siempre usan su configuración."
+
+msgid "Import a script file and save it for this character."
+msgstr "Importa un archivo de script y guárdalo para este personaje."
+
+msgid "JSON Files (*.json);;All Files (*)"
+msgstr "Archivos JSON (*.json);;Todos los archivos (*)"
+
+msgid "Export"
+msgstr "Exportar"
+
+msgid "Duplicate the current team."
+msgstr "Duplica el equipo actual."
+
+msgid "Team Presets"
+msgstr "Presets de equipo"
+
+msgid "Import Team Preset"
+msgstr "Importar preset de equipo"
+
+msgid "No teams yet"
+msgstr "Aún no hay equipos"
+
+msgid "Reset Code"
+msgstr "Restablecer código"
+
+msgid "Slot {index}"
+msgstr "Ranura {index}"
+
+msgid "Open a full editor window for this character's code."
+msgstr "Abre una ventana de editor completa para el código de este personaje."
+
+msgid "Force This Team"
+msgstr "Forzar este equipo"
+
+msgid "Export Team Preset"
+msgstr "Exportar preset de equipo"
+
+msgid "Not saved: {error}"
+msgstr "No guardado: {error}"
+
+msgid "No extra settings for this character."
+msgstr "No hay ajustes adicionales para este personaje."
+
+msgid "From Config"
+msgstr "Desde configuración"
+
+msgid "Team Logic: On"
+msgstr "Lógica de equipo: activada"
+
+msgid "Not Saved"
+msgstr "No guardado"
+
+msgid "Delete this team preset and its custom code?"
+msgstr "¿Eliminar este preset de equipo y su código personalizado?"
+
+msgid "Create a new team preset."
+msgstr "Crea un nuevo preset de equipo."
+
+msgid "Team {number}"
+msgstr "Equipo {number}"
+
+msgid "New Team Preset"
+msgstr "Nuevo preset de equipo"

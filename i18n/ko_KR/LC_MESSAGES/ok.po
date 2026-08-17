@@ -1,4 +1,3 @@
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
@@ -1264,3 +1263,348 @@ msgstr "팀 로직에서 사용할 수 있는 API 빠른 참조(중국어)를 �
 
 msgid "Team Logic API Quick Reference"
 msgstr "팀 로직 API 빠른 참조"
+
+msgid "Create a team from the currently detected in-game team."
+msgstr "현재 감지된 게임 내 팀에서 팀을 만듭니다."
+
+msgid "Create from Detected Team"
+msgstr "감지된 팀에서 만들기"
+
+msgid "Export All"
+msgstr "모두 내보내기"
+
+msgid "Export All Teams"
+msgstr "모든 팀 내보내기"
+
+msgid "Export all teams to one JSON file."
+msgstr "모든 팀을 하나의 JSON 파일로 내보냅니다."
+
+msgid "Exported {n} teams."
+msgstr "{n}개 팀을 내보냈습니다."
+
+msgid "From Team"
+msgstr "팀에서 만들기"
+
+msgid "From URL"
+msgstr "URL에서 설치"
+
+msgid "Import teams from a JSON file (single or batch)."
+msgstr "JSON 파일에서 팀을 가져옵니다(단일 또는 일괄)."
+
+msgid "Imported {n} teams."
+msgstr "{n}개 팀을 가져왔습니다."
+
+msgid "Install a team preset from a JSON URL."
+msgstr "JSON URL에서 팀 프리셋을 설치합니다."
+
+msgid "Install from URL"
+msgstr "URL에서 설치"
+
+msgid "No in-game team detected yet - run a combat task once."
+msgstr "아직 게임 내 팀이 감지되지 않았습니다 - 전투 작업을 한 번 실행하세요."
+
+msgid "No teams to export."
+msgstr "내보낼 팀이 없습니다."
+
+msgid "Once"
+msgstr "한 번"
+
+msgid "Only full match"
+msgstr "전체 일치만"
+
+msgid "Persistent"
+msgstr "지속"
+
+msgid "Preset JSON URL:"
+msgstr "프리셋 JSON URL:"
+
+msgid "Save code before testing"
+msgstr "테스트 전에 코드를 저장하세요"
+
+msgid "Team preset created from the detected team."
+msgstr "감지된 팀으로 팀 프리셋을 만들었습니다."
+
+msgid "Team preset installed from URL."
+msgstr "URL에서 팀 프리셋을 설치했습니다."
+
+msgid "Test Run"
+msgstr "테스트 실행"
+
+msgid "Until match"
+msgstr "일치할 때까지"
+
+msgid "Used {n} times"
+msgstr "{n}회 사용됨"
+
+msgid "{n} errors"
+msgstr "오류 {n}회"
+
+msgid "e.g. 苏格拉塔 1, 今州日常"
+msgstr "예: 스그라타 1, 진저우 일일"
+
+msgid "Create from Template"
+msgstr "템플릿에서 만들기"
+
+msgid "Import a .py script file for this character."
+msgstr "이 캐릭터용 .py 스크립트 파일을 가져옵니다."
+
+msgid "Auto-matched: {name}"
+msgstr "자동 매칭: {name}"
+
+msgid "Editing…"
+msgstr "편집 중…"
+
+msgid "Example inserted - edit and save"
+msgstr "예제가 삽입되었습니다 - 편집 후 저장하세요"
+
+msgid "Team preset exported."
+msgstr "팀 프리셋을 내보냈습니다."
+
+msgid "Hide Advanced Parameters"
+msgstr "고급 매개변수 숨기기"
+
+msgid "Copy"
+msgstr "복제"
+
+msgid "Delete"
+msgstr "삭제"
+
+msgid "Auto-matched: {name} · {roles}"
+msgstr "자동 매칭: {name} · {roles}"
+
+msgid "Save failed: {error}"
+msgstr "저장 실패: {error}"
+
+msgid "New"
+msgstr "새로 만들기"
+
+msgid "Discard unsaved preset character code changes?"
+msgstr "저장되지 않은 프리셋 캐릭터 코드 변경을 취소할까요?"
+
+msgid "Insert Example"
+msgstr "예제 삽입"
+
+msgid "Pick a character…"
+msgstr "캐릭터 선택…"
+
+msgid "Team Logic"
+msgstr "팀 로직"
+
+msgid "Pick characters - the team matching your in-game lineup is used automatically."
+msgstr "캐릭터를 선택하세요 - 게임 내 편성과 일치하는 팀이 자동으로 사용됩니다."
+
+msgid "Always use this team, ignoring auto-match."
+msgstr "자동 매칭을 무시하고 항상 이 팀을 사용합니다."
+
+msgid "Unforce This Team"
+msgstr "이 팀 강제 해제"
+
+msgid "Delete Team Preset"
+msgstr "팀 프리셋 삭제"
+
+msgid "Auto saved"
+msgstr "자동 저장됨"
+
+msgid "Imported from file and saved"
+msgstr "파일에서 가져와 저장했습니다"
+
+msgid "Auto match in-game team"
+msgstr "게임 내 팀 자동 매칭"
+
+msgid "Export the current team to a JSON file."
+msgstr "현재 팀을 JSON 파일로 내보냅니다."
+
+msgid "Higher teams win when multiple match the in-game team."
+msgstr "여러 팀이 게임 내 팀과 일치하면 위쪽 팀이 우선합니다."
+
+msgid "Lower teams win when multiple match the in-game team."
+msgstr "여러 팀이 게임 내 팀과 일치하면 아래쪽 팀이 우선합니다."
+
+msgid "Delete the current team and its custom code."
+msgstr "현재 팀과 사용자 지정 코드를 삭제합니다."
+
+msgid "Warning"
+msgstr "경고"
+
+msgid "Create My First Team"
+msgstr "첫 번째 팀 만들기"
+
+msgid "Done"
+msgstr "완료"
+
+msgid "Invalid params JSON in slot {index}: {error}"
+msgstr "슬롯 {index}의 매개변수 JSON이 잘못되었습니다: {error}"
+
+msgid "Reset to builtin"
+msgstr "기본 제공으로 초기화됨"
+
+msgid "Note (optional)"
+msgstr "메모(선택)"
+
+msgid "Create from Current Config"
+msgstr "현재 설정에서 만들기"
+
+msgid "Pick a character first"
+msgstr "먼저 캐릭터를 선택하세요"
+
+msgid "Forced team: {name} · {roles}"
+msgstr "강제 팀: {name} · {roles}"
+
+msgid "Use this slot"
+msgstr "이 슬롯 사용"
+
+msgid "Choose a template:"
+msgstr "템플릿 선택:"
+
+msgid "Save Code"
+msgstr "코드 저장"
+
+msgid "From Template"
+msgstr "템플릿에서 만들기"
+
+msgid "Team preset created from current config."
+msgstr "현재 설정으로 팀 프리셋을 만들었습니다."
+
+msgid "Character Settings"
+msgstr "캐릭터 설정"
+
+msgid "Create a team from the current global character config (advanced)."
+msgstr "현재 전역 캐릭터 설정에서 팀을 만듭니다(고급)."
+
+msgid "Info"
+msgstr "정보"
+
+msgid "Forced team: {name}"
+msgstr "강제 팀: {name}"
+
+msgid "Move Down"
+msgstr "아래로"
+
+msgid "Team unforced - auto-match is active again."
+msgstr "팀 강제 해제됨 - 자동 매칭이 다시 활성화됩니다."
+
+msgid "Custom Code"
+msgstr "사용자 지정 코드"
+
+msgid "Character already used in slot {index}"
+msgstr "이 캐릭터는 슬롯 {index}에서 이미 사용 중입니다"
+
+msgid "Import"
+msgstr "가져오기"
+
+msgid "Import .py"
+msgstr ".py 가져오기"
+
+msgid "Close"
+msgstr "닫기"
+
+msgid "Code saved"
+msgstr "코드가 저장되었습니다"
+
+msgid "Team name:"
+msgstr "팀 이름:"
+
+msgid "No built-in templates available."
+msgstr "사용 가능한 기본 제공 템플릿이 없습니다."
+
+msgid "Team Name:"
+msgstr "팀 이름:"
+
+msgid "Move Up"
+msgstr "위로"
+
+msgid "Create a team to save a character lineup and switch between lineups with one click."
+msgstr "팀을 만들면 캐릭터 편성을 저장하고 원클릭으로 전환할 수 있습니다."
+
+msgid "Imported and applied to {name}"
+msgstr "가져와서 {name}에 적용했습니다"
+
+msgid "Notice"
+msgstr "알림"
+
+msgid "Description (optional) - shown when sharing as a template or file"
+msgstr "설명(선택) - 템플릿이나 파일로 공유할 때 표시됩니다"
+
+msgid "Import a script file and save it as this team's logic."
+msgstr "스크립트 파일을 가져와 이 팀의 로직으로 저장합니다."
+
+msgid "My Teams"
+msgstr "내 팀"
+
+msgid "Template installed: {name}"
+msgstr "템플릿 설치됨: {name}"
+
+msgid "Python Files (*.py);;All Files (*)"
+msgstr "Python 파일 (*.py);;모든 파일 (*)"
+
+msgid "Import Script (.py)"
+msgstr "스크립트 가져오기 (.py)"
+
+msgid "Advanced Parameters (JSON)"
+msgstr "고급 매개변수 (JSON)"
+
+msgid "Team forced - tasks always use its settings."
+msgstr "팀이 강제됨 - 작업이 항상 해당 설정을 사용합니다."
+
+msgid "Import a script file and save it for this character."
+msgstr "스크립트 파일을 가져와 이 캐릭터용으로 저장합니다."
+
+msgid "JSON Files (*.json);;All Files (*)"
+msgstr "JSON 파일 (*.json);;모든 파일 (*)"
+
+msgid "Export"
+msgstr "내보내기"
+
+msgid "Duplicate the current team."
+msgstr "현재 팀을 복제합니다."
+
+msgid "Team Presets"
+msgstr "팀 프리셋"
+
+msgid "Import Team Preset"
+msgstr "팀 프리셋 가져오기"
+
+msgid "No teams yet"
+msgstr "아직 팀이 없습니다"
+
+msgid "Reset Code"
+msgstr "코드 초기화"
+
+msgid "Slot {index}"
+msgstr "슬롯 {index}"
+
+msgid "Open a full editor window for this character's code."
+msgstr "이 캐릭터 코드의 전체 편집기 창을 엽니다."
+
+msgid "Force This Team"
+msgstr "이 팀 강제 사용"
+
+msgid "Export Team Preset"
+msgstr "팀 프리셋 내보내기"
+
+msgid "Not saved: {error}"
+msgstr "저장되지 않음: {error}"
+
+msgid "No extra settings for this character."
+msgstr "이 캐릭터에는 추가 설정이 없습니다."
+
+msgid "From Config"
+msgstr "설정에서 만들기"
+
+msgid "Team Logic: On"
+msgstr "팀 로직: 켜짐"
+
+msgid "Not Saved"
+msgstr "저장되지 않음"
+
+msgid "Delete this team preset and its custom code?"
+msgstr "이 팀 프리셋과 사용자 지정 코드를 삭제할까요?"
+
+msgid "Create a new team preset."
+msgstr "새 팀 프리셋을 만듭니다."
+
+msgid "Team {number}"
+msgstr "팀 {number}"
+
+msgid "New Team Preset"
+msgstr "새 팀 프리셋"

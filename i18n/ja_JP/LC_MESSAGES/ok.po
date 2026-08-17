@@ -1113,8 +1113,8 @@ msgid "Merge Discarded Echoes"
 msgstr "破棄済み音骸を融合"
 
 msgid ""
-"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
-"batches of 100."
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full batches"
+" of 100."
 msgstr "実行には破棄済み音骸が1000個必要です。破棄済み音骸を100個単位で融合します。"
 
 msgid "Bag Key"
@@ -1141,13 +1141,18 @@ msgstr "破棄済み音骸が1000個超なら融合"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "デイリータスク後に実行する追加タスク"
 
-msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
+msgid ""
+"Select optional tasks. Nightmare Nest runs before stamina farming to help "
+"complete the daily task; the other tasks run afterward."
 msgstr "任意のタスクを選択します。悪夢の巣はデイリー達成を補助するためスタミナ消費前に実行し、その他のタスクはその後に実行します。"
 
-msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
+msgid ""
+"Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in "
+"Farm Echo Task."
 msgstr "「テレポートしてコスト4音骸を収集」を実行するには、音骸収集タスクの「ボスへテレポート」を有効にしてください。"
 
-msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgid ""
+"Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
 msgstr "「すべての悪夢の巣を自動周回」を実行するには、「周回対象」を1つ以上選択してください。"
 
 msgid "Daily Task Completed"
@@ -1229,7 +1234,8 @@ msgid "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按�
 msgstr "Bキーでバッグを開き、フィルターで強化する音骸を選択し、レベル0から昇順に並べて開始してください。"
 
 msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
-msgstr "ゲームとokwwの言語は簡体字/繁体字中国語、解像度は16:9かつ1600x900以上が必要です。必要なものにチェックを入れると、未チェックのものは自動合成されます。"
+msgstr ""
+"ゲームとokwwの言語は簡体字/繁体字中国語、解像度は16:9かつ1600x900以上が必要です。必要なものにチェックを入れると、未チェックのものは自動合成されます。"
 
 msgid "Switch to Healer before and after Combat"
 msgstr "戦闘前後にヒーラーへ切り替える"
@@ -1263,3 +1269,352 @@ msgstr "チームロジックで使える API の早見表(中国語)を表示�
 
 msgid "Team Logic API Quick Reference"
 msgstr "チームロジック API 早見表"
+
+msgid "Create a team from the currently detected in-game team."
+msgstr "現在検出されたゲーム内編成からチームを作成します。"
+
+msgid "Create from Detected Team"
+msgstr "検出した編成から作成"
+
+msgid "Export All"
+msgstr "すべてエクスポート"
+
+msgid "Export All Teams"
+msgstr "すべてのチームをエクスポート"
+
+msgid "Export all teams to one JSON file."
+msgstr "すべてのチームを 1 つの JSON ファイルにエクスポートします。"
+
+msgid "Exported {n} teams."
+msgstr "{n} チームをエクスポートしました。"
+
+msgid "From Team"
+msgstr "編成から作成"
+
+msgid "From URL"
+msgstr "URL からインストール"
+
+msgid "Import teams from a JSON file (single or batch)."
+msgstr "JSON ファイルからチームをインポートします(単一または一括)。"
+
+msgid "Imported {n} teams."
+msgstr "{n} チームをインポートしました。"
+
+msgid "Install a team preset from a JSON URL."
+msgstr "JSON URL からチームプリセットをインストールします。"
+
+msgid "Install from URL"
+msgstr "URL からインストール"
+
+msgid "No in-game team detected yet - run a combat task once."
+msgstr "ゲーム内の編成がまだ検出されていません - 一度戦闘タスクを実行してください。"
+
+msgid "No teams to export."
+msgstr "エクスポートできるチームがありません。"
+
+msgid "Once"
+msgstr "一度だけ"
+
+msgid "Only full match"
+msgstr "完全一致のみ"
+
+msgid "Persistent"
+msgstr "永続"
+
+msgid "Preset JSON URL:"
+msgstr "プリセット JSON URL:"
+
+msgid "Save code before testing"
+msgstr "テスト前にコードを保存してください"
+
+msgid "Team preset created from the detected team."
+msgstr "検出した編成からチームプリセットを作成しました。"
+
+msgid "Team preset installed from URL."
+msgstr "URL からチームプリセットをインストールしました。"
+
+msgid "Test Run"
+msgstr "テスト実行"
+
+msgid "Until match"
+msgstr "一致するまで"
+
+msgid "Used {n} times"
+msgstr "{n} 回使用"
+
+msgid "{n} errors"
+msgstr "エラー {n} 回"
+
+msgid "e.g. 苏格拉塔 1, 今州日常"
+msgstr "例: スグラタ 1、今州デイリー"
+
+msgid "Create from Template"
+msgstr "テンプレートから作成"
+
+msgid "Import a .py script file for this character."
+msgstr "このキャラ用の .py スクリプトファイルをインポートします。"
+
+msgid "Auto-matched: {name}"
+msgstr "自動マッチ: {name}"
+
+msgid "Editing…"
+msgstr "編集中…"
+
+msgid "Example inserted - edit and save"
+msgstr "例を挿入しました - 編集して保存してください"
+
+msgid "Team preset exported."
+msgstr "チームプリセットをエクスポートしました。"
+
+msgid "Hide Advanced Parameters"
+msgstr "詳細パラメータを隠す"
+
+msgid "Copy"
+msgstr "複製"
+
+msgid "Delete"
+msgstr "削除"
+
+msgid "Auto-matched: {name} · {roles}"
+msgstr "自動マッチ: {name} · {roles}"
+
+msgid "Save failed: {error}"
+msgstr "保存に失敗しました: {error}"
+
+msgid "New"
+msgstr "新規"
+
+msgid "Discard unsaved preset character code changes?"
+msgstr "未保存のプリセットキャラコードの変更を破棄しますか?"
+
+msgid "Insert Example"
+msgstr "例を挿入"
+
+msgid "Pick a character…"
+msgstr "キャラを選択…"
+
+msgid "Team Logic"
+msgstr "チームロジック"
+
+msgid ""
+"Pick characters - the team matching your in-game lineup is used "
+"automatically."
+msgstr "キャラを選んでください - ゲーム内編成と一致するチームが自動で使われます。"
+
+msgid "Always use this team, ignoring auto-match."
+msgstr "自動マッチを無視して、常にこのチームを使います。"
+
+msgid "Unforce This Team"
+msgstr "このチームの強制を解除"
+
+msgid "Delete Team Preset"
+msgstr "チームプリセットを削除"
+
+msgid "Auto saved"
+msgstr "自動保存しました"
+
+msgid "Imported from file and saved"
+msgstr "ファイルからインポートして保存しました"
+
+msgid "Auto match in-game team"
+msgstr "ゲーム内編成と自動マッチ"
+
+msgid "Export the current team to a JSON file."
+msgstr "現在のチームを JSON ファイルにエクスポートします。"
+
+msgid "Higher teams win when multiple match the in-game team."
+msgstr "複数のチームがゲーム内編成と一致する場合、上のチームが優先されます。"
+
+msgid "Lower teams win when multiple match the in-game team."
+msgstr "複数のチームがゲーム内編成と一致する場合、下のチームが優先されます。"
+
+msgid "Delete the current team and its custom code."
+msgstr "現在のチームとそのカスタムコードを削除します。"
+
+msgid "Warning"
+msgstr "警告"
+
+msgid "Create My First Team"
+msgstr "最初のチームを作成"
+
+msgid "Done"
+msgstr "完了"
+
+msgid "Invalid params JSON in slot {index}: {error}"
+msgstr "スロット {index} のパラメータ JSON が無効です: {error}"
+
+msgid "Reset to builtin"
+msgstr "組み込みにリセットしました"
+
+msgid "Note (optional)"
+msgstr "メモ(任意)"
+
+msgid "Create from Current Config"
+msgstr "現在の設定から作成"
+
+msgid "Pick a character first"
+msgstr "先にキャラを選択してください"
+
+msgid "Forced team: {name} · {roles}"
+msgstr "強制チーム: {name} · {roles}"
+
+msgid "Use this slot"
+msgstr "このスロットを使う"
+
+msgid "Choose a template:"
+msgstr "テンプレートを選択:"
+
+msgid "Save Code"
+msgstr "コードを保存"
+
+msgid "From Template"
+msgstr "テンプレートから作成"
+
+msgid "Team preset created from current config."
+msgstr "現在の設定からチームプリセットを作成しました。"
+
+msgid "Character Settings"
+msgstr "キャラ設定"
+
+msgid "Create a team from the current global character config (advanced)."
+msgstr "現在のグローバルキャラ設定からチームを作成します(上級)。"
+
+msgid "Info"
+msgstr "情報"
+
+msgid "Forced team: {name}"
+msgstr "強制チーム: {name}"
+
+msgid "Move Down"
+msgstr "下へ"
+
+msgid "Team unforced - auto-match is active again."
+msgstr "チームの強制を解除しました - 自動マッチが再び有効です。"
+
+msgid "Custom Code"
+msgstr "カスタムコード"
+
+msgid "Character already used in slot {index}"
+msgstr "このキャラはスロット {index} で既に使用されています"
+
+msgid "Import"
+msgstr "インポート"
+
+msgid "Import .py"
+msgstr ".py をインポート"
+
+msgid "Close"
+msgstr "閉じる"
+
+msgid "Code saved"
+msgstr "コードを保存しました"
+
+msgid "Team name:"
+msgstr "チーム名:"
+
+msgid "No built-in templates available."
+msgstr "利用可能な組み込みテンプレートがありません。"
+
+msgid "Team Name:"
+msgstr "チーム名:"
+
+msgid "Move Up"
+msgstr "上へ"
+
+msgid ""
+"Create a team to save a character lineup and switch between lineups with one"
+" click."
+msgstr "チームを作成すると、キャラ編成を保存してワンクリックで切り替えられます。"
+
+msgid "Imported and applied to {name}"
+msgstr "インポートして {name} に適用しました"
+
+msgid "Notice"
+msgstr "お知らせ"
+
+msgid "Description (optional) - shown when sharing as a template or file"
+msgstr "説明(任意) - テンプレートやファイルとして共有するときに表示されます"
+
+msgid "Import a script file and save it as this team's logic."
+msgstr "スクリプトファイルをインポートして、このチームのロジックとして保存します。"
+
+msgid "My Teams"
+msgstr "マイチーム"
+
+msgid "Template installed: {name}"
+msgstr "テンプレートをインストールしました: {name}"
+
+msgid "Python Files (*.py);;All Files (*)"
+msgstr "Python ファイル (*.py);;すべてのファイル (*)"
+
+msgid "Import Script (.py)"
+msgstr "スクリプトをインポート (.py)"
+
+msgid "Advanced Parameters (JSON)"
+msgstr "詳細パラメータ (JSON)"
+
+msgid "Team forced - tasks always use its settings."
+msgstr "チームを強制しました - タスクは常にその設定を使います。"
+
+msgid "Import a script file and save it for this character."
+msgstr "スクリプトファイルをインポートして、このキャラ用に保存します。"
+
+msgid "JSON Files (*.json);;All Files (*)"
+msgstr "JSON ファイル (*.json);;すべてのファイル (*)"
+
+msgid "Export"
+msgstr "エクスポート"
+
+msgid "Duplicate the current team."
+msgstr "現在のチームを複製します。"
+
+msgid "Team Presets"
+msgstr "チームプリセット"
+
+msgid "Import Team Preset"
+msgstr "チームプリセットをインポート"
+
+msgid "No teams yet"
+msgstr "チームがまだありません"
+
+msgid "Reset Code"
+msgstr "コードをリセット"
+
+msgid "Slot {index}"
+msgstr "スロット {index}"
+
+msgid "Open a full editor window for this character's code."
+msgstr "このキャラのコードのフルエディタウィンドウを開きます。"
+
+msgid "Force This Team"
+msgstr "このチームを強制"
+
+msgid "Export Team Preset"
+msgstr "チームプリセットをエクスポート"
+
+msgid "Not saved: {error}"
+msgstr "未保存: {error}"
+
+msgid "No extra settings for this character."
+msgstr "このキャラには追加設定はありません。"
+
+msgid "From Config"
+msgstr "設定から作成"
+
+msgid "Team Logic: On"
+msgstr "チームロジック: オン"
+
+msgid "Not Saved"
+msgstr "未保存"
+
+msgid "Delete this team preset and its custom code?"
+msgstr "このチームプリセットとそのカスタムコードを削除しますか?"
+
+msgid "Create a new team preset."
+msgstr "新しいチームプリセットを作成します。"
+
+msgid "Team {number}"
+msgstr "チーム {number}"
+
+msgid "New Team Preset"
+msgstr "新しいチームプリセット"

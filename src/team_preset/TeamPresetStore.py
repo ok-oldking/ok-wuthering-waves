@@ -16,6 +16,13 @@ PRESET_META_FILE = "preset.json"
 PRESET_EXPORT_VERSION = 1
 TEAM_LOGIC_ERROR_FILE = "team_logic_error.json"
 
+# 强制预设的作用域:persist=持续强制(默认), once=本次匹配生效后自动解除,
+# until_match=自动匹配到不同的预设时自动解除。
+FORCE_SCOPE_PERSIST = "persist"
+FORCE_SCOPE_ONCE = "once"
+FORCE_SCOPE_UNTIL_MATCH = "until_match"
+FORCE_SCOPES = (FORCE_SCOPE_PERSIST, FORCE_SCOPE_ONCE, FORCE_SCOPE_UNTIL_MATCH)
+
 
 def _safe_folder_name(name):
     cleaned = re.sub(r'[\\/:*?"<>|]+', "_", str(name or "")).strip()
@@ -225,6 +232,30 @@ class TeamPresetStore:
             cls._save_index(index)
 
     @classmethod
+    def get_force_scope(cls):
+        scope = cls._load_index().get("force_scope", FORCE_SCOPE_PERSIST)
+        return scope if scope in FORCE_SCOPES else FORCE_SCOPE_PERSIST
+
+    @classmethod
+    def set_force_scope(cls, scope):
+        scope = scope if scope in FORCE_SCOPES else FORCE_SCOPE_PERSIST
+        with cls._lock:
+            index = cls._load_index()
+            index["force_scope"] = scope
+            cls._save_index(index)
+
+    @classmethod
+    def get_only_full_match(cls):
+        return bool(cls._load_index().get("only_full_match", False))
+
+    @classmethod
+    def set_only_full_match(cls, enabled):
+        with cls._lock:
+            index = cls._load_index()
+            index["only_full_match"] = bool(enabled)
+            cls._save_index(index)
+
+    @classmethod
     def get_last_auto_match(cls):
         return cls.get_preset(cls._load_index().get("last_auto_match", "") or "")
 
@@ -296,16 +327,33 @@ class TeamPresetStore:
     def resolve_preset_for_team(cls, char_names, use_forced=True):
         """选一个适用于检测到的队伍角色的预设。
 
-        强制预设优先(如果存在且未卸载);否则按"匹配分数"选最优:
+        强制预设优先(如果存在且未卸载);强制作用域为 once/until_match 时
+        按规则自动解除;否则按"匹配分数"选最优:
         分数 = 命中启用角色数 / 启用角色数,全匹配(1.0)优先于子集匹配;
-        同分时按列表顺序(即预设优先级)。必选(required)角色不在队伍中则不匹配。
+        同分时优先最近自动匹配过的预设(避免在相似队伍间反复横跳),
+        再按列表顺序(即预设优先级)。必选(required)角色不在队伍中则不匹配;
+        开启 only_full_match 时子集匹配不再生效。
         每次都会记录匹配详情(供日志与 GUI 排查)。
         """
         if use_forced:
             forced = cls.get_forced_preset()
             if forced is not None:
+                scope = cls.get_force_scope()
+                if scope == FORCE_SCOPE_ONCE:
+                    cls.set_forced("")
+                elif scope == FORCE_SCOPE_UNTIL_MATCH:
+                    auto = cls._resolve_auto_match(char_names)
+                    if auto is not None and auto.id != forced.id:
+                        cls.set_forced("")
+                        return auto
                 return forced
+        return cls._resolve_auto_match(char_names)
+
+    @classmethod
+    def _resolve_auto_match(cls, char_names):
         team = [str(c) for c in (char_names or []) if c]
+        only_full = cls.get_only_full_match()
+        last_auto = cls._load_index().get("last_auto_match", "") or ""
         attempts = []
         best = None
         best_score = 0.0
@@ -313,17 +361,23 @@ class TeamPresetStore:
             if not preset.auto_match:
                 continue
             score, missing_required, hit_names = cls._preset_match(preset, team)
+            filtered = only_full and 0.0 < score < 1.0
             attempts.append({
                 "preset": preset.name or preset.id,
                 "score": score,
                 "missing_required": missing_required,
                 "hits": hit_names,
+                "filtered": filtered,
             })
+            if filtered:
+                continue
             if score <= 0 or score < best_score:
                 continue
             if score > best_score:
                 best = preset
                 best_score = score
+            elif score == best_score and preset.id == last_auto:
+                best = preset
         cls.record_match_attempts(attempts)
         return best
 
@@ -508,14 +562,60 @@ class TeamPresetStore:
                           cls._load_index().get("last_auto_match", "") or ""):
             if not candidate:
                 continue
-            path = cls._preset_folder(candidate) / TEAM_LOGIC_ERROR_FILE
-            if path.exists():
-                try:
-                    return json.loads(path.read_text(encoding="utf-8"))
-                except Exception as e:
-                    logger.error(f"load team logic error failed: {e}")
-                    return None
+            return cls.get_preset_error(candidate)
         return None
+
+    @classmethod
+    def get_preset_error(cls, preset_id):
+        """读取指定预设的队伍逻辑错误记录;无则 None。"""
+        path = cls._preset_folder(preset_id) / TEAM_LOGIC_ERROR_FILE
+        if path.exists():
+            try:
+                return json.loads(path.read_text(encoding="utf-8"))
+            except Exception as e:
+                logger.error(f"load team logic error failed: {e}")
+                return None
+        return None
+
+    # ---------- 使用统计 ----------
+
+    @classmethod
+    def _stats(cls, index=None):
+        stats = (index or cls._load_index()).get("stats", {}) or {}
+        return stats if isinstance(stats, dict) else {}
+
+    @classmethod
+    def record_preset_use(cls, preset_id):
+        """记录一次预设被实际采用(自动匹配或强制命中)。"""
+        if not preset_id:
+            return
+        with cls._lock:
+            index = cls._load_index()
+            stats = cls._stats(index)
+            entry = stats.get(preset_id) or {}
+            entry["uses"] = int(entry.get("uses", 0)) + 1
+            entry["last_used"] = time.time()
+            stats[preset_id] = entry
+            index["stats"] = stats
+            cls._save_index(index)
+
+    @classmethod
+    def record_preset_error(cls, preset_id):
+        """记录一次预设的队伍逻辑运行错误。"""
+        if not preset_id:
+            return
+        with cls._lock:
+            index = cls._load_index()
+            stats = cls._stats(index)
+            entry = stats.get(preset_id) or {}
+            entry["errors"] = int(entry.get("errors", 0)) + 1
+            stats[preset_id] = entry
+            index["stats"] = stats
+            cls._save_index(index)
+
+    @classmethod
+    def get_preset_stats(cls, preset_id):
+        return cls._stats().get(preset_id, {}) or {}
 
     # ---------- 复制 / 创建 ----------
 
@@ -567,6 +667,17 @@ class TeamPresetStore:
                 cls.save_custom_code(new_id, cls_, source.read_text(encoding="utf-8"))
 
         preset.slots = list(slots_by_char.values())
+        cls.add_preset(preset)
+        return preset
+
+    @classmethod
+    def create_from_detected_team(cls, name):
+        """从最近一次检测到的游戏内队伍生成新配对(按槽位顺序填角色)。"""
+        detected = cls.get_last_detected_team()
+        slots = [TeamPresetSlot(char=char) for char in (detected or []) if char]
+        new_id = cls.generate_id(name)
+        preset = TeamPreset(id=new_id, name=name, created_from="Detected Team",
+                            slots=slots)
         cls.add_preset(preset)
         return preset
 
@@ -639,6 +750,74 @@ class TeamPresetStore:
     def import_preset_from_file(cls, path):
         path = Path(path)
         return cls.import_preset(json.loads(path.read_text(encoding="utf-8")))
+
+    # ---------- 批量导入导出 ----------
+
+    @classmethod
+    def _unknown_slot_chars(cls, preset):
+        """预设槽位里当前版本不认识的角色类名(可能来自更新版本)。"""
+        from src.char.CharFactory import char_dict
+        known = {info.get("cls").__name__ for info in char_dict.values()
+                 if info.get("cls") is not None}
+        return sorted({s.char for s in preset.slots
+                       if s.char and s.char not in known})
+
+    @classmethod
+    def export_presets_to_file(cls, preset_ids, path):
+        """把多个预设(含自定义代码)导出为一个 JSON 批量包文件。"""
+        presets = []
+        for preset_id in preset_ids:
+            presets.append(cls.export_preset(preset_id))
+        data = {
+            "type": "ok_ww_team_presets",
+            "version": PRESET_EXPORT_VERSION,
+            "presets": presets,
+        }
+        Path(path).write_text(
+            json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        return data
+
+    @classmethod
+    def import_presets_from_file(cls, path):
+        """导入一个 JSON 文件:单个预设、ok_ww_team_presets 批量包或数组。
+
+        Returns:
+            (presets, warnings):导入的预设列表;warnings 为
+            [{"preset": 名称, "unknown_chars": [...]}, ...](未知角色来自更新版本)。
+        """
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        if isinstance(data, list):
+            items = data
+        elif isinstance(data, dict) and data.get("type") == "ok_ww_team_presets":
+            items = data.get("presets", []) or []
+        else:
+            items = [data]
+        imported = []
+        warnings = []
+        for item in items:
+            preset = cls.import_preset(item if isinstance(item, dict) else {})
+            unknown = cls._unknown_slot_chars(preset)
+            if unknown:
+                warnings.append({"preset": preset.name or preset.id,
+                                 "unknown_chars": unknown})
+            imported.append(preset)
+        return imported, warnings
+
+    # ---------- 从 URL 安装 ----------
+
+    @classmethod
+    def install_preset_from_url(cls, url):
+        """从 URL 下载并安装一个预设(JSON)。返回新预设。"""
+        import requests
+        response = requests.get(url, timeout=20)
+        response.raise_for_status()
+        try:
+            data = response.json()
+        except ValueError as e:
+            raise ValueError(f"invalid JSON from URL: {e}")
+        if not isinstance(data, dict):
+            raise ValueError("invalid preset data from URL")
+        return cls.import_preset(data)
 
     # ---------- 内置模板 ----------
     # 约定:仓库根目录 presets/<模板名>/ 下放 preset.json(与导出的数据格式一致,

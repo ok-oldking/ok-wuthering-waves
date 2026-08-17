@@ -799,5 +799,132 @@ class TestCustomCodePriority(unittest.TestCase):
         self.assertEqual(cls.MARKER, "global")
 
 
+class TestTeamPresetEnhancements(unittest.TestCase):
+    """新功能:强制作用域 / 仅全匹配 / 同分偏好 / 统计 / 批量导入导出 / 检测填槽 / 试运行。"""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.base = Path(self.tmp.name)
+        TeamPresetStore.override_folder = self.base
+        TeamPresetStore.set_forced("")
+        TeamPresetStore.set_force_scope("persist")
+        TeamPresetStore.set_only_full_match(False)
+
+    def tearDown(self):
+        TeamPresetStore.override_folder = None
+        self.tmp.cleanup()
+
+    def _add(self, preset_id, auto_match=True, chars=()):
+        preset = TeamPreset(
+            id=preset_id, name=preset_id, auto_match=auto_match,
+            slots=[TeamPresetSlot(char=c) for c in chars])
+        TeamPresetStore.add_preset(preset)
+        return preset
+
+    def test_force_scope_once_clears_after_use(self):
+        self._add("main", chars=("Iuno",))
+        TeamPresetStore.set_forced("main")
+        TeamPresetStore.set_force_scope("once")
+        matched = TeamPresetStore.resolve_preset_for_team(["Iuno"])
+        self.assertEqual(matched.id, "main")
+        self.assertEqual(TeamPresetStore.get_forced_name(), "")
+
+    def test_force_scope_until_match_overrides(self):
+        self._add("main", chars=("Iuno", "Rover"))
+        self._add("alt", chars=("Iuno", "Verina"))
+        TeamPresetStore.set_forced("main")
+        TeamPresetStore.set_force_scope("until_match")
+        matched = TeamPresetStore.resolve_preset_for_team(["Iuno", "Verina"])
+        self.assertEqual(matched.id, "alt")
+        self.assertEqual(TeamPresetStore.get_forced_name(), "")
+
+    def test_force_scope_until_match_keeps_same(self):
+        self._add("main", chars=("Iuno", "Verina"))
+        TeamPresetStore.set_forced("main")
+        TeamPresetStore.set_force_scope("until_match")
+        matched = TeamPresetStore.resolve_preset_for_team(["Iuno", "Verina"])
+        self.assertEqual(matched.id, "main")
+        self.assertEqual(TeamPresetStore.get_forced_name(), "main")
+
+    def test_only_full_match_blocks_subset(self):
+        self._add("main", chars=("Iuno", "Verina"))
+        TeamPresetStore.set_only_full_match(True)
+        self.assertIsNone(TeamPresetStore.resolve_preset_for_team(["Iuno"]))
+        TeamPresetStore.set_only_full_match(False)
+        self.assertEqual(
+            TeamPresetStore.resolve_preset_for_team(["Iuno"]).id, "main")
+
+    def test_tie_prefers_last_auto_match(self):
+        self._add("first", chars=("Iuno", "Verina"))
+        self._add("second", chars=("Iuno", "Verina"))
+        TeamPresetStore.record_auto_match("second")
+        matched = TeamPresetStore.resolve_preset_for_team(["Iuno", "Verina"])
+        self.assertEqual(matched.id, "second")
+
+    def test_stats_recorded(self):
+        TeamPresetStore.record_preset_use("main")
+        TeamPresetStore.record_preset_use("main")
+        TeamPresetStore.record_preset_error("main")
+        stats = TeamPresetStore.get_preset_stats("main")
+        self.assertEqual(stats.get("uses"), 2)
+        self.assertEqual(stats.get("errors"), 1)
+        self.assertTrue(stats.get("last_used"))
+
+    def test_create_from_detected_team(self):
+        TeamPresetStore.record_detected_team(["Iuno", "Verina"])
+        preset = TeamPresetStore.create_from_detected_team("My Team")
+        self.assertEqual([s.char for s in preset.slots], ["Iuno", "Verina"])
+        self.assertEqual(preset.created_from, "Detected Team")
+
+    def test_batch_export_import_roundtrip(self):
+        self._add("one", chars=("Iuno",))
+        self._add("two", chars=("Verina",))
+        out = self.base / "batch.json"
+        TeamPresetStore.export_presets_to_file(["one", "two"], out)
+        TeamPresetStore.delete_preset("one")
+        TeamPresetStore.delete_preset("two")
+        imported, warnings = TeamPresetStore.import_presets_from_file(out)
+        self.assertEqual(len(imported), 2)
+        self.assertEqual(warnings, [])
+
+    def test_unknown_char_warning_on_import(self):
+        preset = TeamPreset(id="x", name="x",
+                            slots=[TeamPresetSlot(char="NotAChar")])
+        TeamPresetStore.add_preset(preset)
+        out = self.base / "single.json"
+        TeamPresetStore.export_presets_to_file(["x"], out)
+        TeamPresetStore.delete_preset("x")
+        imported, warnings = TeamPresetStore.import_presets_from_file(out)
+        self.assertEqual(len(imported), 1)
+        self.assertEqual(warnings[0]["unknown_chars"], ["NotAChar"])
+
+    def test_get_preset_error_none_when_missing(self):
+        self.assertIsNone(TeamPresetStore.get_preset_error("nope"))
+
+    def test_team_logic_test_run(self):
+        from src.team_preset.TeamLogicLoader import test_run_team_logic
+        preset = self._add("logic")
+        TeamPresetStore.save_team_code(
+            preset.id,
+            "class TestLogic(BaseTeamCombat):\n"
+            "    def perform(self):\n"
+            "        self.click(self.current_char.index)\n"
+            "        self.next_frame()\n")
+        ok, _ = test_run_team_logic(preset.id, frames=30)
+        self.assertTrue(ok)
+
+    def test_team_logic_test_run_reports_error(self):
+        from src.team_preset.TeamLogicLoader import test_run_team_logic
+        preset = self._add("logic")
+        TeamPresetStore.save_team_code(
+            preset.id,
+            "class TestLogic(BaseTeamCombat):\n"
+            "    def perform(self):\n"
+            "        raise ValueError('boom')\n")
+        ok, message = test_run_team_logic(preset.id, frames=30)
+        self.assertFalse(ok)
+        self.assertIn("ValueError", message)
+
+
 if __name__ == "__main__":
     unittest.main()
