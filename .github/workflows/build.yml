@@ -50,10 +50,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: pyproject.toml
+          cache-dependency-path: |
+            requirements.txt
+            pyproject.toml
 
       - name: Install dependencies
         run: |
+          python -m pip install -r requirements.txt
           python -m pip install ".[dev]"
 
       - name: Prepare release requirements
@@ -131,10 +134,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: pyproject.toml
+          cache-dependency-path: |
+            requirements.txt
+            pyproject.toml
 
       - name: Install dependencies
         run: |
+          python -m pip install -r requirements.txt
           python -m pip install ".[dev]"
 
       - name: Prepare release requirements
@@ -196,10 +202,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: pyproject.toml
+          cache-dependency-path: |
+            requirements.txt
+            pyproject.toml
 
       - name: Install dependencies
         run: |
+          python -m pip install -r requirements.txt
           python -m pip install ".[dev]"
 
       - name: Prepare release requirements
