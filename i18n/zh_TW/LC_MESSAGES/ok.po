@@ -1785,3 +1785,6 @@ msgstr "查看隊伍邏輯可用的介面速查表(中文)。"
 
 msgid "Team Logic API Quick Reference"
 msgstr "隊伍邏輯 API 速查"
+
+msgid "Info"
+msgstr "提示"

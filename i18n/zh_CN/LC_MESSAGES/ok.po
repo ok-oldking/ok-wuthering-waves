@@ -1702,3 +1702,6 @@ msgstr "查看队伍逻辑可用的接口速查表(中文)。"
 
 msgid "Team Logic API Quick Reference"
 msgstr "队伍逻辑 API 速查"
+
+msgid "Info"
+msgstr "提示"
