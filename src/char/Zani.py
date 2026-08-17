@@ -529,13 +529,13 @@ class Zani(BaseChar):
 
     def decide_teammate(self):
         from src.char.Phoebe import Phoebe
-        from src.char.HavocRover import HavocRover
+        from src.char.Rover import Rover
         if (char := self.task.has_char(Phoebe)):
             self.char_phoebe = char
             self.blazes_threshold = 0.6
         else:
             self.blazes_threshold = 0.4
-        self.char_rover = self.task.has_char(HavocRover)
+        self.char_rover = self.task.has_char(Rover)
         self._zanfei_guang = bool(self.char_phoebe and self.char_rover)
         # 赞菲光下光主参与默认切人 buff 池（工厂全形态仍是 MainDps，不改 CharFactory）
         if self._zanfei_guang and self.char_rover is not None:

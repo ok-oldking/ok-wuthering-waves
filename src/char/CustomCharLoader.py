@@ -31,9 +31,7 @@ def get_custom_char_file(char_cls_or_name):
 
 
 def _get_class_name(char_cls_or_name):
-    if isinstance(char_cls_or_name, str):
-        return char_cls_or_name
-    return char_cls_or_name.__name__
+    return char_cls_or_name if isinstance(char_cls_or_name, str) else char_cls_or_name.__name__
 
 
 def load_custom_char_modes():

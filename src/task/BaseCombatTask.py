@@ -41,7 +41,7 @@ mismatched_names = {
     "Luhesi": "Luuk Herssen",
     "Xiangliyao": "Xiangli Yao",
     "ShoreKeeper": "Shorekeeper",
-    "HavocRover": "Rover",
+    "Rover": "Rover",
     "YangYangSp": "Yangyang: Xuanling",
 }
 

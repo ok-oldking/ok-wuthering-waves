@@ -18,7 +18,7 @@ from src.char.Denia import Denia
 from src.char.Douling import Douling
 from src.char.Encore import Encore
 from src.char.Galbrena import Galbrena
-from src.char.HavocRover import HavocRover
+from src.char.Rover import Rover
 from src.char.Hiyuki import Hiyuki
 from src.char.Iuno import Iuno
 from src.char.Jianxin import Jianxin
@@ -63,7 +63,7 @@ _char_dict_raw = {
     Labels.char_suisui: {'cls': Suisui, 'char_type': CharType.HEALER},
     Labels.char_taoqi: {'cls': Taoqi, 'char_type': CharType.HEALER,
                         'ring_index': Elements.HAVOC},
-    (Labels.char_rover, Labels.char_rover_male): {'cls': HavocRover, 'char_type': CharType.MAIN_DPS},
+    (Labels.char_rover, Labels.char_rover_male): {'cls': Rover, 'char_type': CharType.MAIN_DPS},
     Labels.char_encore: {'cls': Encore, 'char_type': CharType.MAIN_DPS,
                          'ring_index': Elements.FIRE},
     Labels.char_jianxin: {'cls': Jianxin, 'char_type': CharType.HEALER,
