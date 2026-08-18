@@ -1366,3 +1366,12 @@ msgstr "워크숍 응답이 잘못되었습니다."
 
 msgid "Workshop returned a different team."
 msgstr "워크숍에서 다른 팀을 반환했습니다."
+
+msgid "Cancel"
+msgstr "취소"
+
+msgid "Close"
+msgstr "닫기"
+
+msgid "{team_name} - Team Workshop"
+msgstr "{team_name} - 팀 워크숍"

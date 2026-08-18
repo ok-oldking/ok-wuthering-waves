@@ -1492,3 +1492,12 @@ msgstr "工坊回應無效。"
 
 msgid "Workshop returned a different team."
 msgstr "工坊傳回了其他隊伍。"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Close"
+msgstr "關閉"
+
+msgid "{team_name} - Team Workshop"
+msgstr "{team_name} - 隊伍工坊"

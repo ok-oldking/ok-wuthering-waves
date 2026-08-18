@@ -10,12 +10,13 @@ from urllib.request import urlopen
 from PySide6.QtCore import Qt, QUrl, Signal
 from PySide6.QtGui import QColor, QDesktopServices, QPixmap, QTextCursor, QTextFormat
 from PySide6.QtWidgets import (
-    QApplication, QComboBox, QDialog, QDialogButtonBox, QFileDialog, QFormLayout,
-    QAbstractItemView, QHBoxLayout, QHeaderView, QLabel, QLineEdit, QListWidgetItem,
-    QMessageBox, QPlainTextEdit, QSplitter, QTableWidget, QTableWidgetItem, QTextEdit,
-    QVBoxLayout, QWidget,
+    QApplication, QFileDialog, QAbstractItemView, QHBoxLayout, QHeaderView, QLabel,
+    QListWidgetItem, QSplitter, QTableWidgetItem, QTextEdit, QVBoxLayout, QWidget,
 )
-from qfluentwidgets import BodyLabel, FluentIcon, ListWidget, MessageBox, PlainTextEdit, PrimaryPushButton, PushButton
+from qfluentwidgets import (
+    BodyLabel, ComboBox, FluentIcon, LineEdit, ListWidget, MessageBox, MessageBoxBase,
+    PlainTextEdit, PrimaryPushButton, PushButton, SubtitleLabel, TableWidget, TextEdit,
+)
 
 from ok.gui.tasks.EditTaskTab import CodeEditor
 from ok.gui.tasks.PythonHighlighter import PythonHighlighter
@@ -41,9 +42,22 @@ def translate_ui(message):
     return message
 
 
-class TranslatedDialog(QDialog):
+class TranslatedDialog(MessageBoxBase):
     def tr(self, message):
         return translate_ui(message)
+
+    def set_dialog_title(self, title):
+        self.setWindowTitle(title)
+        self.title_label = SubtitleLabel(title, self.widget)
+        self.viewLayout.addWidget(self.title_label)
+
+    def add_field(self, label, value):
+        label_widget = BodyLabel(label, self.widget)
+        value_widget = BodyLabel(str(value), self.widget)
+        value_widget.setWordWrap(True)
+        self.viewLayout.addWidget(label_widget)
+        self.viewLayout.addWidget(value_widget)
+        return value_widget
 
 
 def workshop_team_slug(team):
@@ -95,30 +109,27 @@ def format_workshop_local_time(code):
 class TeamSelectionDialog(TranslatedDialog):
     def __init__(self, characters, defaults, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(self.tr("Create Team"))
-        layout = QVBoxLayout(self)
-        layout.addWidget(BodyLabel(self.tr("Select 3 different characters")))
+        self.widget.setMinimumWidth(440)
+        self.set_dialog_title(self.tr("Create Team"))
+        self.viewLayout.addWidget(BodyLabel(self.tr("Select 3 different characters"), self.widget))
         self.combos = []
         for index in range(3):
-            combo = QComboBox(self)
+            combo = ComboBox(self.widget)
             for char_cls in characters:
-                combo.addItem(self.tr(get_english_char_name(char_cls)), char_cls.__name__)
+                combo.addItem(self.tr(get_english_char_name(char_cls)), userData=char_cls.__name__)
             default_name = defaults[index].__name__ if index < len(defaults) else None
             default_index = combo.findData(default_name)
             combo.setCurrentIndex(default_index if default_index >= 0 else index)
             combo.currentIndexChanged.connect(self._update_create_enabled)
             self.combos.append(combo)
-            layout.addWidget(combo)
-        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
-        self.buttons.button(QDialogButtonBox.Ok).setText(self.tr("Create Team"))
-        self.buttons.accepted.connect(self.accept)
-        self.buttons.rejected.connect(self.reject)
-        layout.addWidget(self.buttons)
+            self.viewLayout.addWidget(combo)
+        self.yesButton.setText(self.tr("Create Team"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self._update_create_enabled()
 
     def _update_create_enabled(self):
         names = [combo.currentData() for combo in self.combos]
-        self.buttons.button(QDialogButtonBox.Ok).setEnabled(len(set(names)) == 3)
+        self.yesButton.setEnabled(len(set(names)) == 3)
 
     def selected_names(self):
         return [combo.currentData() for combo in self.combos]
@@ -127,30 +138,32 @@ class TeamSelectionDialog(TranslatedDialog):
 class ExportTeamDialog(TranslatedDialog):
     def __init__(self, default_name, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(self.tr("Export Team"))
-        form = QFormLayout(self)
-        self.name_edit = QLineEdit(default_name, self)
-        self.description_edit = QPlainTextEdit(self)
-        self.description_edit.setMaximumHeight(90)
-        self.author_edit = QLineEdit(self)
-        self.version_edit = QLineEdit("1.0.0", self)
-        form.addRow(self.tr("Name"), self.name_edit)
-        form.addRow(self.tr("Description"), self.description_edit)
-        form.addRow(self.tr("Author"), self.author_edit)
-        form.addRow(self.tr("Version"), self.version_edit)
-        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
-        self.buttons.button(QDialogButtonBox.Ok).setText(self.tr("Export"))
-        self.buttons.accepted.connect(self._accept_if_valid)
-        self.buttons.rejected.connect(self.reject)
-        form.addRow(self.buttons)
+        self.widget.setMinimumWidth(520)
+        self.set_dialog_title(self.tr("Export Team"))
+        self.name_edit = LineEdit(self.widget)
+        self.name_edit.setText(default_name)
+        self.description_edit = TextEdit(self.widget)
+        self.description_edit.setFixedHeight(90)
+        self.author_edit = LineEdit(self.widget)
+        self.version_edit = LineEdit(self.widget)
+        self.version_edit.setText("1.0.0")
+        for label, field in (
+            (self.tr("Name"), self.name_edit), (self.tr("Description"), self.description_edit),
+            (self.tr("Author"), self.author_edit), (self.tr("Version"), self.version_edit),
+        ):
+            self.viewLayout.addWidget(BodyLabel(label, self.widget))
+            self.viewLayout.addWidget(field)
+        self.yesButton.setText(self.tr("Export"))
+        self.cancelButton.setText(self.tr("Cancel"))
 
-    def _accept_if_valid(self):
+    def validate(self):
         values = (self.name_edit.text(), self.description_edit.toPlainText(),
                   self.author_edit.text(), self.version_edit.text())
         if not all(value.strip() for value in values):
-            QMessageBox.warning(self, self.tr("Missing Information"), self.tr("All fields are required."))
-            return
-        self.accept()
+            show_info_bar(self.window(), self.tr("All fields are required."),
+                          title=self.tr("Missing Information"), error=True)
+            return False
+        return True
 
     def values(self):
         return {
@@ -164,39 +177,36 @@ class ExportTeamDialog(TranslatedDialog):
 class ImportTeamDialog(TranslatedDialog):
     def __init__(self, manifest, translated_team, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(self.tr("Import Team"))
-        form = QFormLayout(self)
-        form.addRow(self.tr("Name"), QLabel(manifest["name"]))
-        description = QLabel(manifest["description"])
-        description.setWordWrap(True)
-        form.addRow(self.tr("Description"), description)
-        form.addRow(self.tr("Team"), QLabel(translated_team))
-        form.addRow(self.tr("Version"), QLabel(manifest["version"]))
-        warning = QLabel(self.tr("Importing will override the local code for this team."))
+        self.widget.setMinimumWidth(560)
+        self.set_dialog_title(self.tr("Import Team"))
+        self.add_field(self.tr("Name"), manifest["name"])
+        self.add_field(self.tr("Description"), manifest["description"])
+        self.add_field(self.tr("Team"), translated_team)
+        self.add_field(self.tr("Version"), manifest["version"])
+        warning = BodyLabel(self.tr("Importing will override the local code for this team."), self.widget)
         warning.setWordWrap(True)
         warning.setStyleSheet("color: #d13438;")
-        form.addRow(warning)
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
-        buttons.button(QDialogButtonBox.Ok).setText(self.tr("Confirm Import"))
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        form.addRow(buttons)
+        self.viewLayout.addWidget(warning)
+        self.yesButton.setText(self.tr("Confirm Import"))
+        self.cancelButton.setText(self.tr("Cancel"))
 
 
 class WorkshopDialog(TranslatedDialog):
     import_requested = Signal(object)
 
-    def __init__(self, codes, parent=None):
+    def __init__(self, codes, team_name, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(self.tr("Team Workshop"))
-        self.resize(960, 420)
-        layout = QVBoxLayout(self)
+        self.widget.setMinimumSize(1040, 500)
+        title = self.tr("{team_name} - Team Workshop").format(team_name=team_name)
+        self.set_dialog_title(title)
         if not codes:
-            empty = BodyLabel(self.tr("No shared code is available for this team."))
+            empty = BodyLabel(self.tr("No shared code is available for this team."), self.widget)
             empty.setAlignment(Qt.AlignCenter)
-            layout.addWidget(empty, 1)
+            self.viewLayout.addWidget(empty, 1)
         else:
-            table = QTableWidget(len(codes), 7, self)
+            table = TableWidget(self.widget)
+            table.setRowCount(len(codes))
+            table.setColumnCount(7)
             table.setHorizontalHeaderLabels([
                 self.tr("Name"), self.tr("Description"), self.tr("Author"), self.tr("Version"),
                 self.tr("Modified"), self.tr("Size"), "",
@@ -217,10 +227,9 @@ class WorkshopDialog(TranslatedDialog):
                 button = PrimaryPushButton(self.tr("Import"), table)
                 button.clicked.connect(lambda _checked=False, item=code: self.import_requested.emit(item))
                 table.setCellWidget(row, 6, button)
-            layout.addWidget(table, 1)
-        close_buttons = QDialogButtonBox(QDialogButtonBox.Close, self)
-        close_buttons.rejected.connect(self.reject)
-        layout.addWidget(close_buttons)
+            self.viewLayout.addWidget(table, 1)
+        self.yesButton.setText(self.tr("Close"))
+        self.hideCancelButton()
 
 
 class CharacterCodeTab(CustomTab):
@@ -284,7 +293,7 @@ class CharacterCodeTab(CustomTab):
         self.char_image_label = QLabel()
         self.char_image_label.setFixedSize(52, 52)
         self.char_image_label.setAlignment(Qt.AlignCenter)
-        self.member_combo = QComboBox(right)
+        self.member_combo = ComboBox(right)
         self.member_combo.setMinimumWidth(190)
         self.member_combo.currentIndexChanged.connect(self._member_selected)
         self.ask_ai_button = PushButton(FluentIcon.ROBOT, self.tr("Ask AI"))
@@ -385,7 +394,7 @@ class CharacterCodeTab(CustomTab):
         self.member_combo.blockSignals(True)
         self.member_combo.clear()
         for class_name in self.current_team:
-            self.member_combo.addItem(self.tr(get_english_char_name(class_name)), class_name)
+            self.member_combo.addItem(self.tr(get_english_char_name(class_name)), userData=class_name)
         self.member_combo.blockSignals(False)
         self._set_editor_enabled(True)
         self.member_combo.setCurrentIndex(0)
@@ -538,7 +547,10 @@ class CharacterCodeTab(CustomTab):
         except Exception as e:
             show_info_bar(self.window(), str(e), title=self.tr("Workshop Error"), error=True)
             return
-        dialog = WorkshopDialog(codes, self.window())
+        team_name = ", ".join(sorted(
+            (self.tr(get_english_char_name(name)) for name in self.current_team), key=str.casefold
+        ))
+        dialog = WorkshopDialog(codes, team_name, self.window())
         dialog.import_requested.connect(lambda code: self._import_workshop_code(code, dialog))
         dialog.exec()
 
@@ -566,7 +578,10 @@ class CharacterCodeTab(CustomTab):
             if expected_team is not None and normalize_team(info["team"]) != normalize_team(expected_team):
                 raise ValueError(self.tr("The archive is for a different team."))
         except Exception as e:
-            QMessageBox.warning(self.window(), self.tr("Invalid Team Archive"), str(e))
+            box = MessageBox(self.tr("Invalid Team Archive"), str(e), self.window())
+            box.yesButton.setText(self.tr("Close"))
+            box.cancelButton.hide()
+            box.exec()
             return False
         translated_team = ", ".join(
             self.tr(name.strip()) for name in info["manifest"]["team"].split(",")

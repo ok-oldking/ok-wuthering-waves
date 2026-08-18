@@ -1292,3 +1292,12 @@ msgstr "La respuesta del taller no es válida."
 
 msgid "Workshop returned a different team."
 msgstr "El taller devolvió un equipo diferente."
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Close"
+msgstr "Cerrar"
+
+msgid "{team_name} - Team Workshop"
+msgstr "{team_name} - Taller de equipos"
