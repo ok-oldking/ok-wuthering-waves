@@ -23,7 +23,7 @@ numpy==2.5.2
     #   opencv-python
     #   openvino
     #   shapely
-ok-script[ocr,qt]==2.0.1
+ok-script[ocr,qt]==2.0.2
     # via ok-ww (pyproject.toml)
 onnxocr-ppocrv5==0.0.20
     # via ok-script
@@ -57,7 +57,7 @@ pysidesix-frameless-window==0.8.2
     # via
     #   ok-script
     #   pyside6-fluent-widgets
-pywin32==312
+pywin32==311
     # via
     #   ok-script
     #   pysidesix-frameless-window
