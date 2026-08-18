@@ -1234,3 +1234,135 @@ msgstr "게임과 okww 언어는 중국어 간체/번체여야 하며, 16:9 비�
 
 msgid "Switch to Healer before and after Combat"
 msgstr "전투 전후에 힐러로 전환"
+
+msgid "All fields are required."
+msgstr "모든 항목을 입력해야 합니다."
+
+msgid "Author"
+msgstr "작성자"
+
+msgid "Choose Export Folder"
+msgstr "내보낼 폴더 선택"
+
+msgid "Confirm Import"
+msgstr "가져오기 확인"
+
+msgid "Create Team"
+msgstr "팀 만들기"
+
+msgid "Create or import a team to edit character code."
+msgstr "캐릭터 코드를 편집하려면 팀을 만들거나 가져오세요."
+
+msgid "Description"
+msgstr "설명"
+
+msgid "Export"
+msgstr "내보내기"
+
+msgid "Export Team"
+msgstr "팀 내보내기"
+
+msgid "Import"
+msgstr "가져오기"
+
+msgid "Import Team"
+msgstr "팀 가져오기"
+
+msgid "Importing will override the local code for this team."
+msgstr "가져오면 이 팀의 로컬 코드를 덮어씁니다."
+
+msgid "Invalid Team Archive"
+msgstr "잘못된 팀 압축 파일"
+
+msgid "Missing Information"
+msgstr "정보 누락"
+
+msgid "Modified"
+msgstr "수정 시간"
+
+msgid "Name"
+msgstr "이름"
+
+msgid "No shared code is available for this team."
+msgstr "이 팀에 공유된 코드가 없습니다."
+
+msgid "Reset Character Code"
+msgstr "캐릭터 코드 초기화"
+
+msgid "Reset this character to built in code for this team?"
+msgstr "이 팀에서 이 캐릭터를 기본 제공 코드로 초기화할까요?"
+
+msgid "Reset to Built In"
+msgstr "기본 제공 코드로 초기화"
+
+msgid "Save changes before exporting."
+msgstr "내보내기 전에 변경 사항을 저장하세요."
+
+msgid "Select 3 different characters"
+msgstr "서로 다른 캐릭터 3명 선택"
+
+msgid "Size"
+msgstr "크기"
+
+msgid "Team"
+msgstr "팀"
+
+msgid "Team Workshop"
+msgstr "팀 워크숍"
+
+msgid "Team character code saved and reloaded for the matching team."
+msgstr "팀 캐릭터 코드를 저장하고 일치하는 팀에 다시 불러왔습니다."
+
+msgid "Team character code saved."
+msgstr "팀 캐릭터 코드를 저장했습니다."
+
+msgid "Team created."
+msgstr "팀을 만들었습니다."
+
+msgid "Team exported to {path}"
+msgstr "팀을 {path}에 내보냈습니다"
+
+msgid "Team imported and reloaded for the matching team."
+msgstr "팀을 가져오고 일치하는 팀에 다시 불러왔습니다."
+
+msgid "Team imported."
+msgstr "팀을 가져왔습니다."
+
+msgid "Teams"
+msgstr "팀"
+
+msgid "The archive is for a different team."
+msgstr "이 압축 파일은 다른 팀용입니다."
+
+msgid "Upload Team"
+msgstr "팀 업로드"
+
+msgid "Version"
+msgstr "버전"
+
+msgid "Workshop"
+msgstr "워크숍"
+
+msgid "Workshop Error"
+msgstr "워크숍 오류"
+
+msgid "Workshop archive is too large."
+msgstr "워크숍 압축 파일이 너무 큽니다."
+
+msgid "Workshop download URL is invalid."
+msgstr "워크숍 다운로드 URL이 잘못되었습니다."
+
+msgid "Zip files (*.zip)"
+msgstr "ZIP 파일 (*.zip)"
+
+msgid "Workshop response is too large."
+msgstr "워크숍 응답이 너무 큽니다."
+
+msgid "Workshop returned invalid JSON."
+msgstr "워크숍에서 잘못된 JSON을 반환했습니다."
+
+msgid "Workshop response is invalid."
+msgstr "워크숍 응답이 잘못되었습니다."
+
+msgid "Workshop returned a different team."
+msgstr "워크숍에서 다른 팀을 반환했습니다."

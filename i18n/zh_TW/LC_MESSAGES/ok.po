@@ -1360,3 +1360,135 @@ msgstr "⏭️ 任務中跳過對話"
 
 msgid "🌊 Tacet Suppression"
 msgstr "🌊 無音區"
+
+msgid "All fields are required."
+msgstr "所有欄位均為必填。"
+
+msgid "Author"
+msgstr "作者"
+
+msgid "Choose Export Folder"
+msgstr "選擇匯出資料夾"
+
+msgid "Confirm Import"
+msgstr "確認匯入"
+
+msgid "Create Team"
+msgstr "建立隊伍"
+
+msgid "Create or import a team to edit character code."
+msgstr "建立或匯入隊伍以編輯角色程式碼。"
+
+msgid "Description"
+msgstr "說明"
+
+msgid "Export"
+msgstr "匯出"
+
+msgid "Export Team"
+msgstr "匯出隊伍"
+
+msgid "Import"
+msgstr "匯入"
+
+msgid "Import Team"
+msgstr "匯入隊伍"
+
+msgid "Importing will override the local code for this team."
+msgstr "匯入將覆蓋此隊伍的本機程式碼。"
+
+msgid "Invalid Team Archive"
+msgstr "無效的隊伍壓縮檔"
+
+msgid "Missing Information"
+msgstr "資訊不完整"
+
+msgid "Modified"
+msgstr "修改時間"
+
+msgid "Name"
+msgstr "名稱"
+
+msgid "No shared code is available for this team."
+msgstr "此隊伍目前沒有共享程式碼。"
+
+msgid "Reset Character Code"
+msgstr "重設角色程式碼"
+
+msgid "Reset this character to built in code for this team?"
+msgstr "將此隊伍中的角色重設為內建程式碼？"
+
+msgid "Reset to Built In"
+msgstr "重設為內建程式碼"
+
+msgid "Save changes before exporting."
+msgstr "請先儲存變更再匯出。"
+
+msgid "Select 3 different characters"
+msgstr "選擇3個不同的角色"
+
+msgid "Size"
+msgstr "大小"
+
+msgid "Team"
+msgstr "隊伍"
+
+msgid "Team Workshop"
+msgstr "隊伍工坊"
+
+msgid "Team character code saved and reloaded for the matching team."
+msgstr "隊伍角色程式碼已儲存，並為相符的隊伍重新載入。"
+
+msgid "Team character code saved."
+msgstr "隊伍角色程式碼已儲存。"
+
+msgid "Team created."
+msgstr "隊伍已建立。"
+
+msgid "Team exported to {path}"
+msgstr "隊伍已匯出至 {path}"
+
+msgid "Team imported and reloaded for the matching team."
+msgstr "隊伍已匯入，並為相符的隊伍重新載入。"
+
+msgid "Team imported."
+msgstr "隊伍已匯入。"
+
+msgid "Teams"
+msgstr "隊伍"
+
+msgid "The archive is for a different team."
+msgstr "此壓縮檔屬於其他隊伍。"
+
+msgid "Upload Team"
+msgstr "上傳隊伍"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "Workshop"
+msgstr "工坊"
+
+msgid "Workshop Error"
+msgstr "工坊錯誤"
+
+msgid "Workshop archive is too large."
+msgstr "工坊壓縮檔過大。"
+
+msgid "Workshop download URL is invalid."
+msgstr "工坊下載網址無效。"
+
+msgid "Zip files (*.zip)"
+msgstr "ZIP 檔案 (*.zip)"
+
+msgid "Workshop response is too large."
+msgstr "工坊回應過大。"
+
+msgid "Workshop returned invalid JSON."
+msgstr "工坊傳回了無效的 JSON。"
+
+msgid "Workshop response is invalid."
+msgstr "工坊回應無效。"
+
+msgid "Workshop returned a different team."
+msgstr "工坊傳回了其他隊伍。"

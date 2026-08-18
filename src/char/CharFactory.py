@@ -49,7 +49,7 @@ from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
 from src.char.Zani import Zani
 from src.char.Zhezhi import Zhezhi
-from src.char.CustomCharLoader import load_custom_char_class
+from src.char.CustomCharLoader import load_team_char_class, normalize_team
 
 _char_dict_raw = {
     Labels.yangyang_sp: {'cls': YangYangSp, 'char_type': CharType.MAIN_DPS,
@@ -178,8 +178,8 @@ def get_char_by_pos(task, box, index, old_char):
         info = char_dict.get(old_char.char_name)
         char = _find_registered_char(task, box, info)
         if char:
-            cls = load_custom_char_class(info.get('cls'))
-            if type(old_char) is not cls:
+            cls = info.get('cls')
+            if not isinstance(old_char, cls):
                 return _apply_char_config(task, cls(task, index, char_name=info['canonical_name'],
                                                     confidence=char.confidence,
                                                     ring_index=info.get('ring_index', -1),
@@ -192,7 +192,7 @@ def get_char_by_pos(task, box, index, old_char):
         if char:
             info = char_dict.get(char.name)
             name = char.name
-            cls = load_custom_char_class(info.get('cls'))
+            cls = info.get('cls')
             return _apply_char_config(task, cls(task, index, char_name=info['canonical_name'],
                                                 confidence=char.confidence,
                                                 ring_index=info.get('ring_index', -1),
@@ -204,6 +204,36 @@ def get_char_by_pos(task, box, index, old_char):
     if task.debug:
         task.screenshot(f'could not find char {index}')
     return BaseChar(task, index, char_name=name)
+
+
+def apply_team_char_classes(task, chars):
+    """Apply custom code only after the complete three-character team is known."""
+    if len(chars) != 3 or any(char is None for char in chars):
+        return chars
+    infos = [char_dict.get(char.char_name) for char in chars]
+    if any(info is None for info in infos):
+        return chars
+    builtin_classes = [info['cls'] for info in infos]
+    try:
+        team = normalize_team(builtin_classes)
+    except ValueError:
+        return chars
+    for index, (char, builtin_cls) in enumerate(zip(chars, builtin_classes)):
+        desired_cls = load_team_char_class(builtin_cls, team)
+        if type(char) is desired_cls:
+            continue
+        replacement = desired_cls(
+            task,
+            char.index,
+            char_name=char.char_name,
+            confidence=char.confidence,
+            ring_index=char.ring_index,
+            char_type=char.char_type,
+            buff_time=char.buff_time,
+        )
+        replacement.__dict__.update(char.__dict__)
+        chars[index] = replacement
+    return chars
 
 
 def is_float(s):
