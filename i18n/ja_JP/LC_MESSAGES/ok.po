@@ -1618,3 +1618,175 @@ msgstr "チーム {number}"
 
 msgid "New Team Preset"
 msgstr "新しいチームプリセット"
+
+msgid "score {score}, matched {hits}/{total}, missing required: {missing}"
+msgstr "スコア {score},一致 {hits}/{total},必須欠落: {missing}"
+
+msgid "skipped: filtered by Only Full Match"
+msgstr "スキップ:「完全一致のみ」で除外"
+
+msgid "(none yet)"
+msgstr "(まだありません)"
+
+msgid "All tags"
+msgstr "すべてのタグ"
+
+msgid "Auto-match on - tasks use the preset matching your in-game team."
+msgstr "自動マッチON - タスクはゲーム内チームに一致するプリセットを使います。"
+
+msgid "Back Up All Teams"
+msgstr "全チームをバックアップ"
+
+msgid "Back up all teams (with custom code) to a zip file."
+msgstr "全チーム(カスタムコード含む)を zip にバックアップします。"
+
+msgid "Backed up {n} teams to {path}."
+msgstr "{n} チームを {path} にバックアップしました。"
+
+msgid "Backup"
+msgstr "バックアップ"
+
+msgid "Code saved - live-reloaded into {n} running task(s)"
+msgstr "保存済み - 実行中の {n} 個のタスクにホットリロード"
+
+msgid "Combat: {wins}/{total} won"
+msgstr "戦闘成績: {wins}/{total} 勝利"
+
+msgid "Create a new team from a built-in template with ready-to-run scripts."
+msgstr "すぐ使えるスクリプト付きの組み込みテンプレートから新しいチームを作成します。"
+
+msgid "Editing this team's custom code for this character."
+msgstr "このキャラクターのこのチーム用カスタムコードを編集中です。"
+
+msgid "Export as Built-in Template"
+msgstr "組み込みテンプレートとしてエクスポート"
+
+msgid "Export the current team as a built-in template folder for sharing."
+msgstr "現在のチームを共有用の組み込みテンプレートフォルダーとしてエクスポートします。"
+
+msgid "Filter teams by tag."
+msgstr "タグでチームを絞り込みます。"
+
+msgid "Folder Name"
+msgstr "フォルダー名"
+
+msgid "Forced team: none"
+msgstr "強制チーム: なし"
+
+msgid "Forced team: {name} ({scope})"
+msgstr "強制チーム: {name} ({scope})"
+
+msgid "Frames to simulate:"
+msgstr "シミュレートするフレーム数:"
+
+msgid ""
+"How long the forced team stays forced: persistent, once, or until auto-match"
+" finds another team."
+msgstr "強制チームの継続期間:永続、1回のみ、または自動マッチが別のチームを見つけるまで。"
+
+msgid "Imported - live-reloaded into {n} running task(s)"
+msgstr "インポート済み - 実行中の {n} 個のタスクにホットリロード"
+
+msgid "Last auto-match: {name}"
+msgstr "最後の自動マッチ: {name}"
+
+msgid "Last detected in-game team: {roles}"
+msgstr "最後に検出したゲーム内チーム: {roles}"
+
+msgid "Match Diagnostics"
+msgstr "マッチ診断"
+
+msgid "Match Log"
+msgstr "マッチログ"
+
+msgid "No auto-match attempts recorded yet."
+msgstr "自動マッチの試行記録はまだありません。"
+
+msgid ""
+"No custom code yet - editing a copy of the builtin code. Save to create one "
+"for this team."
+msgstr "カスタムコードはまだありません - 内蔵コードのコピーを編集しています。保存するとこのチーム用に作成されます。"
+
+msgid "No preset matches: {roles} - using global config"
+msgstr "一致するプリセットがありません: {roles} - グローバル設定を使用中"
+
+msgid ""
+"No team logic yet - each character fights on its own. Write a BaseTeamCombat"
+" subclass to take full control of the team."
+msgstr ""
+"チームロジックはまだありません - 各キャラクターが個別に戦います。BaseTeamCombat のサブクラスを書くとチーム全体を制御できます。"
+
+msgid "No teams to back up."
+msgstr "バックアップするチームがありません。"
+
+msgid ""
+"Only auto-match teams whose every enabled character is in the in-game team."
+msgstr "有効な全キャラクターがゲーム内チームにいるチームのみ自動マッチします。"
+
+msgid "Optional JSON, e.g. {\"Iuno C6\": false}"
+msgstr "任意の JSON。例: {\"Iuno C6\": false}"
+
+msgid "Restore"
+msgstr "復元"
+
+msgid "Restore Teams from Backup"
+msgstr "バックアップからチームを復元"
+
+msgid "Restore teams from a backup zip file."
+msgstr "バックアップ zip からチームを復元します。"
+
+msgid "Restored {n} teams."
+msgstr "{n} チームを復元しました。"
+
+msgid "Run the logic in a safe simulator without fighting or clicking."
+msgstr "戦闘もクリックもせず、安全なシミュレーターでロジックを実行します。"
+
+msgid "Show why the current team was (or was not) auto-matched last time."
+msgstr "現在のチームが前回自動マッチされた(またはされなかった)理由を表示します。"
+
+msgid "Tags (optional, comma separated) - e.g. 深渊, 大世界"
+msgstr "タグ(任意、カンマ区切り) - 例:深淵, 大世界"
+
+msgid ""
+"Team logic code failed to compile: {error} - it was exported but will not "
+"load."
+msgstr "チームロジックコードのコンパイルに失敗: {error} - エクスポートされましたが読み込まれません。"
+
+msgid "Team logic error: {msg} - fell back to per-character logic"
+msgstr "チームロジックエラー: {msg} - キャラクターごとのロジックにフォールバック"
+
+msgid ""
+"Team-level combat logic - takes full control when the team is matched or "
+"forced."
+msgstr "チームレベルの戦闘ロジック - チームがマッチまたは強制されると完全制御します。"
+
+msgid "Template"
+msgstr "テンプレート"
+
+msgid ""
+"Template exported to {path} - put it under the repo presets/ folder to "
+"share."
+msgstr "テンプレートを {path} にエクスポートしました - リポジトリの presets/ フォルダーに入れると共有できます。"
+
+msgid "Test Run Failed"
+msgstr "テスト実行失敗"
+
+msgid "This team is auto-selected when its characters match the in-game team."
+msgstr "キャラクターがゲーム内チームと一致すると自動選択されます。"
+
+msgid ""
+"This team is currently FORCED - it will stop being applied after deletion. "
+"Delete anyway?"
+msgstr "このチームは現在強制中です。削除すると適用されなくなります。それでも削除しますか?"
+
+msgid "This team logic fully replaces the characters' own combat logic."
+msgstr "このチームロジックはキャラクター自身の戦闘ロジックを完全に置き換えます。"
+
+msgid "ZIP Files (*.zip);;All Files (*)"
+msgstr "ZIP ファイル (*.zip);;すべてのファイル (*)"
+
+msgid "none"
+msgstr "なし"
+
+msgid "{name}: unknown characters {chars} (from a newer version?)"
+msgstr "{name}: 不明なキャラクター {chars}(新しいバージョンの可能性があります?)"

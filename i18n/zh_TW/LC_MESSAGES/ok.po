@@ -1,3 +1,4 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
@@ -1515,7 +1516,9 @@ msgstr "建立一支新的隊伍配對。"
 msgid "Create a team from the current global character config (advanced)."
 msgstr "從目前全域角色設定產生一支隊伍(進階功能)。"
 
-msgid "Create a team to save a character lineup and switch between lineups with one click."
+msgid ""
+"Create a team to save a character lineup and switch between lineups with one"
+" click."
 msgstr "建立一支隊伍,把常用的角色組合保存下來,一鍵切換。"
 
 msgid "Delete the current team and its custom code."
@@ -1617,7 +1620,9 @@ msgstr "例如: 蘇格拉塔 1、今州日常"
 msgid "Open a full editor window for this character's code."
 msgstr "開啟此角色程式碼的獨立編輯視窗。"
 
-msgid "No custom code yet - editing a copy of the builtin code. Save to create one for this team."
+msgid ""
+"No custom code yet - editing a copy of the builtin code. Save to create one "
+"for this team."
 msgstr "尚無自訂程式碼 - 正在編輯內建程式碼的副本，儲存後即為此隊伍建立自訂版本。"
 
 msgid "Editing this team's custom code for this character."
@@ -1662,7 +1667,9 @@ msgstr "自動比對: {name}"
 msgid "Auto-match on - tasks use the preset matching your in-game team."
 msgstr "自動比對已開啟 - 任務將使用與遊戲內隊伍相符的設定。"
 
-msgid "Pick characters - the team matching your in-game lineup is used automatically."
+msgid ""
+"Pick characters - the team matching your in-game lineup is used "
+"automatically."
 msgstr "選擇角色 - 與遊戲內隊伍相符的設定將自動生效。"
 
 msgid "Team unforced - auto-match is active again."
@@ -1686,10 +1693,14 @@ msgstr "隊伍出招邏輯"
 msgid "Team Logic: On"
 msgstr "隊伍出招邏輯: 已啟用"
 
-msgid "Team-level combat logic - takes full control when the team is matched or forced."
+msgid ""
+"Team-level combat logic - takes full control when the team is matched or "
+"forced."
 msgstr "隊伍級出招邏輯 - 隊伍被比對或強制選中時,完全接管三個角色的出招。"
 
-msgid "No team logic yet - each character fights on its own. Write a BaseTeamCombat subclass to take full control of the team."
+msgid ""
+"No team logic yet - each character fights on its own. Write a BaseTeamCombat"
+" subclass to take full control of the team."
 msgstr "尚未編寫隊伍邏輯 - 各角色將按自身邏輯戰鬥。編寫繼承 BaseTeamCombat 的類即可完全接管隊伍。"
 
 msgid "This team logic fully replaces the characters' own combat logic."
@@ -1704,7 +1715,9 @@ msgstr "已插入範例 - 編輯後儲存"
 msgid "Team logic error: {msg} - fell back to per-character logic"
 msgstr "隊伍邏輯出錯: {msg} - 已回退到逐角色邏輯"
 
-msgid "Team logic code failed to compile: {error} - it was exported but will not load."
+msgid ""
+"Team logic code failed to compile: {error} - it was exported but will not "
+"load."
 msgstr "隊伍邏輯程式碼編譯失敗: {error} - 已匯出,但載入時會失敗。"
 
 msgid "Warning"
@@ -1862,3 +1875,130 @@ msgstr "使用 {n} 次"
 
 msgid "{n} errors"
 msgstr "{n} 次錯誤"
+
+msgid "score {score}, matched {hits}/{total}, missing required: {missing}"
+msgstr "分數 {score},命中 {hits}/{total},缺少必選: {missing}"
+
+msgid "skipped: filtered by Only Full Match"
+msgstr "跳過:被「僅全匹配」過濾"
+
+msgid "(none yet)"
+msgstr "(暫無)"
+
+msgid "All tags"
+msgstr "全部標籤"
+
+msgid "Back Up All Teams"
+msgstr "備份全部隊伍"
+
+msgid "Back up all teams (with custom code) to a zip file."
+msgstr "把所有隊伍(含自訂程式碼)打包為 zip 備份。"
+
+msgid "Backed up {n} teams to {path}."
+msgstr "已備份 {n} 個隊伍到 {path}。"
+
+msgid "Backup"
+msgstr "備份"
+
+msgid "Code saved - live-reloaded into {n} running task(s)"
+msgstr "已儲存 - 已熱重載到 {n} 個執行中任務"
+
+msgid "Combat: {wins}/{total} won"
+msgstr "戰鬥勝場: {wins}/{total}"
+
+msgid "Export as Built-in Template"
+msgstr "匯出為內建範本"
+
+msgid "Export the current team as a built-in template folder for sharing."
+msgstr "把目前隊伍匯出為內建範本資料夾,便於分享。"
+
+msgid "Filter teams by tag."
+msgstr "依標籤篩選隊伍。"
+
+msgid "Folder Name"
+msgstr "資料夾名稱"
+
+msgid "Forced team: none"
+msgstr "強制隊伍: 無"
+
+msgid "Forced team: {name} ({scope})"
+msgstr "強制隊伍: {name} ({scope})"
+
+msgid "Frames to simulate:"
+msgstr "模擬幀數:"
+
+msgid ""
+"How long the forced team stays forced: persistent, once, or until auto-match"
+" finds another team."
+msgstr "強制隊伍的持續時間:永久、僅一次,或直到自動匹配到其他隊伍。"
+
+msgid "Imported - live-reloaded into {n} running task(s)"
+msgstr "已匯入 - 已熱重載到 {n} 個執行中任務"
+
+msgid "Last auto-match: {name}"
+msgstr "最近自動匹配: {name}"
+
+msgid "Last detected in-game team: {roles}"
+msgstr "最近偵測到的遊戲內隊伍: {roles}"
+
+msgid "Match Diagnostics"
+msgstr "匹配診斷"
+
+msgid "Match Log"
+msgstr "匹配日誌"
+
+msgid "No auto-match attempts recorded yet."
+msgstr "還沒有自動匹配嘗試記錄。"
+
+msgid "No teams to back up."
+msgstr "沒有可備份的隊伍。"
+
+msgid ""
+"Only auto-match teams whose every enabled character is in the in-game team."
+msgstr "僅自動匹配所有啟用角色都在遊戲內隊伍中的預設。"
+
+msgid "Restore"
+msgstr "還原"
+
+msgid "Restore Teams from Backup"
+msgstr "從備份還原隊伍"
+
+msgid "Restore teams from a backup zip file."
+msgstr "從備份 zip 還原隊伍。"
+
+msgid "Restored {n} teams."
+msgstr "已還原 {n} 個隊伍。"
+
+msgid "Run the logic in a safe simulator without fighting or clicking."
+msgstr "在安全模擬器中試執行邏輯,不戰鬥不點擊。"
+
+msgid "Show why the current team was (or was not) auto-matched last time."
+msgstr "顯示目前隊伍上次被(或未被)自動匹配的原因。"
+
+msgid "Tags (optional, comma separated) - e.g. 深渊, 大世界"
+msgstr "標籤(可選,逗號分隔) - 例如:深淵, 大世界"
+
+msgid "Template"
+msgstr "範本"
+
+msgid ""
+"Template exported to {path} - put it under the repo presets/ folder to "
+"share."
+msgstr "範本已匯出到 {path} - 放入倉庫 presets/ 目錄即可分享。"
+
+msgid "Test Run Failed"
+msgstr "試執行失敗"
+
+msgid ""
+"This team is currently FORCED - it will stop being applied after deletion. "
+"Delete anyway?"
+msgstr "此隊伍正在被強制使用,刪除後將不再生效。仍然刪除?"
+
+msgid "ZIP Files (*.zip);;All Files (*)"
+msgstr "ZIP 檔案 (*.zip);;所有檔案 (*)"
+
+msgid "none"
+msgstr "無"
+
+msgid "{name}: unknown characters {chars} (from a newer version?)"
+msgstr "{name}: 未知角色 {chars}(可能來自更新版本?)"

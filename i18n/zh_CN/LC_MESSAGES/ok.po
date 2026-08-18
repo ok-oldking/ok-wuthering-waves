@@ -1,3 +1,4 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
@@ -1164,8 +1165,8 @@ msgid "Merge Discarded Echoes"
 msgstr "融合已弃置声骸"
 
 msgid ""
-"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
-"batches of 100."
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full batches"
+" of 100."
 msgstr "运行前必须有1000个已弃置声骸，每批融合100个。"
 
 msgid "Bag Key"
@@ -1192,13 +1193,18 @@ msgstr "已弃置声骸超过1000时融合"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "每日任务后运行的附加任务"
 
-msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
+msgid ""
+"Select optional tasks. Nightmare Nest runs before stamina farming to help "
+"complete the daily task; the other tasks run afterward."
 msgstr "选择可选任务。梦魇巢穴会在消耗体力前运行，以协助完成每日任务；其他任务将在之后运行。"
 
-msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
+msgid ""
+"Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in "
+"Farm Echo Task."
 msgstr "选择“传送并刷取4C声骸”时，必须在刷取声骸任务中启用“传送至首领”。"
 
-msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgid ""
+"Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
 msgstr "选择“自动刷取所有梦魇巢穴”时，“刷取目标”必须至少选择一项。"
 
 msgid "Daily Task Completed"
@@ -1432,7 +1438,9 @@ msgstr "创建一支新的队伍配对。"
 msgid "Create a team from the current global character config (advanced)."
 msgstr "从当前全局角色配置生成一支队伍(高级功能)。"
 
-msgid "Create a team to save a character lineup and switch between lineups with one click."
+msgid ""
+"Create a team to save a character lineup and switch between lineups with one"
+" click."
 msgstr "创建一支队伍,把常用的角色组合保存下来,一键切换。"
 
 msgid "Delete the current team and its custom code."
@@ -1534,7 +1542,9 @@ msgstr "例如: 苏格拉塔 1、今州日常"
 msgid "Open a full editor window for this character's code."
 msgstr "打开此角色代码的独立编辑窗口。"
 
-msgid "No custom code yet - editing a copy of the builtin code. Save to create one for this team."
+msgid ""
+"No custom code yet - editing a copy of the builtin code. Save to create one "
+"for this team."
 msgstr "暂无自定义代码 - 正在编辑内置代码的副本，保存后即为本队伍创建自定义版本。"
 
 msgid "Editing this team's custom code for this character."
@@ -1579,7 +1589,9 @@ msgstr "自动匹配: {name}"
 msgid "Auto-match on - tasks use the preset matching your in-game team."
 msgstr "自动匹配已开启 - 任务将使用与游戏内队伍匹配的配置。"
 
-msgid "Pick characters - the team matching your in-game lineup is used automatically."
+msgid ""
+"Pick characters - the team matching your in-game lineup is used "
+"automatically."
 msgstr "选择角色 - 与游戏内队伍匹配的配置将自动生效。"
 
 msgid "Team unforced - auto-match is active again."
@@ -1603,10 +1615,14 @@ msgstr "队伍出招逻辑"
 msgid "Team Logic: On"
 msgstr "队伍出招逻辑: 已启用"
 
-msgid "Team-level combat logic - takes full control when the team is matched or forced."
+msgid ""
+"Team-level combat logic - takes full control when the team is matched or "
+"forced."
 msgstr "队伍级出招逻辑 - 队伍被匹配或强制选中时,完全接管三个角色的出招。"
 
-msgid "No team logic yet - each character fights on its own. Write a BaseTeamCombat subclass to take full control of the team."
+msgid ""
+"No team logic yet - each character fights on its own. Write a BaseTeamCombat"
+" subclass to take full control of the team."
 msgstr "尚未编写队伍逻辑 - 各角色将按自身逻辑战斗。编写继承 BaseTeamCombat 的类即可完全接管队伍。"
 
 msgid "This team logic fully replaces the characters' own combat logic."
@@ -1621,7 +1637,9 @@ msgstr "已插入示例 - 编辑后保存"
 msgid "Team logic error: {msg} - fell back to per-character logic"
 msgstr "队伍逻辑出错: {msg} - 已回退到逐角色逻辑"
 
-msgid "Team logic code failed to compile: {error} - it was exported but will not load."
+msgid ""
+"Team logic code failed to compile: {error} - it was exported but will not "
+"load."
 msgstr "队伍逻辑代码编译失败: {error} - 已导出,但加载时会失败。"
 
 msgid "Warning"
@@ -1779,3 +1797,130 @@ msgstr "使用 {n} 次"
 
 msgid "{n} errors"
 msgstr "{n} 次错误"
+
+msgid "score {score}, matched {hits}/{total}, missing required: {missing}"
+msgstr "分数 {score},命中 {hits}/{total},缺少必选: {missing}"
+
+msgid "skipped: filtered by Only Full Match"
+msgstr "跳过:被「仅全匹配」过滤"
+
+msgid "(none yet)"
+msgstr "(暂无)"
+
+msgid "All tags"
+msgstr "全部标签"
+
+msgid "Back Up All Teams"
+msgstr "备份全部队伍"
+
+msgid "Back up all teams (with custom code) to a zip file."
+msgstr "把所有队伍(含自定义代码)打包为 zip 备份。"
+
+msgid "Backed up {n} teams to {path}."
+msgstr "已备份 {n} 个队伍到 {path}。"
+
+msgid "Backup"
+msgstr "备份"
+
+msgid "Code saved - live-reloaded into {n} running task(s)"
+msgstr "已保存 - 已热重载到 {n} 个运行中任务"
+
+msgid "Combat: {wins}/{total} won"
+msgstr "战斗胜场: {wins}/{total}"
+
+msgid "Export as Built-in Template"
+msgstr "导出为内置模板"
+
+msgid "Export the current team as a built-in template folder for sharing."
+msgstr "把当前队伍导出为内置模板文件夹,便于分享。"
+
+msgid "Filter teams by tag."
+msgstr "按标签过滤队伍。"
+
+msgid "Folder Name"
+msgstr "文件夹名称"
+
+msgid "Forced team: none"
+msgstr "强制队伍: 无"
+
+msgid "Forced team: {name} ({scope})"
+msgstr "强制队伍: {name} ({scope})"
+
+msgid "Frames to simulate:"
+msgstr "模拟帧数:"
+
+msgid ""
+"How long the forced team stays forced: persistent, once, or until auto-match"
+" finds another team."
+msgstr "强制队伍的持续时间:永久、仅一次,或直到自动匹配到其他队伍。"
+
+msgid "Imported - live-reloaded into {n} running task(s)"
+msgstr "已导入 - 已热重载到 {n} 个运行中任务"
+
+msgid "Last auto-match: {name}"
+msgstr "最近自动匹配: {name}"
+
+msgid "Last detected in-game team: {roles}"
+msgstr "最近检测到的游戏内队伍: {roles}"
+
+msgid "Match Diagnostics"
+msgstr "匹配诊断"
+
+msgid "Match Log"
+msgstr "匹配日志"
+
+msgid "No auto-match attempts recorded yet."
+msgstr "还没有自动匹配尝试记录。"
+
+msgid "No teams to back up."
+msgstr "没有可备份的队伍。"
+
+msgid ""
+"Only auto-match teams whose every enabled character is in the in-game team."
+msgstr "仅自动匹配所有启用角色都在游戏内队伍中的预设。"
+
+msgid "Restore"
+msgstr "恢复"
+
+msgid "Restore Teams from Backup"
+msgstr "从备份恢复队伍"
+
+msgid "Restore teams from a backup zip file."
+msgstr "从备份 zip 恢复队伍。"
+
+msgid "Restored {n} teams."
+msgstr "已恢复 {n} 个队伍。"
+
+msgid "Run the logic in a safe simulator without fighting or clicking."
+msgstr "在安全模拟器中试运行逻辑,不战斗不点击。"
+
+msgid "Show why the current team was (or was not) auto-matched last time."
+msgstr "显示当前队伍上次被(或未被)自动匹配的原因。"
+
+msgid "Tags (optional, comma separated) - e.g. 深渊, 大世界"
+msgstr "标签(可选,逗号分隔) - 例如:深渊, 大世界"
+
+msgid "Template"
+msgstr "模板"
+
+msgid ""
+"Template exported to {path} - put it under the repo presets/ folder to "
+"share."
+msgstr "模板已导出到 {path} - 放入仓库 presets/ 目录即可分享。"
+
+msgid "Test Run Failed"
+msgstr "试运行失败"
+
+msgid ""
+"This team is currently FORCED - it will stop being applied after deletion. "
+"Delete anyway?"
+msgstr "此队伍正在被强制使用,删除后将不再生效。仍然删除?"
+
+msgid "ZIP Files (*.zip);;All Files (*)"
+msgstr "ZIP 文件 (*.zip);;所有文件 (*)"
+
+msgid "none"
+msgstr "无"
+
+msgid "{name}: unknown characters {chars} (from a newer version?)"
+msgstr "{name}: 未知角色 {chars}(可能来自更新版本?)"

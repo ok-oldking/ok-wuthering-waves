@@ -925,6 +925,54 @@ class TestTeamPresetEnhancements(unittest.TestCase):
         self.assertFalse(ok)
         self.assertIn("ValueError", message)
 
+    def test_tags_roundtrip(self):
+        preset = self._add("main", chars=("Iuno",))
+        preset.tags = ["深渊", "大世界"]
+        TeamPresetStore.save_preset(preset)
+        out = self.base / "tagged.json"
+        TeamPresetStore.export_preset_to_file(preset.id, out)
+        TeamPresetStore.delete_preset(preset.id)
+        imported = TeamPresetStore.import_preset_from_file(out)
+        self.assertEqual(imported.tags, ["深渊", "大世界"])
+
+    def test_combat_result_stats(self):
+        TeamPresetStore.record_preset_combat_result("main", success=True)
+        TeamPresetStore.record_preset_combat_result("main", success=True)
+        TeamPresetStore.record_preset_combat_result("main", success=False)
+        stats = TeamPresetStore.get_preset_stats("main")
+        self.assertEqual(stats.get("successes"), 2)
+        self.assertEqual(stats.get("fails"), 1)
+
+    def test_backup_restore_zip(self):
+        self._add("one", chars=("Iuno",))
+        self._add("two", chars=("Verina",))
+        backup = self.base / "backup.zip"
+        TeamPresetStore.backup_presets_to_zip(["one", "two"], backup)
+        self.assertTrue(backup.exists())
+        TeamPresetStore.delete_preset("one")
+        TeamPresetStore.delete_preset("two")
+        imported, warnings = TeamPresetStore.restore_presets_from_zip(backup)
+        self.assertEqual(len(imported), 2)
+        self.assertEqual(warnings, [])
+        self.assertIsNotNone(TeamPresetStore.get_preset("one"))
+        self.assertIsNotNone(TeamPresetStore.get_preset("two"))
+
+    def test_export_template_folder(self):
+        preset = self._add("tpl", chars=("Iuno",))
+        preset.description = "示例模板"
+        TeamPresetStore.save_preset(preset)
+        TeamPresetStore.save_team_code(
+            preset.id,
+            "class TplLogic(BaseTeamCombat):\n"
+            "    def perform(self):\n"
+            "        pass\n")
+        folder = self.base / "template"
+        data = TeamPresetStore.export_preset_as_template_folder(preset.id, folder)
+        self.assertTrue((folder / "preset.json").is_file())
+        self.assertTrue((folder / "team_code.py").is_file())
+        self.assertEqual(data["preset"]["tags"], [])
+        self.assertEqual(data["name"], "tpl")
+
 
 if __name__ == "__main__":
     unittest.main()

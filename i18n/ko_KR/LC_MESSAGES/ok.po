@@ -1,3 +1,4 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
@@ -1113,8 +1114,8 @@ msgid "Merge Discarded Echoes"
 msgstr "폐기된 에코 합성"
 
 msgid ""
-"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full "
-"batches of 100."
+"Must have 1000 discarded Echo to Run, Merge discarded Echoes in full batches"
+" of 100."
 msgstr "실행하려면 폐기된 에코가 1000개 있어야 합니다. 폐기된 에코를 100개 단위로 합성합니다."
 
 msgid "Bag Key"
@@ -1141,13 +1142,19 @@ msgstr "폐기된 에코가 1000개 초과면 합성"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "일일 작업 후 실행할 추가 작업"
 
-msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
-msgstr "선택 작업을 고르세요. 악몽 둥지는 일일 작업 완료를 돕기 위해 스태미나 파밍 전에 실행하고, 다른 작업은 그 후에 실행합니다."
+msgid ""
+"Select optional tasks. Nightmare Nest runs before stamina farming to help "
+"complete the daily task; the other tasks run afterward."
+msgstr ""
+"선택 작업을 고르세요. 악몽 둥지는 일일 작업 완료를 돕기 위해 스태미나 파밍 전에 실행하고, 다른 작업은 그 후에 실행합니다."
 
-msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
+msgid ""
+"Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in "
+"Farm Echo Task."
 msgstr "순간이동 후 코스트 4 에코 파밍을 실행하려면 에코 파밍 작업에서 \"보스로 순간이동\"을 활성화해야 합니다."
 
-msgid "Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
+msgid ""
+"Auto Farm all Nightmare Nest requires at least one \"Which to Farm\" option."
 msgstr "모든 악몽 둥지 자동 파밍을 실행하려면 \"파밍 대상\"을 하나 이상 선택해야 합니다."
 
 msgid "Daily Task Completed"
@@ -1229,7 +1236,9 @@ msgid "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按�
 msgstr "B를 눌러 가방을 열고 필터에서 강화할 에코를 선택한 뒤, 레벨 0부터 오름차순으로 정렬하고 시작하세요."
 
 msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
-msgstr "게임과 okww 언어는 중국어 간체/번체여야 하며, 16:9 비율의 1600x900 이상 해상도가 필요합니다. 필요한 항목을 체크하면 체크하지 않은 항목은 자동으로 합성됩니다."
+msgstr ""
+"게임과 okww 언어는 중국어 간체/번체여야 하며, 16:9 비율의 1600x900 이상 해상도가 필요합니다. 필요한 항목을 체크하면 "
+"체크하지 않은 항목은 자동으로 합성됩니다."
 
 msgid "Switch to Healer before and after Combat"
 msgstr "전투 전후에 힐러로 전환"
@@ -1390,7 +1399,9 @@ msgstr "캐릭터 선택…"
 msgid "Team Logic"
 msgstr "팀 로직"
 
-msgid "Pick characters - the team matching your in-game lineup is used automatically."
+msgid ""
+"Pick characters - the team matching your in-game lineup is used "
+"automatically."
 msgstr "캐릭터를 선택하세요 - 게임 내 편성과 일치하는 팀이 자동으로 사용됩니다."
 
 msgid "Always use this team, ignoring auto-match."
@@ -1513,7 +1524,9 @@ msgstr "팀 이름:"
 msgid "Move Up"
 msgstr "위로"
 
-msgid "Create a team to save a character lineup and switch between lineups with one click."
+msgid ""
+"Create a team to save a character lineup and switch between lineups with one"
+" click."
 msgstr "팀을 만들면 캐릭터 편성을 저장하고 원클릭으로 전환할 수 있습니다."
 
 msgid "Imported and applied to {name}"
@@ -1608,3 +1621,176 @@ msgstr "팀 {number}"
 
 msgid "New Team Preset"
 msgstr "새 팀 프리셋"
+
+msgid "score {score}, matched {hits}/{total}, missing required: {missing}"
+msgstr "점수 {score},일치 {hits}/{total},필수 누락: {missing}"
+
+msgid "skipped: filtered by Only Full Match"
+msgstr "건너뜀:'전체 일치만'으로 제외됨"
+
+msgid "(none yet)"
+msgstr "(아직 없음)"
+
+msgid "All tags"
+msgstr "모든 태그"
+
+msgid "Auto-match on - tasks use the preset matching your in-game team."
+msgstr "자동 매치 켜짐 - 태스크는 게임 내 팀과 일치하는 프리셋을 사용합니다."
+
+msgid "Back Up All Teams"
+msgstr "전체 팀 백업"
+
+msgid "Back up all teams (with custom code) to a zip file."
+msgstr "모든 팀(커스텀 코드 포함)을 zip으로 백업합니다."
+
+msgid "Backed up {n} teams to {path}."
+msgstr "{n}개 팀을 {path}에 백업했습니다."
+
+msgid "Backup"
+msgstr "백업"
+
+msgid "Code saved - live-reloaded into {n} running task(s)"
+msgstr "저장됨 - 실행 중인 {n}개 태스크에 핫 리로드됨"
+
+msgid "Combat: {wins}/{total} won"
+msgstr "전투 성적: {wins}/{total} 승리"
+
+msgid "Create a new team from a built-in template with ready-to-run scripts."
+msgstr "바로 사용 가능한 스크립트가 포함된 내장 템플릿에서 새 팀을 만듭니다."
+
+msgid "Editing this team's custom code for this character."
+msgstr "이 캐릭터의 이 팀용 커스텀 코드를 편집 중입니다."
+
+msgid "Export as Built-in Template"
+msgstr "내장 템플릿으로 내보내기"
+
+msgid "Export the current team as a built-in template folder for sharing."
+msgstr "현재 팀을 공유용 내장 템플릿 폴더로 내보냅니다."
+
+msgid "Filter teams by tag."
+msgstr "태그로 팀을 필터링합니다."
+
+msgid "Folder Name"
+msgstr "폴더 이름"
+
+msgid "Forced team: none"
+msgstr "강제 팀: 없음"
+
+msgid "Forced team: {name} ({scope})"
+msgstr "강제 팀: {name} ({scope})"
+
+msgid "Frames to simulate:"
+msgstr "시뮬레이션할 프레임 수:"
+
+msgid ""
+"How long the forced team stays forced: persistent, once, or until auto-match"
+" finds another team."
+msgstr "강제 팀 유지 기간:영구, 1회, 또는 자동 매치가 다른 팀을 찾을 때까지."
+
+msgid "Imported - live-reloaded into {n} running task(s)"
+msgstr "가져옴 - 실행 중인 {n}개 태스크에 핫 리로드됨"
+
+msgid "Last auto-match: {name}"
+msgstr "최근 자동 매치: {name}"
+
+msgid "Last detected in-game team: {roles}"
+msgstr "최근 감지된 게임 내 팀: {roles}"
+
+msgid "Match Diagnostics"
+msgstr "매치 진단"
+
+msgid "Match Log"
+msgstr "매치 로그"
+
+msgid "No auto-match attempts recorded yet."
+msgstr "자동 매치 시도 기록이 아직 없습니다."
+
+msgid ""
+"No custom code yet - editing a copy of the builtin code. Save to create one "
+"for this team."
+msgstr "커스텀 코드가 아직 없습니다 - 내장 코드 사본을 편집 중입니다. 저장하면 이 팀용으로 생성됩니다."
+
+msgid "No preset matches: {roles} - using global config"
+msgstr "일치하는 프리셋 없음: {roles} - 전역 설정 사용 중"
+
+msgid ""
+"No team logic yet - each character fights on its own. Write a BaseTeamCombat"
+" subclass to take full control of the team."
+msgstr ""
+"팀 로직이 아직 없습니다 - 각 캐릭터가 각자 전투합니다. BaseTeamCombat 서브클래스를 작성하면 팀 전체를 제어할 수 "
+"있습니다."
+
+msgid "No teams to back up."
+msgstr "백업할 팀이 없습니다."
+
+msgid ""
+"Only auto-match teams whose every enabled character is in the in-game team."
+msgstr "활성화된 모든 캐릭터가 게임 내 팀에 있는 팀만 자동 매치합니다."
+
+msgid "Optional JSON, e.g. {\"Iuno C6\": false}"
+msgstr "선택 JSON, 예: {\"Iuno C6\": false}"
+
+msgid "Restore"
+msgstr "복원"
+
+msgid "Restore Teams from Backup"
+msgstr "백업에서 팀 복원"
+
+msgid "Restore teams from a backup zip file."
+msgstr "백업 zip에서 팀을 복원합니다."
+
+msgid "Restored {n} teams."
+msgstr "{n}개 팀을 복원했습니다."
+
+msgid "Run the logic in a safe simulator without fighting or clicking."
+msgstr "전투나 클릭 없이 안전한 시뮬레이터에서 로직을 실행합니다."
+
+msgid "Show why the current team was (or was not) auto-matched last time."
+msgstr "현재 팀이 지난번에 자동 매치된(또는 안 된) 이유를 표시합니다."
+
+msgid "Tags (optional, comma separated) - e.g. 深渊, 大世界"
+msgstr "태그(선택, 쉼표 구분) - 예:심연, 대세계"
+
+msgid ""
+"Team logic code failed to compile: {error} - it was exported but will not "
+"load."
+msgstr "팀 로직 코드 컴파일 실패: {error} - 내보내졌지만 로드되지 않습니다."
+
+msgid "Team logic error: {msg} - fell back to per-character logic"
+msgstr "팀 로직 오류: {msg} - 캐릭터별 로직으로 대체됨"
+
+msgid ""
+"Team-level combat logic - takes full control when the team is matched or "
+"forced."
+msgstr "팀 레벨 전투 로직 - 팀이 매치되거나 강제되면 전체를 제어합니다."
+
+msgid "Template"
+msgstr "템플릿"
+
+msgid ""
+"Template exported to {path} - put it under the repo presets/ folder to "
+"share."
+msgstr "템플릿이 {path}로 내보내졌습니다 - 저장소 presets/ 폴더에 넣으면 공유할 수 있습니다."
+
+msgid "Test Run Failed"
+msgstr "테스트 실행 실패"
+
+msgid "This team is auto-selected when its characters match the in-game team."
+msgstr "캐릭터가 게임 내 팀과 일치하면 자동 선택됩니다."
+
+msgid ""
+"This team is currently FORCED - it will stop being applied after deletion. "
+"Delete anyway?"
+msgstr "이 팀은 현재 강제 적용 중입니다. 삭제하면 더 이상 적용되지 않습니다. 그래도 삭제하시겠습니까?"
+
+msgid "This team logic fully replaces the characters' own combat logic."
+msgstr "이 팀 로직은 캐릭터의 자체 전투 로직을 완전히 대체합니다."
+
+msgid "ZIP Files (*.zip);;All Files (*)"
+msgstr "ZIP 파일 (*.zip);;모든 파일 (*)"
+
+msgid "none"
+msgstr "없음"
+
+msgid "{name}: unknown characters {chars} (from a newer version?)"
+msgstr "{name}: 알 수 없는 캐릭터 {chars}(최신 버전일 수 있음?)"

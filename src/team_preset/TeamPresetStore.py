@@ -69,7 +69,7 @@ class TeamPreset:
     """一套队伍配对配置。"""
 
     def __init__(self, id=None, name=None, note="", created_from="", auto_match=True,
-                 slots=None, description=""):
+                 slots=None, description="", tags=None):
         self.id = id or ""
         self.name = name or ""
         self.note = note or ""
@@ -77,6 +77,7 @@ class TeamPreset:
         self.auto_match = bool(auto_match)
         self.slots = slots or []
         self.description = description or ""
+        self.tags = list(tags or [])
 
     def to_dict(self):
         return {
@@ -86,6 +87,7 @@ class TeamPreset:
             "created_from": self.created_from,
             "auto_match": self.auto_match,
             "description": self.description,
+            "tags": self.tags,
             "slots": [slot.to_dict() for slot in self.slots],
         }
 
@@ -101,6 +103,7 @@ class TeamPreset:
             auto_match=data.get("auto_match", True),
             slots=slots,
             description=data.get("description", ""),
+            tags=data.get("tags", []) or [],
         )
 
     @property
@@ -614,6 +617,21 @@ class TeamPresetStore:
             cls._save_index(index)
 
     @classmethod
+    def record_preset_combat_result(cls, preset_id, success):
+        """记录一场战斗结束时的成败(完整打完为成功)。"""
+        if not preset_id:
+            return
+        with cls._lock:
+            index = cls._load_index()
+            stats = cls._stats(index)
+            entry = stats.get(preset_id) or {}
+            key = "successes" if success else "fails"
+            entry[key] = int(entry.get(key, 0)) + 1
+            stats[preset_id] = entry
+            index["stats"] = stats
+            cls._save_index(index)
+
+    @classmethod
     def get_preset_stats(cls, preset_id):
         return cls._stats().get(preset_id, {}) or {}
 
@@ -778,6 +796,20 @@ class TeamPresetStore:
         return data
 
     @classmethod
+    def _import_items(cls, items):
+        """按数组导入多条预设数据,返回 (presets, warnings)。"""
+        imported = []
+        warnings = []
+        for item in items:
+            preset = cls.import_preset(item if isinstance(item, dict) else {})
+            unknown = cls._unknown_slot_chars(preset)
+            if unknown:
+                warnings.append({"preset": preset.name or preset.id,
+                                 "unknown_chars": unknown})
+            imported.append(preset)
+        return imported, warnings
+
+    @classmethod
     def import_presets_from_file(cls, path):
         """导入一个 JSON 文件:单个预设、ok_ww_team_presets 批量包或数组。
 
@@ -792,16 +824,92 @@ class TeamPresetStore:
             items = data.get("presets", []) or []
         else:
             items = [data]
-        imported = []
-        warnings = []
-        for item in items:
-            preset = cls.import_preset(item if isinstance(item, dict) else {})
-            unknown = cls._unknown_slot_chars(preset)
-            if unknown:
-                warnings.append({"preset": preset.name or preset.id,
-                                 "unknown_chars": unknown})
-            imported.append(preset)
+        return cls._import_items(items)
+
+    # ---------- 备份 / 恢复 ----------
+
+    @classmethod
+    def backup_presets_to_zip(cls, preset_ids, path):
+        """把多个预设打包为一个 zip(内含 teams.json 批量包)。"""
+        import zipfile
+        data = {
+            "type": "ok_ww_team_presets",
+            "version": PRESET_EXPORT_VERSION,
+            "presets": [cls.export_preset(pid) for pid in preset_ids],
+        }
+        with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr(
+                "teams.json", json.dumps(data, ensure_ascii=False, indent=2))
+        return data
+
+    @classmethod
+    def restore_presets_from_zip(cls, path):
+        """从备份 zip 恢复预设,返回 (presets, warnings)。
+
+        读取 zip 内的 teams.json(批量包格式);zip 中额外存在的
+        <预设id>.py 文件会写回预设文件夹(旧版备份格式兼容)。
+        """
+        import zipfile
+        path = Path(path)
+        with zipfile.ZipFile(path) as archive:
+            names = archive.namelist()
+            if "teams.json" in names:
+                data = json.loads(archive.read("teams.json").decode("utf-8"))
+            else:
+                json_names = [n for n in names if n.endswith(".json")]
+                if not json_names:
+                    raise ValueError("invalid backup zip: no teams.json")
+                data = json.loads(archive.read(json_names[0]).decode("utf-8"))
+            py_files = {n: archive.read(n).decode("utf-8")
+                        for n in names if n.endswith(".py")}
+        items = []
+        if isinstance(data, list):
+            items = data
+        elif isinstance(data, dict) and data.get("type") == "ok_ww_team_presets":
+            items = data.get("presets", []) or []
+        else:
+            items = [data]
+        imported, warnings = cls._import_items(items)
+        for preset in imported:
+            folder = cls._preset_folder(preset.id, create=True)
+            for filename, code in py_files.items():
+                stem = _safe_folder_name(Path(filename).stem)
+                if not stem:
+                    continue
+                target = folder / f"{stem}.py"
+                if not target.exists():
+                    target.write_text(code, encoding="utf-8")
         return imported, warnings
+
+    # ---------- 导出为内置模板 ----------
+
+    @classmethod
+    def export_preset_as_template_folder(cls, preset_id, folder):
+        """把预设导出为内置模板目录(可直接放入仓库 presets/ 分享)。
+
+        导出 folder/team_code.py + 角色自定义 .py + folder/preset.json。
+        返回写入的 preset.json 数据。
+        """
+        preset = cls.get_preset(preset_id)
+        if preset is None:
+            raise ValueError(f"preset not found: {preset_id}")
+        folder = Path(folder)
+        folder.mkdir(parents=True, exist_ok=True)
+        data = cls.export_preset(preset_id)
+        custom_code = data.get("custom_code", {}) or {}
+        for filename, code in custom_code.items():
+            (folder / filename).write_text(code, encoding="utf-8")
+        template = {
+            "type": "ok_ww_team_preset",
+            "version": PRESET_EXPORT_VERSION,
+            "name": preset.name,
+            "description": preset.description,
+            "preset": preset.to_dict(),
+            "custom_code": {name: None for name in custom_code},
+        }
+        (folder / "preset.json").write_text(
+            json.dumps(template, ensure_ascii=False, indent=2), encoding="utf-8")
+        return template
 
     # ---------- 从 URL 安装 ----------
 

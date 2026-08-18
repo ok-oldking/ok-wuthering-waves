@@ -76,6 +76,7 @@ class BaseCombatTask(CombatCheck):
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']  # 角色文本标识符列表
         self.mouse_pos = None  # 当前鼠标位置
         self.combat_start = 0  # 战斗开始时间戳
+        self._team_logic_failed_this_combat = False  # 本场战斗队伍逻辑是否出过错
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.add_text_fix({'Ｅ': 'e'})
@@ -389,10 +390,23 @@ class BaseCombatTask(CombatCheck):
         except NotInCombatException as e:
             logger.info(f'combat_once out of combat break {e}')
         self.combat_end()
+        self._record_combat_end()
         if self.switch_healer_enabled():
             self.switch_healer()
         self.wait_in_team_and_world(time_out=10, raise_if_not_found=False)
         return result
+
+    def _record_combat_end(self):
+        """战斗结束时记录当前预设的成败统计(队伍逻辑出错算失败)。"""
+        preset_id = getattr(self.active_preset, 'id', None)
+        if not preset_id:
+            return
+        try:
+            TeamPresetStore.record_preset_combat_result(
+                preset_id, success=not self._team_logic_failed_this_combat)
+        except Exception as e:
+            logger.debug(f'record combat result failed: {e}')
+        self._team_logic_failed_this_combat = False
 
     def run_in_circle_to_find_echo(self, circle_count=3):
         """通过绕圈移动来尝试拾取声骸。
@@ -919,6 +933,7 @@ class BaseCombatTask(CombatCheck):
                 TeamPresetStore.record_preset_error(preset_id)
             except Exception as record_error:
                 logger.error(f'record team logic error failed: {record_error}')
+        self._team_logic_failed_this_combat = True
         try:
             self.info_set('Team Logic', f'Error: {str(e)[:40]}')
         except Exception:

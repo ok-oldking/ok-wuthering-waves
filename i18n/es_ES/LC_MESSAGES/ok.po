@@ -1584,3 +1584,207 @@ msgstr "Equipo {number}"
 
 msgid "New Team Preset"
 msgstr "Nuevo preset de equipo"
+
+msgid "score {score}, matched {hits}/{total}, missing required: {missing}"
+msgstr ""
+"puntuación {score}, coincidencia {hits}/{total}, faltan requeridos: "
+"{missing}"
+
+msgid "skipped: filtered by Only Full Match"
+msgstr "omitido: filtrado por \"solo coincidencia completa\""
+
+msgid "(none yet)"
+msgstr "(aún no)"
+
+msgid "All tags"
+msgstr "Todas las etiquetas"
+
+msgid "Auto-match on - tasks use the preset matching your in-game team."
+msgstr ""
+"Coincidencia automática activada: las tareas usan el preset que coincide con"
+" tu equipo en el juego."
+
+msgid "Back Up All Teams"
+msgstr "Respaldar todos los equipos"
+
+msgid "Back up all teams (with custom code) to a zip file."
+msgstr ""
+"Respaldar todos los equipos (con código personalizado) en un archivo zip."
+
+msgid "Backed up {n} teams to {path}."
+msgstr "Se respaldaron {n} equipos en {path}."
+
+msgid "Backup"
+msgstr "Respaldar"
+
+msgid "Code saved - live-reloaded into {n} running task(s)"
+msgstr "Guardado - recargado en vivo en {n} tareas en ejecución"
+
+msgid "Combat: {wins}/{total} won"
+msgstr "Combates: {wins}/{total} ganados"
+
+msgid "Create a new team from a built-in template with ready-to-run scripts."
+msgstr ""
+"Crea un nuevo equipo desde una plantilla integrada con scripts listos para "
+"usar."
+
+msgid "Editing this team's custom code for this character."
+msgstr "Editando el código personalizado de este equipo para este personaje."
+
+msgid "Export as Built-in Template"
+msgstr "Exportar como plantilla integrada"
+
+msgid "Export the current team as a built-in template folder for sharing."
+msgstr ""
+"Exporta el equipo actual como una carpeta de plantilla integrada para "
+"compartir."
+
+msgid "Filter teams by tag."
+msgstr "Filtra equipos por etiqueta."
+
+msgid "Folder Name"
+msgstr "Nombre de carpeta"
+
+msgid "Forced team: none"
+msgstr "Equipo forzado: ninguno"
+
+msgid "Forced team: {name} ({scope})"
+msgstr "Equipo forzado: {name} ({scope})"
+
+msgid "Frames to simulate:"
+msgstr "Fotogramas a simular:"
+
+msgid ""
+"How long the forced team stays forced: persistent, once, or until auto-match"
+" finds another team."
+msgstr ""
+"Cuánto tiempo permanece forzado el equipo: persistente, una vez o hasta que "
+"la coincidencia automática encuentre otro equipo."
+
+msgid "Imported - live-reloaded into {n} running task(s)"
+msgstr "Importado - recargado en vivo en {n} tareas en ejecución"
+
+msgid "Last auto-match: {name}"
+msgstr "Última coincidencia automática: {name}"
+
+msgid "Last detected in-game team: {roles}"
+msgstr "Último equipo detectado en el juego: {roles}"
+
+msgid "Match Diagnostics"
+msgstr "Diagnóstico de coincidencia"
+
+msgid "Match Log"
+msgstr "Registro de coincidencia"
+
+msgid "No auto-match attempts recorded yet."
+msgstr "Aún no se han registrado intentos de coincidencia automática."
+
+msgid ""
+"No custom code yet - editing a copy of the builtin code. Save to create one "
+"for this team."
+msgstr ""
+"Aún no hay código personalizado: estás editando una copia del código "
+"integrado. Guarda para crear uno para este equipo."
+
+msgid "No preset matches: {roles} - using global config"
+msgstr "Ningún preset coincide: {roles} - usando configuración global"
+
+msgid ""
+"No team logic yet - each character fights on its own. Write a BaseTeamCombat"
+" subclass to take full control of the team."
+msgstr ""
+"Aún no hay lógica de equipo: cada personaje lucha por su cuenta. Escribe una"
+" subclase de BaseTeamCombat para controlar todo el equipo."
+
+msgid "No teams to back up."
+msgstr "No hay equipos para respaldar."
+
+msgid ""
+"Only auto-match teams whose every enabled character is in the in-game team."
+msgstr ""
+"Solo coincidir automáticamente equipos cuyos personajes habilitados estén "
+"todos en el equipo del juego."
+
+msgid "Optional JSON, e.g. {\"Iuno C6\": false}"
+msgstr "JSON opcional, p. ej. {\"Iuno C6\": false}"
+
+msgid "Restore"
+msgstr "Restaurar"
+
+msgid "Restore Teams from Backup"
+msgstr "Restaurar equipos desde respaldo"
+
+msgid "Restore teams from a backup zip file."
+msgstr "Restaura equipos desde un archivo zip de respaldo."
+
+msgid "Restored {n} teams."
+msgstr "Se restauraron {n} equipos."
+
+msgid "Run the logic in a safe simulator without fighting or clicking."
+msgstr "Ejecuta la lógica en un simulador seguro sin combatir ni hacer clic."
+
+msgid "Show why the current team was (or was not) auto-matched last time."
+msgstr ""
+"Muestra por qué el equipo actual fue (o no) coincidido automáticamente la "
+"última vez."
+
+msgid "Tags (optional, comma separated) - e.g. 深渊, 大世界"
+msgstr "Etiquetas (opcional, separadas por comas) - p. ej. 深渊, 大世界"
+
+msgid ""
+"Team logic code failed to compile: {error} - it was exported but will not "
+"load."
+msgstr ""
+"El código de lógica de equipo no compiló: {error} - se exportó pero no se "
+"cargará."
+
+msgid "Team logic error: {msg} - fell back to per-character logic"
+msgstr ""
+"Error de lógica de equipo: {msg} - se volvió a la lógica por personaje"
+
+msgid ""
+"Team-level combat logic - takes full control when the team is matched or "
+"forced."
+msgstr ""
+"Lógica de combate a nivel de equipo: toma el control total cuando el equipo "
+"coincide o está forzado."
+
+msgid "Template"
+msgstr "Plantilla"
+
+msgid ""
+"Template exported to {path} - put it under the repo presets/ folder to "
+"share."
+msgstr ""
+"Plantilla exportada a {path} - colócala en la carpeta presets/ del "
+"repositorio para compartirla."
+
+msgid "Test Run Failed"
+msgstr "Error en ejecución de prueba"
+
+msgid "This team is auto-selected when its characters match the in-game team."
+msgstr ""
+"Este equipo se selecciona automáticamente cuando sus personajes coinciden "
+"con el equipo del juego."
+
+msgid ""
+"This team is currently FORCED - it will stop being applied after deletion. "
+"Delete anyway?"
+msgstr ""
+"Este equipo está actualmente FORZADO; dejará de aplicarse tras eliminarlo. "
+"¿Eliminar de todos modos?"
+
+msgid "This team logic fully replaces the characters' own combat logic."
+msgstr ""
+"Esta lógica de equipo reemplaza por completo la lógica de combate propia de "
+"los personajes."
+
+msgid "ZIP Files (*.zip);;All Files (*)"
+msgstr "Archivos ZIP (*.zip);;Todos los archivos (*)"
+
+msgid "none"
+msgstr "ninguno"
+
+msgid "{name}: unknown characters {chars} (from a newer version?)"
+msgstr ""
+"{name}: personajes desconocidos {chars} (¿de una versión más reciente?)"

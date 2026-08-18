@@ -670,8 +670,34 @@ class _TeamLogicDialog(QDialog):
         if self.code_editor.toPlainText() != self.clean_code:
             self._set_status(self.tr("Save code before testing"), error=True)
             return
-        ok, message = test_run_team_logic(self.preset.id)
-        self._set_status(message, error=not ok)
+        frames, ok = QInputDialog.getInt(
+            self, self.tr("Test Run"), self.tr("Frames to simulate:"), 120, 1, 10000, 1)
+        if not ok:
+            return
+        ok, message = test_run_team_logic(self.preset.id, frames=frames)
+        self._set_status(message.split("\n")[0], error=not ok)
+        if not ok and "\n" in message:
+            dialog = QDialog(self)
+            dialog.setWindowTitle(self.tr("Test Run Failed"))
+            dialog.setMinimumSize(520, 320)
+            layout = QVBoxLayout(dialog)
+            layout.setContentsMargins(16, 16, 16, 16)
+            editor = CodeEditor(dialog)
+            editor.setReadOnly(True)
+            editor.setLineWrapMode(PlainTextEdit.NoWrap)
+            font = editor.font()
+            font.setFamily("Consolas")
+            font.setPointSize(10)
+            editor.setFont(font)
+            editor.setPlainText(message)
+            close_button = PrimaryPushButton(self.tr("Close"), dialog)
+            close_button.clicked.connect(dialog.accept)
+            layout.addWidget(editor, 1)
+            button_row = QHBoxLayout()
+            button_row.addStretch(1)
+            button_row.addWidget(close_button)
+            layout.addLayout(button_row)
+            dialog.exec()
 
     def _show_api_ref(self):
         dialog = QDialog(self)
@@ -721,6 +747,10 @@ class _TeamLogicDialog(QDialog):
         self._refresh_title()
         self._set_status(self.tr("Imported from file and saved"))
         self.tab._update_team_logic_button()
+        reloaded = self.tab._reload_live_team_logic(self.preset.id)
+        if reloaded:
+            self._set_status(self.tr("Imported - live-reloaded into {n} running task(s)").format(
+                n=reloaded))
 
     def _set_status(self, text, error=False):
         self.status_label.setText(text)
@@ -740,6 +770,10 @@ class _TeamLogicDialog(QDialog):
         self._refresh_title()
         self._set_status(self.tr("Code saved"))
         self.tab._update_team_logic_button()
+        reloaded = self.tab._reload_live_team_logic(self.preset.id)
+        if reloaded:
+            self._set_status(self.tr("Code saved - live-reloaded into {n} running task(s)").format(
+                n=reloaded))
 
     def _reset_code(self):
         if self.code_has_unsaved_changes:
@@ -824,6 +858,13 @@ class TeamPresetTab(CustomTab):
         self.search_edit.textChanged.connect(lambda _: self._refresh_preset_list())
         left_layout.addWidget(self.search_edit)
 
+        self.tag_filter_combo = ComboBox()
+        self.tag_filter_combo.setToolTip(self.tr("Filter teams by tag."))
+        self.tag_filter_combo.addItem(self.tr("All tags"), "")
+        self.tag_filter_combo.currentIndexChanged.connect(
+            lambda _: self._refresh_preset_list())
+        left_layout.addWidget(self.tag_filter_combo)
+
         self.preset_list = ListWidget(left)
         self.preset_list.setMinimumWidth(210)
         self.preset_list.setMaximumWidth(300)
@@ -906,11 +947,27 @@ class TeamPresetTab(CustomTab):
         tool_row_3.addWidget(self.move_down_button)
         tool_row_3.addStretch(1)
         left_layout.addLayout(tool_row_3)
+
+        tool_row_4 = QHBoxLayout()
+        self.backup_button = PushButton(FluentIcon.SAVE, self.tr("Backup"))
+        self.backup_button.setToolTip(self.tr("Back up all teams (with custom code) to a zip file."))
+        self.restore_button = PushButton(FluentIcon.FOLDER_ADD, self.tr("Restore"))
+        self.restore_button.setToolTip(self.tr("Restore teams from a backup zip file."))
+        self.export_template_button = PushButton(FluentIcon.ZIP_FOLDER, self.tr("Template"))
+        self.export_template_button.setToolTip(self.tr(
+            "Export the current team as a built-in template folder for sharing."))
+        tool_row_4.addWidget(self.backup_button)
+        tool_row_4.addWidget(self.restore_button)
+        tool_row_4.addWidget(self.export_template_button)
+        tool_row_4.addStretch(1)
+        left_layout.addLayout(tool_row_4)
         for button in (self.new_button, self.duplicate_button, self.delete_button,
                        self.import_button, self.export_button, self.from_team_button,
                        self.from_current_button, self.template_button,
                        self.from_url_button, self.export_all_button,
-                       self.move_up_button, self.move_down_button):
+                       self.move_up_button, self.move_down_button,
+                       self.backup_button, self.restore_button,
+                       self.export_template_button):
             button.setFixedHeight(30)
             button.installEventFilter(ToolTipFilter(button))
 
@@ -923,6 +980,9 @@ class TeamPresetTab(CustomTab):
         self.from_current_button.clicked.connect(self._create_from_current)
         self.from_url_button.clicked.connect(self._install_from_url)
         self.export_all_button.clicked.connect(self._export_all)
+        self.backup_button.clicked.connect(self._backup_zip)
+        self.restore_button.clicked.connect(self._restore_zip)
+        self.export_template_button.clicked.connect(self._export_template_folder)
         self.move_up_button.clicked.connect(lambda: self._move_preset(-1))
         self.move_down_button.clicked.connect(lambda: self._move_preset(1))
 
@@ -956,6 +1016,12 @@ class TeamPresetTab(CustomTab):
         self.description_edit.textChanged.connect(self._schedule_auto_save)
         editor_layout.addWidget(self.description_edit)
 
+        self.tags_edit = LineEdit(self.editor_panel)
+        self.tags_edit.setPlaceholderText(
+            self.tr("Tags (optional, comma separated) - e.g. 深渊, 大世界"))
+        self.tags_edit.textChanged.connect(self._schedule_auto_save)
+        editor_layout.addWidget(self.tags_edit)
+
         self.team_logic_button = PushButton(FluentIcon.CODE, self.tr("Team Logic"), self.editor_panel)
         self.team_logic_button.setToolTip(self.tr(
             "Team-level combat logic - takes full control when the team is matched or forced."))
@@ -976,6 +1042,13 @@ class TeamPresetTab(CustomTab):
         self.status_label = BodyLabel("", self.editor_panel)
         self.status_label.setStyleSheet("color:rgba(140,140,140,0.9);")
         bottom_layout.addWidget(self.status_label, 1)
+        self.diagnose_button = PushButton(FluentIcon.SEARCH, self.tr("Match Log"),
+                                          self.editor_panel)
+        self.diagnose_button.setToolTip(self.tr(
+            "Show why the current team was (or was not) auto-matched last time."))
+        self.diagnose_button.clicked.connect(self._show_match_diagnostics)
+        self.diagnose_button.setFixedHeight(28)
+        bottom_layout.addWidget(self.diagnose_button)
         editor_layout.addLayout(bottom_layout)
 
         self.editor_scroll = SingleDirectionScrollArea(right)
@@ -1046,7 +1119,24 @@ class TeamPresetTab(CustomTab):
     # ---------- preset list ----------
 
     def _refresh_preset_list(self, selected_id=None):
-        presets = TeamPresetStore.list_presets()
+        all_presets = TeamPresetStore.list_presets()
+        all_tags = sorted({t for p in all_presets for t in (p.tags or [])})
+        current_tag = self.tag_filter_combo.itemData(self.tag_filter_combo.currentIndex()) or ""
+        current_items = [self.tag_filter_combo.itemData(i)
+                         for i in range(self.tag_filter_combo.count())]
+        if current_items != [""] + all_tags:
+            self.tag_filter_combo.blockSignals(True)
+            self.tag_filter_combo.clear()
+            self.tag_filter_combo.addItem(self.tr("All tags"), "")
+            for tag in all_tags:
+                self.tag_filter_combo.addItem(tag, tag)
+            index = self.tag_filter_combo.findData(current_tag)
+            self.tag_filter_combo.setCurrentIndex(index if index >= 0 else 0)
+            self.tag_filter_combo.blockSignals(False)
+        tag_query = current_tag
+        presets = all_presets
+        if tag_query:
+            presets = [p for p in presets if tag_query in (p.tags or [])]
         query = self.search_edit.text().strip().lower()
         selected_name = selected_id or (self.current_preset.id if self.current_preset else None)
         detected = set(TeamPresetStore.get_last_detected_team() or [])
@@ -1060,6 +1150,7 @@ class TeamPresetTab(CustomTab):
                 if query:
                     haystack = " ".join([
                         label.lower(), preset.note.lower(), preset.description.lower(),
+                        " ".join(preset.tags).lower(),
                         " ".join(slot.char for slot in preset.slots)])
                     if query not in haystack:
                         continue
@@ -1088,6 +1179,11 @@ class TeamPresetTab(CustomTab):
                 tip_lines = []
                 if stats.get("uses"):
                     tip_lines.append(self.tr("Used {n} times").format(n=stats["uses"]))
+                if stats.get("successes") or stats.get("fails"):
+                    wins = stats.get("successes", 0)
+                    total = wins + stats.get("fails", 0)
+                    tip_lines.append(self.tr("Combat: {wins}/{total} won").format(
+                        wins=wins, total=total))
                 if stats.get("errors"):
                     tip_lines.append(self.tr("{n} errors").format(n=stats["errors"]))
                 if error:
@@ -1155,6 +1251,7 @@ class TeamPresetTab(CustomTab):
         preset = self.current_preset
         self.name_edit.setText(preset.name)
         self.description_edit.setText(preset.description)
+        self.tags_edit.setText(", ".join(preset.tags))
         self.auto_match_check.setChecked(preset.auto_match)
         slots = list(preset.slots) + [None] * (MAX_SLOTS - len(preset.slots))
         for editor, slot in zip(self.slot_editors, slots):
@@ -1163,8 +1260,16 @@ class TeamPresetTab(CustomTab):
         self._update_banner()
         self._update_force_state()
         stats = TeamPresetStore.get_preset_stats(preset.id)
+        status_parts = []
         if stats.get("uses"):
-            self.status_label.setText(self.tr("Used {n} times").format(n=stats["uses"]))
+            status_parts.append(self.tr("Used {n} times").format(n=stats["uses"]))
+        if stats.get("successes") or stats.get("fails"):
+            wins = stats.get("successes", 0)
+            total = wins + stats.get("fails", 0)
+            status_parts.append(self.tr("Combat: {wins}/{total} won").format(
+                wins=wins, total=total))
+        if status_parts:
+            self.status_label.setText(" · ".join(status_parts))
         else:
             self.status_label.setText(self.tr("Auto saved"))
 
@@ -1323,6 +1428,7 @@ class TeamPresetTab(CustomTab):
         slots = []
         for editor in self.slot_editors:
             slots.append(editor.to_slot())
+        tags = [t.strip() for t in self.tags_edit.text().split(",") if t.strip()]
         return TeamPreset(
             id=self.current_preset.id,
             name=self.name_edit.text().strip() or self.current_preset.name,
@@ -1330,6 +1436,7 @@ class TeamPresetTab(CustomTab):
             created_from=self.current_preset.created_from,
             auto_match=self.auto_match_check.isChecked(),
             description=self.description_edit.text().strip(),
+            tags=tags,
             slots=slots,
         )
 
@@ -1396,9 +1503,13 @@ class TeamPresetTab(CustomTab):
     def _delete_preset(self):
         if self.current_preset is None:
             return
-        box = MessageBox(self.tr("Delete Team Preset"),
-                         self.tr("Delete this team preset and its custom code?"),
-                         self.window())
+        is_forced = TeamPresetStore.get_forced_name() == self.current_preset.id
+        question = self.tr("Delete this team preset and its custom code?")
+        if is_forced:
+            question = self.tr(
+                "This team is currently FORCED - it will stop being applied "
+                "after deletion. Delete anyway?")
+        box = MessageBox(self.tr("Delete Team Preset"), question, self.window())
         if not box.exec():
             return
         preset_id = self.current_preset.id
@@ -1478,6 +1589,131 @@ class TeamPresetTab(CustomTab):
         show_info_bar(self.window(),
                       self.tr("Exported {n} teams.").format(n=len(presets)),
                       title=self.tr("Success"))
+
+    def _backup_zip(self):
+        presets = TeamPresetStore.list_presets()
+        if not presets:
+            show_info_bar(self.window(), self.tr("No teams to back up."),
+                          title=self.tr("Info"))
+            return
+        path, _ = QFileDialog.getSaveFileName(
+            self, self.tr("Back Up All Teams"), "teams_backup.zip",
+            self.tr("ZIP Files (*.zip);;All Files (*)"))
+        if not path:
+            return
+        try:
+            TeamPresetStore.backup_presets_to_zip([p.id for p in presets], path)
+        except Exception as e:
+            self.logger.error(f"backup team presets failed: {e}")
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+            return
+        show_info_bar(self.window(),
+                      self.tr("Backed up {n} teams to {path}.").format(
+                          n=len(presets), path=path),
+                      title=self.tr("Success"))
+
+    def _restore_zip(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, self.tr("Restore Teams from Backup"), "",
+            self.tr("ZIP Files (*.zip);;All Files (*)"))
+        if not path:
+            return
+        try:
+            imported, warnings = TeamPresetStore.restore_presets_from_zip(path)
+        except Exception as e:
+            self.logger.error(f"restore team presets failed: {e}")
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+            return
+        if not imported:
+            return
+        self._refresh_preset_list(imported[0].id)
+        self.current_preset = TeamPresetStore.get_preset(imported[0].id)
+        self.current_row = self._row_of_preset(imported[0].id)
+        self._load_preset_into_widgets()
+        message = self.tr("Restored {n} teams.").format(n=len(imported))
+        for warning in warnings:
+            chars = ", ".join(warning["unknown_chars"])
+            message += " " + self.tr("{name}: unknown characters {chars} "
+                                     "(from a newer version?)").format(
+                name=warning["preset"], chars=chars)
+        show_info_bar(self.window(), message,
+                      title=self.tr("Success") if not warnings else self.tr("Warning"),
+                      error=bool(warnings))
+
+    def _export_template_folder(self):
+        if self.current_preset is None:
+            return
+        preset_id = self.current_preset.id
+        folder, _ = QFileDialog.getSaveFileName(
+            self, self.tr("Export as Built-in Template"),
+            f"{self.current_preset.name}",
+            self.tr("Folder Name"))
+        if not folder:
+            return
+        try:
+            TeamPresetStore.export_preset_as_template_folder(
+                preset_id, Path(folder))
+        except Exception as e:
+            self.logger.error(f"export template folder failed: {e}")
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+            return
+        show_info_bar(self.window(),
+                      self.tr("Template exported to {path} - put it under the "
+                              "repo presets/ folder to share.").format(path=folder),
+                      title=self.tr("Success"))
+
+    def _show_match_diagnostics(self):
+        detected = TeamPresetStore.get_last_detected_team() or []
+        lines = []
+        roles = " · ".join(self._display_char_name(c) for c in detected)
+        lines.append(self.tr("Last detected in-game team: {roles}").format(
+            roles=roles or self.tr("(none yet)")))
+        forced = TeamPresetStore.get_forced_preset()
+        if forced is not None:
+            lines.append(self.tr("Forced team: {name} ({scope})").format(
+                name=forced.name or forced.id,
+                scope=self.force_scope_combo.currentText()))
+        else:
+            lines.append(self.tr("Forced team: none"))
+        auto = TeamPresetStore.get_last_auto_match()
+        lines.append(self.tr("Last auto-match: {name}").format(
+            name=(auto.name or auto.id) if auto is not None else self.tr("none")))
+        lines.append("")
+        attempts = TeamPresetStore.get_last_match_attempts()
+        if not attempts:
+            lines.append(self.tr("No auto-match attempts recorded yet."))
+        for attempt in attempts:
+            preset_id = attempt.get("preset", "")
+            lines.append(f"- {preset_id}")
+            if attempt.get("filtered"):
+                lines.append("  " + self.tr("skipped: filtered by Only Full Match"))
+            else:
+                lines.append("  " + self.tr(
+                    "score {score}, matched {hits}/{total}, missing required: {missing}").format(
+                    score=attempt.get("score", 0),
+                    hits=len(attempt.get("hits", [])),
+                    total=attempt.get("total", 0) or 1,
+                    missing=", ".join(attempt.get("missing_required") or []) or self.tr("none")))
+        dialog = QDialog(self)
+        dialog.setWindowTitle(self.tr("Match Diagnostics"))
+        dialog.setMinimumSize(520, 380)
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(16, 16, 16, 16)
+        editor = CodeEditor(dialog)
+        editor.setReadOnly(True)
+        editor.setLineWrapMode(PlainTextEdit.NoWrap)
+        font = editor.font()
+        font.setFamily("Consolas")
+        font.setPointSize(10)
+        editor.setPlainText("\n".join(lines))
+        close_button = PrimaryPushButton(self.tr("Close"), dialog)
+        close_button.clicked.connect(dialog.accept)
+        layout.addWidget(editor, 1)
+        button_row = QHBoxLayout()
+        button_row.addStretch(1)
+        button_row.addWidget(close_button)
+        layout.addLayout(button_row)
+        dialog.exec()
 
     def _create_from_detected(self):
         detected = TeamPresetStore.get_last_detected_team()
@@ -1628,6 +1864,33 @@ class TeamPresetTab(CustomTab):
                 replacement.last_buff_time = char.last_buff_time
                 chars[index] = replacement
                 reloaded += 1
+        return reloaded
+
+    def _reload_live_team_logic(self, preset_id):
+        """把已保存的 team code 热重载到正在运行的匹配/强制任务,返回重载数。"""
+        if self.executor is None:
+            return 0
+        try:
+            from src.team_preset.TeamLogicLoader import load_team_logic
+        except Exception:
+            return 0
+        tasks = list(getattr(self.executor, "onetime_tasks", [])) + list(
+            getattr(self.executor, "trigger_tasks", []))
+        reloaded = 0
+        for task in tasks:
+            active_preset = getattr(task, "active_preset", None)
+            if active_preset is None or getattr(active_preset, "id", None) != preset_id:
+                continue
+            if getattr(task, "active_team_logic", None) is None:
+                continue
+            try:
+                cls = load_team_logic(preset_id)
+                if cls is None:
+                    continue
+                task.active_team_logic = cls(task, task.chars)
+                reloaded += 1
+            except Exception as e:
+                self.logger.error(f"live reload team logic failed: {e}")
         return reloaded
 
     def _refresh_runtime_state(self):

@@ -5,6 +5,7 @@
 """
 
 import importlib.util
+import traceback
 
 from ok import Logger
 from src.team_preset.BaseTeamCombat import BaseTeamCombat
@@ -148,5 +149,6 @@ def test_run_team_logic(preset_id, frames=120):
             logic.perform()
             task.next_frame()
     except Exception as e:
-        return False, f"frame {task.frames}: {type(e).__name__}: {e}"
+        traceback_text = traceback.format_exc().strip()
+        return False, f"frame {task.frames}: {type(e).__name__}: {e}\n{traceback_text}"
     return True, f"ran {frames} frames without error"

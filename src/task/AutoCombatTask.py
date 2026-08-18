@@ -70,6 +70,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
                 break
         if ret:
             self.combat_end()
+            self._record_combat_end()
             self.switch_healer()
         return ret
 
