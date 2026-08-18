@@ -19,10 +19,10 @@ from ok.gui.util.app import show_info_bar
 from ok.gui.widget.CustomTab import CustomTab
 from src.char.CharFactory import char_dict
 from src.char.CustomCharLoader import (
+    CHARACTER_DISPLAY_NAMES,
     load_custom_char_class_with_preset,
     read_builtin_char_code,
 )
-from src.gui.CharacterCodeTab import CHARACTER_DISPLAY_NAMES
 from src.team_preset.TeamLogicLoader import test_run_team_logic
 from src.team_preset.TeamPresetStore import (
     FORCE_SCOPE_ONCE, FORCE_SCOPE_PERSIST, FORCE_SCOPE_UNTIL_MATCH,

@@ -329,7 +329,7 @@ msgid ""
 msgstr "必须16:9分辨率, 没有勾选的都会标记为弃置, 大世界启动"
 
 msgid "Boss"
-msgstr "Boss"
+msgstr ""
 
 msgid "Celestial Light"
 msgstr "浮星祛暗"
@@ -631,13 +631,13 @@ msgid "Need mankind help"
 msgstr "自动肉鸽失败, 需要手动操作到下一节点!"
 
 msgid "current task"
-msgstr "当前任务"
+msgstr ""
 
 msgid "in main"
-msgstr "主线中"
+msgstr ""
 
 msgid "wait main"
-msgstr "等待主线"
+msgstr ""
 
 msgid "Stop When Treasure Found"
 msgstr "出现声骸奖励时停止运行"
@@ -749,16 +749,16 @@ msgid ""
 msgstr "在完成日常任务活跃度之后仍然刷取体力直到体力耗尽"
 
 msgid "F10"
-msgstr "F10"
+msgstr ""
 
 msgid "F11"
-msgstr "F11"
+msgstr ""
 
 msgid "F12"
-msgstr "F12"
+msgstr ""
 
 msgid "F9"
-msgstr "F9"
+msgstr ""
 
 msgid "Nightmare Purification"
 msgstr "梦魇拔除"
@@ -1288,6 +1288,147 @@ msgstr "点击B进入背包，在过滤器中选择需要强化的声骸，并�
 msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
 msgstr "游戏与okww语言必须为简体/繁体中文，分辨率必须为16:9且不低于1600x900。勾选需要保留的声骸，未勾选的会自动合成。"
 
+msgid "All fields are required."
+msgstr "所有字段均为必填项。"
+
+msgid "Author"
+msgstr "作者"
+
+msgid "Choose Export Folder"
+msgstr "选择导出文件夹"
+
+msgid "Confirm Import"
+msgstr "确认导入"
+
+msgid "Create Team"
+msgstr "创建队伍"
+
+msgid "Create or import a team to edit character code."
+msgstr "创建或导入队伍以编辑角色代码。"
+
+msgid "Description"
+msgstr "描述"
+
+msgid "Export"
+msgstr "导出"
+
+msgid "Export Team"
+msgstr "导出队伍"
+
+msgid "Import"
+msgstr "导入"
+
+msgid "Import Team"
+msgstr "导入队伍"
+
+msgid "Importing will override the local code for this team."
+msgstr "导入将覆盖此队伍的本地代码。"
+
+msgid "Invalid Team Archive"
+msgstr "无效的队伍压缩包"
+
+msgid "Missing Information"
+msgstr "信息不完整"
+
+msgid "Modified"
+msgstr "修改时间"
+
+msgid "Name"
+msgstr "名称"
+
+msgid "No shared code is available for this team."
+msgstr "此队伍暂无共享代码。"
+
+msgid "Reset Character Code"
+msgstr "重置角色代码"
+
+msgid "Reset this character to built in code for this team?"
+msgstr "将此队伍中的该角色重置为内置代码？"
+
+msgid "Reset to Built In"
+msgstr "重置为内置代码"
+
+msgid "Save changes before exporting."
+msgstr "请先保存更改再导出。"
+
+msgid "Select 3 different characters"
+msgstr "选择3个不同的角色"
+
+msgid "Size"
+msgstr "大小"
+
+msgid "Team"
+msgstr "队伍"
+
+msgid "Team Workshop"
+msgstr "队伍工坊"
+
+msgid "Team character code saved and reloaded for the matching team."
+msgstr "队伍角色代码已保存，并为匹配的队伍重新加载。"
+
+msgid "Team character code saved."
+msgstr "队伍角色代码已保存。"
+
+msgid "Team created."
+msgstr "队伍已创建。"
+
+msgid "Team exported to {path}"
+msgstr "队伍已导出到 {path}"
+
+msgid "Team imported and reloaded for the matching team."
+msgstr "队伍已导入，并为匹配的队伍重新加载。"
+
+msgid "Team imported."
+msgstr "队伍已导入。"
+
+msgid "Teams"
+msgstr "队伍"
+
+msgid "The archive is for a different team."
+msgstr "该压缩包属于其他队伍。"
+
+msgid "Upload Team"
+msgstr "上传队伍"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "Workshop"
+msgstr "工坊"
+
+msgid "Workshop Error"
+msgstr "工坊错误"
+
+msgid "Workshop archive is too large."
+msgstr "工坊压缩包过大。"
+
+msgid "Workshop download URL is invalid."
+msgstr "工坊下载地址无效。"
+
+msgid "Zip files (*.zip)"
+msgstr "ZIP 文件 (*.zip)"
+
+msgid "Workshop response is too large."
+msgstr "工坊响应过大。"
+
+msgid "Workshop returned invalid JSON."
+msgstr "工坊返回了无效的 JSON。"
+
+msgid "Workshop response is invalid."
+msgstr "工坊响应无效。"
+
+msgid "Workshop returned a different team."
+msgstr "工坊返回了其他队伍。"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "{team_name} - Team Workshop"
+msgstr "{team_name} - 队伍工坊"
+
 msgid "Active"
 msgstr "当前激活"
 
@@ -1321,14 +1462,8 @@ msgstr "复制"
 msgid "Enabled"
 msgstr "启用"
 
-msgid "Export"
-msgstr "导出"
-
 msgid "Export Team Preset"
 msgstr "导出队伍配对"
-
-msgid "Import"
-msgstr "导入"
 
 msgid "Import Team Preset"
 msgstr "导入队伍配对"
@@ -1549,9 +1684,6 @@ msgstr "暂无自定义代码 - 正在编辑内置代码的副本，保存后即
 
 msgid "Editing this team's custom code for this character."
 msgstr "正在编辑此角色在本队伍中的自定义代码。"
-
-msgid "Close"
-msgstr "关闭"
 
 msgid "Force This Team"
 msgstr "强制使用此队伍"

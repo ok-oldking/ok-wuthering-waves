@@ -704,82 +704,79 @@ msgid "Auto Farm all Nightmare Nest"
 msgstr "Farmea automáticamente todos los Nidos de Pesadilla."
 
 msgid "Default"
-msgstr "Por defecto"
+msgstr ""
 
 msgid "Fenrico"
-msgstr "Fenrico"
+msgstr ""
 
 msgid "Nameless Explorer"
-msgstr "Exploradora sin nombre"
+msgstr ""
 
 msgid "Lady of the Sea"
-msgstr "Dama del Mar"
+msgstr ""
 
 msgid "Lioness of Glory"
-msgstr "Leona de la Gloria"
+msgstr ""
 
 msgid "Nightmare Nest Task"
-msgstr "Tarea Nido de Pesadilla"
+msgstr ""
 
 msgid "Select boss profile (includes Combat Wait Time)"
 msgstr ""
-"Seleccionar perfil de jefe (incluye tiempo de espera antes del combate)"
 
 msgid "Wait time before each combat (seconds), overrides Boss profile if set"
-msgstr "Si es mayor que 0, anula el perfil de jefe"
+msgstr ""
 
 msgid "Auto Click Fast Travel in Map"
 msgstr "Hace clic automáticamente en Viaje rápido en el mapa."
 
 msgid "Character Config"
-msgstr "Configuración de personajes"
+msgstr ""
 
 msgid "Check Levitator"
-msgstr "Verificar si la herramienta de exploración es el elevador"
+msgstr ""
 
 msgid "Do not use Liberation in Open World to Save Time"
-msgstr "No usar la Liberación en el mundo abierto para ahorrar tiempo"
+msgstr ""
 
 msgid "Do not use Liberation to Save Time"
-msgstr "Si tu nivel es alto, no usar la Liberación para ahorrar tiempo"
+msgstr ""
 
 msgid "Fast Travel"
-msgstr "Viaje rápido"
+msgstr ""
 
 msgid "Iuno C6"
-msgstr "Iuno C6"
+msgstr ""
 
 msgid "Verina C2"
-msgstr "Verina C2"
+msgstr ""
 
 msgid "Chisa DPS"
-msgstr "Chisa DPS"
+msgstr ""
 
 msgid "Nightmare: Hecate"
-msgstr "Pesadilla: Hécate"
+msgstr ""
 
 msgid "Hyvatia"
-msgstr "Hyvatia"
+msgstr ""
 
 msgid "Other"
-msgstr "Otros"
+msgstr ""
 
 msgid "Toggle the levitator and verify if the character is floating"
 msgstr ""
-"Cambiar al elevador en el combate automático para verificar si el personaje "
-"está en el aire"
 
 msgid "Use Liberation"
-msgstr "Usar la Liberación"
+msgstr ""
 
 msgid "Daily"
-msgstr "Diarias semanales"
+msgstr ""
 
 msgid "Dungeon"
-msgstr "Tarea de mazmorra"
+msgstr ""
 
 msgid "Farm"
-msgstr "Tarea 4C"
+msgstr ""
 
 msgid "Multi Account Daily Task"
 msgstr "Tarea diaria multi cuenta"
@@ -951,15 +948,15 @@ msgid ""
 "Custom code matches built in code. Removed custom code and switched to built"
 " in."
 msgstr ""
-"El código personalizado coincide con el integrado. Se eliminó y se cambió al"
-" integrado."
+"El código personalizado coincide con el integrado. Se eliminó el código "
+"personalizado y se cambió al integrado."
 
 msgid ""
 "Custom code matches built in code. Removed custom code, switched to built "
 "in, and reloaded loaded characters."
 msgstr ""
-"El código personalizado coincide con el integrado. Se eliminó, se cambió al "
-"integrado y se recargaron los personajes."
+"El código personalizado coincide con el integrado. Se eliminó el código "
+"personalizado, se cambió al integrado y se recargaron los personajes."
 
 msgid "Custom code reset to built in code."
 msgstr "Código personalizado restablecido al código integrado."
@@ -984,21 +981,21 @@ msgid ""
 "Return only the complete modified Python code for the whole file, not a "
 "patch and not an explanation."
 msgstr ""
-"Devuelve solo el código Python completo modificado de todo el archivo, sin "
-"parches ni explicaciones."
+"Devuelve solo el código Python completo modificado de todo el archivo, no un"
+" parche ni una explicación."
 
 msgid ""
 "Keep the class name as {class_name}. Preserve imports that are still needed."
 msgstr ""
-"Mantén el nombre de clase {class_name}. Conserva las importaciones que sigan"
-" siendo necesarias."
+"Mantén el nombre de la clase como {class_name}. Conserva las importaciones "
+"que sigan siendo necesarias."
 
 msgid ""
 "Use this BaseChar reference while reasoning about helper methods, task APIs,"
 " state, switching, cooldowns, and combat flow:"
 msgstr ""
-"Usa esta referencia de BaseChar al razonar sobre métodos auxiliares, APIs de"
-" tarea, estado, cambios, enfriamientos y flujo de combate:"
+"Usa esta referencia de BaseChar para razonar sobre métodos auxiliares, APIs "
+"de tareas, estado, cambios, enfriamientos y flujo de combate:"
 
 msgid "自动周常乐园"
 msgstr "Jardín semanal automático"
@@ -1190,6 +1187,147 @@ msgstr ""
 
 msgid "Switch to Healer before and after Combat"
 msgstr "Cambiar al sanador antes y después del combate"
+
+msgid "All fields are required."
+msgstr "Todos los campos son obligatorios."
+
+msgid "Author"
+msgstr "Autor"
+
+msgid "Choose Export Folder"
+msgstr "Elegir carpeta de exportación"
+
+msgid "Confirm Import"
+msgstr "Confirmar importación"
+
+msgid "Create Team"
+msgstr "Crear equipo"
+
+msgid "Create or import a team to edit character code."
+msgstr "Crea o importa un equipo para editar el código de los personajes."
+
+msgid "Description"
+msgstr "Descripción"
+
+msgid "Export"
+msgstr "Exportar"
+
+msgid "Export Team"
+msgstr "Exportar equipo"
+
+msgid "Import"
+msgstr "Importar"
+
+msgid "Import Team"
+msgstr "Importar equipo"
+
+msgid "Importing will override the local code for this team."
+msgstr "La importación sobrescribirá el código local de este equipo."
+
+msgid "Invalid Team Archive"
+msgstr "Archivo de equipo no válido"
+
+msgid "Missing Information"
+msgstr "Falta información"
+
+msgid "Modified"
+msgstr "Modificado"
+
+msgid "Name"
+msgstr "Nombre"
+
+msgid "No shared code is available for this team."
+msgstr "No hay código compartido disponible para este equipo."
+
+msgid "Reset Character Code"
+msgstr "Restablecer código del personaje"
+
+msgid "Reset this character to built in code for this team?"
+msgstr "¿Restablecer este personaje al código integrado para este equipo?"
+
+msgid "Reset to Built In"
+msgstr "Restablecer al integrado"
+
+msgid "Save changes before exporting."
+msgstr "Guarda los cambios antes de exportar."
+
+msgid "Select 3 different characters"
+msgstr "Selecciona 3 personajes diferentes"
+
+msgid "Size"
+msgstr "Tamaño"
+
+msgid "Team"
+msgstr "Equipo"
+
+msgid "Team Workshop"
+msgstr "Taller de equipos"
+
+msgid "Team character code saved and reloaded for the matching team."
+msgstr "Código del personaje guardado y recargado para el equipo coincidente."
+
+msgid "Team character code saved."
+msgstr "Código del personaje del equipo guardado."
+
+msgid "Team created."
+msgstr "Equipo creado."
+
+msgid "Team exported to {path}"
+msgstr "Equipo exportado a {path}"
+
+msgid "Team imported and reloaded for the matching team."
+msgstr "Equipo importado y recargado para el equipo coincidente."
+
+msgid "Team imported."
+msgstr "Equipo importado."
+
+msgid "Teams"
+msgstr "Equipos"
+
+msgid "The archive is for a different team."
+msgstr "El archivo pertenece a otro equipo."
+
+msgid "Upload Team"
+msgstr "Subir equipo"
+
+msgid "Version"
+msgstr "Versión"
+
+msgid "Workshop"
+msgstr "Taller"
+
+msgid "Workshop Error"
+msgstr "Error del taller"
+
+msgid "Workshop archive is too large."
+msgstr "El archivo del taller es demasiado grande."
+
+msgid "Workshop download URL is invalid."
+msgstr "La URL de descarga del taller no es válida."
+
+msgid "Zip files (*.zip)"
+msgstr "Archivos ZIP (*.zip)"
+
+msgid "Workshop response is too large."
+msgstr "La respuesta del taller es demasiado grande."
+
+msgid "Workshop returned invalid JSON."
+msgstr "El taller devolvió un JSON no válido."
+
+msgid "Workshop response is invalid."
+msgstr "La respuesta del taller no es válida."
+
+msgid "Workshop returned a different team."
+msgstr "El taller devolvió un equipo diferente."
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Close"
+msgstr "Cerrar"
+
+msgid "{team_name} - Team Workshop"
+msgstr "{team_name} - Taller de equipos"
 
 msgid "Required"
 msgstr "Obligatorio"
@@ -1460,14 +1598,8 @@ msgstr "Código personalizado"
 msgid "Character already used in slot {index}"
 msgstr "El personaje ya se usa en la ranura {index}"
 
-msgid "Import"
-msgstr "Importar"
-
 msgid "Import .py"
 msgstr "Importar .py"
-
-msgid "Close"
-msgstr "Cerrar"
 
 msgid "Code saved"
 msgstr "Código guardado"
@@ -1527,9 +1659,6 @@ msgstr "Importa un archivo de script y guárdalo para este personaje."
 
 msgid "JSON Files (*.json);;All Files (*)"
 msgstr "Archivos JSON (*.json);;Todos los archivos (*)"
-
-msgid "Export"
-msgstr "Exportar"
 
 msgid "Duplicate the current team."
 msgstr "Duplica el equipo actual."

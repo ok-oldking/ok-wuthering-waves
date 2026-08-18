@@ -49,7 +49,10 @@ from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
 from src.char.Zani import Zani
 from src.char.Zhezhi import Zhezhi
-from src.char.CustomCharLoader import load_custom_char_class, load_custom_char_class_with_preset
+from src.char.CustomCharLoader import (
+    load_custom_char_class, load_custom_char_class_with_preset,
+    load_team_char_class, normalize_team,
+)
 import cv2
 
 _char_dict_raw = {
@@ -191,6 +194,45 @@ def _box_frame_hash(frame, box):
 def _load_char_cls(task, base_cls):
     preset_name = getattr(task, 'active_preset_name', None)
     return load_custom_char_class_with_preset(base_cls, preset_name)
+
+
+def apply_team_char_classes(task, chars):
+    """按完整队伍应用队伍级自定义角色代码(仅当没有预设接管时由调用方调用)。"""
+    if len(chars) != 3 or any(char is None for char in chars):
+        return chars
+    infos = [char_dict.get(char.char_name) for char in chars]
+    if any(info is None for info in infos):
+        return chars
+    builtin_classes = [info['cls'] for info in infos]
+    try:
+        team = normalize_team(builtin_classes)
+    except ValueError:
+        return chars
+    for index, (char, builtin_cls) in enumerate(zip(chars, builtin_classes)):
+        desired_cls = load_team_char_class(builtin_cls, team)
+        if type(char) is desired_cls:
+            continue
+        replacement = desired_cls(
+            task,
+            char.index,
+            char_name=char.char_name,
+            confidence=char.confidence,
+            ring_index=char.ring_index,
+            char_type=char.char_type,
+            buff_time=char.buff_time,
+        )
+        replacement.__dict__.update(char.__dict__)
+        replacement.is_current_char = char.is_current_char
+        replacement.has_intro = char.has_intro
+        replacement.has_sub_dps_intro = char.has_sub_dps_intro
+        replacement.last_switch_time = char.last_switch_time
+        replacement.last_switch_in_time = char.last_switch_in_time
+        replacement.last_res = char.last_res
+        replacement.last_echo = char.last_echo
+        replacement.last_liberation = char.last_liberation
+        replacement.last_buff_time = char.last_buff_time
+        chars[index] = replacement
+    return chars
 
 
 def get_char_by_pos(task, box, index, old_char):

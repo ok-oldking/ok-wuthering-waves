@@ -11,7 +11,7 @@ from ok import safe_get
 from src import text_white_color
 from src.char import BaseChar
 from src.char.BaseChar import SwitchPriority, dot_color  # noqa
-from src.char.CharFactory import get_char_by_pos
+from src.char.CharFactory import apply_team_char_classes, get_char_by_pos
 from src.combat.CombatCheck import CombatCheck
 from src.task.BaseWWTask import isolate_white_text_to_black, binarize_for_matching
 from src.team_preset.TeamPresetStore import TeamPresetStore
@@ -876,6 +876,8 @@ class BaseCombatTask(CombatCheck):
             else:
                 self.chars = self.chars[:2]
             self._reload_team_logic()
+        else:
+            apply_team_char_classes(self, self.chars)
 
         if self.active_team_logic is not None:
             self.active_team_logic.chars = self.chars

@@ -654,28 +654,28 @@ msgid "Auto Farm all Nightmare Nest"
 msgstr "すべてのナイトメア・ネストを自動周回します。"
 
 msgid "Default"
-msgstr "デフォルト"
+msgstr ""
 
 msgid "Fenrico"
-msgstr "フェンリコ"
+msgstr ""
 
 msgid "Nameless Explorer"
 msgstr "名もない探索者"
 
 msgid "Lady of the Sea"
-msgstr "海の貴婦人"
+msgstr ""
 
 msgid "Lioness of Glory"
-msgstr "栄光の獅子"
+msgstr ""
 
 msgid "Nightmare Nest Task"
-msgstr "ナイトメアの巣"
+msgstr ""
 
 msgid "Select boss profile (includes Combat Wait Time)"
-msgstr "ボスプロフィールを選択 (戦闘開始前の待機時間を含む)"
+msgstr ""
 
 msgid "Wait time before each combat (seconds), overrides Boss profile if set"
-msgstr "0より大きい場合、ボスプロフィールを上書きする"
+msgstr ""
 
 msgid "Auto Click Fast Travel in Map"
 msgstr "マップ上のファストトラベルを自動でクリックします。"
@@ -684,16 +684,16 @@ msgid "Character Config"
 msgstr "キャラクター設定"
 
 msgid "Check Levitator"
-msgstr "探索ツールが浮遊装置か確認"
+msgstr ""
 
 msgid "Do not use Liberation in Open World to Save Time"
-msgstr "オープンワールドで時間節約のため共鳴解放を使わない"
+msgstr ""
 
 msgid "Do not use Liberation to Save Time"
-msgstr "高練度の場合、時間節約のため共鳴解放を使わない"
+msgstr ""
 
 msgid "Fast Travel"
-msgstr "高速移動"
+msgstr ""
 
 msgid "Iuno C6"
 msgstr "ユーノ完凸"
@@ -705,28 +705,28 @@ msgid "Chisa DPS"
 msgstr "千咲 アタッカー"
 
 msgid "Nightmare: Hecate"
-msgstr "ナイトメア・ヘカテ"
+msgstr ""
 
 msgid "Hyvatia"
 msgstr "ハイヴェイシャ"
 
 msgid "Other"
-msgstr "その他"
+msgstr ""
 
 msgid "Toggle the levitator and verify if the character is floating"
-msgstr "秘境の自動戦闘時に浮遊装置を切り替えてキャラが空中にいるか確認する"
+msgstr ""
 
 msgid "Use Liberation"
-msgstr "共鳴解放を使う"
+msgstr ""
 
 msgid "Daily"
-msgstr "週間デイリー"
+msgstr ""
 
 msgid "Dungeon"
-msgstr "ダンジョンタスク"
+msgstr ""
 
 msgid "Farm"
-msgstr "4Cタスク"
+msgstr ""
 
 msgid "Multi Account Daily Task"
 msgstr "マルチアカウントデイリータスク"
@@ -1240,6 +1240,147 @@ msgstr ""
 msgid "Switch to Healer before and after Combat"
 msgstr "戦闘前後にヒーラーへ切り替える"
 
+msgid "All fields are required."
+msgstr "すべての項目を入力してください。"
+
+msgid "Author"
+msgstr "作者"
+
+msgid "Choose Export Folder"
+msgstr "エクスポート先フォルダーを選択"
+
+msgid "Confirm Import"
+msgstr "インポートを確認"
+
+msgid "Create Team"
+msgstr "チームを作成"
+
+msgid "Create or import a team to edit character code."
+msgstr "キャラクターコードを編集するには、チームを作成またはインポートしてください。"
+
+msgid "Description"
+msgstr "説明"
+
+msgid "Export"
+msgstr "エクスポート"
+
+msgid "Export Team"
+msgstr "チームをエクスポート"
+
+msgid "Import"
+msgstr "インポート"
+
+msgid "Import Team"
+msgstr "チームをインポート"
+
+msgid "Importing will override the local code for this team."
+msgstr "インポートすると、このチームのローカルコードが上書きされます。"
+
+msgid "Invalid Team Archive"
+msgstr "無効なチームアーカイブ"
+
+msgid "Missing Information"
+msgstr "情報が不足しています"
+
+msgid "Modified"
+msgstr "更新日時"
+
+msgid "Name"
+msgstr "名前"
+
+msgid "No shared code is available for this team."
+msgstr "このチームで共有されているコードはありません。"
+
+msgid "Reset Character Code"
+msgstr "キャラクターコードをリセット"
+
+msgid "Reset this character to built in code for this team?"
+msgstr "このチームのキャラクターを組み込みコードに戻しますか？"
+
+msgid "Reset to Built In"
+msgstr "組み込みコードに戻す"
+
+msgid "Save changes before exporting."
+msgstr "エクスポートする前に変更を保存してください。"
+
+msgid "Select 3 different characters"
+msgstr "異なるキャラクターを3人選択"
+
+msgid "Size"
+msgstr "サイズ"
+
+msgid "Team"
+msgstr "チーム"
+
+msgid "Team Workshop"
+msgstr "チームワークショップ"
+
+msgid "Team character code saved and reloaded for the matching team."
+msgstr "チーム用キャラクターコードを保存し、一致するチームに再読み込みしました。"
+
+msgid "Team character code saved."
+msgstr "チーム用キャラクターコードを保存しました。"
+
+msgid "Team created."
+msgstr "チームを作成しました。"
+
+msgid "Team exported to {path}"
+msgstr "チームを {path} にエクスポートしました"
+
+msgid "Team imported and reloaded for the matching team."
+msgstr "チームをインポートし、一致するチームに再読み込みしました。"
+
+msgid "Team imported."
+msgstr "チームをインポートしました。"
+
+msgid "Teams"
+msgstr "チーム"
+
+msgid "The archive is for a different team."
+msgstr "このアーカイブは別のチーム用です。"
+
+msgid "Upload Team"
+msgstr "チームをアップロード"
+
+msgid "Version"
+msgstr "バージョン"
+
+msgid "Workshop"
+msgstr "ワークショップ"
+
+msgid "Workshop Error"
+msgstr "ワークショップエラー"
+
+msgid "Workshop archive is too large."
+msgstr "ワークショップのアーカイブが大きすぎます。"
+
+msgid "Workshop download URL is invalid."
+msgstr "ワークショップのダウンロード URL が無効です。"
+
+msgid "Zip files (*.zip)"
+msgstr "ZIP ファイル (*.zip)"
+
+msgid "Workshop response is too large."
+msgstr "ワークショップの応答が大きすぎます。"
+
+msgid "Workshop returned invalid JSON."
+msgstr "ワークショップから無効な JSON が返されました。"
+
+msgid "Workshop response is invalid."
+msgstr "ワークショップの応答が無効です。"
+
+msgid "Workshop returned a different team."
+msgstr "ワークショップから別のチームが返されました。"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "Close"
+msgstr "閉じる"
+
+msgid "{team_name} - Team Workshop"
+msgstr "{team_name} - チームワークショップ"
+
 msgid "Required"
 msgstr "必須"
 
@@ -1497,14 +1638,8 @@ msgstr "カスタムコード"
 msgid "Character already used in slot {index}"
 msgstr "このキャラはスロット {index} で既に使用されています"
 
-msgid "Import"
-msgstr "インポート"
-
 msgid "Import .py"
 msgstr ".py をインポート"
-
-msgid "Close"
-msgstr "閉じる"
 
 msgid "Code saved"
 msgstr "コードを保存しました"
@@ -1561,9 +1696,6 @@ msgstr "スクリプトファイルをインポートして、このキャラ用
 
 msgid "JSON Files (*.json);;All Files (*)"
 msgstr "JSON ファイル (*.json);;すべてのファイル (*)"
-
-msgid "Export"
-msgstr "エクスポート"
 
 msgid "Duplicate the current team."
 msgstr "現在のチームを複製します。"
