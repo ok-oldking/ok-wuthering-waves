@@ -1233,3 +1233,135 @@ msgstr "ゲームとokwwの言語は簡体字/繁体字中国語、解像度は1
 
 msgid "Switch to Healer before and after Combat"
 msgstr "戦闘前後にヒーラーへ切り替える"
+
+msgid "All fields are required."
+msgstr "すべての項目を入力してください。"
+
+msgid "Author"
+msgstr "作者"
+
+msgid "Choose Export Folder"
+msgstr "エクスポート先フォルダーを選択"
+
+msgid "Confirm Import"
+msgstr "インポートを確認"
+
+msgid "Create Team"
+msgstr "チームを作成"
+
+msgid "Create or import a team to edit character code."
+msgstr "キャラクターコードを編集するには、チームを作成またはインポートしてください。"
+
+msgid "Description"
+msgstr "説明"
+
+msgid "Export"
+msgstr "エクスポート"
+
+msgid "Export Team"
+msgstr "チームをエクスポート"
+
+msgid "Import"
+msgstr "インポート"
+
+msgid "Import Team"
+msgstr "チームをインポート"
+
+msgid "Importing will override the local code for this team."
+msgstr "インポートすると、このチームのローカルコードが上書きされます。"
+
+msgid "Invalid Team Archive"
+msgstr "無効なチームアーカイブ"
+
+msgid "Missing Information"
+msgstr "情報が不足しています"
+
+msgid "Modified"
+msgstr "更新日時"
+
+msgid "Name"
+msgstr "名前"
+
+msgid "No shared code is available for this team."
+msgstr "このチームで共有されているコードはありません。"
+
+msgid "Reset Character Code"
+msgstr "キャラクターコードをリセット"
+
+msgid "Reset this character to built in code for this team?"
+msgstr "このチームのキャラクターを組み込みコードに戻しますか？"
+
+msgid "Reset to Built In"
+msgstr "組み込みコードに戻す"
+
+msgid "Save changes before exporting."
+msgstr "エクスポートする前に変更を保存してください。"
+
+msgid "Select 3 different characters"
+msgstr "異なるキャラクターを3人選択"
+
+msgid "Size"
+msgstr "サイズ"
+
+msgid "Team"
+msgstr "チーム"
+
+msgid "Team Workshop"
+msgstr "チームワークショップ"
+
+msgid "Team character code saved and reloaded for the matching team."
+msgstr "チーム用キャラクターコードを保存し、一致するチームに再読み込みしました。"
+
+msgid "Team character code saved."
+msgstr "チーム用キャラクターコードを保存しました。"
+
+msgid "Team created."
+msgstr "チームを作成しました。"
+
+msgid "Team exported to {path}"
+msgstr "チームを {path} にエクスポートしました"
+
+msgid "Team imported and reloaded for the matching team."
+msgstr "チームをインポートし、一致するチームに再読み込みしました。"
+
+msgid "Team imported."
+msgstr "チームをインポートしました。"
+
+msgid "Teams"
+msgstr "チーム"
+
+msgid "The archive is for a different team."
+msgstr "このアーカイブは別のチーム用です。"
+
+msgid "Upload Team"
+msgstr "チームをアップロード"
+
+msgid "Version"
+msgstr "バージョン"
+
+msgid "Workshop"
+msgstr "ワークショップ"
+
+msgid "Workshop Error"
+msgstr "ワークショップエラー"
+
+msgid "Workshop archive is too large."
+msgstr "ワークショップのアーカイブが大きすぎます。"
+
+msgid "Workshop download URL is invalid."
+msgstr "ワークショップのダウンロード URL が無効です。"
+
+msgid "Zip files (*.zip)"
+msgstr "ZIP ファイル (*.zip)"
+
+msgid "Workshop response is too large."
+msgstr "ワークショップの応答が大きすぎます。"
+
+msgid "Workshop returned invalid JSON."
+msgstr "ワークショップから無効な JSON が返されました。"
+
+msgid "Workshop response is invalid."
+msgstr "ワークショップの応答が無効です。"
+
+msgid "Workshop returned a different team."
+msgstr "ワークショップから別のチームが返されました。"

@@ -1160,3 +1160,135 @@ msgstr "El juego y okww deben estar en chino simplificado/tradicional; se requie
 
 msgid "Switch to Healer before and after Combat"
 msgstr "Cambiar al sanador antes y después del combate"
+
+msgid "All fields are required."
+msgstr "Todos los campos son obligatorios."
+
+msgid "Author"
+msgstr "Autor"
+
+msgid "Choose Export Folder"
+msgstr "Elegir carpeta de exportación"
+
+msgid "Confirm Import"
+msgstr "Confirmar importación"
+
+msgid "Create Team"
+msgstr "Crear equipo"
+
+msgid "Create or import a team to edit character code."
+msgstr "Crea o importa un equipo para editar el código de los personajes."
+
+msgid "Description"
+msgstr "Descripción"
+
+msgid "Export"
+msgstr "Exportar"
+
+msgid "Export Team"
+msgstr "Exportar equipo"
+
+msgid "Import"
+msgstr "Importar"
+
+msgid "Import Team"
+msgstr "Importar equipo"
+
+msgid "Importing will override the local code for this team."
+msgstr "La importación sobrescribirá el código local de este equipo."
+
+msgid "Invalid Team Archive"
+msgstr "Archivo de equipo no válido"
+
+msgid "Missing Information"
+msgstr "Falta información"
+
+msgid "Modified"
+msgstr "Modificado"
+
+msgid "Name"
+msgstr "Nombre"
+
+msgid "No shared code is available for this team."
+msgstr "No hay código compartido disponible para este equipo."
+
+msgid "Reset Character Code"
+msgstr "Restablecer código del personaje"
+
+msgid "Reset this character to built in code for this team?"
+msgstr "¿Restablecer este personaje al código integrado para este equipo?"
+
+msgid "Reset to Built In"
+msgstr "Restablecer al integrado"
+
+msgid "Save changes before exporting."
+msgstr "Guarda los cambios antes de exportar."
+
+msgid "Select 3 different characters"
+msgstr "Selecciona 3 personajes diferentes"
+
+msgid "Size"
+msgstr "Tamaño"
+
+msgid "Team"
+msgstr "Equipo"
+
+msgid "Team Workshop"
+msgstr "Taller de equipos"
+
+msgid "Team character code saved and reloaded for the matching team."
+msgstr "Código del personaje guardado y recargado para el equipo coincidente."
+
+msgid "Team character code saved."
+msgstr "Código del personaje del equipo guardado."
+
+msgid "Team created."
+msgstr "Equipo creado."
+
+msgid "Team exported to {path}"
+msgstr "Equipo exportado a {path}"
+
+msgid "Team imported and reloaded for the matching team."
+msgstr "Equipo importado y recargado para el equipo coincidente."
+
+msgid "Team imported."
+msgstr "Equipo importado."
+
+msgid "Teams"
+msgstr "Equipos"
+
+msgid "The archive is for a different team."
+msgstr "El archivo pertenece a otro equipo."
+
+msgid "Upload Team"
+msgstr "Subir equipo"
+
+msgid "Version"
+msgstr "Versión"
+
+msgid "Workshop"
+msgstr "Taller"
+
+msgid "Workshop Error"
+msgstr "Error del taller"
+
+msgid "Workshop archive is too large."
+msgstr "El archivo del taller es demasiado grande."
+
+msgid "Workshop download URL is invalid."
+msgstr "La URL de descarga del taller no es válida."
+
+msgid "Zip files (*.zip)"
+msgstr "Archivos ZIP (*.zip)"
+
+msgid "Workshop response is too large."
+msgstr "La respuesta del taller es demasiado grande."
+
+msgid "Workshop returned invalid JSON."
+msgstr "El taller devolvió un JSON no válido."
+
+msgid "Workshop response is invalid."
+msgstr "La respuesta del taller no es válida."
+
+msgid "Workshop returned a different team."
+msgstr "El taller devolvió un equipo diferente."

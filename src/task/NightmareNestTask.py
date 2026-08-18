@@ -32,6 +32,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self._capture_success = False
         self._capture_mode = False
         self._unreachable_nests = set()
+        self._nest_tab_of_current_nest = 'go_nest'
         self.default_config.update({'Which to Farm': ['Nightmare Purification', 'Tacet Discord Nest']})
         self.config_type['Which to Farm'] = {'type': "multi_selection",
                                              'options': ['Nightmare Purification', 'Tacet Discord Nest']}
@@ -112,6 +113,24 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 if need_find and not self.walk_find_echo(time_out=5, backward_time=2.5):
                     dropped = self.yolo_find_echo(turn=True, use_color=False, time_out=30)[0]
                     logger.info(f'farm echo yolo find {dropped}')
+                    if not dropped and not is_team:
+                        # 保底：没有收取到声骸时，重新打开图鉴传送回当前聚落（传送点面朝金色声骸群），再搜索一次
+                        self.log_info('no echo collected, re-teleport to current nest as fallback')
+                        self.ensure_main(time_out=30)
+                        self.openF2Book("gray_book_boss")
+                        getattr(self, self._nest_tab_of_current_nest)()
+                        self.sleep(1)
+                        self.click(target_box, after_sleep=2)
+                        if self.wait_feature(TRAVEL_FEATURES, time_out=5, settle_time=0.5,
+                                            raise_if_not_found=False) and self._travel_to_nest_or_skip(nest):
+                            self.sleep(2)
+                            self.run_until(lambda: False, 'w', time_out=2, running=True)
+                            if not self.walk_find_echo(time_out=5, backward_time=2.5):
+                                dropped = self.yolo_find_echo(turn=True, use_color=False, time_out=30)[0]
+                                logger.info(f'farm echo yolo find after re-teleport {dropped}')
+                            else:
+                                dropped = True
+                                self.log_info('farm echo walk find true after re-teleport')
                 else:
                     dropped = True
                     self.log_info(f'farm echo walk find true')
@@ -163,6 +182,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         while self.queues:
             self.queues[0]()
             if nest := self.find_nest():
+                self._nest_tab_of_current_nest = self.queues[0].__name__
                 return nest
             self.queues.pop(0)
 
