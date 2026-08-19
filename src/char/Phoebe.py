@@ -734,8 +734,8 @@ class Phoebe(BaseChar):
     def decide_teammate(self):
         from src.char.Zani import Zani
         from src.char.Cartethyia import Cartethyia
-        from src.char.HavocRover import HavocRover
-        self.char_rover = self.task.has_char(HavocRover)
+        from src.char.Rover import Rover
+        self.char_rover = self.task.has_char(Rover)
         if (char := self.task.has_char(Zani)):
             self.char_zani = char
             self.attribute = 2
