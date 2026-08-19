@@ -1113,7 +1113,7 @@ class BaseWWTask(BaseTask):
         )
 
     def click_team_challenge(self):
-        self.wait_click_feature('team_start_challenge', raise_if_not_found=True, after_sleep=1)
+        self.wait_click_feature('team_start_challenge', raise_if_not_found=True, click_after_delay=0.5, after_sleep=1)
         self.wait_click_skip_dialog_confirm()
 
     def wait_click_travel(self):
