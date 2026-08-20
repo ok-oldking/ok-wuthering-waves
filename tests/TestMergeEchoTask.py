@@ -42,6 +42,7 @@ class TestMergeEchoTask(unittest.TestCase):
         self.task.wait_until = Mock(
             side_effect=lambda predicate, **kwargs: predicate()
         )
+        self.task.click_dialog_left_button = Mock(return_value=True)
         self.task.sleep = Mock()
         self.task.wait_click_skip_dialog_confirm = Mock(return_value=True)
         self.task.wait_click_feature = Mock(return_value=True)
@@ -77,6 +78,8 @@ class TestMergeEchoTask(unittest.TestCase):
         self.assertEqual(
             self.task.click_relative.call_args_list,
             [
+                call(0.034, 0.293, after_sleep=1),
+                call(0.580, 0.911, after_sleep=4),
                 call(0.602, 0.124, after_sleep=0.5, hcenter=True),
                 call(0.520, 0.904, after_sleep=2, hcenter=True),
                 call(0.041, 0.918, after_sleep=1),
@@ -98,9 +101,12 @@ class TestMergeEchoTask(unittest.TestCase):
 
         self.assertEqual(
             self.task.wait_click_skip_dialog_confirm.call_args_list,
-            [call(), call()],
+            [call()],
         )
-        self.assertEqual(self.task.sleep.call_args_list, [call(1), call(2), call(3)])
+        self.assertEqual(
+            self.task.sleep.call_args_list,
+            [call(3), call(2), call(3)],
+        )
         self.assertEqual(
             self.task.wait_click_feature.call_args_list,
             [
@@ -135,7 +141,7 @@ class TestMergeEchoTask(unittest.TestCase):
         self.assertEqual(self.task.ensure_main.call_count, 1)
 
     def test_alerts_and_returns_to_main_when_1000_echo_dialog_is_absent(self):
-        self.task.wait_click_skip_dialog_confirm.return_value = False
+        self.task.click_dialog_left_button.return_value = False
 
         self.task.run()
 
@@ -148,7 +154,7 @@ class TestMergeEchoTask(unittest.TestCase):
         self.task.ocr.assert_not_called()
 
     def test_quietly_returns_when_not_enough_notification_is_disabled(self):
-        self.task.wait_click_skip_dialog_confirm.return_value = False
+        self.task.click_dialog_left_button.return_value = False
         self.task.notify_if_not_enough = False
 
         self.task.run()
