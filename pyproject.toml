@@ -7,7 +7,7 @@ name = "ok-ww"
 version = "0.0.1"
 requires-python = ">=3.11"
 dependencies = [
-    "ok-script[ocr,qt]>=2.0.3",
+    "ok-script[ocr,qt]>=2.0.4",
     "openvino",
     "opencv-python",
     "pyappify>=1.0.13"
