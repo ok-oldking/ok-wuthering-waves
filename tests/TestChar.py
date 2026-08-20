@@ -1437,7 +1437,7 @@ class TestChar(TaskTestCase):
 
         self.assertEqual(combat._choose_switch_target(qingxiao, True), denia)
 
-    def test_unbuffed_denia_accepts_aemeath_intro_as_deadlock_recovery(self):
+    def test_denia_accepts_intro_as_deadlock_recovery(self):
         class Task:
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 return time.time() - start
@@ -1452,12 +1452,12 @@ class TestChar(TaskTestCase):
         self.assertEqual(combat._choose_switch_target(aemeath, True), denia)
 
         denia.last_buff_time = time.time()
-        self.assertEqual(combat._choose_switch_target(aemeath, True), aemeath)
+        self.assertEqual(combat._choose_switch_target(aemeath, True), denia)
 
         denia.last_buff_time = -1
         other_main_dps = BaseChar(task, 0, char_type=CharType.MAIN_DPS)
         combat.chars = task.chars = [other_main_dps, denia, healer]
-        self.assertEqual(combat._choose_switch_target(other_main_dps, True), other_main_dps)
+        self.assertEqual(combat._choose_switch_target(other_main_dps, True), denia)
 
     def test_switch_priority_integer_bands_and_offsets(self):
         self.assertEqual(
