@@ -24,9 +24,9 @@ from ok.gui.util.app import show_info_bar
 from ok.gui.widget.CustomTab import CustomTab
 from src.char.CharFactory import apply_team_char_classes, char_dict
 from src.char.CustomCharLoader import (
-    create_custom_team, export_custom_team, get_english_char_name, import_custom_team,
-    inspect_team_archive, list_custom_teams, normalize_team, read_builtin_char_code,
-    read_team_char_code, save_team_char_code,
+    create_custom_team, delete_custom_team, export_custom_team, get_english_char_name,
+    import_custom_team, inspect_team_archive, list_custom_teams, normalize_team,
+    read_builtin_char_code, read_team_char_code, save_team_char_code,
 )
 
 BASE_CHAR_URL = "https://raw.githubusercontent.com/ok-oldking/ok-wuthering-waves/refs/heads/master/src/char/BaseChar.py"
@@ -265,9 +265,12 @@ class CharacterCodeTab(CustomTab):
         first_team_button_row = QHBoxLayout()
         self.create_team_button = PrimaryPushButton(FluentIcon.ADD, self.tr("Create Team"))
         self.create_team_button.clicked.connect(self._create_team)
+        self.delete_team_button = PushButton(FluentIcon.DELETE, self.tr("Delete Team"))
+        self.delete_team_button.clicked.connect(self._delete_team)
         self.workshop_button = PushButton(FluentIcon.LIBRARY, self.tr("Workshop"))
         self.workshop_button.clicked.connect(self._open_workshop)
         first_team_button_row.addWidget(self.create_team_button)
+        first_team_button_row.addWidget(self.delete_team_button)
         first_team_button_row.addWidget(self.workshop_button)
         second_team_button_row = QHBoxLayout()
         self.import_team_button = PushButton(FluentIcon.DOWNLOAD, self.tr("Import Team"))
@@ -415,8 +418,8 @@ class CharacterCodeTab(CustomTab):
 
     def _set_editor_enabled(self, enabled):
         self.editor.setReadOnly(not enabled)
-        for widget in (self.member_combo, self.workshop_button, self.export_team_button, self.ask_ai_button,
-                       self.reset_button, self.save_button):
+        for widget in (self.member_combo, self.delete_team_button, self.workshop_button,
+                       self.export_team_button, self.ask_ai_button, self.reset_button, self.save_button):
             widget.setEnabled(enabled)
         if not enabled:
             self.loading_editor = True
@@ -460,6 +463,29 @@ class CharacterCodeTab(CustomTab):
             create_custom_team(team)
             self._refresh_team_list(team)
             show_info_bar(self.window(), self.tr("Team created."), title=self.tr("Success"))
+        except Exception as e:
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+
+    def _delete_team(self):
+        if self.current_team is None:
+            return
+        team = self.current_team
+        display_team = sorted(team, key=lambda name: get_english_char_name(name).casefold())
+        team_name = ", ".join(self.tr(get_english_char_name(name)) for name in display_team)
+        box = MessageBox(
+            self.tr("Delete Team"),
+            self.tr("Permanently delete the team {team}?").format(team=team_name),
+            self.window(),
+        )
+        if not box.exec():
+            return
+        try:
+            delete_custom_team(team)
+            self._reload_live_team_code(team)
+            self.current_team = None
+            self.current_char_cls = None
+            self._refresh_team_list()
+            show_info_bar(self.window(), self.tr("Team deleted."), title=self.tr("Success"))
         except Exception as e:
             show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
 

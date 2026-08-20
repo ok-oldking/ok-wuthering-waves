@@ -106,6 +106,16 @@ def create_custom_team(team):
     return folder
 
 
+def delete_custom_team(team):
+    class_names = normalize_team(team)
+    folder = get_custom_team_folder(class_names)
+    if not folder.is_dir():
+        raise ValueError("Team does not exist")
+    shutil.rmtree(folder)
+    clear_team_char_cache(class_names)
+    return folder
+
+
 def list_custom_teams():
     root = get_custom_team_root()
     try:

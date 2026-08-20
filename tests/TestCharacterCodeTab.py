@@ -17,7 +17,9 @@ from src.char.Aemeath import Aemeath
 from src.char.Augusta import Augusta
 from src.char.Baizhi import Baizhi
 from src.Labels import Labels
-from src.char.CustomCharLoader import clear_team_char_cache, create_custom_team, read_team_char_code
+from src.char.CustomCharLoader import (
+    clear_team_char_cache, create_custom_team, get_custom_team_folder, read_team_char_code,
+)
 from src.char.Mortefi import Mortefi
 from src.char.Verina import Verina
 from src.gui.CharacterCodeTab import (
@@ -65,6 +67,24 @@ class TestCharacterCodeTab(unittest.TestCase):
             ])
             tab.executor = SimpleNamespace(onetime_tasks=[task], trigger_tasks=[])
             self.assertEqual(set(tab._detected_team()), {Chixia, Mortefi, Verina})
+        finally:
+            tab.deleteLater()
+
+    def test_delete_team_button_deletes_selected_team(self):
+        team = (Mortefi, Chixia, Verina)
+        create_custom_team(team)
+        tab = CharacterCodeTab()
+        try:
+            with (
+                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.show_info_bar"),
+            ):
+                message_box.return_value.exec.return_value = True
+                tab.delete_team_button.click()
+
+            self.assertFalse(get_custom_team_folder(team).exists())
+            self.assertEqual(tab.team_list.count(), 0)
+            self.assertFalse(tab.delete_team_button.isEnabled())
         finally:
             tab.deleteLater()
 
