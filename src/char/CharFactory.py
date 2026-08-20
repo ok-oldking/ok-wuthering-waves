@@ -33,6 +33,7 @@ from src.char.Mortefi import Mortefi
 from src.char.Mornye import Mornye
 from src.char.Phoebe import Phoebe
 from src.char.Phrolova import Phrolova
+from src.char.Qingxiao import Qingxiao
 from src.char.Qiuyuan import Qiuyuan
 from src.char.Rebecca import Rebecca
 from src.char.Roccia import Roccia
@@ -129,6 +130,7 @@ _char_dict_raw = {
                           'target_box_short_combat_check': True},
     Labels.char_lucy: {'cls': Lucy, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
     Labels.char_rebecca: {'cls': Rebecca, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ELECTRIC},
+    Labels.char_qingxiao: {'cls': Qingxiao, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.WIND},
 }
 
 char_dict = {}

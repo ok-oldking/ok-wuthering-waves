@@ -41,12 +41,13 @@ class Mornye(BaseChar):
         ):
             if self.detect_elbow_strike(detect_ready):
                 self.logger.debug("Detected an elbow strike, attempting to reset.")
-                self.task.wait_until(lambda: not self.detect_elbow_strike(detect_ready), 
+                self.task.wait_until(lambda: not self.detect_elbow_strike(detect_ready),
                                      post_action=lambda: self.continues_right_click(0.05), time_out=1.5)
-            self.click_liberation()               
+            self.click_liberation()
             if self.on_air() and self.is_mouse_forte_full():
                 self.logger.debug("mouse forte full, heavy attack")
-                if self.heavy_click_forte(check_fun=lambda: self.is_mouse_forte_full() and not self.detect_elbow_strike(detect_ready)):
+                if self.heavy_click_forte(
+                        check_fun=lambda: self.is_mouse_forte_full() and not self.detect_elbow_strike(detect_ready)):
                     if self.detect_elbow_strike(detect_ready):
                         continue
                     elif not self.task.wait_until(lambda: self.is_con_full(), time_out=1.5):
@@ -83,12 +84,12 @@ class Mornye(BaseChar):
         return self.time_elapsed_accounting_for_freeze(self.last_heavy) < 23
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        if has_intro and current_char and current_char.char_name in {'char_aemeath'}:
+        if has_intro and current_char and current_char.char_name in {'char_aemeath', 'char_qingxiao'}:
             return SwitchPriority.MUST
         from src.char.Linnai import Linnai
         if has_intro and current_char and self.task.has_char(Linnai) and current_char.char_name != 'char_linnai':
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
-        
+
     def detect_elbow_strike(self, ready):
         return ready and not self.available('echo', check_color=True)
