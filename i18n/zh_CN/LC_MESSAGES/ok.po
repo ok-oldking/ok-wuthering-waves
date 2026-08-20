@@ -1423,3 +1423,12 @@ msgstr "关闭"
 
 msgid "{team_name} - Team Workshop"
 msgstr "{team_name} - 队伍工坊"
+
+msgid "Delete Team"
+msgstr "删除队伍"
+
+msgid "Permanently delete the team {team}?"
+msgstr "确定要永久删除队伍 {team} 吗？"
+
+msgid "Team deleted."
+msgstr "队伍已删除。"

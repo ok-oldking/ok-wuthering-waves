@@ -1301,3 +1301,12 @@ msgstr "Cerrar"
 
 msgid "{team_name} - Team Workshop"
 msgstr "{team_name} - Taller de equipos"
+
+msgid "Delete Team"
+msgstr "Eliminar equipo"
+
+msgid "Permanently delete the team {team}?"
+msgstr "¿Eliminar permanentemente el equipo {team}?"
+
+msgid "Team deleted."
+msgstr "Equipo eliminado."

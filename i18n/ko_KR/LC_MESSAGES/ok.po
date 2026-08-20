@@ -1375,3 +1375,12 @@ msgstr "닫기"
 
 msgid "{team_name} - Team Workshop"
 msgstr "{team_name} - 팀 워크숍"
+
+msgid "Delete Team"
+msgstr "팀 삭제"
+
+msgid "Permanently delete the team {team}?"
+msgstr "{team} 팀을 영구적으로 삭제하시겠습니까?"
+
+msgid "Team deleted."
+msgstr "팀을 삭제했습니다."
