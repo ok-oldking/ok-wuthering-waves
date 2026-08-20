@@ -12,6 +12,7 @@ _ROVER_FORM_NAMES = {
 class Rover(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.use_skyfall_severance = False
         self._bind_form_logger()
 
     def reset_state(self):
@@ -111,8 +112,8 @@ class Rover(BaseChar):
                 name = getattr(char, 'display_name', char.name)
                 names.append(self.task.tr(name) if getattr(self.task, '_app', None) is not None else name)
             self.task.info_set('Chars', ', '.join(names))
-            if self.ring_index == Elements.WIND:
-                self.init_wind()
+        if self.ring_index == Elements.WIND:
+            self.init_wind()
 
     def perform_spectro_routine(self):
         if self.has_intro:
