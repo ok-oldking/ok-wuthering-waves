@@ -763,40 +763,19 @@ class BaseCombatTask(CombatCheck):
         self.switch_preferred_entry()
 
     def switch_preferred_entry(self):
-        """战斗前后入口：战前优先固定角色，战后仅治疗。"""
         if not self.switch_healer_enabled():
             return
-        # 战前/战中才尝试固定角色
-        try:
-            in_combat_now = False
-            try:
-                in_combat_now = bool(self.in_combat())
-            except Exception:
-                in_combat_now = False
-            if in_combat_now:
-                target = self._get_fixed_opener_target()
-                if target is not None:
-                    current = self.get_current_char()
-                    if current is None:
-                        try:
-                            self.load_chars()
-                            current = self.get_current_char()
-                            target = self._get_fixed_opener_target()
-                        except Exception:
-                            pass
-                    if current is not None and current != target:
-                        logger.info(f'switch preferred: fixed opener {current}->{target} (override healer)')
-                        self._switch_to_target(target)
-                        return
-                    if current is not None and current == target:
-                        logger.info(f'switch preferred: already fixed opener {target}, skip')
-                    return
-        except Exception as e:
-            logger.debug(f'switch preferred fixed check failed, fallback to healer: {e}')
-        current_char = self.get_current_char()
+        target = self._get_fixed_opener_target()
+        if target is not None:
+            cur = self.get_current_char()
+            if cur is not None and cur != target:
+                logger.info(f'switch preferred: fixed opener {cur}->{target} (override healer)')
+                self._switch_to_target(target)
+            return
+        cur = self.get_current_char()
         has_healer = any(char and char.is_healer for char in self.chars)
-        if current_char and not current_char.is_healer and has_healer:
-            current_char.switch_other_char(allow_auto_combat=True)
+        if cur and not cur.is_healer and has_healer:
+            cur.switch_other_char(allow_auto_combat=True)
 
     def _get_fixed_opener_target(self):
         """任务侧硬编码表：队伍 -> 固定开局角色。
