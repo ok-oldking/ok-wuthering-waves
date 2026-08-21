@@ -2,6 +2,8 @@ import tempfile
 import unittest
 import zipfile
 import json
+from pathlib import Path
+from unittest.mock import patch
 
 from ok.util.config import Config
 from src.Labels import Labels
@@ -11,8 +13,8 @@ from src.char.CharFactory import apply_team_char_classes
 from src.char.CustomCharLoader import (
     clear_custom_char_cache, clear_team_char_cache, create_custom_team, export_custom_team,
     get_custom_char_file, get_team_char_file, import_custom_team, inspect_team_archive,
-    load_custom_char_class, remove_custom_char_code, save_custom_char_code, save_team_char_code,
-    set_custom_char_enabled,
+    list_custom_teams, load_custom_char_class, remove_custom_char_code, save_custom_char_code,
+    save_team_char_code, set_custom_char_enabled,
 )
 from src.char.Mortefi import Mortefi
 from src.char.Verina import Verina
@@ -149,6 +151,25 @@ class Mortefi(BuiltinMortefi):
         self.assertEqual(first_task.chars[0].team_marker, "first")
         self.assertEqual(second_task.chars[0].team_marker, "second")
         self.assertIsNot(type(first_task.chars[0]), type(second_task.chars[0]))
+
+    def test_list_custom_teams_skips_unreadable_team_folder(self):
+        valid_team = (Mortefi, Chixia, Verina)
+        create_custom_team(valid_team)
+        unreadable_folder = Path(self.temp_dir.name) / "custom_teams" / "Aemeath__Augusta__Baizhi"
+        unreadable_folder.mkdir()
+        original_is_file = Path.is_file
+
+        def is_file(path):
+            if path.parent == unreadable_folder:
+                raise PermissionError(5, "Access is denied", str(path))
+            return original_is_file(path)
+
+        with patch.object(Path, "is_file", is_file):
+            teams = list_custom_teams()
+
+        self.assertEqual(teams, [tuple(sorted(
+            (cls.__name__ for cls in valid_team), key=str.casefold
+        ))])
 
     def test_export_and_import_team_archive(self):
         team = (Mortefi, Chixia, Verina)

@@ -10,7 +10,7 @@ from ok.feature.FeatureSet import FeatureSet
 
 class TestFeatureSet(unittest.TestCase):
     def test_chisa_e2_template_loads_from_current_source_image(self):
-        frame = cv2.imread('assets/images/35.png')
+        frame = cv2.imread('ok_templates/Chisa_e2.png')
         self.assertIsNotNone(frame)
 
         feature_set = FeatureSet(

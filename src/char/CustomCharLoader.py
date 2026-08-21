@@ -106,21 +106,38 @@ def create_custom_team(team):
     return folder
 
 
+def delete_custom_team(team):
+    class_names = normalize_team(team)
+    folder = get_custom_team_folder(class_names)
+    if not folder.is_dir():
+        raise ValueError("Team does not exist")
+    shutil.rmtree(folder)
+    clear_team_char_cache(class_names)
+    return folder
+
+
 def list_custom_teams():
     root = get_custom_team_root()
-    if not root.exists():
+    try:
+        if not root.exists():
+            return []
+        folders = list(root.iterdir())
+    except OSError as e:
+        logger.warning(f"list custom teams failed for {root}: {e}")
         return []
     teams = []
-    for folder in root.iterdir():
-        if not folder.is_dir():
-            continue
-        class_names = tuple(folder.name.split("__"))
+    for folder in folders:
         try:
+            if not folder.is_dir():
+                continue
+            class_names = tuple(folder.name.split("__"))
             class_names = normalize_team(class_names)
+            if all((folder / f"{name}.py").is_file() for name in class_names):
+                teams.append(class_names)
         except ValueError:
             continue
-        if all((folder / f"{name}.py").is_file() for name in class_names):
-            teams.append(class_names)
+        except OSError as e:
+            logger.warning(f"skip unreadable custom team folder {folder}: {e}")
     return sorted(teams, key=lambda team: tuple(name.casefold() for name in team))
 
 

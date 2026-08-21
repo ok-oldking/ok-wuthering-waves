@@ -1113,7 +1113,7 @@ class BaseWWTask(BaseTask):
         )
 
     def click_team_challenge(self):
-        self.wait_click_feature('team_start_challenge', raise_if_not_found=True, after_sleep=1)
+        self.wait_click_feature('team_start_challenge', raise_if_not_found=True, click_after_delay=0.5, after_sleep=1)
         self.wait_click_skip_dialog_confirm()
 
     def wait_click_travel(self):
@@ -1298,7 +1298,7 @@ def convert_bw(cv_image):
 
 
 lower_icon_white = np.array([210, 210, 210], dtype=np.uint8)
-upper_icon_white = np.array([244, 244, 244], dtype=np.uint8)
+upper_icon_white = np.array([255, 255, 255], dtype=np.uint8)
 
 
 def convert_dialog_icon(cv_image):

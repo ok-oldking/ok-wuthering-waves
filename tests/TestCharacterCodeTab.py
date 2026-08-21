@@ -9,6 +9,7 @@ from urllib.error import HTTPError
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtWidgets import QApplication
+from qfluentwidgets import ComboBox, LineEdit, MessageBoxBase, TableWidget, TextEdit
 
 from ok.util.config import Config
 from src.char.Chixia import Chixia
@@ -16,10 +17,15 @@ from src.char.Aemeath import Aemeath
 from src.char.Augusta import Augusta
 from src.char.Baizhi import Baizhi
 from src.Labels import Labels
-from src.char.CustomCharLoader import clear_team_char_cache, create_custom_team, read_team_char_code
+from src.char.CustomCharLoader import (
+    clear_team_char_cache, create_custom_team, get_custom_team_folder, read_team_char_code,
+)
 from src.char.Mortefi import Mortefi
 from src.char.Verina import Verina
-from src.gui.CharacterCodeTab import CharacterCodeTab, fetch_workshop_codes, workshop_team_url
+from src.gui.CharacterCodeTab import (
+    CharacterCodeTab, ExportTeamDialog, ImportTeamDialog, TeamSelectionDialog,
+    WorkshopDialog, fetch_workshop_codes, workshop_team_url,
+)
 
 
 class TestCharacterCodeTab(unittest.TestCase):
@@ -64,6 +70,24 @@ class TestCharacterCodeTab(unittest.TestCase):
         finally:
             tab.deleteLater()
 
+    def test_delete_team_button_deletes_selected_team(self):
+        team = (Mortefi, Chixia, Verina)
+        create_custom_team(team)
+        tab = CharacterCodeTab()
+        try:
+            with (
+                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.show_info_bar"),
+            ):
+                message_box.return_value.exec.return_value = True
+                tab.delete_team_button.click()
+
+            self.assertFalse(get_custom_team_folder(team).exists())
+            self.assertEqual(tab.team_list.count(), 0)
+            self.assertFalse(tab.delete_team_button.isEnabled())
+        finally:
+            tab.deleteLater()
+
     def test_workshop_url_uses_sorted_team_slug(self):
         self.assertEqual(
             workshop_team_url((Baizhi, Augusta, Aemeath)),
@@ -94,6 +118,30 @@ class TestCharacterCodeTab(unittest.TestCase):
         error = HTTPError("https://example.invalid", 404, "Not Found", {}, None)
         with patch("src.gui.CharacterCodeTab.urlopen", side_effect=error):
             self.assertEqual(fetch_workshop_codes((Aemeath, Augusta, Baizhi)), [])
+
+    def test_team_dialogs_use_fluent_widgets(self):
+        parent = CharacterCodeTab()
+        try:
+            create_dialog = TeamSelectionDialog(
+                [Aemeath, Augusta, Baizhi], [Aemeath, Augusta, Baizhi], parent)
+            export_dialog = ExportTeamDialog("Aemeath_Augusta_Baizhi", parent)
+            import_dialog = ImportTeamDialog(
+                {"name": "Team", "description": "Description", "version": "1.0.0"},
+                "Aemeath, Augusta, Baizhi", parent)
+            workshop_dialog = WorkshopDialog([{
+                "name": "Team", "description": "Description", "author": "Author",
+                "version": "1.0.0", "timestamp": 1, "sizeFormatted": "1 KB",
+            }], "Aemeath, Augusta, Baizhi", parent)
+            dialogs = (create_dialog, export_dialog, import_dialog, workshop_dialog)
+            self.assertTrue(all(isinstance(dialog, MessageBoxBase) for dialog in dialogs))
+            self.assertTrue(all(isinstance(combo, ComboBox) for combo in create_dialog.combos))
+            self.assertIsInstance(export_dialog.name_edit, LineEdit)
+            self.assertIsInstance(export_dialog.description_edit, TextEdit)
+            self.assertIsNotNone(workshop_dialog.findChild(TableWidget))
+            self.assertIn("Aemeath, Augusta, Baizhi", workshop_dialog.windowTitle())
+            self.assertEqual(workshop_dialog.yesButton.text(), "Close")
+        finally:
+            parent.deleteLater()
 
 
 if __name__ == "__main__":

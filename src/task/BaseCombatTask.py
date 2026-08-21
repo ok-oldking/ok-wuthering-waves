@@ -529,8 +529,11 @@ class BaseCombatTask(CombatCheck):
 
         prioritized_candidates = []
         for char in candidates:
-            switch_priority = char.get_switch_priority(current_char=current_char, has_intro=has_intro,
-                                                       target_low_con=target_low_con)
+            if char.healer_full_con_switch_locked():
+                switch_priority = SwitchPriority.NO
+            else:
+                switch_priority = char.get_switch_priority(current_char=current_char, has_intro=has_intro,
+                                                           target_low_con=target_low_con)
             self._log_switch_candidate(char, switch_priority)
             if switch_priority > SwitchPriority.NO:
                 prioritized_candidates.append((switch_priority, char))

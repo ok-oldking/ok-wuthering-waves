@@ -1365,3 +1365,21 @@ msgstr "ワークショップの応答が無効です。"
 
 msgid "Workshop returned a different team."
 msgstr "ワークショップから別のチームが返されました。"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "Close"
+msgstr "閉じる"
+
+msgid "{team_name} - Team Workshop"
+msgstr "{team_name} - チームワークショップ"
+
+msgid "Delete Team"
+msgstr "チームを削除"
+
+msgid "Permanently delete the team {team}?"
+msgstr "チーム {team} を完全に削除しますか？"
+
+msgid "Team deleted."
+msgstr "チームを削除しました。"
