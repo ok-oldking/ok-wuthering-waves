@@ -6,7 +6,7 @@ from src.char.BaseChar import BaseChar
 
 class Qingxiao(BaseChar):
     HEAVY_TIMEOUT = 2
-    # 图标连续"暗"满该时长才确认释放(去抖):瞬时模板漏检的假灭到不了这么长,不算数
+    # 图标连续"暗"满该时长才确认释放(去抖)
     HEAVY_CONFIRM = 0.25
 
     def __init__(self, *args, **kwargs):
@@ -75,7 +75,7 @@ class Qingxiao(BaseChar):
         exited_confirm = False
         self.task.mouse_down()
         try:
-            # 去抖:图标连续暗满 HEAVY_CONFIRM 秒才算真释放(过滤瞬时模板漏检的假灭)。真蓄力时图标亮着。
+            # 去抖:图标连续暗满 HEAVY_CONFIRM 秒才算真释放
             while self.time_elapsed_accounting_for_freeze(start) < self.HEAVY_TIMEOUT:
                 now = time.time()
                 if self.heavy_available():
