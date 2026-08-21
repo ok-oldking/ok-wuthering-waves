@@ -30,6 +30,14 @@ class Rover(BaseChar):
     def _bind_form_logger(self):
         self.logger = Logger.get_logger(self.display_name)
 
+    def _known_form(self):
+        if hasattr(self.task, 'get_known_ring_index'):
+            return self.task.get_known_ring_index(self)
+        return self.ring_index
+
+    def is_havoc_form(self):
+        return self._known_form() == Elements.HAVOC
+
     def ensure_display_form(self):
         if self.ring_index >= 0:
             return
@@ -47,27 +55,49 @@ class Rover(BaseChar):
             return False
         return bool(zani.try_consume_insert_handoff())
 
+    def _discard_zani_liber_insert_handoff(self):
+        """非 Spectro 形态不执行 Insert，丢弃本次 token 后继续自身 routine。"""
+        from src.char.Zani import Zani
+        zani = self.task.has_char(Zani)
+        if (
+            zani is not None
+            and getattr(zani, 'in_liberation', False)
+            and getattr(zani, '_liber_phase', 0) in (2, 3)
+            and getattr(zani, '_liber_handoff_token', 0) > 0
+        ):
+            zani._liber_handoff_token = 0
+            self.logger.info('rover: discard zani insert token for non-spectro routine')
+
     def do_perform(self):
-        if self._in_zani_liber_insert_window():
-            return self._do_zani_liber_insert()
         self.init()
         if not self.has_intro:
             self.sleep(0.01)
         if self.ring_index == Elements.HAVOC:
+            self._discard_zani_liber_insert_handoff()
             self.intro_motion_freeze_duration = 0.64
-            self.perform_havoc_routine()
+            self.logger.info('rover: form-dispatch ring=HAVOC routine=havoc')
+            if self.perform_havoc_routine():
+                return
         elif self.ring_index == Elements.SPECTRO:
             self.intro_motion_freeze_duration = 0.92
-            self.perform_spectro_routine()
+            self.logger.info('rover: form-dispatch ring=SPECTRO routine=spectro')
+            if self.perform_spectro_routine():
+                return
         elif self.ring_index == Elements.WIND:
+            self._discard_zani_liber_insert_handoff()
             self.intro_motion_freeze_duration = 0.52
+            self.logger.info('rover: form-dispatch ring=WIND routine=wind')
             self.perform_wind_routine()
         else:
+            self._discard_zani_liber_insert_handoff()
+            self.logger.info('rover: form-dispatch ring=UNKNOWN routine=basic')
             self.perform_basic_routine()
         self.switch_next_char()
 
+    INSERT_R_TO_Q_SETTLE = 0.60
+
     def _do_zani_liber_insert(self):
-        """赞妮大招插入：E + Q + 大招，然后切回赞妮。"""
+        """赞妮大招插入：E → R → Q → 切回赞妮。"""
         self.logger.info('rover: zani liber insert short axis (E+Q+R)')
         self.init()
         if self.has_intro:
@@ -76,12 +106,9 @@ class Rover(BaseChar):
         if self.resonance_available():
             self.click_resonance(send_click=True)
             self.sleep(0.05)
-        if self.echo_available():
-            # 声骸释放完再开大：time_out=1 等声骸按钮进 CD + 0.3s 覆盖脱手动画，避免 R 吞声骸
-            self.click_echo(time_out=1)
-            self.sleep(0.3)
         if self.task.use_liberation:
-            if not self.click_liberation(send_click=True):
+            liber_success = self.click_liberation(send_click=True)
+            if not liber_success:
                 self.logger.info('rover: liber insert R first-fail, retry loop')
                 retry_start = time.time()
                 while time.time() - retry_start < 2:
@@ -90,21 +117,36 @@ class Rover(BaseChar):
                     if time.time() - retry_start >= 2:
                         break
                     if self.click_liberation(send_click=True, wait_if_cd_ready=0):
+                        liber_success = True
                         self.logger.info(f'rover: liber insert R retry-success elapsed={time.time() - retry_start:.2f}s')
                         break
             else:
                 self.logger.info('rover: liber insert R first-success')
+            if liber_success:
+                self.logger.info(f'rover: insert R settle begin duration={self.INSERT_R_TO_Q_SETTLE:.2f}s')
+                self.sleep(self.INSERT_R_TO_Q_SETTLE)
+                self.logger.info(f'rover: insert R settle elapsed={self.INSERT_R_TO_Q_SETTLE:.2f}s')
+        if self.echo_available():
+            self.logger.info('rover: insert Q input time_out=0')
+            self.click_echo(time_out=0)
+            self.logger.info('rover: insert Q returned')
         if self.buff_time > 0:
             self.last_buff_time = time.time()
             self.logger.info(f'rover: insert buff refreshed buff_time={self.buff_time}')
+        self.logger.info('rover: insert switch-to-zani')
         from src.char.Zani import Zani
         zani = self.task.has_char(Zani)
         return super().switch_next_char()
 
     def init(self):
-        if self.ring_index == -1:
+        previous_form = self.ring_index
+        if hasattr(self.task, '_ensure_ring_index'):
             self.task._ensure_ring_index()
+        if self.ring_index != previous_form:
             self._bind_form_logger()
+            self.logger.info(
+                f'rover: form-corrected previous={previous_form} current={self.ring_index}'
+            )
             names = []
             for char in self.task.chars:
                 if char is None:
@@ -116,6 +158,9 @@ class Rover(BaseChar):
             self.init_wind()
 
     def perform_spectro_routine(self):
+        if self._in_zani_liber_insert_window():
+            self._do_zani_liber_insert()
+            return True
         if self.has_intro:
             self.continues_normal_attack(1)
         self.wait_down()
@@ -131,6 +176,7 @@ class Rover(BaseChar):
         self.check_combat()
         if not self.click_liberation(send_click=True):
             self.click_resonance()
+        return False
 
     def perform_havoc_routine(self):
         self.wait_down()
