@@ -28,7 +28,7 @@ class AutoCombatTask(BaseCombatTask, TriggerTask):
             'Auto Target': 'Turn off to enable auto combat only when manually target enemy using middle click',
             'Use Liberation': 'Do not use Liberation in Open World to Save Time',
             'Check Levitator': 'Toggle the levitator and verify if the character is floating',
-            'Switch to Healer before and after Combat': 'Better Chance to Keep Character Alive',
+            'Switch to Healer before and after Combat': 'Switch to fixed character if required, otherwise healer',
         }
         self.op_index = 0
         self.char_features_warmed_up = False

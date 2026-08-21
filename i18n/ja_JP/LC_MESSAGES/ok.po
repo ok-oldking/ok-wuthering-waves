@@ -1232,7 +1232,7 @@ msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使�
 msgstr "ゲームとokwwの言語は簡体字/繁体字中国語、解像度は16:9かつ1600x900以上が必要です。必要なものにチェックを入れると、未チェックのものは自動合成されます。"
 
 msgid "Switch to Healer before and after Combat"
-msgstr "戦闘前後にヒーラーへ切り替える"
+msgstr "戦闘前に固定キャラに切り替え"
 
 msgid "All fields are required."
 msgstr "すべての項目を入力してください。"
@@ -1383,3 +1383,6 @@ msgstr "チーム {team} を完全に削除しますか？"
 
 msgid "Team deleted."
 msgstr "チームを削除しました。"
+
+msgid "Switch to fixed character if required, otherwise healer"
+msgstr "固定が必要な場合は固定キャラ、そうでなければヒーラーに切り替え"
