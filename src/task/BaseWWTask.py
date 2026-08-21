@@ -1148,8 +1148,7 @@ class BaseWWTask(BaseTask):
             return 424 / 2160
         bar = boxes[0]
         self.draw_boxes(boxes=bar, color="red")
-        bar_top = bar.y / self.height
-        return bar_top
+        return bar.y / self.height
 
     def click_on_book_target(self, serial_number: int, total_number: int, structure: list[int] = None):
         def get_cross_count(structure, sn):
@@ -1166,7 +1165,7 @@ class BaseWWTask(BaseTask):
         self.sleep(0.5)
         bar_bottom = 0.8806
         bar_x = 0.9730
-        separator = 0.01
+        header_h = 0.028  # calibrated header height (~40px @1440), replaces separator=0.01
         cross_count = 0
         container_max_rows = 4
         target_index = -1
@@ -1176,32 +1175,32 @@ class BaseWWTask(BaseTask):
         if serial_number <= container_max_rows:
             target_index = serial_number - 1
         else:
-            container_h = bar_bottom - bar_top
-            if structure:
-                cross_count = get_cross_count(structure, serial_number)
-                cross_count += 1
-                container_h -= len(structure) * separator
-            item_h = container_h / total_number
-            height = item_h * serial_number
-            to_click_y = min(bar_top + height + cross_count * separator, bar_bottom)
+            calib_cross = get_cross_count(structure, serial_number) if structure else 0
+            calib_container_h = (bar_bottom - bar_top - (len(structure) - 1) * header_h) if structure else (bar_bottom - bar_top)
+            calib_item_h = calib_container_h / total_number if total_number else 0
+            calib_y = min(bar_top + calib_item_h * serial_number + calib_cross * header_h, bar_bottom) if structure else bar_bottom
+            to_click_y = calib_y
+            item_h = calib_item_h
             self.click(bar_x, to_click_y, after_sleep=1)
         btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
+        # adaptive retry: closed-loop correction for residual underscroll (found 3/4 with low max_y)
+        if not target_index > -1 and btns and len(btns) in (3, 4) and structure and serial_number > container_max_rows:
+            max_y = max(b.y / self.height for b in btns)
+            if max_y < 0.73:
+                retry_y = min(to_click_y + item_h * 0.55, bar_bottom) if 'item_h' in locals() and item_h else min(to_click_y + 0.018, bar_bottom)
+                self.click(bar_x, retry_y, after_sleep=1)
+                btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
         if not btns:
             raise Exception("can't find boss_proceed")
         if target_index > -1:
             if target_index < len(btns):
                 target = btns[target_index]
             else:
-                # Fallback: not enough visible rows, scroll to bring target into view
-                container_h = bar_bottom - bar_top
-                if structure:
-                    cross_count = get_cross_count(structure, serial_number)
-                    cross_count += 1
-                    container_h -= len(structure) * separator
-                item_h = container_h / total_number
-                height = item_h * serial_number
-                to_click_y = min(bar_top + height + cross_count * separator, bar_bottom)
-                self.click(bar_x, to_click_y, after_sleep=1)
+                # Fallback: not enough visible rows, scroll with calibrated header
+                calib_cross2 = get_cross_count(structure, serial_number) if structure else 0
+                calib_h2 = (bar_bottom - bar_top - (len(structure) - 1) * header_h) if structure else (bar_bottom - bar_top)
+                calib_y2 = min(bar_top + (calib_h2 / total_number) * serial_number + calib_cross2 * header_h, bar_bottom) if total_number else bar_bottom
+                self.click(bar_x, calib_y2, after_sleep=1)
                 btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
                 if not btns:
                     raise Exception("can't find boss_proceed after scroll")
