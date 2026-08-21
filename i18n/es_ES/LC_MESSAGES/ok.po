@@ -1159,7 +1159,7 @@ msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使�
 msgstr "El juego y okww deben estar en chino simplificado/tradicional; se requiere una resolución 16:9 de al menos 1600x900. Marca lo que quieras conservar; lo no marcado se fusionará automáticamente."
 
 msgid "Switch to Healer before and after Combat"
-msgstr "Cambiar al sanador antes y después del combate"
+msgstr "Cambiar a personaje fijo antes del combate"
 
 msgid "All fields are required."
 msgstr "Todos los campos son obligatorios."
@@ -1310,3 +1310,6 @@ msgstr "¿Eliminar permanentemente el equipo {team}?"
 
 msgid "Team deleted."
 msgstr "Equipo eliminado."
+
+msgid "Switch to fixed character if required, otherwise healer"
+msgstr "Cambiar a personaje fijo si es necesario, de lo contrario al sanador"
