@@ -1302,7 +1302,8 @@ class TestChar(TaskTestCase):
 
     def test_qingxiao_heavy_holds_until_both_indicators_disappear(self):
         class Task:
-            indicators = [Labels.qingxiao_h1, Labels.qingxiao_h2, None]
+            # 图标熄灭后,去抖确认窗还会再取一帧复核,故暗帧需要两帧
+            indicators = [Labels.qingxiao_h1, Labels.qingxiao_h2, None, None]
 
             def __init__(self):
                 self.frame = 0
@@ -1333,7 +1334,7 @@ class TestChar(TaskTestCase):
 
         self.assertTrue(qingxiao.handle_heavy())
         self.assertEqual(task.actions, ['mouse_down', 'mouse_up'])
-        self.assertEqual(task.frame, 2)
+        self.assertEqual(task.frame, 3)
 
     def test_qingxiao_is_registered_as_wind_main_dps(self):
         info = char_dict[Labels.char_qingxiao]
