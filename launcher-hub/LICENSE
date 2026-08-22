@@ -1,0 +1,36 @@
+                    GNU GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2006
+
+ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+---
+
+免责声明 / Disclaimer:
+
+本软件（OK 游戏助手聚合启动器）是一个第三方工具，用于统一管理基于 ok-script
+框架的各游戏自动化启动器（如 ok-nte / ok-wuthering-waves / ok-end-field）。
+本软件与本系列游戏的官方运营方、ok-script 项目方均无隶属关系，仅供个人学习研究使用。
+
+本软件基于 ok-script（https://ok-script.com/ ，Apache-2.0 + Commons Clause）生态构建，
+遵循其署名要求，在此明确提及并链接：https://ok-script.com/
+
+各被管理游戏的启动器（ok-nte / ok-ww / ok-end-field 等）各自拥有独立的开源协议
+（详见其各自仓库的 LICENSE 文件，如 GPL-3.0 / AGPL-3.0），本聚合启动器仅以独立进程
+调用其可执行文件，不复制、不修改其源码，不构成对相应协议的衍生义务。
+
+使用本软件产生的任何后果由使用者自行承担。

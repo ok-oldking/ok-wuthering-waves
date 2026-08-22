@@ -1,0 +1,5 @@
+# OK 游戏助手 - 聚合启动器 依赖
+# Python 3.10+
+PySide6>=6.5
+PyQt-Fluent-Widgets>=1.5
+dulwich>=0.21   # launcher.py 用其 porcelain/client 做镜像仓库 clone/fetch/checkout
