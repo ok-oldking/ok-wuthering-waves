@@ -1,0 +1,36 @@
+{
+  "_comment": "聚合启动器配置。请根据你本机实际安装目录修改 install_root 与各 app 的 exe/pythonw/app_json/working 路径（均相对于 install_root，使用正斜杠）。",
+  "install_root": "D:/OKApps",
+  "apps": [
+    {
+      "key": "ok-nte",
+      "display": "异环",
+      "exe": "ok-nte/ok-nte/ok-nte.exe",
+      "app_json": "ok-nte/ok-nte/data/apps/ok-nte/app.json",
+      "working": "ok-nte/ok-nte/data/apps/ok-nte/working",
+      "pythonw": "ok-nte/ok-nte/data/apps/ok-nte/python/pythonw.exe",
+      "icon": "assets/ok-nte.png",
+      "website": "https://ok-script.com/ok-nte/"
+    },
+    {
+      "key": "ok-ww",
+      "display": "鸣潮",
+      "exe": "ok-ww/ok-ww.exe",
+      "app_json": "ok-ww/data/apps/ok-ww/app.json",
+      "working": "ok-ww/data/apps/ok-ww/working",
+      "pythonw": "ok-ww/data/apps/ok-ww/python/pythonw.exe",
+      "icon": "assets/ok-ww.png",
+      "website": "https://ok-script.com/ok-ww/"
+    },
+    {
+      "key": "ok-end-field",
+      "display": "终末地",
+      "exe": "ok-end-field/ok-end-field.exe",
+      "app_json": "ok-end-field/data/apps/ok-end-field/app.json",
+      "working": "ok-end-field/data/apps/ok-end-field/working",
+      "pythonw": "ok-end-field/data/apps/ok-end-field/python/pythonw.exe",
+      "icon": "assets/ok-end-field.png",
+      "website": "https://ok-script.com/ok-end-field/"
+    }
+  ]
+}
