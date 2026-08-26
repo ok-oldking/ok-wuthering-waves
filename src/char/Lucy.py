@@ -25,7 +25,7 @@ class Lucy(BaseChar):
         return self.switch_next_char()
 
     def perform_standard(self):
-        """标准攒能量流程（baseline 穿插E：E可用即按，15s CD时序锁住）"""
+        """标准攒能量流程"""
         if self.is_forte_full():
             self.logger.info("Lucy forte is already full, skip standard build-up.")
             return False
@@ -49,8 +49,7 @@ class Lucy(BaseChar):
         return True
 
     def perform_liberation(self):
-        """大招释放及后续连击流程（老v1：E点亮光环→强化重击→光环等待→长按蓄力→Q→R+11连点；无双E、Q用baseline门控）"""
-        # 基线同款：先发E点亮鼠标光环（普攻点不亮它，删掉会导致强化重击环节被整段跳过）
+        """大招释放及后续连击流程
         if self.resonance_available():
             self.click_resonance()
         self.f_break()
@@ -91,7 +90,7 @@ class Lucy(BaseChar):
                         self.task.next_frame()
                     except Exception:
                         pass
-            # Q 沿用 baseline 门控逻辑（echo_available 判定，非固定按）
+            # Q 
             if self.echo_available():
                 self.click_echo(time_out=0)
         else:
