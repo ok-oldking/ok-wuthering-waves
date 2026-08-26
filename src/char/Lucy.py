@@ -5,7 +5,7 @@ class Lucy(BaseChar):
     FORTE_TIMEOUT = 8.5
     LIB_CD_WAIT = 1.5
     NORMAL_ATTACK_DURATION = 0.1
-    HEAVY_ATTACK_DURATION = 0.6
+    HEAVY_ATTACK_DURATION = 0.4
     CLICK_INTERVAL = 0.1
     ENHANCED_HEAVY_INTERVAL = 0.2
     LIB_CLICK_COUNT = 11 #包含冗余点击
@@ -25,19 +25,31 @@ class Lucy(BaseChar):
         return self.switch_next_char()
 
     def perform_standard(self):
-        """标准攒能量流程（v1：简化为纯重击循环，不再穿插E）"""
+        """标准攒能量流程（baseline 穿插E：E可用即按，15s CD时序锁住）"""
+        if self.is_forte_full():
+            self.logger.info("Lucy forte is already full, skip standard build-up.")
+            return False
+
         start_time = time.time()
         while not self.is_forte_full():
+            # 防卡死超时机制
             if time.time() - start_time > self.FORTE_TIMEOUT:
                 self.logger.warning("Lucy failed to fill forte, timeout reached.")
                 break
+
+            if self.resonance_available():
+                self.click_resonance()
+
             self.heavy_attack(self.HEAVY_ATTACK_DURATION)
+
+            if self.resonance_available():
+                self.click_resonance()
 
         self.continues_normal_attack(self.NORMAL_ATTACK_DURATION)
         return True
 
     def perform_liberation(self):
-        """大招释放及后续连击流程（v1：重击后补满-长按-固定Q+R-双E）"""
+        """大招释放及后续连击流程（老v1：E点亮光环→强化重击→光环等待→长按蓄力→Q→R+11连点；无双E、Q用baseline门控）"""
         # 基线同款：先发E点亮鼠标光环（普攻点不亮它，删掉会导致强化重击环节被整段跳过）
         if self.resonance_available():
             self.click_resonance()
@@ -79,11 +91,13 @@ class Lucy(BaseChar):
                         self.task.next_frame()
                     except Exception:
                         pass
-            # 固定 Q 在 R 前（无 echo_available 门）
-            self.click_echo()
+            # Q 沿用 baseline 门控逻辑（echo_available 判定，非固定按）
+            if self.echo_available():
+                self.click_echo(time_out=0)
         else:
-            # 仍未亮，也固定 Q 再 R
-            self.click_echo()
+            # 仍未亮，Q 基线门控后再 R
+            if self.echo_available():
+                self.click_echo(time_out=0)
 
         if self.liberation_available():
             self.click_liberation(send_click=True, wait_if_cd_ready=self.LIB_CD_WAIT)
@@ -96,25 +110,6 @@ class Lucy(BaseChar):
         else:
             self.logger.debug("Liberation not available, skipping.")
 
-        # 大招后双E：E1 -> 等E亮(边普攻最多2s) -> E2 -> 0.5s
-        if self.resonance_available():
-            self.click_resonance()
-        else:
-            self.task.send_key(self.get_resonance_key())
-            self.sleep(0.2)
-
-        wait_e2_start = time.time()
-        while not self.resonance_available() and time.time() - wait_e2_start < 2.0:
-            self.task.click()
-            self.sleep(0.1)
-            if hasattr(self.task, 'next_frame'):
-                try:
-                    self.task.next_frame()
-                except Exception:
-                    pass
-        if self.resonance_available():
-            self.click_resonance()
-        self.sleep(0.5)
         return True
 
     def perform_enhanced_heavy(self):
