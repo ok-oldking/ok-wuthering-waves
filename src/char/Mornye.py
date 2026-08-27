@@ -50,7 +50,7 @@ class Mornye(BaseChar):
                         check_fun=lambda: self.is_mouse_forte_full() and not self.detect_elbow_strike(detect_ready)):
                     if self.detect_elbow_strike(detect_ready):
                         continue
-                    # v1：协奏不满先普攻补满（2s内边打边等），仍不满再 echo
+                    # 协奏未满则先普攻补满（最多 2s），仍不满再放声骸
                     if not self.task.wait_until(lambda: self.is_con_full(), time_out=1.5):
                         fill_start = time.time()
                         while not self.is_con_full() and time.time() - fill_start < 2 and self.on_air():

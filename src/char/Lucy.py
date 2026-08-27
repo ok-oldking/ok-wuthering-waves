@@ -11,7 +11,7 @@ class Lucy(BaseChar):
     LIB_CLICK_COUNT = 11 #包含冗余点击
 
     def do_perform(self):
-        # 切入即抢处决（Rebecca 已关自动F，由 Lucy 接管）
+        # 切入时立即执行处决（协同角色已关闭自动处决）
         try:
             if hasattr(self.task, 'check_f_break') and self.task.check_f_break():
                 self.task.f_break()
@@ -90,7 +90,6 @@ class Lucy(BaseChar):
                         self.task.next_frame()
                     except Exception:
                         pass
-            # Q 
             if self.echo_available():
                 self.click_echo(time_out=0)
         else:
