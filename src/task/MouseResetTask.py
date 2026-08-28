@@ -17,20 +17,45 @@ class MouseResetTask(TriggerTask):
         self.description = "Turn on if you mouse jumps around"
         self.running_reset = False
         self.mouse_pos = None
+        self.reset_loop_id = 0
+
+    def enable(self):
+        super().enable()
+        self.start_reset()
+
+    def disable(self):
+        super().disable()
+        self.stop_reset('disabled')
 
     def run(self):
         if self.is_browser():
             return
-        if self.enabled:
-            if not self.running_reset:
-                logger.info('start mouse reset')
-                self.running_reset = True
-                self.handler.post(self.mouse_reset, 0.01)
-        else:
-            self.running_reset = False
+        if self.enabled and not self.running_reset:
+            self.start_reset()
 
-    def mouse_reset(self):
+    def start_reset(self):
+        if self.running_reset:
+            return
+        logger.info('start mouse reset')
+        self.running_reset = True
+        # bump the loop id so callbacks from a previous loop are ignored
+        self.reset_loop_id += 1
+        loop_id = self.reset_loop_id
+        self.handler.post(lambda: self.mouse_reset(loop_id), 0.01)
+
+    def stop_reset(self, reason):
+        if self.running_reset:
+            logger.info(f'mouse reset stopped: {reason}')
+        self.mouse_pos = None
+        self.running_reset = False
+        # invalidate callbacks still queued from the stopped loop
+        self.reset_loop_id += 1
+
+    def mouse_reset(self, loop_id):
+        if loop_id != self.reset_loop_id or not self.enabled:
+            return
         if self.is_browser():
+            self.handler.post(lambda: self.mouse_reset(loop_id), 1)
             return
         try:
             current_position = win32api.GetCursorPos()
@@ -49,11 +74,10 @@ class MouseResetTask(TriggerTask):
                     logger.info(f'move mouse back {self.mouse_pos}')
                     win32api.SetCursorPos(self.mouse_pos)
                     self.mouse_pos = self.mouse_pos
-                    if self.enabled:
-                        self.handler.post(self.mouse_reset, 1)
+                    self.handler.post(lambda: self.mouse_reset(loop_id), 1)
                     return
             self.mouse_pos = current_position
-            if self.enabled:
-                return self.handler.post(self.mouse_reset, 0.002)
+            self.handler.post(lambda: self.mouse_reset(loop_id), 0.002)
         except Exception as e:
             logger.error('mouse_reset exception', e)
+            self.handler.post(lambda: self.mouse_reset(loop_id), 1)
