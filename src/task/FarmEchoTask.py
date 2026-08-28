@@ -56,8 +56,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                           'Nightmare: Hecate', 'Fenrico', 'Nameless Explorer']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.combat_end_condition = self.find_echos
-        self.total_weekly_number = 9
-        self.total_boss_number = 20
+        self.weekly_structure = [1, 2, 3, 4]
+        self.boss_structure = [2, 4, 7, 1, 9]
+        self.total_weekly_number = sum(self.weekly_structure)
+        self.total_boss_number = sum(self.boss_structure)
         self.add_exit_after_config()
         self._has_treasure = False
         self._in_realm = False
@@ -246,17 +248,19 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             feature = 'zhange'
             serial_number = self.config.get('Which Weekly Boss to Teleport', 1)
             total_number = self.total_weekly_number
+            structure = self.weekly_structure
         elif teleport_to_boss == 'Boss Challenge':
             feature = 'qiangdi'
             serial_number = self.config.get('Which Boss Challenge to Teleport', 1)
             total_number = self.total_boss_number
+            structure = self.boss_structure
         else:
             raise RuntimeError(f'Unknown Teleport to Boss config: {teleport_to_boss}')
 
         self.info_set('Teleport to Boss', f'{teleport_to_boss} {serial_number - 1}')
         self.openF2Book('gray_book_boss')
         self.open_boss_book(feature)
-        is_team = self.click_on_book_target(serial_number, total_number)
+        is_team = self.click_on_book_target(serial_number, total_number, structure)
         if is_team:
             if teleport_to_boss == 'Weekly Challenge':
                 self.click_configured_boss_level()
