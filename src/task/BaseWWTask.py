@@ -1178,7 +1178,7 @@ class BaseWWTask(BaseTask):
             calib_cross = get_cross_count(structure, serial_number) if structure else 0
             calib_container_h = (bar_bottom - bar_top - (len(structure) - 1) * header_h) if structure else (bar_bottom - bar_top)
             calib_item_h = calib_container_h / total_number if total_number else 0
-            calib_y = min(bar_top + calib_item_h * serial_number + calib_cross * header_h, bar_bottom) if structure else bar_bottom
+            calib_y = min(bar_top + calib_item_h * serial_number + calib_cross * header_h, bar_bottom)
             to_click_y = calib_y
             item_h = calib_item_h
             self.click(bar_x, to_click_y, after_sleep=1)
