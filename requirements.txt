@@ -25,8 +25,10 @@ numpy==2.5.2
     #   shapely
 ok-script[ocr,qt]==2.0.5
     # via ok-ww (pyproject.toml)
-onnxocr-ppocrv5==0.0.20
-    # via ok-script
+onnxocr-ppocrv5>=0.0.20
+    # via
+    #   ok-script
+    #   ok-ww (pyproject.toml)
 opencv-python==5.0.0.93
     # via ok-ww (pyproject.toml)
 openvino==2026.3.0

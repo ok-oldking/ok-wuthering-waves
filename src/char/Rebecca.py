@@ -1,91 +1,82 @@
 import time
-from src.char.BaseChar import BaseChar, SwitchPriority
+from src.char.BaseChar import BaseChar
+
 
 class Rebecca(BaseChar):
-    FORTE_TIMEOUT = 5.5          # 防卡死超时
+    LIB_HOLD_DURATION = 5.2
+    LIB_ENTER_DURATION = 0.8
+    # 大招结束后的短时间内再次入场时，技能均在冷却，无可执行的完整连招，
+    # 只做基础攻击并快速换人，避免空转耽误主C输出
+    LIB_REENTER_WINDOW = 17.0
     NORMAL_ATTACK_DURATION = 0.5
     ATTACK_DURATION = 1.0
     ATTACK_TIMEOUT = 2.2
-    HEAVY_ATTACK_DURATION = 1.5
-    LIB_HOLD_DURATION = 5.2
-    LIB_CD_WAIT = 1.5
-    LIB_ENTER_DURATION = 0.8
-    DODGE_INTERVAL = 4.0         # 闪避最小间隔（秒）
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # 用 None 作为哨兵，确保首次登场必然触发蓄力逻辑
-        self._forte_built_at = None
+        self.check_f_on_switch = False  # 切入时不自动处决，交由队友处理
+        self._last_liberation_at = -999.0  # 初始值：首次入场不受窗口限制
+
+    def _in_reenter_window(self):
+        return time.time() - self._last_liberation_at < self.LIB_REENTER_WINDOW
 
     def do_perform(self):
         if self.perform_combat():
-            start = time.time()
-            while not self.is_con_full() and time.time() - start < self.ATTACK_TIMEOUT:
-                self.continues_normal_attack(self.ATTACK_DURATION)
-                time.sleep(0.1)
+            # 窗口内：普攻攒协奏（最多 2.2s）后换出
+            if self._in_reenter_window():
+                start = time.time()
+                while not self.is_con_full() and time.time() - start < self.ATTACK_TIMEOUT:
+                    self.continues_normal_attack(self.ATTACK_DURATION)
+                    time.sleep(0.1)
             return self.switch_next_char()
 
     def perform_combat(self):
-        """
-        核心战斗逻辑状态机
-        """
-        # 状态分支 1：大招就绪，但核心能量未满 -> 触发前置攒能序列
-        if self.liberation_available() and not self.is_forte_full():
-            self._build_forte_sequence()
-        
-        # 状态分支 2：大招就绪（可能由分支 1 攒满能量后下摆至此，或开局即就绪）
-        if self.liberation_available():
-            self.perform_enhanced_heavy()
-            self.perform_liberation()
+        # 窗口内再次入场：没有有效连招，快速让位
+        if self._in_reenter_window():
+            self.click_resonance()
+            self.continues_normal_attack(self.NORMAL_ATTACK_DURATION)
             return True
-        
-        # 状态分支 3：常规循环（大招未就绪）
-        self.click_resonance()
-        self.continues_normal_attack(self.NORMAL_ATTACK_DURATION)
+        # 标准连招：不依赖大招/协奏状态，固定执行
+        self._build_forte_sequence()
         return True
 
     def _build_forte_sequence(self):
-        """
-        前置攒能与切人防重入保护机制
-        """
-        self.continues_normal_attack(self.NORMAL_ATTACK_DURATION)
-        self.continues_right_click(duration=0.1, interval=0.1, direction_key='s')
-        last_dodge = time.time()
-        self.continues_normal_attack(self.NORMAL_ATTACK_DURATION)
-        self.click_resonance()
-        
-        switch_in = getattr(self, 'last_switch_in_time', -1)
-        
-        # 幂等性校验：防止切人失败时轮询导致的重复蓄力
-        if self._forte_built_at != switch_in:
-            start_time = time.time()
-            while time.time() - start_time < self.FORTE_TIMEOUT:
-                if self.is_forte_full():
-                    break
-                
-                now = time.time()
-                if now - last_dodge >= self.DODGE_INTERVAL:
-                    self.continues_right_click(duration=0.1, interval=0.1, direction_key='s')
-                    last_dodge = now
-                
-                self.heavy_attack(self.HEAVY_ATTACK_DURATION)
-                
-                if hasattr(self, 'task') and hasattr(self.task, 'next_frame'):
-                    self.task.next_frame()
-            else:
-                self.logger.warning("Rebecca full forte timeout reached.")
-            
-            self._forte_built_at = switch_in
-        
-        self.perform_enhanced_heavy()
+        """变奏入场 2 次 E / 非变奏 3 次 E -> 末次 E 后普攻攒能量 -> 蓄力重击 -> 声骸 + 大招"""
+        if self.has_intro:
+            self.continues_normal_attack(1.3)
+        else:
+            self.continues_normal_attack(1.8)
 
-    def perform_liberation(self):
-        if self.echo_available():
-            self.click_echo(time_out=0)
-        if self.has_long_action2() and self.liberation_available():
-            self.perform_hmg_mode()
-            
+        if self.has_intro:
+            self.task.wait_until(lambda: self.resonance_available(), 2)
+            self.click_resonance(post_sleep=1.5)
+            self.click_resonance(post_sleep=1.5)
+        else:
+            self.task.wait_until(lambda: self.resonance_available(), 2)
+            self.click_resonance(post_sleep=1.5)
+            self.click_resonance(post_sleep=1.5)
+            self.click_resonance(post_sleep=1)
+
+        # 末次 E 后能量未满：普攻攒能直到蓄力图标出现（最多 4s）
+        self.send_resonance_key()
+        wait_start = time.time()
+        while not self.is_mouse_forte_full() and time.time() - wait_start < 4.0:
+            self.task.click()
+            self.sleep(0.1)
+            if hasattr(self.task, 'next_frame'):
+                try:
+                    self.task.next_frame()
+                except Exception:
+                    pass
+        # 图标亮后蓄力重击（长按 1.5s）
+        if self.is_mouse_forte_full():
+            self.heavy_attack(1.5)
+        # 声骸 + 大招
+        self.click_echo()
+        self.perform_hmg_mode()
+
     def perform_enhanced_heavy(self):
+        """蓄力图标亮起时执行强化重击"""
         if self.is_mouse_forte_full():
             self.heavy_attack(0.5)
 
@@ -95,7 +86,6 @@ class Rebecca(BaseChar):
             self.send_liberation_key()
             self.sleep(0.1, check_combat=False)
         self.record_liberation_use()
-
         start = time.time()
         last_liberation = time.time()
         while time.time() - start < self.LIB_HOLD_DURATION:
@@ -105,3 +95,5 @@ class Rebecca(BaseChar):
                 self.send_liberation_key()
                 last_liberation = now
             self.sleep(0.01, check_combat=False)
+        # 大招完成，启动快速让位窗口
+        self._last_liberation_at = time.time()

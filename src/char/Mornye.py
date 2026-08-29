@@ -50,9 +50,15 @@ class Mornye(BaseChar):
                         check_fun=lambda: self.is_mouse_forte_full() and not self.detect_elbow_strike(detect_ready)):
                     if self.detect_elbow_strike(detect_ready):
                         continue
-                    elif not self.task.wait_until(lambda: self.is_con_full(), time_out=1.5):
-                        self.logger.debug("not condition full, try clicking echo")
-                        self.click_echo(duration=0.2)
+                    # 协奏未满则先普攻补满（最多 2s），仍不满再放声骸
+                    if not self.task.wait_until(lambda: self.is_con_full(), time_out=1.5):
+                        fill_start = time.time()
+                        while not self.is_con_full() and time.time() - fill_start < 2 and self.on_air():
+                            self.continues_normal_attack(0.5)
+                            if self.detect_elbow_strike(detect_ready):
+                                break
+                        if not self.is_con_full():
+                            self.click_echo(duration=0.2)
                     self.last_heavy = time.time()
                     self.check_f_on_switch = False
                     break

@@ -8,6 +8,7 @@ version = "0.0.1"
 requires-python = ">=3.11"
 dependencies = [
     "ok-script[ocr,qt]>=2.0.5",
+    "onnxocr-ppocrv5>=0.0.20",
     "openvino",
     "opencv-python",
     "pyappify>=1.0.13"
