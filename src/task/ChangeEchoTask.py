@@ -41,6 +41,10 @@ class ChangeEchoTask(BaseWWTask, FindFeature):
     def is_0_level(self):
         return self.ocr(0.66, 0.48, 0.77, 0.56, match=re.compile('声骸技能'))
 
+    def click_with_mouse_move(self, x, y=-1, after_sleep=0, name=None):
+        """Hover before clicking controls that ignore a bare PostMessage click."""
+        self.click(x, y, move=True, name=name, after_sleep=after_sleep)
+
     def run(self):
         self.info_set('成功声骸数量', 0)
         while True:
@@ -76,15 +80,23 @@ class ChangeEchoTask(BaseWWTask, FindFeature):
                 raise Exception('找不到当前主属性!')
             if target_main in current_main[0].name:
                 raise Exception('目标属性和当前属性相同, 请修改声骸过滤条件!')
-            self.click(0.04, 0.41)
+            self.click_with_mouse_move(0.04, 0.41, name='数据重构入口', after_sleep=0.8)
             self.wait_ocr(match='主音属性', raise_if_not_found=True)
             self.sleep(0.8)
-            self.click(0.52, 0.71)
+            self.click_with_mouse_move(0.52, 0.71, name='主音属性选择', after_sleep=0.8)
             target = self.wait_ocr(match=re.compile(target_main), raise_if_not_found=True)
-            self.sleep(0.1)
-            self.click(target, after_sleep=0.5)
-            self.wait_click_ocr(match='确认', after_sleep=2)
-            self.wait_click_ocr(0.37, 0.82, 0.64, 0.99, match='数据重构', after_sleep=0.5, raise_if_not_found=True)
+            self.sleep(0.5)
+            self.click_with_mouse_move(target, after_sleep=0.8)
+            confirm = self.wait_ocr(match='确认', raise_if_not_found=True)
+            self.click_with_mouse_move(confirm, after_sleep=2)
+            reconstruct = self.wait_ocr(
+                0.37, 0.82, 0.64, 0.99,
+                match='数据重构',
+                time_out=5,
+            )
+            if not reconstruct:
+                raise Exception(f'未能选中目标属性「{target_main}」，请检查数据重构界面是否已更新!')
+            self.click_with_mouse_move(reconstruct, after_sleep=0.5)
             self.wait_ocr(match='获得声骸', raise_if_not_found=True)
             self.esc()
             self.info_incr('成功声骸数量')
