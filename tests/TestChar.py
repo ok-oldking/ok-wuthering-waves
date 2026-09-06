@@ -5,20 +5,24 @@ from ok.test.TaskTestCase import TaskTestCase
 from src.Labels import Labels
 from src.char.BaseChar import BaseChar, CharType, Elements, SwitchPriority, get_default_buff_time
 from src.char.CharFactory import _get_buff_time, _get_char_type, char_dict, char_names, get_char_by_pos
+from src.char.Aalto import Aalto
 from src.char.Aemeath import Aemeath
 from src.char.Chisa import Chisa
 from src.char.Ciaccona import Ciaccona
 from src.char.Denia import Denia
 from src.char.Iuno import Iuno
+from src.char.Lingyang import Lingyang
 from src.char.Linnai import Linnai
 from src.char.Lucilla import Lucilla
 from src.char.Lucy import Lucy
+from src.char.Lumi import Lumi
 from src.char.Phrolova import Phrolova
 from src.char.Qingxiao import Qingxiao
 from src.char.Rebecca import Rebecca
 from src.char.ShoreKeeper import ShoreKeeper
 from src.char.Suisui import Suisui
 from src.char.Verina import Verina
+from src.char.Yangyang import Yangyang
 from src.char.YangYangSp import YangYangSp
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
 from src.task.AutoCombatTask import AutoCombatTask
@@ -159,6 +163,18 @@ class TestChar(TaskTestCase):
         self.assertEqual(BaseChar(None, 0, char_type=CharType.SUB_DPS, buff_time=11).buff_time, 11)
         self.assertEqual(char_dict[Labels.char_mortefi]['char_type'], CharType.SUB_DPS)
         self.assertEqual(char_dict[Labels.char_mortefi]['buff_time'], get_default_buff_time(CharType.SUB_DPS))
+        self.assertEqual(char_dict[Labels.char_aalto]['cls'], Aalto)
+        self.assertEqual(char_dict[Labels.char_aalto]['char_type'], CharType.SUB_DPS)
+        self.assertEqual(char_dict[Labels.char_aalto]['ring_index'], Elements.WIND)
+        self.assertEqual(char_dict[Labels.char_lingyang]['cls'], Lingyang)
+        self.assertEqual(char_dict[Labels.char_lingyang]['char_type'], CharType.MAIN_DPS)
+        self.assertEqual(char_dict[Labels.char_lingyang]['ring_index'], Elements.ICE)
+        self.assertEqual(char_dict[Labels.char_lumi]['cls'], Lumi)
+        self.assertEqual(char_dict[Labels.char_lumi]['char_type'], CharType.SUB_DPS)
+        self.assertEqual(char_dict[Labels.char_lumi]['ring_index'], Elements.ELECTRIC)
+        self.assertEqual(char_dict[Labels.char_yangyang]['cls'], Yangyang)
+        self.assertEqual(char_dict[Labels.char_yangyang]['char_type'], CharType.SUB_DPS)
+        self.assertEqual(char_dict[Labels.char_yangyang]['ring_index'], Elements.WIND)
         self.assertEqual(char_dict[Labels.char_chisa]['buff_time'], 20)
         self.assertEqual(char_dict[Labels.char_chisa2]['cls'], Chisa)
         self.assertEqual(char_dict[Labels.char_chisa2]['buff_time'], 20)

@@ -1,5 +1,6 @@
 from src.Labels import Labels
 from src.char.Aemeath import Aemeath
+from src.char.Aalto import Aalto
 from src.char.Augusta import Augusta
 from src.char.Baizhi import Baizhi
 from src.char.BaseChar import BaseChar, CharType, Elements, get_default_buff_time
@@ -24,9 +25,11 @@ from src.char.Iuno import Iuno
 from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
 from src.char.Jiyan import Jiyan
+from src.char.Lingyang import Lingyang
 from src.char.Linnai import Linnai
 from src.char.Lucilla import Lucilla
 from src.char.Lucy import Lucy
+from src.char.Lumi import Lumi
 from src.char.Luhesi import Luhesi
 from src.char.Lupa import Lupa
 from src.char.Mortefi import Mortefi
@@ -45,6 +48,7 @@ from src.char.Verina import Verina
 from src.char.Xiangliyao import Xiangliyao
 from src.char.Xigelika import Xigelika
 from src.char.Yinlin import Yinlin
+from src.char.Yangyang import Yangyang
 from src.char.YangYangSp import YangYangSp
 from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
@@ -53,6 +57,8 @@ from src.char.Zhezhi import Zhezhi
 from src.char.CustomCharLoader import load_team_char_class, normalize_team
 
 _char_dict_raw = {
+    Labels.char_aalto: {'cls': Aalto, 'char_type': CharType.SUB_DPS,
+                             'ring_index': Elements.WIND},
     Labels.yangyang_sp: {'cls': YangYangSp, 'char_type': CharType.MAIN_DPS,
                          'ring_index': Elements.HAVOC},
     Labels.char_yinlin: {'cls': Yinlin, 'char_type': CharType.SUB_DPS,
@@ -87,6 +93,8 @@ _char_dict_raw = {
                            'ring_index': Elements.ELECTRIC},
     Labels.char_jiyan: {'cls': Jiyan, 'char_type': CharType.MAIN_DPS,
                         'ring_index': Elements.WIND},
+    Labels.char_lingyang: {'cls': Lingyang, 'char_type': CharType.MAIN_DPS,
+                                'ring_index': Elements.ICE},
     Labels.char_mortefi: {'cls': Mortefi, 'char_type': CharType.SUB_DPS,
                           'ring_index': Elements.FIRE},
     Labels.char_zhezhi: {'cls': Zhezhi, 'char_type': CharType.SUB_DPS,
@@ -129,8 +137,10 @@ _char_dict_raw = {
     Labels.char_lucilla: {'cls': Lucilla, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ICE,
                           'target_box_short_combat_check': True},
     Labels.char_lucy: {'cls': Lucy, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
+    Labels.char_lumi: {'cls': Lumi, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ELECTRIC},
     Labels.char_rebecca: {'cls': Rebecca, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ELECTRIC},
     Labels.char_qingxiao: {'cls': Qingxiao, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.WIND},
+    Labels.char_yangyang: {'cls': Yangyang, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.WIND},
 }
 
 char_dict = {}
