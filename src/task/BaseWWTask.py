@@ -1151,62 +1151,133 @@ class BaseWWTask(BaseTask):
         return bar.y / self.height
 
     def click_on_book_target(self, serial_number: int, total_number: int, structure: list[int] = None):
-        def get_cross_count(structure, sn):
+        def get_cross_count(groups, sn):
             current_sum = 0
             cross_count = 0
-            for s in structure:
-                current_sum += s
+            for size in groups:
+                current_sum += size
                 if sn > current_sum:
                     cross_count += 1
                 else:
                     break
             return cross_count
 
+        def infer_visible_end_offset(buttons):
+            if not structure or len(buttons) < 2:
+                return None
+
+            # Button gaps are ~0.142 within a group and ~0.204 across a region header.
+            gaps = [(right.y - left.y) / self.height for left, right in zip(buttons, buttons[1:])]
+            if not all(0.12 < gap < 0.23 for gap in gaps):
+                return None
+
+            boundaries = set()
+            current_sum = 0
+            for size in structure[:-1]:
+                current_sum += size
+                boundaries.add(current_sum)
+
+            observed = tuple(gap > 0.17 for gap in gaps)
+            matches = []
+            count = len(buttons)
+            # Coarse scrollbar placement is only corrected when one adjacent window matches uniquely.
+            for offset in (-1, 0, 1):
+                end_serial = serial_number + offset
+                start_serial = end_serial - count + 1
+                if start_serial < 1 or end_serial > total_number:
+                    continue
+                expected = tuple((start_serial + index) in boundaries for index in range(count - 1))
+                if expected == observed:
+                    matches.append(offset)
+            return matches[0] if len(matches) == 1 else None
+
+        if total_number <= 0 or not 1 <= serial_number <= total_number:
+            raise ValueError(f'invalid book target: serial={serial_number}, total={total_number}')
+        if structure and (any(size <= 0 for size in structure) or sum(structure) != total_number):
+            raise ValueError(f'invalid book structure: structure={structure}, total={total_number}')
+
         self.sleep(0.5)
         bar_bottom = 0.8806
         bar_x = 0.9730
-        header_h = 0.028  # calibrated header height (~40px @1440), replaces separator=0.01
-        cross_count = 0
+        header_h = 0.028
         container_max_rows = 4
-        target_index = -1
-
+        target_index = serial_number - 1 if serial_number <= container_max_rows else -1
         bar_top = self._find_book_scroll_top()
 
-        if serial_number <= container_max_rows:
-            target_index = serial_number - 1
-        else:
-            calib_cross = get_cross_count(structure, serial_number) if structure else 0
-            calib_container_h = (bar_bottom - bar_top - (len(structure) - 1) * header_h) if structure else (bar_bottom - bar_top)
-            calib_item_h = calib_container_h / total_number if total_number else 0
-            calib_y = min(bar_top + calib_item_h * serial_number + calib_cross * header_h, bar_bottom)
-            to_click_y = calib_y
-            item_h = calib_item_h
+        if target_index < 0:
+            cross_count = get_cross_count(structure, serial_number) if structure else 0
+            container_h = ((bar_bottom - bar_top - (len(structure) - 1) * header_h)
+                           if structure else (bar_bottom - bar_top))
+            item_h = container_h / total_number
+            to_click_y = min(bar_top + item_h * serial_number + cross_count * header_h, bar_bottom)
             self.click(bar_x, to_click_y, after_sleep=1)
-        btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
-        # adaptive retry: closed-loop correction for residual underscroll (found 3/4 with low max_y)
-        if not target_index > -1 and btns and len(btns) in (3, 4) and structure and serial_number > container_max_rows:
-            max_y = max(b.y / self.height for b in btns)
-            if max_y < 0.73:
-                retry_y = min(to_click_y + item_h * 0.55, bar_bottom) if 'item_h' in locals() and item_h else min(to_click_y + 0.018, bar_bottom)
-                self.click(bar_x, retry_y, after_sleep=1)
-                btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
+
+        btns = self.find_feature(
+            'boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8
+        )
+        btns = sorted(btns or [], key=lambda box: box.y)
         if not btns:
             raise Exception("can't find boss_proceed")
-        if target_index > -1:
-            if target_index < len(btns):
-                target = btns[target_index]
-            else:
-                # Fallback: not enough visible rows, scroll with calibrated header
-                calib_cross2 = get_cross_count(structure, serial_number) if structure else 0
-                calib_h2 = (bar_bottom - bar_top - (len(structure) - 1) * header_h) if structure else (bar_bottom - bar_top)
-                calib_y2 = min(bar_top + (calib_h2 / total_number) * serial_number + calib_cross2 * header_h, bar_bottom) if total_number else bar_bottom
-                self.click(bar_x, calib_y2, after_sleep=1)
-                btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
+
+        if target_index >= 0 and target_index < len(btns):
+            target = btns[target_index]
+            selection = 'visible_index'
+            visible_end_offset = None
+        else:
+            if target_index >= 0:
+                cross_count = get_cross_count(structure, serial_number) if structure else 0
+                container_h = ((bar_bottom - bar_top - (len(structure) - 1) * header_h)
+                               if structure else (bar_bottom - bar_top))
+                item_h = container_h / total_number
+                missing_rows = serial_number - len(btns)
+                to_click_y = min(
+                    bar_top + item_h * serial_number + cross_count * header_h + missing_rows * item_h,
+                    bar_bottom,
+                )
+                self.click(bar_x, to_click_y, after_sleep=1)
+                btns = self.find_feature(
+                    'boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8
+                )
+                btns = sorted(btns or [], key=lambda box: box.y)
                 if not btns:
                     raise Exception("can't find boss_proceed after scroll")
-                target = max(btns, key=lambda box: box.y)
-        else:
-            target = max(btns, key=lambda box: box.y)
+
+            visible_end_offset = infer_visible_end_offset(btns)
+            max_y = btns[-1].y / self.height
+            retry_by_signature = visible_end_offset == -1
+            retry_by_position = visible_end_offset is None and len(btns) in (3, 4) and max_y < 0.73
+            if structure and (retry_by_signature or retry_by_position):
+                retry_y = min(to_click_y + item_h * 0.55, bar_bottom)
+                reason = 'signature' if retry_by_signature else 'position'
+                self.log_info(
+                    f'[BOOK_SCROLL] retry sn={serial_number} reason={reason} '
+                    f'offset={visible_end_offset} click_y={retry_y:.5f}'
+                )
+                self.click(bar_x, retry_y, after_sleep=1)
+                btns = self.find_feature(
+                    'boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8
+                )
+                btns = sorted(btns or [], key=lambda box: box.y)
+                if not btns:
+                    raise Exception("can't find boss_proceed after retry")
+                visible_end_offset = infer_visible_end_offset(btns)
+                if retry_by_signature and visible_end_offset not in (0, 1):
+                    raise RuntimeError(
+                        f'book target remains unresolved after retry: serial={serial_number}, '
+                        f'offset={visible_end_offset}'
+                    )
+
+            if visible_end_offset in (0, 1) and visible_end_offset < len(btns):
+                target = btns[-1 - visible_end_offset]
+                selection = f'boundary_offset_{visible_end_offset}'
+            else:
+                target = btns[-1]
+                selection = 'geometry_bottom'
+
+        self.log_info(
+            f'[BOOK_SCROLL] target sn={serial_number} selection={selection} '
+            f'offset={visible_end_offset} ys={[round(button.y / self.height, 5) for button in btns]}'
+        )
         self.draw_boxes(boxes=target, color="red")
         self.click(target, after_sleep=1)
         feature = self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom', 'team_close'], time_out=10,
