@@ -651,6 +651,12 @@ msgstr "刷夢魘·赫卡忒請選是"
 msgid "Auto Farm all Nightmare Nest"
 msgstr "自動刷所有夢魘巢穴"
 
+msgid "Only Farm These Nests"
+msgstr "只刷指定點位"
+
+msgid "Only farm nests whose name contains one of these words, matched against the in-game list. Separate several with commas. Leave empty to farm all."
+msgstr "只刷名字含有這些字的點位，按遊戲裡列表的文字匹配，多個用逗號隔開。留空則刷全部。"
+
 msgid "Other"
 msgstr "其它"
 
