@@ -767,10 +767,13 @@ msgid "Tacet Discord Nest"
 msgstr "残像聚落"
 
 msgid "Switch to Healer before and after Combat"
-msgstr "战斗前后切换到治疗角色"
+msgstr "战斗前切换到固定角色"
 
 msgid "Better Chance to Keep Character Alive"
-msgstr "提高角色生存率"
+msgstr "有固定需求切固定角色，否则切治疗"
+
+msgid "Switch to fixed character if required, otherwise healer"
+msgstr "有固定需求切固定角色，否则切治疗"
 
 msgid "Pause after Success"
 msgstr "符合条件后暂停"

@@ -1233,7 +1233,7 @@ msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使�
 msgstr "게임과 okww 언어는 중국어 간체/번체여야 하며, 16:9 비율의 1600x900 이상 해상도가 필요합니다. 필요한 항목을 체크하면 체크하지 않은 항목은 자동으로 합성됩니다."
 
 msgid "Switch to Healer before and after Combat"
-msgstr "전투 전후에 힐러로 전환"
+msgstr "전투 전 고정 캐릭터로 전환"
 
 msgid "All fields are required."
 msgstr "모든 항목을 입력해야 합니다."
@@ -1384,3 +1384,6 @@ msgstr "{team} 팀을 영구적으로 삭제하시겠습니까?"
 
 msgid "Team deleted."
 msgstr "팀을 삭제했습니다."
+
+msgid "Switch to fixed character if required, otherwise healer"
+msgstr "고정 캐릭터가 필요하면 고정 캐릭터로, 아니면 힐러로 전환"

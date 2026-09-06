@@ -37,7 +37,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Boss Level': "Choose the Lowest that Drop a Echo",
             'Combat Wait Time': 'Wait time before each combat (seconds), overrides Boss profile if set',
             'Use Liberation': 'Do not use Liberation to Save Time',
-            'Switch to Healer before and after Combat': 'Better Chance to Keep Character Alive',
+            'Switch to Healer before and after Combat': 'Switch to fixed character if required, otherwise healer',
             'Which Weekly Boss to Teleport': 'From Top to Bottom, Starting with 1',
             'Which Boss Challenge to Teleport': 'From Top to Bottom, Starting with 1'
         })

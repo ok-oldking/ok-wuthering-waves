@@ -759,11 +759,118 @@ class BaseCombatTask(CombatCheck):
                 char.reset_state()
 
     def switch_healer(self):
-        if self.switch_healer_enabled():
-            current_char = self.get_current_char()
-            has_healer = any(char and char.is_healer for char in self.chars)
-            if current_char and not current_char.is_healer and has_healer:
-                current_char.switch_other_char(allow_auto_combat=True)
+        """保持原开关兼容，实际按 固定角色>治疗 的优先级调度。"""
+        self.switch_preferred_entry()
+
+    def switch_preferred_entry(self):
+        if not self.switch_healer_enabled():
+            return
+        target = self._get_fixed_opener_target()
+        if target is not None:
+            cur = self.get_current_char()
+            if cur is not None and cur != target:
+                logger.info(f'switch preferred: fixed opener {cur}->{target} (override healer)')
+                self._switch_to_target(target)
+            return
+        cur = self.get_current_char()
+        has_healer = any(char and char.is_healer for char in self.chars)
+        if cur and not cur.is_healer and has_healer:
+            cur.switch_other_char(allow_auto_combat=True)
+
+    def _get_fixed_opener_target(self):
+        """任务侧硬编码表：队伍 -> 固定开局角色。
+
+        | 队伍（按 chars 存在判定）        | 固定开局 | 备注 |
+        |--------------------------------|----------|--------------------------------|
+        | Zani + Phoebe + Rover/HavocRover | Phoebe   | 赞菲光，首轮需菲比暖机 |
+        | 其他                            | None     | 回退到治疗分支 |
+        """
+        # 后续扩展：在此追加 elif 分支即可，例如 Cartethyia+Rover -> Cartethyia
+        phoebe_target = self._find_char_by_names(('Phoebe',))
+        has_zani = self._has_char_by_names(('Zani',))
+        has_phoebe = phoebe_target is not None
+        has_rover = self._has_char_by_names(('Rover', 'HavocRover'))
+        if has_zani and has_phoebe and has_rover:
+            return phoebe_target
+        return None
+
+    def _has_char_by_names(self, names):
+        for c in self.chars:
+            if c is None:
+                continue
+            cls_name = type(c).__name__
+            char_name = getattr(c, 'char_name', '') or ''
+            for n in names:
+                if n == cls_name or n in char_name or n in cls_name:
+                    return True
+        # 兼容 has_char 精确匹配（working 覆盖后类身份一致时）
+        for n in names:
+            try:
+                mod_map = {'Zani': 'src.char.Zani', 'Phoebe': 'src.char.Phoebe',
+                           'Rover': 'src.char.Rover', 'HavocRover': 'src.char.HavocRover'}
+                mod = __import__(mod_map[n], fromlist=[n])
+                cls = getattr(mod, n)
+                if self.has_char(cls) is not None:
+                    return True
+            except Exception:
+                pass
+        return False
+
+    def _find_char_by_names(self, names):
+        for c in self.chars:
+            if c is None:
+                continue
+            cls_name = type(c).__name__
+            char_name = getattr(c, 'char_name', '') or ''
+            for n in names:
+                if n == cls_name or n in char_name or n in cls_name:
+                    return c
+        for n in names:
+            try:
+                mod_map = {'Zani': 'src.char.Zani', 'Phoebe': 'src.char.Phoebe',
+                           'Rover': 'src.char.Rover', 'HavocRover': 'src.char.HavocRover'}
+                mod = __import__(mod_map[n], fromlist=[n])
+                cls = getattr(mod, n)
+                t = self.has_char(cls)
+                if t is not None:
+                    return t
+            except Exception:
+                pass
+        return None
+
+    def _switch_to_target(self, target):
+        """通用按键切人到任意 target（复刻 switch_other_char 的 6s 轮询，但目标任意）。"""
+        if target is None:
+            return
+        next_key = str(target.index + 1)
+        start = time.time()
+        # 允许在 AutoCombatTask 中切人
+        logger.debug(f'_switch_to_target start -> {target} key={next_key}')
+        while time.time() - start < 6:
+            try:
+                in_team, cur_idx, _ = self.in_team()
+            except Exception:
+                in_team, cur_idx = False, -1
+            if in_team and cur_idx == target.index:
+                for c in self.chars:
+                    if c:
+                        c.is_current_char = (c.index == cur_idx)
+                break
+            if in_team and cur_idx != target.index:
+                try:
+                    self.send_key(next_key)
+                except Exception:
+                    pass
+            # 与 switch_other_char 保持 0.2s 节奏，跳过战中检查以免 opener 被打断
+            try:
+                self.sleep(0.2)
+            except Exception:
+                time.sleep(0.2)
+            try:
+                self.next_frame()
+            except Exception:
+                pass
+        logger.debug(f'_switch_to_target end -> {target}')
 
     def switch_healer_enabled(self):
         config_task = self
