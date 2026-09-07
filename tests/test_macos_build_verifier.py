@@ -41,3 +41,17 @@ def test_minimum_and_provenance_are_hard_gates(tmp_path, monkeypatch, plist_min,
     else:
         with pytest.raises(SystemExit):
             verifier.verify(contents.parent)
+
+
+def test_verifier_rejects_untrusted_bundle_and_executable_paths(tmp_path):
+    not_app = tmp_path / 'not-an-app'
+    not_app.mkdir()
+    with pytest.raises(ValueError, match=r'existing \.app directory'):
+        verifier._validated_bundle_path(not_app)
+
+    bundle = tmp_path / 'Bad.app'
+    (bundle / 'Contents' / 'MacOS').mkdir(parents=True)
+    with pytest.raises(ValueError, match='plain non-option file name'):
+        verifier._validated_executable(bundle, {'CFBundleExecutable': '../escape'})
+    with pytest.raises(ValueError, match='plain non-option file name'):
+        verifier._validated_executable(bundle, {'CFBundleExecutable': '-option'})

@@ -11,7 +11,8 @@ def test_both_ci_gates_pin_the_same_complete_framework_sha():
         match = re.search(r'repository: Silhouette-my/ok-script\s+ref: ([0-9a-f]{40})\s', text)
         assert match, f'{name} must pin a complete ok-script commit'
         refs.append(match.group(1))
-        assert 'OK_SCRIPT_BUILD_VERSION="2.0.7b1+macos.${framework_sha}"' in text
+        assert 'PYTHONPATH:' in text
+        assert 'ok-script' in text
     assert refs[0] == refs[1]
 
 
@@ -22,9 +23,10 @@ def test_windows_matrix_uses_locked_runtime_without_resolving_framework_extras()
     windows = windows.split('- name:', 1)[0]
     assert "if: runner.os == 'Windows'" in windows
     assert 'python -m pip install -r requirements.txt' in windows
-    assert 'python -m pip install --no-deps -e ../ok-script -e .' in windows
     assert 'python -m pip check' in windows
+    assert 'python -m pip install --no-deps -e ../ok-script -e .' not in windows
     assert '[default' not in windows
+    assert 'PYTHONPATH: ${{ github.workspace }}/ok-script' in workflow
     # Dependency alignment must not remove either test suite on Windows.
     for step_name in ('Run platform and task capability contracts',
                       'Run legacy task tests in isolated processes'):

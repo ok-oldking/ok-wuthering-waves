@@ -12,7 +12,27 @@ else:
     from macos_build_metadata import INTERNAL_MINIMUM_MACOS, native_minimum, version_tuple, validate_provenance
 
 
+def _validated_bundle_path(bundle):
+    bundle = Path(bundle).expanduser().resolve(strict=True)
+    if not bundle.is_dir() or bundle.suffix != '.app':
+        raise ValueError('bundle must be an existing .app directory')
+    return bundle
+
+
+def _validated_executable(bundle, info):
+    name = info.get('CFBundleExecutable')
+    if (not isinstance(name, str) or not name or name.startswith('-')
+            or Path(name).name != name):
+        raise ValueError('CFBundleExecutable must be a plain non-option file name')
+    executable_dir = (bundle / 'Contents' / 'MacOS').resolve(strict=True)
+    binary = (executable_dir / name).resolve(strict=True)
+    if binary.parent != executable_dir or not binary.is_file():
+        raise ValueError('CFBundleExecutable escapes Contents/MacOS or is not a file')
+    return binary
+
+
 def verify(bundle, minimum_macos=INTERNAL_MINIMUM_MACOS):
+    bundle = _validated_bundle_path(bundle)
     with (bundle / 'Contents' / 'Info.plist').open('rb') as stream:
         info = plistlib.load(stream)
     errors = []
@@ -31,7 +51,7 @@ def verify(bundle, minimum_macos=INTERNAL_MINIMUM_MACOS):
             errors.append('invalid signed build provenance: ' + str(error))
     if info.get('CFBundleIdentifier') != 'org.okww.foreground.internal':
         errors.append('unexpected CFBundleIdentifier')
-    binary = bundle / 'Contents' / 'MacOS' / info['CFBundleExecutable']
+    binary = _validated_executable(bundle, info)
     arch = subprocess.check_output(['lipo', '-archs', str(binary)], text=True).strip()
     if arch != 'arm64':
         errors.append('main executable is not arm64-only')

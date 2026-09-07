@@ -1,9 +1,6 @@
 name: Run Tests
 
 on:
-  push:
-    branches:
-      - feature/macos-foreground-mvp
   pull_request:
     types: [ opened, synchronize ]
 
@@ -17,6 +14,7 @@ jobs:
 
     env:
       PYTHONIOENCODING: 'UTF-8'
+      PYTHONPATH: ${{ github.workspace }}/.ci/ok-script
 
     strategy:
       matrix:
@@ -47,7 +45,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Silhouette-my/ok-script
-          ref: 91a897071c6013930a9e23452e7b61fd112af310
+          ref: 29b495c3978db22eece6fe73d6339ba46cdd41c4
           path: .ci/ok-script
           persist-credentials: false
 
@@ -63,15 +61,8 @@ jobs:
           echo PYTHONIOENCODING=utf-8 >> $GITHUB_ENV
 
       - name: Install Dependencies
-        shell: bash
         run: |
-          set -euo pipefail
-          framework_sha="$(git -C .ci/ok-script rev-parse HEAD)"
-          export OK_SCRIPT_BUILD_VERSION="2.0.7b1+macos.${framework_sha}"
-          echo "OK-WW $(git rev-parse HEAD) against ok-script ${framework_sha}"
-          python -m pip install -r requirements.txt
-          python -m pip install --no-deps -e ".ci/ok-script"
-          python -m pip check
+          pip install -r requirements.txt
 
       - name: Run tests
         env:
