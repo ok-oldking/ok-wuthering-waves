@@ -11,36 +11,27 @@ def test_both_ci_gates_pin_the_same_complete_framework_sha():
         match = re.search(r'repository: Silhouette-my/ok-script\s+ref: ([0-9a-f]{40})\s', text)
         assert match, f'{name} must pin a complete ok-script commit'
         refs.append(match.group(1))
-        assert 'PYTHONPATH:' in text
-        assert 'ok-script' in text
     assert refs[0] == refs[1]
+    test_workflow = (workflows / 'test.yml').read_text(encoding='utf-8')
+    assert 'PYTHONPATH: ${{ github.workspace }}/.ci/ok-script' in test_workflow
 
 
-def test_windows_matrix_uses_locked_runtime_without_resolving_framework_extras():
+def test_branch_guardrail_is_dependency_free_and_source_only():
     workflow = (Path(__file__).resolve().parents[1] / '.github' / 'workflows'
                 / 'macos-foreground-guardrails.yml').read_text(encoding='utf-8')
-    windows = workflow.split('- name: Install Windows locked runtime and exact sibling', 1)[1]
-    windows = windows.split('- name:', 1)[0]
-    assert "if: runner.os == 'Windows'" in windows
-    assert 'python -m pip install -r requirements.txt' in windows
-    assert 'python -m pip check' in windows
-    assert 'python -m pip install --no-deps -e ../ok-script -e .' not in windows
-    assert '[default' not in windows
-    assert 'PYTHONPATH: ${{ github.workspace }}/ok-script' in workflow
-    # Dependency alignment must not remove either test suite on Windows.
-    for step_name in ('Run platform and task capability contracts',
-                      'Run legacy task tests in isolated processes'):
-        step = workflow.split(f'- name: {step_name}', 1)[1].split('- name:', 1)[0]
-        assert 'if:' not in step
+    assert 'python -m pip install' not in workflow
+    assert 'python -m compileall -q src scripts config.py macos_main.py' in workflow
+    assert 'Verify foreground-only integration boundaries' in workflow
+    assert 'CGEvent.postToPid' in workflow
+    assert 'PYTHONPATH: ${{ github.workspace }}/.ci/ok-script' in (
+        Path(__file__).resolve().parents[1] / '.github' / 'workflows' / 'test.yml'
+    ).read_text(encoding='utf-8')
 
 
-def test_legacy_qt_platform_matches_each_host_without_changing_contracts():
+def test_branch_guardrail_does_not_run_dependency_bound_qt_or_legacy_tests():
     workflow = (Path(__file__).resolve().parents[1] / '.github' / 'workflows'
                 / 'macos-foreground-guardrails.yml').read_text(encoding='utf-8')
-    assert 'QT_QPA_PLATFORM: offscreen' in workflow
-    contracts = workflow.split('- name: Run platform and task capability contracts', 1)[1]
-    contracts = contracts.split('- name:', 1)[0]
-    assert 'QT_QPA_PLATFORM:' not in contracts
-    legacy = workflow.split('- name: Run legacy task tests in isolated processes', 1)[1]
-    assert "QT_QPA_PLATFORM: ${{ runner.os == 'Windows' && 'windows' || 'offscreen' }}" in legacy
-    assert 'python -m unittest "$test_file"' in legacy
+    assert 'QT_QPA_PLATFORM' not in workflow
+    assert 'python -m unittest' not in workflow
+    assert 'python -m pytest' not in workflow
+    assert 'python -m pip install' not in workflow

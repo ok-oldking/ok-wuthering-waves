@@ -45,7 +45,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Silhouette-my/ok-script
-          ref: 29b495c3978db22eece6fe73d6339ba46cdd41c4
+          ref: f306651c1f292056d65fa8febaa477401d319846
           path: .ci/ok-script
           persist-credentials: false
 

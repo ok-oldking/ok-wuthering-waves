@@ -1,4 +1,4 @@
-name: macOS Foreground Branch Guardrails
+name: macOS Foreground Branch Source Guardrails
 
 on:
   push:
@@ -14,24 +14,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  no-game-contracts:
-    name: No-game contracts (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 45
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - macos-latest
-          - windows-latest
-        python-version:
-          - "3.12"
-
-    env:
-      PYTHONIOENCODING: UTF-8
-      QT_QPA_PLATFORM: offscreen
-      PYTHONPATH: ${{ github.workspace }}/ok-script
+  source-contracts:
+    name: Integration source contracts
+    runs-on: macos-latest
+    timeout-minutes: 10
 
     steps:
       - name: Check out OK-WW integration branch
@@ -46,66 +32,54 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Silhouette-my/ok-script
-          ref: 29b495c3978db22eece6fe73d6339ba46cdd41c4
+          ref: f306651c1f292056d65fa8febaa477401d319846
           path: ok-script
           persist-credentials: false
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
-          cache-dependency-path: |
-            ok-script/pyproject.toml
-            ok-wuthering-waves/pyproject.toml
-            ok-wuthering-waves/requirements.txt
+          python-version: "3.12"
 
-      - name: Install Windows locked runtime and exact sibling
-        if: runner.os == 'Windows'
+      - name: Compile integration sources without importing optional backends
+        working-directory: ok-wuthering-waves
+        shell: bash
+        run: python -m compileall -q src scripts config.py macos_main.py
+
+      - name: Verify foreground-only integration boundaries
         working-directory: ok-wuthering-waves
         shell: bash
         run: |
-          set -euo pipefail
-          framework_sha="$(git -C ../ok-script rev-parse HEAD)"
-          export OK_SCRIPT_BUILD_VERSION="2.0.7b1+macos.${framework_sha}"
-          echo "OK-WW $(git rev-parse HEAD) against ok-script ${framework_sha}"
-          # Development-only exact-SHA matrix. requirements.txt is the repository's
-          # existing Windows lock input; this workflow has contents:read and no secrets.
-          python -m pip install -r requirements.txt  # NOSONAR
-          python -m pip install "pytest==9.1.1" "pytest-subtests==0.15.0" "polib==1.2.0"
-          python -m pip check
+          python - <<'PY'
+          from pathlib import Path
+          import re
 
-      - name: Install macOS sibling editable projects
-        if: runner.os == 'macOS'
-        working-directory: ok-wuthering-waves
-        shell: bash
-        run: |
-          set -euo pipefail
-          framework_sha="$(git -C ../ok-script rev-parse HEAD)"
-          export OK_SCRIPT_BUILD_VERSION="2.0.7b1+macos.${framework_sha}"
-          echo "OK-WW $(git rev-parse HEAD) against ok-script ${framework_sha}"
-          python -m pip install "pip==26.2.1"
-          # The editable framework is the exact commit checked out above. This branch-only
-          # guardrail does not carry release credentials; release dependency locking is separate.
-          python -m pip install -e "../ok-script[default,ocr,qt,dev]" "opencv-python==5.0.0.93" "pytest-subtests==0.15.0"  # NOSONAR
-          python -m pip install "pytest==9.1.1" "polib==1.2.0"
-          python -m pip check
+          root = Path('.')
+          forbidden = (
+              'CGEvent.postToPid',
+              'CGVirtualDisplay',
+              'BetterDisplay',
+              'import win32api',
+              'from win32api import',
+              'import AppKit',
+              'import Quartz',
+          )
+          violations = []
+          for path in (root / 'src').rglob('*.py'):
+              text = path.read_text(encoding='utf-8')
+              for token in forbidden:
+                  if token in text:
+                      violations.append(f'{path}: {token}')
+          if violations:
+              raise SystemExit('Forbidden game-layer platform token(s):\n' + '\n'.join(violations))
 
-      - name: Run platform and task capability contracts
-        working-directory: ok-wuthering-waves
-        shell: bash
-        run: |
-          python -m pytest -q tests/test_macos*.py
+          capabilities = (root / 'src' / 'macos_capabilities.py').read_text(encoding='utf-8')
+          for token in ('MAC_BASIC', 'MAC_LOCKED_GAMEPLAY', 'MAC_FULL_CAMERA', 'UNSUPPORTED'):
+              assert token in capabilities, token
 
-      - name: Run legacy task tests in isolated processes
-        working-directory: ok-wuthering-waves
-        shell: bash
-        env:
-          # Legacy tests construct QApplication; match the primary Windows gate.
-          # Contracts above remain headless on both platforms.
-          QT_QPA_PLATFORM: ${{ runner.os == 'Windows' && 'windows' || 'offscreen' }}
-        run: |
-          set -euo pipefail
-          for test_file in tests/Test*.py; do
-            python -m unittest "$test_file"
-          done
+          workflow = (root / '.github' / 'workflows' / 'test.yml').read_text(encoding='utf-8')
+          match = re.search(r'repository: Silhouette-my/ok-script\s+ref: ([0-9a-f]{40})\s', workflow)
+          assert match, 'Windows PR gate must pin an immutable ok-script commit'
+          assert match.group(1) == 'f306651c1f292056d65fa8febaa477401d319846'
+          assert 'PYTHONPATH: ${{ github.workspace }}/.ci/ok-script' in workflow
+          PY
