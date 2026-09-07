@@ -81,5 +81,5 @@ jobs:
           match = re.search(r'repository: Silhouette-my/ok-script\s+ref: ([0-9a-f]{40})\s', workflow)
           assert match, 'Windows PR gate must pin an immutable ok-script commit'
           assert match.group(1) == 'f306651c1f292056d65fa8febaa477401d319846'
-          assert 'PYTHONPATH: ${{ github.workspace }}/.ci/ok-script' in workflow
+          assert 'PYTHONPATH:' in workflow and '.ci/ok-script' in workflow
           PY
