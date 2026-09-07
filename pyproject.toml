@@ -15,6 +15,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+macos-internal-build = [
+    "Nuitka==4.1.1; sys_platform == 'darwin'",
+    "cmake==3.31.6; sys_platform == 'darwin'",
+    "openvino==2025.4.1; sys_platform == 'darwin'",
+]
 dev = [
     "polib",
     "pytest",

@@ -1684,7 +1684,10 @@ class TestChar(TaskTestCase):
         sub_dps = BaseChar(task, 2, char_type=CharType.SUB_DPS)
         combat.chars = [main_dps, healer, sub_dps]
 
-        healer.last_buff_time = time.time() - 15
+        # Keep the remaining buff times meaningfully different. Using exactly
+        # 15 and 1 seconds makes both nominally 13 seconds and leaves the
+        # result dependent on sub-millisecond clock timing.
+        healer.last_buff_time = time.time() - 16
         sub_dps.last_buff_time = time.time() - 1
         self.assertEqual(combat._choose_switch_target(main_dps, False), healer)
 

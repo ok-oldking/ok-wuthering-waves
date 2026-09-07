@@ -1,7 +1,9 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 from src.task.MouseResetTask import MouseResetTask
+from src.task.WWOneTimeTask import WWOneTimeTask
 
 
 class FakeHandler:
@@ -26,6 +28,10 @@ class TestMouseResetTask(unittest.TestCase):
         task._handler = FakeHandler()
         task._enabled = True
         task.config = {}
+        cursor_service = MagicMock()
+        cursor_service.available = True
+        cursor_service.get_position.return_value = (100, 100)
+        task.executor.device_manager.cursor_service = cursor_service
         return task
 
     def test_run_keeps_only_one_callback(self):
@@ -53,12 +59,17 @@ class TestMouseResetTask(unittest.TestCase):
         task.run()
         callback = task.handler.pop()
 
-        with patch('src.task.MouseResetTask.win32api') as win32api:
-            win32api.GetCursorPos.return_value = (100, 100)
-            callback()
+        callback()
 
         self.assertEqual(len(task.handler.posts), 1)
         self.assertEqual(task.handler.posts[0][1], 0.002)
+
+    def test_unavailable_cursor_service_does_not_start_loop(self):
+        task = self.make_task()
+        task.executor.device_manager.cursor_service.available = False
+
+        self.assertFalse(task.run())
+        self.assertEqual(len(task.handler.posts), 0)
 
     def test_browser_mode_does_not_start_loop(self):
         task = self.make_task()
@@ -67,6 +78,40 @@ class TestMouseResetTask(unittest.TestCase):
         task.run()
 
         self.assertEqual(len(task.handler.posts), 0)
+
+    def test_one_time_task_skips_incompatible_mouse_reset(self):
+        mouse_reset = MagicMock()
+        mouse_reset.is_device_compatible.return_value = False
+        interaction = SimpleNamespace(activate=MagicMock())
+        owner = SimpleNamespace(
+            executor=SimpleNamespace(
+                get_task_by_class=MagicMock(return_value=mouse_reset),
+                interaction=interaction,
+            ),
+            sleep=MagicMock(),
+        )
+
+        WWOneTimeTask.run(owner)
+
+        mouse_reset.run.assert_not_called()
+        interaction.activate.assert_called_once_with()
+        owner.sleep.assert_called_once_with(0.5)
+
+    def test_one_time_task_preserves_compatible_mouse_reset_behavior(self):
+        mouse_reset = MagicMock()
+        mouse_reset.is_device_compatible.return_value = True
+        owner = SimpleNamespace(
+            executor=SimpleNamespace(
+                get_task_by_class=MagicMock(return_value=mouse_reset),
+                interaction=SimpleNamespace(),
+            ),
+            sleep=MagicMock(),
+        )
+
+        WWOneTimeTask.run(owner)
+
+        mouse_reset.run.assert_called_once_with()
+        owner.sleep.assert_called_once_with(0.5)
 
 
 if __name__ == '__main__':

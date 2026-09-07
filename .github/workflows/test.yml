@@ -14,6 +14,7 @@ jobs:
 
     env:
       PYTHONIOENCODING: 'UTF-8'
+      PYTHONPATH: ${{ github.workspace }}/.ci/ok-script
 
     strategy:
       matrix:
@@ -35,6 +36,17 @@ jobs:
           submodules: true
           lfs: true
           fetch-depth: 1
+          persist-credentials: false
+
+      # The integration branch imports platform contracts that are not in the
+      # currently published ok-script release. Keep CI reproducible by using an
+      # reviewed immutable sibling commit instead of a mutable branch URL.
+      - name: Check out compatible ok-script
+        uses: actions/checkout@v4
+        with:
+          repository: Silhouette-my/ok-script
+          ref: f306651c1f292056d65fa8febaa477401d319846
+          path: .ci/ok-script
           persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -80,7 +92,13 @@ jobs:
             Remove-Item "Env:\$_" -ErrorAction SilentlyContinue
           }
 
-          Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
+          # Legacy application tests use unittest-style Test*.py files.
+          # Pytest-style platform contract tests run in the dedicated
+          # macOS foreground guardrail workflow with the same exact ok-script SHA.
+          Get-ChildItem -Path ".\tests" -File |
+            Where-Object { $_.Name -cmatch '^Test.*\.py$' } |
+            Sort-Object Name |
+            ForEach-Object {
               Write-Host "Running tests in $($_.FullName)"
               try {
                   # Run the Python unittest command

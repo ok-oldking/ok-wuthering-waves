@@ -1,0 +1,85 @@
+name: macOS Foreground Branch Source Guardrails
+
+on:
+  push:
+    branches:
+      - feature/macos-foreground-mvp
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-foreground-okww-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-contracts:
+    name: Integration source contracts
+    runs-on: macos-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out OK-WW integration branch
+        uses: actions/checkout@v4
+        with:
+          path: ok-wuthering-waves
+          submodules: recursive
+          lfs: true
+          persist-credentials: false
+
+      - name: Check out exact compatible ok-script commit
+        uses: actions/checkout@v4
+        with:
+          repository: Silhouette-my/ok-script
+          ref: f306651c1f292056d65fa8febaa477401d319846
+          path: ok-script
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile integration sources without importing optional backends
+        working-directory: ok-wuthering-waves
+        shell: bash
+        run: python -m compileall -q src scripts config.py macos_main.py
+
+      - name: Verify foreground-only integration boundaries
+        working-directory: ok-wuthering-waves
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('.')
+          forbidden = (
+              'CGEvent.postToPid',
+              'CGVirtualDisplay',
+              'BetterDisplay',
+              'import win32api',
+              'from win32api import',
+              'import AppKit',
+              'import Quartz',
+          )
+          violations = []
+          for path in (root / 'src').rglob('*.py'):
+              text = path.read_text(encoding='utf-8')
+              for token in forbidden:
+                  if token in text:
+                      violations.append(f'{path}: {token}')
+          if violations:
+              raise SystemExit('Forbidden game-layer platform token(s):\n' + '\n'.join(violations))
+
+          capabilities = (root / 'src' / 'macos_capabilities.py').read_text(encoding='utf-8')
+          for token in ('MAC_BASIC', 'MAC_LOCKED_GAMEPLAY', 'MAC_FULL_CAMERA', 'UNSUPPORTED'):
+              assert token in capabilities, token
+
+          workflow = (root / '.github' / 'workflows' / 'test.yml').read_text(encoding='utf-8')
+          match = re.search(r'repository: Silhouette-my/ok-script\s+ref: ([0-9a-f]{40})\s', workflow)
+          assert match, 'Windows PR gate must pin an immutable ok-script commit'
+          assert match.group(1) == 'f306651c1f292056d65fa8febaa477401d319846'
+          assert 'PYTHONPATH:' in workflow and '.ci/ok-script' in workflow
+          PY

@@ -9,6 +9,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Preparation Seconds"
+msgstr "準備時間（秒）"
+
+msgid "Seconds after switching to the game (0-300). Switching away cancels startup."
+msgstr "ゲームに切り替えた後の待機時間（0～300秒）。別のアプリに切り替えると開始を取り消します。"
+
 msgid "Fleurdelys"
 msgstr "フルールドリス"
 

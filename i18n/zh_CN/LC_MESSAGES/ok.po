@@ -9,6 +9,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Preparation Seconds"
+msgstr "准备时间（秒）"
+
+msgid "Seconds after switching to the game (0-300). Switching away cancels startup."
+msgstr "切回游戏后开始计时（0–300 秒），期间切走游戏将取消启动。"
+
 msgid "Fleurdelys"
 msgstr "芙露德莉斯"
 

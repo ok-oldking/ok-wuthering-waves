@@ -9,6 +9,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Preparation Seconds"
+msgstr "준비 시간(초)"
+
+msgid "Seconds after switching to the game (0-300). Switching away cancels startup."
+msgstr "게임으로 전환한 후 대기 시간(0~300초). 다른 앱으로 전환하면 시작이 취소됩니다."
+
 msgid "Fleurdelys"
 msgstr "플뢰르 드 리스"
 

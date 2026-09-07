@@ -61,6 +61,35 @@ MANIFEST
 venv/
 python/
 
+# macOS development, signing, packaging, and private acceptance material
+.DS_Store
+*.app
+*.app/
+*.dmg
+*.pkg
+*.xcarchive
+*.xcarchive/
+*.dSYM
+*.dSYM/
+DerivedData/
+.notarytool/
+*.p12
+*.pfx
+*.cer
+*.mobileprovision
+*.provisionprofile
+*.local.entitlements
+notarytool*.json
+codesign*.log
+TCC.db
+TCC.db-*
+tcc/
+tcc-*/
+tcc-export*
+.secrets/
+private-acceptance/
+docs/development/acceptance/private/
+
 # PyInstaller
 # Usually these files are written by a python script from a template
 # before PyInstaller builds the exe, so as to inject date/other infos into it.

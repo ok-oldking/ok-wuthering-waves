@@ -1,6 +1,7 @@
 import os
 import re
-from pathlib import Path
+import sys
+from pathlib import Path, PureWindowsPath
 
 from ok import Box, ConfigOption, Icon
 from src.task.process_feature import process_feature
@@ -112,7 +113,9 @@ def _find_pc_exe_near_registered_path(registered_path):
 def calculate_pc_exe_path(running_path):
     if running_path is None:
         return _find_most_recently_run_pc_exe() or _find_pc_exe_from_registry()
-    game_exe_folder = Path(running_path).parents[3]
+    # This callback always receives a Windows executable path. Parse it with
+    # Windows semantics even when its pure behavior is tested from macOS.
+    game_exe_folder = PureWindowsPath(running_path).parents[3]
     return str(game_exe_folder / "Wuthering Waves.exe")
 
 
@@ -201,6 +204,23 @@ config = {
         'check_night_light': True,
         'force_no_night_light': False,
     },
+    # Observed from the official macOS client during Stage D hardware capture.
+    # Title matches remain an auxiliary candidate filter and never authorize
+    # automatic binding when the application identity does not match.
+    'macos': {
+        'bundle_identifiers': ['com.kurogame.mingchao'],
+        'application_names': ['鸣潮'],
+        'title_patterns': [
+            r'^Wuthering Waves(?:\s.*)?$',
+            r'^鸣潮(?:\s.*)?$',
+            r'^鳴潮(?:\s.*)?$',
+        ],
+        'allowed_layers': [0],
+        # Logical outer-window points: exclude the observed 52x20 helper panel.
+        # Multiple eligible game windows still require explicit selection.
+        'minimum_width': 320,
+        'minimum_height': 200,
+    },
     'window_size': {
         'width': 1200,
         'height': 800,
@@ -278,3 +298,14 @@ config = {
     }
 
 }
+
+# Native Mac canvas support; ratio remains the legacy task reference layout.
+# Do not change Windows defaults or stretch/crop capture frames (ADR 0001).
+if sys.platform == 'darwin':
+    config['ocr']['params']['use_npu'] = False
+    config['supported_resolution'].update({
+        'allowed_ratios': ['16:9', '16:10'],
+        'coordinate_mode': 'anchored',
+        'force_ratio': True,
+        'resize_to': [],
+    })

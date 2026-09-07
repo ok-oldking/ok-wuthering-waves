@@ -1,5 +1,6 @@
 import unittest
 import re
+from types import SimpleNamespace
 
 from src.task.NightmareNestTask import NestTarget, NightmareNestTask
 
@@ -45,9 +46,12 @@ class TestNightmareNestTask(unittest.TestCase):
         self.assertEqual('echo captured', task.out_of_combat_reason)
 
     def test_combat_nest_rechecks_after_pickup_in_team_and_open_world(self):
-        for feature_name in ('team_close', 'fast_travel_custom'):
+        for feature_name in ('team_close', 'fast_travel_custom', 'team_start_challenge'):
             with self.subTest(feature_name=feature_name):
                 task = NightmareNestTask.__new__(NightmareNestTask)
+                device = 'macos' if feature_name == 'team_start_challenge' else 'windows'
+                task._executor = SimpleNamespace(device_manager=SimpleNamespace(
+                    get_preferred_device=lambda: {'device': device}))
                 task._capture_mode = False
                 task._capture_success = False
                 combat_calls = []
@@ -83,6 +87,7 @@ class TestNightmareNestTask(unittest.TestCase):
 
     def test_unreachable_nest_is_cached_when_travel_does_not_enter_world(self):
         task = NightmareNestTask.__new__(NightmareNestTask)
+        task._uses_macos_provider = lambda: False
         task._unreachable_nests = set()
         backs = []
         clicks = []
@@ -108,6 +113,7 @@ class TestNightmareNestTask(unittest.TestCase):
 
     def test_travel_waits_up_to_120_seconds_for_loading(self):
         task = NightmareNestTask.__new__(NightmareNestTask)
+        task._uses_macos_provider = lambda: False
         task._unreachable_nests = set()
         travel = FakeBox('fast_travel_custom')
         world_waits = []

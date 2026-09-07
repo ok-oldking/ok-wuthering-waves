@@ -3,6 +3,7 @@ import cv2
 from dataclasses import dataclass
 
 from ok import Logger
+from ok.task.exceptions import WaitFailedException
 from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException
 from src.task.WWOneTimeTask import WWOneTimeTask
 
@@ -80,9 +81,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def combat_nest(self, nest):
         target_box = nest.box if isinstance(nest, NestTarget) else nest
         self.click(target_box, after_sleep=2)
-        feature = self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom', 'team_close'], time_out=10,
-                                    settle_time=0.5, raise_if_not_found=True)
-        is_team = feature.name == 'team_close'
+        is_team = self.wait_book_destination()
         if is_team:
             self.click_team_challenge()
             self.wait_in_team_and_world(time_out=120)
@@ -149,6 +148,8 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             target=True, time_out=3, raise_if_not_found=False)
 
     def _travel_to_nest_or_skip(self, nest):
+        if self._uses_macos_provider():
+            return self._travel_to_nest_macos(nest)
         travel = self.wait_until(self._find_travel_button, raise_if_not_found=False, time_out=1)
         if travel:
             self.click(travel, after_sleep=1)
@@ -167,6 +168,29 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self.log_info('nightmare nest unreachable, skip this run')
         self.back(after_sleep=1)
         return False
+
+    def _travel_to_nest_macos(self, nest):
+        travel = self.wait_until(self._find_travel_button, raise_if_not_found=False, time_out=1)
+        if not travel:
+            raise WaitFailedException('nightmare nest: no travel button; navigation stopped')
+        self.click(travel, after_sleep=1)
+        # Explicit fresh-frame boundary after the click. Never infer failure
+        # from the pre-click map frame or a still-visible transitional button.
+        self.next_frame()
+        if confirm := self._find_first_feature(CONFIRM_FEATURES, threshold=0.6):
+            self.click(confirm, after_sleep=1)
+        if self.wait_in_team_and_world(time_out=120, raise_if_not_found=False):
+            return True
+        self.next_frame()
+        if self._find_travel_button():
+            if isinstance(nest, NestTarget):
+                self._unreachable_nests.add(nest.cache_key)
+            self.log_info('nightmare nest travel timed out on map; skip this run')
+            self.back(after_sleep=1)
+            return False
+        # An unknown/loading page is not an unreachable destination. Do not
+        # press Esc or reopen the guide while a teleport may still be loading.
+        raise WaitFailedException('nightmare nest loading timed out; navigation stopped')
 
     def _find_travel_button(self):
         return self._find_first_feature(TRAVEL_FEATURES, threshold=0.7)

@@ -11,6 +11,8 @@ from ok import CannotFindException
 import cv2
 
 from src.Labels import Labels
+from src.macos_capabilities import get_macos_task_compatibility
+from src import macos_game_integration as macos_game
 from src.scene.WWScene import WWScene
 
 logger = Logger.get_logger(__name__)
@@ -37,6 +39,22 @@ class BaseWWTask(BaseTask):
         self.key_config = self.get_global_config('Game Hotkey')  # 游戏热键配置
         self.next_monthly_card_start = 0
         self.scene: WWScene | None = None
+
+    def get_macos_compatibility(self):
+        return get_macos_task_compatibility(self)
+
+    def _uses_macos_provider(self) -> bool:
+        return macos_game.uses_macos_provider(self)
+
+    def get_required_capabilities(self):
+        return macos_game.task_required_capabilities(self, super().get_required_capabilities)
+
+    def get_device_compatibility_state(self) -> dict:
+        return macos_game.decorate_task_compatibility(self, super().get_device_compatibility_state())
+
+    def ensure_device_capabilities(self) -> None:
+        macos_game.ensure_task_supported(self)
+        super().ensure_device_capabilities()
 
     @property
     def logged_in(self):
@@ -1011,6 +1029,10 @@ class BaseWWTask(BaseTask):
             y = 0.86
         else:
             raise Exception(f'unknown_lang {name}')
+        point = macos_game.map_book_category_point(self, name, x, y)
+        if point is not None:
+            self.click(*point, after_sleep=after_sleep, name=name)
+            return
         self.click_relative(x, y, after_sleep=after_sleep, name=name)
 
     def openF2Book(self, feature="gray_book_all_monsters"):
@@ -1116,6 +1138,13 @@ class BaseWWTask(BaseTask):
         self.wait_click_feature('team_start_challenge', raise_if_not_found=True, click_after_delay=0.5, after_sleep=1)
         self.wait_click_skip_dialog_confirm()
 
+    def wait_book_destination(self):
+        team_feature = macos_game.book_destination_ready_feature(self)
+        feature = self.wait_feature(
+            ['fast_travel_custom', 'gray_teleport', 'remove_custom', team_feature],
+            time_out=10, settle_time=0.5, raise_if_not_found=True)
+        return feature.name == team_feature
+
     def wait_click_travel(self):
         self.wait_until(self.click_traval_button, raise_if_not_found=True, time_out=10)
 
@@ -1215,9 +1244,7 @@ class BaseWWTask(BaseTask):
             target = max(btns, key=lambda box: box.y)
         self.draw_boxes(boxes=target, color="red")
         self.click(target, after_sleep=1)
-        feature = self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom', 'team_close'], time_out=10,
-                                    settle_time=0.5, raise_if_not_found=True)
-        return feature.name == 'team_close'
+        return self.wait_book_destination()
 
     def change_time_to_night(self):
         logger.info('change time to night')

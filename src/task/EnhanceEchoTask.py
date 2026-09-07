@@ -1,7 +1,7 @@
 # EnhanceEchoTask.py
 import re
 import time
-import os
+from ok.device.services.paths import open_path
 
 from ok import FindFeature, Logger
 from ok.feature.Box import get_bounding_box
@@ -73,7 +73,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                               notify=True)
                 if self.info_get('成功声骸数量') >= 1:
                     try:
-                        os.startfile(os.path.abspath("screenshots"))
+                        open_path("screenshots")
                     except Exception as e:
                         self.log_error(f"无法打开截图文件夹: {e}")
                 return

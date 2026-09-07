@@ -1,8 +1,6 @@
 import re
 import time
 
-import win32api
-
 from ok import find_boxes_by_name, Logger, calculate_color_percentage
 from ok import find_color_rectangles, get_mask_in_color_range, is_pure_black
 from src import text_white_color
@@ -220,14 +218,24 @@ class CombatCheck(BaseWWTask):
         if not levitator:
             self.send_key_up(self.key_config.get('Wheel Key'))
             raise Exception('no levitator tool in the tab wheel!')
-        old = win32api.GetCursorPos()
-        self.move(levitator.x, levitator.y)
-        abs_pos = self.executor.interaction.capture.get_abs_cords(levitator.x, levitator.y)
-        win32api.SetCursorPos(abs_pos)
-        self.sleep(0.1)
-        self.send_key_up(self.key_config.get('Wheel Key'))
+        cursor_service = getattr(
+            getattr(self.executor, 'device_manager', None), 'cursor_service', None)
+        if cursor_service is None or not cursor_service.available:
+            self.send_key_up(self.key_config.get('Wheel Key'))
+            logger.warning('Levitator selection requires an available cursor service')
+            return False
+
+        old = cursor_service.get_position()
+        try:
+            self.move(levitator.x, levitator.y)
+            abs_pos = self.executor.interaction.capture.get_abs_cords(
+                levitator.x, levitator.y)
+            cursor_service.set_position(abs_pos)
+            self.sleep(0.1)
+        finally:
+            self.send_key_up(self.key_config.get('Wheel Key'))
         self.sleep(0.2)
-        win32api.SetCursorPos(old)
+        cursor_service.set_position(old)
         if not self.wait_feature('edge_levitator', threshold=0.6, time_out=1):
             if self.has_char(Roccia):
                 if self.find_one('levitator_roccia', threshold=0.6):
