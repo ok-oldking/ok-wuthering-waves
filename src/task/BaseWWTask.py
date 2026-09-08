@@ -16,7 +16,7 @@ from src.scene.WWScene import WWScene
 logger = Logger.get_logger(__name__)
 number_re = re.compile(r'(\d+)')
 stamina_re = re.compile(r'(\d+)/(\d+)')
-LOGIN_TEXTS = ["登录", re.compile('Log', re.IGNORECASE), '登入']
+LOGIN_TEXTS = ["登录", re.compile('Log|点击连接|Click to Connect', re.IGNORECASE), '登入']
 LOGIN_CLICK_SETTLE_TIME = 4  # seconds; keep below AutoLoginTask trigger_interval (5) so triggers don't overlap
 f_white_color = {
     'r': (235, 255),  # Red range
@@ -1176,7 +1176,8 @@ class BaseWWTask(BaseTask):
             target_index = serial_number - 1
         else:
             calib_cross = get_cross_count(structure, serial_number) if structure else 0
-            calib_container_h = (bar_bottom - bar_top - (len(structure) - 1) * header_h) if structure else (bar_bottom - bar_top)
+            calib_container_h = (bar_bottom - bar_top - (len(structure) - 1) * header_h) if structure else (
+                        bar_bottom - bar_top)
             calib_item_h = calib_container_h / total_number if total_number else 0
             calib_y = min(bar_top + calib_item_h * serial_number + calib_cross * header_h, bar_bottom)
             to_click_y = calib_y
@@ -1187,9 +1188,11 @@ class BaseWWTask(BaseTask):
         if not target_index > -1 and btns and len(btns) in (3, 4) and structure and serial_number > container_max_rows:
             max_y = max(b.y / self.height for b in btns)
             if max_y < 0.73:
-                retry_y = min(to_click_y + item_h * 0.55, bar_bottom) if 'item_h' in locals() and item_h else min(to_click_y + 0.018, bar_bottom)
+                retry_y = min(to_click_y + item_h * 0.55, bar_bottom) if 'item_h' in locals() and item_h else min(
+                    to_click_y + 0.018, bar_bottom)
                 self.click(bar_x, retry_y, after_sleep=1)
-                btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
+                btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861),
+                                         threshold=0.8)
         if not btns:
             raise Exception("can't find boss_proceed")
         if target_index > -1:
@@ -1198,10 +1201,13 @@ class BaseWWTask(BaseTask):
             else:
                 # Fallback: not enough visible rows, scroll with calibrated header
                 calib_cross2 = get_cross_count(structure, serial_number) if structure else 0
-                calib_h2 = (bar_bottom - bar_top - (len(structure) - 1) * header_h) if structure else (bar_bottom - bar_top)
-                calib_y2 = min(bar_top + (calib_h2 / total_number) * serial_number + calib_cross2 * header_h, bar_bottom) if total_number else bar_bottom
+                calib_h2 = (bar_bottom - bar_top - (len(structure) - 1) * header_h) if structure else (
+                            bar_bottom - bar_top)
+                calib_y2 = min(bar_top + (calib_h2 / total_number) * serial_number + calib_cross2 * header_h,
+                               bar_bottom) if total_number else bar_bottom
                 self.click(bar_x, calib_y2, after_sleep=1)
-                btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8)
+                btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861),
+                                         threshold=0.8)
                 if not btns:
                     raise Exception("can't find boss_proceed after scroll")
                 target = max(btns, key=lambda box: box.y)
