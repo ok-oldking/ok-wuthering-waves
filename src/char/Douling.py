@@ -1,7 +1,5 @@
 import time
 
-from ok import Box
-
 from src.char.BaseChar import BaseChar, SwitchPriority
 from src.utils.guaxiang import recognize_guaxiang as detect_guaxiang
 
@@ -15,6 +13,7 @@ class Douling(BaseChar):
         super().__init__(*args, **kwargs)
         self._segment = 1
         self._waiting_for_guaxiang = False
+        self._guaxiang_error_logged = False
 
     def do_perform(self):
         self.recognize_guaxiang('entry')
@@ -24,42 +23,26 @@ class Douling(BaseChar):
             self._do_segment2()
 
     def recognize_guaxiang(self, sample_point='manual'):
-        """识别当前帧的卦象并记录结果；不改变战斗轴。"""
-        start = time.perf_counter()
+        """识别当前帧的卦象，仅在上场时记录结果。"""
         try:
             hud_visible = self.task.in_team()[0]
             captured_frame = self.task.frame
             frame = captured_frame.copy() if captured_frame is not None else None
             result = detect_guaxiang(frame, hud_visible=hud_visible)
-            elapsed_ms = (time.perf_counter() - start) * 1000
-            screenshot_name = 'unavailable'
-            if frame is not None:
-                screenshot_name = f'guaxiang/{sample_point}_{time.time_ns()}'
-                try:
-                    self.task.screenshot(screenshot_name, frame=frame, show_box=False)
-                except Exception as error:
-                    self.logger.warning(f'[DoulingScreenshot] name={screenshot_name} error={error}')
-                    screenshot_name = 'failed'
-            context = f'point={sample_point} screenshot_name={screenshot_name}'
-            if result.sequence is None:
-                self.logger.info(
-                    f'[DoulingRecognition] status=uncertain reason={result.reason} '
-                    f'elapsed_ms={elapsed_ms:.2f} {context}')
-            else:
-                sequence = ','.join(result.sequence) or '[]'
-                self.logger.info(
-                    f'[DoulingRecognition] count={len(result.sequence)} sequence={sequence} '
-                    f'elapsed_ms={elapsed_ms:.2f} {context}')
-            if getattr(self.task, 'debug', False):
-                regions = [Box(*result.region, name='douling_guaxiang_region')] if result.region else []
-                self.task.draw_boxes('douling_guaxiang_region', regions)
-                boxes = [Box(*item.box, confidence=item.score,
-                             name=f'{item.color} match={item.score:.2f} color={item.color_score:.2f}')
-                         for item in result.detections]
-                self.task.draw_boxes('douling_guaxiang_matches', boxes)
+            if sample_point == 'entry':
+                if result.sequence is None:
+                    self.logger.info(
+                        f'[DoulingRecognition] point=entry status=uncertain reason={result.reason}')
+                else:
+                    sequence = ','.join(result.sequence) or '[]'
+                    self.logger.info(
+                        f'[DoulingRecognition] point=entry count={len(result.sequence)} sequence={sequence}')
             return result.sequence
         except Exception as error:
-            self.logger.warning(f'[DoulingRecognition] status=uncertain error={error}')
+            if not self._waiting_for_guaxiang or not self._guaxiang_error_logged:
+                self.logger.warning(f'[DoulingRecognition] point={sample_point} status=uncertain error={error}')
+                if self._waiting_for_guaxiang:
+                    self._guaxiang_error_logged = True
             return None
 
     def _do_segment1(self):
@@ -127,6 +110,7 @@ class Douling(BaseChar):
         attempts = 0
         count = 'uncertain'
         self._waiting_for_guaxiang = True
+        self._guaxiang_error_logged = False
         try:
             while attempts < self.GUAXIANG_MAX_ATTEMPTS and time.monotonic() < deadline:
                 attempts += 1
@@ -139,11 +123,13 @@ class Douling(BaseChar):
                 if time.monotonic() >= deadline:
                     break
                 if sequence is not None and len(sequence) == 4:
-                    self.logger.info('[DoulingGuaxiang] count=4 action=continue_to_heavy')
+                    elapsed = time.monotonic() - start
+                    self.logger.info(
+                        f'[DoulingGuaxiang] count=4 sequence={",".join(sequence)} '
+                        f'attempts={attempts} elapsed={elapsed:.3f}s action=continue_to_heavy')
                     return True
                 if attempts >= self.GUAXIANG_MAX_ATTEMPTS:
                     break
-                self.logger.info(f'[DoulingGuaxiang] count={count} action=normal_attack')
                 self._tap_normal()
             elapsed = time.monotonic() - start
             reason = 'timeout' if elapsed >= self.GUAXIANG_WAIT_TIMEOUT else 'max_attempts'
