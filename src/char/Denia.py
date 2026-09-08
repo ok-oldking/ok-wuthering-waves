@@ -41,10 +41,10 @@ class Denia(BaseChar):
                         return self.switch_next_char()
                     else:
                         self.lib_1_casted = True
-                        for i in range(10):
+                        for i in range(12):
                             self.click(after_sleep=0.1)
-                        self.task.send_key(self.task.key_config.get('Dodge Key'))
-                        for i in range(10):
+                        self.task.send_key('space')
+                        for i in range(12):
                             self.click(after_sleep=0.1)
                         # self.click_resonance()
                         # self.click(after_sleep=0.1)
@@ -63,12 +63,7 @@ class Denia(BaseChar):
     #         return [False]
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if has_intro:
-            from src.char.Aemeath import Aemeath
-            from src.char.Qingxiao import Qingxiao
-
-            if isinstance(current_char, (Aemeath, Qingxiao)) and not self.has_buff():
-                return SwitchPriority.NORMAL
-            return SwitchPriority.NO + 1
+            return SwitchPriority.NO
         elif self.has_buff():
             return SwitchPriority.LOW
         else:
