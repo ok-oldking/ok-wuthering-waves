@@ -142,7 +142,7 @@ class TestDoulingGuaxiang(unittest.TestCase):
                 if not has_frame:
                     char.recognize_guaxiang.assert_not_called()
 
-    def test_attempt_limit_bounds_recognition_and_screenshots(self):
+    def test_attempt_limit_bounds_recognition_without_screenshots(self):
         char = self.make_char()
         char.task.next_frame = Mock(return_value=char.task.frame)
         char._tap_normal = Mock()
@@ -151,7 +151,7 @@ class TestDoulingGuaxiang(unittest.TestCase):
                 patch('src.char.Douling.detect_guaxiang', detector):
             self.assertFalse(char._normal_attack_until_four_guaxiang())
         self.assertEqual(detector.call_count, 30)
-        self.assertEqual(char.task.screenshot.call_count, 30)
+        char.task.screenshot.assert_not_called()
         self.assertEqual(char._tap_normal.call_count, 29)
         self.assertFalse(char._waiting_for_guaxiang)
         char.logger.warning.assert_called_once()
@@ -194,7 +194,7 @@ class TestDoulingGuaxiang(unittest.TestCase):
         char.recognize_guaxiang.assert_not_called()
         self.assertFalse(char._waiting_for_guaxiang)
 
-    def test_recognition_logs_and_screenshots_the_same_frame(self):
+    def test_entry_recognition_uses_frame_copy_and_logs_without_screenshots(self):
         char = self.make_char()
         detector = Mock(return_value=SimpleNamespace(
             sequence=['黄', '蓝'],
@@ -209,11 +209,10 @@ class TestDoulingGuaxiang(unittest.TestCase):
 
         detector.assert_called_once()
         self.assertIsNot(detector.call_args.args[0], char.task.frame)
-        screenshot = char.task.screenshot.call_args
-        self.assertIs(screenshot.kwargs['frame'], detector.call_args.args[0])
-        self.assertFalse(screenshot.kwargs['show_box'])
-        self.assertTrue(screenshot.args[0].startswith('guaxiang/entry_'))
-        self.assertIn('point=entry', char.logger.info.call_args.args[0])
+        np.testing.assert_array_equal(detector.call_args.args[0], char.task.frame)
+        char.task.screenshot.assert_not_called()
+        char.logger.info.assert_called_once_with(
+            '[DoulingRecognition] point=entry count=2 sequence=黄,蓝')
 
 
 if __name__ == '__main__':
