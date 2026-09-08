@@ -151,6 +151,8 @@ class Labels(str, Enum):
     denia_end_lib = 'denia_end_lib'
     denia_lib2 = 'denia_lib2'
     dialog_3_dots = 'dialog_3_dots'
+    douling_gua_blue = 'douling_gua_blue'
+    douling_gua_yellow = 'douling_gua_yellow'
     douling_heavy = 'douling_heavy'
     e = 'e'
     e_forte = 'e_forte'

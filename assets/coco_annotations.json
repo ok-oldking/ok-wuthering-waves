@@ -1229,6 +1229,18 @@
             "file_name": "images/3.png",
             "width": 3840,
             "height": 2160
+        },
+        {
+            "id": 290,
+            "file_name": "images/douling_gua_blue.png",
+            "width": 1600,
+            "height": 900
+        },
+        {
+            "id": 291,
+            "file_name": "images/douling_gua_yellow.png",
+            "width": 1600,
+            "height": 900
         }
     ],
     "annotations": [
@@ -5240,6 +5252,36 @@
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
+        },
+        {
+            "id": 440,
+            "image_id": 290,
+            "category_id": 282,
+            "bbox": [
+                782,
+                746,
+                21,
+                27
+            ],
+            "area": 567,
+            "iscrowd": 0,
+            "ignore": 0,
+            "segmentation": []
+        },
+        {
+            "id": 441,
+            "image_id": 291,
+            "category_id": 283,
+            "bbox": [
+                782,
+                746,
+                21,
+                27
+            ],
+            "area": 567,
+            "iscrowd": 0,
+            "ignore": 0,
+            "segmentation": []
         }
     ],
     "categories": [
@@ -6646,6 +6688,16 @@
         {
             "id": 281,
             "name": "char_lingyang",
+            "supercategory": ""
+        },
+        {
+            "id": 282,
+            "name": "douling_gua_blue",
+            "supercategory": ""
+        },
+        {
+            "id": 283,
+            "name": "douling_gua_yellow",
             "supercategory": ""
         }
     ]
