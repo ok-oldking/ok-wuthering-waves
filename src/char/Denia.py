@@ -20,7 +20,7 @@ class Denia(BaseChar):
         if self.has_intro:
             self.continues_normal_attack(2)
         elif self.lib_1_casted:
-            self.continues_normal_attack(1.2)
+            self.continues_normal_attack(1.3)
         duration = 1.2
         if self.lib_1_casted:
             duration = 4.4
@@ -41,13 +41,14 @@ class Denia(BaseChar):
                         return self.switch_next_char()
                     else:
                         self.lib_1_casted = True
-                        for i in range(12):
-                            self.click(after_sleep=0.1)
-                        self.task.send_key('space')
-                        for i in range(12):
-                            self.click(after_sleep=0.1)
+                        # for i in range(12):
+                        #     self.click(after_sleep=0.1)
+                        # self.task.send_key('space')
+                        # for i in range(12):
+                        #     self.click(after_sleep=0.1)
                         # self.click_resonance()
                         # self.click(after_sleep=0.1)
+                        self.continues_normal_attack(1.9)
                         return self.switch_next_char()
                 pass
             else:
@@ -63,7 +64,12 @@ class Denia(BaseChar):
     #         return [False]
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if has_intro:
-            return SwitchPriority.NO
+            from src.char.Aemeath import Aemeath
+            from src.char.Qingxiao import Qingxiao
+
+            if isinstance(current_char, (Aemeath, Qingxiao)) and not self.has_buff():
+                return SwitchPriority.NORMAL
+            return SwitchPriority.NO + 1
         elif self.has_buff():
             return SwitchPriority.LOW
         else:
