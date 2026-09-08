@@ -43,7 +43,7 @@ class TestDoulingGuaxiang(unittest.TestCase):
         char.normal_attack = Mock()
         char.sleep = Mock()
 
-        char._normal_attack_until_four_guaxiang()
+        self.assertTrue(char._normal_attack_until_four_guaxiang())
 
         self.assertEqual(char.normal_attack.call_count, 3)
         self.assertEqual(char.sleep.call_args_list, [call(.3)] * 3)
@@ -57,7 +57,7 @@ class TestDoulingGuaxiang(unittest.TestCase):
         char.recognize_guaxiang = Mock(return_value=['蓝'] * 4)
         char._tap_normal = Mock()
 
-        char._normal_attack_until_four_guaxiang()
+        self.assertTrue(char._normal_attack_until_four_guaxiang())
 
         char._tap_normal.assert_called_once_with()
         char.recognize_guaxiang.assert_called_once_with('before_heavy')
@@ -84,7 +84,7 @@ class TestDoulingGuaxiang(unittest.TestCase):
         char.sleep = lambda duration: events.append(('sleep', duration))
         char.flying = lambda: False
         char.wait_down = lambda: events.append('wait_down')
-        char._normal_attack_until_four_guaxiang = lambda: events.append('gua_gate')
+        char._normal_attack_until_four_guaxiang = lambda: events.append('gua_gate') or True
         char._heavy_attack_hold = lambda duration: events.append(('heavy', duration))
         char.click_echo = lambda time_out: events.append(('echo', time_out))
         char.click_liberation = lambda: events.append('liberation')
@@ -105,6 +105,94 @@ class TestDoulingGuaxiang(unittest.TestCase):
             'liberation',
             'switch',
         ])
+
+    def test_timeout_switches_without_followup_skills(self):
+        for sequence, has_frame in (([], True), (None, True), (['蓝'] * 4, False)):
+            with self.subTest(sequence=sequence, has_frame=has_frame):
+                char = self.make_char()
+                char._segment = 2
+                char.task.jump = Mock()
+                char.sleep = Mock()
+                char.flying = Mock(return_value=False)
+                char.wait_down = Mock()
+                char.task.next_frame = Mock(return_value=char.task.frame if has_frame else None)
+                char.recognize_guaxiang = Mock(return_value=sequence)
+                char._heavy_attack_hold = Mock()
+                char.click_echo = Mock()
+                char.click_liberation = Mock()
+                char.switch_next_char = Mock()
+                clock = [0.0]
+
+                def attack():
+                    clock[0] += 1.0
+
+                char._tap_normal = Mock(side_effect=attack)
+                with patch('src.char.Douling.time.monotonic', side_effect=lambda: clock[0]):
+                    char._do_segment2()
+
+                self.assertEqual(char.task.next_frame.call_count, 3)
+                char._heavy_attack_hold.assert_not_called()
+                char.click_echo.assert_not_called()
+                char.click_liberation.assert_not_called()
+                char.switch_next_char.assert_called_once_with()
+                self.assertEqual(char._segment, 1)
+                self.assertFalse(char._waiting_for_guaxiang)
+                char.logger.warning.assert_called_once()
+                self.assertIn('reason=timeout', char.logger.warning.call_args.args[0])
+                if not has_frame:
+                    char.recognize_guaxiang.assert_not_called()
+
+    def test_attempt_limit_bounds_recognition_and_screenshots(self):
+        char = self.make_char()
+        char.task.next_frame = Mock(return_value=char.task.frame)
+        char._tap_normal = Mock()
+        detector = Mock(return_value=SimpleNamespace(sequence=None, reason='low_confidence'))
+        with patch('src.char.Douling.time.monotonic', return_value=0), \
+                patch('src.char.Douling.detect_guaxiang', detector):
+            self.assertFalse(char._normal_attack_until_four_guaxiang())
+        self.assertEqual(detector.call_count, 30)
+        self.assertEqual(char.task.screenshot.call_count, 30)
+        self.assertEqual(char._tap_normal.call_count, 29)
+        self.assertFalse(char._waiting_for_guaxiang)
+        char.logger.warning.assert_called_once()
+        self.assertIn('reason=max_attempts', char.logger.warning.call_args.args[0])
+
+    def test_deadline_checked_after_frame_and_recognition(self):
+        for stage in ('frame', 'recognition'):
+            for elapsed in (2.999, 3.0, 3.1):
+                with self.subTest(stage=stage, elapsed=elapsed):
+                    char = self.make_char()
+                    clock = [0.0]
+
+                    def refresh():
+                        if stage == 'frame':
+                            clock[0] = elapsed
+                        return char.task.frame
+
+                    def recognize(_):
+                        if stage == 'recognition':
+                            clock[0] = elapsed
+                        return ['蓝'] * 4
+
+                    char.task.next_frame = Mock(side_effect=refresh)
+                    char.recognize_guaxiang = Mock(side_effect=recognize)
+                    char._tap_normal = Mock()
+                    with patch('src.char.Douling.time.monotonic', side_effect=lambda: clock[0]):
+                        self.assertEqual(char._normal_attack_until_four_guaxiang(), elapsed < 3)
+                    char._tap_normal.assert_not_called()
+                    self.assertFalse(char._waiting_for_guaxiang)
+                    if stage == 'frame' and elapsed >= 3:
+                        char.recognize_guaxiang.assert_not_called()
+
+    def test_task_stop_propagates_and_clears_waiting_state(self):
+        from ok.task.exceptions import TaskDisabledException
+        char = self.make_char()
+        char.task.next_frame = Mock(side_effect=TaskDisabledException())
+        char.recognize_guaxiang = Mock()
+        with self.assertRaises(TaskDisabledException):
+            char._normal_attack_until_four_guaxiang()
+        char.recognize_guaxiang.assert_not_called()
+        self.assertFalse(char._waiting_for_guaxiang)
 
     def test_recognition_logs_and_screenshots_the_same_frame(self):
         char = self.make_char()

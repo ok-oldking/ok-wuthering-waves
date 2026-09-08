@@ -8,6 +8,8 @@ from src.utils.guaxiang import recognize_guaxiang as detect_guaxiang
 
 class Douling(BaseChar):
     NORMAL_ATTACK_INTERVAL = 0.3
+    GUAXIANG_WAIT_TIMEOUT = 3.0
+    GUAXIANG_MAX_ATTEMPTS = 30
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -88,7 +90,10 @@ class Douling(BaseChar):
         else:
             self.wait_down()
         self.check_combat()
-        self._normal_attack_until_four_guaxiang()
+        if not self._normal_attack_until_four_guaxiang():
+            self._segment = 1
+            self.switch_next_char()
+            return
         self._heavy_attack_hold(2.5)
         self.click_echo(time_out=0)
         self.click_liberation()
@@ -116,19 +121,36 @@ class Douling(BaseChar):
         self.sleep(self.NORMAL_ATTACK_INTERVAL)
 
     def _normal_attack_until_four_guaxiang(self):
-        """持续普攻补足卦象，只有确认四个后才允许重击。"""
+        """限时普攻补足卦象，只有期限内确认四个才返回成功。"""
+        start = time.monotonic()
+        deadline = start + self.GUAXIANG_WAIT_TIMEOUT
+        attempts = 0
+        count = 'uncertain'
         self._waiting_for_guaxiang = True
         try:
-            while True:
+            while attempts < self.GUAXIANG_MAX_ATTEMPTS and time.monotonic() < deadline:
+                attempts += 1
                 frame = self.task.next_frame()
                 self.check_combat()
+                if time.monotonic() >= deadline:
+                    break
                 sequence = self.recognize_guaxiang('before_heavy') if frame is not None else None
+                count = 'uncertain' if sequence is None else len(sequence)
+                if time.monotonic() >= deadline:
+                    break
                 if sequence is not None and len(sequence) == 4:
                     self.logger.info('[DoulingGuaxiang] count=4 action=continue_to_heavy')
-                    return
-                count = 'uncertain' if sequence is None else len(sequence)
+                    return True
+                if attempts >= self.GUAXIANG_MAX_ATTEMPTS:
+                    break
                 self.logger.info(f'[DoulingGuaxiang] count={count} action=normal_attack')
                 self._tap_normal()
+            elapsed = time.monotonic() - start
+            reason = 'timeout' if elapsed >= self.GUAXIANG_WAIT_TIMEOUT else 'max_attempts'
+            self.logger.warning(
+                f'[DoulingGuaxiang] action=abort reason={reason} elapsed={elapsed:.3f}s '
+                f'attempts={attempts} count={count}')
+            return False
         finally:
             self._waiting_for_guaxiang = False
 
