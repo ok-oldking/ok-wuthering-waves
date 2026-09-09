@@ -144,7 +144,11 @@ class TestGuaxiangCharacterIntegration(unittest.TestCase):
         char.task.next_frame = Mock(side_effect=lambda: char.task.frame)
         char.logger = Mock()
         char.normal_attack = Mock()
-        char.sleep = Mock()
+        char.clock = [0.0]
+        timer = patch('src.char.Douling.time.monotonic', side_effect=lambda: char.clock[0])
+        timer.start()
+        self.addCleanup(timer.stop)
+        char.sleep = Mock(side_effect=lambda duration: char.clock.__setitem__(0, char.clock[0] + duration))
         return char
 
     def test_entry_results_without_screenshots_or_boxes(self):
@@ -195,8 +199,9 @@ class TestGuaxiangCharacterIntegration(unittest.TestCase):
         results = [[], ['蓝'], None, ['黄', '蓝'], ['蓝'] * 3, ['蓝'] * 5, ['蓝'] * 4]
         char.recognize_guaxiang = Mock(side_effect=results)
         self.assertTrue(char._normal_attack_until_four_guaxiang())
-        self.assertEqual(char.normal_attack.call_count, 6)
-        self.assertEqual([call.args for call in char.sleep.call_args_list], [(0.3,)] * 6)
+        self.assertEqual(char.normal_attack.call_count, 2)
+        self.assertEqual(char.sleep.call_count, 6)
+        self.assertAlmostEqual(char.clock[0], .6)
         self.assertEqual(char.task.next_frame.call_count, 7)
         self.assertEqual(char.task.check_combat.call_count, 7)
         char.logger.info.assert_called_once()

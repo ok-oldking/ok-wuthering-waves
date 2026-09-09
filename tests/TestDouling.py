@@ -19,6 +19,12 @@ class TestDoulingGuaxiang(unittest.TestCase):
         )
         char.logger = Mock()
         char._waiting_for_guaxiang = False
+        char.clock = [0.0]
+        timer = patch('src.char.Douling.time.monotonic', side_effect=lambda: char.clock[0])
+        timer.start()
+        self.addCleanup(timer.stop)
+        char.sleep = Mock(side_effect=lambda duration: char.clock.__setitem__(0, char.clock[0] + duration))
+        char.normal_attack = Mock()
         return char
 
     def test_entry_recognition_runs_once_for_each_segment(self):
@@ -41,12 +47,12 @@ class TestDoulingGuaxiang(unittest.TestCase):
         char.recognize_guaxiang = Mock(
             side_effect=[[], ['蓝'], None, ['黄', '蓝', '蓝', '蓝']])
         char.normal_attack = Mock()
-        char.sleep = Mock()
 
         self.assertTrue(char._normal_attack_until_four_guaxiang())
 
-        self.assertEqual(char.normal_attack.call_count, 3)
-        self.assertEqual(char.sleep.call_args_list, [call(.3)] * 3)
+        self.assertEqual(char.normal_attack.call_count, 1)
+        self.assertEqual(char.sleep.call_count, 3)
+        self.assertAlmostEqual(char.clock[0], .3)
         self.assertEqual(char.recognize_guaxiang.call_args_list,
                          [call('before_heavy')] * 4)
         self.assertFalse(char._waiting_for_guaxiang)
@@ -55,25 +61,93 @@ class TestDoulingGuaxiang(unittest.TestCase):
         char = self.make_char()
         char.task.next_frame = Mock(side_effect=[None, char.task.frame])
         char.recognize_guaxiang = Mock(return_value=['蓝'] * 4)
-        char._tap_normal = Mock()
+        char.normal_attack = Mock()
 
         self.assertTrue(char._normal_attack_until_four_guaxiang())
 
-        char._tap_normal.assert_called_once_with()
+        char.normal_attack.assert_called_once_with()
         char.recognize_guaxiang.assert_called_once_with('before_heavy')
+
+    def test_four_gua_returns_before_next_attack_is_due(self):
+        for ready_at in (0, .1):
+            with self.subTest(ready_at=ready_at):
+                char = self.make_char()
+                char.task.next_frame = Mock(return_value=char.task.frame)
+                char.recognize_guaxiang = Mock(
+                    side_effect=lambda _: ['蓝'] * 4 if char.clock[0] >= ready_at else [])
+                self.assertTrue(char._normal_attack_until_four_guaxiang())
+                self.assertAlmostEqual(char.clock[0], ready_at)
+                self.assertEqual(char.normal_attack.call_count, int(ready_at > 0))
+
+    def test_slow_work_does_not_catch_up_attacks_or_polls(self):
+        for stage in ('frame', 'recognition', 'attack'):
+            for delay in (.04, .45):
+                with self.subTest(stage=stage, delay=delay):
+                    char = self.make_char()
+                    polls, attacks = [], []
+
+                    def advance():
+                        char.clock[0] += delay
+
+                    def refresh():
+                        polls.append(char.clock[0])
+                        if stage == 'frame':
+                            advance()
+                        return char.task.frame
+
+                    def recognize(_):
+                        if stage == 'recognition':
+                            advance()
+                        return None
+
+                    def attack():
+                        attacks.append(char.clock[0])
+                        if stage == 'attack':
+                            advance()
+
+                    char.task.next_frame = Mock(side_effect=refresh)
+                    char.recognize_guaxiang = Mock(side_effect=recognize)
+                    char.normal_attack = Mock(side_effect=attack)
+                    self.assertFalse(char._normal_attack_until_four_guaxiang())
+                    self.assertGreater(len(attacks), 1)
+                    self.assertTrue(all(b - a >= .3 - 1e-9 for a, b in zip(attacks, attacks[1:])))
+                    self.assertTrue(all(b - a >= .1 - 1e-9 for a, b in zip(polls, polls[1:])))
+                    self.assertTrue(all(t < 3 for t in attacks))
+                    self.assertLessEqual(len(polls), 30)
+                    if delay == .04 and stage != 'attack':
+                        self.assertAlmostEqual(polls[1], .1)
+
+    def test_sleep_is_clipped_to_deadline(self):
+        char = self.make_char()
+        char.GUAXIANG_WAIT_TIMEOUT = .05
+        char.task.next_frame = Mock(return_value=char.task.frame)
+        char.recognize_guaxiang = Mock(return_value=[])
+        self.assertFalse(char._normal_attack_until_four_guaxiang())
+        char.sleep.assert_called_once_with(.05)
+        self.assertAlmostEqual(char.clock[0], .05)
+
+    def test_stop_during_poll_sleep_propagates(self):
+        from ok.task.exceptions import TaskDisabledException
+        char = self.make_char()
+        char.task.next_frame = Mock(return_value=char.task.frame)
+        char.recognize_guaxiang = Mock(return_value=[])
+        char.sleep.side_effect = TaskDisabledException()
+        with self.assertRaises(TaskDisabledException):
+            char._normal_attack_until_four_guaxiang()
+        self.assertFalse(char._waiting_for_guaxiang)
 
     def test_gate_propagates_combat_end_and_clears_waiting_state(self):
         char = self.make_char()
         char.task.next_frame = Mock(return_value=char.task.frame)
         char.task.check_combat.side_effect = RuntimeError('combat ended')
         char.recognize_guaxiang = Mock()
-        char._tap_normal = Mock()
+        char.normal_attack = Mock()
 
         with self.assertRaisesRegex(RuntimeError, 'combat ended'):
             char._normal_attack_until_four_guaxiang()
 
         char.recognize_guaxiang.assert_not_called()
-        char._tap_normal.assert_not_called()
+        char.normal_attack.assert_not_called()
         self.assertFalse(char._waiting_for_guaxiang)
 
     def test_segment_two_gates_before_heavy_and_preserves_followup_order(self):
@@ -112,7 +186,7 @@ class TestDoulingGuaxiang(unittest.TestCase):
                 char = self.make_char()
                 char._segment = 2
                 char.task.jump = Mock()
-                char.sleep = Mock()
+                char.sleep = Mock(side_effect=lambda duration: clock.__setitem__(0, clock[0] + 1.0))
                 char.flying = Mock(return_value=False)
                 char.wait_down = Mock()
                 char.task.next_frame = Mock(return_value=char.task.frame if has_frame else None)
@@ -123,10 +197,7 @@ class TestDoulingGuaxiang(unittest.TestCase):
                 char.switch_next_char = Mock()
                 clock = [0.0]
 
-                def attack():
-                    clock[0] += 1.0
-
-                char._tap_normal = Mock(side_effect=attack)
+                char.normal_attack = Mock()
                 with patch('src.char.Douling.time.monotonic', side_effect=lambda: clock[0]):
                     char._do_segment2()
 
@@ -145,14 +216,13 @@ class TestDoulingGuaxiang(unittest.TestCase):
     def test_attempt_limit_bounds_recognition_without_screenshots(self):
         char = self.make_char()
         char.task.next_frame = Mock(return_value=char.task.frame)
-        char._tap_normal = Mock()
+        char.normal_attack = Mock()
         detector = Mock(return_value=SimpleNamespace(sequence=None, reason='low_confidence'))
-        with patch('src.char.Douling.time.monotonic', return_value=0), \
-                patch('src.char.Douling.detect_guaxiang', detector):
+        with patch('src.char.Douling.detect_guaxiang', detector):
             self.assertFalse(char._normal_attack_until_four_guaxiang())
         self.assertEqual(detector.call_count, 30)
         char.task.screenshot.assert_not_called()
-        self.assertEqual(char._tap_normal.call_count, 29)
+        self.assertLessEqual(char.normal_attack.call_count, 10)
         self.assertFalse(char._waiting_for_guaxiang)
         char.logger.warning.assert_called_once()
         self.assertIn('reason=max_attempts', char.logger.warning.call_args.args[0])
@@ -176,10 +246,10 @@ class TestDoulingGuaxiang(unittest.TestCase):
 
                     char.task.next_frame = Mock(side_effect=refresh)
                     char.recognize_guaxiang = Mock(side_effect=recognize)
-                    char._tap_normal = Mock()
+                    char.normal_attack = Mock()
                     with patch('src.char.Douling.time.monotonic', side_effect=lambda: clock[0]):
                         self.assertEqual(char._normal_attack_until_four_guaxiang(), elapsed < 3)
-                    char._tap_normal.assert_not_called()
+                    char.normal_attack.assert_not_called()
                     self.assertFalse(char._waiting_for_guaxiang)
                     if stage == 'frame' and elapsed >= 3:
                         char.recognize_guaxiang.assert_not_called()

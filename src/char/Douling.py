@@ -6,6 +6,7 @@ from src.utils.guaxiang import recognize_guaxiang as detect_guaxiang
 
 class Douling(BaseChar):
     NORMAL_ATTACK_INTERVAL = 0.3
+    GUAXIANG_POLL_INTERVAL = 0.1
     GUAXIANG_WAIT_TIMEOUT = 3.0
     GUAXIANG_MAX_ATTEMPTS = 30
 
@@ -99,20 +100,18 @@ class Douling(BaseChar):
             self.click()
             self.cycle_sleep()
 
-    def _tap_normal(self):
-        self.normal_attack()
-        self.sleep(self.NORMAL_ATTACK_INTERVAL)
-
     def _normal_attack_until_four_guaxiang(self):
         """限时普攻补足卦象，只有期限内确认四个才返回成功。"""
         start = time.monotonic()
         deadline = start + self.GUAXIANG_WAIT_TIMEOUT
+        next_attack = start
         attempts = 0
         count = 'uncertain'
         self._waiting_for_guaxiang = True
         self._guaxiang_error_logged = False
         try:
             while attempts < self.GUAXIANG_MAX_ATTEMPTS and time.monotonic() < deadline:
+                poll_start = time.monotonic()
                 attempts += 1
                 frame = self.task.next_frame()
                 self.check_combat()
@@ -130,7 +129,13 @@ class Douling(BaseChar):
                     return True
                 if attempts >= self.GUAXIANG_MAX_ATTEMPTS:
                     break
-                self._tap_normal()
+                if time.monotonic() >= next_attack:
+                    self.normal_attack()
+                    # 从本次输入完成后计时，慢帧时也不补发积压普攻。
+                    next_attack = time.monotonic() + self.NORMAL_ATTACK_INTERVAL
+                remaining = min(poll_start + self.GUAXIANG_POLL_INTERVAL, deadline) - time.monotonic()
+                if remaining > 0:
+                    self.sleep(remaining)
             elapsed = time.monotonic() - start
             reason = 'timeout' if elapsed >= self.GUAXIANG_WAIT_TIMEOUT else 'max_attempts'
             self.logger.warning(
