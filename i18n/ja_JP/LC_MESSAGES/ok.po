@@ -1384,8 +1384,6 @@ msgstr "チーム {team} を完全に削除しますか？"
 msgid "Team deleted."
 msgstr "チームを削除しました。"
 
-
-
 msgid "Use Echo Box for Daily Echo"
 msgstr "音骸ボックスでデイリー用の音骸を獲得"
 
@@ -1393,3 +1391,6 @@ msgid ""
 "When needed, use an Echo box from the Bag to obtain an Echo and complete "
 "daily activities."
 msgstr "必要に応じてバッグ内の音骸ボックスを使用し、音骸を獲得してデイリーを達成します。"
+
+msgid "JingRan"
+msgstr "景燃"
