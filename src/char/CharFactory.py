@@ -15,7 +15,7 @@ from src.char.Chixia import Chixia
 from src.char.Ciaccona import Ciaccona
 from src.char.Danjin import Danjin
 from src.char.Denia import Denia
-from src.char.Douling import Douling
+from src.char.Buling import Buling
 from src.char.Encore import Encore
 from src.char.Galbrena import Galbrena
 from src.char.Rover import Rover
@@ -25,10 +25,10 @@ from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
 from src.char.JingRan import JingRan
 from src.char.Jiyan import Jiyan
-from src.char.Linnai import Linnai
+from src.char.Lynae import Lynae
 from src.char.Lucilla import Lucilla
 from src.char.Lucy import Lucy
-from src.char.Luhesi import Luhesi
+from src.char.LuukHerssen import LuukHerssen
 from src.char.Lupa import Lupa
 from src.char.Mortefi import Mortefi
 from src.char.Mornye import Mornye
@@ -39,14 +39,14 @@ from src.char.Qiuyuan import Qiuyuan
 from src.char.Rebecca import Rebecca
 from src.char.Roccia import Roccia
 from src.char.Sanhua import Sanhua
-from src.char.ShoreKeeper import ShoreKeeper
+from src.char.Shorekeeper import Shorekeeper
 from src.char.Suisui import Suisui
 from src.char.Taoqi import Taoqi
 from src.char.Verina import Verina
-from src.char.Xiangliyao import Xiangliyao
-from src.char.Xigelika import Xigelika
+from src.char.XiangliYao import XiangliYao
+from src.char.Sigrika import Sigrika
 from src.char.Yinlin import Yinlin
-from src.char.YangYangSp import YangYangSp
+from src.char.YangyangXuanling import YangyangXuanling
 from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
 from src.char.Zani import Zani
@@ -54,13 +54,13 @@ from src.char.Zhezhi import Zhezhi
 from src.char.CustomCharLoader import load_team_char_class, normalize_team
 
 _char_dict_raw = {
-    Labels.yangyang_sp: {'cls': YangYangSp, 'char_type': CharType.MAIN_DPS,
+    Labels.yangyang_sp: {'cls': YangyangXuanling, 'char_type': CharType.MAIN_DPS,
                          'ring_index': Elements.HAVOC},
     Labels.char_yinlin: {'cls': Yinlin, 'char_type': CharType.SUB_DPS,
                          'ring_index': Elements.ELECTRIC},
     Labels.char_verina: {'cls': Verina, 'char_type': CharType.HEALER,
                          'ring_index': Elements.SPECTRO},
-    Labels.char_shorekeeper: {'cls': ShoreKeeper, 'char_type': CharType.HEALER,
+    Labels.char_shorekeeper: {'cls': Shorekeeper, 'char_type': CharType.HEALER,
                               'ring_index': Elements.SPECTRO},
     Labels.char_suisui: {'cls': Suisui, 'char_type': CharType.HEALER},
     Labels.char_taoqi: {'cls': Taoqi, 'char_type': CharType.HEALER,
@@ -92,7 +92,7 @@ _char_dict_raw = {
                           'ring_index': Elements.FIRE},
     Labels.char_zhezhi: {'cls': Zhezhi, 'char_type': CharType.SUB_DPS,
                          'ring_index': Elements.ICE},
-    Labels.char_xiangliyao: {'cls': Xiangliyao, 'char_type': CharType.MAIN_DPS,
+    Labels.char_xiangliyao: {'cls': XiangliYao, 'char_type': CharType.MAIN_DPS,
                              'ring_index': Elements.ELECTRIC},
     Labels.char_camellya: {'cls': Camellya, 'char_type': CharType.MAIN_DPS,
                            'ring_index': Elements.HAVOC},
@@ -118,14 +118,14 @@ _char_dict_raw = {
     (Labels.char_chisa, Labels.char_chisa2): {'cls': Chisa, 'char_type': CharType.HEALER, 'buff_time': 20,
                                               'ring_index': Elements.HAVOC},
     Labels.char_denia: {'cls': Denia, 'char_type': CharType.SUB_DPS, 'buff_time': 14, 'ring_index': Elements.FIRE},
-    Labels.char_douling: {'cls': Douling, 'char_type': CharType.HEALER, 'ring_index': Elements.ELECTRIC},
-    (Labels.char_linnai, Labels.char_linnai2): {'cls': Linnai, 'char_type': CharType.SUB_DPS,
+    Labels.char_douling: {'cls': Buling, 'char_type': CharType.HEALER, 'ring_index': Elements.ELECTRIC},
+    (Labels.char_linnai, Labels.char_linnai2): {'cls': Lynae, 'char_type': CharType.SUB_DPS,
                                                 'ring_index': Elements.SPECTRO},
     (Labels.char_moning, Labels.char_moning_new): {'cls': Mornye, 'char_type': CharType.HEALER,
                                                    'ring_index': Elements.FIRE},
     Labels.char_aemeath: {'cls': Aemeath, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.FIRE},
-    Labels.char_xigelika: {'cls': Xigelika, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.WIND},
-    Labels.char_luhesi: {'cls': Luhesi, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
+    Labels.char_xigelika: {'cls': Sigrika, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.WIND},
+    Labels.char_luhesi: {'cls': LuukHerssen, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
     Labels.char_hiyuki: {'cls': Hiyuki, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.ICE},
     Labels.char_lucilla: {'cls': Lucilla, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ICE,
                           'target_box_short_combat_check': True},

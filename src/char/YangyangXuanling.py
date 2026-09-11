@@ -4,7 +4,7 @@ from ok import Logger
 from src.char.BaseChar import BaseChar
 
 
-class YangYangSp(BaseChar):
+class YangyangXuanling(BaseChar):
     INTRO_PERFORM_DURATION = 8.0
     PERFORM_DURATION = 3.2
     LONG_PRESS_RELEASE_DELAY = 0.1

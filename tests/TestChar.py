@@ -10,16 +10,16 @@ from src.char.Chisa import Chisa
 from src.char.Ciaccona import Ciaccona
 from src.char.Denia import Denia
 from src.char.Iuno import Iuno
-from src.char.Linnai import Linnai
+from src.char.Lynae import Lynae
 from src.char.Lucilla import Lucilla
 from src.char.Lucy import Lucy
 from src.char.Phrolova import Phrolova
 from src.char.Qingxiao import Qingxiao
 from src.char.Rebecca import Rebecca
-from src.char.ShoreKeeper import ShoreKeeper
+from src.char.Shorekeeper import Shorekeeper
 from src.char.Suisui import Suisui
 from src.char.Verina import Verina
-from src.char.YangYangSp import YangYangSp
+from src.char.YangyangXuanling import YangyangXuanling
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
 from src.task.AutoCombatTask import AutoCombatTask
 from src.task.FarmEchoTask import FarmEchoTask
@@ -163,7 +163,7 @@ class TestChar(TaskTestCase):
         self.assertEqual(char_dict[Labels.char_chisa2]['cls'], Chisa)
         self.assertEqual(char_dict[Labels.char_chisa2]['buff_time'], 20)
 
-        self.assertEqual(char_dict[Labels.char_linnai2]['cls'], Linnai)
+        self.assertEqual(char_dict[Labels.char_linnai2]['cls'], Lynae)
         self.assertEqual(char_dict[Labels.char_linnai2]['char_type'], CharType.SUB_DPS)
         self.assertEqual(char_dict[Labels.char_linnai2]['canonical_name'], Labels.char_linnai)
         self.assertEqual(
@@ -179,7 +179,7 @@ class TestChar(TaskTestCase):
         self.assertEqual(char_dict[Labels.char_rebecca]['char_type'], CharType.SUB_DPS)
         self.assertEqual(char_dict[Labels.char_suisui]['cls'], Suisui)
         self.assertEqual(char_dict[Labels.char_suisui]['char_type'], CharType.HEALER)
-        self.assertEqual(char_dict[Labels.yangyang_sp]['cls'], YangYangSp)
+        self.assertEqual(char_dict[Labels.yangyang_sp]['cls'], YangyangXuanling)
         self.assertEqual(char_dict[Labels.yangyang_sp]['char_type'], CharType.MAIN_DPS)
         self.assertEqual(_get_char_type(task, char_dict[Labels.char_iuno]), CharType.SUB_DPS)
         self.assertEqual(_get_buff_time(task, char_dict[Labels.char_iuno]), get_default_buff_time(CharType.SUB_DPS))
@@ -250,20 +250,20 @@ class TestChar(TaskTestCase):
             def sleep(self, duration):
                 actions.append(('sleep', duration))
 
-        class TrackingYangYangSp(YangYangSp):
+        class TrackingYangyangXuanling(YangyangXuanling):
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 return self.PERFORM_DURATION
 
             def switch_next_char(self, *args, **kwargs):
                 actions.append('switch')
 
-        yangyang = TrackingYangYangSp(Task(), 0)
+        yangyang = TrackingYangyangXuanling(Task(), 0)
         yangyang.do_perform()
 
         self.assertEqual(actions, [
             'mouse_down',
             'mouse_up',
-            ('sleep', YangYangSp.LONG_PRESS_RELEASE_DELAY),
+            ('sleep', YangyangXuanling.LONG_PRESS_RELEASE_DELAY),
             'switch',
         ])
 
@@ -285,7 +285,7 @@ class TestChar(TaskTestCase):
                 if duration == 0.05:
                     self.poll_count += 1
 
-        class TrackingYangYangSp(YangYangSp):
+        class TrackingYangyangXuanling(YangyangXuanling):
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 return 0 if self.task.poll_count < 3 else self.PERFORM_DURATION
 
@@ -302,7 +302,7 @@ class TestChar(TaskTestCase):
             def switch_next_char(self, *args, **kwargs):
                 actions.append('switch')
 
-        yangyang = TrackingYangYangSp(Task(), 0)
+        yangyang = TrackingYangyangXuanling(Task(), 0)
         yangyang.do_perform()
 
         self.assertEqual(actions.count(('echo', {'time_out': 0})), 1)
@@ -325,7 +325,7 @@ class TestChar(TaskTestCase):
                 if not self.skip_combat_check:
                     raise RuntimeError('combat check failed')
 
-        class TrackingYangYangSp(YangYangSp):
+        class TrackingYangyangXuanling(YangyangXuanling):
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 return 0
 
@@ -338,7 +338,7 @@ class TestChar(TaskTestCase):
             def resonance_available(self):
                 return False
 
-        yangyang = TrackingYangYangSp(Task(), 0)
+        yangyang = TrackingYangyangXuanling(Task(), 0)
         with self.assertRaisesRegex(RuntimeError, 'combat check failed'):
             yangyang.do_perform()
 
@@ -346,7 +346,7 @@ class TestChar(TaskTestCase):
             'mouse_down',
             ('sleep', 0.05),
             'mouse_up',
-            ('sleep', YangYangSp.LONG_PRESS_RELEASE_DELAY),
+            ('sleep', YangyangXuanling.LONG_PRESS_RELEASE_DELAY),
         ])
 
     def test_suisui_switch_priority_with_main_dps(self):
@@ -644,7 +644,7 @@ class TestChar(TaskTestCase):
         task = Task()
         char = get_char_by_pos(task, None, 0, None)
 
-        self.assertIsInstance(char, Linnai)
+        self.assertIsInstance(char, Lynae)
         self.assertEqual(char.char_name, Labels.char_linnai)
 
         char = get_char_by_pos(task, None, 0, char)
@@ -1848,7 +1848,7 @@ class TestChar(TaskTestCase):
             def jump(self):
                 pass
 
-        class TestLinnai(Linnai):
+        class TestLynae(Lynae):
             def __init__(self):
                 super().__init__(Task(), 0)
                 self.actions = []
@@ -1882,10 +1882,10 @@ class TestChar(TaskTestCase):
             def wait_down(self, click=True):
                 self.actions.append(('wait_down', click))
 
-        linnai = TestLinnai()
-        self.assertTrue(linnai.perform_under_intro())
-        self.assertEqual(linnai.resonance_clicks, 2)
-        self.assertEqual(linnai.actions, [('sleep', 0.3), ('wait_down', True),
+        lynae = TestLynae()
+        self.assertTrue(lynae.perform_under_intro())
+        self.assertEqual(lynae.resonance_clicks, 2)
+        self.assertEqual(lynae.actions, [('sleep', 0.3), ('wait_down', True),
                                           ('sleep', 0.3), ('wait_down', True)])
 
     def test_linnai_waits_longer_after_aemeath_outro(self):
@@ -1897,7 +1897,7 @@ class TestChar(TaskTestCase):
                 self.wait_time_out = time_out
                 return condition()
 
-        class TestLinnai(Linnai):
+        class TestLynae(Lynae):
             def __init__(self, task):
                 super().__init__(task, 0)
                 self.has_intro = True
@@ -1914,9 +1914,9 @@ class TestChar(TaskTestCase):
                 pass
 
         task = Task()
-        linnai = TestLinnai(task)
-        self.assertTrue(linnai.wait_for_accelerate_ready())
-        self.assertEqual(task.wait_time_out, linnai.AEMEATH_INTRO_RES_WAIT)
+        lynae = TestLynae(task)
+        self.assertTrue(lynae.wait_for_accelerate_ready())
+        self.assertEqual(task.wait_time_out, lynae.AEMEATH_INTRO_RES_WAIT)
 
     def test_linnai_check_res_falls_back_to_long_target_box(self):
         class Box:
@@ -1947,8 +1947,8 @@ class TestChar(TaskTestCase):
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 return 999
 
-        linnai = Linnai(Task(), 0)
-        self.assertTrue(linnai.check_res())
+        lynae = Lynae(Task(), 0)
+        self.assertTrue(lynae.check_res())
 
     def test_intro_does_not_switch_to_phrolova_during_liberation_lock(self):
         class Task:
@@ -2031,7 +2031,7 @@ class TestChar(TaskTestCase):
             def wait_in_team_and_world(self, **kwargs):
                 raise RuntimeError('intro wait failed')
 
-        shorekeeper = ShoreKeeper(Task(), 0)
+        shorekeeper = Shorekeeper(Task(), 0)
         shorekeeper.has_intro = True
 
         with self.assertRaises(RuntimeError):
@@ -2043,7 +2043,7 @@ class TestChar(TaskTestCase):
         class Task:
             has_lavitator = False
 
-        shorekeeper = ShoreKeeper(Task(), 0)
+        shorekeeper = Shorekeeper(Task(), 0)
         shorekeeper.has_intro = True
         self.assertTrue(shorekeeper.skip_combat_check())
 
@@ -2076,7 +2076,7 @@ class TestChar(TaskTestCase):
         self.set_image('tests/images/luhesi_lib_in_cd.png')
         self.task.load_chars()
         self.assertTrue(len(self.task.chars) > 0)
-        self.assertEqual(self.task.chars[0].name, 'Luhesi')
+        self.assertEqual(self.task.chars[0].name, 'LuukHerssen')
 
         has_cd = self.task.chars[0].has_cd('liberation')
         time.sleep(1)

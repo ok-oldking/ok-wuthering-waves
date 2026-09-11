@@ -3,7 +3,7 @@ import time
 from src.char.BaseChar import BaseChar, SwitchPriority
 
 
-class ShoreKeeper(BaseChar):
+class Shorekeeper(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.outrotime = -1
@@ -33,7 +33,7 @@ class ShoreKeeper(BaseChar):
         if self.has_intro:
             self.task.skip_combat_check = True
             try:
-                self.logger.debug('ShoreKeeper wait intro animation')
+                self.logger.debug('Shorekeeper wait intro animation')
                 time.sleep(0.1)
                 if not self.task.in_team_and_world():
                     self.task.wait_in_team_and_world(time_out=4, raise_if_not_found=False)
@@ -66,5 +66,5 @@ class ShoreKeeper(BaseChar):
                 self.task.next_frame()
         if clicked:
             self.dodge_count -= 1
-            self.logger.info('ShoreKeepers auto dodge success!')
+            self.logger.info('Shorekeepers auto dodge success!')
         return clicked

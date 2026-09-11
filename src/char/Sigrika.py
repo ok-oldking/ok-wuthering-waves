@@ -3,7 +3,7 @@ import time
 from src.char.BaseChar import BaseChar
 
 
-class Xigelika(BaseChar):
+class Sigrika(BaseChar):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -70,9 +70,9 @@ class Xigelika(BaseChar):
         return handled
 
     def shorekeeper_auto_dodge(self):
-        from src.char.ShoreKeeper import ShoreKeeper
+        from src.char.Shorekeeper import Shorekeeper
         for i, char in enumerate(self.task.chars):
-            if isinstance(char, ShoreKeeper):
+            if isinstance(char, Shorekeeper):
                 return char.auto_dodge(condition = self.flying)  
                 
     def is_forte_full(self):

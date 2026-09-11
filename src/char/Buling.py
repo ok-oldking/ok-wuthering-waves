@@ -3,7 +3,7 @@ import time
 from src.char.BaseChar import BaseChar, SwitchPriority
 
 
-class Douling(BaseChar):
+class Buling(BaseChar):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

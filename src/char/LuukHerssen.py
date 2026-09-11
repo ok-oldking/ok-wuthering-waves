@@ -3,7 +3,7 @@ import time
 from src.char.BaseChar import BaseChar, SwitchPriority
 
 
-class Luhesi(BaseChar):
+class LuukHerssen(BaseChar):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

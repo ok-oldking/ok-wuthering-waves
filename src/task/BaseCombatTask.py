@@ -35,14 +35,9 @@ class CharRevivedException(CharDeadException):
 
 
 mismatched_names = {
-    "Douling": "Buling",
-    "Xigelika": "Sigrika",
-    "Linnai": "Lynae",
-    "Luhesi": "Luuk Herssen",
-    "Xiangliyao": "Xiangli Yao",
-    "ShoreKeeper": "Shorekeeper",
-    "Rover": "Rover",
-    "YangYangSp": "Yangyang: Xuanling",
+    "LuukHerssen": "Luuk Herssen",
+    "XiangliYao": "Xiangli Yao",
+    "YangyangXuanling": "Yangyang: Xuanling",
 }
 
 
@@ -610,11 +605,11 @@ class BaseCombatTask(CombatCheck):
             f'current_con {current_con}')
         # if self.debug:
         #     self.screenshot(f'switch_next_char_{current_con}')
-        from src.char.ShoreKeeper import ShoreKeeper
+        from src.char.Shorekeeper import Shorekeeper
         last_click = 0
         start = time.time()
         while True:
-            if not (isinstance(switch_to, ShoreKeeper) and has_intro):
+            if not (isinstance(switch_to, Shorekeeper) and has_intro):
                 self.check_combat()
             now = time.time()
             _, current_index, _ = self.in_team()
