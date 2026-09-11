@@ -1311,5 +1311,15 @@ msgstr "¿Eliminar permanentemente el equipo {team}?"
 msgid "Team deleted."
 msgstr "Equipo eliminado."
 
+msgid "Use Echo Box for Daily Echo"
+msgstr "Usar cajas de Eco para las actividades diarias"
+
+msgid ""
+"When needed, use an Echo box from the Bag to obtain an Echo and complete "
+"daily activities."
+msgstr ""
+"Cuando sea necesario, usa una caja de Eco de la mochila para obtener un Eco "
+"y completar las actividades diarias."
+
 msgid "JingRan"
 msgstr "Jingran"
