@@ -1,3 +1,4 @@
+import re
 import unittest
 
 from src.task.BaseWWTask import BaseWWTask, LOGIN_CLICK_SETTLE_TIME, LOGIN_TEXTS
@@ -46,10 +47,15 @@ class FakeLoginTask:
                     if 'log' in b.name.lower() or '登录' in b.name or '登入' in b.name] or None
         if match == "+86":
             return [b for b in texts if '+86' in b.name] or None
+        if isinstance(match, re.Pattern):
+            # 与真实 ok.find_boxes 一致:re.Pattern 做 re.search 子串匹配
+            return [b for b in texts if re.search(match, b.name)] or None
         return None
 
     def click(self, target, after_sleep=0):
-        self.clicked.append([b.name for b in target])
+        # 与真实 ok.BaseTask.click 兼容:接受单个 Box 或 Box 列表
+        targets = target if isinstance(target, list) else [target]
+        self.clicked.append([b.name for b in targets])
 
     def sleep(self, timeout):
         self.slept.append(timeout)
@@ -104,6 +110,16 @@ class TestWaitLogin(unittest.TestCase):
 
         self.assertFalse(result)
         self.assertEqual(task.clicked, [])
+
+    def test_connect_button_is_clicked(self):
+        # 3.6.x 连接界面按钮:regex 子串匹配,OCR 文本含多余字符也能命中;
+        # 多匹配(如右下角重试图标)时排序后取第一个(主按钮)
+        task = FakeLoginTask(frames=[[TextBox('点击连接'), TextBox('点击连接 :: 重试')]])
+
+        result = BaseWWTask.wait_login(task)
+
+        self.assertFalse(result)
+        self.assertEqual(task.clicked, [['点击连接']])
 
 
 if __name__ == "__main__":
