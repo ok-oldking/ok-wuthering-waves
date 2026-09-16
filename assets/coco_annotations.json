@@ -1231,7 +1231,7 @@
             "height": 2160
         },
         {
-            "id": 290,
+            "id": 292,
             "file_name": "images/douling_gua_blue.png",
             "width": 1600,
             "height": 900
@@ -5255,7 +5255,7 @@
         },
         {
             "id": 440,
-            "image_id": 290,
+            "image_id": 292,
             "category_id": 282,
             "bbox": [
                 782,
