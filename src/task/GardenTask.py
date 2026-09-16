@@ -1,4 +1,5 @@
 import re
+import time
 
 import cv2
 
@@ -16,6 +17,12 @@ ECHO_REFRESH_TEXT = re.compile('刷新|Refresh', re.IGNORECASE)
 
 # 品质优先级: 金 > 紫 > 蓝 > 灰
 ECHO_QUALITY_PRIORITY = ('gold', 'purple', 'blue', 'gray')
+
+# 顶部倍数按钮区域(最大为 MAX), 以及旁边"剩余X天"文本区域, 用于确认在乐园主界面 (1920x1080 归一化)
+GARDEN_MULTIPLIER_BOX = (0.540, 0.025, 0.600, 0.080)
+GARDEN_DAY_TEXT_BOX = (0.320, 0.025, 0.400, 0.080)
+GARDEN_DAY_TEXT = re.compile('剩余|剩餘|Days?|天', re.IGNORECASE)
+GARDEN_MULTIPLIER_MAX = re.compile('MAX', re.IGNORECASE)
 
 # 卡片标题栏区域与卡片点击位置 (1920x1080 归一化坐标)
 ECHO_CARDS = (
@@ -45,6 +52,7 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
         WWOneTimeTask.run(self)
         self.ensure_main()
         self.open_garden_weekly_page()
+        self.ensure_garden_multiplier_max()
         if self.is_weekly_garden_completed():
             self.log_info('乐园任务完成, 已达到上限', notify=True)
             return
@@ -98,6 +106,25 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
                         self.click(garden_restart, after_sleep=1)
                 self.sleep(0.2)
         self.log_info('乐园任务完成, 已达到上限', notify=True)
+
+    def ensure_garden_multiplier_max(self, time_out=6):
+        """乐园主界面检查顶部倍数按钮是否为 MAX, 不是则点击调整为 MAX"""
+        box = self.box_of_screen(*GARDEN_MULTIPLIER_BOX)
+        day_box = self.box_of_screen(*GARDEN_DAY_TEXT_BOX)
+        start = time.time()
+        while time.time() - start < time_out:
+            texts = self.ocr(box=day_box, log=self.debug)
+            if not self.find_boxes(texts, boundary=day_box, match=GARDEN_DAY_TEXT):
+                self.log_info('not on garden main screen, skip multiplier check')
+                return False
+            texts = self.ocr(box=box, log=self.debug)
+            if self.find_boxes(texts, boundary=box, match=GARDEN_MULTIPLIER_MAX):
+                self.log_info('garden multiplier is MAX')
+                return True
+            self.log_info('garden multiplier not MAX, click to adjust')
+            self.click(0.565, 0.052, after_sleep=0.5)
+        self.log_info('adjust garden multiplier to MAX timeout')
+        return False
 
     def open_garden_weekly_page(self):
         self.openF2Book('gray_book_quest')
