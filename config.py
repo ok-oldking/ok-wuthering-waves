@@ -149,6 +149,20 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
     'Monthly Card Time': 'Your computer\'s local time when the monthly card will popup, hour in (1-24)'
 })
 
+
+def validate_development_overlay(key, value):
+    """Refresh the native HUD before the Settings page returns to the user."""
+    from src.globals import Globals
+    Globals.apply_overlay_setting_change(key, value)
+    return True, None
+
+
+overlay_config_option = ConfigOption('Development Overlay', {
+    'Show Custom Overlay Content': True,
+    'Show Debug Boxes': False,
+}, description='Control custom game HUD content and recognition boxes independently.',
+   validator=validate_development_overlay)
+
 config = {
     'debug': False,  # Optional, default: False
     'custom_tasks': True,
@@ -158,7 +172,7 @@ config = {
     'config_folder': 'configs',
     'blur_area': blur_area,
     'gui_icon': 'icons/icon.png',
-    'global_configs': [key_config_option, char_config_option, monthly_card_config_option],
+    'global_configs': [key_config_option, char_config_option, monthly_card_config_option, overlay_config_option],
     'custom_tabs': [["src.gui.CharacterCodeTab", "CharacterCodeTab"]],
     'ocr': {
         'lib': 'onnxocr',
@@ -270,6 +284,8 @@ config = {
         ["src.task.SkipDialogTask", "AutoDialogTask"],
         ["src.task.FastTravelTask", "FastTravelTask"],
         ["src.task.MouseResetTask", "MouseResetTask"],
+        ["src.task.OverlayStatusTask", "OverlayStatusTask"],
+        ["src.task.EchoStatOverlayTask", "EchoStatOverlayTask"],
     ], 'scene': ["src.scene.WWScene", "WWScene"],
     'update_pyappify': {
         'to_version': '1.2.3',
