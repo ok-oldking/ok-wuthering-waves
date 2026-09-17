@@ -40,7 +40,10 @@ class TestEchoStatOverlayTask(unittest.TestCase):
         task.ocr = Mock(return_value=[])
         with unittest.mock.patch(
             "src.task.EchoStatOverlayTask.analyze_echo_stats",
-            return_value=Mock(rectangles=[Mock()], row_scores=[1.0], summary="score"),
+            return_value=Mock(
+                rectangles=[Mock()], row_scores=[1.0], summary="score", tier_labels=["1档"],
+                tier_colors=[(80, 235, 130)],
+            ),
         ):
             self.assertFalse(task.run())
 

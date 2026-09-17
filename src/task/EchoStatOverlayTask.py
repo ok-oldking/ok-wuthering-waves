@@ -42,9 +42,16 @@ class EchoStatOverlayTask(TriggerTask, BaseWWTask):
         # This is the exact full-frame OCR result whose Boxes are rendered by
         # the red debug layer.  We only regroup and recolour those Boxes.
         ocr_boxes = self.ocr()
-        template_name = self.echo_score_config.get("角色评分模板", "通用")
+        from src.echo_score import DEFAULT_TEMPLATE
+        template_name = self.echo_score_config.get("角色评分模板", DEFAULT_TEMPLATE)
         analysis = analyze_echo_stats(ocr_boxes, self.width, self.height, template_name)
-        self.painter.update(analysis.rectangles, analysis.row_scores, analysis.summary)
+        self.painter.update(
+            analysis.rectangles,
+            analysis.row_scores,
+            analysis.summary,
+            analysis.tier_labels,
+            analysis.tier_colors,
+        )
         if analysis.rectangles:
             overlay.draw(ECHO_STAT_PAINTER_KEY, self.painter.paint)
         else:

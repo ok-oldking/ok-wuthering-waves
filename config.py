@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 
 from ok import Box, ConfigOption, Icon
-from src.echo_score import template_names
+from src.echo_score import DEFAULT_TEMPLATE, template_names
 from src.task.process_feature import process_feature
 
 version = "dev"
@@ -159,7 +159,7 @@ def validate_echo_score(key, value):
 
 
 echo_score_config_option = ConfigOption('声骸评分', {
-    '角色评分模板': '通用',
+    '角色评分模板': DEFAULT_TEMPLATE,
     '显示主副词条框体': True,
     'Show Debug Boxes': False,
 }, description='声骸评分与游戏画面标识设置', validator=validate_echo_score,

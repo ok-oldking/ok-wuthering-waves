@@ -1,21 +1,89 @@
-"""Echo score calculation adapted from the local wuwa-stat-echo project."""
+"""XW-UID-compatible score calculation for one Echo."""
 
 from __future__ import annotations
 
-import json
+from collections import Counter
 from dataclasses import dataclass
+import math
+
+from src.xwuid_echo_data import TEMPLATES
 
 
-# Snapshot of E:\wuwa-stat-echo\backend\consts.py.  Keeping the values local
-# makes the development client independent from the sibling checkout.
-TEMPLATE_DATA = json.loads(r'''{"通用":{"echo_max_score":{"4":80,"3":80,"1":80},"mainstat_scores":{"4C":[6.61,2.25],"3C属伤":[5.21,1.57],"3C攻击":[5.16,1.57],"3C其它":[1.57,0],"1C":[4.76,0]},"substat_weight":{"共鸣效率":0.3,"普攻":0.05,"重击":0.05,"共鸣技能":0.05,"共鸣解放":0.05}},"暗主":{"echo_max_score":{"4":82.527,"3":78.527,"1":74.977},"mainstat_scores":{"4C":[6.66,2.27],"3C属伤":[5.25,1.59],"3C攻击":[5.25,1.59],"3C其它":[1.59,0],"1C":[4.8,0]},"substat_weight":{"共鸣效率":0.5,"普攻":0.275,"共鸣技能":0.22,"共鸣解放":0.605}},"椿":{"echo_max_score":{"4":83.8,"3":79.8,"1":76.25},"mainstat_scores":{"4C":[6.56,2.23],"3C属伤":[5.2,1.6],"3C攻击":[5.2,1.6],"3C其它":[1.6,0],"1C":[4.72,0]},"substat_weight":{"共鸣效率":0.15,"普攻":0.715,"共鸣解放":0.275}},"珂莱塔":{"echo_max_score":{"4":86.066,"3":82.066,"1":78.516},"mainstat_scores":{"4C":[6.39,2.17],"3C属伤":[5.02,1.52],"3C攻击":[5.02,1.52],"3C其它":[1.52,0],"1C":[4.58,0]},"substat_weight":{"共鸣效率":0.2,"共鸣技能":0.91}},"今汐":{"echo_max_score":{"4":83.8,"3":79.8,"1":76.25},"mainstat_scores":{"4C":[6.56,2.23],"3C属伤":[5.16,1.56],"3C攻击":[5.16,1.56],"3C其它":[1.56,0],"1C":[4.72,0]},"substat_weight":{"共鸣效率":0.25,"共鸣技能":0.715,"共鸣解放":0.33}},"长离":{"echo_max_score":{"4":83.17,"3":79.17,"1":75.62},"mainstat_scores":{"4C":[6.61,2.25],"3C属伤":[5.21,1.57],"3C攻击":[5.21,1.57],"3C其它":[1.57,0],"1C":[4.76,0]},"substat_weight":{"共鸣效率":0.3,"共鸣技能":0.66,"共鸣解放":0.44}},"坎特蕾拉":{"echo_max_score":{"4":83.17,"3":79.17,"1":75.62},"mainstat_scores":{"4C":[6.61,2.25],"3C属伤":[5.21,1.57],"3C攻击":[5.21,1.57],"3C其它":[1.57,0],"1C":[4.76,0]},"substat_weight":{"共鸣效率":0.5,"普攻":0.66}},"折枝":{"echo_max_score":{"4":81.89,"3":77.89,"1":74.34},"mainstat_scores":{"4C":[6.71,2.28],"3C属伤":[5.29,1.6],"3C攻击":[5.29,1.6],"3C其它":[1.6,0],"1C":[4.84,0]},"substat_weight":{"共鸣效率":0.2,"普攻":0.55,"重击":0.22,"共鸣技能":0.22}},"忌炎":{"echo_max_score":{"4":83.8,"3":79.8,"1":76.25},"mainstat_scores":{"4C":[6.56,2.23],"3C属伤":[5.16,1.56],"3C攻击":[5.16,1.56],"3C其它":[1.56,0],"1C":[4.72,0]},"substat_weight":{"共鸣效率":0.3,"普攻":0.165,"重击":0.715,"共鸣技能":0.33}},"相里要":{"echo_max_score":{"4":83.8,"3":79.8,"1":76.25},"mainstat_scores":{"4C":[6.56,2.23],"3C属伤":[5.16,1.56],"3C攻击":[5.16,1.56],"3C其它":[1.56,0],"1C":[4.72,0]},"substat_weight":{"共鸣效率":0.3,"普攻":0.165,"共鸣技能":0.22,"共鸣解放":0.715}},"洛可可":{"echo_max_score":{"4":85.25,"3":81.25,"1":77.7},"mainstat_scores":{"4C":[6.45,2.19],"3C属伤":[5.07,1.53],"3C攻击":[5.07,1.53],"3C其它":[1.53,0],"1C":[4.63,0]},"substat_weight":{"共鸣效率":0.3,"重击":0.84}},"布兰特":{"echo_max_score":{"4":77.33,"3":74.03,"1":71.88},"mainstat_scores":{"4C":[7.11,1.06],"3C属伤":[5.57,0.74],"3C攻击":[5.57,0.74],"3C其它":[5.57,0.74],"1C":[5,0]},"substat_weight":{"攻击":0.44,"攻击固定值":0.044,"共鸣效率":0.8,"普攻":0.66,"共鸣解放":0.165}},"菲比":{"echo_max_score":{"4":78.76,"3":74.76,"1":71.21},"mainstat_scores":{"4C":[6.98,2.38],"3C属伤":[5.51,1.67],"3C攻击":[5.21,1.57],"3C其它":[1.57,0],"1C":[5.05,0]},"substat_weight":{"暴击":1.58,"共鸣效率":0.1,"普攻":0.088,"重击":0.66,"共鸣技能":0.055,"共鸣解放":0.187}},"赞妮":{"echo_max_score":{"4":83.8,"3":79.8,"1":76.25},"mainstat_scores":{"4C":[6.56,2.23],"3C属伤":[5.16,1.56],"3C攻击":[5.16,1.56],"3C其它":[1.56,0],"1C":[4.72,0]},"substat_weight":{"共鸣效率":0.3,"重击":0.715,"共鸣解放":0.154}},"夏空":{"echo_max_score":{"4":82.78,"3":78.78,"1":75.23},"mainstat_scores":{"4C":[6.64,2.26],"3C属伤":[5.23,1.58],"3C攻击":[5.23,1.58],"3C其它":[1.58,0],"1C":[4.78,0]},"substat_weight":{"共鸣效率":0.3,"普攻":0.506,"重击":0.363,"共鸣解放":0.627}},"卡提希娅":{"echo_max_score":{"4":79.726,"3":76.871,"1":78.986},"mainstat_scores":{"4C":[6.89,0],"3C属伤":[5.46,0],"3C攻击":[5.46,0],"3C其它":[0,0],"1C":[4.32,2.16]},"substat_weight":{"攻击":0,"攻击固定值":0,"生命":1.1,"生命固定值":0.01,"共鸣效率":0.1,"普攻":0.704,"共鸣解放":0.308}},"露帕":{"echo_max_score":{"4":84.059,"3":80.059,"1":76.509},"mainstat_scores":{"4C":[6.54,2.23],"3C属伤":[5.15,1.56],"3C攻击":[5.15,1.56],"3C其它":[1.56,0],"1C":[4.7,0]},"substat_weight":{"共鸣效率":0.2,"普攻":0.077,"重击":0.055,"共鸣技能":0.231,"共鸣解放":0.737}},"弗洛洛":{"echo_max_score":{"4":84.059,"3":80.059,"1":76.509},"mainstat_scores":{"4C":[6.54,2.23],"3C属伤":[5.15,1.56],"3C攻击":[5.15,1.56],"3C其它":[1.56,0],"1C":[4.7,0]},"substat_weight":{"共鸣技能":0.737}},"奥古斯塔":{"echo_max_score":{"4":85.161,"3":81.161,"1":77.611},"mainstat_scores":{"4C":[6.45,2.2],"3C属伤":[5.08,1.54],"3C攻击":[5.08,1.54],"3C其它":[1.54,0],"1C":[4.63,0]},"substat_weight":{"重击":0.832,"共鸣效率":0.2}},"尤诺":{"echo_max_score":{"4":83.804,"3":79.804,"1":76.254},"mainstat_scores":{"4C":[6.56,2.23],"3C属伤":[5.16,1.56],"3C攻击":[5.16,1.56],"3C其它":[1.56,0],"1C":[4.72,0]},"substat_weight":{"共鸣效率":0.2,"共鸣解放":0.715}},"嘉贝莉娜":{"echo_max_score":{"4":80.358,"3":76.358,"1":72.808},"mainstat_scores":{"4C":[6.56,2.23],"3C属伤":[5.4,1.63],"3C攻击":[5.4,1.63],"3C其它":[1.63,0],"1C":[4.94,0]},"substat_weight":{"共鸣效率":0.2,"重击":0.418}},"陆赫斯":{"echo_max_score":{"4":85.915,"3":81.915,"1":78.365},"mainstat_scores":{"4C":[6.4,2.18],"3C属伤":[5.03,1.52],"3C攻击":[5.03,1.52],"3C其它":[1.52,0],"1C":[4.59,0]},"substat_weight":{"攻击":1.15,"普攻":0.847,"共鸣效率":0.15}},"爱弥斯":{"echo_max_score":{"4":85.642,"3":81.642,"1":78.092},"mainstat_scores":{"4C":[6.42,2.18],"3C属伤":[5.05,1.53],"3C攻击":[5.05,1.53],"3C其它":[1.53,0],"1C":[4.6,0]},"substat_weight":{"攻击固定值":0.12,"共鸣解放":0.77,"共鸣效率":0.2}},"达妮娅":{"echo_max_score":{"4":85.939,"3":83.88,"1":84.979},"mainstat_scores":{"4C":[6.14,1.74],"3C属伤":[5.36,1.49],"3C攻击":[5.36,1.49],"3C其它":[1.49,0],"1C":[7.41,0]},"substat_weight":{"攻击":1.2,"攻击固定值":0.11,"共鸣效率":0.2,"共鸣解放":0.85}},"丽贝卡":{"echo_max_score":{"4":85.475,"3":83.416,"1":82.715},"mainstat_scores":{"4C":[5.18,1.47],"3C属伤":[5.39,1.49],"3C攻击":[5.39,1.49],"3C其它":[1.49,0],"1C":[6.52,0]},"substat_weight":{"攻击":1.2,"攻击固定值":0.11,"共鸣效率":0.25,"共鸣解放":0.09,"普攻":0.81}},"露西":{"echo_max_score":{"4":86.518,"3":84.46,"1":83.758},"mainstat_scores":{"4C":[6.1,1.73],"3C属伤":[5.32,1.47],"3C攻击":[5.32,1.47],"3C其它":[1.47,0],"1C":[6.44,0]},"substat_weight":{"攻击":1.2,"攻击固定值":0.11,"共鸣效率":0.2,"重击":0.9}},"穗穗":{"echo_max_score":{"4":54.427,"3":52.478,"1":58.154},"mainstat_scores":{"4C":[10.61,0],"3C属伤":[7.84,5.29],"3C攻击":[7.84,5.29],"3C其它":[7.84,5.29],"1C":[7.84,5.29]},"substat_weight":{"暴击":0.1,"暴击伤害":0.33,"攻击":0,"攻击固定值":0,"共鸣效率":1,"共鸣技能":0.33,"生命":1.2,"生命固定值":0.01}},"清霄":{"echo_max_score":{"4":83.051,"3":79.801,"1":79.1},"mainstat_scores":{"4C":[6.62,2.25],"3C属伤":[5.63,1.56],"3C攻击":[5.63,1.56],"3C其它":[1.56,0],"1C":[6.82,0]},"substat_weight":{"暴击":1.7,"暴击伤害":1,"攻击":1.2,"攻击固定值":0.11,"共鸣效率":0.2,"重击":0.77,"普攻":0.44,"共鸣解放":0.605}}}''')
-
-DEFAULT_WEIGHTS = {"暴击": 2.0, "暴击伤害": 1.0, "攻击": 1.1, "攻击固定值": 0.1}
+SCORE_PER_ECHO = 50.0
+ELEMENT_NAMES = {"冷凝", "热熔", "导电", "气动", "衍射", "湮灭"}
+SKILL_WEIGHT_INDEX = {
+    "普攻伤害加成": 0,
+    "重击伤害加成": 1,
+    "共鸣技能伤害加成": 2,
+    "共鸣解放伤害加成": 3,
+}
+_SHORT_SKILL_NAMES = {
+    "普攻": "普攻伤害加成",
+    "重击": "重击伤害加成",
+    "共鸣技能": "共鸣技能伤害加成",
+    "共鸣解放": "共鸣解放伤害加成",
+}
 MAX_SUBSTAT_VALUES = {
-    "暴击": 10.5, "暴击伤害": 21.0, "攻击": 11.6, "防御": 14.7,
-    "生命": 11.6, "攻击固定值": 60.0, "防御固定值": 70.0,
-    "生命固定值": 580.0, "共鸣效率": 12.4, "普攻": 11.6,
-    "重击": 11.6, "共鸣技能": 11.6, "共鸣解放": 11.6,
+    "暴击": 10.5,
+    "暴击伤害": 21.0,
+    "攻击%": 11.6,
+    "防御%": 14.7,
+    "生命%": 11.6,
+    "攻击": 60.0,
+    "防御": 70.0,
+    "生命": 580.0,
+    "共鸣效率": 12.4,
+    "普攻": 11.6,
+    "重击": 11.6,
+    "共鸣技能": 11.6,
+    "共鸣解放": 11.6,
+}
+SUBSTAT_TIERS = {
+    "暴击": (6.3, 6.9, 7.5, 8.1, 8.7, 9.3, 9.9, 10.5),
+    "暴击伤害": (12.6, 13.8, 15.0, 16.2, 17.4, 18.6, 19.8, 21.0),
+    "攻击%": (6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6),
+    "防御%": (8.1, 9.0, 10.0, 10.9, 11.8, 12.8, 13.8, 14.7),
+    "生命%": (6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6),
+    "攻击": (30.0, 40.0, 50.0, 60.0),
+    "防御": (40.0, 50.0, 60.0, 70.0),
+    "生命": (320.0, 360.0, 390.0, 430.0, 470.0, 510.0, 540.0, 580.0),
+    "共鸣效率": (6.8, 7.6, 8.4, 9.2, 10.0, 10.8, 11.6, 12.4),
+    "普攻": (6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6),
+    "重击": (6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6),
+    "共鸣技能": (6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6),
+    "共鸣解放": (6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6),
+}
+MAX_MAINSTAT_VALUES = {
+    1: (
+        {"攻击%": 18.0, "生命%": 22.8, "防御%": 22.8},
+        {"生命": 2280.0},
+    ),
+    3: (
+        {
+            "攻击%": 30.0,
+            "生命%": 30.0,
+            "防御%": 38.0,
+            "共鸣效率": 32.0,
+            "冷凝伤害加成": 30.0,
+            "热熔伤害加成": 30.0,
+            "导电伤害加成": 30.0,
+            "气动伤害加成": 30.0,
+            "衍射伤害加成": 30.0,
+            "湮灭伤害加成": 30.0,
+        },
+        {"攻击": 100.0},
+    ),
+    4: (
+        {
+            "攻击%": 33.0,
+            "生命%": 33.0,
+            "防御%": 41.5,
+            "暴击": 22.0,
+            "暴击伤害": 44.0,
+            "治疗效果加成": 26.0,
+        },
+        {"攻击": 150.0},
+    ),
 }
 
 
@@ -28,38 +96,143 @@ class EchoScoreResult:
     potential_score: float
 
 
+def _build_template_options():
+    rows = [
+        (str(char_id), variant, template)
+        for char_id, variants in TEMPLATES.items()
+        for variant, template in variants.items()
+    ]
+    duplicate_names = Counter(template["name"] for _, _, template in rows)
+    options = {}
+    for char_id, variant, template in rows:
+        label = template["name"]
+        if duplicate_names[label] > 1:
+            label = f"{label}（{char_id}）"
+        options[label] = (char_id, variant, template)
+    return options
+
+
+TEMPLATE_OPTIONS = _build_template_options()
+DEFAULT_TEMPLATE = TEMPLATES["default"]["default"]["name"]
+
+
 def template_names():
-    return list(TEMPLATE_DATA)
+    """Return all 66 character/modal templates as unique display labels."""
+    return list(TEMPLATE_OPTIONS)
+
+
+def matching_template_names(text):
+    """Case-insensitive contains matching used by the searchable selector."""
+    query = str(text).strip().casefold()
+    return [name for name in template_names() if query in name.casefold()]
+
+
+def substat_tier(stat_name, value):
+    """Return ``(tier, total_tiers)`` for the closest in-game roll value."""
+    tiers = SUBSTAT_TIERS.get(stat_name)
+    if not tiers:
+        return None
+    tier_index = min(range(len(tiers)), key=lambda index: abs(tiers[index] - float(value)))
+    return tier_index + 1, len(tiers)
+
+
+def substat_tier_label(stat_name, value):
+    """Return the closest in-game roll tier, such as ``1档`` or ``8档``."""
+    tier = substat_tier(stat_name, value)
+    return f"{tier[0]}档" if tier else ""
+
+
+def resolve_template_name(template_name):
+    """Resolve an exact option or migrate a legacy bare character name."""
+    if template_name in TEMPLATE_OPTIONS:
+        return template_name
+    if template_name == "通用":
+        return DEFAULT_TEMPLATE
+    prefix = f"{template_name}-"
+    matches = [name for name in template_names() if name.startswith(prefix)]
+    return matches[0] if matches else DEFAULT_TEMPLATE
+
+
+def _selected_template(template_name):
+    return TEMPLATE_OPTIONS[resolve_template_name(template_name)][2]
+
+
+def _main_name(name):
+    if name.endswith("伤害加成") and name.removesuffix("伤害加成") in ELEMENT_NAMES:
+        return "属性伤害加成"
+    return name
+
+
+def _entry_weight(index, name, cost, template):
+    if index < 2:
+        return float(template.get("main_props", {}).get(str(cost), {}).get(_main_name(name), 0.0))
+
+    name = _SHORT_SKILL_NAMES.get(name, name)
+    sub_weights = template.get("sub_props", {})
+    if name in SKILL_WEIGHT_INDEX:
+        generic_weight = float(sub_weights.get("技能伤害加成", 0.0))
+        skill_weights = template.get("skill_weight", [0.0, 0.0, 0.0, 0.0])
+        return generic_weight * float(skill_weights[SKILL_WEIGHT_INDEX[name]])
+    return float(sub_weights.get(name, 0.0))
+
+
+def _truncate_2(value):
+    return math.trunc((value + 1e-12) * 100.0) / 100.0
+
+
+def _max_main_value(cost, index, row):
+    """Return the +25 value for this main-stat slot, or its observed value."""
+    slots = MAX_MAINSTAT_VALUES.get(int(cost), ())
+    if index >= len(slots):
+        return row.value
+    return slots[index].get(row.stat_name, row.value)
 
 
 def calculate_echo_score(template_name, cost, cost_key, main_rows, sub_rows):
-    template = TEMPLATE_DATA.get(template_name, TEMPLATE_DATA["通用"])
-    denominator = float(template["echo_max_score"].get(str(cost), 0))
-    if denominator <= 0:
+    """Score OCR rows using XW-UID's per-entry truncation and 50-point scale."""
+    template = _selected_template(template_name)
+    try:
+        maximum = float(template["score_max"][(1, 3, 4).index(int(cost))])
+    except (KeyError, ValueError, IndexError, TypeError):
+        return None
+    if maximum <= 0:
         return None
 
-    weights = dict(DEFAULT_WEIGHTS)
-    weights.update(template["substat_weight"])
-    main_scores = list(template["mainstat_scores"].get(cost_key, (0.0, 0.0)))
-    if cost_key == "3C其它":
-        main_scores = [0.0, sum(main_scores)]
-    main_scores = (main_scores + [0.0, 0.0])[:len(main_rows)]
-
-    sub_scores = [weights.get(row.stat_name, 0.0) * row.value / denominator * 50 for row in sub_rows]
-    current = sum(main_scores) + sum(sub_scores)
-
-    selected = {row.stat_name for row in sub_rows}
-    remaining_slots = max(0, 5 - len(selected))
-    candidates = sorted((
-        weights.get(name, 0.0) * value / denominator * 50
-        for name, value in MAX_SUBSTAT_VALUES.items() if name not in selected
-    ), reverse=True)
-    potential = current + sum(candidates[:remaining_slots])
+    rows = list(main_rows) + list(sub_rows)
+    row_scores = tuple(
+        _truncate_2(
+            (
+                _max_main_value(cost, index, row)
+                if index < len(main_rows)
+                else row.value
+            )
+            * _entry_weight(index, row.stat_name, int(cost), template)
+            / maximum * SCORE_PER_ECHO
+        )
+        for index, row in enumerate(rows)
+    )
+    existing_substats = {row.stat_name for row in sub_rows}
+    remaining_slots = max(0, 5 - len(sub_rows))
+    best_unrolled_scores = sorted(
+        (
+            _truncate_2(
+                max_value * _entry_weight(2, name, int(cost), template)
+                / maximum * SCORE_PER_ECHO
+            )
+            for name, max_value in MAX_SUBSTAT_VALUES.items()
+            if name not in existing_substats
+        ),
+        reverse=True,
+    )
+    potential_score = round(
+        sum(row_scores)
+        + sum(best_unrolled_scores[:remaining_slots]),
+        2,
+    )
     return EchoScoreResult(
-        cost=cost,
+        cost=int(cost),
         cost_key=cost_key,
-        row_scores=tuple(main_scores + sub_scores),
-        # Match JavaScript toFixed used by wuwa-stat-echo at half-cent values.
-        current_score=float(f"{current + 1e-9:.2f}"),
-        potential_score=float(f"{potential + 1e-9:.2f}"),
+        row_scores=row_scores,
+        current_score=round(sum(row_scores), 2),
+        potential_score=potential_score,
     )

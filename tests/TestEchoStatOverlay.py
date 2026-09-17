@@ -1,7 +1,16 @@
 import unittest
 from types import SimpleNamespace
 
-from src.gui.EchoStatOverlay import analyze_echo_stats, find_echo_stat_rectangles
+from src.gui.EchoStatOverlay import (
+    StatRectangle,
+    HIGHEST_TIER_TEXT_COLOR,
+    LOWEST_TIER_TEXT_COLOR,
+    TIER_TEXT_COLOR,
+    _tier_text_color,
+    _score_lines,
+    analyze_echo_stats,
+    find_echo_stat_rectangles,
+)
 
 
 def box(x, y, width, height, name):
@@ -9,6 +18,15 @@ def box(x, y, width, height, name):
 
 
 class TestEchoStatOverlay(unittest.TestCase):
+    def test_main_score_is_marked_as_level_25_on_two_lines(self):
+        main = StatRectangle(0, 0, 100, 30, (255, 0, 0))
+        sub = StatRectangle(0, 0, 100, 30, (255, 255, 255))
+
+        self.assertEqual(("+6.84",), _score_lines(main, 6.84))
+        self.assertEqual(("+6.84",), _score_lines(sub, 6.84))
+        self.assertEqual((), _score_lines(main, 0.0))
+        self.assertEqual((), _score_lines(sub, 0.0))
+
     def test_main_and_substats_receive_requested_colours(self):
         boxes = [
             box(1250, 420, 70, 28, "声骸技能"),
@@ -28,6 +46,20 @@ class TestEchoStatOverlay(unittest.TestCase):
         self.assertEqual([(255, 255, 255)] * 5, [item.color for item in rectangles[2:]])
         self.assertEqual((1252, 189, 296, 34),
                          (rectangles[0].x, rectangles[0].y, rectangles[0].width, rectangles[0].height))
+
+        analysis = analyze_echo_stats(boxes, 1600, 900, "角色-通用")
+        self.assertEqual(
+            ("", "", "6档", "4档", "2档", "4档", "7档"),
+            analysis.tier_labels,
+        )
+        self.assertEqual(1368, analysis.rectangles[4].tier_x)
+        self.assertEqual(316, analysis.rectangles[4].tier_y)
+        self.assertEqual(TIER_TEXT_COLOR, analysis.tier_colors[6])
+
+    def test_tier_colours_distinguish_lowest_and_highest_rolls(self):
+        self.assertEqual(LOWEST_TIER_TEXT_COLOR, _tier_text_color((1, 8)))
+        self.assertEqual(HIGHEST_TIER_TEXT_COLOR, _tier_text_color((8, 8)))
+        self.assertEqual(TIER_TEXT_COLOR, _tier_text_color((4, 8)))
 
     def test_tuning_layout_uses_left_stat_panel(self):
         rectangles = find_echo_stat_rectangles([
@@ -74,10 +106,10 @@ class TestEchoStatOverlay(unittest.TestCase):
 
         analysis = analyze_echo_stats(boxes, 1600, 900, "通用")
 
-        self.assertEqual((4.76, 0.0), analysis.row_scores[:2])
-        self.assertAlmostEqual(8.625, analysis.row_scores[2])
+        self.assertEqual((0.0, 0.0), analysis.row_scores[:2])
+        self.assertEqual(10.15, analysis.row_scores[2])
         self.assertEqual(
-            "评分模板：通用\n当前评分：13.39\n理论最高：40.56",
+            "评分模板：通用\n当前评分：10.15\n理论最高：39.39",
             analysis.summary,
         )
 
@@ -91,7 +123,7 @@ class TestEchoStatOverlay(unittest.TestCase):
 
         analysis = analyze_echo_stats(boxes, 1600, 900, "通用")
 
-        self.assertEqual((0.0, 1.57), analysis.row_scores[:2])
+        self.assertEqual((0.0, 1.74), analysis.row_scores[:2])
         self.assertTrue(analysis.summary.startswith("评分模板：通用\n当前评分："))
         self.assertIn("\n理论最高：", analysis.summary)
 
@@ -104,8 +136,8 @@ class TestEchoStatOverlay(unittest.TestCase):
                 box(1257, 222, 68, 29, "攻击"), box(1482, 224, 55, 25, "100"),
             ], 1600, 900, "通用")
 
-        self.assertEqual((5.21, 1.57), analyze("冷凝伤害加成").row_scores[:2])
-        self.assertEqual((5.16, 1.57), analyze("攻击伤害加成").row_scores[:2])
+        self.assertEqual((5.76, 1.74), analyze("冷凝伤害加成").row_scores[:2])
+        self.assertEqual((5.76, 1.74), analyze("攻击伤害加成").row_scores[:2])
 
     @staticmethod
     def _left_summary_rows():

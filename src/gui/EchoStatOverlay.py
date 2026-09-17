@@ -7,10 +7,13 @@ from dataclasses import dataclass
 import os
 import re
 
-from src.echo_score import calculate_echo_score
+from src.echo_score import calculate_echo_score, substat_tier, substat_tier_label
 
 
 ECHO_STAT_PAINTER_KEY = "echo-stat-boxes"
+TIER_TEXT_COLOR = (80, 185, 255)
+LOWEST_TIER_TEXT_COLOR = (80, 235, 130)
+HIGHEST_TIER_TEXT_COLOR = (255, 75, 75)
 _STAT_TEXT = re.compile(
     r"攻击|生命|防御|暴击|共鸣效率|伤害加成|治疗效果|ATK|HP|DEF|Crit|Energy|DMG|Heal",
     re.IGNORECASE,
@@ -25,6 +28,8 @@ class StatRectangle:
     width: int
     height: int
     color: tuple[int, int, int]
+    tier_x: int = 0
+    tier_y: int = 0
 
 
 @dataclass(frozen=True)
@@ -36,9 +41,13 @@ class RecognizedStatRow:
     stat_name: str
     value: float
     value_text: str
+    tier_x: int
+    tier_y: int
 
     def rectangle(self, color):
-        return StatRectangle(self.x, self.y, self.width, self.height, color)
+        return StatRectangle(
+            self.x, self.y, self.width, self.height, color, self.tier_x, self.tier_y
+        )
 
 
 @dataclass(frozen=True)
@@ -46,6 +55,8 @@ class EchoStatAnalysis:
     rectangles: tuple[StatRectangle, ...]
     row_scores: tuple[float, ...]
     summary: str
+    tier_labels: tuple[str, ...] = ()
+    tier_colors: tuple[tuple[int, int, int], ...] = ()
 
 
 def find_echo_stat_rectangles(ocr_boxes, screen_width, screen_height):
@@ -98,7 +109,11 @@ def analyze_echo_stats(ocr_boxes, screen_width, screen_height, template_name):
         f"当前评分：{score.current_score:.2f}\n"
         f"理论最高：{score.potential_score:.2f}"
     )
-    return EchoStatAnalysis(rectangles, score.row_scores, summary)
+    tier_labels = ("", "") + tuple(substat_tier_label(row.stat_name, row.value) for row in sub_rows)
+    tier_colors = ((255, 0, 0), (255, 0, 0)) + tuple(
+        _tier_text_color(substat_tier(row.stat_name, row.value)) for row in sub_rows
+    )
+    return EchoStatAnalysis(rectangles, score.row_scores, summary, tier_labels, tier_colors)
 
 
 def _find_ocr_rows(ocr_boxes, min_x, max_x, min_y, max_y):
@@ -128,6 +143,8 @@ def _find_ocr_rows(ocr_boxes, min_x, max_x, min_y, max_y):
             round(left), round(top), round(right - left), round(bottom - top),
             _normalize_stat_name(str(prop.name), value_text),
             _numeric_value(value_text), value_text,
+            round(prop.x + prop.width + 8),
+            round(prop.y + max(0, (prop.height - 18) / 2)),
         ))
     return rows[:7]
 
@@ -156,7 +173,9 @@ def _normalize_stat_name(text, value_text):
         return "共鸣解放"
     for name in ("攻击", "防御", "生命"):
         if name in compact:
-            return name if is_percent else f"{name}固定值"
+            # XW-UID names percentage rolls with a trailing percent marker;
+            # the unmarked name is the fixed companion/main property.
+            return f"{name}%" if is_percent else name
     return compact
 
 
@@ -183,7 +202,7 @@ def _find_cost(ocr_boxes, main_rows):
         return 3
     if name in {"暴击", "暴击伤害"} or "治疗" in name:
         return 4
-    targets = (22.8, 38.0, 41.5) if name == "防御" else (18.0, 30.0, 33.0)
+    targets = (22.8, 38.0, 41.5) if name == "防御%" else (18.0, 30.0, 33.0)
     return (1, 3, 4)[min(range(3), key=lambda index: abs(value - targets[index]))]
 
 
@@ -199,16 +218,31 @@ def _cost_key(cost, main_rows):
     return "3C其它"
 
 
+def _tier_text_color(tier):
+    if not tier:
+        return TIER_TEXT_COLOR
+    index, total = tier
+    if index == 1:
+        return LOWEST_TIER_TEXT_COLOR
+    if index == total:
+        return HIGHEST_TIER_TEXT_COLOR
+    return TIER_TEXT_COLOR
+
+
 class EchoStatBoxPainter:
     def __init__(self):
         self.rectangles = []
         self.row_scores = []
         self.summary = ""
+        self.tier_labels = []
+        self.tier_colors = []
 
-    def update(self, rectangles, row_scores=(), summary=""):
+    def update(self, rectangles, row_scores=(), summary="", tier_labels=(), tier_colors=()):
         self.rectangles = list(rectangles)
         self.row_scores = list(row_scores)
         self.summary = summary
+        self.tier_labels = list(tier_labels)
+        self.tier_colors = list(tier_colors)
 
     def paint(self, canvas, _overlay):
         for index, rectangle in enumerate(self.rectangles):
@@ -217,12 +251,61 @@ class EchoStatBoxPainter:
                 color=rectangle.color, line_width=1,
             )
             if index < len(self.row_scores):
-                canvas.text(
-                    rectangle.x + rectangle.width + 8, rectangle.y,
-                    f"+{self.row_scores[index]:.2f}", color=rectangle.color,
-                )
+                score_x = rectangle.x + rectangle.width + 8
+                tier_label = self.tier_labels[index] if index < len(self.tier_labels) else ""
+                score_lines = _score_lines(rectangle, self.row_scores[index])
+                line_height = max(13, min(18, rectangle.height // 2))
+                for line_index, line in enumerate(score_lines):
+                    if not line:
+                        continue
+                    canvas.text(
+                        score_x,
+                        rectangle.y + line_index * line_height,
+                        line,
+                        color=rectangle.color,
+                    )
+                if tier_label:
+                    tier_color = self.tier_colors[index] if index < len(self.tier_colors) else TIER_TEXT_COLOR
+                    _paint_bold_text(
+                        canvas,
+                        rectangle.tier_x or rectangle.x,
+                        rectangle.tier_y or rectangle.y,
+                        tier_label,
+                        tier_color,
+                    )
         if self.summary:
             _paint_score_summary(canvas, _overlay, self.summary)
+
+
+def _score_lines(rectangle, score):
+    if abs(score) < 0.005:
+        return ()
+    if rectangle.color == (255, 0, 0):
+        return (f"+{score:.2f}",)
+    return (f"+{score:.2f}",)
+
+
+def _paint_bold_text(canvas, x, y, text, color):
+    """Paint an OCR-adjacent tier label with a readable bold native font."""
+    if os.name != "nt":
+        canvas.text(x, y, text, color=color)
+        return
+    from ok.ui.overlay import win32_gdi
+
+    font = win32_gdi.gdi32.CreateFontW(
+        -max(16, round(18 * canvas.ratio)), 0, 0, 0, 700, 0, 0, 0,
+        1, 0, 0, 5, 0, "Microsoft YaHei UI",
+    )
+    old_font = win32_gdi.gdi32.SelectObject(canvas.hdc, font)
+    try:
+        win32_gdi.gdi32.SetBkMode(canvas.hdc, 1)
+        win32_gdi.gdi32.SetTextColor(canvas.hdc, win32_gdi._rgb(*color))
+        win32_gdi.gdi32.TextOutW(
+            canvas.hdc, round(x * canvas.ratio), round(y * canvas.ratio), text, len(text)
+        )
+    finally:
+        win32_gdi.gdi32.SelectObject(canvas.hdc, old_font)
+        win32_gdi.gdi32.DeleteObject(font)
 
 
 def _paint_score_summary(canvas, overlay, text):

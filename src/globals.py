@@ -25,6 +25,11 @@ class Globals:
             app.get_overlay_view()
         communicate.window.connect(self._update_game_overlay)
 
+    def on_show_main_window(self, main_window):
+        """Upgrade the template dropdown to an editable, searchable selector."""
+        from src.gui.SearchableTemplateDropdown import install_searchable_template_dropdown
+        install_searchable_template_dropdown(main_window)
+
     @staticmethod
     def _update_game_overlay(visible, *geometry):
         """Keep the Echo overlay visible while the game window still exists."""
