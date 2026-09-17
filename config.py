@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 
 from ok import Box, ConfigOption, Icon
+from src.echo_score import template_names
 from src.task.process_feature import process_feature
 
 version = "dev"
@@ -150,18 +151,22 @@ monthly_card_config_option = ConfigOption('Monthly Card Config', {
 })
 
 
-def validate_development_overlay(key, value):
-    """Refresh the native HUD before the Settings page returns to the user."""
+def validate_echo_score(key, value):
+    """Apply Echo and debug overlay switches without requiring a restart."""
     from src.globals import Globals
-    Globals.apply_overlay_setting_change(key, value)
+    Globals.apply_echo_score_setting_change(key, value)
     return True, None
 
 
-overlay_config_option = ConfigOption('Development Overlay', {
-    'Show Custom Overlay Content': True,
+echo_score_config_option = ConfigOption('声骸评分', {
+    '角色评分模板': '通用',
+    '显示主副词条框体': True,
     'Show Debug Boxes': False,
-}, description='Control custom game HUD content and recognition boxes independently.',
-   validator=validate_development_overlay)
+}, description='声骸评分与游戏画面标识设置', validator=validate_echo_score,
+   config_type={
+       '角色评分模板': {'type': 'drop_down', 'options': template_names()},
+   },
+   show_at_tab=True, icon=Icon.SYNC)
 
 config = {
     'debug': False,  # Optional, default: False
@@ -172,7 +177,8 @@ config = {
     'config_folder': 'configs',
     'blur_area': blur_area,
     'gui_icon': 'icons/icon.png',
-    'global_configs': [key_config_option, char_config_option, monthly_card_config_option, overlay_config_option],
+    'global_configs': [key_config_option, echo_score_config_option, char_config_option,
+                       monthly_card_config_option],
     'custom_tabs': [["src.gui.CharacterCodeTab", "CharacterCodeTab"]],
     'ocr': {
         'lib': 'onnxocr',

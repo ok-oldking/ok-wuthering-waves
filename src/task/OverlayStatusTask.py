@@ -15,22 +15,12 @@ class OverlayStatusTask(TriggerTask, BaseWWTask):
         self.default_config.update({"_enabled": True})
         self.trigger_interval = 0.5
         self.name = "🛠️ Overlay Status"
-        self.description = "Show OKWW development status in the game overlay"
-        self.overlay_config = self.get_global_config("Development Overlay")
+        self.description = "Show ECHO development status in the game overlay"
+        self.echo_score_config = self.get_global_config("声骸评分")
 
     def run(self):
-        show_content = self.overlay_config.get("Show Custom Overlay Content", True)
-        show_boxes = self.overlay_config.get("Show Debug Boxes", False)
-        enabled = show_content or show_boxes
+        show_boxes = self.echo_score_config.get("Show Debug Boxes", False)
         app = self._app
-        if not enabled:
-            overlay = self.get_overlay_view()
-            if overlay is not None:
-                overlay.clear_draw(OVERLAY_PAINTER_KEY)
-            if app.ok_config.get("use_overlay", False):
-                app.set_overlay_setting("boxes", False)
-            return False
-
         if not app.ok_config.get("use_overlay", False):
             app.ok_config["use_overlay"] = True
         overlay = self.get_overlay_view()
@@ -38,8 +28,5 @@ class OverlayStatusTask(TriggerTask, BaseWWTask):
             return False
         overlay.set_boxes_enabled(show_boxes)
 
-        if show_content and self.in_world():
-            overlay.draw(OVERLAY_PAINTER_KEY, paint_okww_status)
-        else:
-            overlay.clear_draw(OVERLAY_PAINTER_KEY)
+        overlay.draw(OVERLAY_PAINTER_KEY, paint_okww_status)
         return False

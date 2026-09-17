@@ -4,11 +4,11 @@ import ctypes
 import os
 
 
-STATUS_TEXT = "OKWW-ON"
+STATUS_TEXT = "ECHO-ON"
 
 
 def paint_okww_status(canvas, overlay):
-    """Draw a bold status label just below the active character health bar."""
+    """Draw a bold Echo overlay status label at the bottom of every game screen."""
     if os.name != "nt":
         return
 

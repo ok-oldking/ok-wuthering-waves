@@ -1,7 +1,7 @@
 import unittest
 from types import SimpleNamespace
 
-from src.gui.EchoStatOverlay import find_echo_stat_rectangles
+from src.gui.EchoStatOverlay import analyze_echo_stats, find_echo_stat_rectangles
 
 
 def box(x, y, width, height, name):
@@ -62,6 +62,50 @@ class TestEchoStatOverlay(unittest.TestCase):
         boxes += self._left_summary_rows()
 
         self.assertEqual([], find_echo_stat_rectangles(boxes, 1600, 900))
+
+    def test_cost_one_and_each_row_receive_scores(self):
+        boxes = [
+            box(1100, 130, 55, 25, "COST 1"),
+            box(1250, 420, 70, 28, "声骸技能"),
+            box(1257, 192, 68, 28, "生命"), box(1477, 195, 66, 23, "22.8%"),
+            box(1257, 222, 68, 29, "生命"), box(1482, 224, 55, 25, "2280"),
+            box(1278, 255, 82, 28, "暴击伤害"), box(1472, 255, 66, 30, "13.8%"),
+        ]
+
+        analysis = analyze_echo_stats(boxes, 1600, 900, "通用")
+
+        self.assertEqual((4.76, 0.0), analysis.row_scores[:2])
+        self.assertAlmostEqual(8.625, analysis.row_scores[2])
+        self.assertEqual(
+            "评分模板：通用\n当前评分：13.39\n理论最高：40.56",
+            analysis.summary,
+        )
+
+    def test_cost_three_other_rule_excludes_energy_regen(self):
+        boxes = [
+            box(1040, 135, 55, 25, "COST"), box(1110, 135, 20, 25, "3"),
+            box(1250, 420, 70, 28, "声骸技能"),
+            box(1257, 192, 90, 28, "共鸣效率"), box(1477, 195, 66, 23, "32.0%"),
+            box(1257, 222, 68, 29, "攻击"), box(1482, 224, 55, 25, "100"),
+        ]
+
+        analysis = analyze_echo_stats(boxes, 1600, 900, "通用")
+
+        self.assertEqual((0.0, 1.57), analysis.row_scores[:2])
+        self.assertTrue(analysis.summary.startswith("评分模板：通用\n当前评分："))
+        self.assertIn("\n理论最高：", analysis.summary)
+
+    def test_cost_three_element_and_attack_use_distinct_main_scores(self):
+        def analyze(main_name):
+            return analyze_echo_stats([
+                box(1040, 135, 70, 25, "COST 3"),
+                box(1250, 420, 70, 28, "声骸技能"),
+                box(1257, 192, 150, 28, main_name), box(1477, 195, 66, 23, "30.0%"),
+                box(1257, 222, 68, 29, "攻击"), box(1482, 224, 55, 25, "100"),
+            ], 1600, 900, "通用")
+
+        self.assertEqual((5.21, 1.57), analyze("冷凝伤害加成").row_scores[:2])
+        self.assertEqual((5.16, 1.57), analyze("攻击伤害加成").row_scores[:2])
 
     @staticmethod
     def _left_summary_rows():

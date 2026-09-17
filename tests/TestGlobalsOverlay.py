@@ -17,7 +17,7 @@ class TestGlobalsOverlay(unittest.TestCase):
         self.previous_global_config = getattr(og, "global_config", None)
         self.global_config = Mock()
         self.global_config.get_config.return_value = {
-            "Show Custom Overlay Content": True,
+            "显示主副词条框体": True,
             "Show Debug Boxes": False,
         }
         og.app = self.app
@@ -39,10 +39,25 @@ class TestGlobalsOverlay(unittest.TestCase):
 
         self.overlay.clear_draw.assert_called_once_with("okww-status")
 
-    def test_setting_change_updates_overlay_without_waiting_for_a_frame(self):
+    def test_debug_box_setting_change_updates_overlay_without_waiting_for_a_frame(self):
         Globals._game_window_visible = True
 
-        Globals.apply_overlay_setting_change("Show Custom Overlay Content", False)
+        Globals.apply_echo_score_setting_change("Show Debug Boxes", True)
 
-        self.overlay.clear_draw.assert_called_once_with("okww-status")
-        self.overlay.set_boxes_enabled.assert_called_once_with(False)
+        self.overlay.draw.assert_called_once()
+        self.overlay.set_boxes_enabled.assert_called_once_with(True)
+
+    def test_echo_box_switch_clears_custom_painter_immediately(self):
+        Globals.apply_echo_score_setting_change("显示主副词条框体", False)
+
+        self.overlay.clear_draw.assert_called_once_with("echo-stat-boxes")
+
+    def test_background_game_keeps_overlay_visible(self):
+        hwnd_window = Mock(exists=True, visible=False)
+        with unittest.mock.patch.object(og, "device_manager", Mock(hwnd_window=hwnd_window)):
+            Globals._update_game_overlay(False, 10, 20, 1600, 900, 1600, 900, 1.0)
+
+        self.overlay.update_overlay.assert_called_once_with(
+            True, 10, 20, 1600, 900, 1600, 900, 1.0
+        )
+        self.overlay.draw.assert_called_once()
