@@ -28,9 +28,6 @@ def find_echo_stat_rectangles(ocr_boxes, screen_width, screen_height):
     if not screen_width or not screen_height:
         return []
 
-    # Detect both layouts from their actual stat/value rows.  This avoids
-    # losing the tuning overlay when the page title is not recognised in a
-    # particular frame, while still limiting matching to the two known panels.
     left_rows = _find_ocr_rows(
         ocr_boxes, screen_width * 0.09, screen_width * 0.38,
         screen_height * 0.20, screen_height * 0.54,
@@ -39,10 +36,24 @@ def find_echo_stat_rectangles(ocr_boxes, screen_width, screen_height):
         ocr_boxes, screen_width * 0.76, screen_width * 0.99,
         screen_height * 0.18, screen_height * 0.47,
     )
-    rows = left_rows if len(left_rows) > len(right_rows) else right_rows
+    screen_text = " ".join(str(box.name) for box in ocr_boxes)
+    is_tuning_page = any(marker in screen_text for marker in (
+        "声骸强化", "强化并调谐", "已完成全部调谐", "Echo Enhancement",
+    ))
+    is_single_echo_page = any(marker in screen_text for marker in (
+        "声骸技能", "合鸣效果", "Echo Skill", "Sonata Effect",
+    ))
 
-    if len(rows) < 2:
+    # Left-side stat rows are accepted only on the tuning page.  This excludes
+    # the Resonator Attribute Details page and the initial Echo summary page,
+    # both of which also contain six ordinary stat rows in the same area.
+    if is_tuning_page and len(left_rows) >= 2:
+        rows = left_rows
+    elif is_single_echo_page and len(right_rows) >= 2:
+        rows = right_rows
+    else:
         return []
+
     rectangles = [StatRectangle(*row, color=(255, 0, 0)) for row in rows[:2]]
     rectangles.extend(StatRectangle(*row, color=(255, 255, 255)) for row in rows[2:7])
     return rectangles

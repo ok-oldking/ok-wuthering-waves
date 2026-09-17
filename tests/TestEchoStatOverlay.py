@@ -31,6 +31,7 @@ class TestEchoStatOverlay(unittest.TestCase):
 
     def test_tuning_layout_uses_left_stat_panel(self):
         rectangles = find_echo_stat_rectangles([
+            box(48, 42, 120, 30, "声骸强化"),
             box(177, 212, 76, 30, "生命"), box(478, 213, 70, 29, "22.8%"),
             box(177, 248, 76, 28, "生命"), box(490, 250, 58, 24, "2280"),
             box(205, 285, 87, 28, "共鸣效率"), box(475, 285, 72, 28, "10.8%"),
@@ -49,3 +50,25 @@ class TestEchoStatOverlay(unittest.TestCase):
 
     def test_other_screens_do_not_draw_stat_boxes(self):
         self.assertEqual([], find_echo_stat_rectangles([box(10, 10, 70, 28, "背包")], 1600, 900))
+
+    def test_resonator_attribute_details_are_ignored(self):
+        boxes = [box(48, 44, 120, 28, "属性详情")]
+        boxes += self._left_summary_rows()
+
+        self.assertEqual([], find_echo_stat_rectangles(boxes, 1600, 900))
+
+    def test_initial_echo_summary_is_ignored(self):
+        boxes = [box(50, 45, 60, 28, "声骸"), box(170, 365, 90, 28, "声骸技能")]
+        boxes += self._left_summary_rows()
+
+        self.assertEqual([], find_echo_stat_rectangles(boxes, 1600, 900))
+
+    @staticmethod
+    def _left_summary_rows():
+        names = ["生命", "攻击", "防御", "共鸣效率", "暴击", "暴击伤害"]
+        values = ["22005", "1089", "4110", "274.2%", "19.4%", "213.6%"]
+        boxes = []
+        for index, (name, value) in enumerate(zip(names, values)):
+            y = 285 + index * 35
+            boxes.extend((box(177, y, 100, 28, name), box(400, y, 70, 28, value)))
+        return boxes
