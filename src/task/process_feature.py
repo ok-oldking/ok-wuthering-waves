@@ -8,7 +8,7 @@ def process_feature(feature_name, feature):
         feature.mat = binarize_for_matching(feature.mat)
     elif feature_name == 'world_earth_icon':
         feature.mat = convert_bw(feature.mat)
-    elif feature_name == 'skip_dialog':
+    elif feature_name in ('skip_dialog', 'skip_dialog_new'):
         feature.mat = convert_dialog_icon(feature.mat)
     elif feature_name == 'mouse_forte':
         feature.mat = binarize_for_matching(feature.mat)

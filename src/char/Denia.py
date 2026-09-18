@@ -65,10 +65,11 @@ class Denia(BaseChar):
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if has_intro:
             from src.char.Aemeath import Aemeath
+            from src.char.Qingxiao import Qingxiao
 
-            if isinstance(current_char, Aemeath) and not self.has_buff():
+            if isinstance(current_char, (Aemeath, Qingxiao)) and not self.has_buff():
                 return SwitchPriority.NORMAL
-            return SwitchPriority.NO
+            return SwitchPriority.NO + 1
         elif self.has_buff():
             return SwitchPriority.LOW
         else:

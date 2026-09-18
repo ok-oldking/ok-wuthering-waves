@@ -3,7 +3,7 @@ import unittest
 from config import config
 from ok.test.TaskTestCase import TaskTestCase
 from src.Labels import Labels
-from src.char.BaseChar import BaseChar, CharType, SwitchPriority, get_default_buff_time
+from src.char.BaseChar import BaseChar, CharType, Elements, SwitchPriority, get_default_buff_time
 from src.char.CharFactory import _get_buff_time, _get_char_type, char_dict, char_names, get_char_by_pos
 from src.char.Aemeath import Aemeath
 from src.char.Chisa import Chisa
@@ -14,6 +14,7 @@ from src.char.Linnai import Linnai
 from src.char.Lucilla import Lucilla
 from src.char.Lucy import Lucy
 from src.char.Phrolova import Phrolova
+from src.char.Qingxiao import Qingxiao
 from src.char.Rebecca import Rebecca
 from src.char.ShoreKeeper import ShoreKeeper
 from src.char.Suisui import Suisui
@@ -1229,6 +1230,119 @@ class TestChar(TaskTestCase):
         aemeath.perform_everything()
         self.assertEqual(aemeath.actions, ['lib1', 'enhance_e', 'lib1'])
 
+    def test_qingxiao_full_rotation_finishes_h2_with_liberation_then_switches(self):
+        class TrackingQingxiao(Qingxiao):
+            def __init__(self):
+                super().__init__(None, 0)
+                self.actions = []
+                self.heavy_count = 0
+
+            def has_all_buff(self):
+                return True
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return 0
+
+            def click_liberation(self, **kwargs):
+                self.actions.append('liberation')
+                return True
+
+            def cast_enhanced_resonance(self):
+                self.actions.append('enhanced_resonance')
+                return True
+
+            def handle_heavy(self):
+                self.heavy_count += 1
+                if self.heavy_count == 1:
+                    self.actions.append('heavy_h2')
+                    return Labels.qingxiao_h2
+                return False
+
+            def f_break(self):
+                self.actions.append('f_break')
+
+            def switch_next_char(self):
+                self.actions.append('switch')
+
+        qingxiao = TrackingQingxiao()
+        qingxiao.has_intro = True
+        qingxiao.do_perform()
+
+        self.assertTrue(qingxiao.must_cast_lib_this_turn)
+        self.assertEqual(qingxiao.actions, ['heavy_h2', 'f_break', 'liberation', 'switch'])
+
+    def test_qingxiao_short_rotation_uses_e_then_switches(self):
+        class TrackingQingxiao(Qingxiao):
+            def __init__(self):
+                super().__init__(None, 0)
+                self.actions = []
+
+            def has_all_buff(self):
+                return False
+
+            def click_liberation(self, **kwargs):
+                self.actions.append('liberation')
+
+            def cast_enhanced_resonance(self):
+                self.actions.append('enhanced_resonance')
+                return True
+
+            def handle_heavy(self):
+                self.actions.append('heavy')
+
+            def switch_next_char(self):
+                self.actions.append('switch')
+
+        qingxiao = TrackingQingxiao()
+        qingxiao.has_intro = True
+        qingxiao.do_perform()
+
+        self.assertFalse(qingxiao.must_cast_lib_this_turn)
+        self.assertEqual(qingxiao.actions, ['enhanced_resonance', 'switch'])
+
+    def test_qingxiao_heavy_holds_until_both_indicators_disappear(self):
+        class Task:
+            # 图标熄灭后,去抖确认窗还会再取一帧复核,故暗帧需要两帧
+            indicators = [Labels.qingxiao_h1, Labels.qingxiao_h2, None, None]
+
+            def __init__(self):
+                self.frame = 0
+                self.actions = []
+
+            def find_one(self, template, threshold=None):
+                if template == self.indicators[self.frame]:
+                    return template
+                return None
+
+            def mouse_down(self):
+                self.actions.append('mouse_down')
+
+            def mouse_up(self):
+                self.actions.append('mouse_up')
+
+            def next_frame(self):
+                self.frame += 1
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+            def sleep(self, sec):
+                pass
+
+        task = Task()
+        qingxiao = Qingxiao(task, 0)
+
+        self.assertTrue(qingxiao.handle_heavy())
+        self.assertEqual(task.actions, ['mouse_down', 'mouse_up'])
+        self.assertEqual(task.frame, 3)
+
+    def test_qingxiao_is_registered_as_wind_main_dps(self):
+        info = char_dict[Labels.char_qingxiao]
+
+        self.assertIs(info['cls'], Qingxiao)
+        self.assertEqual(info['char_type'], CharType.MAIN_DPS)
+        self.assertEqual(info['ring_index'], Elements.WIND)
+
     def test_switch_priority_hooks(self):
         class Task:
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
@@ -1267,7 +1381,64 @@ class TestChar(TaskTestCase):
         combat.chars = [current, blocked_main_dps, allowed_sub_dps]
         self.assertEqual(combat._choose_switch_target(current, True), allowed_sub_dps)
 
-    def test_unbuffed_denia_accepts_aemeath_intro_as_deadlock_recovery(self):
+    def test_healer_full_con_switch_has_default_sixteen_second_lockout(self):
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+        task = Task()
+        healer = BaseChar(task, 0, char_type=CharType.HEALER)
+
+        healer.switch_out(con_full=True)
+        self.assertEqual(healer.HEALER_FULL_CON_SWITCH_LOCKOUT, 16.0)
+        self.assertEqual(healer.get_switch_priority(), SwitchPriority.NO)
+
+        healer.last_full_con_switch_time = time.time() - 16.01
+        self.assertEqual(healer.get_switch_priority(), SwitchPriority.NORMAL)
+
+        healer_without_outro = BaseChar(task, 1, char_type=CharType.HEALER)
+        healer_without_outro.switch_out(con_full=False)
+        self.assertEqual(healer_without_outro.get_switch_priority(), SwitchPriority.NORMAL)
+
+        main_dps = BaseChar(task, 2, char_type=CharType.MAIN_DPS)
+        main_dps.switch_out(con_full=True)
+        self.assertEqual(main_dps.get_switch_priority(), SwitchPriority.NORMAL)
+
+    def test_healer_full_con_lockout_overrides_character_must_priority(self):
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+        task = Task()
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        current = BaseChar(task, 0, char_type=CharType.MAIN_DPS)
+        healer = ForcedChar(task, 1, char_type=CharType.HEALER)
+        sub_dps = BaseChar(task, 2, char_type=CharType.SUB_DPS)
+        combat.chars = [current, healer, sub_dps]
+
+        healer.switch_out(con_full=True)
+
+        self.assertEqual(combat._choose_switch_target(current, True), sub_dps)
+
+    def test_qingxiao_switches_to_denia_while_full_con_healer_is_locked(self):
+        class Task:
+            chars = []
+
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                return time.time() - start
+
+        task = Task()
+        combat = AutoCombatTask.__new__(AutoCombatTask)
+        qingxiao = Qingxiao(task, 0, char_type=CharType.MAIN_DPS)
+        denia = Denia(task, 1, char_type=CharType.SUB_DPS)
+        healer = BaseChar(task, 2, char_type=CharType.HEALER)
+        combat.chars = task.chars = [qingxiao, denia, healer]
+
+        healer.switch_out(con_full=True)
+
+        self.assertEqual(combat._choose_switch_target(qingxiao, True), denia)
+
+    def test_denia_accepts_intro_as_deadlock_recovery(self):
         class Task:
             def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
                 return time.time() - start
@@ -1282,12 +1453,12 @@ class TestChar(TaskTestCase):
         self.assertEqual(combat._choose_switch_target(aemeath, True), denia)
 
         denia.last_buff_time = time.time()
-        self.assertEqual(combat._choose_switch_target(aemeath, True), aemeath)
+        self.assertEqual(combat._choose_switch_target(aemeath, True), denia)
 
         denia.last_buff_time = -1
         other_main_dps = BaseChar(task, 0, char_type=CharType.MAIN_DPS)
         combat.chars = task.chars = [other_main_dps, denia, healer]
-        self.assertEqual(combat._choose_switch_target(other_main_dps, True), other_main_dps)
+        self.assertEqual(combat._choose_switch_target(other_main_dps, True), denia)
 
     def test_switch_priority_integer_bands_and_offsets(self):
         self.assertEqual(

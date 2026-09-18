@@ -3,6 +3,7 @@ if __name__ == "__main__":
     from ok import OK
 
     config = config
+    config["debug"] = True
     config["gui"] = {
         "type": "web",
         "launch_mode": "pywebview",  # default

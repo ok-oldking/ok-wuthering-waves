@@ -11,7 +11,7 @@ from ok import safe_get
 from src import text_white_color
 from src.char import BaseChar
 from src.char.BaseChar import SwitchPriority, dot_color  # noqa
-from src.char.CharFactory import get_char_by_pos
+from src.char.CharFactory import apply_team_char_classes, get_char_by_pos
 from src.combat.CombatCheck import CombatCheck
 from src.task.BaseWWTask import isolate_white_text_to_black, binarize_for_matching
 
@@ -41,7 +41,7 @@ mismatched_names = {
     "Luhesi": "Luuk Herssen",
     "Xiangliyao": "Xiangli Yao",
     "ShoreKeeper": "Shorekeeper",
-    "HavocRover": "Rover",
+    "Rover": "Rover",
     "YangYangSp": "Yangyang: Xuanling",
 }
 
@@ -529,8 +529,11 @@ class BaseCombatTask(CombatCheck):
 
         prioritized_candidates = []
         for char in candidates:
-            switch_priority = char.get_switch_priority(current_char=current_char, has_intro=has_intro,
-                                                       target_low_con=target_low_con)
+            if char.healer_full_con_switch_locked():
+                switch_priority = SwitchPriority.NO
+            else:
+                switch_priority = char.get_switch_priority(current_char=current_char, has_intro=has_intro,
+                                                           target_low_con=target_low_con)
             self._log_switch_candidate(char, switch_priority)
             if switch_priority > SwitchPriority.NO:
                 prioritized_candidates.append((switch_priority, char))
@@ -851,6 +854,8 @@ class BaseCombatTask(CombatCheck):
             if len(self.chars) == 3:
                 self.chars = self.chars[:2]
                 logger.info(f'team size changed to 2')
+
+        apply_team_char_classes(self, self.chars)
 
         for char in self.chars:
             if char is not None:

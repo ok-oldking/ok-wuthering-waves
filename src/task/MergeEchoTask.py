@@ -31,10 +31,12 @@ class MergeEchoTask(BaseWWTask):
                 notify=True,
             )
             return
-        self.sleep(1)
+        self.sleep(3)
 
-        if self.wait_click_skip_dialog_confirm():
+        if self.click_dialog_left_button():
             self.sleep(2)
+            self.click_relative(0.034, 0.293, after_sleep=1)
+            self.click_relative(0.580, 0.911, after_sleep=4)
         else:
             if self.notify_if_not_enough:
                 self.log_error(

@@ -27,6 +27,7 @@ CLAUDE.md
 # C extensions
 ok
 ok/
+pyappify
 *.cpp
 *.pyx
 *.so

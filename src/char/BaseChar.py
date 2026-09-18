@@ -63,6 +63,8 @@ class BaseChar:
       should not hard-code team role unless the character's mechanics require it.
     """
 
+    HEALER_FULL_CON_SWITCH_LOCKOUT = 16.0
+
     def __init__(self, task, index, char_name=None, confidence=1, ring_index=-1, char_type=CharType.MAIN_DPS,
                  buff_time=None):
         """初始化角色基础属性。
@@ -80,6 +82,7 @@ class BaseChar:
         self.ring_index = ring_index  # for con check
         self.last_switch_time = -1
         self.last_switch_in_time = -1
+        self.last_full_con_switch_time = -1
         self.last_res = -1
         self.last_echo = -1
         self.last_liberation = -1
@@ -315,10 +318,13 @@ class BaseChar:
     def switch_out(self, con_full=False):
         """角色被切换下场时的状态更新。"""
         self.last_switch_time = time.time()
+        switched_with_full_con = con_full or self.current_con == 1
+        if self.is_healer and switched_with_full_con:
+            self.last_full_con_switch_time = self.last_switch_time
         self.is_current_char = False
         self.has_intro = False
         self.has_sub_dps_intro = False
-        if con_full or self.current_con == 1:
+        if switched_with_full_con:
             if self.buff_time > 0:
                 self.last_buff_time = self.last_switch_time
             self.logger.info(f'switch_out at full con set current_con to 0')
@@ -576,6 +582,7 @@ class BaseChar:
         self.has_intro = False
         self.has_sub_dps_intro = False
         self.current_con = 0
+        self.last_full_con_switch_time = -1
         self.has_tool_box = False
         self._liberation_available = False
         self._echo_available = False
@@ -698,7 +705,17 @@ class BaseChar:
         first; the named priority bands are spaced by 100 so callers can return
         values such as ``SwitchPriority.HIGH + 1``.
         """
+        if self.healer_full_con_switch_locked():
+            return SwitchPriority.NO
         return SwitchPriority.NORMAL
+
+    def healer_full_con_switch_locked(self):
+        return (
+            self.is_healer
+            and self.last_full_con_switch_time >= 0
+            and self.time_elapsed_accounting_for_freeze(self.last_full_con_switch_time)
+            < self.HEALER_FULL_CON_SWITCH_LOCKOUT
+        )
 
     def resonance_available(self):
         """判断共鸣技能是否可用。

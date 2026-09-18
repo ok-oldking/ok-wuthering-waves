@@ -15,22 +15,24 @@ class MouseResetTask(TriggerTask):
         self.trigger_interval = 10
         self.name = "🖱️ Prevent Wuthering Waves from moving the mouse"
         self.description = "Turn on if you mouse jumps around"
-        self.running_reset = False
         self.mouse_pos = None
 
+    def enable(self):
+        super().enable()
+        self.run()
+
     def run(self):
-        if self.is_browser():
+        if not self.enabled or self.is_browser():
             return
+        logger.debug('schedule mouse reset')
+        self.post_mouse_reset(0.01)
+
+    def post_mouse_reset(self, delay):
         if self.enabled:
-            if not self.running_reset:
-                logger.info('start mouse reset')
-                self.running_reset = True
-                self.handler.post(self.mouse_reset, 0.01)
-        else:
-            self.running_reset = False
+            self.handler.post(self.mouse_reset, delay, remove_existing=True)
 
     def mouse_reset(self):
-        if self.is_browser():
+        if not self.enabled or self.is_browser():
             return
         try:
             current_position = win32api.GetCursorPos()
@@ -49,11 +51,9 @@ class MouseResetTask(TriggerTask):
                     logger.info(f'move mouse back {self.mouse_pos}')
                     win32api.SetCursorPos(self.mouse_pos)
                     self.mouse_pos = self.mouse_pos
-                    if self.enabled:
-                        self.handler.post(self.mouse_reset, 1)
+                    self.post_mouse_reset(1)
                     return
             self.mouse_pos = current_position
-            if self.enabled:
-                return self.handler.post(self.mouse_reset, 0.002)
+            self.post_mouse_reset(0.002)
         except Exception as e:
             logger.error('mouse_reset exception', e)

@@ -2,6 +2,7 @@ import re
 
 
 from ok import Box
+from ok.task.exceptions import WaitFailedException
 from src.task.DailyTask import DailyTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
@@ -120,8 +121,18 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
                     continue
                 account = self.wait_until(
                     lambda: self._click_account_in_list(),
-                    time_out=10, raise_if_not_found=True
+                    time_out=10, raise_if_not_found=False
                 )
+                if not account:
+                    # _click_account_in_list() returns None once every account the login
+                    # screen offers is already in done_set.  That is the normal end of a
+                    # multi-account sweep, so let run()'s while loop stop instead of
+                    # raising and failing the whole run after the work is already done.
+                    if self.all_accounts and all(self._is_done(name) for name in self.all_accounts):
+                        self.log_info(self.tr('No remaining account to run; finishing multi-account daily task'))
+                        return None
+                    # Nothing readable in the account list: keep the original failure signal.
+                    raise WaitFailedException()
                 self.sleep(1)
                 current_account = self._detect_current_account_from_login()
                 self.log_info(self.tr('Selected account: {selected}, displayed account: {displayed}').format(
