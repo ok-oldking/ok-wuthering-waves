@@ -1,9 +1,0 @@
-__pycache__/
-**/__pycache__/
-.venv
-__pycache__
-*.pyc
-logs/
-**/logs/
-*.log
-*.log.*

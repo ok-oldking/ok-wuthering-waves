@@ -1,11 +1,11 @@
-name: "ok-ww"
+name: "echo-score"
 uac: true
 icon: "icons/icon.png"
-website: "http://ok-script.com/ok-ww"
+website: "https://github.com/IceHe/ok-wuthering-waves"
 
 profiles:
   - name: "China"
-    git_url: "https://cnb.cool/ok-oldking/ok-ww-update2.git"
+    git_url: "https://github.com/IceHe/ok-wuthering-waves.git"
     admin: true
     main_script: "main.py"
     requires_python: "3.12"
@@ -16,8 +16,7 @@ profiles:
     # PYTHONPATH: "your/default/path" # Optional, will be "" if missing
 
   - name: "Global"
-    git_url: "https://github.com/ok-oldking/ok-ww-update.git"
+    git_url: "https://github.com/IceHe/ok-wuthering-waves.git"
     main_script: "main.py"
     requirements: "requirements.txt"
-
 

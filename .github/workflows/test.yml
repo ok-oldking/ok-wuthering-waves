@@ -1,100 +1,25 @@
-name: Run Tests
+name: Tests
 
 on:
+  push:
+    branches: [slim]
   pull_request:
-    types: [ opened, synchronize ]
 
 permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build exe with launcher
+  test:
     runs-on: windows-latest
-
-    env:
-      PYTHONIOENCODING: 'UTF-8'
-
-    strategy:
-      matrix:
-        python-version: [ 3.12 ]
-
     steps:
-      - name: Configure git
-        run: |
-          [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-          git config --global core.autocrlf false
-          git config --global core.eol lf
-          git config --global user.email "ok-oldking@users.noreply.github.com"
-          git config --global user.name "ok-oldking"
-          echo "action_state=yellow" >> $env:GITHUB_ENV
-          echo "${{ env.action_state }}"
-
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          submodules: true
-          lfs: true
-          fetch-depth: 1
-          persist-credentials: false
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Set UTF-8 encoding
-        run: |
-          set PYTHONIOENCODING=utf-8
-          set PYTHONLEGACYWINDOWSSTDIO=utf-8
-          echo PYTHONIOENCODING=utf-8 >> $GITHUB_ENV
-
-      - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
-
-      - name: Run tests
-        env:
-          GITHUB_TOKEN: ''
-          GH_TOKEN: ''
-          CNB_TOKEN: ''
-          OK_GH: ''
-          SIGNPATH_API_TOKEN: ''
-          GEMINI_API_KEY: ''
-          AI_API_KEY: ''
-          MirrorChyanUploadToken: ''
-          ACTIONS_RUNTIME_TOKEN: ''
-          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ''
-        run: |
-          @(
-            'GITHUB_TOKEN',
-            'GH_TOKEN',
-            'CNB_TOKEN',
-            'OK_GH',
-            'SIGNPATH_API_TOKEN',
-            'GEMINI_API_KEY',
-            'AI_API_KEY',
-            'MirrorChyanUploadToken',
-            'ACTIONS_RUNTIME_TOKEN',
-            'ACTIONS_ID_TOKEN_REQUEST_TOKEN'
-          ) | ForEach-Object {
-            Remove-Item "Env:\$_" -ErrorAction SilentlyContinue
-          }
-
-          Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
-              Write-Host "Running tests in $($_.FullName)"
-              try {
-                  # Run the Python unittest command
-                  python -m unittest $_.FullName
-
-                  # Check if the previous command succeeded
-                  if ($LASTEXITCODE -ne 0) {
-                      throw "Tests failed in $($_.FullName)"
-                  }
-              } catch {
-                  # Stop the loop and return the error
-                  Write-Error $_
-                  exit 1
-              }
-          }
-
-  
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run slim test suite
+        run: python -m unittest discover -s tests -p "Test*.py"
+      - name: Smoke-test application configuration
+        run: python -c "import config; from src.task.EchoStatOverlayTask import EchoStatOverlayTask; assert len(config.config['trigger_tasks']) == 1"

@@ -8,7 +8,7 @@ os.environ["PYAPPIFY_PYTHON_TEST"] = "1"
 
 
 def ensure_windows_admin():
-    """Relaunch the source debug client at the game's privilege level on Windows."""
+    """Relaunch Echo Score at the game's privilege level on Windows."""
     if os.name != "nt" or ctypes.windll.shell32.IsUserAnAdmin():
         return True
 
@@ -34,9 +34,7 @@ def sync_debug_overlay_setting():
     except (FileNotFoundError, json.JSONDecodeError):
         ok_config = {}
 
-    # The status marker is always visible while the game window is visible,
-    # and Echo boxes can be toggled live, so the native overlay must be created
-    # during application startup.
+    # The native overlay is required by the only application feature.
     ok_config["use_overlay"] = True
     config_folder.mkdir(exist_ok=True)
     ok_config_path.write_text(json.dumps(ok_config, ensure_ascii=False, indent=4), encoding="utf-8")

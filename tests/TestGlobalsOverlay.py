@@ -14,43 +14,29 @@ class TestGlobalsOverlay(unittest.TestCase):
         self.app.ok_config = {"use_overlay": True}
         self.overlay = Mock()
         self.app.get_overlay_view.return_value = self.overlay
-        self.previous_global_config = getattr(og, "global_config", None)
-        self.global_config = Mock()
-        self.global_config.get_config.return_value = {
-            "显示主副词条框体": True,
-            "Show Debug Boxes": False,
-        }
         og.app = self.app
-        og.global_config = self.global_config
 
     def tearDown(self):
         Globals._game_window_visible = self.previous_window_visible
         og.app = self.previous_app
-        og.global_config = self.previous_global_config
-
-    def test_visible_game_window_draws_status(self):
-        Globals._update_game_overlay(True)
-
-        self.overlay.draw.assert_called_once()
-        self.overlay.set_boxes_enabled.assert_called_once_with(False)
-
-    def test_hidden_game_window_clears_status(self):
-        Globals._update_game_overlay(False)
-
-        self.overlay.clear_draw.assert_called_once_with("okww-status")
 
     def test_debug_box_setting_change_updates_overlay_without_waiting_for_a_frame(self):
-        Globals._game_window_visible = True
-
         Globals.apply_echo_score_setting_change("Show Debug Boxes", True)
 
-        self.overlay.draw.assert_called_once()
         self.overlay.set_boxes_enabled.assert_called_once_with(True)
 
     def test_echo_box_switch_clears_custom_painter_immediately(self):
         Globals.apply_echo_score_setting_change("显示主副词条框体", False)
 
         self.overlay.clear_draw.assert_called_once_with("echo-stat-boxes")
+
+    def test_disable_score_clears_boxes_and_status(self):
+        Globals.apply_echo_score_setting_change("启用声骸评分", False)
+
+        self.assertEqual(
+            [call.args[0] for call in self.overlay.clear_draw.call_args_list],
+            ["echo-stat-boxes", "echo-score-status"],
+        )
 
     def test_background_game_keeps_overlay_visible(self):
         hwnd_window = Mock(exists=True, visible=False)
@@ -60,4 +46,3 @@ class TestGlobalsOverlay(unittest.TestCase):
         self.overlay.update_overlay.assert_called_once_with(
             True, 10, 20, 1600, 900, 1600, 900, 1.0
         )
-        self.overlay.draw.assert_called_once()

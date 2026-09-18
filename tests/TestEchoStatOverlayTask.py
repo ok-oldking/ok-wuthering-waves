@@ -17,14 +17,28 @@ class TestEchoStatOverlayTask(unittest.TestCase):
     def make_task(self, show_content):
         task = EchoStatOverlayTask.__new__(EchoStatOverlayTask)
         task.echo_score_config = {
+            "启用声骸评分": True,
             "角色评分模板": "通用",
             "显示主副词条框体": show_content,
+            "Show Debug Boxes": False,
         }
         task.painter = Mock()
         task._executor = Mock()
         task._executor.method.width = 1600
         task._executor.method.height = 900
         return task
+
+    def test_disabled_feature_clears_score_and_status(self):
+        task = self.make_task(show_content=True)
+        task.echo_score_config["启用声骸评分"] = False
+        overlay = Mock()
+        task.get_overlay_view = Mock(return_value=overlay)
+
+        self.assertFalse(task.run())
+        self.assertEqual(
+            [call.args[0] for call in overlay.clear_draw.call_args_list],
+            ["echo-stat-boxes", "echo-score-status"],
+        )
 
     def test_custom_content_switch_clears_echo_stat_boxes(self):
         task = self.make_task(show_content=False)
@@ -47,7 +61,7 @@ class TestEchoStatOverlayTask(unittest.TestCase):
         ):
             self.assertFalse(task.run())
 
-        overlay.draw.assert_called_once_with(ECHO_STAT_PAINTER_KEY, task.painter.paint)
+        overlay.draw.assert_any_call(ECHO_STAT_PAINTER_KEY, task.painter.paint)
 
     def test_background_game_preserves_last_recognized_boxes(self):
         task = self.make_task(show_content=True)

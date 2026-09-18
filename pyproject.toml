@@ -3,7 +3,7 @@ requires = ["setuptools>=77", "cython>=3"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ok-ww"
+name = "echo-score"
 version = "0.0.1"
 requires-python = ">=3.11"
 dependencies = [
@@ -16,12 +16,5 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "polib",
     "pytest",
-]
-docs = [
-    "mkdocs-material>=9.5,<10",
-]
-web-test = [
-    "ok-script[web]==2.0.7b1",
 ]

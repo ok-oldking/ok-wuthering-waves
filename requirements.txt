@@ -24,15 +24,15 @@ numpy==2.5.2
     #   openvino
     #   shapely
 ok-script[ocr,qt]==2.0.7b1
-    # via ok-ww (pyproject.toml)
+    # via echo-score (pyproject.toml)
 onnxocr-ppocrv5>=0.0.20
     # via
     #   ok-script
-    #   ok-ww (pyproject.toml)
+    #   echo-score (pyproject.toml)
 opencv-python==5.0.0.93
-    # via ok-ww (pyproject.toml)
+    # via echo-score (pyproject.toml)
 openvino==2026.3.0
-    # via ok-ww (pyproject.toml)
+    # via echo-score (pyproject.toml)
 openvino-telemetry==2025.2.0
     # via openvino
 pillow==12.3.0
@@ -44,7 +44,7 @@ psutil==7.2.2
 pyappify==1.0.13
     # via
     #   ok-script
-    #   ok-ww (pyproject.toml)
+    #   echo-score (pyproject.toml)
 pycaw==20240210
     # via ok-script
 pyclipper==1.4.0
