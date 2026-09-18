@@ -7,13 +7,16 @@ from dataclasses import dataclass
 import os
 import re
 
-from src.echo_score import calculate_echo_score, substat_tier, substat_tier_label
+from src.echo_score import auto_match_template, calculate_echo_score, substat_tier, substat_tier_label
 
 
 ECHO_STAT_PAINTER_KEY = "echo-stat-boxes"
 TIER_TEXT_COLOR = (80, 185, 255)
 LOWEST_TIER_TEXT_COLOR = (80, 235, 130)
 HIGHEST_TIER_TEXT_COLOR = (255, 75, 75)
+SUMMARY_TEMPLATE_COLOR = (110, 220, 255)
+SUMMARY_CURRENT_COLOR = (255, 220, 80)
+SUMMARY_POTENTIAL_COLOR = (120, 235, 150)
 _STAT_TEXT = re.compile(
     r"攻击|生命|防御|暴击|共鸣效率|伤害加成|治疗效果|ATK|HP|DEF|Crit|Energy|DMG|Heal",
     re.IGNORECASE,
@@ -64,7 +67,8 @@ def find_echo_stat_rectangles(ocr_boxes, screen_width, screen_height):
     return list(analyze_echo_stats(ocr_boxes, screen_width, screen_height, "通用").rectangles)
 
 
-def analyze_echo_stats(ocr_boxes, screen_width, screen_height, template_name):
+def analyze_echo_stats(ocr_boxes, screen_width, screen_height, template_name,
+                       auto_match=False):
     """Recognize one Echo panel and calculate its row and total scores."""
     if not screen_width or not screen_height:
         return EchoStatAnalysis((), (), "")
@@ -78,6 +82,9 @@ def analyze_echo_stats(ocr_boxes, screen_width, screen_height, template_name):
         screen_height * 0.18, screen_height * 0.47,
     )
     screen_text = " ".join(str(box.name) for box in ocr_boxes)
+    matched_template = auto_match_template(ocr_boxes) if auto_match else None
+    if matched_template:
+        template_name = matched_template
     is_tuning_page = any(marker in screen_text for marker in (
         "声骸强化", "强化并调谐", "已完成全部调谐", "Echo Enhancement",
     ))
@@ -105,7 +112,7 @@ def analyze_echo_stats(ocr_boxes, screen_width, screen_height, template_name):
     if score is None:
         return EchoStatAnalysis(rectangles, (), "")
     summary = (
-        f"评分模板：{template_name}\n"
+        f"评分模板：{template_name}{' (自动匹配)' if matched_template else ''}\n"
         f"当前评分：{score.current_score:.2f}\n"
         f"理论最高：{score.potential_score:.2f}"
     )
@@ -334,9 +341,10 @@ def _paint_score_summary(canvas, overlay, text):
         block_width = max(size.cx for size in sizes)
         line_height = max(size.cy for size in sizes) + max(4, round(height * 0.008))
         block_height = line_height * len(lines)
-        # Center the two-line block, but keep both lines on one shared left edge.
+        # Center the block, but keep all lines on one shared left edge.
         x = max(0, (width - block_width) // 2)
         y = max(0, (height - block_height) // 2)
+        line_colors = (SUMMARY_TEMPLATE_COLOR, SUMMARY_CURRENT_COLOR, SUMMARY_POTENTIAL_COLOR)
         for index, line in enumerate(lines):
             line_y = y + index * line_height
             for dx, dy in ((-2, 0), (2, 0), (0, -2), (0, 2)):
@@ -344,7 +352,8 @@ def _paint_score_summary(canvas, overlay, text):
                 win32_gdi.gdi32.TextOutW(
                     canvas.hdc, x + dx, line_y + dy, line, len(line)
                 )
-            win32_gdi.gdi32.SetTextColor(canvas.hdc, win32_gdi._rgb(255, 220, 80))
+            color = line_colors[index] if index < len(line_colors) else SUMMARY_CURRENT_COLOR
+            win32_gdi.gdi32.SetTextColor(canvas.hdc, win32_gdi._rgb(*color))
             win32_gdi.gdi32.TextOutW(canvas.hdc, x, line_y, line, len(line))
     finally:
         win32_gdi.gdi32.SelectObject(canvas.hdc, old_font)

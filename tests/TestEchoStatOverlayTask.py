@@ -14,14 +14,14 @@ class TestEchoStatOverlayTask(unittest.TestCase):
     def tearDown(self):
         og.device_manager = self.previous_device_manager
 
-    def make_task(self, show_content):
+    def make_task(self):
         task = EchoStatOverlayTask.__new__(EchoStatOverlayTask)
         task.echo_score_config = {
             "启用声骸评分": True,
+            "自动匹配评分模板": False,
             "角色评分模板": "通用",
-            "显示主副词条框体": show_content,
-            "Show Debug Boxes": False,
         }
+        task.debug_config = {"Show Debug Boxes": False}
         task.painter = Mock()
         task._executor = Mock()
         task._executor.method.width = 1600
@@ -29,7 +29,7 @@ class TestEchoStatOverlayTask(unittest.TestCase):
         return task
 
     def test_disabled_feature_clears_score_and_status(self):
-        task = self.make_task(show_content=True)
+        task = self.make_task()
         task.echo_score_config["启用声骸评分"] = False
         overlay = Mock()
         task.get_overlay_view = Mock(return_value=overlay)
@@ -40,15 +40,26 @@ class TestEchoStatOverlayTask(unittest.TestCase):
             ["echo-stat-boxes", "echo-score-status"],
         )
 
-    def test_custom_content_switch_clears_echo_stat_boxes(self):
-        task = self.make_task(show_content=False)
-        task.get_overlay_view = Mock(return_value=Mock())
+    def test_unrecognized_page_clears_status_watermark(self):
+        task = self.make_task()
+        overlay = Mock()
+        task.get_overlay_view = Mock(return_value=overlay)
+        task.ocr = Mock(return_value=[])
 
         self.assertFalse(task.run())
-        task.get_overlay_view.return_value.clear_draw.assert_called_once_with(ECHO_STAT_PAINTER_KEY)
+        overlay.clear_draw.assert_any_call("echo-score-status")
 
-    def test_custom_content_switch_draws_recognized_boxes(self):
-        task = self.make_task(show_content=True)
+    def test_hidden_worker_repairs_legacy_disabled_state(self):
+        task = EchoStatOverlayTask.__new__(EchoStatOverlayTask)
+        task.config = {"_enabled": False}
+
+        task.on_create()
+
+        self.assertTrue(task.enabled)
+        self.assertTrue(task.config["_enabled"])
+
+    def test_enabled_score_draws_recognized_boxes(self):
+        task = self.make_task()
         overlay = Mock()
         task.get_overlay_view = Mock(return_value=overlay)
         task.ocr = Mock(return_value=[])
@@ -63,8 +74,24 @@ class TestEchoStatOverlayTask(unittest.TestCase):
 
         overlay.draw.assert_any_call(ECHO_STAT_PAINTER_KEY, task.painter.paint)
 
+    def test_auto_match_setting_is_forwarded_to_analysis(self):
+        task = self.make_task()
+        task.echo_score_config["自动匹配评分模板"] = True
+        overlay = Mock()
+        task.get_overlay_view = Mock(return_value=overlay)
+        task.ocr = Mock(return_value=[])
+        with unittest.mock.patch(
+            "src.task.EchoStatOverlayTask.analyze_echo_stats",
+            return_value=Mock(
+                rectangles=[], row_scores=[], summary="", tier_labels=[], tier_colors=[],
+            ),
+        ) as analyze:
+            task.run()
+
+        self.assertTrue(analyze.call_args.kwargs["auto_match"])
+
     def test_background_game_preserves_last_recognized_boxes(self):
-        task = self.make_task(show_content=True)
+        task = self.make_task()
         overlay = Mock()
         task.get_overlay_view = Mock(return_value=overlay)
         task.ocr = Mock()

@@ -12,13 +12,19 @@ STATUS_PAINTER_KEY = "echo-score-status"
 class EchoStatOverlayTask(TriggerTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.default_config.update({"_enabled": True})
         self.trigger_interval = 0.5
         self.name = "声骸评分后台识别"
         self.description = "实时识别查看/调谐界面的单个声骸"
         self.visible = False
         self.echo_score_config = self.get_global_config("声骸评分")
+        self.debug_config = self.get_global_config("开发调试")
         self.painter = EchoStatBoxPainter()
+
+    def on_create(self):
+        """This hidden worker is controlled by the public score switch only."""
+        self._enabled = True
+        if not self.config.get("_enabled", False):
+            self.config["_enabled"] = True
 
     def post_init(self):
         app = getattr(og, "app", None)
@@ -33,11 +39,7 @@ class EchoStatOverlayTask(TriggerTask):
             self._clear(overlay, include_status=True)
             return False
 
-        overlay.draw(STATUS_PAINTER_KEY, paint_okww_status)
-        overlay.set_boxes_enabled(bool(self.echo_score_config.get("Show Debug Boxes", False)))
-        if not self.echo_score_config.get("显示主副词条框体", True):
-            self._clear(overlay)
-            return False
+        overlay.set_boxes_enabled(bool(self.debug_config.get("Show Debug Boxes", False)))
 
         hwnd_window = getattr(getattr(og, "device_manager", None), "hwnd_window", None)
         if (hwnd_window is not None and hwnd_window.exists and not hwnd_window.visible
@@ -47,6 +49,7 @@ class EchoStatOverlayTask(TriggerTask):
         analysis = analyze_echo_stats(
             self.ocr(), self.width, self.height,
             self.echo_score_config.get("角色评分模板", DEFAULT_TEMPLATE),
+            auto_match=bool(self.echo_score_config.get("自动匹配评分模板", False)),
         )
         self.painter.update(
             analysis.rectangles, analysis.row_scores, analysis.summary,
@@ -54,8 +57,16 @@ class EchoStatOverlayTask(TriggerTask):
         )
         if analysis.rectangles:
             overlay.draw(ECHO_STAT_PAINTER_KEY, self.painter.paint)
+            if analysis.summary:
+                # The watermark is a scoring-state indicator, not a global
+                # overlay label.  It only appears when this frame is a
+                # recognized single-Echo view with a calculated score.
+                overlay.draw(STATUS_PAINTER_KEY, paint_okww_status)
+            else:
+                overlay.clear_draw(STATUS_PAINTER_KEY)
         else:
             overlay.clear_draw(ECHO_STAT_PAINTER_KEY)
+            overlay.clear_draw(STATUS_PAINTER_KEY)
         return False
 
     def _clear(self, overlay, include_status=False):

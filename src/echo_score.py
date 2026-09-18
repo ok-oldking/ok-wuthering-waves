@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 import math
+import re
 
 from src.xwuid_echo_data import TEMPLATES
 
@@ -125,6 +126,32 @@ def matching_template_names(text):
     """Case-insensitive contains matching used by the searchable selector."""
     query = str(text).strip().casefold()
     return [name for name in template_names() if query in name.casefold()]
+
+
+def auto_match_template(ocr_boxes):
+    """Return the last template whose character is marked as equipped.
+
+    The single-Echo view renders ``[character]装配中`` above the Unload
+    button.  Iterating the ordered template list intentionally lets the last
+    variant win for characters with multiple scoring modes.
+    """
+    texts = [str(getattr(box, "name", box)) for box in ocr_boxes]
+    compact_text = re.sub(r"\s+", "", "".join(texts))
+    if "装配中" not in compact_text:
+        return None
+
+    # Only accept a character name directly attached to the equipped marker.
+    # Searching the whole screen used to let the generic template ``角色-通用``
+    # match skill descriptions such as “角色为敌人……”, overwriting the real
+    # equipped character shown at the bottom-right.
+    matched = None
+    for name in template_names():
+        character = name.split("-", 1)[0].split("－", 1)[0].strip()
+        if name == DEFAULT_TEMPLATE or character == "角色":
+            continue
+        if character and f"{character}装配中" in compact_text:
+            matched = name
+    return matched
 
 
 def substat_tier(stat_name, value):

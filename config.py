@@ -55,16 +55,14 @@ echo_score_config = ConfigOption(
     "声骸评分",
     {
         "启用声骸评分": True,
+        "自动匹配评分模板": False,
         "角色评分模板": DEFAULT_TEMPLATE,
-        "显示主副词条框体": True,
-        "Show Debug Boxes": False,
     },
     description="实时识别单个声骸并按角色模板评分",
     config_description={
-        "启用声骸评分": "启用后台识别、ECHO-ON 和实时评分",
+        "启用声骸评分": "启用后台识别、词条框体和实时评分",
+        "自动匹配评分模板": "根据声骸查看界面的“装配中”角色自动选择评分模板",
         "角色评分模板": "输入角色名搜索 XW-UID 角色/流派评分模板",
-        "显示主副词条框体": "仅在查看或调谐单个声骸时显示识别框和评分",
-        "Show Debug Boxes": "显示 OK Script 的 OCR 调试框",
     },
     config_type={"角色评分模板": {"type": "drop_down", "options": template_names()}},
     validator=validate_echo_score,
@@ -72,13 +70,43 @@ echo_score_config = ConfigOption(
     icon=Icon.SYNC,
 )
 
+debug_config = ConfigOption(
+    "开发调试",
+    {"Show Debug Boxes": False},
+    description="开发与 OCR 调试选项",
+    config_description={"Show Debug Boxes": "显示 OK Script 的 OCR 调试框"},
+    validator=validate_echo_score,
+    show_at_tab=False,
+)
+
+# OK Script registers a full notification settings tab by default.  Echo Score
+# does not emit user notifications, so pre-register a compatible hidden option
+# and keep the notification backend disabled.
+notification_config = ConfigOption(
+    "Notification",
+    {
+        "System Notification": False,
+        "Discord Notification": False,
+        "Telegram Notification": False,
+        "Enterprise WeChat Webhook Notification": False,
+        "QQ Bot API Notification": False,
+        "SMTP Notification": False,
+        "QQ Desktop Notification (Not Reliable)": False,
+        "WeChat Desktop Notification (Not Reliable)": False,
+    },
+    show_at_tab=False,
+)
+
 
 config = {
     "debug": False,
     "gui": {"type": "qt"},
+    # The score/status painters are the application's primary output.  Keep the
+    # native overlay available in normal, debug and packaged launches.
+    "use_overlay": True,
     "config_folder": "configs",
     "gui_icon": "icons/icon.png",
-    "global_configs": [echo_score_config],
+    "global_configs": [echo_score_config, debug_config, notification_config],
     "ocr": {
         "lib": "onnxocr",
         "auto_simplify": True,
@@ -117,6 +145,8 @@ config = {
     },
     "about": """
         <p><strong>声骸评分</strong> 基于 OK Script 与 OKWW 的窗口捕获和 OCR 能力。</p>
+        <p>评分逻辑基于 <a href="https://github.com/Loping151/XutheringWavesUID">XutheringWavesUID</a>；
+        本项目结合 XWUID（GPL-3.0）与 OKWW（AGPL-3.0）开发，并以 AGPL-3.0 发布。</p>
         <p>本程序只读取游戏窗口画面，不读取内存、不修改游戏文件。</p>
         <p style="color:red;">使用外部辅助工具存在账号风险，请自行判断并承担风险。</p>
     """,

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=77", "cython>=3"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -12,9 +12,4 @@ dependencies = [
     "openvino",
     "opencv-python",
     "pyappify>=1.0.13"
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest",
 ]

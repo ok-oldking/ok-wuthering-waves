@@ -8,6 +8,7 @@ from src.echo_score import (
     resolve_template_name,
     substat_tier_label,
     template_names,
+    auto_match_template,
 )
 
 
@@ -16,6 +17,25 @@ def row(name, value):
 
 
 class TestEchoScore(unittest.TestCase):
+    def test_auto_match_requires_equipped_marker(self):
+        boxes = [SimpleNamespace(name="洛瑟菈")]
+
+        self.assertIsNone(auto_match_template(boxes))
+
+    def test_auto_match_uses_last_variant_for_character(self):
+        boxes = [SimpleNamespace(name="洛瑟菈装配中")]
+
+        self.assertEqual("洛瑟菈-声骸-羽落", auto_match_template(boxes))
+
+    def test_auto_match_does_not_let_generic_role_text_override_character(self):
+        boxes = [
+            SimpleNamespace(name="角色为敌人添加负面效果"),
+            SimpleNamespace(name="达妮娅"),
+            SimpleNamespace(name="装配中"),
+        ]
+
+        self.assertEqual("达妮娅-通用", auto_match_template(boxes))
+
     def test_all_xwuid_character_and_modal_templates_are_available(self):
         names = template_names()
 

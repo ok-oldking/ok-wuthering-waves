@@ -113,6 +113,24 @@ class TestEchoStatOverlay(unittest.TestCase):
             analysis.summary,
         )
 
+    def test_equipped_character_auto_matches_last_template_and_marks_summary(self):
+        boxes = [
+            box(1100, 130, 55, 25, "COST 1"),
+            box(1250, 420, 70, 28, "声骸技能"),
+            box(1280, 790, 150, 28, "洛瑟菈装配中"),
+            box(1257, 192, 68, 28, "生命"), box(1477, 195, 66, 23, "22.8%"),
+            box(1257, 222, 68, 29, "生命"), box(1482, 224, 55, 25, "2280"),
+            box(1278, 255, 82, 28, "暴击伤害"), box(1472, 255, 66, 30, "13.8%"),
+        ]
+
+        analysis = analyze_echo_stats(
+            boxes, 1600, 900, "嘉贝莉娜-通用", auto_match=True,
+        )
+
+        self.assertTrue(
+            analysis.summary.startswith("评分模板：洛瑟菈-声骸-羽落 (自动匹配)\n")
+        )
+
     def test_cost_three_other_rule_excludes_energy_regen(self):
         boxes = [
             box(1040, 135, 55, 25, "COST"), box(1110, 135, 20, 25, "3"),
