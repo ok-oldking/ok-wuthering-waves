@@ -130,6 +130,23 @@ class TestEchoStatOverlay(unittest.TestCase):
         self.assertTrue(
             analysis.summary.startswith("评分模板：洛瑟菈-声骸-羽落 (自动匹配)\n")
         )
+        self.assertEqual("洛瑟菈-声骸-羽落", analysis.selected_template)
+
+    def test_tuning_page_reuses_last_auto_matched_template(self):
+        boxes = [
+            box(120, 60, 120, 30, "声骸强化"),
+            box(170, 190, 68, 28, "生命"), box(480, 195, 66, 23, "22.8%"),
+            box(170, 222, 68, 29, "生命"), box(480, 224, 55, 25, "2280"),
+            box(190, 255, 82, 28, "暴击伤害"), box(470, 255, 66, 30, "13.8%"),
+        ]
+
+        analysis = analyze_echo_stats(
+            boxes, 1600, 900, "角色-通用", auto_match=True,
+            remembered_template="达妮娅-通用",
+        )
+
+        self.assertTrue(analysis.summary.startswith("评分模板：达妮娅-通用 (自动匹配)\n"))
+        self.assertEqual("", analysis.selected_template)
 
     def test_cost_three_other_rule_excludes_energy_regen(self):
         boxes = [

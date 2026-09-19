@@ -19,6 +19,7 @@ class EchoStatOverlayTask(TriggerTask):
         self.echo_score_config = self.get_global_config("声骸评分")
         self.debug_config = self.get_global_config("开发调试")
         self.painter = EchoStatBoxPainter()
+        self.auto_matched_template = None
 
     def on_create(self):
         """This hidden worker is controlled by the public score switch only."""
@@ -50,7 +51,10 @@ class EchoStatOverlayTask(TriggerTask):
             self.ocr(), self.width, self.height,
             self.echo_score_config.get("角色评分模板", DEFAULT_TEMPLATE),
             auto_match=bool(self.echo_score_config.get("自动匹配评分模板", False)),
+            remembered_template=getattr(self, "auto_matched_template", None),
         )
+        if getattr(analysis, "selected_template", None):
+            self.auto_matched_template = analysis.selected_template
         self.painter.update(
             analysis.rectangles, analysis.row_scores, analysis.summary,
             analysis.tier_labels, analysis.tier_colors,

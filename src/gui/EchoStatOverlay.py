@@ -17,6 +17,7 @@ HIGHEST_TIER_TEXT_COLOR = (255, 75, 75)
 SUMMARY_TEMPLATE_COLOR = (110, 220, 255)
 SUMMARY_CURRENT_COLOR = (255, 220, 80)
 SUMMARY_POTENTIAL_COLOR = (120, 235, 150)
+SUMMARY_CENTER_X_RATIO = 0.60
 _STAT_TEXT = re.compile(
     r"攻击|生命|防御|暴击|共鸣效率|伤害加成|治疗效果|ATK|HP|DEF|Crit|Energy|DMG|Heal",
     re.IGNORECASE,
@@ -60,6 +61,7 @@ class EchoStatAnalysis:
     summary: str
     tier_labels: tuple[str, ...] = ()
     tier_colors: tuple[tuple[int, int, int], ...] = ()
+    selected_template: str = ""
 
 
 def find_echo_stat_rectangles(ocr_boxes, screen_width, screen_height):
@@ -68,7 +70,7 @@ def find_echo_stat_rectangles(ocr_boxes, screen_width, screen_height):
 
 
 def analyze_echo_stats(ocr_boxes, screen_width, screen_height, template_name,
-                       auto_match=False):
+                       auto_match=False, remembered_template=None):
     """Recognize one Echo panel and calculate its row and total scores."""
     if not screen_width or not screen_height:
         return EchoStatAnalysis((), (), "")
@@ -83,8 +85,9 @@ def analyze_echo_stats(ocr_boxes, screen_width, screen_height, template_name,
     )
     screen_text = " ".join(str(box.name) for box in ocr_boxes)
     matched_template = auto_match_template(ocr_boxes) if auto_match else None
-    if matched_template:
-        template_name = matched_template
+    automatic_template = matched_template or (remembered_template if auto_match else None)
+    if automatic_template:
+        template_name = automatic_template
     is_tuning_page = any(marker in screen_text for marker in (
         "声骸强化", "强化并调谐", "已完成全部调谐", "Echo Enhancement",
     ))
@@ -100,7 +103,7 @@ def analyze_echo_stats(ocr_boxes, screen_width, screen_height, template_name,
     elif is_single_echo_page and len(right_rows) >= 2:
         rows = right_rows
     else:
-        return EchoStatAnalysis((), (), "")
+        return EchoStatAnalysis((), (), "", selected_template=matched_template or "")
 
     rows = rows[:7]
     main_rows, sub_rows = rows[:2], rows[2:]
@@ -110,9 +113,9 @@ def analyze_echo_stats(ocr_boxes, screen_width, screen_height, template_name,
     rectangles = tuple(row.rectangle((255, 0, 0)) for row in main_rows)
     rectangles += tuple(row.rectangle((255, 255, 255)) for row in sub_rows)
     if score is None:
-        return EchoStatAnalysis(rectangles, (), "")
+        return EchoStatAnalysis(rectangles, (), "", selected_template=matched_template or "")
     summary = (
-        f"评分模板：{template_name}{' (自动匹配)' if matched_template else ''}\n"
+        f"评分模板：{template_name}{' (自动匹配)' if automatic_template else ''}\n"
         f"当前评分：{score.current_score:.2f}\n"
         f"理论最高：{score.potential_score:.2f}"
     )
@@ -120,7 +123,10 @@ def analyze_echo_stats(ocr_boxes, screen_width, screen_height, template_name,
     tier_colors = ((255, 0, 0), (255, 0, 0)) + tuple(
         _tier_text_color(substat_tier(row.stat_name, row.value)) for row in sub_rows
     )
-    return EchoStatAnalysis(rectangles, score.row_scores, summary, tier_labels, tier_colors)
+    return EchoStatAnalysis(
+        rectangles, score.row_scores, summary, tier_labels, tier_colors,
+        matched_template or "",
+    )
 
 
 def _find_ocr_rows(ocr_boxes, min_x, max_x, min_y, max_y):
@@ -341,8 +347,11 @@ def _paint_score_summary(canvas, overlay, text):
         block_width = max(size.cx for size in sizes)
         line_height = max(size.cy for size in sizes) + max(4, round(height * 0.008))
         block_height = line_height * len(lines)
-        # Center the block, but keep all lines on one shared left edge.
-        x = max(0, (width - block_width) // 2)
+        # Keep all lines on one shared left edge, but bias the block to the
+        # right. On the tuning page the stat rows and their score labels occupy
+        # the left side; true screen centering made the two overlays collide.
+        x = round(width * SUMMARY_CENTER_X_RATIO - block_width / 2)
+        x = max(0, min(width - block_width, x))
         y = max(0, (height - block_height) // 2)
         line_colors = (SUMMARY_TEMPLATE_COLOR, SUMMARY_CURRENT_COLOR, SUMMARY_POTENTIAL_COLOR)
         for index, line in enumerate(lines):

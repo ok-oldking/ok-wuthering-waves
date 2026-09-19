@@ -41,9 +41,9 @@ def paint_okww_status(canvas, overlay):
             win32_gdi.gdi32.TextOutW(
                 canvas.hdc, x + dx, y + dy, STATUS_TEXT, len(STATUS_TEXT)
             )
-        # Bright cyan-white remains legible over both dark and luminous game
-        # backgrounds while retaining a distinct status color.
-        win32_gdi.gdi32.SetTextColor(canvas.hdc, win32_gdi._rgb(120, 255, 235))
+        # Orange remains distinct from the red/white stat boxes while the
+        # black halo keeps it readable over both dark and luminous backgrounds.
+        win32_gdi.gdi32.SetTextColor(canvas.hdc, win32_gdi._rgb(255, 145, 35))
         win32_gdi.gdi32.TextOutW(canvas.hdc, x, y, STATUS_TEXT, len(STATUS_TEXT))
     finally:
         win32_gdi.gdi32.SelectObject(canvas.hdc, old_font)
