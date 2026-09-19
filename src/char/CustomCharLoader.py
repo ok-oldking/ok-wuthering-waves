@@ -19,14 +19,14 @@ CUSTOM_TEAM_FOLDER = "custom_teams"
 TEAM_MANIFEST_FILE = "team.json"
 
 CHARACTER_DISPLAY_NAMES = {
-    "Douling": "Buling",
-    "Xigelika": "Sigrika",
-    "Linnai": "Lynae",
-    "Luhesi": "Luuk Herssen",
-    "Xiangliyao": "Xiangli Yao",
-    "ShoreKeeper": "Shorekeeper",
+    "Buling": "Buling",
+    "Sigrika": "Sigrika",
+    "Lynae": "Lynae",
+    "LuukHerssen": "Luuk Herssen",
+    "XiangliYao": "Xiangli Yao",
+    "Shorekeeper": "Shorekeeper",
     "HavocRover": "Rover",
-    "YangYangSp": "Yangyang: Xuanling",
+    "YangyangXuanling": "Yangyang: Xuanling",
 }
 
 _custom_class_cache = {}

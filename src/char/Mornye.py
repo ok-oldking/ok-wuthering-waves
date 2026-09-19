@@ -92,8 +92,8 @@ class Mornye(BaseChar):
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if has_intro and current_char and current_char.char_name in {'char_aemeath', 'char_qingxiao'}:
             return SwitchPriority.MUST
-        from src.char.Linnai import Linnai
-        if has_intro and current_char and self.task.has_char(Linnai) and current_char.char_name != 'char_linnai':
+        from src.char.Lynae import Lynae
+        if has_intro and current_char and self.task.has_char(Lynae) and current_char.char_name != 'char_linnai':
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
 
