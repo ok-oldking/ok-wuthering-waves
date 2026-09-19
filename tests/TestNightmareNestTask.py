@@ -1,7 +1,7 @@
 import unittest
 import re
 
-from src.task.NightmareNestTask import NestTarget, NightmareNestTask
+from src.task.NightmareNestTask import ONLY_NESTS, NestTarget, NightmareNestTask
 
 
 class FakeBox:
@@ -15,6 +15,51 @@ class FakeBox:
 
 
 class TestNightmareNestTask(unittest.TestCase):
+
+    def test_only_farm_these_nests_empty_means_all(self):
+        task = NightmareNestTask.__new__(NightmareNestTask)
+        task.config = {ONLY_NESTS: ''}
+        self.assertIsNone(task._wanted_nest_rows())
+
+    def test_only_farm_these_nests_matches_by_substring(self):
+        task = NightmareNestTask.__new__(NightmareNestTask)
+        task.config = {ONLY_NESTS: '落渊南丘, 盲望之塌'}
+        task.count_re = re.compile(r"(\d{1,2})/(\d{1,2})")
+        task.sleep = lambda *args, **kwargs: None
+        boxes = [FakeBox('落渊南丘残象聚落', y=300, height=35),
+                 FakeBox('已击败残象：0/41', y=373, height=30),
+                 FakeBox('盲望之塌残象聚落', y=523, height=35),
+                 FakeBox('已击败残象：48/48', y=596, height=30)]
+        task.ocr = lambda *args, **kwargs: boxes if 'match' not in kwargs else [boxes[1], boxes[3]]
+        self.assertEqual([317.5, 540.5], task._wanted_nest_rows())
+
+    def test_find_nest_skips_counts_outside_wanted_nests(self):
+        task = NightmareNestTask.__new__(NightmareNestTask)
+        task.config = {ONLY_NESTS: '盲望之塌'}
+        task.count_re = re.compile(r"(\d{1,2})/(\d{1,2})")
+        task._unreachable_nests = set()
+        task.sleep = lambda *args, **kwargs: None
+        task.log_info = lambda *args, **kwargs: None
+        task.width_of_screen = lambda ratio: 1000
+        task._make_nest_cache_key = lambda box, denominator: f'{box.name}@{denominator}'
+        names = [FakeBox('落渊南丘残象聚落', y=300, height=35), FakeBox('盲望之塌残象聚落', y=523, height=35)]
+        counts = [FakeBox('已击败残象：0/41', y=373, height=30), FakeBox('已击败残象：0/48', y=596, height=30)]
+        task.ocr = lambda *args, **kwargs: counts if 'match' in kwargs else names + counts
+        nest = task.find_nest()
+        self.assertIsInstance(nest, NestTarget)
+        self.assertEqual('已击败残象：0/48@48', nest.cache_key)
+
+    def test_find_nest_returns_nothing_when_named_nest_is_absent(self):
+        task = NightmareNestTask.__new__(NightmareNestTask)
+        task.config = {ONLY_NESTS: '不存在的点位'}
+        task.count_re = re.compile(r"(\d{1,2})/(\d{1,2})")
+        task.sleep = lambda *args, **kwargs: None
+        errors = []
+        task.log_error = lambda *args, **kwargs: errors.append(args[0])
+        boxes = [FakeBox('落渊南丘残象聚落', y=300, height=35), FakeBox('已击败残象：0/41', y=373, height=30)]
+        task.ocr = lambda *args, **kwargs: [boxes[1]] if 'match' in kwargs else boxes
+        self.assertIsNone(task.find_nest())
+        self.assertEqual(1, len(errors))
 
     def test_nest_is_checked_before_nightmare_changes_book_scroll(self):
         task = NightmareNestTask.__new__(NightmareNestTask)

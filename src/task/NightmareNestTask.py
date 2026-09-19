@@ -9,6 +9,13 @@ from src.task.WWOneTimeTask import WWOneTimeTask
 logger = Logger.get_logger(__name__)
 TRAVEL_FEATURES = ['fast_travel_custom', 'gray_teleport', 'remove_custom']
 CONFIRM_FEATURES = ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter']
+ONLY_NESTS = 'Only Farm These Nests'
+# How long to wait for the nest list to render before reading names from it.
+NEST_LIST_TIMEOUT = 15
+# The kill count sits below the nest name inside the same card, about two rows
+# lower; the next card starts roughly five rows down. Four rows keeps a count
+# attached to its own name without reaching the next nest.
+NEST_ROW_SPAN = 4
 
 
 @dataclass
@@ -33,7 +40,11 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self._capture_mode = False
         self._unreachable_nests = set()
         self._nest_tab_of_current_nest = 'go_nest'
-        self.default_config.update({'Which to Farm': ['Nightmare Purification', 'Tacet Discord Nest']})
+        self.default_config.update({'Which to Farm': ['Nightmare Purification', 'Tacet Discord Nest'],
+                                    ONLY_NESTS: ''})
+        self.config_description[ONLY_NESTS] = (
+            'Only farm nests whose name contains one of these words, matched against the in-game list. '
+            'Separate several with commas. Leave empty to farm all.')
         self.config_type['Which to Farm'] = {'type': "multi_selection",
                                              'options': ['Nightmare Purification', 'Tacet Discord Nest']}
 
@@ -208,9 +219,41 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def go_nest(self):
         self.open_boss_book('canxiang')
 
+    def _wanted_nest_rows(self):
+        """Row centres (y) of the nests named in ONLY_NESTS, or None when the option is empty.
+
+        An empty list means the option is set but none of the names is on the
+        current list, so nothing should be farmed.
+        """
+        raw = ((getattr(self, 'config', None) or {}).get(ONLY_NESTS) or '').strip()
+        if not raw:
+            return None
+        names = [n.strip() for n in re.split(r'[,，]', raw) if n.strip()]
+        # The list keeps rendering for a moment after it opens; wait until a
+        # count is readable instead of a fixed delay.
+        for _ in range(NEST_LIST_TIMEOUT):
+            if self.ocr(0.35, 0.13, 1, 0.96, match=self.count_re):
+                break
+            self.sleep(1)
+        boxes = self.ocr(0.35, 0.13, 1, 0.96)
+        rows = [box.y + box.height / 2
+                for name in names for box in boxes if name in (box.name or '')]
+        if not rows:
+            self.log_error(f'nightmare nest: none of {names} found in the list, '
+                           f'got {[box.name for box in boxes]}', notify=True)
+        return rows
+
     def find_nest(self):
+        wanted_rows = self._wanted_nest_rows()
+        if wanted_rows is not None and not wanted_rows:
+            return None
         counts = self.ocr(0.35, 0.13, 1, 0.96, match=self.count_re)
         for count_box in counts:
+            if wanted_rows is not None:
+                row = count_box.y + count_box.height / 2
+                span = count_box.height * NEST_ROW_SPAN
+                if not any(-count_box.height <= row - w <= span for w in wanted_rows):
+                    continue
             for match in re.finditer(self.count_re, count_box.name):
                 numerator = match.group(1)
                 denominator = match.group(2)
