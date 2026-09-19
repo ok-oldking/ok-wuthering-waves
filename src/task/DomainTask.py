@@ -50,6 +50,13 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         self.openF2Book('gray_book_boss')
         return self.get_stamina()
 
+    def wait_for_delayed_revive_prompt(self, time_out=3):
+        """在战后缓冲期持续检查延迟出现的复苏弹窗。"""
+        if self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8,
+                             time_out=time_out, raise_if_not_found=False):
+            self.raise_not_in_combat(
+                'delayed revive prompt detected after combat', revive_prompt_detected=True)
+
     def farm_domain_with_recovery_loop(self, must_use, teleport_into_domain_once, max_recovery_retries=3):
         """包装副本刷取循环：死亡恢复后自动从 F2 重新进入，并限制重试次数。"""
         recovery_retries = 0
@@ -86,7 +93,8 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             self.pick_f()
             try:
                 self.combat_once()
-                self.sleep(3)
+                # 复苏弹窗可能在战斗状态消失数秒后才出现；复用原有 3 秒缓冲期完成检测。
+                self.wait_for_delayed_revive_prompt()
                 self.walk_to_treasure()
                 self.pick_f(handle_claim=False)
             except (NotInCombatException, CharDeadException):
