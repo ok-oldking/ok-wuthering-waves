@@ -53,6 +53,15 @@ class BaseCombatTask(CombatCheck):
     hot_key_verified = False  # 热键是否已验证
     con_full_size = None  # 不同角色协奏值充满时的大小记录
     freeze_durations = []  # 记录冻结/卡肉的持续时间
+    char_dead_vote_threshold = 2
+    char_alive_vote_threshold = 2
+    dead_low_saturation_threshold = 0.72
+    alive_low_saturation_threshold = 0.62
+    dead_gray_ratio_threshold = 0.55
+    alive_gray_ratio_threshold = 0.45
+    char_alive_check_interval = 0.5
+    team_revive_button = (0.5, 0.86)
+    team_revive_timeout = 70
     if con_full_size is None:
         con_full_size = Config("_con_full_size", {
             "0": 0,
@@ -76,9 +85,22 @@ class BaseCombatTask(CombatCheck):
         self.mouse_pos = None  # 当前鼠标位置
         self.combat_start = 0  # 战斗开始时间戳
 
+        self.reset_char_alive_states()
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.add_text_fix({'Ｅ': 'e'})
         self.use_liberation = True
+
+    def reset_char_alive_states(self):
+        """重置角色存活状态及防抖投票。"""
+        self.char_alive_state = [True, True, True]
+        self.char_dead_votes = [0, 0, 0]
+        self.char_alive_votes = [0, 0, 0]
+        self.last_char_alive_check = 0
+
+    def do_reset_to_false(self):
+        ret = super().do_reset_to_false()
+        self.reset_char_alive_states()
+        return ret
 
     def add_freeze_duration(self, start, duration=-1.0, freeze_time=0.1):
         """添加冻结持续时间。用于精确计算技能冷却等。
@@ -301,16 +323,17 @@ class BaseCombatTask(CombatCheck):
         self.wait_in_team_and_world(time_out=20)
         self.sleep(2)
 
-    def raise_not_in_combat(self, message):
+    def raise_not_in_combat(self, message, revive_prompt_detected=False):
         """抛出未在战斗状态的异常。
 
         Args:
             message (str): 异常信息。
-            exception_type (Exception, optional): 要抛出的异常类型。默认为 NotInCombatException。
+            revive_prompt_detected (bool): 调用方是否已确认复苏弹窗可见。
         """
         exception_type = None
         logger.error(message)
-        if self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2):
+        if revive_prompt_detected or self.wait_feature(
+                'revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2):
             self.log_info('raise_not_in_combat char dead')
             if self.reset_to_false(reason=message):
                 logger.error(f'reset to false failed: {message}')
@@ -382,7 +405,13 @@ class BaseCombatTask(CombatCheck):
         try:
             while self.in_combat():
                 logger.debug(f'combat_once loop {self.chars}')
-                self.get_current_char().perform()
+                current_char = self.get_current_char()
+                try:
+                    current_char.perform()
+                except CharDeadException as e:
+                    if self.try_continue_after_char_dead(current_char):
+                        continue
+                    raise e
         except CharDeadException as e:
             raise e
         except NotInCombatException as e:
@@ -519,10 +548,13 @@ class BaseCombatTask(CombatCheck):
 
         return self._switch_rule_3_target(candidates)
 
-    def _choose_switch_target(self, current_char, has_intro, target_low_con=False):
+    def _choose_switch_target(self, current_char, has_intro, target_low_con=False, excluded_indices=None):
+        self.update_char_alive_states()
+        excluded_indices = excluded_indices or set()
         candidates = [
             char for char in self.chars
-            if char is not None and char != current_char
+            if char is not None and char != current_char and self.is_char_alive(char)
+               and char.index not in excluded_indices
         ]
         if not candidates:
             return current_char
@@ -575,6 +607,196 @@ class BaseCombatTask(CombatCheck):
     def _apply_intro_flags(self, current_char, switch_to, has_intro):
         switch_to.has_intro = has_intro
         switch_to.has_sub_dps_intro = has_intro and current_char.is_sub_dps
+
+    # 角色头像会因动画、特效短暂失色，因此使用连续帧投票维护存活状态。
+    def _ensure_char_alive_state(self):
+        if not hasattr(self, 'char_alive_state'):
+            self.reset_char_alive_states()
+
+    def is_char_alive(self, char):
+        self._ensure_char_alive_state()
+        return char is None or char.index >= len(self.char_alive_state) or self.char_alive_state[char.index]
+
+    def set_char_alive(self, char, alive):
+        self._ensure_char_alive_state()
+        if char is None or char.index >= len(self.char_alive_state):
+            return
+        self.char_alive_state[char.index] = alive
+        message = f'set char alive: {char} index={char.index} alive={alive}'
+        if hasattr(self, 'logger'):
+            self.log_info(message)
+        else:
+            logger.info(message)
+
+    def _char_portrait_liveness(self, char):
+        """按头像的低饱和度和灰度比例判断死亡或存活。"""
+        try:
+            box = self.get_box_by_name(f'box_char_{char.index + 1}')
+            cropped = box.crop_frame(self.frame)
+        except Exception as e:
+            logger.debug(f'char portrait liveness skipped: {char} {e}')
+            return None
+        if cropped is None or cropped.size == 0:
+            return None
+
+        h, w = cropped.shape[:2]
+        cropped = cropped[int(h * 0.10):int(h * 0.90), int(w * 0.10):int(w * 0.90)]
+        if cropped.size == 0:
+            return None
+
+        hsv = cv2.cvtColor(cropped, cv2.COLOR_BGR2HSV)
+        saturation = hsv[:, :, 1]
+        brightness = hsv[:, :, 2]
+        valid = brightness > 25
+        valid_count = int(valid.sum())
+        if valid_count <= 0:
+            return None
+
+        low_saturation_ratio = float(((saturation < 35) & valid).sum() / valid_count)
+        b, g, r = cv2.split(cropped.astype(np.int16))
+        gray_like = (np.abs(r - g) < 12) & (np.abs(g - b) < 12) & (np.abs(r - b) < 12) & valid
+        gray_ratio = float(gray_like.sum() / valid_count)
+
+        dead = (low_saturation_ratio >= self.dead_low_saturation_threshold and
+                gray_ratio >= self.dead_gray_ratio_threshold)
+        alive = (low_saturation_ratio <= self.alive_low_saturation_threshold or
+                 gray_ratio <= self.alive_gray_ratio_threshold)
+        logger.debug(
+            f'char liveness {char} low_sat={low_saturation_ratio:.2f} gray={gray_ratio:.2f} '
+            f'dead={dead} alive={alive}')
+        return dead, alive
+
+    def update_char_alive_states(self):
+        """根据头像连续检测结果更新非当前角色的存活状态。"""
+        self._ensure_char_alive_state()
+        if not hasattr(self, 'frame') or self.frame is None:
+            return
+        now = time.time()
+        if now - self.last_char_alive_check < self.char_alive_check_interval:
+            return
+        self.last_char_alive_check = now
+        current_index = -1
+        try:
+            in_team, current_index, _ = self.in_team()
+            if not in_team:
+                current_index = -1
+        except Exception as e:
+            logger.debug(f'char alive current index skipped: {e}')
+        for char in self.chars:
+            if char is None or char.index >= len(self.char_alive_state) or char.index == current_index:
+                continue
+            result = self._char_portrait_liveness(char)
+            if result is None:
+                continue
+            dead, alive = result
+            if dead:
+                self.char_dead_votes[char.index] += 1
+                self.char_alive_votes[char.index] = 0
+                if self.char_dead_votes[char.index] >= self.char_dead_vote_threshold:
+                    self.set_char_alive(char, False)
+            elif alive:
+                self.char_alive_votes[char.index] += 1
+                self.char_dead_votes[char.index] = 0
+                if self.char_alive_votes[char.index] >= self.char_alive_vote_threshold:
+                    self.set_char_alive(char, True)
+
+    def has_alive_switch_target(self, current_char=None):
+        self.update_char_alive_states()
+        return any(
+            char is not None and char != current_char and self.is_char_alive(char)
+            for char in self.chars
+        )
+
+    def _revive_prompt_visible(self):
+        return bool(self.find_one('revive_confirm_hcenter_vcenter', threshold=0.8))
+
+    def close_revive_prompt(self, time_out=1.0):
+        """等待复苏提示出现并关闭，确认提示消失后才继续切人。"""
+        if not self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8,
+                                 time_out=time_out, raise_if_not_found=False):
+            return False
+        self.send_key('esc', after_sleep=0.2)
+        if self.wait_until(lambda: not self._revive_prompt_visible(), time_out=0.8,
+                           settle_time=0, raise_if_not_found=False):
+            return True
+        # 首次 ESC 可能被死亡动画吞掉，再补发一次并做最终确认。
+        self.send_key('esc', after_sleep=0.2)
+        return bool(self.wait_until(lambda: not self._revive_prompt_visible(), time_out=0.8,
+                                    settle_time=0, raise_if_not_found=False))
+
+    def revive_all_dead_characters(self):
+        """全员死亡时点击免费复苏，并等待角色回到大世界队伍态。"""
+        if not self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8,
+                                 time_out=2, raise_if_not_found=False):
+            return False
+
+        self.log_info('all characters dead, waiting for team revive')
+        start = time.time()
+        while time.time() - start < self.team_revive_timeout:
+            if self.in_team_and_world():
+                self.reset_char_alive_states()
+                self.scene.set_not_in_combat()
+                self.info_set('Revive', 'Success')
+                return True
+            self.click(*self.team_revive_button, after_sleep=0.5)
+            if self.wait_in_team_and_world(time_out=1, raise_if_not_found=False):
+                self.reset_char_alive_states()
+                self.scene.set_not_in_combat()
+                self.info_set('Revive', 'Success')
+                return True
+
+        self.log_error('team revive timed out', notify=True)
+        self.info_set('Revive', 'Failed')
+        return False
+
+    def try_continue_after_char_dead(self, current_char):
+        """当前角色死亡后，重试切换全部可用角色，避免单次按键丢失后停机。"""
+        self.set_char_alive(current_char, False)
+        if not self.has_alive_switch_target(current_char):
+            return False
+        self.close_revive_prompt()
+        excluded_indices = set()
+        while True:
+            target = self._choose_switch_target(
+                current_char, has_intro=False, excluded_indices=excluded_indices)
+            if not target or target == current_char:
+                return False
+
+            # 每帧未切换成功时重发按键，覆盖按键被死亡动画吞掉的情况。
+            switched = self.wait_until(
+                lambda: self.in_team()[0] and self.in_team()[1] == target.index,
+                post_action=lambda: self.send_key(target.index + 1, after_sleep=0.1),
+                time_out=2, settle_time=0, raise_if_not_found=False)
+            if switched:
+                for char in self.chars:
+                    if char:
+                        char.is_current_char = (char == target)
+                target.last_switch_in_time = time.time()
+                self.scene.set_in_combat()
+                return True
+
+            excluded_indices.add(target.index)
+            if self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8,
+                                 time_out=0.4, raise_if_not_found=False):
+                self.set_char_alive(target, False)
+                self.close_revive_prompt(time_out=0.1)
+                self.log_info(f'death recovery skipped dead target {target}')
+            else:
+                self.log_info(f'death recovery switch timeout {target}, trying another target')
+
+    def handle_dead_switch_target(self, current_char, switch_to, has_intro, target_low_con=False):
+        """常规切人触发死亡弹窗时，排除死亡目标并选择下一角色。"""
+        if not self.close_revive_prompt():
+            return None
+        self.set_char_alive(switch_to, False)
+        if not self.has_alive_switch_target(current_char):
+            return None
+        next_target = self._choose_switch_target(current_char, has_intro, target_low_con=target_low_con)
+        if not next_target or next_target == current_char:
+            return None
+        self._apply_intro_flags(current_char, next_target, has_intro)
+        self.log_info(f'skip dead switch target {switch_to}, retry with {next_target}')
+        return next_target
 
     def switch_next_char(self, current_char, post_action=None, free_intro=False, target_low_con=False):
         """切换到下一个最优角色。
@@ -649,6 +871,14 @@ class BaseCombatTask(CombatCheck):
             in_team, current_index, size = self.in_team()
             if not in_team:
                 logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
+                next_target = self.handle_dead_switch_target(current_char, switch_to, has_intro,
+                                                             target_low_con=target_low_con)
+                if next_target:
+                    switch_to = next_target
+                    start = time.time()
+                    last_click = 0
+                    self.next_frame()
+                    continue
                 # if self.debug:
                 #     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
                 self.raise_not_in_combat(f'not in_team while switching')
