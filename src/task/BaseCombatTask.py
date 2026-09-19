@@ -301,16 +301,17 @@ class BaseCombatTask(CombatCheck):
         self.wait_in_team_and_world(time_out=20)
         self.sleep(2)
 
-    def raise_not_in_combat(self, message):
+    def raise_not_in_combat(self, message, revive_prompt_detected=False):
         """抛出未在战斗状态的异常。
 
         Args:
             message (str): 异常信息。
-            exception_type (Exception, optional): 要抛出的异常类型。默认为 NotInCombatException。
+            revive_prompt_detected (bool): 调用方是否已确认复苏弹窗可见。
         """
         exception_type = None
         logger.error(message)
-        if self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2):
+        if revive_prompt_detected or self.wait_feature(
+                'revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2):
             self.log_info('raise_not_in_combat char dead')
             if self.reset_to_false(reason=message):
                 logger.error(f'reset to false failed: {message}')
