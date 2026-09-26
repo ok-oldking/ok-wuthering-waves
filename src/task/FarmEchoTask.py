@@ -5,7 +5,7 @@ import time
 import numpy as np
 
 from ok import Logger, TaskDisabledException, color_range_to_bound
-from src.task.BaseCombatTask import BaseCombatTask, white_color
+from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException, white_color
 from src.task.WWOneTimeTask import WWOneTimeTask
 from ok import find_boxes_by_name
 
@@ -85,7 +85,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
     def revive_action(self):
         if self._in_realm:
-            return False
+            # 副本内只有开启传送才能回到 boss，此时先退本回血，由 do_run 重新传送
+            if not self.teleport_to_boss_enabled():
+                return False
+            return super().revive_action()
         self.teleport_to_heal()
         self.run_until(lambda: False, 's', 1, running=True)
         self.teleport_to_nearest_boss()
@@ -110,8 +113,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             else:
                 raise
 
-    def do_run(self):
+    def do_run(self, max_recovery_retries=3):
         count = 0
+        recovery_retries = 0
         self._in_realm = self.in_realm()
         self.manage_boss_parameters()
         self.log_info(f'in_realm: {self._in_realm}')
@@ -122,6 +126,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         if self.teleport_to_boss_enabled():
             self.teleport_to_configured_boss_and_prepare()
         while count < self.config.get("Repeat Farm Count", 0):
+            round_start_count = count
             try:
                 self.in_realm_check(60)
                 self.log_debug(f'start farming {count} {self._in_realm}')
@@ -189,6 +194,19 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                         self.wait_until(self.in_combat, raise_if_not_found=False, time_out=1)
             except TaskDisabledException:
                 raise
+            except CharRevivedException:
+                if not self.teleport_to_boss_enabled():
+                    raise
+                recovery_retries += 1
+                if recovery_retries >= max_recovery_retries:
+                    self.log_info(f'farm 4c: exceeded recovery retries ({max_recovery_retries}), stop farming',
+                                  notify=True)
+                    return
+                self.log_info('farm 4c: death recovered, teleport to boss again')
+                count = round_start_count  # 死亡那一轮不计入刷取次数
+                self.is_revived = False
+                self.teleport_to_configured_boss_and_prepare()
+                continue
             except Exception as e:
                 if self.should_reteleport_after_farm_exception():
                     self.log_error('Farm failed after walking into boss combat, teleporting again', e)
