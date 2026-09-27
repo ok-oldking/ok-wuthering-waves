@@ -116,6 +116,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
     def do_run(self, max_recovery_retries=3):
         count = 0
         recovery_retries = 0
+        self.realm_entry_at_heal_point = False
         self._in_realm = self.in_realm()
         self.manage_boss_parameters()
         self.log_info(f'in_realm: {self._in_realm}')
@@ -205,6 +206,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.log_info('farm 4c: death recovered, teleport to boss again')
                 count = round_start_count  # 死亡那一轮不计入刷取次数
                 self.is_revived = False
+                self.realm_entry_at_heal_point = True  # 恢复后站在信标上; 走大世界进本时会被重置
                 self.teleport_to_configured_boss_and_prepare()
                 continue
             except Exception as e:
@@ -281,6 +283,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.click(0.880, 0.911, after_sleep=2)
             self.click_team_challenge()
         else:
+            self.realm_entry_at_heal_point = False  # 传送到 boss 附近再走进本, 退本不会回到信标
             self.wait_click_travel()
         self.wait_in_team_and_world(time_out=120)
         self.sleep(2)

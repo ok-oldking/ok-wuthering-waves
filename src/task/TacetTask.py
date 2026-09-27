@@ -53,6 +53,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             must_use = 0
         self.info_incr('used stamina', 0)
         recovery_retries = 0
+        self.realm_entry_at_heal_point = False
         while True:
             self.sleep(1)
             self.openF2Book("gray_book_boss")
@@ -78,6 +79,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                                       notify=True)
                         return None
                     self.log_info('farm_tacet: death recovered, re-enter from F2 book')
+                    self.realm_entry_at_heal_point = True  # 恢复后站在信标上, 从 F2 直接进本
                     break
                 self.walk_to_treasure()
                 self.pick_f(handle_claim=False)

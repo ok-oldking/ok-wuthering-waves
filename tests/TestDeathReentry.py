@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch
 
 from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException
+from src.task.DomainTask import DomainTask
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.TacetTask import TacetTask
 
@@ -16,6 +17,18 @@ def combat_results(deaths):
         return True
 
     return combat_once, calls
+
+
+def record_heal_point(task, name):
+    flags = []
+    original = getattr(task, name)
+
+    def wrapper(*args, **kwargs):
+        flags.append(task.realm_entry_at_heal_point)
+        return original(*args, **kwargs)
+
+    setattr(task, name, wrapper)
+    return flags
 
 
 class TestTacetDeathReentry(unittest.TestCase):
@@ -55,6 +68,15 @@ class TestTacetDeathReentry(unittest.TestCase):
         self.assertEqual(3, len(task.teleports))
         self.assertEqual(3, len(task.combat_calls))
         self.assertIn('farm_tacet: exceeded recovery retries (3), stop farming', task.logs)
+
+    def test_heal_point_set_only_after_recovery(self):
+        task = self.make_task(deaths=2)
+        task.realm_entry_at_heal_point = True  # 上一次运行的残留
+        flags = record_heal_point(task, 'combat_once')
+
+        task.farm_tacet(config={'Which Tacet Suppression to Farm': 1})
+
+        self.assertEqual([False, True, True], flags)
 
 
 class TestFarmEchoDeathReentry(unittest.TestCase):
@@ -121,6 +143,85 @@ class TestFarmEchoDeathReentry(unittest.TestCase):
         with self.assertRaises(CharRevivedException):
             task.do_run()
         self.assertEqual([], task.teleports)
+
+    def test_heal_point_set_only_after_recovery(self):
+        task = self.make_task(deaths=2, repeat=1)
+        task.realm_entry_at_heal_point = True  # 上一次运行的残留
+        flags = record_heal_point(task, 'combat_once')
+
+        task.do_run()
+
+        self.assertEqual([False, True, True], flags)
+
+    def test_walk_in_boss_entry_clears_heal_point(self):
+        for is_team, expected in ((True, True), (False, False)):
+            with self.subTest(is_team=is_team):
+                task = FarmEchoTask.__new__(FarmEchoTask)
+                task.config = {'Teleport to Boss': 'Boss Challenge', 'Which Boss Challenge to Teleport': 1}
+                task.total_boss_number = 20
+                task.realm_entry_at_heal_point = True
+                noop = lambda *args, **kwargs: None
+                for name in ('ensure_main', 'info_set', 'openF2Book', 'open_boss_book', 'click_team_challenge',
+                             'wait_click_travel', 'wait_in_team_and_world', 'sleep'):
+                    setattr(task, name, noop)
+                task.click_on_book_target = lambda *args: is_team
+
+                task.teleport_to_configured_boss()
+
+                self.assertEqual(expected, task.realm_entry_at_heal_point)
+
+
+class TestDomainHealPoint(unittest.TestCase):
+
+    def test_heal_point_set_only_after_recovery(self):
+        task = DomainTask.__new__(DomainTask)
+        task.stamina_once = 40
+        task.realm_entry_at_heal_point = True  # 上一次运行的残留
+        task.open_F2_book_and_get_stamina = lambda: (120, 0, 120)
+        task.sleep = task.log_info = lambda *args, **kwargs: None
+        results = iter([(False, 0), (False, 0), (True, 0)])
+        task.farm_in_domain = lambda must_use: next(results)
+        flags = record_heal_point(task, 'farm_in_domain')
+
+        task.farm_domain_with_recovery_loop(0, lambda: None)
+
+        self.assertEqual([False, True, True], flags)
+
+
+class TestReviveAtHealPoint(unittest.TestCase):
+
+    def make_task(self, cls, heal_point, in_realm=True):
+        task = cls.__new__(cls)
+        task.realm_entry_at_heal_point = heal_point
+        task.teleport_timeout = 100
+        task.exits = []
+        task.teleports = []
+        noop = lambda *args, **kwargs: True
+        for name in ('close_revive_popup', 'send_key', 'sleep', 'wait_click_feature', 'wait_in_team_and_world'):
+            setattr(task, name, noop)
+        task.in_realm = lambda: in_realm
+        task.ensure_main = lambda *args, **kwargs: task.exits.append(True)
+        task.revive_at_tower_and_heal = lambda: task.teleports.append(True)
+        return task
+
+    def test_base_revive_skips_teleport_when_realm_entry_at_heal_point(self):
+        for heal_point, in_realm, teleports in ((True, True, 0), (False, True, 1), (True, False, 1)):
+            with self.subTest(heal_point=heal_point, in_realm=in_realm):
+                task = self.make_task(TacetTask, heal_point, in_realm)
+
+                self.assertTrue(task.revive_action())
+
+                self.assertEqual(teleports, len(task.teleports))
+                self.assertEqual(1 - teleports, len(task.exits))  # 跳过传送时仍要退本
+
+    def test_domain_revive_skips_teleport_when_realm_entry_at_heal_point(self):
+        for heal_point, teleports in ((True, 0), (False, 1)):
+            with self.subTest(heal_point=heal_point):
+                task = self.make_task(DomainTask, heal_point)
+
+                self.assertTrue(task.revive_action())
+
+                self.assertEqual(teleports, len(task.teleports))
 
 
 if __name__ == '__main__':
