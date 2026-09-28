@@ -11,10 +11,13 @@ from src.char.Baizhi import Baizhi
 from src.char.Chixia import Chixia
 from src.char.CharFactory import apply_team_char_classes
 from src.char.CustomCharLoader import (
+    TEAM_CODE_MODE_BUILTIN, TEAM_CODE_MODE_IMPORT, adopt_current_code_as_import,
     clear_custom_char_cache, clear_team_char_cache, create_custom_team, export_custom_team,
-    get_custom_char_file, get_team_char_file, import_custom_team, inspect_team_archive,
-    list_custom_teams, load_custom_char_class, remove_custom_char_code, save_custom_char_code,
-    save_team_char_code, set_custom_char_enabled,
+    get_custom_char_file, get_team_char_file, get_team_code_mode, get_team_import_file,
+    import_custom_team, inspect_team_archive, list_custom_teams, load_custom_char_class,
+    read_builtin_char_code, read_team_char_code, read_team_import_code, read_team_manifest,
+    remove_custom_char_code, save_custom_char_code, save_team_char_code, save_team_import_code,
+    set_custom_char_enabled, set_team_code_mode, team_code_status,
 )
 from src.char.Mortefi import Mortefi
 from src.char.Verina import Verina
@@ -190,6 +193,91 @@ class Mortefi(BuiltinMortefi):
         import_custom_team(info)
         self.assertEqual(info["team"], tuple(sorted((cls.__name__ for cls in team), key=str.casefold)))
         self.assertNotIn(b"\r\r\n", get_team_char_file(team, Mortefi).read_bytes())
+
+    def test_import_team_keeps_import_code_backup(self):
+        team = (Mortefi, Chixia, Verina)
+        create_custom_team(team)
+        save_team_char_code(team, Mortefi, self._team_code("before import"))
+        archive = export_custom_team(
+            team, self.temp_dir.name, name="My Team", description="Rotation",
+            author="Tester", version="1.2.3",
+        )
+        info = inspect_team_archive(archive)
+        import_custom_team(info)
+
+        self.assertEqual(get_team_code_mode(team), TEAM_CODE_MODE_IMPORT)
+        for char_cls in team:
+            imported = info["codes"][char_cls.__name__]
+            self.assertEqual(read_team_char_code(team, char_cls), imported)
+            self.assertEqual(read_team_import_code(team, char_cls), imported)
+
+    def test_set_team_code_mode_keeps_team_manifest(self):
+        team = (Mortefi, Chixia, Verina)
+        create_custom_team(team)
+        manifest_before = read_team_manifest(team)
+
+        set_team_code_mode(team, TEAM_CODE_MODE_IMPORT)
+        self.assertEqual(get_team_code_mode(team), TEAM_CODE_MODE_IMPORT)
+        set_team_code_mode(team, TEAM_CODE_MODE_BUILTIN)
+        self.assertEqual(get_team_code_mode(team), TEAM_CODE_MODE_BUILTIN)
+        self.assertEqual(read_team_manifest(team)["code_mode"], TEAM_CODE_MODE_BUILTIN)
+        self.assertEqual(read_team_manifest(team)["team"], manifest_before["team"])
+
+    def test_team_code_status_requires_all_import_backups(self):
+        team = (Mortefi, Chixia, Verina)
+        create_custom_team(team)
+        self.assertEqual(team_code_status(team), (TEAM_CODE_MODE_BUILTIN, False, False))
+
+        for char_cls in team:
+            save_team_import_code(team, char_cls, read_builtin_char_code(char_cls))
+        self.assertEqual(team_code_status(team), (TEAM_CODE_MODE_BUILTIN, True, False))
+
+        save_team_char_code(team, Mortefi, self._team_code("edited"))
+        self.assertEqual(team_code_status(team), (TEAM_CODE_MODE_BUILTIN, True, True))
+
+    def test_switch_to_builtin_keeps_import_backup(self):
+        team = (Mortefi, Chixia, Verina)
+        create_custom_team(team)
+        imported_code = self._team_code("imported")
+        for char_cls in team:
+            save_team_char_code(team, char_cls, read_builtin_char_code(char_cls))
+            save_team_import_code(team, char_cls, read_builtin_char_code(char_cls))
+        save_team_char_code(team, Mortefi, imported_code)
+        save_team_import_code(team, Mortefi, imported_code)
+        set_team_code_mode(team, TEAM_CODE_MODE_IMPORT)
+        self.assertEqual(team_code_status(team), (TEAM_CODE_MODE_IMPORT, True, True))
+
+        # switching the whole team to built in code must keep the imported backup intact
+        for char_cls in team:
+            save_team_char_code(team, char_cls, read_builtin_char_code(char_cls))
+
+        self.assertEqual(read_team_char_code(team, Mortefi), read_builtin_char_code(Mortefi))
+        self.assertEqual(read_team_import_code(team, Mortefi), imported_code)
+        self.assertEqual(team_code_status(team), (TEAM_CODE_MODE_IMPORT, True, False))
+
+    def test_read_team_import_code_requires_backup(self):
+        team = (Mortefi, Chixia, Verina)
+        create_custom_team(team)
+        with self.assertRaises(ValueError):
+            read_team_import_code(team, Mortefi)
+
+    def test_save_team_import_code_rejects_char_outside_team(self):
+        team = (Mortefi, Chixia, Verina)
+        create_custom_team(team)
+        with self.assertRaises(ValueError):
+            save_team_import_code(team, Baizhi, "class Baizhi: pass")
+
+    def test_adopt_current_code_as_import(self):
+        team = (Mortefi, Chixia, Verina)
+        create_custom_team(team)
+        current_code = self._team_code("current")
+        save_team_char_code(team, Mortefi, current_code)
+        self.assertFalse(get_team_import_file(team, Mortefi).is_file())
+
+        adopted = adopt_current_code_as_import(team)
+
+        self.assertEqual(adopted, sorted((cls.__name__ for cls in team), key=str.casefold))
+        self.assertEqual(read_team_import_code(team, Mortefi), current_code)
 
     @staticmethod
     def _team_code(marker):

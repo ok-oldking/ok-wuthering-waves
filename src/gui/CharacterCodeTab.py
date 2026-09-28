@@ -27,9 +27,11 @@ from ok.gui.util.app import show_info_bar
 from ok.gui.widget.CustomTab import CustomTab
 from src.char.CharFactory import apply_team_char_classes, char_dict
 from src.char.CustomCharLoader import (
+    TEAM_CODE_MODE_BUILTIN, TEAM_CODE_MODE_IMPORT, adopt_current_code_as_import,
     create_custom_team, delete_custom_team, export_custom_team, get_english_char_name,
-    import_custom_team, inspect_team_archive, list_custom_teams, normalize_team,
-    read_builtin_char_code, read_team_char_code, save_team_char_code,
+    get_team_code_mode, import_custom_team, inspect_team_archive, list_custom_teams,
+    normalize_team, read_builtin_char_code, read_team_char_code, read_team_import_code,
+    save_team_char_code, save_team_import_code, set_team_code_mode, team_code_status,
 )
 
 BASE_CHAR_URL = "https://raw.githubusercontent.com/ok-oldking/ok-wuthering-waves/refs/heads/master/src/char/BaseChar.py"
@@ -74,6 +76,19 @@ def translate_ui(message):
             "Action": "操作",
             "Import": "导入",
             "Close": "关闭",
+            "Switch to Built In Code": "切换为内置代码",
+            "Switch to Imported Code": "切换为导入代码",
+            "Switch Character Code": "切换角色代码",
+            "Switch the whole team to built in code?": "将整个队伍切换为内置代码？",
+            "Switch the whole team to imported code?": "将整个队伍切换为导入代码？",
+            "Switch": "切换",
+            "Switched to {target}.": "已切换为{target}。",
+            "Switched to {target} and reloaded for the matching team.": "已切换为{target}，并已为匹配的队伍重新加载。",
+            "built in code": "内置代码",
+            "imported code": "导入代码",
+            "Save and Switch": "保存并切换",
+            "Discard and Switch": "不保存并切换",
+            "Save the current character code changes before switching?": "切换前是否保存当前角色代码的更改？",
         },
         "zh_TW": {
             "Search by team, character, author or description...": "搜尋隊伍、角色、作者或說明...",
@@ -92,6 +107,19 @@ def translate_ui(message):
             "Action": "操作",
             "Import": "匯入",
             "Close": "關閉",
+            "Switch to Built In Code": "切換為內建程式碼",
+            "Switch to Imported Code": "切換為匯入程式碼",
+            "Switch Character Code": "切換角色程式碼",
+            "Switch the whole team to built in code?": "將整個隊伍切換為內建程式碼？",
+            "Switch the whole team to imported code?": "將整個隊伍切換為匯入程式碼？",
+            "Switch": "切換",
+            "Switched to {target}.": "已切換為{target}。",
+            "Switched to {target} and reloaded for the matching team.": "已切換為{target}，並已為相符的隊伍重新載入。",
+            "built in code": "內建程式碼",
+            "imported code": "匯入程式碼",
+            "Save and Switch": "儲存並切換",
+            "Discard and Switch": "不儲存並切換",
+            "Save the current character code changes before switching?": "切換前是否儲存目前角色程式碼的變更？",
         },
         "ja_JP": {
             "Search by team, character, author or description...": "チーム、キャラクター、作者、説明を検索...",
@@ -110,6 +138,19 @@ def translate_ui(message):
             "Action": "操作",
             "Import": "インポート",
             "Close": "閉じる",
+            "Switch to Built In Code": "組み込みコードに切り替え",
+            "Switch to Imported Code": "インポートしたコードに切り替え",
+            "Switch Character Code": "キャラクターコードの切り替え",
+            "Switch the whole team to built in code?": "チーム全体を組み込みコードに切り替えますか？",
+            "Switch the whole team to imported code?": "チーム全体をインポートしたコードに切り替えますか？",
+            "Switch": "切り替え",
+            "Switched to {target}.": "{target}に切り替えました。",
+            "Switched to {target} and reloaded for the matching team.": "{target}に切り替え、該当チーム向けに再読み込みしました。",
+            "built in code": "組み込みコード",
+            "imported code": "インポートしたコード",
+            "Save and Switch": "保存して切り替え",
+            "Discard and Switch": "保存せずに切り替え",
+            "Save the current character code changes before switching?": "切り替える前に現在のキャラクターコードの変更を保存しますか？",
         },
         "ko_KR": {
             "Search by team, character, author or description...": "파티, 캐릭터, 제작자 또는 설명 검색...",
@@ -128,6 +169,19 @@ def translate_ui(message):
             "Action": "동작",
             "Import": "가져오기",
             "Close": "닫기",
+            "Switch to Built In Code": "내장 코드로 전환",
+            "Switch to Imported Code": "가져온 코드로 전환",
+            "Switch Character Code": "캐릭터 코드 전환",
+            "Switch the whole team to built in code?": "파티 전체를 내장 코드로 전환하시겠습니까?",
+            "Switch the whole team to imported code?": "파티 전체를 가져온 코드로 전환하시겠습니까?",
+            "Switch": "전환",
+            "Switched to {target}.": "{target}(으)로 전환했습니다.",
+            "Switched to {target} and reloaded for the matching team.": "{target}(으)로 전환하고 해당 파티에 다시 불러왔습니다.",
+            "built in code": "내장 코드",
+            "imported code": "가져온 코드",
+            "Save and Switch": "저장 후 전환",
+            "Discard and Switch": "저장하지 않고 전환",
+            "Save the current character code changes before switching?": "전환하기 전에 현재 캐릭터 코드 변경 사항을 저장하시겠습니까?",
         },
         "es_ES": {
             "Search by team, character, author or description...": "Buscar por equipo, personaje, autor o descripción...",
@@ -146,6 +200,19 @@ def translate_ui(message):
             "Action": "Acción",
             "Import": "Importar",
             "Close": "Cerrar",
+            "Switch to Built In Code": "Cambiar a código integrado",
+            "Switch to Imported Code": "Cambiar a código importado",
+            "Switch Character Code": "Cambiar código del personaje",
+            "Switch the whole team to built in code?": "¿Cambiar todo el equipo al código integrado?",
+            "Switch the whole team to imported code?": "¿Cambiar todo el equipo al código importado?",
+            "Switch": "Cambiar",
+            "Switched to {target}.": "Cambiado a {target}.",
+            "Switched to {target} and reloaded for the matching team.": "Cambiado a {target} y recargado para el equipo correspondiente.",
+            "built in code": "código integrado",
+            "imported code": "código importado",
+            "Save and Switch": "Guardar y cambiar",
+            "Discard and Switch": "Descartar y cambiar",
+            "Save the current character code changes before switching?": "¿Guardar los cambios del código del personaje actual antes de cambiar?",
         },
     }
 
@@ -662,7 +729,7 @@ class CharacterCodeTab(CustomTab):
         bottom = QHBoxLayout()
         self.status_label = BodyLabel("")
         self.reset_button = PushButton(FluentIcon.SYNC, self.tr("Reset to Built In"))
-        self.reset_button.clicked.connect(self._reset_current)
+        self.reset_button.clicked.connect(self._switch_code_mode)
         self.save_button = PrimaryPushButton(FluentIcon.SAVE, self.tr("Save"))
         self.save_button.clicked.connect(self._save_current)
         bottom.addWidget(self.status_label, 1)
@@ -755,6 +822,7 @@ class CharacterCodeTab(CustomTab):
         self.current_member_index = index
         self._load_editor_code()
         self._update_char_image()
+        self._update_code_mode_button()
 
     def _set_editor_enabled(self, enabled):
         self.editor.setReadOnly(not enabled)
@@ -768,6 +836,7 @@ class CharacterCodeTab(CustomTab):
             self.editor.clear()
             self.loading_editor = False
             self.status_label.setText(self.tr("Create or import a team to edit character code."))
+            self.reset_button.setText(self.tr("Reset to Built In"))
 
     def _load_editor_code(self):
         if self.current_team is None or self.current_char_cls is None:
@@ -855,6 +924,8 @@ class CharacterCodeTab(CustomTab):
         try:
             code = self.editor.toPlainText()
             path = save_team_char_code(self.current_team, self.current_char_cls, code)
+            if get_team_code_mode(self.current_team) == TEAM_CODE_MODE_IMPORT:
+                save_team_import_code(self.current_team, self.current_char_cls, code)
             reloaded = self._reload_live_team_code(self.current_team)
             self.clean_code = code
             self.status_label.setText(self.tr("Saved and reloaded"))
@@ -867,7 +938,96 @@ class CharacterCodeTab(CustomTab):
             self.logger.error(f"save team char code failed: {e}")
             show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
 
-    def _reset_current(self):
+    def _update_code_mode_button(self):
+        if self.current_team is None or self.current_char_cls is None:
+            return
+        mode, has_import, has_custom = team_code_status(self.current_team)
+        if mode == TEAM_CODE_MODE_IMPORT:
+            self.reset_button.setText(self.tr("Switch to Built In Code"))
+        elif has_import or has_custom:
+            self.reset_button.setText(self.tr("Switch to Imported Code"))
+        else:
+            self.reset_button.setText(self.tr("Reset to Built In"))
+
+    def _switch_code_mode(self):
+        if self.current_team is None or self.current_char_cls is None:
+            return
+        mode, has_import, has_custom = team_code_status(self.current_team)
+        if mode != TEAM_CODE_MODE_IMPORT and not (has_import or has_custom):
+            self._reset_to_builtin_code()
+            return
+        target = TEAM_CODE_MODE_BUILTIN if mode == TEAM_CODE_MODE_IMPORT else TEAM_CODE_MODE_IMPORT
+        if target == TEAM_CODE_MODE_IMPORT and not has_import:
+            try:
+                adopted = adopt_current_code_as_import(self.current_team)
+            except Exception as e:
+                self.logger.error(f"adopt current code as import failed: {e}")
+                show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+                return
+            if adopted:
+                self.logger.info(f"adopted current code as import: {adopted}")
+        if self._has_unsaved_changes():
+            action = self._confirm_switch_changes()
+            if action == "cancel":
+                return
+            if action == "save":
+                self._save_current()
+        target_text = self.tr("built in code") if target == TEAM_CODE_MODE_BUILTIN else self.tr("imported code")
+        content = (self.tr("Switch the whole team to built in code?")
+                   if target == TEAM_CODE_MODE_BUILTIN
+                   else self.tr("Switch the whole team to imported code?"))
+        box = MessageBox(self.tr("Switch Character Code"), content, self.window())
+        box.yesButton.setText(self.tr("Switch"))
+        box.cancelButton.setText(self.tr("Cancel"))
+        if not box.exec():
+            return
+        try:
+            class_names = normalize_team(self.current_team)
+            for class_name in class_names:
+                char_cls = self.char_by_name.get(class_name)
+                if char_cls is None:
+                    continue
+                if target == TEAM_CODE_MODE_BUILTIN:
+                    code = read_builtin_char_code(char_cls)
+                else:
+                    code = read_team_import_code(self.current_team, char_cls)
+                save_team_char_code(self.current_team, char_cls, code)
+            set_team_code_mode(self.current_team, target)
+            reloaded = self._reload_live_team_code(self.current_team)
+            self._load_editor_code()
+            self._update_code_mode_button()
+            message = self.tr("Switched to {target}.").format(target=target_text)
+            if reloaded:
+                message = self.tr("Switched to {target} and reloaded for the matching team.").format(target=target_text)
+            show_info_bar(self.window(), message, title=self.tr("Success"))
+            self.logger.info(f"switched team char code to {target}: {class_names}")
+        except Exception as e:
+            self.logger.error(f"switch team char code failed: {e}")
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+
+    def _confirm_switch_changes(self):
+        box = MessageBox(
+            self.tr("Unsaved Changes"),
+            self.tr("Save the current character code changes before switching?"),
+            self.window(),
+        )
+        box.yesButton.setText(self.tr("Save and Switch"))
+        box.cancelButton.setText(self.tr("Cancel"))
+        discard_button = PushButton(self.tr("Discard and Switch"), box.buttonGroup)
+        box.buttonLayout.addWidget(discard_button, 1, Qt.AlignVCenter)
+        result = "cancel"
+
+        def choose(action):
+            nonlocal result
+            result = action
+
+        box.yesButton.clicked.connect(lambda: choose("save"))
+        discard_button.clicked.connect(lambda: choose("discard"))
+        box.cancelButton.clicked.connect(lambda: choose("cancel"))
+        box.exec()
+        return result
+
+    def _reset_to_builtin_code(self):
         if self.current_char_cls is None:
             return
         box = MessageBox(self.tr("Reset Character Code"), self.tr("Reset this character to built in code for this team?"), self.window())

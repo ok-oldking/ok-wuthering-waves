@@ -17,6 +17,9 @@ CUSTOM_CHAR_FOLDER = "custom_chars"
 CUSTOM_CHAR_MODES_FILE = "custom_chars.json"
 CUSTOM_TEAM_FOLDER = "custom_teams"
 TEAM_MANIFEST_FILE = "team.json"
+TEAM_CODE_MODE_IMPORT = "import"
+TEAM_CODE_MODE_BUILTIN = "builtin"
+TEAM_IMPORT_SUFFIX = ".import.py"
 
 CHARACTER_DISPLAY_NAMES = {
     "Douling": "Buling",
@@ -170,6 +173,111 @@ def save_team_char_code(team, char_cls, code):
     return path
 
 
+def read_team_manifest(team):
+    path = get_custom_team_folder(team) / TEAM_MANIFEST_FILE
+    manifest = None
+    if path.exists():
+        try:
+            manifest = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as e:
+            logger.warning(f"read_team_manifest failed path={path}: {e!r}")
+    if not isinstance(manifest, dict):
+        class_names = normalize_team(team)
+        manifest = {
+            "name": " ".join(get_english_char_name(name) for name in class_names),
+            "team": class_names,
+            "description": "",
+            "author": "",
+            "version": "1.0",
+        }
+    return manifest
+
+
+def write_team_manifest(team, manifest):
+    path = get_custom_team_folder(team) / TEAM_MANIFEST_FILE
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    return path
+
+
+def get_team_code_mode(team):
+    mode = read_team_manifest(team).get("code_mode")
+    return TEAM_CODE_MODE_IMPORT if mode == TEAM_CODE_MODE_IMPORT else TEAM_CODE_MODE_BUILTIN
+
+
+def set_team_code_mode(team, mode):
+    class_names = normalize_team(team)
+    manifest = read_team_manifest(class_names)
+    manifest["code_mode"] = TEAM_CODE_MODE_IMPORT if mode == TEAM_CODE_MODE_IMPORT else TEAM_CODE_MODE_BUILTIN
+    return write_team_manifest(class_names, manifest)
+
+
+def get_team_import_file(team, char_cls_or_name):
+    return get_custom_team_folder(team) / f"{_get_class_name(char_cls_or_name)}{TEAM_IMPORT_SUFFIX}"
+
+
+def read_team_import_code(team, char_cls):
+    path = get_team_import_file(team, char_cls)
+    if not path.is_file():
+        raise ValueError(
+            f"Missing imported code for {get_english_char_name(char_cls)}, cannot switch back to it"
+        )
+    return path.read_text(encoding="utf-8")
+
+
+def save_team_import_code(team, char_cls, code):
+    class_names = normalize_team(team)
+    class_name = _get_class_name(char_cls)
+    if class_name not in class_names:
+        raise ValueError(f"{class_name} is not in {class_names}")
+    path = get_team_import_file(class_names, class_name)
+    _validate_character_code(code, class_name, path)
+    path.write_text(code, encoding="utf-8")
+    return path
+
+
+def adopt_current_code_as_import(team):
+    class_names = normalize_team(team)
+    folder = get_custom_team_folder(class_names)
+    if not folder.is_dir():
+        raise ValueError(f"Team {class_names} does not exist")
+    adopted = []
+    for class_name in class_names:
+        if get_team_import_file(class_names, class_name).is_file():
+            continue
+        path = folder / f"{class_name}.py"
+        if not path.is_file():
+            raise ValueError(f"Missing code for {get_english_char_name(class_name)}")
+        save_team_import_code(class_names, class_name, path.read_text(encoding="utf-8"))
+        adopted.append(class_name)
+    return adopted
+
+
+def team_code_status(team):
+    """Return (code_mode, has_import_code, has_custom_code) for a whole team."""
+    class_names = normalize_team(team)
+    mode = get_team_code_mode(class_names)
+    folder = get_custom_team_folder(class_names)
+    if not folder.is_dir():
+        return mode, False, False
+    char_classes = _registered_char_classes()
+    has_import = True
+    has_custom = False
+    for class_name in class_names:
+        if not get_team_import_file(class_names, class_name).is_file():
+            has_import = False
+        path = folder / f"{class_name}.py"
+        char_cls = char_classes.get(class_name)
+        if char_cls is None or not path.is_file():
+            continue
+        try:
+            if path.read_text(encoding="utf-8") != read_builtin_char_code(char_cls):
+                has_custom = True
+        except OSError:
+            continue
+    return mode, has_import, has_custom
+
+
 def clear_team_char_cache(team=None, char_cls_or_name=None):
     if team is None:
         _team_class_cache.clear()
@@ -303,8 +411,11 @@ def import_custom_team(archive_info):
             code = codes[class_name]
             _validate_character_code(code, class_name, f"{class_name}.py")
             (temp_folder / f"{class_name}.py").write_text(code, encoding="utf-8")
+            (temp_folder / f"{class_name}{TEAM_IMPORT_SUFFIX}").write_text(code, encoding="utf-8")
+        manifest = dict(archive_info["manifest"])
+        manifest["code_mode"] = TEAM_CODE_MODE_IMPORT
         (temp_folder / TEAM_MANIFEST_FILE).write_text(
-            json.dumps(archive_info["manifest"], ensure_ascii=False, indent=2), encoding="utf-8"
+            json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
         )
         backup = folder.with_name(folder.name + ".backup")
         if backup.exists():

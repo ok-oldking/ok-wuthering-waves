@@ -19,7 +19,9 @@ from src.char.Baizhi import Baizhi
 from src.char.Chisa import Chisa
 from src.Labels import Labels
 from src.char.CustomCharLoader import (
-    clear_team_char_cache, create_custom_team, get_custom_team_folder, read_team_char_code,
+    TEAM_CODE_MODE_BUILTIN, TEAM_CODE_MODE_IMPORT, clear_team_char_cache, create_custom_team,
+    get_custom_team_folder, get_team_code_mode, read_builtin_char_code, read_team_char_code,
+    read_team_import_code, save_team_char_code, save_team_import_code, set_team_code_mode,
 )
 from src.char.Mortefi import Mortefi
 from src.char.Suisui import Suisui
@@ -88,6 +90,57 @@ class TestCharacterCodeTab(unittest.TestCase):
             self.assertFalse(get_custom_team_folder(team).exists())
             self.assertEqual(tab.team_list.count(), 0)
             self.assertFalse(tab.delete_team_button.isEnabled())
+        finally:
+            tab.deleteLater()
+
+    @staticmethod
+    def _imported_code(class_name):
+        return (
+            f"from src.char.{class_name} import {class_name} as Builtin{class_name}\n"
+            "\n\n"
+            f"class {class_name}(Builtin{class_name}):\n"
+            '    team_marker = "imported"\n'
+        )
+
+    def test_reset_button_switches_team_code_between_imported_and_built_in(self):
+        team = (Mortefi, Chixia, Verina)
+        create_custom_team(team)
+        for char_cls in team:
+            save_team_char_code(team, char_cls, read_builtin_char_code(char_cls))
+            save_team_import_code(team, char_cls, read_builtin_char_code(char_cls))
+        imported_code = self._imported_code(Mortefi.__name__)
+        save_team_char_code(team, Mortefi, imported_code)
+        save_team_import_code(team, Mortefi, imported_code)
+        set_team_code_mode(team, TEAM_CODE_MODE_IMPORT)
+
+        tab = CharacterCodeTab()
+        try:
+            with (
+                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.show_info_bar"),
+            ):
+                message_box.return_value.exec.return_value = True
+                self.assertEqual(tab.reset_button.text(), "Switch to Built In Code")
+
+                tab.member_combo.setCurrentIndex(tab.member_combo.findData(Mortefi.__name__))
+                self.assertIs(tab.current_char_cls, Mortefi)
+                self.assertEqual(tab.editor.toPlainText(), imported_code)
+
+                tab.reset_button.click()
+
+                self.assertEqual(read_team_char_code(team, Mortefi), read_builtin_char_code(Mortefi))
+                self.assertEqual(read_team_import_code(team, Mortefi), imported_code)
+                self.assertEqual(get_team_code_mode(team), TEAM_CODE_MODE_BUILTIN)
+                self.assertEqual(tab.editor.toPlainText(), read_builtin_char_code(Mortefi))
+                self.assertEqual(tab.reset_button.text(), "Switch to Imported Code")
+
+                tab.reset_button.click()
+
+                self.assertEqual(read_team_char_code(team, Mortefi), imported_code)
+                self.assertEqual(read_team_import_code(team, Mortefi), imported_code)
+                self.assertEqual(get_team_code_mode(team), TEAM_CODE_MODE_IMPORT)
+                self.assertEqual(tab.editor.toPlainText(), imported_code)
+                self.assertEqual(tab.reset_button.text(), "Switch to Built In Code")
         finally:
             tab.deleteLater()
 
