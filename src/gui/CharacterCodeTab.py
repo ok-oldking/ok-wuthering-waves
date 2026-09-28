@@ -1014,11 +1014,15 @@ class CharacterCodeTab(CustomTab):
         box.yesButton.setText(translate_ui("Save and Switch"))
         box.cancelButton.setText(translate_ui("Cancel"))
         discard_button = PushButton(translate_ui("Discard and Switch"), box.buttonGroup)
+        buttons = [box.yesButton, discard_button, box.cancelButton]
         box.buttonLayout.insertWidget(1, discard_button, 1, Qt.AlignVCenter)
-        # MessageBox pins the widget size at construction time; grow it so the
-        # third button and its label fit instead of being clipped.
+        # MessageBox pins the widget size at construction time, before the
+        # layout runs, and only accounts for its own two buttons. Grow it from
+        # the real hints so the third button is not squeezed: every button gets
+        # an equal share of the row, so the widest label decides the width.
         text_width = max(box.titleLabel.sizeHint().width(), box.contentLabel.sizeHint().width()) + 48
-        box.widget.setFixedSize(max(box.widget.width(), box.buttonLayout.sizeHint().width() + 48, text_width), box.widget.height())
+        button_width = max(button.sizeHint().width() for button in buttons) * len(buttons) + 96
+        box.widget.setFixedSize(max(box.widget.width(), text_width, button_width), box.widget.height())
         result = "cancel"
 
         def choose(action):
