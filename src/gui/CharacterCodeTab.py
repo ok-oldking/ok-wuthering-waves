@@ -943,11 +943,11 @@ class CharacterCodeTab(CustomTab):
             return
         mode, has_import, has_custom = team_code_status(self.current_team)
         if mode == TEAM_CODE_MODE_IMPORT:
-            self.reset_button.setText(self.tr("Switch to Built In Code"))
+            self.reset_button.setText(translate_ui("Switch to Built In Code"))
         elif has_import or has_custom:
-            self.reset_button.setText(self.tr("Switch to Imported Code"))
+            self.reset_button.setText(translate_ui("Switch to Imported Code"))
         else:
-            self.reset_button.setText(self.tr("Reset to Built In"))
+            self.reset_button.setText(translate_ui("Reset to Built In"))
 
     def _switch_code_mode(self):
         if self.current_team is None or self.current_char_cls is None:
@@ -972,13 +972,13 @@ class CharacterCodeTab(CustomTab):
                 return
             if action == "save":
                 self._save_current()
-        target_text = self.tr("built in code") if target == TEAM_CODE_MODE_BUILTIN else self.tr("imported code")
-        content = (self.tr("Switch the whole team to built in code?")
+        target_text = translate_ui("built in code") if target == TEAM_CODE_MODE_BUILTIN else translate_ui("imported code")
+        content = (translate_ui("Switch the whole team to built in code?")
                    if target == TEAM_CODE_MODE_BUILTIN
-                   else self.tr("Switch the whole team to imported code?"))
-        box = MessageBox(self.tr("Switch Character Code"), content, self.window())
-        box.yesButton.setText(self.tr("Switch"))
-        box.cancelButton.setText(self.tr("Cancel"))
+                   else translate_ui("Switch the whole team to imported code?"))
+        box = MessageBox(translate_ui("Switch Character Code"), content, self.window())
+        box.yesButton.setText(translate_ui("Switch"))
+        box.cancelButton.setText(translate_ui("Cancel"))
         if not box.exec():
             return
         try:
@@ -996,9 +996,9 @@ class CharacterCodeTab(CustomTab):
             reloaded = self._reload_live_team_code(self.current_team)
             self._load_editor_code()
             self._update_code_mode_button()
-            message = self.tr("Switched to {target}.").format(target=target_text)
+            message = translate_ui("Switched to {target}.").format(target=target_text)
             if reloaded:
-                message = self.tr("Switched to {target} and reloaded for the matching team.").format(target=target_text)
+                message = translate_ui("Switched to {target} and reloaded for the matching team.").format(target=target_text)
             show_info_bar(self.window(), message, title=self.tr("Success"))
             self.logger.info(f"switched team char code to {target}: {class_names}")
         except Exception as e:
@@ -1007,14 +1007,18 @@ class CharacterCodeTab(CustomTab):
 
     def _confirm_switch_changes(self):
         box = MessageBox(
-            self.tr("Unsaved Changes"),
-            self.tr("Save the current character code changes before switching?"),
+            translate_ui("Unsaved Changes"),
+            translate_ui("Save the current character code changes before switching?"),
             self.window(),
         )
-        box.yesButton.setText(self.tr("Save and Switch"))
-        box.cancelButton.setText(self.tr("Cancel"))
-        discard_button = PushButton(self.tr("Discard and Switch"), box.buttonGroup)
-        box.buttonLayout.addWidget(discard_button, 1, Qt.AlignVCenter)
+        box.yesButton.setText(translate_ui("Save and Switch"))
+        box.cancelButton.setText(translate_ui("Cancel"))
+        discard_button = PushButton(translate_ui("Discard and Switch"), box.buttonGroup)
+        box.buttonLayout.insertWidget(1, discard_button, 1, Qt.AlignVCenter)
+        # MessageBox pins the widget size at construction time; grow it so the
+        # third button and its label fit instead of being clipped.
+        text_width = max(box.titleLabel.sizeHint().width(), box.contentLabel.sizeHint().width()) + 48
+        box.widget.setFixedSize(max(box.widget.width(), box.buttonLayout.sizeHint().width() + 48, text_width), box.widget.height())
         result = "cancel"
 
         def choose(action):
@@ -1023,6 +1027,7 @@ class CharacterCodeTab(CustomTab):
 
         box.yesButton.clicked.connect(lambda: choose("save"))
         discard_button.clicked.connect(lambda: choose("discard"))
+        discard_button.clicked.connect(box.accept)
         box.cancelButton.clicked.connect(lambda: choose("cancel"))
         box.exec()
         return result
@@ -1030,7 +1035,10 @@ class CharacterCodeTab(CustomTab):
     def _reset_to_builtin_code(self):
         if self.current_char_cls is None:
             return
-        box = MessageBox(self.tr("Reset Character Code"), self.tr("Reset this character to built in code for this team?"), self.window())
+        box = MessageBox(
+            translate_ui("Reset Character Code"),
+            translate_ui("Reset this character to built in code for this team?"),
+            self.window())
         if not box.exec():
             return
         self.loading_editor = True
@@ -1101,8 +1109,8 @@ class CharacterCodeTab(CustomTab):
             if expected_team is not None and normalize_team(info["team"]) != normalize_team(expected_team):
                 raise ValueError(self.tr("The archive is for a different team."))
         except Exception as e:
-            box = MessageBox(self.tr("Invalid Team Archive"), str(e), self.window())
-            box.yesButton.setText(self.tr("Close"))
+            box = MessageBox(translate_ui("Invalid Team Archive"), str(e), self.window())
+            box.yesButton.setText(translate_ui("Close"))
             box.cancelButton.hide()
             box.exec()
             return False

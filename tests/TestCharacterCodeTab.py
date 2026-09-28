@@ -8,8 +8,8 @@ from urllib.error import HTTPError
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtWidgets import QApplication
-from qfluentwidgets import ComboBox, LineEdit, MessageBoxBase, TableWidget, TextEdit
+from PySide6.QtWidgets import QApplication, QDialog
+from qfluentwidgets import ComboBox, LineEdit, MessageBox, MessageBoxBase, TableWidget, TextEdit
 
 from ok.util.config import Config
 from src.char.Chixia import Chixia
