@@ -236,6 +236,12 @@ class MultiAccountConfigTab(CustomTab):
         header.addWidget(self.stop_button)
         self.addLayout(header)
         self.add_widget(BodyLabel('按卡片顺序执行。配置独立保存，任务失败时停止后续账号。'))
+        self.account_hint = BodyLabel(
+            '账号统一删除所有 * 后完整匹配，保留大小写。'
+            '例如 Ab****12@outlook.com 填 Ab12@outlook.com；159****1234 填 1591234。'
+        )
+        self.account_hint.setWordWrap(True)
+        self.add_widget(self.account_hint)
         self.status_table = AccountStatusTable()
         self.status_table.setColumnCount(2)
         self.status_table.setHorizontalHeaderLabels([self.tr('Info'), self.tr('Value')])
