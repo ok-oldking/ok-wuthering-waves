@@ -1,14 +1,11 @@
 import json
 import os
-import re
 import tempfile
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 
 
-ACCOUNT_KEY = re.compile(r'[0-9]{7}')
-OCR_ACCOUNT = re.compile(r'(?<![0-9])([0-9]{3})\*{4}([0-9]{4})(?![0-9])')
 MULTI_ACCOUNT_TASKS = {
     ('src.task.MultiAccountDailyTask', 'MultiAccountDailyTask'),
     ('src.task.MultiAccountConfigTask', 'MultiAccountConfigTask'),
@@ -16,12 +13,11 @@ MULTI_ACCOUNT_TASKS = {
 
 
 def account_key_from_ocr(text):
-    match = OCR_ACCOUNT.search(text or '')
-    return match.group(1) + match.group(2) if match else None
+    return text.replace('*', '').strip() if text else None
 
 
 def display_account(key):
-    return f'{key[:3]}****{key[3:]}' if ACCOUNT_KEY.fullmatch(key) else key
+    return key
 
 
 def task_reference(task):
@@ -50,8 +46,9 @@ def validate_accounts(accounts, executor=None):
         if not isinstance(account, dict):
             raise ValueError('账号配置必须是对象。')
         key = account.get('account_key')
-        if not isinstance(key, str) or not ACCOUNT_KEY.fullmatch(key):
-            raise ValueError('账号标识必须为前三位 + 后四位，共 7 位数字。')
+        if (not isinstance(key, str) or not key.strip() or key != key.strip()
+                or '*' in key or any(ord(char) < 32 for char in key)):
+            raise ValueError('账号标识请填写登录列表文本去掉所有 * 后的剩余部分，不可为空或包含首尾空格。')
         if key in seen:
             raise ValueError(f'账号标识 {key} 重复，请修改后再保存。')
         seen.add(key)

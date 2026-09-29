@@ -116,6 +116,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         mouse = SimpleNamespace(enabled=True, disable=Mock(), enable=Mock())
         runner = SimpleNamespace(
             executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
+            _login_combo=lambda: None,
             sleep=Mock(), click=Mock(), find_account_drop_down=lambda: 'dropdown',
             do_find_account_drop_down=lambda: None,
             _find_target_account=lambda key: True,
@@ -137,12 +138,69 @@ class TestMultiAccountConfig(unittest.TestCase):
 
     def test_account_keys(self):
         self.assertEqual(account_key_from_ocr('123****1234'), '1231234')
-        self.assertEqual(display_account('1231234'), '123****1234')
-        for value in ('123123', '12312341', 'abc1234', '１２３１２３４', ''):
+        self.assertEqual(display_account('1231234'), '1231234')
+        for value in ('', '***', '123*1234', ' name', 'name ', 'a\nb'):
             with self.subTest(value=value), self.assertRaises(ValueError):
                 validate_accounts([account(value)])
-        for value in ('123***1234', 'a@demo.com', '1123****1234', '123****12341'):
-            self.assertIsNone(account_key_from_ocr(value))
+        for text, key in [('123***1234', '1231234'), ('Ab****12@outlook.com', 'Ab12@outlook.com'),
+                          ('Some Name', 'Some Name'), ('*a*b**', 'ab'), ('1234', '1234')]:
+            self.assertEqual(account_key_from_ocr(text), key)
+            validate_accounts([account(key)])
+        self.assertNotEqual(account_key_from_ocr('A0****12'), account_key_from_ocr('ao****12'))
+
+    def test_combo_selects_configured_email_or_name_without_ocr_clicks(self):
+        module = 'src.task.MultiAccountConfigTask.'
+        for target, displayed in [('Ab12@outlook.com', 'Ab****12@outlook.com'),
+                                  ('Some Name', 'Some Name'), ('1231234', '123**1234')]:
+            with self.subTest(target=target):
+                runner = SimpleNamespace(_login_combo=lambda: 42, sleep=Mock(),
+                                         ocr=Mock(side_effect=AssertionError('unexpected OCR')),
+                                         click=Mock(side_effect=AssertionError('unexpected click')))
+                with patch(module + 'combo_items', return_value=['Other', displayed, displayed]), \
+                        patch(module + 'select_combo_item', return_value=True) as select, \
+                        patch(module + 'combo_selected_item', return_value=displayed):
+                    MultiAccountConfigTask._select_target_account(runner, target)
+                select.assert_called_once_with(42, 2)
+                runner.ocr.assert_not_called()
+                runner.click.assert_not_called()
+
+    def test_combo_failure_never_logs_in_or_falls_back_and_restores_mouse(self):
+        module = 'src.task.MultiAccountConfigTask.'
+        for items, selected, current in [(['Other'], True, 'Other'),
+                                         (['Ab**12@outlook.com'], False, 'Ab**12@outlook.com'),
+                                         (['Ab**12@outlook.com'], True, 'Other')]:
+            with self.subTest(items=items, selected=selected, current=current):
+                mouse = SimpleNamespace(enabled=True, disable=Mock(), enable=Mock())
+                runner = SimpleNamespace(executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
+                                         _login_combo=lambda: 42, sleep=Mock(), ocr=Mock(), click=Mock(),
+                                         find_account_drop_down=Mock(), ensure_main=Mock())
+                with patch(module + 'combo_items', return_value=items), \
+                        patch(module + 'select_combo_item', return_value=selected), \
+                        patch(module + 'combo_selected_item', return_value=current), \
+                        self.assertRaises(WaitFailedException):
+                    MultiAccountConfigTask._login_target_account(runner, 'Ab12@outlook.com')
+                runner.ocr.assert_not_called()
+                runner.click.assert_not_called()
+                runner.find_account_drop_down.assert_not_called()
+                runner.ensure_main.assert_not_called()
+                mouse.enable.assert_called_once()
+
+    def test_ocr_matches_email_and_name_after_removing_every_star(self):
+        for text, target in [('Ab*1**2@outlook.com', 'Ab12@outlook.com'), ('Some Name', 'Some Name')]:
+            with self.subTest(text=text):
+                box = SimpleNamespace(name=text, y=100, height=30)
+                runner = SimpleNamespace(ocr=lambda: [box], click=Mock(),
+                                         _target_account_key=target, find_boxes=Mock(return_value=['login']))
+                self.assertTrue(MultiAccountConfigTask._find_target_account(runner, target))
+                runner.click.assert_called_once_with(box, after_sleep=2)
+                self.assertIs(MultiAccountConfigTask.do_find_account_drop_down(runner), box)
+
+    def test_email_and_name_configs_round_trip(self):
+        with tempfile.TemporaryDirectory() as folder:
+            store = MultiAccountConfigStore(folder)
+            values = [account('Ab12@outlook.com'), account('Some Name'), account('1231234')]
+            store.save(values)
+            self.assertEqual(store.load(), values)
 
     def test_atomic_save_validation_and_order(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -344,6 +402,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         mouse = SimpleNamespace(enabled=True, disable=Mock(), enable=Mock())
         runner = SimpleNamespace(
             executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
+            _login_combo=lambda: None,
             sleep=Mock(), click=Mock(), find_account_drop_down=Mock(return_value='dropdown'),
             do_find_account_drop_down=Mock(return_value=True), ocr=Mock(),
         )
@@ -360,6 +419,7 @@ class TestMultiAccountConfig(unittest.TestCase):
                 mouse = SimpleNamespace(enabled=True, disable=Mock(), enable=Mock())
                 runner = SimpleNamespace(
                     executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
+                    _login_combo=lambda: None,
                     sleep=Mock(), click=Mock(), find_account_drop_down=Mock(return_value='dropdown'),
                     do_find_account_drop_down=Mock(return_value=None),
                     _find_target_account=Mock(return_value=True),
@@ -395,6 +455,7 @@ class TestMultiAccountConfig(unittest.TestCase):
             mouse.enable = lambda: mouse.config.__setitem__('_enabled', True)
             runner = SimpleNamespace(
                 executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
+                _login_combo=lambda: None,
                 sleep=Mock(side_effect=TaskDisabledException()),
             )
             with self.assertRaises(TaskDisabledException), isolated_task_configs([mouse]):
@@ -464,6 +525,13 @@ class TestMultiAccountConfigUI(unittest.TestCase):
         finally:
             tab.close()
             tab.deleteLater()
+
+    def test_account_editor_accepts_email_and_display_name(self):
+        card = AccountTaskCard(account(), [], lambda: None)
+        for value in ('Ab12@outlook.com', 'Some Name'):
+            card.account_edit.setText(value)
+            self.assertEqual(card.account_edit.text(), value)
+        card.deleteLater()
 
     def test_task_name_and_account_edit_isolation(self):
         task, trigger = ExampleTask(), ExampleTrigger()

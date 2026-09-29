@@ -1,8 +1,8 @@
 from copy import deepcopy
 from datetime import datetime
 
-from PySide6.QtCore import QRegularExpression, QTimer, Qt
-from PySide6.QtGui import QFontMetrics, QRegularExpressionValidator
+from PySide6.QtCore import QTimer, Qt
+from PySide6.QtGui import QFontMetrics
 from PySide6.QtWidgets import QHBoxLayout, QSizePolicy, QStyleOptionViewItem, QTableWidgetItem, QVBoxLayout, QWidget
 from qfluentwidgets import (
     BodyLabel, ComboBox, ExpandSettingCard, FluentIcon, InfoBar, LineEdit,
@@ -101,10 +101,8 @@ class AccountTaskCard(ExpandSettingCard):
         self.addWidget(self.enabled_switch)
 
         self.account_edit = LineEdit()
-        self.account_edit.setPlaceholderText('前三位 + 后四位，例如 1231234')
+        self.account_edit.setPlaceholderText('去掉所有 *，例如 1231234 或 Ab12@outlook.com')
         self.account_edit.setMinimumWidth(280)
-        self.account_edit.setMaxLength(7)
-        self.account_edit.setValidator(QRegularExpressionValidator(QRegularExpression('[0-9]{0,7}'), self))
         self.account_edit.setText(account.get('account_key', ''))
         row = LabelAndWidget('账号标识')
         row.add_widget(self.account_edit, stretch=0)

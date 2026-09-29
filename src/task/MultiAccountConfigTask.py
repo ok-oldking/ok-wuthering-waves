@@ -5,7 +5,9 @@ from ok.task.exceptions import TaskDisabledException, WaitFailedException
 
 from src.task.BaseWWTask import LOGIN_TEXTS
 from src.task.MouseResetTask import MouseResetTask
-from src.task.MultiAccountDailyTask import MultiAccountDailyTask, account_pattern
+from src.task.MultiAccountDailyTask import (
+    MultiAccountDailyTask, combo_items, combo_selected_item, select_combo_item,
+)
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.account.MultiAccountConfigStore import (
     MultiAccountConfigStore, account_key_from_ocr, display_account,
@@ -68,6 +70,7 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
             # Reset for every account, including configs of indirectly called tasks.
             for index, (account, task) in enumerate(plan):
                 try:
+                    self._target_account_key = account['account_key']
                     with isolated_task_configs(self.executor.get_all_tasks()):
                         if index == 0:
                             WWOneTimeTask.run(self)
@@ -102,7 +105,7 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
             raise
 
     def _find_target_account(self, account_key):
-        matches = [box for box in self.ocr(match=account_pattern)
+        matches = [box for box in self.ocr()
                    if account_key_from_ocr(box.name) == account_key]
         if matches:
             # The dropdown can repeat the currently displayed account above the
@@ -111,27 +114,59 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
             return True
         return False
 
+    def do_find_account_drop_down(self):
+        texts = self.ocr()
+        target = getattr(self, '_target_account_key', None)
+        accounts = [box for box in texts if '*' in box.name or '@' in box.name
+                    or (target and account_key_from_ocr(box.name) == target)]
+        if len(accounts) == 1 and self.find_boxes(texts, LOGIN_TEXTS):
+            return accounts[0]
+        return None
+
+    def _detect_current_account_from_login(self):
+        if combo := self._login_combo():
+            return combo_selected_item(combo)
+        box = self.do_find_account_drop_down()
+        return box.name if box else None
+
+    def _select_target_account(self, account_key):
+        self._target_account_key = account_key
+        self.sleep(1)
+        if combo := self._login_combo():
+            matches = [index for index, text in enumerate(combo_items(combo))
+                       if account_key_from_ocr(text) == account_key]
+            if not matches:
+                raise WaitFailedException(f'账号列表中未找到 {display_account(account_key)}')
+            # Consistent with OCR: prefer the lower entry for duplicate labels.
+            if not select_combo_item(combo, matches[-1]):
+                raise WaitFailedException('ComboBox 账号选择未生效，停止登录。')
+            self.sleep(1)
+            if account_key_from_ocr(combo_selected_item(combo)) != account_key:
+                raise WaitFailedException('ComboBox 当前账号与目标不一致，停止登录。')
+            return
+        for attempt in range(5):
+            self.sleep(1)
+            self.click(self.find_account_drop_down(), after_sleep=2)
+            if self.do_find_account_drop_down():
+                continue
+            if not self.wait_until(lambda: self._find_target_account(account_key),
+                                   time_out=10, raise_if_not_found=False):
+                raise WaitFailedException(f'账号列表中未找到 {display_account(account_key)}')
+            self.sleep(1)
+            current = self._detect_current_account_from_login()
+            if account_key_from_ocr(current) == account_key:
+                break
+            self.log_info(f'账号确认不匹配，重试 {attempt + 1}/5')
+        else:
+            raise WaitFailedException(f'无法确认目标账号 {display_account(account_key)}，停止登录。')
+
     def _login_target_account(self, account_key):
         mouse_reset = self.executor.get_task_by_class(MouseResetTask)
         was_enabled = mouse_reset.enabled if mouse_reset else False
         try:
             if was_enabled:
                 mouse_reset.disable()
-            for attempt in range(5):
-                self.sleep(1)
-                self.click(self.find_account_drop_down(), after_sleep=2)
-                if self.do_find_account_drop_down():
-                    continue
-                if not self.wait_until(lambda: self._find_target_account(account_key),
-                                       time_out=10, raise_if_not_found=False):
-                    raise WaitFailedException(f'账号列表中未找到 {display_account(account_key)}')
-                self.sleep(1)
-                current = self._detect_current_account_from_login()
-                if account_key_from_ocr(current) == account_key:
-                    break
-                self.log_info(f'账号确认不匹配，重试 {attempt + 1}/5')
-            else:
-                raise WaitFailedException(f'无法确认目标账号 {display_account(account_key)}，停止登录。')
+            MultiAccountConfigTask._select_target_account(self, account_key)
             previous_cursor_mode = getattr(self, '_login_cursor_active', False)
             try:
                 self._login_cursor_active = True
