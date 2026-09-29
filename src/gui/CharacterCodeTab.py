@@ -8,16 +8,20 @@ from urllib.error import HTTPError
 from urllib.parse import quote, urlparse
 from urllib.request import urlopen
 
-from PySide6.QtCore import QEvent, Qt, QUrl, Signal
-from PySide6.QtGui import QColor, QDesktopServices, QPixmap, QTextCursor, QTextFormat
+from PySide6.QtCore import QEvent, QPointF, Qt, QSize, QUrl, Signal
+from PySide6.QtGui import (
+    QColor, QDesktopServices, QFontMetricsF, QPainter, QPixmap, QTextCursor, QTextFormat, QTextLayout,
+)
 from PySide6.QtWidgets import (
     QApplication, QFileDialog, QAbstractItemView, QHBoxLayout, QHeaderView, QLabel,
-    QListWidgetItem, QSplitter, QTableWidgetItem, QTextEdit, QVBoxLayout, QWidget,
+    QListWidgetItem, QSplitter, QStyle, QStyleOptionViewItem, QTableWidgetItem, QTextEdit, QVBoxLayout,
+    QWidget,
 )
 from qfluentwidgets.common.style_sheet import setCustomStyleSheet
 from qfluentwidgets import (
-    BodyLabel, CaptionLabel, ComboBox, FluentIcon, LineEdit, ListWidget, MessageBox, MessageBoxBase,
+    BodyLabel, CaptionLabel, ComboBox, FluentIcon, LineEdit, ListItemDelegate, ListWidget, MessageBox, MessageBoxBase,
     PlainTextEdit, PrimaryPushButton, PushButton, SearchLineEdit, SubtitleLabel, TableWidget, TextEdit,
+    isDarkTheme, qconfig,
 )
 
 from ok import Logger
@@ -27,11 +31,12 @@ from ok.gui.util.app import show_info_bar
 from ok.gui.widget.CustomTab import CustomTab
 from src.char.CharFactory import apply_team_char_classes, char_dict
 from src.char.CustomCharLoader import (
-    TEAM_CODE_MODE_BUILTIN, TEAM_CODE_MODE_IMPORT, adopt_current_code_as_import,
-    create_custom_team, delete_custom_team, export_custom_team, get_english_char_name,
-    get_team_code_mode, import_custom_team, inspect_team_archive, list_custom_teams,
-    normalize_team, read_builtin_char_code, read_team_char_code, read_team_import_code,
-    save_team_char_code, save_team_import_code, set_team_code_mode, team_code_status,
+    TEAM_CODE_MODE_BUILTIN, TEAM_CODE_MODE_IMPORT, TEAM_CODE_STATE_NONE,
+    changed_import_members, create_custom_team, delete_custom_team, drifted_team_members,
+    export_custom_team, get_english_char_name,
+    import_custom_team, inspect_team_archive, list_custom_teams, normalize_custom_teams,
+    normalize_team, read_builtin_char_code, read_team_char_code,
+    save_team_code_as_import, switch_all_teams_code_mode, switch_team_code_mode, team_code_state,
 )
 
 BASE_CHAR_URL = "https://raw.githubusercontent.com/ok-oldking/ok-wuthering-waves/refs/heads/master/src/char/BaseChar.py"
@@ -40,6 +45,94 @@ WORKSHOP_TEAMS_ALL_URL = "https://okwwcharcode.ok-script.com/teams.json"
 WORKSHOP_TEAM_URL = "https://okwwcharcode.ok-script.com/teams/{slug}.json"
 WORKSHOP_ARCHIVE_HOSTS = {"okwwcharcode.ok-script.com", "raw.githubusercontent.com"}
 logger = Logger.get_logger(__name__)
+
+# The team list marks each team with a haloed dot, and both switch buttons wear the
+# color of the state they switch to, so the buttons double as the legend for the
+# dots. Switching always moves a whole team, so a team is blue exactly when its
+# members run imported code; a never imported team runs built in code and looks alike.
+TEAM_CODE_STATE_COLORS = {
+    # state: (light theme, dark theme)
+    TEAM_CODE_MODE_IMPORT: ("#0F6CBD", "#479EF5"),
+    TEAM_CODE_MODE_BUILTIN: ("#D13438", "#F1707B"),
+}
+STATE_DOT_SIZE = 14
+STATE_DOT_CORE_SIZE = 8
+STATE_DOT_HALO_ALPHA = 60
+TEAM_CODE_STATE_ROLE = Qt.UserRole + 1
+
+
+def _state_colors(state):
+    return TEAM_CODE_STATE_COLORS[TEAM_CODE_MODE_IMPORT if state == TEAM_CODE_MODE_IMPORT else TEAM_CODE_MODE_BUILTIN]
+
+
+def team_state_color(state):
+    """Return the color of `state` in the current theme."""
+    light, dark = _state_colors(state)
+    return QColor(dark if isDarkTheme() else light)
+
+
+def _text_middle_y(option, text_rect):
+    """Y of the middle of a full height glyph, laid out the way QCommonStyle lays out a
+    single line of item text: the line box is centered with integer math."""
+    layout = QTextLayout(option.text, option.font)
+    layout.beginLayout()
+    line = layout.createLine()
+    layout.endLayout()
+    top = text_rect.y() + int((text_rect.height() - int(line.height())) / 2)
+    glyph = QFontMetricsF(option.font).tightBoundingRect("中")
+    return top + line.ascent() + glyph.center().y()
+
+
+class TeamListDelegate(ListItemDelegate):
+    """Paints the code state dot of a team level with the middle of its name.
+
+    An icon would be centered on the row, while the text lands up to two pixels lower
+    depending on the font and the scale factor, so the dot is painted here instead.
+    """
+
+    def initStyleOption(self, option, index):
+        super().initStyleOption(option, index)
+        if index.data(TEAM_CODE_STATE_ROLE) is not None:
+            # keep the room of an icon in front of the name, paint() fills it
+            option.features |= QStyleOptionViewItem.HasDecoration
+            option.decorationSize = QSize(STATE_DOT_SIZE, STATE_DOT_SIZE)
+
+    def paint(self, painter, option, index):
+        # the base paint moves option.rect in by the margin, so keep an untouched copy
+        opt = QStyleOptionViewItem(option)
+        super().paint(painter, option, index)
+        state = index.data(TEAM_CODE_STATE_ROLE)
+        if state is None:
+            return
+        self.initStyleOption(opt, index)
+        opt.rect.adjust(0, self.margin, 0, -self.margin)
+        style = opt.widget.style() if opt.widget else QApplication.style()
+        icon_rect = style.subElementRect(QStyle.SE_ItemViewItemDecoration, opt, opt.widget)
+        text_rect = style.subElementRect(QStyle.SE_ItemViewItemText, opt, opt.widget)
+        # snap the core onto device pixels so it stays crisp at any scale factor
+        ratio = painter.device().devicePixelRatioF()
+        radius = STATE_DOT_CORE_SIZE / 2
+        x = round((icon_rect.x() + icon_rect.width() / 2 - radius) * ratio) / ratio + radius
+        y = round((_text_middle_y(opt, text_rect) - radius) * ratio) / ratio + radius
+        color = team_state_color(state)
+        halo = QColor(color)
+        halo.setAlpha(STATE_DOT_HALO_ALPHA)
+        painter.save()
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(halo)
+        painter.drawEllipse(QPointF(x, y), STATE_DOT_SIZE / 2, STATE_DOT_SIZE / 2)
+        painter.setBrush(color)
+        painter.drawEllipse(QPointF(x, y), radius, radius)
+        painter.restore()
+
+
+def team_state_tooltip(state):
+    if state == TEAM_CODE_MODE_IMPORT:
+        return translate_ui("Imported code is in effect")
+    if state == TEAM_CODE_MODE_BUILTIN:
+        return translate_ui("Built in code is in effect")
+    return translate_ui("Never imported code, skipped by Switch All")
 
 
 def translate_ui(message):
@@ -89,6 +182,27 @@ def translate_ui(message):
             "Save and Switch": "保存并切换",
             "Discard and Switch": "不保存并切换",
             "Save the current character code changes before switching?": "切换前是否保存当前角色代码的更改？",
+            "Switch All to Built In Code": "切换全部队伍角色为内置代码",
+            "Switch All to Imported Code": "切换全部队伍角色为导入代码",
+            "Switch All Team Code": "切换所有队伍代码",
+            "Switch all teams to built in code?": "将所有队伍切换为内置代码？",
+            "Switch all teams to imported code?": "将所有队伍切换为导入代码？",
+            "No team has imported code to switch.": "没有已导入代码的队伍可切换。",
+            "Switched {count} teams to {target}.": "已将 {count} 个队伍切换为{target}。",
+            "Skipped {count} teams that never imported code.": "已跳过 {count} 个未导入代码的队伍。",
+            "Failed {count} teams.": "{count} 个队伍切换失败。",
+            "Switch every team between imported and built in code": "在所有队伍的导入代码与内置代码之间一键切换",
+            "Imported code is in effect": "生效代码：导入代码",
+            "Built in code is in effect": "生效代码：内置代码",
+            "Never imported code, skipped by Switch All": "未导入过代码，切换全部时会跳过",
+            "Reset this character to built in code for this team?": "将此角色在此队伍中重置为内置代码？",
+            "The whole team's current code is now its imported code.": "整个队伍的当前代码已成为导入代码。",
+            "Replace Imported Code": "替换导入代码",
+            "This team runs built in code. Saving makes the whole team's current code its imported code and replaces the imported code of: {names}": "该队伍当前使用内置代码。保存后，整个队伍的当前代码将成为导入代码，并替换以下角色的导入代码：{names}",
+            "The current code of {names} is neither the built in nor the imported code of this team and is lost when switching.": "{names} 的当前代码既不是该队伍的内置代码，也不是导入代码，切换后将丢失。",
+            "Keep as Imported Code and Switch": "保存为导入代码并切换",
+            "Skipped {count} teams whose current code is not kept as imported code, switch them one by one.": "已跳过 {count} 个当前代码未保存为导入代码的队伍，请逐个切换。",
+            "Partially Completed": "部分完成",
         },
         "zh_TW": {
             "Search by team, character, author or description...": "搜尋隊伍、角色、作者或說明...",
@@ -120,6 +234,27 @@ def translate_ui(message):
             "Save and Switch": "儲存並切換",
             "Discard and Switch": "不儲存並切換",
             "Save the current character code changes before switching?": "切換前是否儲存目前角色程式碼的變更？",
+            "Switch All to Built In Code": "切換全部隊伍角色為內建程式碼",
+            "Switch All to Imported Code": "切換全部隊伍角色為匯入程式碼",
+            "Switch All Team Code": "切換所有隊伍程式碼",
+            "Switch all teams to built in code?": "將所有隊伍切換為內建程式碼？",
+            "Switch all teams to imported code?": "將所有隊伍切換為匯入程式碼？",
+            "No team has imported code to switch.": "沒有已匯入程式碼的隊伍可切換。",
+            "Switched {count} teams to {target}.": "已將 {count} 個隊伍切換為{target}。",
+            "Skipped {count} teams that never imported code.": "已跳過 {count} 個未匯入程式碼的隊伍。",
+            "Failed {count} teams.": "{count} 個隊伍切換失敗。",
+            "Switch every team between imported and built in code": "在所有隊伍的匯入程式碼與內建程式碼之間一鍵切換",
+            "Imported code is in effect": "生效程式碼：匯入程式碼",
+            "Built in code is in effect": "生效程式碼：內建程式碼",
+            "Never imported code, skipped by Switch All": "未匯入過程式碼，切換全部時會跳過",
+            "Reset this character to built in code for this team?": "將此角色在此隊伍中重設為內建程式碼？",
+            "The whole team's current code is now its imported code.": "整個隊伍的目前程式碼已成為匯入程式碼。",
+            "Replace Imported Code": "取代匯入程式碼",
+            "This team runs built in code. Saving makes the whole team's current code its imported code and replaces the imported code of: {names}": "該隊伍目前使用內建程式碼。儲存後，整個隊伍的目前程式碼將成為匯入程式碼，並取代以下角色的匯入程式碼：{names}",
+            "The current code of {names} is neither the built in nor the imported code of this team and is lost when switching.": "{names} 的目前程式碼既不是該隊伍的內建程式碼，也不是匯入程式碼，切換後將遺失。",
+            "Keep as Imported Code and Switch": "儲存為匯入程式碼並切換",
+            "Skipped {count} teams whose current code is not kept as imported code, switch them one by one.": "已跳過 {count} 個目前程式碼未儲存為匯入程式碼的隊伍，請逐一切換。",
+            "Partially Completed": "部分完成",
         },
         "ja_JP": {
             "Search by team, character, author or description...": "チーム、キャラクター、作者、説明を検索...",
@@ -151,6 +286,27 @@ def translate_ui(message):
             "Save and Switch": "保存して切り替え",
             "Discard and Switch": "保存せずに切り替え",
             "Save the current character code changes before switching?": "切り替える前に現在のキャラクターコードの変更を保存しますか？",
+            "Switch All to Built In Code": "すべてを組み込みコードに切り替え",
+            "Switch All to Imported Code": "すべてをインポートしたコードに切り替え",
+            "Switch All Team Code": "すべてのチームのコードを切り替え",
+            "Switch all teams to built in code?": "すべてのチームを組み込みコードに切り替えますか？",
+            "Switch all teams to imported code?": "すべてのチームをインポートしたコードに切り替えますか？",
+            "No team has imported code to switch.": "インポートしたコードを持つチームがありません。",
+            "Switched {count} teams to {target}.": "{count} 個のチームを{target}に切り替えました。",
+            "Skipped {count} teams that never imported code.": "コードをインポートしていない {count} 個のチームをスキップしました。",
+            "Failed {count} teams.": "{count} 個のチームの切り替えに失敗しました。",
+            "Switch every team between imported and built in code": "すべてのチームのインポートコードと組み込みコードを一括で切り替えます",
+            "Imported code is in effect": "有効なコード：インポートしたコード",
+            "Built in code is in effect": "有効なコード：組み込みコード",
+            "Never imported code, skipped by Switch All": "コードをインポートしていないため、一括切り替えではスキップされます",
+            "Reset this character to built in code for this team?": "このキャラクターをこのチームの内蔵コードにリセットしますか？",
+            "The whole team's current code is now its imported code.": "チーム全体の現在のコードがインポートしたコードになりました。",
+            "Replace Imported Code": "インポートしたコードを置き換え",
+            "This team runs built in code. Saving makes the whole team's current code its imported code and replaces the imported code of: {names}": "このチームは組み込みコードで動作しています。保存すると、チーム全体の現在のコードがインポートしたコードになり、次のキャラクターのインポートしたコードが置き換えられます：{names}",
+            "The current code of {names} is neither the built in nor the imported code of this team and is lost when switching.": "{names} の現在のコードは、このチームの組み込みコードでもインポートしたコードでもないため、切り替えると失われます。",
+            "Keep as Imported Code and Switch": "インポートしたコードとして保存して切り替え",
+            "Skipped {count} teams whose current code is not kept as imported code, switch them one by one.": "現在のコードがインポートしたコードとして保存されていない {count} 個のチームをスキップしました。個別に切り替えてください。",
+            "Partially Completed": "一部完了",
         },
         "ko_KR": {
             "Search by team, character, author or description...": "파티, 캐릭터, 제작자 또는 설명 검색...",
@@ -182,6 +338,27 @@ def translate_ui(message):
             "Save and Switch": "저장 후 전환",
             "Discard and Switch": "저장하지 않고 전환",
             "Save the current character code changes before switching?": "전환하기 전에 현재 캐릭터 코드 변경 사항을 저장하시겠습니까?",
+            "Switch All to Built In Code": "모두 내장 코드로 전환",
+            "Switch All to Imported Code": "모두 가져온 코드로 전환",
+            "Switch All Team Code": "모든 팀 코드 전환",
+            "Switch all teams to built in code?": "모든 팀을 내장 코드로 전환하시겠습니까?",
+            "Switch all teams to imported code?": "모든 팀을 가져온 코드로 전환하시겠습니까?",
+            "No team has imported code to switch.": "가져온 코드가 있는 팀이 없습니다.",
+            "Switched {count} teams to {target}.": "{count}개 팀을 {target}(으)로 전환했습니다.",
+            "Skipped {count} teams that never imported code.": "코드를 가져오지 않은 {count}개 팀을 건너뛰었습니다.",
+            "Failed {count} teams.": "{count}개 팀 전환에 실패했습니다.",
+            "Switch every team between imported and built in code": "모든 팀의 가져온 코드와 내장 코드를 한 번에 전환합니다",
+            "Imported code is in effect": "적용 중인 코드: 가져온 코드",
+            "Built in code is in effect": "적용 중인 코드: 내장 코드",
+            "Never imported code, skipped by Switch All": "코드를 가져온 적이 없어 전체 전환에서 건너뜁니다",
+            "Reset this character to built in code for this team?": "이 캐릭터를 이 파티의 내장 코드로 초기화할까요?",
+            "The whole team's current code is now its imported code.": "팀 전체의 현재 코드가 가져온 코드가 되었습니다.",
+            "Replace Imported Code": "가져온 코드 교체",
+            "This team runs built in code. Saving makes the whole team's current code its imported code and replaces the imported code of: {names}": "이 팀은 내장 코드를 사용 중입니다. 저장하면 팀 전체의 현재 코드가 가져온 코드가 되며, 다음 캐릭터의 가져온 코드를 교체합니다: {names}",
+            "The current code of {names} is neither the built in nor the imported code of this team and is lost when switching.": "{names}의 현재 코드는 이 팀의 내장 코드도 가져온 코드도 아니므로 전환하면 사라집니다.",
+            "Keep as Imported Code and Switch": "가져온 코드로 저장 후 전환",
+            "Skipped {count} teams whose current code is not kept as imported code, switch them one by one.": "현재 코드가 가져온 코드로 저장되지 않은 {count}개 팀을 건너뛰었습니다. 하나씩 전환하세요.",
+            "Partially Completed": "일부 완료",
         },
         "es_ES": {
             "Search by team, character, author or description...": "Buscar por equipo, personaje, autor o descripción...",
@@ -213,6 +390,27 @@ def translate_ui(message):
             "Save and Switch": "Guardar y cambiar",
             "Discard and Switch": "Descartar y cambiar",
             "Save the current character code changes before switching?": "¿Guardar los cambios del código del personaje actual antes de cambiar?",
+            "Switch All to Built In Code": "Cambiar todo a código integrado",
+            "Switch All to Imported Code": "Cambiar todo a código importado",
+            "Switch All Team Code": "Cambiar el código de todos los equipos",
+            "Switch all teams to built in code?": "¿Cambiar todos los equipos a código integrado?",
+            "Switch all teams to imported code?": "¿Cambiar todos los equipos a código importado?",
+            "No team has imported code to switch.": "No hay equipos con código importado para cambiar.",
+            "Switched {count} teams to {target}.": "Se cambiaron {count} equipos a {target}.",
+            "Skipped {count} teams that never imported code.": "Se omitieron {count} equipos que nunca importaron código.",
+            "Failed {count} teams.": "{count} equipos no se pudieron cambiar.",
+            "Switch every team between imported and built in code": "Cambia todos los equipos entre código importado y código integrado",
+            "Imported code is in effect": "Código en vigor: importado",
+            "Built in code is in effect": "Código en vigor: integrado",
+            "Never imported code, skipped by Switch All": "Nunca importó código; el cambio global lo omitirá",
+            "Reset this character to built in code for this team?": "¿Restablecer este personaje al código integrado en este equipo?",
+            "The whole team's current code is now its imported code.": "El código actual de todo el equipo es ahora su código importado.",
+            "Replace Imported Code": "Reemplazar código importado",
+            "This team runs built in code. Saving makes the whole team's current code its imported code and replaces the imported code of: {names}": "Este equipo usa el código integrado. Al guardar, el código actual de todo el equipo pasa a ser su código importado y reemplaza el código importado de: {names}",
+            "The current code of {names} is neither the built in nor the imported code of this team and is lost when switching.": "El código actual de {names} no es ni el código integrado ni el importado de este equipo y se perderá al cambiar.",
+            "Keep as Imported Code and Switch": "Guardar como código importado y cambiar",
+            "Skipped {count} teams whose current code is not kept as imported code, switch them one by one.": "Se omitieron {count} equipos cuyo código actual no está guardado como código importado; cámbialos uno por uno.",
+            "Partially Completed": "Completado parcialmente",
         },
     }
 
@@ -652,6 +850,7 @@ class CharacterCodeTab(CustomTab):
         self.clean_code = ""
         self.loading_editor = False
         self.suppress_selection_guard = False
+        self.current_code_state = TEAM_CODE_STATE_NONE
         self.char_label_by_cls = self._char_labels()
         self.char_feature_index = self._load_char_feature_index()
         self.char_feature_images = {}
@@ -667,8 +866,14 @@ class CharacterCodeTab(CustomTab):
         self.team_list = ListWidget(left)
         self.team_list.setMinimumWidth(210)
         self.team_list.setMaximumWidth(300)
+        self.team_list.setItemDelegate(TeamListDelegate(self.team_list))
         self.team_list.currentRowChanged.connect(self._team_selected)
         left_layout.addWidget(self.team_list, 1)
+        self.switch_all_button = PushButton(translate_ui("Switch All to Built In Code"))
+        self.switch_all_button.setToolTip(
+            translate_ui("Switch every team between imported and built in code"))
+        self.switch_all_button.clicked.connect(self._switch_all_code_mode)
+        left_layout.addWidget(self.switch_all_button)
         team_buttons = QVBoxLayout()
         first_team_button_row = QHBoxLayout()
         self.create_team_button = PrimaryPushButton(FluentIcon.ADD, self.tr("Create Team"))
@@ -743,7 +948,9 @@ class CharacterCodeTab(CustomTab):
         splitter.setStretchFactor(1, 1)
         self.add_widget(splitter, stretch=1)
         self._set_editor_enabled(False)
+        normalize_custom_teams()
         self._refresh_team_list()
+        qconfig.themeChangedFinished.connect(self.team_list.viewport().update)
 
     @property
     def name(self):
@@ -766,6 +973,7 @@ class CharacterCodeTab(CustomTab):
     def _refresh_team_list(self, selected_team=None):
         selected_team = normalize_team(selected_team) if selected_team else self.current_team
         teams = list_custom_teams()
+        states = {team: team_code_state(team) for team in teams}
         self.team_list.blockSignals(True)
         self.team_list.clear()
         selected_row = -1
@@ -774,6 +982,7 @@ class CharacterCodeTab(CustomTab):
             label = ", ".join(self.tr(get_english_char_name(name)) for name in display_team)
             item = QListWidgetItem(label)
             item.setData(Qt.UserRole, list(team))
+            self._mark_team_state(item, states[team])
             self.team_list.addItem(item)
             if team == selected_team:
                 selected_row = row
@@ -787,11 +996,34 @@ class CharacterCodeTab(CustomTab):
             self.current_char_cls = None
             self.member_combo.clear()
             self._set_editor_enabled(False)
+        self._update_switch_all_button(states)
+        self._update_code_mode_button()
+
+    @staticmethod
+    def _mark_team_state(item, state):
+        """TeamListDelegate paints the dot of the state in front of the team name."""
+        item.setData(TEAM_CODE_STATE_ROLE, state)
+        item.setToolTip(team_state_tooltip(state))
+
+    def _refresh_team_state_marker(self):
+        """Patch the marker of the current row after a single team switch.
+
+        Rebuilding the whole list would drop the scroll position and re-run
+        every team on disk, while this only re-reads the states once."""
+        teams = list_custom_teams()
+        states = {team: team_code_state(team) for team in teams}
+        team = self.current_team
+        row = teams.index(team) if team in teams else -1
+        if row >= 0:
+            item = self.team_list.item(row)
+            if item is not None:
+                self._mark_team_state(item, states[team])
+        self._update_switch_all_button(states)
 
     def _team_selected(self, row):
         if self.suppress_selection_guard:
             return
-        if self._has_unsaved_changes() and not self._confirm_discard_changes():
+        if not self._guard_unsaved_changes():
             self.suppress_selection_guard = True
             self.team_list.setCurrentRow(self.current_team_row)
             self.suppress_selection_guard = False
@@ -799,21 +1031,24 @@ class CharacterCodeTab(CustomTab):
         item = self.team_list.item(row)
         if item is None:
             return
-        self.current_team = normalize_team(item.data(Qt.UserRole))
+        team = normalize_team(item.data(Qt.UserRole))
+        # A list rebuild re-selects the same team, which must not jump back to the first member.
+        member_index = max(self.current_member_index, 0) if team == self.current_team else 0
+        self.current_team = team
         self.current_team_row = row
         self.member_combo.blockSignals(True)
         self.member_combo.clear()
         for class_name in self.current_team:
             self.member_combo.addItem(self.tr(get_english_char_name(class_name)), userData=class_name)
+        self.member_combo.setCurrentIndex(member_index)
         self.member_combo.blockSignals(False)
         self._set_editor_enabled(True)
-        self.member_combo.setCurrentIndex(0)
-        self._member_selected(0)
+        self._member_selected(member_index)
 
     def _member_selected(self, index):
         if index < 0 or self.current_team is None or self.suppress_selection_guard:
             return
-        if self._has_unsaved_changes() and not self._confirm_discard_changes():
+        if not self._guard_unsaved_changes():
             self.suppress_selection_guard = True
             self.member_combo.setCurrentIndex(self.current_member_index)
             self.suppress_selection_guard = False
@@ -837,6 +1072,7 @@ class CharacterCodeTab(CustomTab):
             self.loading_editor = False
             self.status_label.setText(self.tr("Create or import a team to edit character code."))
             self.reset_button.setText(self.tr("Reset to Built In"))
+            self._set_switch_icon(self.reset_button, TEAM_CODE_MODE_BUILTIN)
 
     def _load_editor_code(self):
         if self.current_team is None or self.current_char_cls is None:
@@ -854,6 +1090,7 @@ class CharacterCodeTab(CustomTab):
             return
         self._highlight_changed_lines()
         self.status_label.setText(self.tr("Unsaved changes") if self._has_unsaved_changes() else "")
+        self._update_reset_enabled()
 
     def _has_unsaved_changes(self):
         return self.current_team is not None and self.editor.toPlainText() != self.clean_code
@@ -861,6 +1098,18 @@ class CharacterCodeTab(CustomTab):
     def _confirm_discard_changes(self):
         box = MessageBox(self.tr("Unsaved Changes"), self.tr("Discard unsaved character code changes?"), self.window())
         return bool(box.exec())
+
+    def _guard_unsaved_changes(self):
+        """Ask before unsaved code gets dropped and return whether to go on.
+
+        Discarding puts the saved code back into the editor right away, so the
+        reloads that follow do not ask a second time."""
+        if not self._has_unsaved_changes():
+            return True
+        if not self._confirm_discard_changes():
+            return False
+        self._load_editor_code()
+        return True
 
     def _create_team(self):
         defaults = self._detected_team()
@@ -919,99 +1168,229 @@ class CharacterCodeTab(CustomTab):
         return []
 
     def _save_current(self):
+        """Save the editor and return whether it was written.
+
+        Saving always makes the whole team's current code its imported code: a
+        never imported team gets its first imported code, and a team running
+        built in code first confirms replacing the imported code it keeps."""
         if self.current_team is None or self.current_char_cls is None:
-            return
+            return False
+        team = self.current_team
+        code = self.editor.toPlainText()
+        codes = {self.current_char_cls.__name__: code}
         try:
-            code = self.editor.toPlainText()
-            path = save_team_char_code(self.current_team, self.current_char_cls, code)
-            if get_team_code_mode(self.current_team) == TEAM_CODE_MODE_IMPORT:
-                save_team_import_code(self.current_team, self.current_char_cls, code)
-            reloaded = self._reload_live_team_code(self.current_team)
+            state = team_code_state(team)
+            if state == TEAM_CODE_MODE_BUILTIN and not self._confirm_replace_import(team, codes):
+                return False
+            save_team_code_as_import(team, codes)
+            reloaded = self._reload_live_team_code(team)
             self.clean_code = code
             self.status_label.setText(self.tr("Saved and reloaded"))
             message = self.tr("Team character code saved.")
             if reloaded:
                 message = self.tr("Team character code saved and reloaded for the matching team.")
+            if state == TEAM_CODE_STATE_NONE:
+                message += " " + translate_ui("The whole team's current code is now its imported code.")
             show_info_bar(self.window(), message, title=self.tr("Success"))
-            self.logger.info(f"saved team char code {self.current_char_cls.__name__}: {path}")
+            self.logger.info(f"saved team char code {self.current_char_cls.__name__} as imported code: {team}")
         except Exception as e:
             self.logger.error(f"save team char code failed: {e}")
             show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+            return False
+        self._update_code_mode_button()
+        self._refresh_team_state_marker()
+        return True
+
+    def _confirm_replace_import(self, team, codes):
+        changed = changed_import_members(team, codes)
+        if not changed:
+            return True
+        names = ", ".join(self.tr(get_english_char_name(name)) for name in changed)
+        box = MessageBox(
+            translate_ui("Replace Imported Code"),
+            translate_ui("This team runs built in code. Saving makes the whole team's current code its imported code "
+                         "and replaces the imported code of: {names}").format(names=names),
+            self.window(),
+        )
+        box.yesButton.setText(self.tr("Save"))
+        box.cancelButton.setText(translate_ui("Cancel"))
+        return bool(box.exec())
+
+    @staticmethod
+    def _switch_all_target(states):
+        """Return (target, switchable teams). Only teams owning imported code can
+        switch, and they decide which way the global button points."""
+        switchable = [team for team, state in states.items() if state != TEAM_CODE_STATE_NONE]
+        if switchable and all(states[team] == TEAM_CODE_MODE_IMPORT for team in switchable):
+            return TEAM_CODE_MODE_BUILTIN, switchable
+        return TEAM_CODE_MODE_IMPORT, switchable
+
+    @staticmethod
+    def _set_switch_icon(button, target_mode):
+        """Color a switch button like the dot of the state it switches to, which
+        turns the two buttons into the legend for the team list dots."""
+        light, dark = _state_colors(target_mode)
+        button.setIcon(FluentIcon.SYNC.colored(QColor(light), QColor(dark)))
+
+    def _update_switch_all_button(self, states=None):
+        if states is None:
+            states = {team: team_code_state(team) for team in list_custom_teams()}
+        target, switchable = self._switch_all_target(states)
+        self._set_switch_icon(self.switch_all_button, target)
+        self.switch_all_button.setText(
+            translate_ui("Switch All to Built In Code") if target == TEAM_CODE_MODE_BUILTIN
+            else translate_ui("Switch All to Imported Code"))
+        self.switch_all_button.setEnabled(bool(switchable))
 
     def _update_code_mode_button(self):
         if self.current_team is None or self.current_char_cls is None:
             return
-        mode, has_import, has_custom = team_code_status(self.current_team)
-        if mode == TEAM_CODE_MODE_IMPORT:
+        state = team_code_state(self.current_team)
+        self.current_code_state = state
+        if state == TEAM_CODE_MODE_IMPORT:
+            target = TEAM_CODE_MODE_BUILTIN
             self.reset_button.setText(translate_ui("Switch to Built In Code"))
-        elif has_import or has_custom:
+        elif state == TEAM_CODE_MODE_BUILTIN:
+            target = TEAM_CODE_MODE_IMPORT
             self.reset_button.setText(translate_ui("Switch to Imported Code"))
         else:
+            target = TEAM_CODE_MODE_BUILTIN
             self.reset_button.setText(translate_ui("Reset to Built In"))
+        self._set_switch_icon(self.reset_button, target)
+        self._update_reset_enabled()
 
-    def _switch_code_mode(self):
+    def _update_reset_enabled(self):
+        """A never imported team has nothing to switch; its button only resets the
+        editor, which is pointless while the editor already holds the built in code."""
         if self.current_team is None or self.current_char_cls is None:
             return
-        mode, has_import, has_custom = team_code_status(self.current_team)
-        if mode != TEAM_CODE_MODE_IMPORT and not (has_import or has_custom):
-            self._reset_to_builtin_code()
+        enabled = True
+        if self.current_code_state == TEAM_CODE_STATE_NONE:
+            enabled = self.editor.toPlainText() != read_builtin_char_code(self.current_char_cls)
+        self.reset_button.setEnabled(enabled)
+
+    def _settle_unsaved_changes(self):
+        """Let the user save or drop unsaved editor code before a switch rewrites it.
+        Returns whether the switch may go on."""
+        if not self._has_unsaved_changes():
+            return True
+        action = self._confirm_switch_changes()
+        if action == "save":
+            return self._save_current()
+        if action == "discard":
+            self._load_editor_code()
+            return True
+        return False
+
+    def _switch_all_code_mode(self):
+        if not self._settle_unsaved_changes():
             return
-        target = TEAM_CODE_MODE_BUILTIN if mode == TEAM_CODE_MODE_IMPORT else TEAM_CODE_MODE_IMPORT
-        if target == TEAM_CODE_MODE_IMPORT and not has_import:
-            try:
-                adopted = adopt_current_code_as_import(self.current_team)
-            except Exception as e:
-                self.logger.error(f"adopt current code as import failed: {e}")
-                show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
-                return
-            if adopted:
-                self.logger.info(f"adopted current code as import: {adopted}")
-        if self._has_unsaved_changes():
-            action = self._confirm_switch_changes()
-            if action == "cancel":
-                return
-            if action == "save":
-                self._save_current()
-        target_text = translate_ui("built in code") if target == TEAM_CODE_MODE_BUILTIN else translate_ui("imported code")
-        content = (translate_ui("Switch the whole team to built in code?")
+        states = {team: team_code_state(team) for team in list_custom_teams()}
+        target, switchable = self._switch_all_target(states)
+        if not switchable:
+            show_info_bar(self.window(), translate_ui("No team has imported code to switch."),
+                          title=self.tr("Team"))
+            return
+        content = (translate_ui("Switch all teams to built in code?")
                    if target == TEAM_CODE_MODE_BUILTIN
-                   else translate_ui("Switch the whole team to imported code?"))
-        box = MessageBox(translate_ui("Switch Character Code"), content, self.window())
+                   else translate_ui("Switch all teams to imported code?"))
+        box = MessageBox(translate_ui("Switch All Team Code"), content, self.window())
         box.yesButton.setText(translate_ui("Switch"))
         box.cancelButton.setText(translate_ui("Cancel"))
         if not box.exec():
             return
         try:
-            class_names = normalize_team(self.current_team)
-            for class_name in class_names:
-                char_cls = self.char_by_name.get(class_name)
-                if char_cls is None:
-                    continue
-                if target == TEAM_CODE_MODE_BUILTIN:
-                    code = read_builtin_char_code(char_cls)
-                else:
-                    code = read_team_import_code(self.current_team, char_cls)
-                save_team_char_code(self.current_team, char_cls, code)
-            set_team_code_mode(self.current_team, target)
-            reloaded = self._reload_live_team_code(self.current_team)
+            summary = switch_all_teams_code_mode(target)
+        except Exception as e:
+            self.logger.error(f"switch all teams code mode failed: {e}")
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+            return
+        target_text = translate_ui("built in code") if target == TEAM_CODE_MODE_BUILTIN else translate_ui("imported code")
+        for team in summary["switched"]:
+            self._reload_live_team_code(team)
+        self._refresh_team_list()
+        if self.current_team is not None and self.current_char_cls is not None:
             self._load_editor_code()
-            self._update_code_mode_button()
+        self.logger.info(f"switched all teams char code to {target}: {len(summary['switched'])} switched, "
+                         f"{len(summary['drifted'])} drifted, {len(summary['failed'])} failed")
+        parts = [translate_ui("Switched {count} teams to {target}.").format(
+            count=len(summary["switched"]), target=target_text)]
+        skipped = len(states) - len(switchable)
+        if skipped:
+            parts.append(translate_ui("Skipped {count} teams that never imported code.").format(count=skipped))
+        if summary["drifted"]:
+            parts.append(translate_ui(
+                "Skipped {count} teams whose current code is not kept as imported code, switch them one by one."
+            ).format(count=len(summary["drifted"])))
+        if summary["failed"]:
+            parts.append(translate_ui("Failed {count} teams.").format(count=len(summary["failed"])))
+            title = translate_ui("Partially Completed") if summary["switched"] else self.tr("Error")
+        else:
+            title = self.tr("Success")
+        show_info_bar(self.window(), " ".join(parts), title=title, error=bool(summary["failed"]))
+
+    def _switch_code_mode(self):
+        if self.current_team is None or self.current_char_cls is None:
+            return
+        team = self.current_team
+        state = team_code_state(team)
+        if state == TEAM_CODE_STATE_NONE:
+            self._reset_to_builtin_code()
+            return
+        target = TEAM_CODE_MODE_BUILTIN if state == TEAM_CODE_MODE_IMPORT else TEAM_CODE_MODE_IMPORT
+        if not self._settle_unsaved_changes():
+            return
+        # saving from built in code lands the team on imported code already
+        if team_code_state(team) == target:
+            return
+        target_text = translate_ui("built in code") if target == TEAM_CODE_MODE_BUILTIN else translate_ui("imported code")
+        drifted = drifted_team_members(team)
+        keep_drifted = False
+        if drifted:
+            names = ", ".join(self.tr(get_english_char_name(name)) for name in drifted)
+            action = self._confirm_switch_changes(
+                translate_ui("Switch Character Code"),
+                translate_ui("The current code of {names} is neither the built in nor the imported code of this team "
+                             "and is lost when switching.").format(names=names),
+                translate_ui("Keep as Imported Code and Switch"),
+            )
+            if action == "cancel":
+                return
+            keep_drifted = action == "save"
+        else:
+            content = (translate_ui("Switch the whole team to built in code?")
+                       if target == TEAM_CODE_MODE_BUILTIN
+                       else translate_ui("Switch the whole team to imported code?"))
+            box = MessageBox(translate_ui("Switch Character Code"), content, self.window())
+            box.yesButton.setText(translate_ui("Switch"))
+            box.cancelButton.setText(translate_ui("Cancel"))
+            if not box.exec():
+                return
+        try:
+            if keep_drifted:
+                save_team_code_as_import(team, {})
+            if team_code_state(team) != target:
+                switch_team_code_mode(team, target)
+            reloaded = self._reload_live_team_code(team)
             message = translate_ui("Switched to {target}.").format(target=target_text)
             if reloaded:
                 message = translate_ui("Switched to {target} and reloaded for the matching team.").format(target=target_text)
             show_info_bar(self.window(), message, title=self.tr("Success"))
-            self.logger.info(f"switched team char code to {target}: {class_names}")
+            self.logger.info(f"switched team char code to {target}: {team}")
         except Exception as e:
             self.logger.error(f"switch team char code failed: {e}")
             show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+        self._load_editor_code()
+        self._update_code_mode_button()
+        self._refresh_team_state_marker()
 
-    def _confirm_switch_changes(self):
+    def _confirm_switch_changes(self, title=None, content=None, save_text=None):
         box = MessageBox(
-            translate_ui("Unsaved Changes"),
-            translate_ui("Save the current character code changes before switching?"),
+            title or translate_ui("Unsaved Changes"),
+            content or translate_ui("Save the current character code changes before switching?"),
             self.window(),
         )
-        box.yesButton.setText(translate_ui("Save and Switch"))
+        box.yesButton.setText(save_text or translate_ui("Save and Switch"))
         box.cancelButton.setText(translate_ui("Cancel"))
         discard_button = PushButton(translate_ui("Discard and Switch"), box.buttonGroup)
         buttons = [box.yesButton, discard_button, box.cancelButton]
@@ -1037,6 +1416,8 @@ class CharacterCodeTab(CustomTab):
         return result
 
     def _reset_to_builtin_code(self):
+        """Put the built in code of the current character into the editor. Nothing
+        is written; saving it afterwards works like saving any other edit."""
         if self.current_char_cls is None:
             return
         box = MessageBox(
@@ -1045,11 +1426,7 @@ class CharacterCodeTab(CustomTab):
             self.window())
         if not box.exec():
             return
-        self.loading_editor = True
         self.editor.setPlainText(read_builtin_char_code(self.current_char_cls))
-        self.loading_editor = False
-        self._save_current()
-        self._highlight_changed_lines()
 
     def _export_team(self):
         if self.current_team is None:
@@ -1071,7 +1448,7 @@ class CharacterCodeTab(CustomTab):
             show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
 
     def _import_team(self):
-        if self._has_unsaved_changes() and not self._confirm_discard_changes():
+        if not self._guard_unsaved_changes():
             return
         archive_path, _filter = QFileDialog.getOpenFileName(
             self.window(), self.tr("Import Team"), "", self.tr("Zip files (*.zip)"))
@@ -1080,6 +1457,9 @@ class CharacterCodeTab(CustomTab):
         self._preview_and_import_archive(archive_path)
 
     def _open_workshop(self):
+        # An import selects the imported team, so ask before anything is downloaded.
+        if not self._guard_unsaved_changes():
+            return
         try:
             codes = fetch_all_workshop_teams()
         except Exception as e:

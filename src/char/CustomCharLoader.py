@@ -19,6 +19,7 @@ CUSTOM_TEAM_FOLDER = "custom_teams"
 TEAM_MANIFEST_FILE = "team.json"
 TEAM_CODE_MODE_IMPORT = "import"
 TEAM_CODE_MODE_BUILTIN = "builtin"
+TEAM_CODE_STATE_NONE = "none"
 TEAM_IMPORT_SUFFIX = ".import.py"
 
 CHARACTER_DISPLAY_NAMES = {
@@ -34,6 +35,10 @@ CHARACTER_DISPLAY_NAMES = {
 
 _custom_class_cache = {}
 _team_class_cache = {}
+# Framework character sources never change at runtime, but the team code checks read
+# them once per member per team, which turns a scan over every team into a hundred
+# file reads. Cache the result and keep the existing clear hooks pointed at it.
+_builtin_code_cache = {}
 
 
 def get_english_char_name(char_cls_or_name):
@@ -236,51 +241,207 @@ def save_team_import_code(team, char_cls, code):
     return path
 
 
-def adopt_current_code_as_import(team):
+def team_code_state(team):
+    """Return the code state of a team: none, builtin or import.
+
+    A team owns imported code once every member has an imported copy, and the
+    manifest's code mode then says which side is in effect. A copy that happens
+    to equal the built in code is still the imported code of that team.
+    """
     class_names = normalize_team(team)
-    folder = get_custom_team_folder(class_names)
-    if not folder.is_dir():
-        raise ValueError(f"Team {class_names} does not exist")
-    adopted = []
-    for class_name in class_names:
-        if get_team_import_file(class_names, class_name).is_file():
-            continue
-        path = folder / f"{class_name}.py"
-        if not path.is_file():
-            raise ValueError(f"Missing code for {get_english_char_name(class_name)}")
-        save_team_import_code(class_names, class_name, path.read_text(encoding="utf-8"))
-        adopted.append(class_name)
-    return adopted
+    if not all(get_team_import_file(class_names, name).is_file() for name in class_names):
+        return TEAM_CODE_STATE_NONE
+    return get_team_code_mode(class_names)
 
 
-def team_code_status(team):
-    """Return (code_mode, has_import_code, has_custom_code) for a whole team."""
+def normalize_team_code(team):
+    """Complete the imported copies older versions left behind half written.
+
+    Imported copies are all or nothing, and the import mode needs them. Missing
+    copies are filled from the current code; nothing is deleted or overwritten.
+    Returns the member names that got a copy.
+    """
     class_names = normalize_team(team)
-    mode = get_team_code_mode(class_names)
-    folder = get_custom_team_folder(class_names)
-    if not folder.is_dir():
-        return mode, False, False
-    char_classes = _registered_char_classes()
-    has_import = True
-    has_custom = False
+    present = [name for name in class_names if get_team_import_file(class_names, name).is_file()]
+    if len(present) == len(class_names):
+        return []
+    if not present and get_team_code_mode(class_names) != TEAM_CODE_MODE_IMPORT:
+        return []
+    filled = []
     for class_name in class_names:
-        if not get_team_import_file(class_names, class_name).is_file():
-            has_import = False
-        path = folder / f"{class_name}.py"
-        char_cls = char_classes.get(class_name)
-        if char_cls is None or not path.is_file():
+        if class_name in present:
             continue
+        code = get_team_char_file(class_names, class_name).read_text(encoding="utf-8")
+        save_team_import_code(class_names, class_name, code)
+        filled.append(class_name)
+    return filled
+
+
+def normalize_custom_teams():
+    normalized = {}
+    for team in list_custom_teams():
         try:
-            if path.read_text(encoding="utf-8") != read_builtin_char_code(char_cls):
-                has_custom = True
-        except OSError:
+            filled = normalize_team_code(team)
+        except Exception as e:
+            logger.error(f"normalize team code failed for {team}: {e}")
             continue
-    return mode, has_import, has_custom
+        if filled:
+            logger.info(f"filled missing imported copies of {team}: {filled}")
+            normalized[team] = filled
+    return normalized
+
+
+def drifted_team_members(team):
+    """Members whose current code is neither side the team state says is in effect.
+
+    Only data written by older versions gets here, and switching would silently
+    drop that code, so callers ask first.
+    """
+    class_names = normalize_team(team)
+    state = team_code_state(class_names)
+    if state == TEAM_CODE_STATE_NONE:
+        return []
+    drifted = []
+    for class_name, char_cls in _team_char_classes(class_names).items():
+        if state == TEAM_CODE_MODE_IMPORT:
+            expected = read_team_import_code(class_names, class_name)
+        else:
+            expected = read_builtin_char_code(char_cls)
+        if read_team_char_code(class_names, char_cls) != expected:
+            drifted.append(class_name)
+    return drifted
+
+
+def team_import_snapshot(team, codes):
+    """Return the imported code a save of `codes` gives the team: the given members
+    take the new code and the others keep their current code."""
+    class_names = normalize_team(team)
+    return {
+        class_name: codes[class_name] if class_name in codes else read_team_char_code(class_names, char_cls)
+        for class_name, char_cls in _team_char_classes(class_names).items()
+    }
+
+
+def changed_import_members(team, codes):
+    """Members whose imported code a save of `codes` would replace."""
+    class_names = normalize_team(team)
+    changed = []
+    for class_name, code in team_import_snapshot(class_names, codes).items():
+        path = get_team_import_file(class_names, class_name)
+        if not path.is_file() or path.read_text(encoding="utf-8") != code:
+            changed.append(class_name)
+    return changed
+
+
+def save_team_code_as_import(team, codes):
+    """Save `codes` ({class name: code}) and make the whole team's current code its imported code.
+
+    Saving is how a team gets imported code, so the team always ends up in the
+    import mode, whatever state it came from.
+    """
+    class_names = normalize_team(team)
+    snapshot = team_import_snapshot(class_names, codes)
+    _write_team_code(class_names, {name: snapshot[name] for name in codes}, snapshot, TEAM_CODE_MODE_IMPORT)
+
+
+def switch_team_code_mode(team, target):
+    """Switch a team that owns imported code to `target` as one unit."""
+    if target not in (TEAM_CODE_MODE_IMPORT, TEAM_CODE_MODE_BUILTIN):
+        raise ValueError(f"Unsupported code mode: {target}")
+    class_names = normalize_team(team)
+    if team_code_state(class_names) == TEAM_CODE_STATE_NONE:
+        raise ValueError("This team has no imported code to switch")
+    codes = {
+        class_name: read_builtin_char_code(char_cls) if target == TEAM_CODE_MODE_BUILTIN
+        else read_team_import_code(class_names, class_name)
+        for class_name, char_cls in _team_char_classes(class_names).items()
+    }
+    _write_team_code(class_names, codes, mode=target)
+
+
+def switch_all_teams_code_mode(target):
+    """Switch every team that owns imported code to `target`.
+
+    Teams whose current code neither side keeps are skipped as well, switching
+    them would drop that code; they are reported to be switched one by one.
+    Returns {"target", "switched", "already", "drifted", "failed"} for the caller to summarise.
+    """
+    if target not in (TEAM_CODE_MODE_IMPORT, TEAM_CODE_MODE_BUILTIN):
+        raise ValueError(f"Unsupported code mode: {target}")
+    switched, already, drifted, failed = [], [], [], []
+    for team in list_custom_teams():
+        class_names = normalize_team(team)
+        try:
+            state = team_code_state(class_names)
+            if state == TEAM_CODE_STATE_NONE:
+                continue
+            if state == target:
+                already.append(class_names)
+                continue
+            if drifted_team_members(class_names):
+                drifted.append(class_names)
+                continue
+            switch_team_code_mode(class_names, target)
+            switched.append(class_names)
+        except Exception as e:
+            logger.error(f"switch all teams code mode failed for {class_names}: {e}")
+            failed.append((class_names, e))
+    return {"target": target, "switched": switched, "already": already, "drifted": drifted, "failed": failed}
+
+
+def _team_char_classes(class_names):
+    char_classes = _registered_char_classes()
+    missing = [name for name in class_names if name not in char_classes]
+    if missing:
+        raise ValueError(f"Unknown character: {missing[0]}")
+    return {name: char_classes[name] for name in class_names}
+
+
+def _write_team_code(team, codes, import_codes=None, mode=None):
+    """Write the code of a whole team as one unit.
+
+    Every code is validated and loaded before the team counts as written, and the
+    code mode goes last. Any failure restores every touched file, so a team never
+    ends up half switched.
+    """
+    class_names = normalize_team(team)
+    char_classes = _team_char_classes(class_names)
+    writes = {}
+    for class_name, code in codes.items():
+        path = get_team_char_file(class_names, class_name)
+        _validate_character_code(code, class_name, path)
+        writes[path] = code
+    for class_name, code in (import_codes or {}).items():
+        path = get_team_import_file(class_names, class_name)
+        _validate_character_code(code, class_name, path)
+        writes[path] = code
+    touched = list(writes)
+    if mode is not None:
+        touched.append(get_custom_team_folder(class_names) / TEAM_MANIFEST_FILE)
+    backups = {path: path.read_text(encoding="utf-8") if path.is_file() else None for path in touched}
+    try:
+        for path, code in writes.items():
+            path.write_text(code, encoding="utf-8")
+        clear_team_char_cache(class_names)
+        for class_name in codes:
+            _load_team_char_class_from_file(
+                char_classes[class_name], class_names, get_team_char_file(class_names, class_name))
+        if mode is not None:
+            set_team_code_mode(class_names, mode)
+    except Exception:
+        for path, old in backups.items():
+            if old is None:
+                path.unlink(missing_ok=True)
+            else:
+                path.write_text(old, encoding="utf-8")
+        clear_team_char_cache(class_names)
+        raise
 
 
 def clear_team_char_cache(team=None, char_cls_or_name=None):
     if team is None:
         _team_class_cache.clear()
+        clear_builtin_code_cache()
         return
     team_key = get_team_key(team)
     if char_cls_or_name is None:
@@ -288,6 +449,7 @@ def clear_team_char_cache(team=None, char_cls_or_name=None):
             _team_class_cache.pop(key, None)
     else:
         _team_class_cache.pop((team_key, _get_class_name(char_cls_or_name)), None)
+    clear_builtin_code_cache()
 
 
 def load_team_char_class(char_cls, team):
@@ -343,10 +505,13 @@ def export_custom_team(team, destination, name, description, author, version):
     safe_author = re.sub(r'[<>:"/\\|?*\s]+', "_", values["author"]).strip(" .") or "author"
     safe_version = re.sub(r'[<>:"/\\|?*]+', "_", values["version"]).strip(" .") or "version"
     archive_path = destination / f"{safe_name}_{safe_author}_{safe_version}.zip"
+    # A team shares its imported code whichever side is in effect right now; a team
+    # never imported shares its current code.
+    imported = team_code_state(class_names) != TEAM_CODE_STATE_NONE
     with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.writestr(TEAM_MANIFEST_FILE, json.dumps(manifest, ensure_ascii=False, indent=2))
         for class_name in class_names:
-            code_path = folder / f"{class_name}.py"
+            code_path = get_team_import_file(class_names, class_name) if imported else folder / f"{class_name}.py"
             if not code_path.is_file():
                 raise ValueError(f"Missing code for {get_english_char_name(class_name)}")
             archive.write(code_path, f"{class_name}.py")
@@ -514,11 +679,20 @@ def remove_custom_char_code(char_cls_or_name):
     return path
 
 
+def clear_builtin_code_cache():
+    _builtin_code_cache.clear()
+
+
 def read_builtin_char_code(char_cls):
+    cached = _builtin_code_cache.get(char_cls)
+    if cached is not None:
+        return cached
     path = inspect.getsourcefile(char_cls)
     if not path:
         raise RuntimeError(f"Cannot find source file for {char_cls.__name__}")
-    return Path(path).read_text(encoding="utf-8")
+    code = Path(path).read_text(encoding="utf-8")
+    _builtin_code_cache[char_cls] = code
+    return code
 
 
 def read_custom_or_builtin_char_code(char_cls):
@@ -554,6 +728,7 @@ def clear_custom_char_cache(char_cls_or_name=None):
         _custom_class_cache.clear()
     else:
         _custom_class_cache.pop(_get_class_name(char_cls_or_name), None)
+    clear_builtin_code_cache()
 
 
 def load_custom_char_class(char_cls):
