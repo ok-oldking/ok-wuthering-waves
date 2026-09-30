@@ -1,5 +1,10 @@
+import ctypes
 import re
+from ctypes import wintypes
 
+import win32con
+import win32gui
+import win32process
 
 from ok import Box
 from ok.task.exceptions import WaitFailedException
@@ -11,11 +16,62 @@ from src.task.MouseResetTask import MouseResetTask
 
 account_pattern = re.compile(r'\*\*\*\*')
 
+CB_GETCOUNT, CB_GETCURSEL, CB_GETLBTEXT, CB_GETLBTEXTLEN, CB_SETCURSEL = 0x146, 0x147, 0x148, 0x149, 0x14E
+CBN_SELCHANGE = 1
+_SendMessageW = ctypes.windll.user32.SendMessageW
+_SendMessageW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
+_SendMessageW.restype = ctypes.c_ssize_t
+
 
 def normalize_account_name(account):
     if not account:
         return account
     return account.lower().replace('0', 'o').replace('.con', '.com')
+
+
+def find_login_combo(game_hwnd):
+    """国际服 KRSDK 登录框是原生 #32770 对话框，账号列表是标准 ComboBox。
+    后台模式下点击下拉列表项后选择会被撤销（#1316 #1678），所以能找到时直接读写 ComboBox。找不到返回 None。"""
+    if not game_hwnd or not win32gui.IsWindow(game_hwnd):
+        return None
+    _, game_pid = win32process.GetWindowThreadProcessId(game_hwnd)
+    combos = []
+
+    def on_child(child, _):
+        if (win32gui.GetClassName(child) == 'ComboBox' and win32gui.IsWindowVisible(child)
+                and _SendMessageW(child, CB_GETCOUNT, 0, 0) > 0):
+            combos.append(child)
+
+    def on_top(hwnd, _):
+        if (win32gui.GetClassName(hwnd) == '#32770' and win32gui.IsWindowVisible(hwnd)
+                and win32process.GetWindowThreadProcessId(hwnd)[1] == game_pid):
+            win32gui.EnumChildWindows(hwnd, on_child, None)
+
+    win32gui.EnumWindows(on_top, None)
+    return combos[0] if combos else None
+
+
+def combo_items(combo):
+    items = []
+    for i in range(_SendMessageW(combo, CB_GETCOUNT, 0, 0)):
+        buf = ctypes.create_unicode_buffer(max(_SendMessageW(combo, CB_GETLBTEXTLEN, i, 0), 0) + 1)
+        _SendMessageW(combo, CB_GETLBTEXT, i, ctypes.addressof(buf))
+        items.append(buf.value)
+    return items
+
+
+def combo_selected_item(combo):
+    index = _SendMessageW(combo, CB_GETCURSEL, 0, 0)
+    items = combo_items(combo)
+    return items[index] if 0 <= index < len(items) else None
+
+
+def select_combo_item(combo, index):
+    """选中后通知父窗口 CBN_SELCHANGE，和用户手动选择一样让登录框更新当前账号。"""
+    _SendMessageW(combo, CB_SETCURSEL, index, 0)
+    parent = win32gui.GetParent(combo)
+    _SendMessageW(parent, win32con.WM_COMMAND, (CBN_SELCHANGE << 16) | win32gui.GetDlgCtrlID(combo), combo)
+    return _SendMessageW(combo, CB_GETCURSEL, 0, 0) == index
 
 
 class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
@@ -72,10 +128,33 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         self.wait_feature('esc_setting')
         self.click_relative(0.04, 0.96, after_sleep=1)
         self.click_confirm(timeout=10)
-        self.find_account_drop_down()
+        # 登录框显示的账号没有 **** 时（非邮箱/手机号账号）OCR 等不到下拉框，原生 ComboBox 也算回到登录界面
+        self.wait_until(lambda: self._login_combo() or self.do_find_account_drop_down(),
+                        time_out=60, settle_time=2, raise_if_not_found=True)
         self.log_info(self.tr('Back at login screen'))
 
+    def _login_combo(self):
+        return find_login_combo(self.hwnd.hwnd if self.hwnd else 0)
+
+    def _select_account_by_combo(self, combo):
+        accounts = combo_items(combo)
+        for name in accounts:
+            self.all_accounts.add(normalize_account_name(name))
+        self.info_set('All Accounts', self.all_accounts)
+        for index, name in enumerate(accounts):
+            if self._is_done(name):
+                continue
+            if not select_combo_item(combo, index):
+                raise Exception(self.tr('Failed to switch account'))
+            self.log_info(self.tr('Confirmed selected account: {account}').format(account=name))
+            return name
+        return None
+
     def _detect_current_account_from_login(self):
+        if combo := self._login_combo():
+            if account := combo_selected_item(combo):
+                self.log_info(self.tr('Current account: {account}').format(account=account))
+                return account
         texts = self.ocr(match=account_pattern)
         if texts:
             self.log_info(self.tr('Current account: {account}').format(account=texts[0]))
@@ -102,7 +181,14 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         if mouse_reset_was_enabled:
             mouse_reset_task.disable()
         try:
-            max_retries = 5
+            combo = self._login_combo()
+            if combo:
+                current_account = self._select_account_by_combo(combo)
+                if not current_account:
+                    self.log_info(self.tr('No remaining account to run; finishing multi-account daily task'))
+                    return None
+            # 找不到原生 ComboBox 时（如其他登录界面）走原有的 OCR + 点击流程
+            max_retries = 0 if combo else 5
             for attempt in range(1, max_retries + 1):
                 # self.ensure_in_front()
                 # self.update_capture({
