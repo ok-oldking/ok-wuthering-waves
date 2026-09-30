@@ -106,6 +106,18 @@ class TestBookTargetSelection(unittest.TestCase):
                         self.assertEqual(serial, record.row)
                         self.assertLessEqual(record.scrolls, 1)
 
+    def test_future_structures_need_no_code_change(self):
+        # Shapes the lists may grow into: more regions, one long region, many one-item regions.
+        cases = [([9, 9, 9, 9, 9], 'normal'), ([30], 'normal'), ([1] * 12, 'normal'), ([3, 5, 5, 7, 2], 'normal'),
+                 ([2, 3, 3, 4, 2], 'weekly')]
+        for structure, layout in cases:
+            for serial in range(1, sum(structure) + 1):
+                with self.subTest(structure=structure, serial=serial):
+                    task, record = make_task(FakeBookList(structure, layout))
+                    task.click_on_book_target(serial, sum(structure), structure)
+                    self.assertEqual(serial, record.row)
+                    self.assertLessEqual(record.scrolls, 1)
+
     def test_closed_loop_still_lands_when_track_clicks_behave_differently(self):
         for name, (structure, layout) in self.lists.items():
             for serial in range(1, sum(structure) + 1):
