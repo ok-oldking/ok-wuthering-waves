@@ -56,7 +56,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                           'Nightmare: Hecate', 'Fenrico', 'Nameless Explorer']
         self.config_type['Boss'] = {'type': "drop_down", 'options': self.boss_list}
         self.combat_end_condition = self.find_echos
-        self.weekly_structure = [1, 2, 3, 4]
+        self.weekly_structure = [2, 2, 3, 4]
         self.boss_structure = [2, 4, 7, 1, 9]
         self.total_weekly_number = sum(self.weekly_structure)
         self.total_boss_number = sum(self.boss_structure)

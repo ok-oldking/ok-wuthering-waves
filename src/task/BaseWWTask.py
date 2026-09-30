@@ -1138,145 +1138,134 @@ class BaseWWTask(BaseTask):
                 raise Exception('must be in game world and in teams')
         return True
 
-    def _find_book_scroll_top(self):
-        box = self.box_of_screen(0.969, 0.191, 0.978, 0.271, name="bar")
+    def _find_book_scroll_thumb(self):
+        box = self.box_of_screen(0.969, 0.19, 0.978, 0.89, name="bar")
         self.draw_boxes(boxes=box, color="blue")
         min_width = self.width_of_screen(5 / 2560)
         min_height = self.height_of_screen(10 / 1440)
-        boxes = find_color_rectangles(self.frame, book_bar_color, min_width, min_height, threshold=0.8, box=box)
+        boxes = find_color_rectangles(self.frame, book_bar_color, min_width, min_height, threshold=0.7, box=box)
+        # Bright scenery can show through beside the track; the thumb always spans the track's click column.
+        track_x = self.width_of_screen(0.973)
+        boxes = [b for b in boxes if b.x <= track_x <= b.x + b.width]
         if not boxes:
-            return 424 / 2160
-        bar = boxes[0]
-        self.draw_boxes(boxes=bar, color="red")
-        return bar.y / self.height
+            return None
+        thumb = max(boxes, key=lambda b: b.height)
+        self.draw_boxes(boxes=thumb, color="red")
+        return thumb
 
-    def click_on_book_target(self, serial_number: int, total_number: int, structure: list[int] = None):
-        def get_cross_count(groups, sn):
-            current_sum = 0
-            cross_count = 0
-            for size in groups:
-                current_sum += size
-                if sn > current_sum:
-                    cross_count += 1
-                else:
-                    break
-            return cross_count
-
-        def infer_visible_end_offset(buttons):
-            if not structure or len(buttons) < 2:
-                return None
-
-            # Button gaps are ~0.142 within a group and ~0.204 across a region header.
-            gaps = [(right.y - left.y) / self.height for left, right in zip(buttons, buttons[1:])]
-            if not all(0.12 < gap < 0.23 for gap in gaps):
-                return None
-
-            boundaries = set()
-            current_sum = 0
-            for size in structure[:-1]:
-                current_sum += size
-                boundaries.add(current_sum)
-
-            observed = tuple(gap > 0.17 for gap in gaps)
-            matches = []
-            count = len(buttons)
-            # Coarse scrollbar placement is only corrected when one adjacent window matches uniquely.
-            for offset in (-1, 0, 1):
-                end_serial = serial_number + offset
-                start_serial = end_serial - count + 1
-                if start_serial < 1 or end_serial > total_number:
-                    continue
-                expected = tuple((start_serial + index) in boundaries for index in range(count - 1))
-                if expected == observed:
-                    matches.append(offset)
-            return matches[0] if len(matches) == 1 else None
-
-        if total_number <= 0 or not 1 <= serial_number <= total_number:
-            raise ValueError(f'invalid book target: serial={serial_number}, total={total_number}')
-        if structure and (any(size <= 0 for size in structure) or sum(structure) != total_number):
-            raise ValueError(f'invalid book structure: structure={structure}, total={total_number}')
-
-        self.sleep(0.5)
-        bar_bottom = 0.8806
-        bar_x = 0.9730
-        header_h = 0.028
-        container_max_rows = 4
-        target_index = serial_number - 1 if serial_number <= container_max_rows else -1
-        bar_top = self._find_book_scroll_top()
-
-        if target_index < 0:
-            cross_count = get_cross_count(structure, serial_number) if structure else 0
-            container_h = ((bar_bottom - bar_top - (len(structure) - 1) * header_h)
-                           if structure else (bar_bottom - bar_top))
-            item_h = container_h / total_number
-            to_click_y = min(bar_top + item_h * serial_number + cross_count * header_h, bar_bottom)
-            self.click(bar_x, to_click_y, after_sleep=1)
-
-        btns = self.find_feature(
+    def _find_book_buttons(self):
+        buttons = self.find_feature(
             'boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8
         )
-        btns = sorted(btns or [], key=lambda box: box.y)
-        if not btns:
+        return sorted(buttons or [], key=lambda box: box.y)
+
+    def click_on_book_target(self, serial_number: int, total_number: int, structure: list[int] = None):
+        structure = structure or [total_number]
+        if total_number <= 0 or not 1 <= serial_number <= total_number:
+            raise ValueError(f'invalid book target: serial={serial_number}, total={total_number}')
+        if any(size <= 0 for size in structure) or sum(structure) != total_number:
+            raise ValueError(f'invalid book structure: structure={structure}, total={total_number}')
+
+        # List geometry in screen-height units, measured on the 3.6/3.7 F2 lists at 16:9.
+        row_h = 0.1417  # button pitch inside a region
+        header_h = 0.0620  # extra pitch where a region header sits between two buttons
+        first_row_below_thumb = 0.105  # serial 1 button top minus thumb top while the list is at its top
+        view_bottom = 0.976  # serial 1 button top + visible list height
+        content_pad = 0.19  # list height minus the serial 1..last button span
+        track_bottom = 0.8833
+        click_bottom = 0.8815
+        mid_y = 0.517  # middle of the button search box
+        bar_x = 0.973
+
+        region_ends = set()
+        region_end = 0
+        for size in structure[:-1]:
+            region_end += size
+            region_ends.add(region_end)
+        offsets = [0.0]  # offsets[k]: content distance from serial 1 to serial k
+        crossed = 0
+        for serial in range(1, total_number + 1):
+            offsets.append((serial - 1) * row_h + crossed * header_h)
+            if serial in region_ends:
+                crossed += 1
+
+        def locate(buttons, approx_pos):
+            # Every candidate is checked against all visible buttons, so region headers pin the alignment
+            # and the scrollbar estimate only has to be within half a row.
+            ys = [button.y / self.height for button in buttons]
+            best = None
+            for last in range(len(ys), total_number + 1):
+                pos = first_y + offsets[last] - ys[-1]
+                error = abs(pos - approx_pos)
+                if best is not None and error >= best[0]:
+                    continue
+                first = last - len(ys) + 1
+                if all(abs(first_y + offsets[first + i] - pos - y) < 0.02 for i, y in enumerate(ys)):
+                    best = (error, pos)
+            if best is None or best[0] > 0.45 * row_h:
+                raise RuntimeError(f'book list does not match structure={structure}: '
+                                   f'ys={[round(y, 4) for y in ys]} approx_pos={approx_pos:.4f} best={best}')
+            return best[1]
+
+        self.sleep(0.5)
+        buttons = self._find_book_buttons()
+        if not buttons:
             raise Exception("can't find boss_proceed")
-
-        if target_index >= 0 and target_index < len(btns):
-            target = btns[target_index]
-            selection = 'visible_index'
-            visible_end_offset = None
-        else:
-            if target_index >= 0:
-                cross_count = get_cross_count(structure, serial_number) if structure else 0
-                container_h = ((bar_bottom - bar_top - (len(structure) - 1) * header_h)
-                               if structure else (bar_bottom - bar_top))
-                item_h = container_h / total_number
-                missing_rows = serial_number - len(btns)
-                to_click_y = min(
-                    bar_top + item_h * serial_number + cross_count * header_h + missing_rows * item_h,
-                    bar_bottom,
-                )
-                self.click(bar_x, to_click_y, after_sleep=1)
-                btns = self.find_feature(
-                    'boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8
-                )
-                btns = sorted(btns or [], key=lambda box: box.y)
-                if not btns:
-                    raise Exception("can't find boss_proceed after scroll")
-
-            visible_end_offset = infer_visible_end_offset(btns)
-            max_y = btns[-1].y / self.height
-            retry_by_signature = visible_end_offset == -1
-            retry_by_position = visible_end_offset is None and len(btns) in (3, 4) and max_y < 0.73
-            if structure and (retry_by_signature or retry_by_position):
-                retry_y = min(to_click_y + item_h * 0.55, bar_bottom)
-                reason = 'signature' if retry_by_signature else 'position'
-                self.log_info(
-                    f'[BOOK_SCROLL] retry sn={serial_number} reason={reason} '
-                    f'offset={visible_end_offset} click_y={retry_y:.5f}'
-                )
-                self.click(bar_x, retry_y, after_sleep=1)
-                btns = self.find_feature(
-                    'boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861), threshold=0.8
-                )
-                btns = sorted(btns or [], key=lambda box: box.y)
-                if not btns:
-                    raise Exception("can't find boss_proceed after retry")
-                visible_end_offset = infer_visible_end_offset(btns)
-                if retry_by_signature and visible_end_offset not in (0, 1):
-                    raise RuntimeError(
-                        f'book target remains unresolved after retry: serial={serial_number}, '
-                        f'offset={visible_end_offset}'
-                    )
-
-            if visible_end_offset in (0, 1) and visible_end_offset < len(btns):
-                target = btns[-1 - visible_end_offset]
-                selection = f'boundary_offset_{visible_end_offset}'
-            else:
-                target = btns[-1]
-                selection = 'geometry_bottom'
+        first_y = buttons[0].y / self.height  # the list opens at its top, so this is serial 1
+        pos = 0.0
+        thumb = None
+        target = None
+        for attempt in range(5):
+            expected_y = first_y + offsets[serial_number] - pos
+            target = next((b for b in buttons if abs(b.y / self.height - expected_y) < row_h / 3), None)
+            if target or attempt == 4:
+                break
+            if thumb is None:
+                thumb = self._find_book_scroll_thumb()
+                if not thumb:
+                    raise Exception("can't find book scrollbar")
+                track_top = thumb.y / self.height
+                thumb_h = thumb.height / self.height
+                if abs(first_y - track_top - first_row_below_thumb) > 0.015:
+                    raise RuntimeError(f'book list is not at its top: first_y={first_y:.4f} thumb_top={track_top:.4f}')
+                track_len = track_bottom - track_top
+                content_h = offsets[total_number] + content_pad
+                content_from_thumb = (view_bottom - first_y) * track_len / thumb_h
+                if abs(content_from_thumb - content_h) > 0.6 * row_h:
+                    raise ValueError(f'book structure={structure} does not match the list length: '
+                                     f'scrollbar={content_from_thumb:.3f} structure={content_h:.3f}')
+                scale = content_h / track_len  # content distance per unit of thumb travel
+                lead = {True: thumb_h, False: 0.0}  # click y minus resulting thumb top, observed as edge-follows-click
+            thumb_top = thumb.y / self.height
+            want_top = track_top + (first_y + offsets[serial_number] - mid_y) / scale
+            want_top = min(max(want_top, track_top), track_bottom - thumb_h)
+            if abs(want_top - thumb_top) < 0.002:
+                break
+            down = want_top > thumb_top
+            click_y = want_top + lead[down]
+            # A click on the thumb itself does not scroll.
+            click_y = max(click_y, thumb_top + thumb_h + 0.003) if down else min(click_y, thumb_top - 0.003)
+            click_y = min(max(click_y, track_top), click_bottom)
+            learn = click_y == want_top + lead[down]
+            self.click(bar_x, click_y, after_sleep=1)
+            thumb = self._find_book_scroll_thumb()
+            buttons = self._find_book_buttons()
+            if not thumb or not buttons:
+                raise Exception("can't find book scrollbar or boss_proceed after scroll")
+            new_top = thumb.y / self.height
+            if learn and track_top + 0.002 < new_top < track_bottom - thumb_h - 0.002:
+                lead[down] += want_top - new_top
+            pos = locate(buttons, (new_top - track_top) * scale)
+            if new_top - track_top > 0.02:
+                scale = pos / (new_top - track_top)
+            self.log_info(f'[BOOK_SCROLL] sn={serial_number} attempt={attempt} click_y={click_y:.4f} '
+                          f'thumb={new_top:.4f} pos={pos:.4f}')
+        if not target:
+            raise RuntimeError(f'book target not reached: serial={serial_number}, structure={structure}')
 
         self.log_info(
-            f'[BOOK_SCROLL] target sn={serial_number} selection={selection} '
-            f'offset={visible_end_offset} ys={[round(button.y / self.height, 5) for button in btns]}'
+            f'[BOOK_SCROLL] target sn={serial_number} y={target.y / self.height:.4f} '
+            f'ys={[round(button.y / self.height, 4) for button in buttons]}'
         )
         self.draw_boxes(boxes=target, color="red")
         self.click(target, after_sleep=1)
