@@ -1,5 +1,6 @@
 import unittest
 
+from ok.task.exceptions import WaitFailedException
 from src.task.BaseWWTask import LOGIN_TEXTS
 from src.task.MultiAccountDailyTask import (
     MultiAccountDailyTask,
@@ -82,3 +83,109 @@ class TestMultiAccountDailyTask(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+    def test_selection_ends_the_sweep_once_every_detected_account_is_done(self):
+        class AccountBox:
+            def __init__(self, name):
+                self.name = name
+
+        class FakeExecutor:
+            def get_task_by_class(self, task_class):
+                return None
+
+        class FakeTask:
+            executor = FakeExecutor()
+
+            def __init__(self):
+                self.done_set = {normalize_account_name("aa****01@example.com")}
+                self.all_accounts = set()
+                self.clicked = []
+                self.logs = []
+
+            _is_done = MultiAccountDailyTask._is_done
+            _click_account_in_list = MultiAccountDailyTask._click_account_in_list
+
+            def ocr(self, match=None):
+                return [AccountBox("aa****01@example.com")]
+
+            def info_set(self, *args):
+                pass
+
+            def click(self, account, after_sleep=0):
+                self.clicked.append(account.name)
+
+            def log_info(self, *args):
+                self.logs.append(args)
+
+            def tr(self, message):
+                return message
+
+            def sleep(self, *args):
+                pass
+
+            def find_account_drop_down(self):
+                return object()
+
+            def do_find_account_drop_down(self):
+                return None
+
+            def wait_until(self, condition, time_out=0, raise_if_not_found=False, **_kwargs):
+                value = condition()
+                if not value and raise_if_not_found:
+                    raise WaitFailedException()
+                return value
+
+        task = FakeTask()
+
+        self.assertIsNone(MultiAccountDailyTask._select_and_login_account(task))
+        self.assertEqual(task.clicked, [])
+
+    def test_selection_still_fails_when_no_account_is_readable(self):
+        class FakeExecutor:
+            def get_task_by_class(self, task_class):
+                return None
+
+        class FakeTask:
+            executor = FakeExecutor()
+
+            def __init__(self):
+                self.done_set = set()
+                self.all_accounts = set()
+                self.clicked = []
+
+            _is_done = MultiAccountDailyTask._is_done
+            _click_account_in_list = MultiAccountDailyTask._click_account_in_list
+
+            def ocr(self, match=None):
+                return []
+
+            def info_set(self, *args):
+                pass
+
+            def click(self, account, after_sleep=0):
+                self.clicked.append(account.name)
+
+            def log_info(self, *args):
+                pass
+
+            def tr(self, message):
+                return message
+
+            def sleep(self, *args):
+                pass
+
+            def find_account_drop_down(self):
+                return object()
+
+            def do_find_account_drop_down(self):
+                return None
+
+            def wait_until(self, condition, time_out=0, raise_if_not_found=False, **_kwargs):
+                value = condition()
+                if not value and raise_if_not_found:
+                    raise WaitFailedException()
+                return value
+
+        with self.assertRaises(WaitFailedException):
+            MultiAccountDailyTask._select_and_login_account(FakeTask())

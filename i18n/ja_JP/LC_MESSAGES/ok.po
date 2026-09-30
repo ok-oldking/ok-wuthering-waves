@@ -1383,3 +1383,6 @@ msgstr "チーム {team} を完全に削除しますか？"
 
 msgid "Team deleted."
 msgstr "チームを削除しました。"
+
+msgid "JingRan"
+msgstr "景燃"

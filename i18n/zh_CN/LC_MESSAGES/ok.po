@@ -1432,3 +1432,6 @@ msgstr "确定要永久删除队伍 {team} 吗？"
 
 msgid "Team deleted."
 msgstr "队伍已删除。"
+
+msgid "JingRan"
+msgstr "景燃"

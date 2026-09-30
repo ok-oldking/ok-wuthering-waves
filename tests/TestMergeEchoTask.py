@@ -43,6 +43,7 @@ class TestMergeEchoTask(unittest.TestCase):
             side_effect=lambda predicate, **kwargs: predicate()
         )
         self.task.click_dialog_left_button = Mock(return_value=True)
+        self.task.has_discard_merge_dialog = Mock(return_value=True)
         self.task.sleep = Mock()
         self.task.wait_click_skip_dialog_confirm = Mock(return_value=True)
         self.task.wait_click_feature = Mock(return_value=True)
@@ -141,7 +142,7 @@ class TestMergeEchoTask(unittest.TestCase):
         self.assertEqual(self.task.ensure_main.call_count, 1)
 
     def test_alerts_and_returns_to_main_when_1000_echo_dialog_is_absent(self):
-        self.task.click_dialog_left_button.return_value = False
+        self.task.has_discard_merge_dialog.return_value = False
 
         self.task.run()
 
@@ -154,7 +155,7 @@ class TestMergeEchoTask(unittest.TestCase):
         self.task.ocr.assert_not_called()
 
     def test_quietly_returns_when_not_enough_notification_is_disabled(self):
-        self.task.click_dialog_left_button.return_value = False
+        self.task.has_discard_merge_dialog.return_value = False
         self.task.notify_if_not_enough = False
 
         self.task.run()
