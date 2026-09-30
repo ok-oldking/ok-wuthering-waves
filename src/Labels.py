@@ -183,6 +183,7 @@ class Labels(str, Enum):
     garden_next_day = 'garden_next_day'
     garden_not_interested = 'garden_not_interested'
     garden_not_interested_confirm = 'garden_not_interested_confirm'
+    garden_echo_recommend = 'garden_echo_recommend'
     garden_shop_buy = 'garden_shop_buy'
     garden_shop_close = 'garden_shop_close'
     garden_start_game = 'garden_start_game'
