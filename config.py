@@ -4,6 +4,7 @@ from pathlib import Path
 
 from ok import Box, ConfigOption, Icon
 from ok.util.GlobalConfig import create_basic_options
+from src.game_launcher import get_game_launch_arguments
 from src.task.process_feature import process_feature
 
 version = "dev"
@@ -199,6 +200,7 @@ config = {
                            re.compile('CNativeLoginDlg'), 'Static', 'ComboBox', 'ComboLBox', 'Button'
                            ],
         'calculate_pc_exe_path': calculate_pc_exe_path,
+        'launch_arguments': get_game_launch_arguments,
         'exe': 'Client-Win64-Shipping.exe',
         'hwnd_class': 'UnrealWindow',
         'interaction': 'PostMessage',
