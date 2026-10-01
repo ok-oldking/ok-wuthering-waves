@@ -1433,5 +1433,13 @@ msgstr "确定要永久删除队伍 {team} 吗？"
 msgid "Team deleted."
 msgstr "队伍已删除。"
 
+msgid "Use Echo Box for Daily Echo"
+msgstr "使用声骸箱子获取日常声骸"
+
+msgid ""
+"When needed, use an Echo box from the Bag to obtain an Echo and complete "
+"daily activities."
+msgstr "必要时，使用背包中的声骸箱子获取声骸完成日常"
+
 msgid "JingRan"
 msgstr "景燃"

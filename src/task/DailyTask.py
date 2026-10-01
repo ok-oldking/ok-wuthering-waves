@@ -12,6 +12,7 @@ from src.task.TacetTask import TacetTask
 from src.task.SimulationTask import SimulationTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
+from src.task.EchoBoxMixin import EchoBoxMixin
 
 logger = Logger.get_logger(__name__)
 
@@ -20,9 +21,10 @@ AUTO_FARM_NIGHTMARE_NEST = 'Auto Farm all Nightmare Nest'
 MERGE_ECHO_IF_DISCARDED_OVER_1000 = 'Merge Echo If discarded > 1000'
 TELEPORT_AND_FARM_4C_ECHO = 'Teleport and Farm 4C Echo'
 ADDITIONAL_TASKS = 'Additional Tasks to Run After Daily Task'
+USE_ECHO_BOX_FOR_DAILY = 'Use Echo Box for Daily Echo'
 
 
-class DailyTask(WWOneTimeTask, BaseCombatTask):
+class DailyTask(EchoBoxMixin, WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -35,6 +37,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Which Forgery Challenge to Farm': 1,  # starts with 1
             'Material Selection': 'Shell Credit',
             'Farm Nightmare Nest for Daily Echo': True,
+            USE_ECHO_BOX_FOR_DAILY: False,
             ADDITIONAL_TASKS: [CHECK_WEEKLY_GARDEN],
         }
         self.config_description = {
@@ -42,6 +45,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
             'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.',
+            USE_ECHO_BOX_FOR_DAILY: 'When needed, use an Echo box from the Bag to obtain an Echo and complete daily activities.',
             ADDITIONAL_TASKS: 'Select optional tasks. Nightmare Nest runs before stamina farming to help complete '
                               'the daily task; the other tasks run afterward.',
         }
@@ -129,11 +133,64 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
         self.claim_daily()
 
+        if self.config.get(USE_ECHO_BOX_FOR_DAILY, False):
+            self.complete_daily_with_echo_box()
+
         self.claim_mail()
         self.sleep(1)
         self.claim_battle_pass()
         self.run_additional_tasks()
         self.log_info('Daily Task Completed', notify=True)
+
+    def complete_daily_with_echo_box(self):
+        """原日常领取完成后检查积分，必要时使用一个箱子，成功后复用原领取方法。
+
+        不改变梦魇或体力流程；积分读不清、无箱子或开箱失败时继续后续日常。
+        """
+        if self.game_lang != 'zh_CN':
+            self.log_info('声骸箱子功能仅支持简体中文游戏界面，跳过开箱')
+            return
+        try:
+            self.info_set('current task', '检查领取后的日常活跃度')
+            self.open_daily()
+
+            def read_points():
+                """独立严格识别积分，用元组保留有效的 0 点，不改动原活跃度读取方法。"""
+                boxes = self.ocr(0.19, 0.8, 0.30, 0.93,
+                                 match=re.compile(r'^\s*[0-9]+\s*$'), threshold=0.8)
+                if len(boxes) != 1:
+                    return None
+                text = boxes[0].name.strip()
+                if re.fullmatch(r'[0-9]+', text) and 0 <= int(text) <= 100:
+                    return (int(text),)
+                return None
+
+            result = self.wait_until(read_points, time_out=5, settle_time=0.5)
+            if not result:
+                self.log_info('日常活跃度识别不清，跳过声骸箱子')
+            else:
+                self.info_set('total daily points', result[0])
+                if result[0] < 100:
+                    self.ensure_main()
+                    if self.use_one_echo_box():
+                        self.log_info('成功使用1个声骸箱子，领取新增日常奖励')
+                        self.ensure_main()
+                        self.claim_daily()
+        except TaskDisabledException:
+            raise
+        except Exception as error:
+            self.log_error(f'声骸箱子日常补足失败，继续后续日常：{error}')
+            self.screenshot('DailyEcho_box_failed')
+
+        # 满分、读不清和无箱子时也可能停留在清单或背包，恢复后接回原邮件流程。
+        # 不使用 finally 恢复页面，确保手动停止后不再操作游戏。
+        try:
+            self.ensure_main()
+        except TaskDisabledException:
+            raise
+        except Exception as error:
+            self.log_error(f'声骸箱子流程结束后返回主界面失败：{error}')
+            self.screenshot('DailyEcho_return_failed')
 
     def validate_additional_tasks(self):
         additional_tasks = self.config.get(ADDITIONAL_TASKS) or []
