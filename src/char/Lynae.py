@@ -1,6 +1,6 @@
 from src.char.BaseChar import BaseChar, SwitchPriority, forte_white_color
 
-class Linnai(BaseChar):
+class Lynae(BaseChar):
     RES_CHECK_THRESHOLD = 0.6
     INTRO_RES_WAIT = 1.0
     AEMEATH_INTRO_RES_WAIT = 1.6
@@ -40,7 +40,7 @@ class Linnai(BaseChar):
             
     def perform_under_intro(self):
         if not self.wait_for_accelerate_ready():
-            self.logger.debug(f'Linnai fails entering accelerate mode!')
+            self.logger.debug(f'Lynae fails entering accelerate mode!')
             return False
         self.task.wait_until(lambda: self.is_color_full() or self.is_con_full(), post_action=self.click,
                                      time_out=1)
@@ -90,7 +90,7 @@ class Linnai(BaseChar):
             return self.task.find_best_match_in_box(box, list(self.get_target_names()),
                                                     threshold=self.RES_CHECK_THRESHOLD)
         except Exception as e:
-            self.logger.debug(f'Linnai check res skipped {box_name}: {e}')
+            self.logger.debug(f'Lynae check res skipped {box_name}: {e}')
             return None
 
     def check_res(self):
@@ -104,7 +104,7 @@ class Linnai(BaseChar):
             try:
                 best = self.task.find_one('target_box_short', threshold=self.RES_CHECK_THRESHOLD)
             except Exception as e:
-                self.logger.debug(f'Linnai check res skipped target_box_short: {e}')
+                self.logger.debug(f'Lynae check res skipped target_box_short: {e}')
                 best = None
         self.logger.debug(f'check res {best}')
         return best
@@ -119,7 +119,7 @@ class Linnai(BaseChar):
         self.switch_other_char()
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        # Mornye 离场就强制切 Linnai
+        # Mornye 离场就强制切 Lynae
         if current_char and current_char.char_name == 'char_moning':
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)

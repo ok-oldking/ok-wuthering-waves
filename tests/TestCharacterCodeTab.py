@@ -33,7 +33,7 @@ from src.char.CustomCharLoader import (
 from src.char.Mortefi import Mortefi
 from src.char.Suisui import Suisui
 from src.char.Verina import Verina
-from src.char.YangYangSp import YangYangSp
+from src.char.YangyangXuanling import YangyangXuanling
 from src.gui.CharacterCodeTab import (
     STATE_DOT_SIZE, CharacterCodeTab, ExportTeamDialog, ImportTeamDialog,
     TeamSelectionDialog, WorkshopDialog, fetch_workshop_codes, team_state_color, workshop_team_url,
@@ -159,7 +159,7 @@ class TestCharacterCodeTab(unittest.TestCase):
 
     def test_workshop_url_sanitizes_character_name_punctuation(self):
         self.assertEqual(
-            workshop_team_url((YangYangSp, Chisa, Suisui)),
+            workshop_team_url((YangyangXuanling, Chisa, Suisui)),
             "https://okwwcharcode.ok-script.com/teams/Chisa_Suisui_Yangyang_Xuanling.json",
         )
 

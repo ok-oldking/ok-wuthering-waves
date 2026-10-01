@@ -60,3 +60,4 @@ Always verify the implementation against this repo's helpers and available label
 - Prefer `click_resonance`, `click_liberation`, `click_echo`, `heavy_attack`, `continues_normal_attack`, `heavy_click_forte`, `is_forte_full`, `has_long_action`, and `f_break` over raw key calls.
 - Keep loops bounded by timeouts and call `self.task.next_frame()` or `self.sleep(...)` inside polling loops.
 - Use `Priority` overrides only when switching behavior truly depends on intro, cooldown, healer timing, or a long buff window.
+- Character file and class name in directory `src/char` should be a **PascalCase** English word (A-Z and a-z only) referenced from https://wutheringwaves.fandom.com/wiki/Resonator/List#Playable_Resonators (updating). Here are some examples: XiangliYao (Xiangli Yao / 相里要), LuukHerssen (Luuk Herssen / 陆赫斯), Sigrika (Sigrika / 西格莉卡), YangyangXuanling (Yangyang: Xuanling / 秧秧·玄翎). Character Rover can be ignored (multiple genders and attributes).

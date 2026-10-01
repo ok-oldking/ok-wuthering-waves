@@ -4,7 +4,7 @@ from src.char.BaseChar import BaseChar, SwitchPriority
 class Hiyuki(BaseChar):
     # 在场/阶段总超时 (秒)
     FIELD_TIME_OUT: float = 16.0
-    # Linnai BUFF 时长 (秒)
+    # Lynae BUFF 时长 (秒)
     LINNAI_FIELD_TIME_OUT: float = 18.0
     # hold_liberation 长按的总超时 (秒)
     HOLD_LIB_TIME_OUT: float = 8.0

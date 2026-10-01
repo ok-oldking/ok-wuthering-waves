@@ -328,9 +328,9 @@ class Carlotta(BaseChar):
         return forte
 
     def shorekeeper_auto_dodge(self):
-        from src.char.ShoreKeeper import ShoreKeeper
+        from src.char.Shorekeeper import Shorekeeper
         for i, char in enumerate(self.task.chars):
-            if isinstance(char, ShoreKeeper):
+            if isinstance(char, Shorekeeper):
                 return char.auto_dodge(condition=self.flying)
 
 
