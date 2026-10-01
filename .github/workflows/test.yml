@@ -53,6 +53,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
+        timeout-minutes: 20
         env:
           GITHUB_TOKEN: ''
           GH_TOKEN: ''
@@ -80,21 +81,7 @@ jobs:
             Remove-Item "Env:\$_" -ErrorAction SilentlyContinue
           }
 
-          Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
-              Write-Host "Running tests in $($_.FullName)"
-              try {
-                  # Run the Python unittest command
-                  python -m unittest $_.FullName
-
-                  # Check if the previous command succeeded
-                  if ($LASTEXITCODE -ne 0) {
-                      throw "Tests failed in $($_.FullName)"
-                  }
-              } catch {
-                  # Stop the loop and return the error
-                  Write-Error $_
-                  exit 1
-              }
-          }
+          python .github/scripts/run_tests.py
+          exit $LASTEXITCODE
 
   

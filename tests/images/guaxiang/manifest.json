@@ -1,0 +1,125 @@
+[
+  {
+    "name": "blue1_grass",
+    "path": "tests/images/guaxiang/blue1_grass.png",
+    "expected": [
+      "蓝"
+    ],
+    "source_attachment": "codex-clipboard-8eec5107-16bf-4927-aa9a-7e8025d2bd24.png",
+    "sha256": "a09e1bc4281de4bb59ac551cf37125500dd948b5a3cb090c0e8f111c5d122e54",
+    "template_source": false
+  },
+  {
+    "name": "mixed4",
+    "path": "tests/images/guaxiang/mixed4.png",
+    "expected": [
+      "黄",
+      "蓝",
+      "蓝",
+      "蓝"
+    ],
+    "source_attachment": "codex-clipboard-126617ba-5437-4bdd-a864-247e617556b9.png",
+    "sha256": "12d0650fbb4f47da2604370b2b7cb18fcce0dba60e7ba5ccf92ced15a8f7733c",
+    "template_source": false
+  },
+  {
+    "name": "blue4",
+    "path": "tests/images/guaxiang/blue4.png",
+    "expected": [
+      "蓝",
+      "蓝",
+      "蓝",
+      "蓝"
+    ],
+    "source_attachment": "codex-clipboard-bf682453-3c36-4aac-ba16-672f15dabb55.png",
+    "sha256": "913d521f16403a67ab92a3031835b0927cf14699416dd0f04cfbc4b08f024cc0",
+    "template_source": false
+  },
+  {
+    "name": "blue3",
+    "path": "tests/images/guaxiang/blue3.png",
+    "expected": [
+      "蓝",
+      "蓝",
+      "蓝"
+    ],
+    "source_attachment": "codex-clipboard-28b42007-cdce-4c86-bf09-066387c1ee7d.png",
+    "sha256": "5e46c54194fc2e9a316d1fad764c399bce7d81a25933a016c61b98c4ef729a0d",
+    "template_source": false
+  },
+  {
+    "name": "blue2",
+    "path": "tests/images/guaxiang/blue2.png",
+    "expected": [
+      "蓝",
+      "蓝"
+    ],
+    "source_attachment": "codex-clipboard-e11c44d0-f679-4b6d-bb6a-7ba62bb61912.png",
+    "sha256": "5a177afe816bd3d4b36b4309116280412ad34c72b42c1357d3686bb110acc588",
+    "template_source": false
+  },
+  {
+    "name": "empty",
+    "path": "tests/images/guaxiang/empty.png",
+    "expected": [],
+    "source_attachment": "codex-clipboard-8b9bfaf4-8aeb-48b4-b57d-237e3d99e6f1.png",
+    "sha256": "4bb8f3f29a38942ab2cd4960f111b35b4f73949167daca6479826203bb2b0bad",
+    "template_source": false
+  },
+  {
+    "name": "blue1",
+    "path": "assets/images/douling_gua_blue.png",
+    "expected": [
+      "蓝"
+    ],
+    "source_attachment": "codex-clipboard-569c56bf-f586-47f0-bad2-ade71d2c097f.png",
+    "sha256": "2caf6d4735e9ada9ddd84f8d119eeb5f664d20217df138f9d4816b56b400a095",
+    "template_source": true
+  },
+  {
+    "name": "yellow4",
+    "path": "tests/images/guaxiang/yellow4.png",
+    "expected": [
+      "黄",
+      "黄",
+      "黄",
+      "黄"
+    ],
+    "source_attachment": "codex-clipboard-036e4828-dcd6-4585-b511-16b95f8b0d7a.png",
+    "sha256": "25bb988d37f4193ba147fbb54381379d8d6df3b6288b4f7e8f493a80cec2fbe1",
+    "template_source": false
+  },
+  {
+    "name": "yellow1",
+    "path": "assets/images/douling_gua_yellow.png",
+    "expected": [
+      "黄"
+    ],
+    "source_attachment": "codex-clipboard-9d053050-97f3-4235-bfc3-43a623cbeb5b.png",
+    "sha256": "56057bbded6c198e075044b12e9d95ec34f88899c8afb4d74cd482ce79888a99",
+    "template_source": true
+  },
+  {
+    "name": "yellow2",
+    "path": "tests/images/guaxiang/yellow2.png",
+    "expected": [
+      "黄",
+      "黄"
+    ],
+    "source_attachment": "codex-clipboard-3e86ee22-0b9c-4a35-91fc-e4aeeb263cdd.png",
+    "sha256": "010f89dba5ced4f3e2d5e214f8b7eafd14b592c076c4d71256031325096d0116",
+    "template_source": false
+  },
+  {
+    "name": "yellow3",
+    "path": "tests/images/guaxiang/yellow3.png",
+    "expected": [
+      "黄",
+      "黄",
+      "黄"
+    ],
+    "source_attachment": "codex-clipboard-5ac04545-3643-42c1-b49e-39e428df3e50.png",
+    "sha256": "5048cf4b679e9ae170356cf99104f86b5f4938610c6e0379949dc33bb7976f60",
+    "template_source": false
+  }
+]
