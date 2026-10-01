@@ -1435,3 +1435,6 @@ msgstr "队伍已删除。"
 
 msgid "JingRan"
 msgstr "景燃"
+
+msgid "Hsin"
+msgstr "心"
