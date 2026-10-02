@@ -14,6 +14,8 @@ class Ciaccona(BaseChar):
         self.in_liberation = False
         self.cartethyia = None
         self.outrotime = -1
+        # 按过大招键后夏空留场演奏, 直到切下场为止
+        self.recital_on_field = False
 
     def skip_combat_check(self):
         return self.time_elapsed_accounting_for_freeze(self.last_liberation) < 2
@@ -22,6 +24,7 @@ class Ciaccona(BaseChar):
         super().reset_state()
         self.attribute = 0
         self.cartethyia = None
+        self.recital_on_field = False
 
     def do_perform(self):
         self.in_liberation = False
@@ -162,6 +165,22 @@ class Ciaccona(BaseChar):
         if self.is_con_full():
             self.outrotime = time.time()
         return super().switch_next_char(*args, **kwargs)
+
+    def send_liberation_key(self, *args, **kwargs):
+        # click_liberation 可能因动画检测超时返回 False 但大招已放出, 所以按键即标记
+        self.recital_on_field = True
+        super().send_liberation_key(*args, **kwargs)
+
+    def switch_out(self, con_full=False):
+        self.recital_on_field = False
+        super().switch_out(con_full=con_full)
+
+    def on_combat_end(self, chars):
+        # 大招击杀 boss 时战斗在切人前结束, 夏空留场演奏没有锁定 UI, 后续进战锁不上目标, 这里补切一次
+        if self.recital_on_field:
+            self.logger.info('ciaccona: combat ended while still on field after liberation, switch out')
+            self.recital_on_field = False
+            self.switch_other_char()
 
     def in_outro(self):
         return self.time_elapsed_accounting_for_freeze(self.outrotime) < 30

@@ -1519,3 +1519,6 @@ msgstr "多帳號設定執行"
 
 msgid "Log in to accounts in card order and run tasks with independent configurations"
 msgstr "依卡片順序登入帳號，並使用各帳號的獨立設定執行任務"
+
+msgid "Hsin"
+msgstr "心"
