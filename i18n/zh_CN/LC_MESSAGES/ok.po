@@ -654,6 +654,12 @@ msgstr "梦魇巢穴"
 msgid "Auto Farm all Nightmare Nest"
 msgstr "自动刷所有梦魇巢穴"
 
+msgid "Only Farm These Nests"
+msgstr "只刷指定点位"
+
+msgid "Only farm nests whose name contains one of these words, matched against the in-game list. Separate several with commas. Leave empty to farm all."
+msgstr "只刷名字含有这些字的点位，按游戏里列表的文字匹配，多个用逗号隔开。留空则刷全部。"
+
 msgid "Select boss profile (includes Combat Wait Time)"
 msgstr "选择Boss配置 (已包含战斗开始前等待时间)"
 
