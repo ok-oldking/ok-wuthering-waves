@@ -124,41 +124,53 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
         return None
 
     def _detect_current_account_from_login(self):
-        if combo := self._login_combo():
-            return combo_selected_item(combo)
+        if not getattr(self, '_ocr_account_selection', False):
+            if combo := self._login_combo():
+                return combo_selected_item(combo)
         box = self.do_find_account_drop_down()
         return box.name if box else None
 
     def _select_target_account(self, account_key):
         self._target_account_key = account_key
         self.sleep(1)
-        if combo := self._login_combo():
-            matches = [index for index, text in enumerate(combo_items(combo))
-                       if account_key_from_ocr(text) == account_key]
-            if not matches:
-                raise WaitFailedException(f'账号列表中未找到 {display_account(account_key)}')
-            # Consistent with OCR: prefer the lower entry for duplicate labels.
-            if not select_combo_item(combo, matches[-1]):
-                raise WaitFailedException('ComboBox 账号选择未生效，停止登录。')
-            self.sleep(1)
-            if account_key_from_ocr(combo_selected_item(combo)) != account_key:
-                raise WaitFailedException('ComboBox 当前账号与目标不一致，停止登录。')
-            return
-        for attempt in range(5):
-            self.sleep(1)
-            self.click(self.find_account_drop_down(), after_sleep=2)
-            if self.do_find_account_drop_down():
-                continue
-            if not self.wait_until(lambda: self._find_target_account(account_key),
-                                   time_out=10, raise_if_not_found=False):
-                raise WaitFailedException(f'账号列表中未找到 {display_account(account_key)}')
-            self.sleep(1)
-            current = self._detect_current_account_from_login()
-            if account_key_from_ocr(current) == account_key:
-                break
-            self.log_info(f'账号确认不匹配，重试 {attempt + 1}/5')
-        else:
-            raise WaitFailedException(f'无法确认目标账号 {display_account(account_key)}，停止登录。')
+        try:
+            if combo := self._login_combo():
+                matches = [index for index, text in enumerate(combo_items(combo))
+                           if account_key_from_ocr(text) == account_key]
+                if not matches:
+                    raise WaitFailedException(f'账号列表中未找到 {display_account(account_key)}')
+                # Consistent with OCR: prefer the lower entry for duplicate labels.
+                if not select_combo_item(combo, matches[-1]):
+                    raise WaitFailedException('ComboBox 账号选择未生效。')
+                self.sleep(1)
+                if account_key_from_ocr(combo_selected_item(combo)) != account_key:
+                    raise WaitFailedException('ComboBox 当前账号与目标不一致。')
+                return
+        except TaskDisabledException:
+            raise
+        except Exception as error:
+            self.log_warning(f'ComboBox 切号失败，回退 OCR：{type(error).__name__}')
+        previous_ocr_mode = getattr(self, '_ocr_account_selection', False)
+        try:
+            self._ocr_account_selection = True
+            for attempt in range(5):
+                self.sleep(1)
+                self.click(self.find_account_drop_down(), after_sleep=2)
+                if self.do_find_account_drop_down():
+                    continue
+                if not self.wait_until(lambda: self._find_target_account(account_key),
+                                       time_out=10, raise_if_not_found=False):
+                    raise WaitFailedException(f'账号列表中未找到 {display_account(account_key)}')
+                self.sleep(1)
+                current = self._detect_current_account_from_login()
+                if account_key_from_ocr(current) == account_key:
+                    break
+                self.log_info(f'账号确认不匹配，重试 {attempt + 1}/5')
+            else:
+                raise WaitFailedException(f'无法确认目标账号 {display_account(account_key)}，停止登录。')
+        finally:
+            self._ocr_account_selection = previous_ocr_mode
+
 
     def _login_target_account(self, account_key):
         mouse_reset = self.executor.get_task_by_class(MouseResetTask)

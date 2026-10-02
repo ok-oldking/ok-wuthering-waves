@@ -164,7 +164,7 @@ class TestMultiAccountConfig(unittest.TestCase):
                 runner.ocr.assert_not_called()
                 runner.click.assert_not_called()
 
-    def test_combo_failure_never_logs_in_or_falls_back_and_restores_mouse(self):
+    def test_combo_and_ocr_failure_never_logs_in_and_restores_mouse(self):
         module = 'src.task.MultiAccountConfigTask.'
         for items, selected, current in [(['Other'], True, 'Other'),
                                          (['Ab**12@outlook.com'], False, 'Ab**12@outlook.com'),
@@ -173,7 +173,8 @@ class TestMultiAccountConfig(unittest.TestCase):
                 mouse = SimpleNamespace(enabled=True, disable=Mock(), enable=Mock())
                 runner = SimpleNamespace(executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
                                          _login_combo=lambda: 42, sleep=Mock(), ocr=Mock(), click=Mock(),
-                                         find_account_drop_down=Mock(), ensure_main=Mock())
+                                         find_account_drop_down=Mock(side_effect=WaitFailedException()),
+                                         log_warning=Mock(), ensure_main=Mock())
                 with patch(module + 'combo_items', return_value=items), \
                         patch(module + 'select_combo_item', return_value=selected), \
                         patch(module + 'combo_selected_item', return_value=current), \
@@ -181,9 +182,31 @@ class TestMultiAccountConfig(unittest.TestCase):
                     MultiAccountConfigTask._login_target_account(runner, 'Ab12@outlook.com')
                 runner.ocr.assert_not_called()
                 runner.click.assert_not_called()
-                runner.find_account_drop_down.assert_not_called()
+                runner.find_account_drop_down.assert_called_once()
                 runner.ensure_main.assert_not_called()
                 mouse.enable.assert_called_once()
+
+    def test_combo_error_falls_back_to_ocr_and_confirms_without_combo(self):
+        for error in (OSError('invalid window'), WaitFailedException()):
+            runner = SimpleNamespace(
+                _login_combo=Mock(side_effect=error), sleep=Mock(), log_warning=Mock(),
+                click=Mock(), find_account_drop_down=Mock(return_value='dropdown'),
+                do_find_account_drop_down=Mock(side_effect=[None, SimpleNamespace(name='Ab**12@outlook.com')]),
+                _find_target_account=Mock(return_value=True),
+                wait_until=lambda callback, **kwargs: callback(),
+            )
+            runner._detect_current_account_from_login = lambda: MultiAccountConfigTask._detect_current_account_from_login(runner)
+            MultiAccountConfigTask._select_target_account(runner, 'Ab12@outlook.com')
+            runner._login_combo.assert_called_once()
+            runner._find_target_account.assert_called_once_with('Ab12@outlook.com')
+            self.assertFalse(runner._ocr_account_selection)
+
+    def test_combo_cancellation_does_not_start_ocr_fallback(self):
+        runner = SimpleNamespace(sleep=Mock(), _login_combo=Mock(side_effect=TaskDisabledException()),
+                                 find_account_drop_down=Mock())
+        with self.assertRaises(TaskDisabledException):
+            MultiAccountConfigTask._select_target_account(runner, '1231234')
+        runner.find_account_drop_down.assert_not_called()
 
     def test_ocr_matches_email_and_name_after_removing_every_star(self):
         for text, target in [('Ab*1**2@outlook.com', 'Ab12@outlook.com'), ('Some Name', 'Some Name')]:
