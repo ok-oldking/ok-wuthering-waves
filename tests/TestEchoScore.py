@@ -44,12 +44,26 @@ class TestEchoScore(unittest.TestCase):
     def test_all_xwuid_character_and_modal_templates_are_available(self):
         names = template_names()
 
-        self.assertEqual(66, len(names))
-        self.assertEqual(66, len(set(names)))
+        self.assertEqual(68, len(names))
+        self.assertEqual(68, len(set(names)))
         self.assertIn("洛瑟菈-霜渐", names)
         self.assertIn("洛瑟菈-霜渐-羽落", names)
         self.assertIn("洛瑟菈-声骸", names)
         self.assertIn("洛瑟菈-声骸-羽落", names)
+        self.assertIn("心-通用", names)
+        self.assertIn("锁暝-通用", names)
+
+    def test_new_character_weights_and_auto_match(self):
+        from src.xwuid_echo_data import TEMPLATES
+
+        self.assertEqual(0.74, TEMPLATES["1311"]["default"]["skill_weight"][2])
+        self.assertEqual(0.7, TEMPLATES["1312"]["default"]["skill_weight"][0])
+        self.assertEqual(1.2, TEMPLATES["1312"]["default"]["sub_props"]["攻击%"])
+        self.assertIn("心-通用", matching_template_names("心-通用"))
+        self.assertEqual(["锁暝-通用"], matching_template_names("锁暝"))
+        self.assertEqual("心-通用", auto_match_template([SimpleNamespace(name="心装配中")]))
+        self.assertEqual("锁暝-通用", auto_match_template([SimpleNamespace(name="锁暝装配中")]))
+        self.assertEqual("鉴心-通用", auto_match_template([SimpleNamespace(name="鉴心装配中")]))
 
     def test_readme_reference_echo_scores_49_96(self):
         main_rows = [row("暴击", 22), row("攻击", 150)]

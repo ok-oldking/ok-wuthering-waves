@@ -24,7 +24,7 @@ def _copy_text(source, target, replacements=()):
     text = Path(source).read_text(encoding="utf-8")
     for old, new in replacements:
         text = text.replace(old, new)
-    Path(target).write_text(text, encoding="utf-8")
+    Path(target).write_bytes(text.encode("utf-8"))
 
 
 def _stage_package(stage):
@@ -64,11 +64,11 @@ def build_import_folder(output_folder=None, version="0.2.0"):
     with tempfile.TemporaryDirectory(prefix="echo-score-import-") as temp:
         stage = Path(temp)
         _stage_package(stage)
-        (stage / "manifest.json").write_text(json.dumps({
+        (stage / "manifest.json").write_bytes(json.dumps({
             "file_name": "echo-score",
             "script_name": "声骸评分",
             "version": version,
-        }, ensure_ascii=False, indent=2), encoding="utf-8")
+        }, ensure_ascii=False, indent=2).encode("utf-8") + b"\n")
         for name in IMPORT_FILES:
             shutil.copy2(stage / name, output / name)
     return output

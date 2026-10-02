@@ -1,20 +1,11 @@
 # 声骸评分 OK Script
 
-这是可导入官方 OKWW/OK Script 安装版的声骸评分适配包。
-
-构建：
-
-```powershell
-.\.venv\Scripts\python.exe scripts\build_echo_score_okscript.py
-```
-
-产物位于 `dist/echo-score.okscript`。在官方 OKWW 的“脚本”页导入该文件，
-然后在“声骸评分设置”任务卡中启用评分即可。
-
-如果要直接复制文件，使用 `dist/echo-score/` 文件夹，将整个文件夹复制到：
+这是供官方 OKWW/OK Script 安装版加载的声骸评分目录。将整个 `echo-score` 文件夹复制到：
 
 `D:\ok-ww\data\apps\ok-ww\working\ok_import\echo-score`
 
-重启 OKWW 后即可加载。
+重启 OKWW 后，在“截图方式”页面选择鸣潮窗口并开始捕获，再到“声骸评分”页面打开右上角总开关。
+
+目前经过测试，可识别游戏的简体中文和繁体中文界面中的单个声骸主副词条及数值。其他游戏语言尚未测试。
 
 本包不覆盖宿主程序源码，只注册一个设置任务和一个隐藏后台识别任务。

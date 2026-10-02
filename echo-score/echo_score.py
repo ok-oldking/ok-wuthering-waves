@@ -119,7 +119,7 @@ DEFAULT_TEMPLATE = TEMPLATES["default"]["default"]["name"]
 
 
 def template_names():
-    """Return all 66 character/modal templates as unique display labels."""
+    """Return character/modal templates as unique display labels."""
     return list(TEMPLATE_OPTIONS)
 
 
@@ -146,12 +146,14 @@ def auto_match_template(ocr_boxes):
     # match skill descriptions such as “角色为敌人……”, overwriting the real
     # equipped character shown at the bottom-right.
     matched = None
+    longest_character = 0
     for name in template_names():
         character = name.split("-", 1)[0].split("－", 1)[0].strip()
         if name == DEFAULT_TEMPLATE or character == "角色":
             continue
-        if character and f"{character}装配中" in compact_text:
+        if character and f"{character}装配中" in compact_text and len(character) >= longest_character:
             matched = name
+            longest_character = len(character)
     return matched
 
 
