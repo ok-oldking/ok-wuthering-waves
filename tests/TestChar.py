@@ -1,4 +1,7 @@
 import time
+from copy import deepcopy
+from pathlib import Path
+from tempfile import TemporaryDirectory
 import unittest
 from config import config
 from ok.test.TaskTestCase import TaskTestCase
@@ -44,6 +47,25 @@ class ForcedChar(BaseChar):
 class TestChar(TaskTestCase):
     task_class = AutoCombatTask
     config = config
+
+    @classmethod
+    def setUpClass(cls):
+        # Screenshot fixtures have their own hotkeys. Never persist those into
+        # the developer's live Game Hotkey.json (or device/task settings).
+        from ok.util.config import Config
+        original_folder = Config.config_folder
+        temp = TemporaryDirectory(prefix='okww-char-tests-')
+        cls.addClassCleanup(temp.cleanup)
+        cls.addClassCleanup(setattr, Config, 'config_folder', original_folder)
+        cls.config = deepcopy(config)
+        cls.config['config_folder'] = str(Path(temp.name) / 'configs')
+        cls.config['screenshots_folder'] = str(Path(temp.name) / 'screenshots')
+        Config.config_folder = cls.config['config_folder']
+        super().setUpClass()
+
+    def test_character_fixtures_use_isolated_config(self):
+        self.assertTrue(Path(self.task.key_config.config_file).resolve().is_relative_to(
+            Path(self.config['config_folder']).resolve()))
 
     def test_healer_disables_f_check_on_switch_by_default(self):
         self.assertFalse(BaseChar(None, 0, char_type=CharType.HEALER).check_f_on_switch)
@@ -235,119 +257,15 @@ class TestChar(TaskTestCase):
         sub_dps.last_buff_time = time.time() - sub_dps.buff_time
         self.assertFalse(current.has_all_buff())
 
-    def test_yangyang_sp_releases_and_settles_long_press_before_switching(self):
-        actions = []
+    # Yangyang visual rotation/input regressions live in TestYangYangSpRotation.
 
-        class Task:
-            skip_combat_check = False
-
-            def mouse_down(self):
-                actions.append('mouse_down')
-
-            def mouse_up(self):
-                actions.append('mouse_up')
-
-            def sleep(self, duration):
-                actions.append(('sleep', duration))
-
-        class TrackingYangYangSp(YangYangSp):
-            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
-                return self.PERFORM_DURATION
-
-            def switch_next_char(self, *args, **kwargs):
-                actions.append('switch')
-
-        yangyang = TrackingYangYangSp(Task(), 0)
-        yangyang.do_perform()
-
-        self.assertEqual(actions, [
-            'mouse_down',
-            'mouse_up',
-            ('sleep', YangYangSp.LONG_PRESS_RELEASE_DELAY),
-            'switch',
-        ])
-
-    def test_yangyang_sp_uses_echo_once_and_sleeps_between_polls(self):
-        actions = []
-
-        class Task:
-            skip_combat_check = False
-            poll_count = 0
-
-            def mouse_down(self):
-                actions.append('mouse_down')
-
-            def mouse_up(self):
-                actions.append('mouse_up')
-
-            def sleep(self, duration):
-                actions.append(('sleep', duration))
-                if duration == 0.05:
-                    self.poll_count += 1
-
-        class TrackingYangYangSp(YangYangSp):
-            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
-                return 0 if self.task.poll_count < 3 else self.PERFORM_DURATION
-
-            def click_echo(self, **kwargs):
-                actions.append(('echo', kwargs))
-                return True
-
-            def liberation_available(self):
-                return False
-
-            def resonance_available(self):
-                return False
-
-            def switch_next_char(self, *args, **kwargs):
-                actions.append('switch')
-
-        yangyang = TrackingYangYangSp(Task(), 0)
-        yangyang.do_perform()
-
-        self.assertEqual(actions.count(('echo', {'time_out': 0})), 1)
-        self.assertEqual(actions.count(('sleep', 0.05)), 3)
-
-    def test_yangyang_sp_releases_mouse_when_poll_sleep_raises(self):
-        actions = []
-
-        class Task:
-            skip_combat_check = False
-
-            def mouse_down(self):
-                actions.append('mouse_down')
-
-            def mouse_up(self):
-                actions.append('mouse_up')
-
-            def sleep(self, duration):
-                actions.append(('sleep', duration))
-                if not self.skip_combat_check:
-                    raise RuntimeError('combat check failed')
-
-        class TrackingYangYangSp(YangYangSp):
-            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
-                return 0
-
-            def click_echo(self, **kwargs):
-                return False
-
-            def liberation_available(self):
-                return False
-
-            def resonance_available(self):
-                return False
-
-        yangyang = TrackingYangYangSp(Task(), 0)
-        with self.assertRaisesRegex(RuntimeError, 'combat check failed'):
-            yangyang.do_perform()
-
-        self.assertEqual(actions, [
-            'mouse_down',
-            ('sleep', 0.05),
-            'mouse_up',
-            ('sleep', YangYangSp.LONG_PRESS_RELEASE_DELAY),
-        ])
+    def test_yangyang_visual_detector_uses_task_matching(self):
+        from tests.TestYangYangSpVision import fixture, TestYangYangSpVision
+        yangyang = YangYangSp(self.task, 0)
+        for index, expected in enumerate(TestYangYangSpVision.EXPECTED):
+            with self.subTest(index=index):
+                state = yangyang.vision.observe(fixture(index), self.task.find_one)
+                self.assertEqual(state.signature, expected, state.scores)
 
     def test_suisui_switch_priority_with_main_dps(self):
         class Task:

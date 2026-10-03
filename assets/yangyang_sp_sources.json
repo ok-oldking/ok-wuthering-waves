@@ -1,0 +1,90 @@
+[
+  {
+    "label": "yangyang_sp_attack_sword",
+    "source": "\u5207\u6362\u7fbd\u5251\u666e\u901aE.png",
+    "bbox": [
+      2800,
+      1872,
+      130,
+      130
+    ],
+    "sha256": "9d55b1cca9e9f1bb6feb71f3f3bea3d529bc1d31632c8be95eb3fc608daa0f4a"
+  },
+  {
+    "label": "yangyang_sp_attack_feather",
+    "source": "\u5207\u6362\u521a\u5251E.png",
+    "bbox": [
+      2800,
+      1872,
+      130,
+      130
+    ],
+    "sha256": "b2beab736d5588d5f492204903bc0fbbd2bcf1aa8d18da0d268098c477cd9226"
+  },
+  {
+    "label": "yangyang_sp_e_crescent",
+    "source": "\u94a2\u5251\u5f3a\u5316E.png",
+    "bbox": [
+      3180,
+      1872,
+      130,
+      130
+    ],
+    "sha256": "554342003d9980fb5c5932a31083ce634bdf16cbddb59cc26d9a80b27c7946f5"
+  },
+  {
+    "label": "yangyang_sp_e_feather",
+    "source": "\u7fbd\u5251\u5f3a\u5316E.png",
+    "bbox": [
+      3180,
+      1872,
+      130,
+      130
+    ],
+    "sha256": "83ad740e708fea97a2952eac62c964b777443b9a44b2252e121f95081195abfa"
+  },
+  {
+    "label": "yangyang_sp_heavy_azure",
+    "source": "\u94a2\u5251\u91cd\u51fb\uff08\u4e5f\u5c31\u662f\u6211\u8bf4\u7684\u53cc\u5706\u5708\uff09.png",
+    "bbox": [
+      2800,
+      1872,
+      130,
+      130
+    ],
+    "sha256": "d57cf109190e6b4e0bb9e0faaf05590e3651e4a6d7dc6801f205d1e58cc7a6d8"
+  },
+  {
+    "label": "yangyang_sp_heavy_air",
+    "source": "\u7fbd\u5251\u91cd\u51fb2\uff08\u5b9e\u9645\u4e0a\u5c31\u662f\u957f\u6309\uff09.png",
+    "bbox": [
+      2800,
+      1872,
+      130,
+      130
+    ],
+    "sha256": "92c826d9d0fa35855b2fc6c31be69045e4462a78d27ca4a6ac0d0a0e94b566d3"
+  },
+  {
+    "label": "yangyang_sp_heavy_followup",
+    "source": "\u7fbd\u5251\u91cd\u51fb3\uff08\u7ee7\u7eed\u957f\u6309\uff09.png",
+    "bbox": [
+      2800,
+      1872,
+      130,
+      130
+    ],
+    "sha256": "37eff551a7cc6609ae3a124b011d5743b7990927be82949b9a2345b394f8402c"
+  },
+  {
+    "label": "yangyang_sp_liberation",
+    "source": "\u5927\u62db\u4eae.png",
+    "bbox": [
+      3562,
+      1872,
+      130,
+      130
+    ],
+    "sha256": "e8215eb363fcc2d8bf27def67e9c2f35c1561b3362caacce7b21fc41792a63ea"
+  }
+]
