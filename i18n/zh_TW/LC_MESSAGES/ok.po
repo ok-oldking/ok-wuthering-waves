@@ -1516,3 +1516,9 @@ msgstr "景燃"
 
 msgid "Hsin"
 msgstr "心"
+
+msgid "Special Nightmare"
+msgstr "特異夢魘"
+
+msgid "Which Special Nightmare to Teleport"
+msgstr "傳送到第幾個特異夢魘"
