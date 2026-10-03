@@ -13,7 +13,9 @@ def make_task(config, is_team):
     for name in ('ensure_main', 'info_set', 'openF2Book', 'open_boss_book', 'click', 'click_configured_boss_level',
                  'click_team_challenge', 'wait_click_travel', 'wait_in_team_and_world', 'sleep'):
         setattr(task, name, Mock())
-    task.click_on_book_target = Mock(return_value=is_team)
+    task.book_targets = []
+    task.click_on_book_target = lambda serial, total, structure=None: task.book_targets.append(
+        (serial, total, structure)) or is_team
     return task
 
 
@@ -26,7 +28,7 @@ class TestFarmEchoTeleport(unittest.TestCase):
         self.assertTrue(task.teleport_to_configured_boss())
 
         task.open_boss_book.assert_called_once_with('mengyan')
-        task.click_on_book_target.assert_called_once_with(8, 15, [5, 10])
+        self.assertEqual([(8, 15, [5, 10])], task.book_targets)
         task.click_team_challenge.assert_called_once_with()
         task.click_configured_boss_level.assert_not_called()
 
@@ -37,7 +39,7 @@ class TestFarmEchoTeleport(unittest.TestCase):
         self.assertFalse(task.teleport_to_configured_boss())
 
         task.open_boss_book.assert_called_once_with('qiangdi')
-        task.click_on_book_target.assert_called_once_with(3, 20, None)
+        self.assertEqual([(3, 20, None)], task.book_targets)
         task.wait_click_travel.assert_called_once_with()
 
 
