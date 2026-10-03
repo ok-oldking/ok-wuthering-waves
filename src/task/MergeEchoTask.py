@@ -33,7 +33,8 @@ class MergeEchoTask(BaseWWTask):
             return
         self.sleep(3)
 
-        if self.click_dialog_left_button():
+        if self.has_discard_merge_dialog():
+            self.click_dialog_left_button()
             self.sleep(2)
             self.click_relative(0.034, 0.293, after_sleep=1)
             self.click_relative(0.580, 0.911, after_sleep=4)
@@ -47,6 +48,12 @@ class MergeEchoTask(BaseWWTask):
             return
 
         self.merge_echoes()
+
+    def has_discard_merge_dialog(self):
+        return bool(self.find_one([
+            Labels.cancel_button_hcenter_vcenter,
+            Labels.cancel_button_highlight_hcenter_vcenter,
+        ]))
 
     def merge_echoes(self):
         self.open_merge_page()

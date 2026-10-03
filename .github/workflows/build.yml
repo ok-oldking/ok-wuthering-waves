@@ -65,6 +65,7 @@ jobs:
         run: python -m ok.update.inline_ok_requirements --tag "$env:RELEASE_TAG"
 
       - name: Run tests
+        timeout-minutes: 20
         env:
           GITHUB_TOKEN: ''
           GH_TOKEN: ''
@@ -94,7 +95,7 @@ jobs:
 
           Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
             Write-Host "Running tests in $($_.FullName)"
-            python -m unittest $_.FullName
+            python -u run_test.py $_.FullName
 
             if ($LASTEXITCODE -ne 0) {
               throw "Tests failed in $($_.FullName)"

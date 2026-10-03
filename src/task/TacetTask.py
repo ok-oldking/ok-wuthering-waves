@@ -1,4 +1,3 @@
-
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException
 from src.task.WWOneTimeTask import WWOneTimeTask
@@ -16,7 +15,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         default_config = {
             'Which Tacet Suppression to Farm': 1,  # starts with 1
         }
-        self.structure = [2, 5, 5, 7]
+        self.structure = [4, 5, 5, 7]
         self.total_number = sum(self.structure)
         self.target_enemy_time_out = 10
         default_config.update(self.default_config)
@@ -32,9 +31,11 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             4: [],
             5: [],
             6: [],
-            7: [["a", 0.3]],
-            8: [["d", 0.6]],
-            9: [["a", 1.5], ["w", 3], ["a", 2.5]],
+            7: [],
+            8: [],
+            9: [["a", 0.3]],
+            10: [["d", 0.6]],
+            11: [["a", 1.5], ["w", 3], ["a", 2.5]],
         }
         self.stamina_once = 60
 
@@ -44,7 +45,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.wait_in_team_and_world(esc=True)
         self.farm_tacet()
 
-    def farm_tacet(self, daily=False, used_stamina=0, config=None):
+    def farm_tacet(self, daily=False, used_stamina=0, config=None, max_recovery_retries=3):
         if config is None:
             config = self.config
         if daily:
@@ -52,6 +53,8 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         else:
             must_use = 0
         self.info_incr('used stamina', 0)
+        recovery_retries = 0
+        self.realm_entry_at_heal_point = False
         while True:
             self.sleep(1)
             self.openF2Book("gray_book_boss")
@@ -68,7 +71,17 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             self.click_team_challenge()
             while True:
                 self.wait_in_team_and_world(time_out=120)
-                self.combat_once(target=True)
+                try:
+                    self.combat_once(target=True)
+                except CharRevivedException:
+                    recovery_retries += 1
+                    if recovery_retries >= max_recovery_retries:
+                        self.log_info(f'farm_tacet: exceeded recovery retries ({max_recovery_retries}), stop farming',
+                                      notify=True)
+                        return None
+                    self.log_info('farm_tacet: death recovered, re-enter from F2 book')
+                    self.realm_entry_at_heal_point = True  # 恢复后站在信标上, 从 F2 直接进本
+                    break
                 self.walk_to_treasure()
                 self.pick_f(handle_claim=False)
                 self.sleep(2)

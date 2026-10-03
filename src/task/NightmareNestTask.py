@@ -18,6 +18,7 @@ class NestTarget:
 
 
 class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
+    max_nest_deaths = 3
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -32,6 +33,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self._capture_success = False
         self._capture_mode = False
         self._unreachable_nests = set()
+        self._nest_deaths = {}
         self._nest_tab_of_current_nest = 'go_nest'
         self.default_config.update({'Which to Farm': ['Nightmare Purification', 'Tacet Discord Nest']})
         self.config_type['Which to Farm'] = {'type': "multi_selection",
@@ -41,6 +43,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self._capture_mode = False
         self._capture_success = False
         self._unreachable_nests.clear()
+        self._nest_deaths.clear()
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=30)
         self._init_queue()
@@ -53,6 +56,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self._capture_mode = True
         self._capture_success = False
         self._unreachable_nests.clear()
+        self._nest_deaths.clear()
         WWOneTimeTask.run(self)
         self.ensure_main(time_out=30)
         self._init_queue()
@@ -101,6 +105,14 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
                 need_find = self.combat_once(wait_combat_time=wait_combat_time, target=True,
                                              raise_if_not_found=False)
             except CharRevivedException:
+                if isinstance(nest, NestTarget):
+                    deaths = self._nest_deaths.get(nest.cache_key, 0) + 1
+                    self._nest_deaths[nest.cache_key] = deaths
+                    if deaths >= self.max_nest_deaths:
+                        self._unreachable_nests.add(nest.cache_key)
+                        self.log_info(f'nightmare nest: died {deaths} times, skip this run: {nest.cache_key}',
+                                      notify=True)
+                        return
                 self.log_info('nightmare nest: death recovered, re-enter from F2 book')
                 return
             captured_early = False
@@ -191,6 +203,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         actions = []
         if 'Tacet Discord Nest' in quests:
             actions.append(self.go_nest)
+            actions.append(self.go_nest_scroll)
         if 'Nightmare Purification' in quests:
             actions.append(self.go_nightmare)
             actions.append(self.go_nightmare_scroll)
@@ -208,8 +221,12 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def go_nest(self):
         self.open_boss_book('canxiang')
 
+    def go_nest_scroll(self):
+        self.open_boss_book('canxiang')
+        self.click(0.9730, 0.8806, after_sleep=1)
+
     def find_nest(self):
-        counts = self.ocr(0.35, 0.13, 1, 0.96, match=self.count_re)
+        counts = self.ocr(0.35, 0.25, 1, 0.96, match=self.count_re)
         for count_box in counts:
             for match in re.finditer(self.count_re, count_box.name):
                 numerator = match.group(1)

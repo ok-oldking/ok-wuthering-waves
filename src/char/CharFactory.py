@@ -20,6 +20,7 @@ from src.char.Encore import Encore
 from src.char.Galbrena import Galbrena
 from src.char.Rover import Rover
 from src.char.Hiyuki import Hiyuki
+from src.char.Hsin import Hsin
 from src.char.Iuno import Iuno
 from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
@@ -133,6 +134,7 @@ _char_dict_raw = {
     Labels.char_rebecca: {'cls': Rebecca, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ELECTRIC},
     Labels.char_qingxiao: {'cls': Qingxiao, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.WIND},
     Labels.char_jingran: {'cls': JingRan, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.FIRE},
+    Labels.char_hsin: {'cls': Hsin, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.ELECTRIC},
 }
 
 char_dict = {}
