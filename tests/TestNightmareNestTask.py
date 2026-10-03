@@ -20,7 +20,7 @@ class TestNightmareNestTask(unittest.TestCase):
         task = NightmareNestTask.__new__(NightmareNestTask)
         task.config = {'Which to Farm': ['Nightmare Purification', 'Tacet Discord Nest']}
         task._init_queue()
-        self.assertEqual(['go_nest', 'go_nightmare', 'go_nightmare_scroll'],
+        self.assertEqual(['go_nest', 'go_nest_scroll', 'go_nightmare', 'go_nightmare_scroll'],
                          [action.__name__ for action in task.queues])
 
     def test_capture_success_clears_combat_before_post_combat_waits(self):
