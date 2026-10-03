@@ -191,6 +191,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         actions = []
         if 'Tacet Discord Nest' in quests:
             actions.append(self.go_nest)
+            actions.append(self.go_nest_scroll)
         if 'Nightmare Purification' in quests:
             actions.append(self.go_nightmare)
             actions.append(self.go_nightmare_scroll)
@@ -208,8 +209,12 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def go_nest(self):
         self.open_boss_book('canxiang')
 
+    def go_nest_scroll(self):
+        self.open_boss_book('canxiang')
+        self.click(0.9730, 0.8806, after_sleep=1)
+
     def find_nest(self):
-        counts = self.ocr(0.35, 0.13, 1, 0.96, match=self.count_re)
+        counts = self.ocr(0.35, 0.25, 1, 0.96, match=self.count_re)
         for count_box in counts:
             for match in re.finditer(self.count_re, count_box.name):
                 numerator = match.group(1)
