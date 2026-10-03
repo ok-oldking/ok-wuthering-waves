@@ -30,6 +30,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Switch to Healer before and after Combat': True,
             'Which Weekly Boss to Teleport': 1,
             'Which Boss Challenge to Teleport': 1,
+            'Which Special Nightmare to Teleport': 1,
         })
         self.config_description.update({
             'Boss': 'Select boss profile (includes Combat Wait Time)',
@@ -39,16 +40,19 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Use Liberation': 'Do not use Liberation to Save Time',
             'Switch to Healer before and after Combat': 'Better Chance to Keep Character Alive',
             'Which Weekly Boss to Teleport': 'From Top to Bottom, Starting with 1',
-            'Which Boss Challenge to Teleport': 'From Top to Bottom, Starting with 1'
+            'Which Boss Challenge to Teleport': 'From Top to Bottom, Starting with 1',
+            'Which Special Nightmare to Teleport': 'From Top to Bottom, Starting with 1',
         })
         self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
         self.config_type['Teleport to Boss'] = {'type': "drop_down",
                                                 'options': ['No', 'Weekly Challenge',
-                                                            'Boss Challenge'],
+                                                            'Boss Challenge', 'Special Nightmare'],
                                                 'sub_configs': {
                                                     'Weekly Challenge': ['Which Weekly Boss to Teleport', 'Boss Level'],
                                                     'Boss Challenge': ['Which Boss Challenge to Teleport',
                                                                        'Boss Level'],
+                                                    'Special Nightmare': ['Which Special Nightmare to Teleport',
+                                                                          'Boss Level'],
                                                 }}
         self.config_type['Boss Level'] = {'type': "drop_down", 'options': ['50', '60', '70', '80', '90'], }
         self.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': self.find_echo_method}
@@ -58,6 +62,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.combat_end_condition = self.find_echos
         self.total_weekly_number = 9
         self.total_boss_number = 20
+        # F2 Nightmare Purification list: nightmare nests, then special nightmares
+        self.nightmare_structure = [5, 10]
         self.add_exit_after_config()
         self._has_treasure = False
         self._in_realm = False
@@ -242,6 +248,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
     def teleport_to_configured_boss(self):
         teleport_to_boss = self.config.get('Teleport to Boss', 'No')
         self.ensure_main(time_out=180)
+        structure = None
         if teleport_to_boss == 'Weekly Challenge':
             feature = 'zhange'
             serial_number = self.config.get('Which Weekly Boss to Teleport', 1)
@@ -250,13 +257,20 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             feature = 'qiangdi'
             serial_number = self.config.get('Which Boss Challenge to Teleport', 1)
             total_number = self.total_boss_number
+        elif teleport_to_boss == 'Special Nightmare':
+            feature = 'mengyan'
+            serial_number = self.config.get('Which Special Nightmare to Teleport', 1)
+            structure = self.nightmare_structure
+            total_number = sum(structure)
         else:
             raise RuntimeError(f'Unknown Teleport to Boss config: {teleport_to_boss}')
 
         self.info_set('Teleport to Boss', f'{teleport_to_boss} {serial_number - 1}')
         self.openF2Book('gray_book_boss')
         self.open_boss_book(feature)
-        is_team = self.click_on_book_target(serial_number, total_number)
+        # special nightmares are listed after the nightmare nests
+        book_serial = serial_number + sum(structure[:-1]) if structure else serial_number
+        is_team = self.click_on_book_target(book_serial, total_number, structure)
         if is_team:
             if teleport_to_boss == 'Weekly Challenge':
                 self.click_configured_boss_level()
