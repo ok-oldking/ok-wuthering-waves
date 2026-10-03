@@ -1,6 +1,7 @@
 import unittest
 import re
 
+from src.task.BaseCombatTask import CharRevivedException
 from src.task.NightmareNestTask import NestTarget, NightmareNestTask
 
 
@@ -105,6 +106,33 @@ class TestNightmareNestTask(unittest.TestCase):
         self.assertEqual([(travel, {'after_sleep': 1})], clicks)
         self.assertEqual([], world_waits)
         self.assertEqual([{'after_sleep': 1}], backs)
+
+    def test_nest_is_skipped_after_max_deaths(self):
+        task = NightmareNestTask.__new__(NightmareNestTask)
+        task._capture_mode = False
+        task._capture_success = False
+        task._unreachable_nests = set()
+        task._nest_deaths = {}
+        logs = []
+
+        def combat_once(**kwargs):
+            raise CharRevivedException('char dead')
+
+        task.click = lambda *args, **kwargs: None
+        task.wait_feature = lambda *args, **kwargs: FakeBox('team_close')
+        task.click_team_challenge = lambda: None
+        task.wait_in_team_and_world = lambda *args, **kwargs: True
+        task.combat_once = combat_once
+        task.log_info = lambda message, **kwargs: logs.append(message)
+        nest = NestTarget(object(), 'go_nest:36:10')
+
+        for _ in range(NightmareNestTask.max_nest_deaths - 1):
+            task.combat_nest(nest)
+            self.assertNotIn(nest.cache_key, task._unreachable_nests)
+        task.combat_nest(nest)
+
+        self.assertIn(nest.cache_key, task._unreachable_nests)
+        self.assertIn('nightmare nest: died 3 times, skip this run: go_nest:36:10', logs)
 
     def test_travel_waits_up_to_120_seconds_for_loading(self):
         task = NightmareNestTask.__new__(NightmareNestTask)

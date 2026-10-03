@@ -34,6 +34,9 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         if not self.wait_in_team_and_world(time_out=max(self.teleport_timeout, 120), raise_if_not_found=False):
             return False
         self.sleep(0.5)
+        if self.realm_entry_at_heal_point:
+            logger.info('revive_action: left realm at heal point, skip teleport')
+            return True
         self.revive_at_tower_and_heal()
         return True
 
@@ -53,6 +56,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
     def farm_domain_with_recovery_loop(self, must_use, teleport_into_domain_once, max_recovery_retries=3):
         """包装副本刷取循环：死亡恢复后自动从 F2 重新进入，并限制重试次数。"""
         recovery_retries = 0
+        self.realm_entry_at_heal_point = False
         while True:
             current, _, total = self.open_F2_book_and_get_stamina()
             if total < self.stamina_once or total < must_use or (must_use == 0 and current < self.stamina_once):
@@ -71,6 +75,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
                 self.make_sure_in_world()
                 return
             self.log_info('farm_domain: death recovered, re-enter from F2 book')
+            self.realm_entry_at_heal_point = True  # 恢复后站在信标上, 从 F2 直接进本
             self.sleep(1)
 
     def farm_in_domain(self, must_use=0):
