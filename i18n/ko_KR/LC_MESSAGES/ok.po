@@ -1387,3 +1387,9 @@ msgstr "팀을 삭제했습니다."
 
 msgid "JingRan"
 msgstr "경연"
+
+msgid "Multi Account Config Task"
+msgstr "다중 계정 설정 작업"
+
+msgid "Log in to accounts in card order and run tasks with independent configurations"
+msgstr "카드 순서대로 계정에 로그인하고 계정별 설정으로 작업을 실행합니다"

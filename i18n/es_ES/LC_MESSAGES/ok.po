@@ -1313,3 +1313,9 @@ msgstr "Equipo eliminado."
 
 msgid "JingRan"
 msgstr "Jingran"
+
+msgid "Multi Account Config Task"
+msgstr "Tarea de configuración multicuenta"
+
+msgid "Log in to accounts in card order and run tasks with independent configurations"
+msgstr "Inicia sesión en el orden de las tarjetas y ejecuta tareas con configuraciones independientes"

@@ -1386,3 +1386,9 @@ msgstr "チームを削除しました。"
 
 msgid "JingRan"
 msgstr "景燃"
+
+msgid "Multi Account Config Task"
+msgstr "複数アカウント設定タスク"
+
+msgid "Log in to accounts in card order and run tasks with independent configurations"
+msgstr "カードの順番でアカウントにログインし、個別の設定でタスクを実行します"
