@@ -18,12 +18,15 @@ runpy.run_module('unittest', run_name='__main__')
 """
 
 
-def run_test(path, timeout):
+def run_test(path, timeout, runner=None):
     print(f'Running tests in {path}', flush=True)
     # Keep the watchdog active during interpreter shutdown, after unittest OK.
-    with subprocess.Popen([
+    command = [
         sys.executable, '-u', '-c', CHILD_CODE, str(timeout * 0.75), str(path),
-    ]) as process:
+    ]
+    if runner is not None:
+        command = [sys.executable, '-u', str(runner), str(path)]
+    with subprocess.Popen(command) as process:
         try:
             return_code = process.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
@@ -41,6 +44,8 @@ def run_test(path, timeout):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--timeout', type=float, default=120)
+    parser.add_argument('--runner', type=Path,
+                        help='Run each test through this Python entry point')
     parser.add_argument('paths', nargs='*', type=Path)
     args = parser.parse_args()
     if args.timeout <= 0:
@@ -49,7 +54,7 @@ def main():
     if not paths:
         parser.error('No test files found')
     for path in paths:
-        if not run_test(path, args.timeout):
+        if not run_test(path, args.timeout, args.runner):
             return 1
     return 0
 

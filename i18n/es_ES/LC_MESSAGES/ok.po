@@ -1313,3 +1313,9 @@ msgstr "Equipo eliminado."
 
 msgid "JingRan"
 msgstr "Jingran"
+
+msgid "Special Nightmare"
+msgstr "Pesadilla especial"
+
+msgid "Which Special Nightmare to Teleport"
+msgstr "Pesadilla especial a la que teletransportar"

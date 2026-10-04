@@ -1386,3 +1386,9 @@ msgstr "チームを削除しました。"
 
 msgid "JingRan"
 msgstr "景燃"
+
+msgid "Special Nightmare"
+msgstr "特異悪夢"
+
+msgid "Which Special Nightmare to Teleport"
+msgstr "テレポートする特異悪夢"

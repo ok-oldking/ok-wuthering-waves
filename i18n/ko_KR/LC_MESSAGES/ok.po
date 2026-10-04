@@ -1387,3 +1387,9 @@ msgstr "팀을 삭제했습니다."
 
 msgid "JingRan"
 msgstr "경연"
+
+msgid "Special Nightmare"
+msgstr "특이 악몽"
+
+msgid "Which Special Nightmare to Teleport"
+msgstr "텔레포트할 특이 악몽 번호"

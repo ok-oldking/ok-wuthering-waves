@@ -81,7 +81,7 @@ jobs:
             Remove-Item "Env:\$_" -ErrorAction SilentlyContinue
           }
 
-          python .github/scripts/run_tests.py
+          python .github/scripts/run_tests.py --runner run_test.py --timeout 150
           exit $LASTEXITCODE
 
   
