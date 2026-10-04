@@ -1,3 +1,4 @@
+import json
 import unittest
 from pathlib import Path
 
@@ -43,6 +44,45 @@ class TestYangYangSpVision(unittest.TestCase):
         ('feather', True, 'feather', True),
         ('feather', True, 'feather', True),
     ]
+
+    @unittest.skipUnless((ROOT / 'ok_templates/coco_annotations.json').is_file(),
+                         'Template source submodule is not initialized')
+    def test_runtime_templates_match_annotated_sources(self):
+        def templates(folder):
+            data = json.loads((folder / 'coco_annotations.json').read_text(encoding='utf-8'))
+            for key in ('images', 'categories', 'annotations'):
+                ids = [item['id'] for item in data[key]]
+                self.assertEqual(len(ids), len(set(ids)), f'Duplicate {key} IDs')
+            names = {cat['id']: cat['name'] for cat in data['categories']}
+            images = {image['id']: image for image in data['images']}
+            result = {}
+            for annotation in data['annotations']:
+                name = names[annotation['category_id']]
+                if not name.startswith('yangyang_sp_'):
+                    continue
+                image = images[annotation['image_id']]
+                frame = cv2.imread(str(folder / image['file_name']))
+                self.assertIsNotNone(frame, name)
+                x, y, width, height = map(round, annotation['bbox'])
+                result[name] = (annotation['bbox'], (image['width'], image['height']),
+                                frame[y:y + height, x:x + width])
+            return result
+
+        source = templates(ROOT / 'ok_templates')
+        runtime = templates(ROOT / 'assets')
+        self.assertEqual(len(source), 8)
+        self.assertEqual(source.keys(), runtime.keys())
+        for name in source:
+            with self.subTest(label=name):
+                self.assertEqual(source[name][:2], runtime[name][:2])
+                np.testing.assert_array_equal(source[name][2], runtime[name][2])
+                editable = json.loads((ROOT / 'ok_templates' / f'{name}.json').read_text(encoding='utf-8'))
+                self.assertEqual(len(editable['shapes']), 1)
+                shape = editable['shapes'][0]
+                self.assertEqual((shape['label'], shape['shape_type']), (name, 'rectangle'))
+                xs, ys = zip(*shape['points'])
+                self.assertEqual([min(xs), min(ys), max(xs) - min(xs), max(ys) - min(ys)],
+                                 source[name][0])
 
     def test_screenshots_at_multiple_resolutions(self):
         for width, height in [(3840, 2159), (3840, 2160), (2560, 1440), (1920, 1080), (1600, 900)]:
