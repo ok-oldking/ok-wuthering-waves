@@ -5,6 +5,9 @@ from datetime import datetime, timedelta
 from typing import List
 
 import numpy as np
+import win32con
+import win32gui
+import win32process
 
 from ok import BaseTask, Logger, find_boxes_by_name, og, find_color_rectangles, mask_white, Box
 from ok import CannotFindException
@@ -27,6 +30,30 @@ processed_feature = False
 WIDE_MODE_UI_SCALE = 0.75
 
 
+def find_native_button(game_hwnd, x, y):
+    """KRSDK 登录框是原生 #32770 对话框，「登录」是其中的 Button 子窗口。
+    返回游戏进程里包含屏幕坐标 (x, y) 的可见按钮，找不到返回 None。"""
+    if not game_hwnd or not win32gui.IsWindow(game_hwnd):
+        return None
+    _, game_pid = win32process.GetWindowThreadProcessId(game_hwnd)
+    buttons = []
+
+    def on_child(child, _):
+        if (win32gui.GetClassName(child) == 'Button' and win32gui.IsWindowVisible(child)
+                and win32gui.IsWindowEnabled(child)):
+            left, top, right, bottom = win32gui.GetWindowRect(child)
+            if left <= x < right and top <= y < bottom:
+                buttons.append(child)
+
+    def on_top(hwnd, _):
+        if (win32gui.GetClassName(hwnd) == '#32770' and win32gui.IsWindowVisible(hwnd)
+                and win32process.GetWindowThreadProcessId(hwnd)[1] == game_pid):
+            win32gui.EnumChildWindows(hwnd, on_child, None)
+
+    win32gui.EnumWindows(on_top, None)
+    return buttons[0] if buttons else None
+
+
 class BaseWWTask(BaseTask):
     map_zoomed = False
 
@@ -37,6 +64,7 @@ class BaseWWTask(BaseTask):
         self.key_config = self.get_global_config('Game Hotkey')  # 游戏热键配置
         self.next_monthly_card_start = 0
         self.scene: WWScene | None = None
+        self._native_login_attempts = {}
 
     @property
     def logged_in(self):
@@ -763,7 +791,7 @@ class BaseWWTask(BaseTask):
                                             match=LOGIN_TEXTS)
                     if login and not self.find_boxes(texts, boundary=login_box,
                                                      match="+86"):
-                        self.click(login, after_sleep=1)
+                        self.click_login(login, after_sleep=1)
                         self.log_info('点击登录按钮!')
                 return False
             if agree := self.find_boxes(texts, boundary=login_box, match="同意"):
@@ -792,6 +820,37 @@ class BaseWWTask(BaseTask):
                     self.log_info(f'wait_login {switch_login} {boxes}')
                     self.click_relative(0.503, 0.926, hcenter=True, vcenter=True, after_sleep=3)
                     return False
+
+    def click_login(self, login, after_sleep=1):
+        """点击登录界面的「登录」。
+        后台模式下发给原生按钮的鼠标消息经常不生效：按钮按下时会捕获鼠标，Windows 随后按真实光标位置补一个
+        WM_MOUSEMOVE，光标不在按钮上时按钮就取消按下，松开时不再触发点击。
+        能找到原生按钮时直接给登录框发 BN_CLICKED，和用户点击按钮的效果一样；同一个按钮再次需要点击时
+        与原来的鼠标点击交替，避免某个版本的登录框不认这条消息时卡住。
+        找不到原生按钮时（游戏内绘制的按钮、非 Windows 设备）走原来的点击。"""
+        box = login[0] if isinstance(login, list) else login
+        button = self._native_login_button(box)
+        if button:
+            attempt = self._native_login_attempts.get(button, 0)
+            self._native_login_attempts[button] = attempt + 1
+            if attempt % 2 == 0:
+                control_id = win32gui.GetDlgCtrlID(button)
+                self.log_info(f'click_login send BN_CLICKED to native button {button} id={control_id}')
+                win32gui.PostMessage(win32gui.GetParent(button), win32con.WM_COMMAND,
+                                     (win32con.BN_CLICKED << 16) | control_id, button)
+                self.sleep(after_sleep)
+                return True
+        return self.click(login, after_sleep=after_sleep)
+
+    def _native_login_button(self, box):
+        if not isinstance(box, Box) or not self.hwnd or not self.hwnd.hwnd:
+            return None
+        try:
+            x, y = self.hwnd.get_abs_cords(box.x + box.width / 2, box.y + box.height / 2)
+            return find_native_button(self.hwnd.hwnd, int(x), int(y))
+        except Exception as e:
+            self.log_debug(f'native login button lookup failed: {e}')
+            return None
 
     def in_team_and_world(self):
         return self.in_team()[

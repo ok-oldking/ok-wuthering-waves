@@ -239,7 +239,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             login_btn = self.find_boxes(texts, boundary=self.box_of_screen(0.3, 0.3, 0.7, 0.8),
                                         match=LOGIN_TEXTS)
             if login_btn:
-                self.click(login_btn, after_sleep=3)
+                self.click_login(login_btn, after_sleep=3)
             else:
                 self.click_relative(0.5, 0.568, hcenter=True, vcenter=True, after_sleep=3)
             self.logged_in = False
