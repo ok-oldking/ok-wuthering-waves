@@ -1,6 +1,11 @@
 import os
 
 os.environ["PYAPPIFY_PYTHON_TEST"] = "1"
+
+# Same crash diagnostics as main.py (see faulthandler_setup.py).
+import faulthandler_setup  # noqa: F401
+
+
 if __name__ == '__main__':
     from config import config
     from ok import OK
