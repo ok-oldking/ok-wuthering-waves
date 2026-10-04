@@ -3,6 +3,9 @@ import re
 import time
 import os
 
+import cv2
+import numpy as np
+
 from ok import FindFeature, Logger
 from ok.feature.Box import get_bounding_box
 from ok.util.file import clear_folder
@@ -56,25 +59,69 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
     def is_0_level(self):
         return self.ocr(0.65, 0.35, 1, 0.57, match=re.compile('声骸技能'))
 
-    def select_0_level_echo(self):
-        # 3.7 起从培养界面返回后, 背包选中并滚动到刚强化的声骸, 不再停在第一格
-        self.click(0.13, 0.21, after_sleep=0.5)  # 第一格
-        if self.is_0_level():
-            return True
-        for _ in range(2):  # 升降序切换两次, 列表回到顶部
+    def list_to_top(self):
+        for _ in range(2):  # 升降序切换两次, 列表回到顶部, 选中框回到第一格
             self.click(0.35, 0.917, after_sleep=0.5)
-        self.click(0.13, 0.21, after_sleep=0.5)
-        return self.is_0_level()
+
+    def find_selected_slot(self):
+        # 选中的格子外有一圈浅金色细框; 列表滚动后格子错位, 找不到时返回 None
+        gold = cv2.inRange(cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV), (15, 25, 140), (42, 160, 255))
+        found = []
+        for slot in range(24):
+            x, y = slot_corner(slot)
+            edges = [self.box_of_screen(x - 0.0035, y + 0.03, x, y + 0.1),
+                     self.box_of_screen(x + 0.074, y + 0.03, x + 0.0775, y + 0.1),
+                     self.box_of_screen(x + 0.015, y - 0.006, x + 0.059, y)]
+            if all(edge.crop_frame(gold).mean() > 255 * 0.15 for edge in edges):
+                found.append(slot)
+        return found[0] if len(found) == 1 else None
+
+    def find_start_slot(self):
+        # 从用户选中的声骸开始, 跳过它左边的声骸 (#1732)
+        slot = self.find_selected_slot()
+        before = self.frame
+        self.list_to_top()
+        self.sleep(0.5)  # 等列表切换动画结束再对比
+        diffs = []
+        for i in range(24):
+            if i not in (0, slot):  # 这两格的选中框会变化
+                x, y = slot_corner(i)
+                card = self.box_of_screen(x + 0.015, y + 0.03, x + 0.059, y + 0.12)
+                diffs.append(cv2.absdiff(card.crop_frame(before), card.crop_frame(self.frame)).mean())
+        if np.median(diffs) > 30:
+            raise Exception('请回到列表顶部, 在第一页选择起始声骸后开始!')
+        if slot is None:
+            self.log_info('未识别到选中的声骸, 从第1格开始')
+            return 0
+        self.log_info(f'从第{slot + 1}格开始')
+        return slot
+
+    def select_0_level_echo(self, slot, to_top=False):
+        # 3.7 起从培养界面返回后, 背包选中并可能滚动到刚强化的声骸, 不再停在原来的格子
+        if not to_top and self.click_0_level_slot(slot):
+            return True
+        self.list_to_top()
+        return self.click_0_level_slot(slot)
+
+    def click_0_level_slot(self, slot):
+        x, y = slot_corner(slot)
+        self.click(x + 0.037, y + 0.08, after_sleep=0.5)
+        # 点到空格时选中不变, 右侧仍是之前的声骸, 所以先确认选中框到了这一格
+        return self.wait_until(lambda: self.find_selected_slot() == slot, time_out=1) and self.is_0_level()
 
     def run(self):
         self.info_set('成功声骸数量', 0)
         self.info_set('失败声骸数量', 0)
         clear_folder('screenshots')
+        slot = None
+        to_top = False
         while True:
             enhance = self.find_echo_enhance()
             if not enhance:
                 raise Exception('必须在背包声骸界面过滤后开始!')
-            if not self.select_0_level_echo():
+            if slot is None:
+                slot = self.find_start_slot()
+            if not self.select_0_level_echo(slot, to_top):
                 total = self.info_get('成功声骸数量') + self.info_get('失败声骸数量')
                 if self.debug:
                     self.screenshot('无可强化声骸')
@@ -139,10 +186,12 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
 
                 if not self.check_echo_stats(properties, values):
                     self.trash_and_esc()
+                    to_top = False
                     break
 
                 if len(properties) >= 5:
                     self.lock_and_esc()
+                    to_top = True  # 留下的声骸排到后面, 选中跟着它可能把列表滚下去
                     break
 
     def find_confirm(self):
@@ -341,6 +390,12 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             self.pause()
         self.esc()
         self.wait_ocr(0.82, 0.86, 0.97, 0.96, match='培养', settle_time=0.1)
+
+
+def slot_corner(slot):
+    # 背包 6x4 格, 返回第 slot 格 (0 起) 卡片左上角
+    row, col = divmod(slot, 6)
+    return 0.0927 + col * 0.092, 0.1296 + row * 0.1966
 
 
 def parse_number(text):
