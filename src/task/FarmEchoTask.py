@@ -106,6 +106,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         return True
 
     def run(self):
+        # 一条龙经 run_task_by_class 调用时执行器不会设置 start_time, 每小时声骸数会按 1970 年起算而恒为 0;
+        # 领奖/月卡重试会再次进入 run, 已有计数时不重新计时
+        if not self.info.get('Echo Count'):
+            self.start_time = time.time()
         WWOneTimeTask.run(self)
         self.use_liberation = self.config.get('Use Liberation')
         try:

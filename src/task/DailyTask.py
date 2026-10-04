@@ -1,5 +1,4 @@
 import re
-import time
 
 
 from ok import Logger, TaskDisabledException
@@ -164,8 +163,6 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             self.check_discarded_echo()
         if TELEPORT_AND_FARM_4C_ECHO in additional_tasks:
             self.log_info('Daily task completed, start teleport to farm 4C echo', notify=True)
-            # 子任务不经执行器启动, start_time 一直是 0, 每小时声骸数会按 1970 年起算而显示 0
-            self.get_task_by_class(FarmEchoTask).start_time = time.time()
             self.run_task_by_class(FarmEchoTask)
 
     def check_weekly_garden(self):
