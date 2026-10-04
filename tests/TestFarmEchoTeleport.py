@@ -8,6 +8,7 @@ from src.task.WWOneTimeTask import WWOneTimeTask
 def make_task(config, is_team):
     task = FarmEchoTask.__new__(FarmEchoTask)
     task.config = config
+    task.info = {}
     task.total_weekly_number = 9
     task.total_boss_number = 20
     task.nightmare_structure = [5, 10]
