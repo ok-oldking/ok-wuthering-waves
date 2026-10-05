@@ -1,6 +1,8 @@
 import re
 import time
 
+import cv2
+
 from ok import Logger
 
 from src.task.BaseWWTask import BaseWWTask, convert_bw, convert_dialog_icon
@@ -36,9 +38,10 @@ class SkipBaseTask(BaseWWTask):
 
     def find_skip(self):
         return self.find_one('skip_dialog', horizontal_variance=0.02, threshold=0.75,
-                             frame_processor=convert_dialog_icon) or self.find_one('skip_dialog_new',
-                                                                                   threshold=0.75,
-                                                                                   frame_processor=convert_dialog_icon)
+                             frame_processor=convert_dialog_icon) or self.find_one(
+            'skip_dialog_new', box=self.box_of_screen(0, 0, 0.12, 0.2),
+            threshold=0.85, use_gray_scale=True, mask_function=mask_dialog_icon,
+        )
 
     def try_click_skip(self):
         skipped = False
@@ -51,6 +54,16 @@ class SkipBaseTask(BaseWWTask):
     def check_skip(self):
         if self.try_click_skip():
             return self.wait_until(self.skip_confirm, time_out=3, raise_if_not_found=False)
+
+
+def mask_dialog_icon(template):
+    # Match the triangle and skip-bar boundaries, ignoring their transparent
+    # centers and the background around the button.
+    gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+    mask = cv2.dilate(cv2.Canny(gray, 50, 100), cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))
+    mask[[0, -1], :] = 0
+    mask[:, [0, -1]] = 0
+    return mask
 
 
 dialog_white_color = {
