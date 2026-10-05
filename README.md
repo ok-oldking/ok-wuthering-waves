@@ -37,6 +37,9 @@ python -m venv .venv
 
 ## 更新 XW-UID 评分模板
 
+完整的仓库职责、脚本选项、三目录同步要求和已验证发布记录见
+[声骸评分维护与分发](docs/echo-score-maintenance.md)。
+
 在本仓库目录运行，检查上游的新角色、多模态模板和已有评分权重变化：
 
 ```powershell
