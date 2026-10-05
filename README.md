@@ -35,6 +35,34 @@ python -m venv .venv
 仓库使用 `pyappify.yml` 生成 China/Global Windows 安装包。发布产物统一使用
 `echo-score-win32-*-setup.exe` 命名。
 
+## 更新 XW-UID 评分模板
+
+在本仓库目录运行，检查上游的新角色、多模态模板和已有评分权重变化：
+
+```powershell
+.\.venv\Scripts\python.exe scripts\update_xwuid_echo_templates.py --check
+```
+
+完整同步、打包并提交推送两个仓库：
+
+```powershell
+.\.venv\Scripts\python.exe scripts\update_xwuid_echo_templates.py --publish --commit-push
+```
+
+脚本从 XW-UID 的独立资源仓库拉取全部 `calc*.json` 和 `condition.json`，
+保留每个角色的所有模态，并报告新增、修改、删除的模板。资源缓存默认位于
+`E:/xwuid-score-resources`；首次运行会自动克隆，只检出评分 JSON 文件。
+
+发布时自动运行测试、递增补丁版本、生成 `.okscript` 和导入文件夹，同步到
+本仓库 `echo-score/`、`D:/ok-ww/data/apps/ok-ww/working/ok_import/echo-score/` 和
+`E:/okww-xwuid-echo-score/echo-score/`，重建并验证 `echo-score.zip`、更新分发 README，
+最后 commit & push 两个仓库。无变化时跳过发布；使用 `--force-package` 可以强制重打包。
+
+`--publish` 不带 `--commit-push` 时仅生成本地产物，便于检查差异。
+不带选项时只拉取并更新源码快照。`--distribution`、`--install-dir` 可指定其他目录；
+`--version` 可指定发布版本。提交推送模式要求两个仓库均无未提交修改；失败会明确报错，
+不会忽略测试、复制或推送错误。运行后重启 OKWW 加载新模板。
+
 ## 声明
 
 本项目不会读取游戏内存或修改游戏文件。使用任何外部辅助工具均可能存在账号风险，

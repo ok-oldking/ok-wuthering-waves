@@ -1,5 +1,6 @@
 import unittest
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from src.echo_score import (
     DEFAULT_TEMPLATE,
@@ -14,6 +15,20 @@ from src.echo_score import (
 
 def row(name, value):
     return SimpleNamespace(stat_name=name, value=value)
+
+
+def reference_score(cost, cost_key, main_rows, sub_rows):
+    # Freeze the reference weights so upstream balance changes don't look like
+    # regressions in truncation, level-25 main stats or potential-score logic.
+    template = {
+        "main_props": {"4": {"暴击": 0.5, "攻击": 0.025}},
+        "sub_props": {"共鸣效率": 0.2, "技能伤害加成": 1.1, "攻击": 0.1,
+                      "攻击%": 1.1, "暴击": 2, "暴击伤害": 1},
+        "skill_weight": [0, 0.38, 0, 0],
+        "score_max": [72.808, 76.358, 80.358],
+    }
+    with patch("src.echo_score._selected_template", return_value=template):
+        return calculate_echo_score("参考模板", cost, cost_key, main_rows, sub_rows)
 
 
 class TestEchoScore(unittest.TestCase):
@@ -44,8 +59,9 @@ class TestEchoScore(unittest.TestCase):
     def test_all_xwuid_character_and_modal_templates_are_available(self):
         names = template_names()
 
-        self.assertEqual(68, len(names))
-        self.assertEqual(68, len(set(names)))
+        from src.xwuid_echo_data import TEMPLATES
+        self.assertEqual(sum(len(variants) for variants in TEMPLATES.values()), len(names))
+        self.assertEqual(len(names), len(set(names)))
         self.assertIn("洛瑟菈-霜渐", names)
         self.assertIn("洛瑟菈-霜渐-羽落", names)
         self.assertIn("洛瑟菈-声骸", names)
@@ -53,12 +69,7 @@ class TestEchoScore(unittest.TestCase):
         self.assertIn("心-通用", names)
         self.assertIn("锁暝-通用", names)
 
-    def test_new_character_weights_and_auto_match(self):
-        from src.xwuid_echo_data import TEMPLATES
-
-        self.assertEqual(0.74, TEMPLATES["1311"]["default"]["skill_weight"][2])
-        self.assertEqual(0.7, TEMPLATES["1312"]["default"]["skill_weight"][0])
-        self.assertEqual(1.2, TEMPLATES["1312"]["default"]["sub_props"]["攻击%"])
+    def test_new_character_search_and_auto_match(self):
         self.assertIn("心-通用", matching_template_names("心-通用"))
         self.assertEqual(["锁暝-通用"], matching_template_names("锁暝"))
         self.assertEqual("心-通用", auto_match_template([SimpleNamespace(name="心装配中")]))
@@ -75,7 +86,7 @@ class TestEchoScore(unittest.TestCase):
             row("攻击", 60),
         ]
 
-        score = calculate_echo_score("嘉贝莉娜-通用", 4, "4C", main_rows, sub_rows)
+        score = reference_score(4, "4C", main_rows, sub_rows)
 
         self.assertEqual((6.84, 2.33, 13.06, 13.06, 7.93, 3.01, 3.73), score.row_scores)
         self.assertEqual(49.96, score.current_score)
@@ -85,7 +96,7 @@ class TestEchoScore(unittest.TestCase):
         main_rows = [row("暴击", 22), row("攻击", 150)]
         sub_rows = [row("暴击", 6.3)]
 
-        score = calculate_echo_score("嘉贝莉娜-通用", 4, "4C", main_rows, sub_rows)
+        score = reference_score(4, "4C", main_rows, sub_rows)
 
         self.assertLess(score.current_score, score.potential_score)
         self.assertNotEqual(50.0, score.potential_score)
@@ -95,7 +106,7 @@ class TestEchoScore(unittest.TestCase):
     def test_unleveled_main_stats_use_level_25_values_in_both_scores(self):
         main_rows = [row("暴击", 4.4), row("攻击", 30)]
 
-        score = calculate_echo_score("嘉贝莉娜-通用", 4, "4C", main_rows, [])
+        score = reference_score(4, "4C", main_rows, [])
 
         # +25 values are Crit 22% and flat ATK 150, not the observed level-0 values.
         self.assertEqual((6.84, 2.33), score.row_scores)
