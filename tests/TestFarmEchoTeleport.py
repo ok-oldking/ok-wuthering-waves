@@ -1,12 +1,14 @@
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, call, patch
 
 from src.task.FarmEchoTask import FarmEchoTask
+from src.task.WWOneTimeTask import WWOneTimeTask
 
 
 def make_task(config, is_team):
     task = FarmEchoTask.__new__(FarmEchoTask)
     task.config = config
+    task.info = {}
     task.total_weekly_number = 9
     task.total_boss_number = 20
     task.nightmare_structure = [5, 10]
@@ -41,6 +43,60 @@ class TestFarmEchoTeleport(unittest.TestCase):
         task.open_boss_book.assert_called_once_with('qiangdi')
         self.assertEqual([(3, 20, None)], task.book_targets)
         task.wait_click_travel.assert_called_once_with()
+
+    # With too few waveplates (incl. reserve), a "no rewards, enter anyway?" popup shows after
+    # solo challenge and before the team screen.
+    def test_weekly_challenge_confirms_low_waveplate_popup_before_team_screen(self):
+        task = make_task({'Teleport to Boss': 'Weekly Challenge', 'Which Weekly Boss to Teleport': 2},
+                         is_team=True)
+        task.wait_click_skip_dialog_confirm = Mock()
+        steps = Mock()
+        for name in ('click_configured_boss_level', 'click', 'wait_click_skip_dialog_confirm', 'click_team_challenge'):
+            steps.attach_mock(getattr(task, name), name)
+
+        self.assertTrue(task.teleport_to_configured_boss())
+
+        self.assertEqual([call.click_configured_boss_level(), call.click(0.880, 0.911, after_sleep=2),
+                          call.wait_click_skip_dialog_confirm(time_out=1), call.click_team_challenge()],
+                         steps.mock_calls)
+
+    def test_reentry_from_f_confirms_low_waveplate_popup_before_starting(self):
+        task = make_task({}, is_team=True)
+        task.wait_until = Mock(return_value=True)
+        task.send_key = Mock()
+        task.init_parameters = Mock()
+        task.wait_click_skip_dialog_confirm = Mock()
+        steps = Mock()
+        for name in ('click', 'wait_click_skip_dialog_confirm', 'wait_in_team_and_world'):
+            steps.attach_mock(getattr(task, name), name)
+
+        task.enter_configured_boss_realm_from_f()
+
+        self.assertEqual([call.click(0.880, 0.911, after_sleep=2), call.wait_click_skip_dialog_confirm(time_out=1),
+                          call.click(0.908, 0.919, after_sleep=5), call.wait_in_team_and_world(time_out=120)],
+                         steps.mock_calls)
+
+    def test_popup_mistaken_for_claim_is_retried_at_most_three_times(self):
+        task = make_task({}, is_team=True)
+        task.do_run = Mock(side_effect=RuntimeError('Teleport to boss failed'))
+        task.handle_claim_button = Mock(return_value=True)
+        task.handle_monthly_card = Mock(return_value=False)
+
+        with patch.object(WWOneTimeTask, 'run'), self.assertRaises(RuntimeError):
+            task.run()
+
+        self.assertEqual(4, task.do_run.call_count)
+
+    def test_farm_continues_after_claim_popup_is_closed(self):
+        task = make_task({}, is_team=True)
+        task.do_run = Mock(side_effect=[RuntimeError('Teleport to boss failed'), None])
+        task.handle_claim_button = Mock(return_value=True)
+        task.handle_monthly_card = Mock(return_value=False)
+
+        with patch.object(WWOneTimeTask, 'run'):
+            task.run()
+
+        self.assertEqual(2, task.do_run.call_count)
 
 
 if __name__ == '__main__':
