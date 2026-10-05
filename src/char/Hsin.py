@@ -11,14 +11,25 @@ class Hsin(BaseChar):
         self.finisher_start: float | None = None
         self.finisher_e_sent: bool = False
         self.h2_completed: bool = False
+        self.h2_guard_until: float = 0.0
+
+    def skip_combat_check(self):
+        if self.h2_guard_until and time.time() >= self.h2_guard_until:
+            self.logger.info('Hsin H2 protection expired; resume combat checks')
+            self.h2_guard_until = 0.0
+        return self.h2_guard_until > 0
 
     def do_perform(self):
         self.lib2_cast_this_turn = False
         self.finisher_start = None
         self.finisher_e_sent = False
         self.h2_completed = False
+        self.h2_guard_until = 0.0
         self.logger.debug(f'Hsin perform start: has_intro={self.has_intro}')
-        self.perform_everything()
+        try:
+            self.perform_everything()
+        finally:
+            self.h2_guard_until = 0.0
         self.logger.debug(f'Hsin switch_next_char start: lib2_cast={self.lib2_cast_this_turn}')
         self.switch_next_char()
         self.logger.debug('Hsin switch_next_char end')
@@ -178,6 +189,7 @@ class Hsin(BaseChar):
         if liberated:
             if is_lib2:
                 self.lib2_cast_this_turn = True
+                self.h2_guard_until = 0.0
             elif self.finisher_start is None:
                 # Start the finishing budget after R1 animation, accounting for subsequent freezes.
                 self.finisher_start = time.time()
@@ -193,17 +205,26 @@ class Hsin(BaseChar):
             return 1
         return 0
 
-    def heavy_wait_highlight_down(self, time_out: float) -> bool:
+    def heavy_wait_highlight_down(self, time_out: float, protect_animation: bool = False) -> bool:
         self.logger.debug(f'Hsin heavy hold start: timeout={time_out:.2f}')
         self.check_combat()
         self.task.mouse_down()
+        if protect_animation:
+            # H2 hides the HUD; let R2 take over before retargeting interrupts the animation.
+            self.h2_guard_until = time.time() + 4
+            self.logger.info('Hsin H2 protection start: at most 4s through R2 transition')
         try:
             confirmed = bool(self.task.wait_until(
                 lambda: not self.heavy_available(), time_out=time_out,
                 settle_time=0.25, pre_action=self.check_combat))
+        except BaseException:
+            self.h2_guard_until = 0.0
+            raise
         finally:
             self.task.mouse_up()
             self.logger.debug('Hsin heavy hold: mouse released')
+        if not confirmed:
+            self.h2_guard_until = 0.0
         self.sleep(0.01)
         self.logger.debug(f'Hsin heavy hold end: indicator_disappeared={confirmed}')
         return confirmed
@@ -215,7 +236,7 @@ class Hsin(BaseChar):
             self.logger.debug('Hsin heavy end: unavailable')
             return False
         # An already-started hold gets its full window, even near the rotation deadline.
-        confirmed = self.heavy_wait_highlight_down(1.2)
+        confirmed = self.heavy_wait_highlight_down(1.2, protect_animation=heavy_type == 2)
         self.logger.debug(f'Hsin heavy: type={heavy_type}, confirmed={confirmed}')
         if confirmed and heavy_type == 2:
             self.h2_completed = True

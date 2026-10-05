@@ -1,7 +1,7 @@
 import unittest
 from threading import Event
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import create_autospec, patch
 
 import cv2
 import numpy as np
@@ -11,6 +11,8 @@ from ok.task.TaskExecutor import TaskExecutor
 from src.Labels import Labels
 from src.char.BaseChar import BaseChar
 from src.char.Hsin import Hsin
+from src.combat.CombatCheck import CombatCheck
+from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
 from src.task.BaseWWTask import binarize_for_matching
 from src.task.process_feature import process_feature
 
@@ -70,6 +72,9 @@ class _Task(TaskExecutor):
         self.up_at.append(self.clock.time())
 
     def send_key(self, key):
+        pass
+
+    def check_combat(self):
         pass
 
     def in_team(self):
@@ -150,6 +155,109 @@ class HsinRotationTest(unittest.TestCase):
         char.task.features = lambda: ({Labels.hsin_h2}
                                      if char.task.mouse_start is None
                                      or self.clock.time() - char.task.mouse_start < 0.4 else set())
+
+    def lost_target_checks(self, lost_before_hold=False):
+        char = self.char
+        retargets = []
+        checker = create_autospec(
+            BaseCombatTask, instance=True,
+            skip_combat_check=False, _in_combat=True, in_liberation=False,
+            scene=SimpleNamespace(in_combat=lambda: None, set_in_combat=lambda: True),
+            check_f_break=lambda: None, get_current_char=lambda: char,
+            on_combat_check=lambda: True, combat_end_condition=None,
+            has_target=lambda: not lost_before_hold and char.task.mouse_start is None,
+            should_check_monthly_card=lambda: False)
+
+        def retarget(wait=True):
+            retargets.append(self.clock.now)
+            self.clock.advance(3)
+            return False
+
+        def reset(reason=''):
+            checker._in_combat = False
+            return False
+
+        def abort(message):
+            raise NotInCombatException(message)
+
+        checker.target_enemy = retarget
+        checker.reset_to_false = reset
+        checker.raise_not_in_combat = abort
+        checker.in_combat = lambda: CombatCheck.do_check_in_combat(checker, False)
+        char.task.check_combat = lambda: BaseCombatTask.check_combat(checker)
+        char.check_combat = lambda: BaseChar.check_combat(char)
+        return retargets
+
+    def test_h2_lost_target_during_animation_still_reaches_delayed_r2(self):
+        char = self.char
+        self.finishing()
+        self.h2_until_consumed()
+        retargets = self.lost_target_checks()
+        char.liberation_available = lambda check_color=True: (char.task.mouse_start is not None
+                                                             and self.clock.now - char.task.mouse_start >= 2.8)
+
+        def cycle_sleep(duration=0.1):
+            self.clock.advance(duration)
+            char.check_combat()
+
+        char.cycle_sleep = cycle_sleep
+        char.perform_everything()
+        self.assertEqual([stage for stage, _ in char.casts], [2])
+        self.assertEqual(retargets, [])
+        self.assertFalse(char.skip_combat_check())
+        self.assertFalse(char.task.pressed)
+        with self.assertRaises(NotInCombatException):
+            char.check_combat()
+
+    def test_h2_guard_expires_if_r2_never_becomes_available(self):
+        char = self.char
+        self.h2_until_consumed()
+        retargets = self.lost_target_checks()
+        char.liberation_available = lambda check_color=True: False
+
+        def cycle_sleep(duration=0.1):
+            self.clock.advance(duration)
+            char.check_combat()
+
+        char.cycle_sleep = cycle_sleep
+        with self.assertRaises(NotInCombatException):
+            char.do_perform()
+        self.assertEqual(len(retargets), 1)
+        self.assertTrue(4 <= retargets[0] - char.task.down_at[0] < 4.2)
+        self.assertFalse(char.skip_combat_check())
+        self.assertFalse(char.task.pressed)
+        self.assertEqual(char.casts, [])
+
+    def test_failure_after_confirmed_h2_clears_protection_on_exit(self):
+        char = self.char
+        self.h2_until_consumed()
+
+        def fail_liberation(**kwargs):
+            raise RuntimeError('liberation failed')
+
+        char.click_liberation = fail_liberation
+        with self.assertRaisesRegex(RuntimeError, 'liberation failed'):
+            char.do_perform()
+        self.assertFalse(char.task.pressed)
+        self.assertFalse(char.skip_combat_check())
+
+    def test_h1_does_not_get_h2_target_loss_protection(self):
+        self.char.task.features = lambda: {Labels.hsin_h1}
+        retargets = self.lost_target_checks()
+        with self.assertRaises(NotInCombatException):
+            self.char.handle_heavy(1)
+        self.assertEqual(len(retargets), 1)
+        self.assertFalse(self.char.task.pressed)
+        self.assertFalse(self.char.skip_combat_check())
+
+    def test_h2_checks_combat_before_starting_protection(self):
+        self.h2_until_consumed()
+        retargets = self.lost_target_checks(lost_before_hold=True)
+        with self.assertRaises(NotInCombatException):
+            self.char.handle_heavy(2)
+        self.assertEqual(len(retargets), 1)
+        self.assertEqual(self.char.task.down_at, [])
+        self.assertFalse(self.char.skip_combat_check())
 
     def test_reappearing_prompt_after_consumption_retries_e(self):
         char = self.char
@@ -285,6 +393,7 @@ class HsinRotationTest(unittest.TestCase):
         self.assertFalse(self.char.handle_heavy())
         self.assertFalse(self.char.h2_completed)
         self.assertFalse(self.char.task.pressed)
+        self.assertFalse(self.char.skip_combat_check())
         self.assertEqual(len(self.char.task.up_at), 1)
 
     def test_combat_exception_releases_mouse(self):
@@ -293,6 +402,7 @@ class HsinRotationTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'combat ended'):
             self.char.handle_heavy()
         self.assertFalse(self.char.task.pressed)
+        self.assertFalse(self.char.skip_combat_check())
 
     def test_late_heavy_keeps_full_hold_window(self):
         self.char.task.features = lambda: {Labels.hsin_h1} if self.clock.now >= 105.8 else set()
@@ -384,11 +494,15 @@ class HsinRotationTest(unittest.TestCase):
         char = self.char
         self.finishing()
         char.lib2_cast_this_turn = char.finisher_e_sent = char.h2_completed = True
+        self.h2_until_consumed()
+        self.assertTrue(char.handle_heavy(2))
+        self.assertTrue(char.skip_combat_check())
         switched = []
         char.switch_next_char = lambda *args, **kwargs: switched.append(self.clock.now)
         char.do_perform()
         self.assertIsNone(char.finisher_start)
         self.assertFalse(char.lib2_cast_this_turn or char.finisher_e_sent or char.h2_completed)
+        self.assertFalse(char.skip_combat_check())
         self.assertEqual(len(switched), 1)
 
 
