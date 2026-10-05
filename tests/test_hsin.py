@@ -6,11 +6,12 @@ from unittest.mock import patch
 import cv2
 import numpy as np
 
-from ok.feature.Box import Box
+from ok.feature.FeatureSet import FeatureSet
 from ok.task.TaskExecutor import TaskExecutor
 from src.Labels import Labels
 from src.char.BaseChar import BaseChar
 from src.char.Hsin import Hsin
+from src.task.BaseWWTask import binarize_for_matching
 
 
 class _Clock:
@@ -367,22 +368,22 @@ class HsinRotationTest(unittest.TestCase):
         self.assertEqual(len(switched), 1)
 
 
-class HsinEnhancedRingTest(unittest.TestCase):
-    def test_gold_perimeter_across_scales_rejects_blank_or_broad_effects(self):
-        for width, height in ((1280, 720), (1920, 1080), (2560, 1440)):
-            box = Box(round(3185 * width / 3840), round(1877 * height / 2160),
-                      round(135 * width / 3840), round(113 * height / 2160))
-            task = SimpleNamespace(frame=None, get_box_by_name=lambda name: box)
-            probe = Hsin(task, 0)
-            margin = round(box.width * 0.24)
-            side = box.width + 2 * margin
-            for color in ((0, 0, 0), (80, 190, 220)):
-                task.frame = np.full((height, width, 3), color, dtype=np.uint8)
-                self.assertFalse(Hsin.enhanced_e_ready(probe))
-            task.frame = np.zeros((height, width, 3), dtype=np.uint8)
-            center = (box.x + box.width // 2, box.y + box.height // 2)
-            cv2.circle(task.frame, center, round(side * 0.41), (80, 190, 220), max(2, round(side * 0.03)))
-            self.assertTrue(Hsin.enhanced_e_ready(probe), (width, height))
+class HsinEnhancedTemplateTest(unittest.TestCase):
+    def test_existing_e_forte_template_controls_enhanced_readiness(self):
+        feature_set = FeatureSet(False, 'assets/coco_annotations.json', 0.002, 0.002,
+                                 default_threshold=0.7)
+        source_frame = cv2.imread('assets/images/31.png')
+        self.assertIsNotNone(source_frame)
+        assert source_frame is not None
+        frame = source_frame.copy()
+        task = SimpleNamespace(find_e_forte=lambda: feature_set.find_one_feature(
+            frame, 'e_forte', horizontal_variance=0.025, threshold=0.6,
+            frame_processor=lambda image: binarize_for_matching(image, 220)))
+        char = Hsin(task, 0)
+        self.assertTrue(char.enhanced_e_ready())
+        for color in ((0, 0, 0), (80, 190, 220)):
+            frame = np.full_like(frame, color)
+            self.assertFalse(char.enhanced_e_ready())
 
 
 if __name__ == '__main__':
