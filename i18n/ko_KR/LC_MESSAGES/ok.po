@@ -931,6 +931,9 @@ msgstr "헬퍼 메서드, 태스크 API, 상태, 교체, 재사용 대기시간,
 msgid "Rover: Spectro"
 msgstr "방랑자 · 회절"
 
+msgid "Rover: Electro"
+msgstr "방랑자 · 전도"
+
 msgid "Rover: Havoc"
 msgstr "방랑자 · 인멸"
 
