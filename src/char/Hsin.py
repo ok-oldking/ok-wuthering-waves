@@ -26,6 +26,7 @@ class Hsin(BaseChar):
     def perform_everything(self):
         start = time.time()
         duration = 12 if self.has_intro else 6
+        last_e_ready = None
         self.logger.debug(f'Hsin rotation start: duration={duration}')
         while True:
             phase_start = self.finisher_start if self.finisher_start is not None else start
@@ -36,6 +37,8 @@ class Hsin(BaseChar):
                 if not self.h2_completed:
                     self.logger.debug('Hsin heavy end: duration reached')
                 self.logger.debug('Hsin rotation end: duration reached')
+                self.logger.info(f'Hsin rotation end: timeout, finisher={self.finisher_start is not None}, '
+                                 f'enhanced_e={self.finisher_e_sent}, h2={self.h2_completed}')
                 return
             self.cycle_start()
             self.logger.debug(
@@ -68,9 +71,17 @@ class Hsin(BaseChar):
                 self.cycle_sleep()
                 self.logger.debug('Hsin cycle_sleep end')
                 continue
-            # After R1, charge with normals; never send ordinary E during unlocking.
+            # The live prompt controls E; a transient disappearance must not lock out retries.
             if self.finisher_start is not None:
-                if not self.finisher_e_sent and self.enhanced_e_ready():
+                ready = self.enhanced_e_ready()
+                if ready != last_e_ready:
+                    self.logger.info(f'Hsin enhanced E prompt: ready={ready}, '
+                                     f'previously_confirmed={self.finisher_e_sent}')
+                    last_e_ready = ready
+                if ready:
+                    if self.finisher_e_sent:
+                        self.logger.info('Hsin enhanced E prompt returned; retry E')
+                    self.finisher_e_sent = False
                     self.cast_enhanced_e()
                 else:
                     self.logger.debug(f'Hsin enhanced E skipped: consumed={self.finisher_e_sent}')
@@ -121,8 +132,10 @@ class Hsin(BaseChar):
 
     def cast_enhanced_e(self) -> bool:
         self.logger.debug('Hsin enhanced E start')
+        self.logger.info('Hsin enhanced E start: generic prompt ready')
         start = time.time()
         last_send = -1.0
+        sends = 0
         gone_since = None
         while time.time() - start < 1.5:
             self.check_combat()
@@ -132,6 +145,8 @@ class Hsin(BaseChar):
                 if now - last_send >= 0.25:
                     self.send_resonance_key()
                     last_send = now
+                    sends += 1
+                    self.logger.info(f'Hsin enhanced E key: send={sends}, elapsed={now - start:.3f}s')
             elif last_send >= 0:
                 if gone_since is None:
                     gone_since = now
@@ -139,9 +154,13 @@ class Hsin(BaseChar):
                     self.finisher_e_sent = True
                     self.record_resonance_use()
                     self.logger.debug('Hsin enhanced E consumed; continue normal attacks')
+                    self.logger.info(f'Hsin enhanced E result: confirmed=True, sends={sends}, '
+                                     f'elapsed={time.time() - start:.3f}s')
                     return True
             self.task.next_frame()
         self.logger.debug('Hsin enhanced E not confirmed; retry when ready')
+        self.logger.info(f'Hsin enhanced E result: confirmed=False, sends={sends}, '
+                         f'elapsed={time.time() - start:.3f}s')
         return False
 
     def lib(self, after_heavy: bool = False) -> bool:
@@ -163,6 +182,7 @@ class Hsin(BaseChar):
                 # Start the finishing budget after R1 animation, accounting for subsequent freezes.
                 self.finisher_start = time.time()
                 self.logger.debug('Hsin finisher start: duration=18')
+                self.logger.info('Hsin finisher start: R1 confirmed, duration=18')
         self.logger.debug(f'Hsin liberation end: cast={liberated}, lib2={is_lib2}')
         return liberated
 

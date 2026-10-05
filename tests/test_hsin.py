@@ -12,6 +12,7 @@ from src.Labels import Labels
 from src.char.BaseChar import BaseChar
 from src.char.Hsin import Hsin
 from src.task.BaseWWTask import binarize_for_matching
+from src.task.process_feature import process_feature
 
 
 class _Clock:
@@ -116,7 +117,7 @@ class _Hsin(Hsin):
     def resonance_available(self):
         return self.e_ready
 
-    def enhanced_e_ready(self) -> bool:
+    def is_e_forte_full(self):
         return self.e_ready
 
     def click_resonance(self, *args, **kwargs):
@@ -150,6 +151,23 @@ class HsinRotationTest(unittest.TestCase):
                                      if char.task.mouse_start is None
                                      or self.clock.time() - char.task.mouse_start < 0.4 else set())
 
+    def test_reappearing_prompt_after_consumption_retries_e(self):
+        char = self.char
+        self.finishing()
+        keys = []
+        # The first key is swallowed; a visual gap lasts longer than the settle time.
+        char.enhanced_e_ready = lambda: (self.clock.now < 100.1
+                                        or (self.clock.now >= 100.8 and len(keys) < 2))
+        char.send_resonance_key = lambda **kwargs: keys.append(self.clock.now)
+        char.task.features = lambda: ({Labels.hsin_h2}
+                                     if len(keys) == 2 and self.clock.now - keys[-1] >= 0.5
+                                     and (char.task.mouse_start is None
+                                          or self.clock.now - char.task.mouse_start < 0.4) else set())
+        char.perform_everything()
+        self.assertEqual(len(keys), 2)
+        self.assertGreaterEqual(keys[1], 100.8)
+        self.assertTrue(char.h2_completed and char.lib2_cast_this_turn)
+
     def test_delayed_enhanced_e_cannot_be_locked_by_ordinary_availability(self):
         char = self.char
         self.finishing()
@@ -167,7 +185,7 @@ class HsinRotationTest(unittest.TestCase):
         self.assertTrue(char.finisher_e_sent and char.lib2_cast_this_turn)
         self.assertGreater(char.normals, 0)
 
-    def test_swallowed_e_retries_only_while_ring_is_present(self):
+    def test_swallowed_e_retries_only_while_prompt_is_present(self):
         char = self.char
         keys = []
         char.send_resonance_key = lambda **kwargs: keys.append(self.clock.now)
@@ -177,7 +195,7 @@ class HsinRotationTest(unittest.TestCase):
         self.assertGreaterEqual(keys[1] - keys[0], 0.25)
         self.assertTrue(char.finisher_e_sent)
 
-    def test_brief_ring_disappearance_does_not_confirm_consumption(self):
+    def test_brief_prompt_disappearance_does_not_confirm_consumption(self):
         char = self.char
         keys = []
         char.enhanced_e_ready = lambda: not 100.09 < self.clock.now < 100.19 and self.clock.now < 100.6
@@ -189,7 +207,13 @@ class HsinRotationTest(unittest.TestCase):
         self.assertGreaterEqual(self.clock.now, 100.85)
         self.assertTrue(all(stamp < 100.6 for stamp in keys))
 
-    def test_no_ring_uses_normals_and_exits_without_ordinary_e(self):
+    def test_absent_prompt_does_not_send_or_confirm_e(self):
+        char = self.char
+        self.assertFalse(char.cast_enhanced_e())
+        self.assertFalse(char.finisher_e_sent)
+        self.assertEqual(char.resonances, 0)
+
+    def test_no_prompt_uses_normals_and_exits_without_ordinary_e(self):
         char = self.char
         self.finishing()
         char.resonance_available = lambda: True
@@ -369,21 +393,29 @@ class HsinRotationTest(unittest.TestCase):
 
 
 class HsinEnhancedTemplateTest(unittest.TestCase):
-    def test_existing_e_forte_template_controls_enhanced_readiness(self):
+    @staticmethod
+    def detector_task(frame):
         feature_set = FeatureSet(False, 'assets/coco_annotations.json', 0.002, 0.002,
-                                 default_threshold=0.7)
-        source_frame = cv2.imread('assets/images/31.png')
-        self.assertIsNotNone(source_frame)
-        assert source_frame is not None
-        frame = source_frame.copy()
-        task = SimpleNamespace(find_e_forte=lambda: feature_set.find_one_feature(
-            frame, 'e_forte', horizontal_variance=0.025, threshold=0.6,
-            frame_processor=lambda image: binarize_for_matching(image, 220)))
+                                 0.8, process_feature, hcenter_features=['e_forte'])
+        return SimpleNamespace(
+            frame=frame,
+            find_e_forte=lambda: feature_set.find_one_feature(
+                frame, 'e_forte', horizontal_variance=0.025, threshold=0.6,
+                frame_processor=lambda image: binarize_for_matching(image, 220)))
+
+    def test_existing_prompt_controls_readiness_without_marking_cast_success(self):
+        frame = cv2.imread('assets/images/31.png')
+        self.assertIsNotNone(frame)
+        task = self.detector_task(frame)
+        self.assertTrue(task.find_e_forte())
         char = Hsin(task, 0)
         self.assertTrue(char.enhanced_e_ready())
+        self.assertFalse(char.finisher_e_sent)
+
+    def test_black_and_broad_gold_background_have_no_prompt(self):
         for color in ((0, 0, 0), (80, 190, 220)):
-            frame = np.full_like(frame, color)
-            self.assertFalse(char.enhanced_e_ready())
+            frame = np.full((1080, 1920, 3), color, np.uint8)
+            self.assertFalse(Hsin(self.detector_task(frame), 0).enhanced_e_ready())
 
 
 if __name__ == '__main__':
