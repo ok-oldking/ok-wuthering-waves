@@ -6,6 +6,7 @@ class Mornye(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last_heavy = 0
+        self.echo_lit_on_air = False
 
     def do_perform(self):
         if self.has_intro:
@@ -32,32 +33,30 @@ class Mornye(BaseChar):
         return self.has_long_action2()
 
     def on_air_actions(self):
-        detect_ready = False
+        self.echo_lit_on_air = False
         self.logger.debug("on_air start attacking")
         start = time.time()
         while (
                 time.time() - start < 10
                 and self.on_air()
         ):
-            # 声骸图标在空中亮过再变暗才算被击飞，起飞过渡中或空中不能放的声骸图标本来就是暗的
-            detect_ready = detect_ready or bool(self.available('echo'))
-            if self.detect_elbow_strike(detect_ready):
+            if self.detect_elbow_strike():
                 self.logger.debug("Detected an elbow strike, attempting to reset.")
-                self.task.wait_until(lambda: not self.detect_elbow_strike(detect_ready),
+                self.task.wait_until(lambda: not self.detect_elbow_strike(),
                                      post_action=lambda: self.continues_right_click(0.05), time_out=1.5)
             self.click_liberation()
             if self.on_air() and self.is_mouse_forte_full():
                 self.logger.debug("mouse forte full, heavy attack")
                 if self.heavy_click_forte(
-                        check_fun=lambda: self.is_mouse_forte_full() and not self.detect_elbow_strike(detect_ready)):
-                    if self.detect_elbow_strike(detect_ready):
+                        check_fun=lambda: self.is_mouse_forte_full() and not self.detect_elbow_strike()):
+                    if self.detect_elbow_strike():
                         continue
                     # 协奏未满则先普攻补满（最多 2s），仍不满再放声骸
                     if not self.task.wait_until(lambda: self.is_con_full(), time_out=1.5):
                         fill_start = time.time()
                         while not self.is_con_full() and time.time() - fill_start < 2 and self.on_air():
                             self.continues_normal_attack(0.5)
-                            if self.detect_elbow_strike(detect_ready):
+                            if self.detect_elbow_strike():
                                 break
                         if not self.is_con_full():
                             self.click_echo(duration=0.2)
@@ -99,5 +98,9 @@ class Mornye(BaseChar):
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
 
-    def detect_elbow_strike(self, ready):
-        return ready and not self.available('echo', check_color=True)
+    def detect_elbow_strike(self):
+        # 声骸图标在空中亮过再变暗才算被击飞，起飞过渡中或空中不能放的声骸图标本来就是暗的
+        if self.available('echo', check_color=True):
+            self.echo_lit_on_air = True
+            return False
+        return self.echo_lit_on_air
