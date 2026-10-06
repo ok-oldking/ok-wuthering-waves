@@ -32,13 +32,15 @@ class Mornye(BaseChar):
         return self.has_long_action2()
 
     def on_air_actions(self):
-        detect_ready = self.echo_available()
+        detect_ready = False
         self.logger.debug("on_air start attacking")
         start = time.time()
         while (
                 time.time() - start < 10
                 and self.on_air()
         ):
+            # 声骸图标在空中亮过再变暗才算被击飞，起飞过渡中或空中不能放的声骸图标本来就是暗的
+            detect_ready = detect_ready or bool(self.available('echo'))
             if self.detect_elbow_strike(detect_ready):
                 self.logger.debug("Detected an elbow strike, attempting to reset.")
                 self.task.wait_until(lambda: not self.detect_elbow_strike(detect_ready),
