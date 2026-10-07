@@ -169,4 +169,3 @@ class TestCombatCheck(TaskTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
