@@ -931,6 +931,9 @@ msgstr "헬퍼 메서드, 태스크 API, 상태, 교체, 재사용 대기시간,
 msgid "Rover: Spectro"
 msgstr "방랑자 · 회절"
 
+msgid "Rover: Electro"
+msgstr "방랑자 · 전도"
+
 msgid "Rover: Havoc"
 msgstr "방랑자 · 인멸"
 
@@ -1395,3 +1398,9 @@ msgstr "필요할 때 가방의 에코 상자를 사용해 에코를 획득하�
 
 msgid "JingRan"
 msgstr "경연"
+
+msgid "Special Nightmare"
+msgstr "특이 악몽"
+
+msgid "Which Special Nightmare to Teleport"
+msgstr "텔레포트할 특이 악몽 번호"

@@ -4,6 +4,7 @@ from pathlib import Path
 
 from ok import Box, ConfigOption, Icon
 from ok.util.GlobalConfig import create_basic_options
+from src.game_launcher import get_game_launch_arguments
 from src.task.process_feature import process_feature
 
 version = "dev"
@@ -199,6 +200,7 @@ config = {
                            re.compile('CNativeLoginDlg'), 'Static', 'ComboBox', 'ComboLBox', 'Button'
                            ],
         'calculate_pc_exe_path': calculate_pc_exe_path,
+        'launch_arguments': get_game_launch_arguments,
         'exe': 'Client-Win64-Shipping.exe',
         'hwnd_class': 'UnrealWindow',
         'interaction': 'PostMessage',
@@ -234,7 +236,7 @@ config = {
             'sponsor': 'https://afdian.com/a/ok-oldking',
             'share': '下载okww https://ok-script.com/ok-ww',
             'faq': 'https://ok-script.com/ok-ww',
-            'qq_group': 'https://qm.qq.com/q/SUQpIpmq4',
+            'qq_group': 'https://qm.qq.com/q/jw2NltIEWA',
             'qq_channel': 'https://pd.qq.com/s/djmm6l44y',
         },
     },

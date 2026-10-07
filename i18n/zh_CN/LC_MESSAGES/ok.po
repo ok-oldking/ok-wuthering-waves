@@ -979,6 +979,9 @@ msgstr "在思考辅助方法、任务 API、状态、切人、冷却和战斗�
 msgid "Rover: Spectro"
 msgstr "漂泊者·衍射"
 
+msgid "Rover: Electro"
+msgstr "漂泊者·导电"
+
 msgid "Rover: Havoc"
 msgstr "漂泊者·湮灭"
 
@@ -1443,3 +1446,12 @@ msgstr "必要时，使用背包中的声骸箱子获取声骸完成日常"
 
 msgid "JingRan"
 msgstr "景燃"
+
+msgid "Hsin"
+msgstr "心"
+
+msgid "Special Nightmare"
+msgstr "特异梦魇"
+
+msgid "Which Special Nightmare to Teleport"
+msgstr "传送到第几个特异梦魇"

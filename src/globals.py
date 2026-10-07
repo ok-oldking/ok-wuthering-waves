@@ -10,9 +10,6 @@ logger = Logger.get_logger(__name__)
 class Globals:
 
     def __init__(self, exit_event):
-        from src.game_launcher import install_game_launcher
-
-        install_game_launcher()
         self._yolo_model = None
         self.mini_map_arrow = None
         self.logged_in = False

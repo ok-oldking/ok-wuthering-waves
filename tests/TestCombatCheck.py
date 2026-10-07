@@ -108,6 +108,64 @@ class TestCombatCheck(TaskTestCase):
         self.assertTrue(task.do_check_in_combat(False))
         self.assertEqual(order, ['load_chars', ('has_target', True)])
 
+    def test_in_combat_retarget_with_health_bar_extends_timeout(self):
+        task = AutoCombatTask.__new__(AutoCombatTask)
+        task._in_combat = True
+        task.in_liberation = False
+        task.scene = type('Scene', (), {'in_combat': lambda *args, **kwargs: None, 'set_in_combat': lambda *args, **kwargs: True})()
+        task.check_f_break = lambda: None
+        task.get_current_char = lambda: None
+        task.on_combat_check = lambda: True
+        task.has_target = lambda: False
+        task.combat_end_condition = None
+        task.check_health_bar = lambda: True
+        task.target_enemy_time_out = 3
+
+        calls = []
+        task.target_enemy = lambda wait, time_out, check_health: calls.append((wait, time_out, check_health)) or True
+
+        result = task.do_check_in_combat(False)
+        self.assertTrue(result)
+        self.assertEqual(calls, [(True, 30, True)])
+
+    def test_in_combat_retarget_without_health_bar_uses_default_timeout(self):
+        task = AutoCombatTask.__new__(AutoCombatTask)
+        task._in_combat = True
+        task.in_liberation = False
+        task.scene = type('Scene', (), {'in_combat': lambda *args, **kwargs: None, 'set_in_combat': lambda *args, **kwargs: True})()
+        task.check_f_break = lambda: None
+        task.get_current_char = lambda: None
+        task.on_combat_check = lambda: True
+        task.has_target = lambda: False
+        task.combat_end_condition = None
+        task.check_health_bar = lambda: False
+        task.target_enemy_time_out = 3
+        task.should_check_monthly_card = lambda: False
+        task.reset_to_false = lambda reason: False
+
+        calls = []
+        task.target_enemy = lambda wait, time_out, check_health: calls.append((wait, time_out, check_health)) or False
+
+        result = task.do_check_in_combat(False)
+        self.assertFalse(result)
+        self.assertEqual(calls, [(True, 3, False)])
+
+    def test_target_enemy_breaks_early_when_health_bar_disappears(self):
+        task = AutoCombatTask.__new__(AutoCombatTask)
+        task.has_target = lambda: False
+        task.middle_click = lambda **kwargs: None
+        task.next_frame = lambda: None
+        task.combat_end_condition = None
+        task.target_enemy_time_out = 30
+        task.check_health_bar = lambda: False
+
+        start = time.time()
+        result = task.target_enemy(wait=True, time_out=30, check_health=True)
+        elapsed = time.time() - start
+
+        self.assertFalse(result)
+        self.assertLess(elapsed, 3.0)
+
 
 if __name__ == '__main__':
     unittest.main()

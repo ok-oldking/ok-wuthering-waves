@@ -930,6 +930,9 @@ msgstr ""
 msgid "Rover: Spectro"
 msgstr "漂泊者・回折"
 
+msgid "Rover: Electro"
+msgstr "漂泊者・電導"
+
 msgid "Rover: Havoc"
 msgstr "漂泊者・消滅"
 
@@ -1394,3 +1397,9 @@ msgstr "必要に応じてバッグ内の音骸ボックスを使用し、音骸
 
 msgid "JingRan"
 msgstr "景燃"
+
+msgid "Special Nightmare"
+msgstr "特異悪夢"
+
+msgid "Which Special Nightmare to Teleport"
+msgstr "テレポートする特異悪夢"
