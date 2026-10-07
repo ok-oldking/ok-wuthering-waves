@@ -1,9 +1,10 @@
 import threading
 import unittest
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
-from src.echo_capture_recovery import CaptureRecoveryMonitor
+from src.echo_capture_recovery import CaptureRecoveryMonitor, read_echo_frame
+from ok.task.exceptions import CaptureException
 
 
 class FakeCapture:
@@ -34,6 +35,41 @@ class FakeDeviceManager:
 
 
 class TestEchoCaptureRecovery(unittest.TestCase):
+    def test_missing_capture_skips_ocr_without_disabling_task(self):
+        task = SimpleNamespace(executor=SimpleNamespace(method=None), ocr=Mock())
+        self.assertIsNone(read_echo_frame(task))
+        task.ocr.assert_not_called()
+
+    def test_capture_disappearing_during_ocr_does_not_read_none_width(self):
+        task = SimpleNamespace(executor=SimpleNamespace(method=SimpleNamespace(width=1600, height=900)))
+        def lose_capture():
+            task.executor.method = None
+            return ["old frame"]
+        task.ocr = lose_capture
+        self.assertIsNone(read_echo_frame(task))
+
+    def test_ocr_from_previous_hwnd_is_discarded(self):
+        window = SimpleNamespace(hwnd=100, exists=True)
+        task = SimpleNamespace(executor=SimpleNamespace(method=SimpleNamespace(width=1600, height=900)))
+        def restart_game():
+            window.hwnd = 200
+            return ["old frame"]
+        task.ocr = restart_game
+        self.assertIsNone(read_echo_frame(task, window))
+
+    def test_transient_capture_exception_is_waited_out(self):
+        task = SimpleNamespace(executor=SimpleNamespace(method=SimpleNamespace(width=1600, height=900)),
+                               ocr=Mock(side_effect=CaptureException("window closed")))
+        self.assertIsNone(read_echo_frame(task))
+        task.ocr = Mock(return_value=["new frame"])
+        self.assertEqual((["new frame"], 1600, 900), read_echo_frame(task))
+
+    def test_unrelated_ocr_errors_are_not_hidden(self):
+        task = SimpleNamespace(executor=SimpleNamespace(method=SimpleNamespace(width=1600, height=900)),
+                               ocr=Mock(side_effect=AttributeError("unrelated OCR error")))
+        with self.assertRaises(AttributeError):
+            read_echo_frame(task)
+
     def setUp(self):
         self.manager = FakeDeviceManager()
         self.exit_event = threading.Event()
@@ -66,6 +102,43 @@ class TestEchoCaptureRecovery(unittest.TestCase):
             self.assertFalse(self.monitor.poll())
             self.assertTrue(self.monitor.poll())
         self.assertEqual(2, self.manager.refreshes)
+
+    def test_repeated_restarts_with_reused_hwnd_force_new_capture(self):
+        self.manager.hwnd_window.hwnd = 100
+        self.manager.hwnd_window.exists = True
+        self.manager.capture_method = FakeCapture(connected=True)
+        self.assertFalse(self.monitor.poll())
+        for cycle in range(3):
+            self.manager.hwnd_window.exists = False
+            self.assertFalse(self.monitor.poll())
+            self.manager.hwnd_window.exists = True
+            # BitBlt still reports connected and the selected HWND is unchanged.
+            self.assertTrue(self.monitor.poll())
+            self.assertEqual(cycle + 1, self.manager.refreshes)
+
+    def test_hwnd_change_during_retry_delay_remains_pending(self):
+        self.manager.hwnd_window.hwnd = 100
+        self.manager.hwnd_window.exists = True
+        self.manager.capture_method = FakeCapture(connected=True)
+        with patch("src.echo_capture_recovery.time.monotonic", side_effect=[0, 1, 2, 6]):
+            self.assertFalse(self.monitor.poll())
+            self.manager.hwnd_window.hwnd = 200
+            self.assertTrue(self.monitor.poll())
+            self.manager.hwnd_window.hwnd = 300
+            self.manager.preferred["real_hwnd"] = 300
+            self.assertFalse(self.monitor.poll())
+            self.assertTrue(self.monitor.poll())
+        self.assertEqual(2, self.manager.refreshes)
+
+    def test_connected_capture_that_never_produced_a_frame_is_retried(self):
+        self.manager.hwnd_window.hwnd = 100
+        self.manager.hwnd_window.exists = True
+        self.manager.capture_method = FakeCapture(connected=True)
+        with patch("src.echo_capture_recovery.time.monotonic", side_effect=[10, 19, 20]):
+            self.assertFalse(self.monitor.poll())
+            self.assertFalse(self.monitor.poll())
+            self.assertTrue(self.monitor.poll())
+        self.assertEqual(1, self.manager.refreshes)
 
     def test_only_active_disconnected_capture_is_restarted(self):
         self.manager.hwnd_window.hwnd = 100

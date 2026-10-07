@@ -3,6 +3,7 @@
 from ok import TriggerTask, og
 
 from src.echo_score import DEFAULT_TEMPLATE
+from src.echo_capture_recovery import read_echo_frame
 from src.gui.EchoStatOverlay import ECHO_STAT_PAINTER_KEY, EchoStatBoxPainter, analyze_echo_stats
 from src.gui.OverlayStatus import paint_okww_status
 
@@ -47,8 +48,13 @@ class EchoStatOverlayTask(TriggerTask):
                 and self.painter.rectangles):
             return False
 
+        frame = read_echo_frame(self, hwnd_window)
+        if frame is None:
+            self._clear(overlay, include_status=True)
+            return False
+        boxes, width, height = frame
         analysis = analyze_echo_stats(
-            self.ocr(), self.width, self.height,
+            boxes, width, height,
             self.echo_score_config.get("角色评分模板", DEFAULT_TEMPLATE),
             auto_match=bool(self.echo_score_config.get("自动匹配评分模板", False)),
             remembered_template=getattr(self, "auto_matched_template", None),

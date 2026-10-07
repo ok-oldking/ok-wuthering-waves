@@ -3,7 +3,7 @@
 from ok import TriggerTask, og
 
 from echo_score import DEFAULT_TEMPLATE
-from echo_capture_recovery import CaptureRecoveryMonitor
+from echo_capture_recovery import CaptureRecoveryMonitor, read_echo_frame
 from echo_stat_overlay import ECHO_STAT_PAINTER_KEY, EchoStatBoxPainter, analyze_echo_stats
 from overlay_status import paint_okww_status
 
@@ -25,6 +25,18 @@ class EchoScoreOverlayTask(TriggerTask):
         self._enabled = True
         if not self.config.get("_enabled", False):
             self.config["_enabled"] = True
+        # Official OKWW calls after_init/on_create for imported tasks, but
+        # post_init only for built-ins. The monitor must already run when OCR
+        # has no frames, otherwise the worker cannot recover itself.
+        self._ensure_capture_recovery()
+
+    def _ensure_capture_recovery(self):
+        if getattr(self, "capture_recovery", None) is not None:
+            return
+        manager = getattr(og, "device_manager", None)
+        if manager is not None:
+            self.capture_recovery = CaptureRecoveryMonitor(manager, self.executor.exit_event)
+            self.capture_recovery.start()
 
     def _ensure_overlay(self):
         # Imported scripts must initialize the host overlay lazily.
@@ -51,8 +63,7 @@ class EchoScoreOverlayTask(TriggerTask):
 
     def post_init(self):
         self._ensure_overlay()
-        self.capture_recovery = CaptureRecoveryMonitor(og.device_manager, self.executor.exit_event)
-        self.capture_recovery.start()
+        self._ensure_capture_recovery()
 
     def _settings(self):
         for task in self.get_tasks():
@@ -66,6 +77,7 @@ class EchoScoreOverlayTask(TriggerTask):
         }
 
     def run(self):
+        self._ensure_capture_recovery()
         overlay = self._ensure_overlay()
         if overlay is None:
             return False
@@ -81,8 +93,13 @@ class EchoScoreOverlayTask(TriggerTask):
                 and self.painter.rectangles):
             return False
 
+        frame = read_echo_frame(self, hwnd_window)
+        if frame is None:
+            self._clear(overlay, True)
+            return False
+        boxes, width, height = frame
         analysis = analyze_echo_stats(
-            self.ocr(), self.width, self.height,
+            boxes, width, height,
             settings.get("角色评分模板", DEFAULT_TEMPLATE),
             auto_match=bool(settings.get("自动匹配评分模板", False)),
             remembered_template=getattr(self, "auto_matched_template", None),

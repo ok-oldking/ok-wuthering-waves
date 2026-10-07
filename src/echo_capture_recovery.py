@@ -4,9 +4,39 @@ import threading
 import time
 
 from ok.util.logger import Logger
+from ok.task.exceptions import CaptureException
 
 
 logger = Logger.get_logger(__name__)
+
+
+def read_echo_frame(task, window=None):
+    """Discard OCR from a capture that disappeared or changed during reading.
+
+    Task.width/height dereference executor.method on every access. Reading
+    them after OCR races with DeviceManager clearing that method on shutdown,
+    which makes the host disable the scoring worker after an AttributeError.
+    """
+    capture = task.executor.method
+    if capture is None:
+        return None
+    width, height = capture.width, capture.height
+    if width <= 0 or height <= 0:
+        return None
+    hwnd = getattr(window, "hwnd", None)
+    try:
+        boxes = task.ocr()
+    except CaptureException:
+        return None
+    except AttributeError:
+        if task.executor.method is not capture or (window is not None and not window.exists):
+            return None
+        raise
+    if (task.executor.method is not capture or getattr(window, "hwnd", None) != hwnd
+            or (window is not None and not window.exists)
+            or (capture.width, capture.height) != (width, height)):
+        return None
+    return boxes, width, height
 
 
 class CaptureRecoveryMonitor:
@@ -19,6 +49,8 @@ class CaptureRecoveryMonitor:
         self.stale_frame_delay = stale_frame_delay
         self._last_attempt = float("-inf")
         self._last_hwnd = 0
+        self._reconnect_pending = False
+        self._window_seen_at = None
         self._stop_event = threading.Event()
         self._thread = None
 
@@ -48,7 +80,12 @@ class CaptureRecoveryMonitor:
         window = getattr(manager, "hwnd_window", None)
         hwnd = getattr(window, "hwnd", 0) if getattr(window, "exists", False) else 0
         if not hwnd:
+            if self._last_hwnd:
+                # Windows can reuse the same HWND for the next game process.
+                # Remember the loss instead of treating it as a first start.
+                self._reconnect_pending = True
             self._last_hwnd = 0
+            self._window_seen_at = None
             self._last_attempt = float("-inf")
             return False
         if not getattr(window, "pos_valid", True):
@@ -60,6 +97,10 @@ class CaptureRecoveryMonitor:
             return False
         now = time.monotonic()
         hwnd_changed = self._last_hwnd not in (0, hwnd)
+        if hwnd_changed:
+            self._reconnect_pending = True
+        if self._window_seen_at is None or hwnd_changed:
+            self._window_seen_at = now
         self._last_hwnd = hwnd
         preferred = manager.get_preferred_device()
         preferred_hwnd = preferred.get("real_hwnd") if preferred else None
@@ -74,16 +115,17 @@ class CaptureRecoveryMonitor:
             "EchoStatOverlayTask", "EchoScoreOverlayTask",
         )
         stale_frame = (
-            last_frame > 0 and time.time() - last_frame >= self.stale_frame_delay
+            (last_frame > 0 and time.time() - last_frame >= self.stale_frame_delay
+             or last_frame <= 0 and now - self._window_seen_at >= self.stale_frame_delay)
             and not another_task_running
         )
-        if not (hwnd_changed or wrong_selection or not connected or stale_frame):
+        if not (self._reconnect_pending or wrong_selection or not connected or stale_frame):
             return False
         if now - self._last_attempt < self.retry_delay:
             return False
         self._last_attempt = now
         reason = (
-            "new game HWND" if hwnd_changed else
+            "game window restarted" if self._reconnect_pending else
             "stale selected HWND" if wrong_selection else
             "capture disconnected" if not connected else "no recent frames"
         )
@@ -98,4 +140,7 @@ class CaptureRecoveryMonitor:
             except Exception as error:
                 logger.error("Failed to close stale Echo capture", error)
         manager.refresh()
+        # Keep the pending event until refresh was requested, even if an HWND
+        # change happened while retries were throttled or refresh raised.
+        self._reconnect_pending = False
         return True
