@@ -187,17 +187,19 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 if self.pick_echo():
                     logger.info(f'farm echo on the face')
                     dropped = True
-                elif self.config.get('Echo Pickup Method', "Yolo") == "Yolo":
-                    dropped = \
-                        self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=self.yolo_time_out,
-                                            threshold=self.yolo_threshold)[0]
-                    logger.info(f'farm echo yolo find {dropped}')
-                elif self.config.get('Echo Pickup Method', "Yolo") == "Run in Circle":
-                    dropped = self.run_in_circle_to_find_echo(circle_count=2)
-                    logger.info(f'farm echo walk_circle_find_echo {dropped}')
                 else:
-                    dropped = self.walk_find_echo()
-                    logger.info(f'farm echo walk_find_echo {dropped}')
+                    self.middle_click(after_sleep=0.2)
+                    if self.config.get('Echo Pickup Method', "Yolo") == "Yolo":
+                        dropped = \
+                            self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=self.yolo_time_out,
+                                                threshold=self.yolo_threshold)[0]
+                        logger.info(f'farm echo yolo find {dropped}')
+                    elif self.config.get('Echo Pickup Method', "Yolo") == "Run in Circle":
+                        dropped = self.run_in_circle_to_find_echo(circle_count=2)
+                        logger.info(f'farm echo walk_circle_find_echo {dropped}')
+                    else:
+                        dropped = self.walk_find_echo()
+                        logger.info(f'farm echo walk_find_echo {dropped}')
                 self.incr_drop(dropped)
                 if not self.bypass_end_wait:
                     if dropped and not self._has_treasure:
