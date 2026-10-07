@@ -105,7 +105,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.is_revived = True
         return True
 
-    def run(self):
+    def run(self, retries=3):
         # 一条龙经 run_task_by_class 调用时执行器不会设置 start_time, 每小时声骸数会按 1970 年起算而恒为 0;
         # 领奖/月卡重试会再次进入 run, 已有计数时不重新计时
         if not self.info.get('Echo Count'):
@@ -118,8 +118,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             pass
         except Exception as e:
             logger.error('farm 4c error, try handle monthly card', e)
-            if self.handle_claim_button() or self.handle_monthly_card():
-                self.run()
+            # 有上限: 认不出的双按钮弹窗会被当成领奖弹窗关掉, 重进后又弹, 无限循环 (#1649)
+            if retries > 0 and (self.handle_claim_button() or self.handle_monthly_card()):
+                self.run(retries - 1)
             else:
                 raise
 
@@ -298,7 +299,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         if is_team:
             if teleport_to_boss == 'Weekly Challenge':
                 self.click_configured_boss_level()
-                self.click(0.880, 0.911, after_sleep=2)
+                self.click_solo_challenge()
             self.click_team_challenge()
         else:
             self.realm_entry_at_heal_point = False  # 传送到 boss 附近再走进本, 退本不会回到信标
@@ -349,7 +350,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.send_key('f', after_sleep=3)
         self.click_configured_boss_level()
         self.sleep(1)
-        self.click(0.880, 0.911, after_sleep=2)
+        self.click_solo_challenge()
         self.click(0.908, 0.919, after_sleep=5)
         self.wait_in_team_and_world(time_out=120)
         self._in_realm = True
@@ -369,6 +370,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         if not level_box:
             raise RuntimeError(f'Can not find boss level {boss_level}')
         self.click_box(level_box)
+
+    def click_solo_challenge(self):
+        self.click(0.880, 0.911, after_sleep=2)
+        # 结晶波片(含备用)不足时, 进队伍界面前会弹「无法获取奖励, 是否继续进入」;
+        # 勾选本次登录不再提示并确认, 刷声骸不需要领奖励. 弹窗点击后立即出现, 不弹时只多等 1 秒
+        self.wait_click_skip_dialog_confirm(time_out=1)
 
     def handle_boss_restart_after_treasure(self):
         self._has_treasure = True

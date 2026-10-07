@@ -930,6 +930,9 @@ msgstr ""
 msgid "Rover: Spectro"
 msgstr "漂泊者・回折"
 
+msgid "Rover: Electro"
+msgstr "漂泊者・電導"
+
 msgid "Rover: Havoc"
 msgstr "漂泊者・消滅"
 
