@@ -14,7 +14,7 @@ from ok.core.script_packager import export_script
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_SOURCE = ROOT / "packaging" / "echo_score"
 FILES = (
-    "echo_score.py", "echo_text.py", "echo_capture_recovery.py", "xwuid_echo_data.py", "echo_stat_overlay.py",
+    "echo_score.py", "echo_text.py", "echo_capture_recovery.py", "echo_runtime.py", "echo_overlay_recovery.py", "xwuid_echo_data.py", "echo_stat_overlay.py",
     "overlay_status.py", "echo_score_settings.py", "echo_score_task.py",
 )
 IMPORT_FILES = FILES + ("README.md", "manifest.json")
@@ -33,6 +33,8 @@ def _stage_package(stage):
                 ("from src.echo_text import", "from echo_text import")))
     shutil.copy2(ROOT / "src" / "echo_text.py", stage / "echo_text.py")
     shutil.copy2(ROOT / "src" / "echo_capture_recovery.py", stage / "echo_capture_recovery.py")
+    shutil.copy2(ROOT / "src" / "echo_runtime.py", stage / "echo_runtime.py")
+    shutil.copy2(ROOT / "src" / "echo_overlay_recovery.py", stage / "echo_overlay_recovery.py")
     shutil.copy2(ROOT / "src" / "xwuid_echo_data.py", stage / "xwuid_echo_data.py")
     _copy_text(ROOT / "src" / "gui" / "EchoStatOverlay.py", stage / "echo_stat_overlay.py",
                (("from src.echo_score import", "from echo_score import"),

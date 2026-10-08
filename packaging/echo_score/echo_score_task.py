@@ -3,7 +3,9 @@
 from ok import TriggerTask, og
 
 from echo_score import DEFAULT_TEMPLATE
-from echo_capture_recovery import CaptureRecoveryMonitor, read_echo_frame
+from echo_capture_recovery import read_echo_frame
+from echo_runtime import EchoScoreRuntime
+from echo_overlay_recovery import ensure_echo_overlay
 from echo_stat_overlay import ECHO_STAT_PAINTER_KEY, EchoStatBoxPainter, analyze_echo_stats
 from overlay_status import paint_okww_status
 
@@ -28,42 +30,31 @@ class EchoScoreOverlayTask(TriggerTask):
         # Official OKWW calls after_init/on_create for imported tasks, but
         # post_init only for built-ins. The monitor must already run when OCR
         # has no frames, otherwise the worker cannot recover itself.
-        self._ensure_capture_recovery()
+        self._ensure_runtime()
 
-    def _ensure_capture_recovery(self):
-        if getattr(self, "capture_recovery", None) is not None:
+    def _ensure_runtime(self):
+        if getattr(self, "score_runtime", None) is not None:
             return
         manager = getattr(og, "device_manager", None)
         if manager is not None:
-            self.capture_recovery = CaptureRecoveryMonitor(manager, self.executor.exit_event)
-            self.capture_recovery.start()
+            self.score_runtime = EchoScoreRuntime(self, manager, self.executor.exit_event)
+            self.capture_recovery = self.score_runtime.recovery
+            self.score_runtime.start()
 
     def _ensure_overlay(self):
-        # Imported scripts must initialize the host overlay lazily.
-        try:
-            from ok.ui.overlay import win32_gdi
-            win32_gdi.HWND_TOPMOST = -2  # HWND_NOTOPMOST
-        except ImportError:
-            pass
         app = getattr(og, "app", None)
-        if app is None:
-            return None
         # ``set_overlay_setting('boxes', False)`` is the lifecycle switch for
         # the *entire* overlay, not merely OCR boxes: it persists
         # ``use_overlay=False`` and closes the native window. Keep that global
         # lifecycle enabled, then independently disable only debug boxes on the
         # overlay instance. Do not toggle True every frame, which could flash
         # OCR boxes before the following False call.
-        if not app.ok_config.get("use_overlay", False):
-            app.set_overlay_setting("boxes", True)
-        overlay = app.get_overlay_view()
-        if overlay is not None:
-            overlay.set_boxes_enabled(False)
-        return overlay
+        window = getattr(getattr(og, "device_manager", None), "hwnd_window", None)
+        return ensure_echo_overlay(app, window)
 
     def post_init(self):
         self._ensure_overlay()
-        self._ensure_capture_recovery()
+        self._ensure_runtime()
 
     def _settings(self):
         for task in self.get_tasks():
@@ -77,7 +68,15 @@ class EchoScoreOverlayTask(TriggerTask):
         }
 
     def run(self):
-        self._ensure_capture_recovery()
+        self._ensure_runtime()
+        # Recognition runs independently: TaskExecutor can pause automatically
+        # or skip every trigger before run() when a game has no capture frames.
+        return False
+
+    def score_enabled(self):
+        return bool(self._settings().get("启用声骸评分", True))
+
+    def render_score(self):
         overlay = self._ensure_overlay()
         if overlay is None:
             return False
@@ -93,11 +92,13 @@ class EchoScoreOverlayTask(TriggerTask):
                 and self.painter.rectangles):
             return False
 
-        frame = read_echo_frame(self, hwnd_window)
+        frame = read_echo_frame(self, hwnd_window, direct=True)
         if frame is None:
             self._clear(overlay, True)
             return False
         boxes, width, height = frame
+        if getattr(self, "score_runtime", None) is not None and self.score_runtime.stopped:
+            return False
         analysis = analyze_echo_stats(
             boxes, width, height,
             settings.get("角色评分模板", DEFAULT_TEMPLATE),
@@ -117,8 +118,8 @@ class EchoScoreOverlayTask(TriggerTask):
             else:
                 overlay.clear_draw(STATUS_PAINTER_KEY)
         else:
-            self._clear(overlay)
-        return False
+            self._clear(overlay, True)
+        return True
 
     def _clear(self, overlay, include_status=False):
         self.painter.update([])
@@ -127,8 +128,8 @@ class EchoScoreOverlayTask(TriggerTask):
             overlay.clear_draw(STATUS_PAINTER_KEY)
 
     def on_destroy(self):
-        if recovery := getattr(self, "capture_recovery", None):
-            recovery.stop()
+        if runtime := getattr(self, "score_runtime", None):
+            runtime.stop()
         overlay = self.get_overlay_view()
         if overlay is not None:
             self._clear(overlay, True)

@@ -10,7 +10,7 @@ from ok.task.exceptions import CaptureException
 logger = Logger.get_logger(__name__)
 
 
-def read_echo_frame(task, window=None):
+def read_echo_frame(task, window=None, *, direct=False, debug_boxes=False):
     """Discard OCR from a capture that disappeared or changed during reading.
 
     Task.width/height dereference executor.method on every access. Reading
@@ -20,12 +20,30 @@ def read_echo_frame(task, window=None):
     capture = task.executor.method
     if capture is None:
         return None
-    width, height = capture.width, capture.height
-    if width <= 0 or height <= 0:
-        return None
     hwnd = getattr(window, "hwnd", None)
     try:
-        boxes = task.ocr()
+        if direct:
+            # Never use executor.frame: it waits indefinitely while the host
+            # is paused and may retain a frame belonging to the previous game.
+            if window is not None and (not window.exists or not getattr(window, "pos_valid", True)):
+                return None
+            image = capture.get_frame()
+            if image is None:
+                return None
+            height, width = image.shape[:2]
+            if width <= 0 or height <= 0:
+                return None
+            from ok.feature.Box import Box, sort_boxes
+            boxes, _ = task.ocr_fun("default")(
+                Box(0, 0, width, height), image, None, 1.0,
+                task.ocr_default_threshold, "default",
+            )
+            boxes = sort_boxes(boxes)
+        else:
+            width, height = capture.width, capture.height
+            if width <= 0 or height <= 0:
+                return None
+            boxes = task.ocr()
     except CaptureException:
         return None
     except AttributeError:
@@ -36,17 +54,22 @@ def read_echo_frame(task, window=None):
             or (window is not None and not window.exists)
             or (capture.width, capture.height) != (width, height)):
         return None
+    if direct and debug_boxes:
+        from ok.core.events import communicate
+        communicate.emit_draw_box("echo-score-ocr", boxes, "red")
     return boxes, width, height
 
 
 class CaptureRecoveryMonitor:
     def __init__(self, device_manager, exit_event, interval=1.0, retry_delay=5.0,
-                 stale_frame_delay=10.0):
+                 stale_frame_delay=10.0, allow_paused=None):
         self.device_manager = device_manager
         self.exit_event = exit_event
         self.interval = interval
         self.retry_delay = retry_delay
         self.stale_frame_delay = stale_frame_delay
+        self.allow_paused = allow_paused
+        self._score_frame_time = 0
         self._last_attempt = float("-inf")
         self._last_hwnd = 0
         self._reconnect_pending = False
@@ -63,6 +86,9 @@ class CaptureRecoveryMonitor:
 
     def stop(self):
         self._stop_event.set()
+
+    def record_frame(self):
+        self._score_frame_time = time.time()
 
     def _run(self):
         while not self.exit_event.is_set() and not self._stop_event.wait(self.interval):
@@ -93,7 +119,7 @@ class CaptureRecoveryMonitor:
 
         executor = getattr(manager, "executor", None)
         capture = getattr(manager, "capture_method", None)
-        if executor is None or executor.paused:
+        if executor is None or (executor.paused and not (self.allow_paused and self.allow_paused())):
             return False
         now = time.monotonic()
         hwnd_changed = self._last_hwnd not in (0, hwnd)
@@ -109,15 +135,16 @@ class CaptureRecoveryMonitor:
             and preferred_hwnd not in (None, 0, hwnd)
         )
         connected = capture is not None and capture.connected()
-        last_frame = getattr(executor, "_last_frame_time", 0)
+        last_frame = max(getattr(executor, "_last_frame_time", 0), self._score_frame_time)
         current_task = getattr(executor, "current_task", None)
-        another_task_running = current_task is not None and current_task.__class__.__name__ not in (
+        another_task_running = not executor.paused and current_task is not None and current_task.__class__.__name__ not in (
             "EchoStatOverlayTask", "EchoScoreOverlayTask",
         )
         stale_frame = (
             (last_frame > 0 and time.time() - last_frame >= self.stale_frame_delay
              or last_frame <= 0 and now - self._window_seen_at >= self.stale_frame_delay)
             and not another_task_running
+            and getattr(window, "visible", True)
         )
         if not (self._reconnect_pending or wrong_selection or not connected or stale_frame):
             return False

@@ -18,8 +18,6 @@ class Globals:
     )
 
     def __init__(self, exit_event):
-        from src.echo_capture_recovery import CaptureRecoveryMonitor
-
         notification_config = og.global_config.get_config("Notification")
         for key in self._notification_switches:
             if notification_config.get(key):
@@ -28,8 +26,6 @@ class Globals:
         if app is not None:
             app.get_overlay_view()
         communicate.window.connect(self._update_game_overlay)
-        self.capture_recovery = CaptureRecoveryMonitor(og.device_manager, exit_event)
-        self.capture_recovery.start()
 
     def on_show_main_window(self, main_window):
         from src.gui.SearchableTemplateDropdown import install_searchable_template_dropdown

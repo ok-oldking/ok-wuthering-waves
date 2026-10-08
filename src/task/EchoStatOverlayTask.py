@@ -4,6 +4,8 @@ from ok import TriggerTask, og
 
 from src.echo_score import DEFAULT_TEMPLATE
 from src.echo_capture_recovery import read_echo_frame
+from src.echo_runtime import EchoScoreRuntime
+from src.echo_overlay_recovery import ensure_echo_overlay
 from src.gui.EchoStatOverlay import ECHO_STAT_PAINTER_KEY, EchoStatBoxPainter, analyze_echo_stats
 from src.gui.OverlayStatus import paint_okww_status
 
@@ -27,6 +29,13 @@ class EchoStatOverlayTask(TriggerTask):
         self._enabled = True
         if not self.config.get("_enabled", False):
             self.config["_enabled"] = True
+        self._ensure_runtime()
+
+    def _ensure_runtime(self):
+        manager = getattr(og, "device_manager", None)
+        if manager is not None and getattr(self, "score_runtime", None) is None:
+            self.score_runtime = EchoScoreRuntime(self, manager, self.executor.exit_event)
+            self.score_runtime.start()
 
     def post_init(self):
         app = getattr(og, "app", None)
@@ -34,25 +43,36 @@ class EchoStatOverlayTask(TriggerTask):
             app.set_overlay_setting("boxes", True)
 
     def run(self):
-        overlay = self.get_overlay_view()
+        self._ensure_runtime()
+        return False
+
+    def score_enabled(self):
+        return bool(self.echo_score_config.get("启用声骸评分", True))
+
+    def render_score(self):
+        hwnd_window = getattr(getattr(og, "device_manager", None), "hwnd_window", None)
+        overlay = ensure_echo_overlay(
+            getattr(og, "app", None), hwnd_window,
+            debug_boxes=bool(self.debug_config.get("Show Debug Boxes", False)),
+        )
         if overlay is None:
             return False
         if not self.echo_score_config.get("启用声骸评分", True):
             self._clear(overlay, include_status=True)
             return False
 
-        overlay.set_boxes_enabled(bool(self.debug_config.get("Show Debug Boxes", False)))
-
-        hwnd_window = getattr(getattr(og, "device_manager", None), "hwnd_window", None)
         if (hwnd_window is not None and hwnd_window.exists and not hwnd_window.visible
                 and self.painter.rectangles):
             return False
 
-        frame = read_echo_frame(self, hwnd_window)
+        frame = read_echo_frame(self, hwnd_window, direct=True,
+                                debug_boxes=bool(self.debug_config.get("Show Debug Boxes", False)))
         if frame is None:
             self._clear(overlay, include_status=True)
             return False
         boxes, width, height = frame
+        if getattr(self, "score_runtime", None) is not None and self.score_runtime.stopped:
+            return False
         analysis = analyze_echo_stats(
             boxes, width, height,
             self.echo_score_config.get("角色评分模板", DEFAULT_TEMPLATE),
@@ -77,7 +97,7 @@ class EchoStatOverlayTask(TriggerTask):
         else:
             overlay.clear_draw(ECHO_STAT_PAINTER_KEY)
             overlay.clear_draw(STATUS_PAINTER_KEY)
-        return False
+        return True
 
     def _clear(self, overlay, include_status=False):
         self.painter.update([])
@@ -86,6 +106,8 @@ class EchoStatOverlayTask(TriggerTask):
             overlay.clear_draw(STATUS_PAINTER_KEY)
 
     def on_destroy(self):
+        if runtime := getattr(self, "score_runtime", None):
+            runtime.stop()
         overlay = self.get_overlay_view()
         if overlay is not None:
             self._clear(overlay, include_status=True)
