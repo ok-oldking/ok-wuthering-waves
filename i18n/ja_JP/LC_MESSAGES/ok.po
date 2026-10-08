@@ -930,6 +930,9 @@ msgstr ""
 msgid "Rover: Spectro"
 msgstr "漂泊者・回折"
 
+msgid "Rover: Electro"
+msgstr "漂泊者・電導"
+
 msgid "Rover: Havoc"
 msgstr "漂泊者・消滅"
 
@@ -1392,3 +1395,9 @@ msgstr "複数アカウント設定タスク"
 
 msgid "Log in to accounts in card order and run tasks with independent configurations"
 msgstr "カードの順番でアカウントにログインし、個別の設定でタスクを実行します"
+
+msgid "Special Nightmare"
+msgstr "特異悪夢"
+
+msgid "Which Special Nightmare to Teleport"
+msgstr "テレポートする特異悪夢"

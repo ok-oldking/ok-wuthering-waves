@@ -931,6 +931,9 @@ msgstr "헬퍼 메서드, 태스크 API, 상태, 교체, 재사용 대기시간,
 msgid "Rover: Spectro"
 msgstr "방랑자 · 회절"
 
+msgid "Rover: Electro"
+msgstr "방랑자 · 전도"
+
 msgid "Rover: Havoc"
 msgstr "방랑자 · 인멸"
 
@@ -1393,3 +1396,9 @@ msgstr "다중 계정 설정 작업"
 
 msgid "Log in to accounts in card order and run tasks with independent configurations"
 msgstr "카드 순서대로 계정에 로그인하고 계정별 설정으로 작업을 실행합니다"
+
+msgid "Special Nightmare"
+msgstr "특이 악몽"
+
+msgid "Which Special Nightmare to Teleport"
+msgstr "텔레포트할 특이 악몽 번호"

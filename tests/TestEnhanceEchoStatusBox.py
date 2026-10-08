@@ -49,6 +49,26 @@ class FakeEnhanceTask:
         return None
 
 
+class FakeSelectTask:
+    """Scripts the +0 check after each click on the bag grid.
+
+    3.7 keeps the just-enhanced echo selected (and scrolled into view) when
+    returning to the bag, so the task must pick a +0 echo itself.
+    """
+
+    targets = {(0.13, 0.21): 'first card', (0.35, 0.917): 'sort order'}
+
+    def __init__(self, zero_level_results):
+        self.zero_level_results = list(zero_level_results)
+        self.clicks = []
+
+    def click(self, x, y, after_sleep=0):
+        self.clicks.append(self.targets[(x, y)])
+
+    def is_0_level(self):
+        return self.zero_level_results.pop(0)
+
+
 class TestEnhanceEchoStatusBox(unittest.TestCase):
     # Sibling templates deliberately differ in size, with the sibling BIGGER
     # than the anchor box: the geometry that crashed the lock pair in
@@ -91,6 +111,27 @@ class TestEnhanceEchoStatusBox(unittest.TestCase):
         self.assertEqual(threshold, 0.7)
         self.assertCovers(search, locked)
         self.assertCovers(search, not_locked)
+
+    def test_first_card_is_used_when_it_is_0_level(self):
+        task = FakeSelectTask([True])
+
+        self.assertTrue(EnhanceEchoTask.select_0_level_echo(task))
+
+        self.assertEqual(['first card'], task.clicks)
+
+    def test_list_returns_to_top_when_first_visible_card_is_enhanced(self):
+        task = FakeSelectTask([False, True])
+
+        self.assertTrue(EnhanceEchoTask.select_0_level_echo(task))
+
+        self.assertEqual(['first card', 'sort order', 'sort order', 'first card'], task.clicks)
+
+    def test_no_0_level_echo_left(self):
+        task = FakeSelectTask([False, False])
+
+        self.assertFalse(EnhanceEchoTask.select_0_level_echo(task))
+
+        self.assertEqual(['first card', 'sort order', 'sort order', 'first card'], task.clicks)
 
 
 if __name__ == '__main__':

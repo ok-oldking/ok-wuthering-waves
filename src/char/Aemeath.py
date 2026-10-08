@@ -18,11 +18,16 @@ class Aemeath(BaseChar):
     def lib2_available(self):
         return bool(self.task.find_one('aemeath_lib2', threshold=0.7))
 
+    def waits_for_intro(self):
+        # 有副C(爱达千、爱达穗、爱琳莫)时只在变奏入场输出，两个队友都不是副C时由爱弥斯站场输出
+        teammates = [char for char in getattr(self.task, 'chars', []) if char and char is not self]
+        return len(teammates) != 2 or any(char.is_sub_dps for char in teammates)
+
     def do_perform(self):
         self.enhance_e_cast_this_turn = False
         self.lib2_cast_this_turn = False
         self.must_cast_lib2_this_turn = self.has_all_buff() and self.has_intro
-        if not self.must_cast_lib2_this_turn:
+        if not self.must_cast_lib2_this_turn and self.waits_for_intro():
             while self.has_long_action():
                 if self.handle_heavy():
                     self.sleep(0.3)
