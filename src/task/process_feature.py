@@ -1,4 +1,4 @@
-from src.task.BaseWWTask import convert_bw, binarize_for_matching, convert_dialog_icon
+from src.task.BaseWWTask import convert_bw, binarize_for_matching, convert_dialog_icon, isolate_gua_strokes
 
 
 def process_feature(feature_name, feature):
@@ -14,3 +14,5 @@ def process_feature(feature_name, feature):
         feature.mat = binarize_for_matching(feature.mat)
     elif feature_name == 'e_forte':
         feature.mat = binarize_for_matching(feature.mat, 220)
+    elif feature_name in ('douling_gen', 'douling_zhen'):
+        feature.mat = isolate_gua_strokes(feature.mat)
