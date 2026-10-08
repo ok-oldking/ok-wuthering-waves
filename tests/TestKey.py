@@ -52,6 +52,15 @@ class TestKey(TaskTestCase):
         self.assertEqual(self.task.key_config['Echo Key'], 'a')
         self.assertEqual(self.task.key_config['Liberation Key'], 'a')
 
+    def test_mouse_button_hotkey_not_overridden(self):
+        self.task.do_reset_to_false()
+        self.task.key_config['Echo Key'] = 'mouse4'
+        self.task.key_config['Liberation Key'] = 'mouse5'
+        self.set_image('tests/images/in_combat.png')
+        self.task.load_hotkey(force=True)
+        self.assertEqual(self.task.key_config['Echo Key'], 'mouse4')
+        self.assertEqual(self.task.key_config['Liberation Key'], 'mouse5')
+
 
 if __name__ == '__main__':
     unittest.main()
