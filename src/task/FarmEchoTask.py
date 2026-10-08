@@ -89,6 +89,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.in_realm_check(20)
         return True
 
+    def _unbuffed_non_main_target(self, current_char, candidates):
+        # 刷声骸以主C输出为主：奶没带变奏时不去切另一个没增益的奶，直接回主C
+        if current_char.is_healer:
+            candidates = [char for char in candidates if not char.is_healer]
+        return super()._unbuffed_non_main_target(current_char, candidates)
+
     def revive_action(self):
         if self._in_realm:
             # 副本内只有开启传送才能回到 boss，此时先退本回血，由 do_run 重新传送

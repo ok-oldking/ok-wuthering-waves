@@ -796,6 +796,30 @@ class TestChar(TaskTestCase):
         self.assertTrue(current.has_intro)
         self.assertFalse(current.has_sub_dps_intro)
 
+    def test_farm_echo_healer_returns_to_main_dps(self):
+        class Task:
+            def time_elapsed_accounting_for_freeze(self, start, intro_motion_freeze=False):
+                if start < 0:
+                    return 10000
+                return time.time() - start
+
+        task = Task()
+        healer = BaseChar(task, 0, char_type=CharType.HEALER)
+        other_healer = BaseChar(task, 1, char_type=CharType.HEALER)
+        sub_dps = BaseChar(task, 1, char_type=CharType.SUB_DPS)
+        main_dps = BaseChar(task, 2, char_type=CharType.MAIN_DPS)
+
+        auto = AutoCombatTask.__new__(AutoCombatTask)
+        auto.chars = [healer, other_healer, main_dps]
+        self.assertEqual(auto._choose_switch_target(healer, False), other_healer)
+
+        farm = FarmEchoTask.__new__(FarmEchoTask)
+        farm.chars = [healer, other_healer, main_dps]
+        self.assertEqual(farm._choose_switch_target(healer, False), main_dps)
+
+        farm.chars = [healer, sub_dps, main_dps]
+        self.assertEqual(farm._choose_switch_target(healer, False), sub_dps)
+
     def _make_support_chisa(self, has_intro, buffed=False):
         class Task:
             char_config = {'Chisa DPS': False}
