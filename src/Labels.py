@@ -96,6 +96,7 @@ class Labels(str, Enum):
     char_jiyan = 'char_jiyan'
     char_linnai = 'char_linnai'
     char_linnai2 = 'char_linnai2'
+    char_lingyang = 'char_lingyang'
     char_lucilla = 'char_lucilla'
     char_lucy = 'char_lucy'
     char_luhesi = 'char_luhesi'
