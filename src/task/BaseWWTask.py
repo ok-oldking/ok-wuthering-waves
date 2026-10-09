@@ -660,6 +660,20 @@ class BaseWWTask(BaseTask):
             logger.debug(f'farm echo found echo move forward walk_until_f to find echo')
             return self.pick_f()
 
+    def back_and_forth_find_echo(self, forward_time=2.0, backward_time=4.0):
+        target_text = self.absorb_echo_text()
+        if self.find_f_with_text(target_text=target_text):
+            return self.pick_f() or self.pick_echo()
+        if self.send_key_and_wait_f('w', raise_if_not_found=False, time_out=forward_time,
+                                    target_text=target_text, check_combat=True):
+            logger.debug('back and forth found echo moving forward')
+            return self.pick_f() or self.pick_echo()
+        if self.send_key_and_wait_f('s', raise_if_not_found=False, time_out=backward_time,
+                                    target_text=target_text, check_combat=True):
+            logger.debug('back and forth found echo moving backward')
+            return self.pick_f() or self.pick_echo()
+        return False
+
     def incr_drop(self, dropped):
         if dropped:
             self.info['Echo Count'] = self.info.get('Echo Count', 0) + 1

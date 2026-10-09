@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import Mock, call
 
 from src.task.FarmEchoTask import FarmEchoTask
+from src.task.BaseWWTask import BaseWWTask
 
 
 def make_task(config=None):
@@ -21,8 +22,8 @@ def make_task(config=None):
         'in_realm', 'manage_boss_parameters', 'init_parameters', 'teleport_to_boss_enabled',
         'teleport_to_configured_boss_and_prepare', 'in_realm_check', 'manage_boss_interactions',
         'in_combat', 'check_boss_name', 'combat_once', 'pick_echo', 'middle_click',
-        'yolo_find_echo', 'run_in_circle_to_find_echo', 'walk_find_echo', 'incr_drop',
-        'sleep', 'log_info', 'log_debug'
+        'yolo_find_echo', 'run_in_circle_to_find_echo', 'walk_find_echo',
+        'back_and_forth_find_echo', 'incr_drop', 'sleep', 'log_info', 'log_debug'
     ):
         setattr(task, name, Mock())
     task.in_realm.return_value = False
@@ -77,6 +78,56 @@ class TestFarmEchoPickup(unittest.TestCase):
             steps.mock_calls
         )
         task.incr_drop.assert_called_once_with(True)
+
+    def test_pick_echo_failure_triggers_middle_click_before_back_and_forth(self):
+        task = make_task({"Repeat Farm Count": 1, "Echo Pickup Method": "Back and Forth"})
+        task.pick_echo.return_value = False
+        task.back_and_forth_find_echo.return_value = True
+        steps = Mock()
+        steps.attach_mock(task.middle_click, 'middle_click')
+        steps.attach_mock(task.back_and_forth_find_echo, 'back_and_forth_find_echo')
+
+        task.do_run()
+
+        self.assertEqual(
+            [call.middle_click(after_sleep=0.2), call.back_and_forth_find_echo()],
+            steps.mock_calls
+        )
+        task.incr_drop.assert_called_once_with(True)
+
+    def test_back_and_forth_find_echo_forward_success(self):
+        task = BaseWWTask.__new__(BaseWWTask)
+        task.absorb_echo_text = Mock(return_value="Echo")
+        task.find_f_with_text = Mock(return_value=False)
+        task.send_key_and_wait_f = Mock(return_value=True)
+        task.pick_f = Mock(return_value=True)
+        task.pick_echo = Mock(return_value=False)
+
+        res = BaseWWTask.back_and_forth_find_echo(task, forward_time=2.0, backward_time=4.0)
+
+        self.assertTrue(res)
+        task.send_key_and_wait_f.assert_called_once_with(
+            'w', raise_if_not_found=False, time_out=2.0, target_text="Echo", check_combat=True
+        )
+
+    def test_back_and_forth_find_echo_backward_success(self):
+        task = BaseWWTask.__new__(BaseWWTask)
+        task.absorb_echo_text = Mock(return_value="Echo")
+        task.find_f_with_text = Mock(return_value=False)
+        task.send_key_and_wait_f = Mock(side_effect=[False, True])
+        task.pick_f = Mock(return_value=True)
+        task.pick_echo = Mock(return_value=False)
+
+        res = BaseWWTask.back_and_forth_find_echo(task, forward_time=2.0, backward_time=4.0)
+
+        self.assertTrue(res)
+        self.assertEqual(
+            [
+                call('w', raise_if_not_found=False, time_out=2.0, target_text="Echo", check_combat=True),
+                call('s', raise_if_not_found=False, time_out=4.0, target_text="Echo", check_combat=True),
+            ],
+            task.send_key_and_wait_f.mock_calls
+        )
 
 
 if __name__ == '__main__':
