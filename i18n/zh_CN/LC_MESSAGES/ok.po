@@ -1439,6 +1439,12 @@ msgstr "队伍已删除。"
 msgid "JingRan"
 msgstr "景燃"
 
+msgid "Multi Account Config Task"
+msgstr "多账号配置执行"
+
+msgid "Log in to accounts in card order and run tasks with independent configurations"
+msgstr "按卡片顺序登录账号，并使用各账号的独立配置执行任务"
+
 msgid "Hsin"
 msgstr "心"
 
