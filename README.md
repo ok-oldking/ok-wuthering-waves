@@ -103,6 +103,8 @@ python main.py
 python main_debug.py
 ```
 
+> **注意（Windows）**: 如果游戏客户端以管理员权限运行（例如通过 WeGame 启动），ok-ww 也必须以管理员权限运行（右键 `pythonw.exe` 的快捷方式 → "以管理员身份运行"，或在管理员 PowerShell 中运行命令）。否则 Windows 会拒绝向游戏窗口发送按键/点击（`PostMessage` 错误码 5），自动登录等所有交互都不会生效。
+
 ### 命令行参数
 
 您可以通过命令行参数实现自动化启动。
