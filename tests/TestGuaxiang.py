@@ -156,6 +156,7 @@ class TestGuaxiangCharacterIntegration(unittest.TestCase):
     def make_char(self, name='mixed4', hud=True):
         from src.char.Douling import Douling
         char = Douling.__new__(Douling)
+        char.index = 1
         char._segment = 1
         char._waiting_for_guaxiang = False
         char._guaxiang_error_logged = False
@@ -177,8 +178,9 @@ class TestGuaxiangCharacterIntegration(unittest.TestCase):
             with self.subTest(name=name):
                 char = self.make_char(name, hud)
                 self.assertEqual(char.recognize_guaxiang('entry'), expected)
-                char.logger.info.assert_called_once()
-                message = char.logger.info.call_args.args[0]
+                self.assertEqual(char.logger.info.call_count, 2)
+                message = next(call.args[0] for call in char.logger.info.call_args_list
+                               if call.args[0].startswith('[DoulingRecognition]'))
                 self.assertIn('point=entry', message)
                 self.assertIn('status=uncertain reason=' if expected is None
                               else f'count={len(expected)} sequence=', message)
@@ -195,7 +197,7 @@ class TestGuaxiangCharacterIntegration(unittest.TestCase):
             char._do_segment2 = lambda: events.append(2)
             char.do_perform()
             self.assertEqual(events, ['entry', segment])
-            char.logger.info.assert_called_once()
+            self.assertEqual(char.logger.info.call_count, 2)
 
     def test_actual_hud_detection_on_all_screenshots(self):
         from ok.feature.FeatureSet import FeatureSet

@@ -31,10 +31,15 @@ COCO 标签 `douling_gua_blue`、`douling_gua_yellow` 在模板页中的标注�
 `configs/custom_teams/<队伍名>/Douling.py` 如果存在，可能覆盖内置角色实现，
 验收时应确认实际加载的代码。
 
+卜灵能量识别与 `entry` 和每次 `before_heavy` 卦象识别同步，复用同一份
+截图副本；能量状态不作为四卦象门控的附加条件。上场增加一条
+`[DoulingEnergy]` 日志，门控成功/失败汇总增加 `energy` 字段。
+详见 `tests/images/douling_energy/README.md`。
+
 第二段跳跃及落地处理之后，进入重击前的四卦象门控：
 
 - 首轮立即刷新并识别，期限内确认四个卦象就返回成功，继续原有
-  2.5 秒重击、声骸、大招及切人。
+  2.5 秒重击及持续采样、声骸、大招及切人。
 - 不足四个或结果不确定时，首次允许立即普攻；后续普攻从上一次输入
   完成后至少等待 0.3 秒，慢帧不补发积压普攻。
 - 相邻识别轮询开始时间至少间隔 0.1 秒，本轮截图、识别及输入耗时
@@ -46,15 +51,24 @@ COCO 标签 `douling_gua_blue`、`douling_gua_yellow` 在模板页中的标注�
   剩余期限，但底层采集、识别或输入调用不能被此循环强制中断，实际退出
   时间仍可能晚于 3 秒。退战和手动停止任务继续通过异常中断循环。
 
-日志仅保留以下输出，不保存卦象截图、不绘框、不逐轮输出卦象识别或补卦动作：
+日志包含以下输出，不保存卦象截图、不绘框、不逐轮输出重击前补卦动作：
 
 - `[DoulingRecognition] point=entry`：确定时输出 `count` 和 `sequence`，
   不确定时输出 `status=uncertain` 与 `reason`。
+- `[DoulingEnergy] point=entry`：确定时输出 `state`，不确定时输出
+  `status=uncertain` 与 `reason`。
+- `[DoulingRecognition] point=during_heavy|after_heavy`：按下重击时开始，
+  目标每隔 0.2 秒采样一次，持续至松开重击后的 0.4 秒，逐次记录卦象和
+  能量状态。重击松开后立即执行声骸、大招和切人；剩余观察只复用后续
+  动作通过任务 `next_frame()` 自然刷新的新帧，不额外等待或影响动作条件。
+  无新帧时不采样，实际间隔受刷新频率影响，空帧、切人或 HUD 隐藏不复用
+  旧结果。`attempt` 标识重试次数，`sample` 在每次重击内连续编号。
 - `[DoulingGuaxiang] action=continue_to_heavy`：成功汇总，包含四卦象序列、
-  `attempts` 和 `elapsed`。
+  `energy`、`attempts` 和 `elapsed`。
 - `[DoulingGuaxiang] action=abort`：失败汇总，包含 `reason=timeout|max_attempts`、
-  `attempts`、`elapsed` 和最后一次 `count`。
-- 识别异常记录 WARNING，每个门控等待周期最多一次；失败汇总另计。
+  `attempts`、`elapsed` 和最后一次 `count`、`energy`。
+- 卦象与能量识别异常分别记录 WARNING，每个门控等待周期各最多一次；
+  失败汇总另计。
 
 无候选且调用方确认 HUD 有效时返回 `[]`；隐藏 HUD、无效截图、缺失资源、
 弱匹配、颜色冲突或超过四个候选返回 `None`。这不保证所有未知场景都能检测

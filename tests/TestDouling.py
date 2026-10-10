@@ -10,6 +10,7 @@ from src.char.Douling import Douling
 class TestDoulingGuaxiang(unittest.TestCase):
     def make_char(self):
         char = Douling.__new__(Douling)
+        char.index = 1
         char.task = SimpleNamespace(
             frame=np.zeros((4, 4, 3), dtype=np.uint8),
             in_team=Mock(return_value=(True, 1, 3)),
@@ -281,8 +282,11 @@ class TestDoulingGuaxiang(unittest.TestCase):
         self.assertIsNot(detector.call_args.args[0], char.task.frame)
         np.testing.assert_array_equal(detector.call_args.args[0], char.task.frame)
         char.task.screenshot.assert_not_called()
-        char.logger.info.assert_called_once_with(
+        char.logger.info.assert_any_call(
             '[DoulingRecognition] point=entry count=2 sequence=黄,蓝')
+        char.logger.info.assert_any_call(
+            '[DoulingEnergy] point=entry status=uncertain reason=invalid_frame')
+        self.assertEqual(char.logger.info.call_count, 2)
 
 
 if __name__ == '__main__':
