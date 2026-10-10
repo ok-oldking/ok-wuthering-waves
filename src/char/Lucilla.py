@@ -4,146 +4,69 @@ from src.char.BaseChar import BaseChar, SwitchPriority
 
 
 class Lucilla(BaseChar):
-    """Lucilla 自动战斗: 回路充能型 + 大招变身型角色。
+    LIBERATION_ANIMATION_TIME = 3.0
+    LIBERATION_HEAVY_TIME = 5.0
+    HEAVY_PULSE_TIME = 0.6
+    RES_HOLD_TIME = 0.8
+    CHARGE_TIME_OUT = 7.2
+    LIBERATION_CD_SKIP = 1.5
+    ECHO_WINDOW = (0.6, 4.0)
+    EXTRA_BUDGET = 4.0
+    HOLD_FIELD_OUTRO = {'char_suisui'}
 
-    机制: 长按 E 或蓄力重击各攒 1 格回路能量, 攒满 3 格大招可用; 放大招后变身进入特殊形态
-    (技能栏/大招图标消失, 视觉信号全失效), 固定时长输出后变回原建模, 再切人。
-    """
-    HOLD_TIME: float = 1.4
-    LIBERATION_ANIMATION_TIME: float = 3.0
-    LIBERATION_HEAVY_TIME: float = 15.0
-    HEAVY_PULSE_TIME: float = 0.6
-    CHARGE_TIME_OUT: float = 7.2
-    LIBERATION_CD_SKIP: float = 1.5
-    SWITCH_IN_SETTLE: float = 0.5
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.e_count = 0
+        self.check_f_on_switch = False
 
     def do_perform(self):
         if not self.perform_combat():
             self.switch_next_char()
 
     def perform_combat(self):
-        """攒能量 -> 大招可用则放大招接输出.
-
-        Returns:
-            bool: 放出了大招(并已在 try_liberation 内切人)返回 True, 否则 False.
-        """
         start = time.time()
-
-        self.task.wait_until(lambda: self.task.in_team()[0], time_out=0.8)
-        self.sleep(self.SWITCH_IN_SETTLE, check_combat=False)  # 等技能栏渲染稳定再判大招
+        self.task.wait_until(lambda: self.task.in_team()[0], time_out=0.2)
+        if self.has_intro:
+            # 入场动画期间的输入会被吞, 不是延迟执行
+            self.sleep(self.intro_motion_freeze_duration, check_combat=False)
         self.task.next_frame()
 
-        if self.try_liberation():
-            return True
+        self.e_count = 0
+        # 接穗穗延奏时手上已经有两格, 补一格即可; 空手入场要攒满三格
+        target = 1 if self.has_intro else 3
+        hold_field = self.has_intro and self.check_outro() in self.HOLD_FIELD_OUTRO
 
-        while time.time() - start < self.CHARGE_TIME_OUT:
-            # 能量满但放不出(短CD / 切回UI未渲染读假 / 任何原因) -> 别溢出空攒, 直接切人
-            if self.energy_full() and not self.liberation_available():
-                self.logger.info('Lucilla energy full but liberation not castable, switch')
-                break
-
-            # 能量没满且大招在较长 CD -> 没必要攒, 切人省时间
-            if not self.liberation_available() and self.task.get_cd('liberation') > self.LIBERATION_CD_SKIP:
+        while self.time_elapsed_accounting_for_freeze(start) < self.CHARGE_TIME_OUT:
+            if self.e_count >= target:
+                if self.perform_liberation():
+                    self.switch_next_char(free_intro=self.fill_con())
+                    return True
+                # 大招没放出说明有一发 E 被吞了, 退一格重攒
+                self.e_count = max(0, self.e_count - 1)
+            elif self.time_elapsed_accounting_for_freeze(start) >= 2 and not hold_field \
+                    and not self.liberation_available() \
+                    and self.task.get_cd('liberation') > self.LIBERATION_CD_SKIP:
                 self.logger.info('Lucilla liberation on long cd, switch to save time')
-                break    
-
-            if self.try_liberation():
-                return True
-
+                break
             self.charge_once()
-
         return False
 
     def charge_once(self):
-        """攒 1 格回路能量: E 可用优先长按 E、否则蓄力重击.
-        """
-        if self.resonance_available():
-            self.hold_resonance(self.HOLD_TIME)
-        else:
-            self.heavy_attack(self.HOLD_TIME)
+        if not self.resonance_available():
+            self.sleep(0.15)
+            return
+        self.hold_resonance(self.RES_HOLD_TIME)
+        # 长按不够长会退化成点按, 且完全无声: 进了 CD 才算真的放出来
+        cd = self.task.get_cd('resonance')
+        if cd <= 0:
+            self.logger.warning(f'Lucilla E swallowed (held {self.RES_HOLD_TIME:.2f}s, '
+                                f'cd still {cd:.1f}s), not counted')
+            return
+        self.e_count += 1
+        self.logger.info(f'Lucilla E #{self.e_count}, resonance cd now {cd:.1f}s')
         self.task.next_frame()
 
-    def try_liberation(self):
-        """大招就绪则放招(顺带先放声骸), 返回是否放出。
-
-        仅在大招可用(能量满且无CD)时才放招; 未就绪只返回 False, 由外层(perform_combat 循环)
-        统一处理攒能量/长CD切人。不能用"非长CD就放"——那会在能量没满时空放声骸/大招。
-        """
-        if not self.liberation_available():
-            return False
-
-        if self.echo_available():
-            self.click_echo(time_out=0)
-            
-        self.perform_liberation()
-        self.switch_next_char()
-        return True
-
-    def energy_full(self):
-        """回路能量是否已满(解放图标高亮, 忽略CD)。
-
-        liberation_available() 把"能量满"和"无CD"绑在一起判断, 故用 check_cd=False 单看能量满,
-        配合 not liberation_available() 即可识别"能量满但放不出(短CD/切回读假等)"而切人, 不攒溢出。
-        """
-        return self.available('liberation', check_color=True, check_cd=False)
-
-    def perform_liberation(self):
-        """放大招进入变身形态, 按住左键固定时长输出后切人.
-
-        不调用 BaseChar.click_liberation(): 它内部 ``while not in_team()`` 在变身形态下会因
-        in_team 误判卡死到超时抛异常. 这里用 liberation_available() 变 False
-        (大招图标消失 = 已进入形态) 作为放出信号.
-
-        """
-        if not self.task.use_liberation:
-            return
-
-        start = time.time()
-        while self.liberation_available() and time.time() - start < 1.5:
-            self.send_liberation_key()
-            self.sleep(0.1, check_combat=False)
-        self.record_liberation_use()
-        self.logger.info('Lucilla perform lib')
-
-        self.sleep(self.LIBERATION_ANIMATION_TIME, check_combat=False)
-        
-        # 恢复调用脉冲重击, con 归零会在内部自动提前 break
-        self.pulse_heavy_attack(self.LIBERATION_HEAVY_TIME)
-        self.logger.info('Lucilla perform lib end')
-
-    def pulse_heavy_attack(self, total_time):
-        """变身后脉冲式重击 total_time 秒: 反复 mouse_down/sleep/mouse_up.
-
-        每拍重新 mouse_down, 某拍被打断, 下一拍自动
-        重按恢复, 保证持续输出直到连招打完. 全程 check_combat=False
-        
-        检测 con 归零以提前结束脉冲. 变身激活时 con 会变非零, 变身结束动画时 con 会短暂归零.
-        若未检测到归零(如被连续打断), 则持续脉冲直到 total_time 兜底.
-        """
-        end = time.time() + total_time
-        seen_active = False
-        while time.time() < end:
-            self.task.mouse_down()
-            try:
-                self.sleep(min(self.HEAVY_PULSE_TIME, end - time.time()), check_combat=False)
-            finally:
-                self.task.mouse_up()
-            
-            con = self.task.get_current_con()
-            if con > 0.1:
-                seen_active = True
-            elif seen_active and con < 0.05:
-                self.logger.info('Lucilla transform ended, stop pulse heavy early')
-                break
-                
-            self.sleep(0.02, check_combat=False) 
-
     def hold_resonance(self, duration):
-        """长按共鸣技能键一段时间 (攒 1 格回路能量)。
-
-        长按期间用 check_combat=False: 攒能量在正常态, in_combat() 偶发误判不应打断长按;
-        sleep 已推进帧, 无需忙等/额外 next_frame。
-        """
         self.task.send_key_down(self.get_resonance_key())
         try:
             self.sleep(duration, check_combat=False)
@@ -151,7 +74,79 @@ class Lucilla(BaseChar):
             self.task.send_key_up(self.get_resonance_key())
         self.record_resonance_use()
 
+    def perform_liberation(self):
+        """放大招变身并输出。返回大招是否真的放出去了。"""
+        if not self.task.use_liberation:
+            return False
+
+        # 不用 click_liberation: 它内部的 while not in_team() 在变身形态下会卡死。
+        # 【sent 是必须的】: 图标在刚上场/动画期间会假阴性, 先看再按会一次都不按就跳出,
+        # 而且后面那个 available() 仍然是 False, 连"没放出来"都报不出来 —— 整段空转
+        start = time.time()
+        sent = 0
+        while time.time() - start < 1.5:
+            if sent and not self.liberation_available():
+                break  # 图标灭了 = 变身形态已激活
+            self.send_liberation_key()
+            sent += 1
+            self.sleep(0.15, check_combat=False)
+        if self.liberation_available():
+            self.logger.warning(f'Lucilla liberation icon still lit after {sent} presses, not fired')
+            return False
+
+        self.record_liberation_use()
+        self.logger.info(f'Lucilla perform lib ({sent} presses)')
+        self.sleep(self.LIBERATION_ANIMATION_TIME, check_combat=False)
+        self.pulse_heavy_attack(self.LIBERATION_HEAVY_TIME)
+        # 被打断时能量会剩, 变身一结束就作废, 所以按图标打空为准
+        self.pulse_until(lambda: not self.is_mouse_forte_full(), 'forte drained')
+        self.logger.info(f'Lucilla perform lib end ({time.time() - start:.1f}s)')
+        return True
+
+    def pulse_heavy_attack(self, total_time):
+        """脉冲重击: 每拍重新按下, 某拍被打断下一拍自动恢复。Q 在窗口内反复发。"""
+        start = time.time()
+        last_echo = 0
+        while time.time() - start < total_time:
+            elapsed = time.time() - start
+            # 变身动画期间按 Q 会被吞, 形态结束后按又没了增益, 只有中间这段有效
+            if self.ECHO_WINDOW[0] <= elapsed <= self.ECHO_WINDOW[1] and time.time() - last_echo >= 0.3:
+                self.send_echo_key()
+                last_echo = time.time()
+            self.heavy_pulse()
+
+    def pulse_until(self, cond, name):
+        start = time.time()
+        while self.time_elapsed_accounting_for_freeze(start) < self.EXTRA_BUDGET:
+            if cond():
+                self.logger.info(f'Lucilla {name} after {time.time() - start:.1f}s')
+                return True
+            self.heavy_pulse()
+        self.logger.warning(f'Lucilla {name} timed out')
+        return False
+
+    def heavy_pulse(self):
+        self.task.mouse_down()
+        try:
+            self.sleep(self.HEAVY_PULSE_TIME, check_combat=False)
+        finally:
+            self.task.mouse_up()
+        self.sleep(0.02, check_combat=False)
+
+    def fill_con(self):
+        """确认协奏满再交棒。变身刚结束时能量环读数滞后, 直接读会读成 0。"""
+        if self.task.wait_until(self.is_con_full, time_out=1.5):
+            return True
+        # 读数已经该稳了还没满, 说明是真的短了(被打断), 站着等没用, 得打
+        self.logger.info(f'Lucilla con reads {self.get_current_con():.2f} after settle, attacking')
+        if self.pulse_until(self.is_con_full, 'con filled'):
+            return True
+        self.logger.warning(f'Lucilla con still reads {self.get_current_con():.2f}, '
+                            f'next char gets no intro')
+        return False
+
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
-        if has_intro and current_char and current_char.char_name in {'char_verina', 'char_shorekeeper'}:
+        if has_intro and current_char and current_char.char_name in {'char_verina', 'char_shorekeeper',
+                                                                    'char_suisui'}:
             return SwitchPriority.MUST
         return super().get_switch_priority(current_char, has_intro, target_low_con)
