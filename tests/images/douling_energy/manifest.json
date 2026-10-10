@@ -1,0 +1,30 @@
+[
+  {
+    "name": "none_shaoyin_shaoyang",
+    "path": "tests/images/douling_energy/none_shaoyin_shaoyang.png",
+    "source_attachment": "none_shaoyin_shaoyang.png",
+    "expected": "none",
+    "sha256": "db2abcc9a53221082f88f0c881e9da48d81e77cc9ef0af02e459464ea9de720b"
+  },
+  {
+    "name": "shaoyang",
+    "path": "tests/images/douling_energy/shaoyang.png",
+    "source_attachment": "shaoyang.png",
+    "expected": "shaoyang",
+    "sha256": "c59f15b57749afbb7f89eb4fa996626552f0ed77f3f27aeaf31ad3f6c82c1bc8"
+  },
+  {
+    "name": "shaoyin",
+    "path": "tests/images/douling_energy/shaoyin.png",
+    "source_attachment": "shaoyin.png",
+    "expected": "shaoyin",
+    "sha256": "57470c89af8ec5800fe6f5abe0b2291f7e46f1adab67b85342fc5bede478a3dc"
+  },
+  {
+    "name": "shaoyin_and_shaoyang",
+    "path": "tests/images/douling_energy/shaoyin_and_shaoyang.png",
+    "source_attachment": "shaoyin_and_shaoyang.png",
+    "expected": "both",
+    "sha256": "8dfe4f4d146fa3db1f8947b74db6178cec7ee6f25b45791d72455ccbfd9ae38d"
+  }
+]

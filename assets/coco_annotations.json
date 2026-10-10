@@ -1259,6 +1259,12 @@
             "file_name": "images/7.png",
             "width": 3840,
             "height": 2160
+        },
+        {
+            "id": 296,
+            "file_name": "images/49.png",
+            "width": 1600,
+            "height": 900
         }
     ],
     "annotations": [
@@ -5335,6 +5341,36 @@
             "iscrowd": 0,
             "ignore": 0,
             "segmentation": []
+        },
+        {
+            "id": 440,
+            "image_id": 296,
+            "category_id": 287,
+            "bbox": [
+                782,
+                746,
+                21,
+                27
+            ],
+            "area": 567,
+            "iscrowd": 0,
+            "ignore": 0,
+            "segmentation": []
+        },
+        {
+            "id": 441,
+            "image_id": 296,
+            "category_id": 288,
+            "bbox": [
+                820,
+                746,
+                21,
+                27
+            ],
+            "area": 567,
+            "iscrowd": 0,
+            "ignore": 0,
+            "segmentation": []
         }
     ],
     "categories": [
@@ -6766,6 +6802,16 @@
         {
             "id": 286,
             "name": "hsin_lib2",
+            "supercategory": ""
+        },
+        {
+            "id": 287,
+            "name": "douling_gua_blue",
+            "supercategory": ""
+        },
+        {
+            "id": 288,
+            "name": "douling_gua_yellow",
             "supercategory": ""
         }
     ]
