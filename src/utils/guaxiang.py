@@ -53,6 +53,7 @@ def _load_templates():
     images = {item['id']: item for item in data['images']}
     categories = {item['name']: item['id'] for item in data['categories']}
     templates = []
+    frames = {}
     for label, color in TEMPLATE_COLORS:
         annotations = [a for a in data['annotations'] if a['category_id'] == categories[label]]
         if len(annotations) != 1:
@@ -62,9 +63,12 @@ def _load_templates():
         if (source['width'], source['height']) != REFERENCE_SIZE:
             raise ValueError(f'{label}: unexpected template reference resolution')
         path = ASSET_ROOT / source['file_name']
-        frame = cv2.imdecode(np.fromfile(path, dtype=np.uint8), cv2.IMREAD_COLOR)
-        if frame is None:
-            raise ValueError(f'{label}: unreadable template image')
+        if path not in frames:
+            frame = cv2.imdecode(np.fromfile(path, dtype=np.uint8), cv2.IMREAD_COLOR)
+            if frame is None:
+                raise ValueError(f'{label}: unreadable template image')
+            frames[path] = frame
+        frame = frames[path]
         x, y, w, h = map(int, annotation['bbox'])
         patch = frame[y:y + h, x:x + w]
         if patch.shape[:2] != (h, w) or min(w, h) < 3:

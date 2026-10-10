@@ -68,7 +68,7 @@
   },
   {
     "name": "blue1",
-    "path": "assets/images/douling_gua_blue.png",
+    "path": "tests/images/guaxiang/douling_gua_blue.png",
     "expected": [
       "蓝"
     ],
@@ -91,7 +91,7 @@
   },
   {
     "name": "yellow1",
-    "path": "assets/images/douling_gua_yellow.png",
+    "path": "tests/images/guaxiang/douling_gua_yellow.png",
     "expected": [
       "黄"
     ],

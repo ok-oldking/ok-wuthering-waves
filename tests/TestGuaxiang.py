@@ -117,6 +117,10 @@ class TestGuaxiang(unittest.TestCase):
 
     def test_real_annotation_references(self):
         data = json.loads((ASSET_ROOT / 'coco_annotations.json').read_text(encoding='utf-8'))
+        expected_boxes = {
+            'douling_gua_blue': [782, 746, 21, 27],
+            'douling_gua_yellow': [820, 746, 21, 27],
+        }
         for label, _ in TEMPLATE_COLORS:
             categories = [item for item in data['categories'] if item['name'] == label]
             self.assertEqual(len(categories), 1)
@@ -129,7 +133,23 @@ class TestGuaxiang(unittest.TestCase):
             images = [item for item in data['images'] if item['id'] == annotation['image_id']]
             self.assertEqual(len(images), 1)
             self.assertTrue((ASSET_ROOT / images[0]['file_name']).is_file())
-            self.assertEqual(annotation['bbox'], [782, 746, 21, 27])
+            self.assertEqual(images[0]['file_name'], 'images/douling_gua.png')
+            self.assertEqual((images[0]['width'], images[0]['height']), (1600, 900))
+            self.assertEqual(annotation['bbox'], expected_boxes[label])
+
+    def test_template_page_preserves_source_pixels_and_is_decoded_once(self):
+        page = cv2.imdecode(np.fromfile(ASSET_ROOT / 'images/douling_gua.png', dtype=np.uint8),
+                            cv2.IMREAD_COLOR)
+        for name, x in (('blue1', 782), ('yellow1', 820)):
+            with self.subTest(sample=name):
+                np.testing.assert_array_equal(page[746:773, x:x + 21],
+                                              self.frames[name][746:773, 782:803])
+        _load_templates.cache_clear()
+        self.addCleanup(_load_templates.cache_clear)
+        with patch('src.utils.guaxiang.cv2.imdecode', wraps=cv2.imdecode) as decode:
+            templates = _load_templates()
+            self.assertIs(_load_templates(), templates)
+        decode.assert_called_once()
 
 
 class TestGuaxiangCharacterIntegration(unittest.TestCase):

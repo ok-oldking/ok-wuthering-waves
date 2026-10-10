@@ -1262,13 +1262,7 @@
         },
         {
             "id": 296,
-            "file_name": "images/douling_gua_blue.png",
-            "width": 1600,
-            "height": 900
-        },
-        {
-            "id": 297,
-            "file_name": "images/douling_gua_yellow.png",
+            "file_name": "images/douling_gua.png",
             "width": 1600,
             "height": 900
         }
@@ -5365,10 +5359,10 @@
         },
         {
             "id": 441,
-            "image_id": 297,
+            "image_id": 296,
             "category_id": 288,
             "bbox": [
-                782,
+                820,
                 746,
                 21,
                 27
