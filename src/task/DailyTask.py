@@ -20,6 +20,7 @@ AUTO_FARM_NIGHTMARE_NEST = 'Auto Farm all Nightmare Nest'
 MERGE_ECHO_IF_DISCARDED_OVER_1000 = 'Merge Echo If discarded > 1000'
 TELEPORT_AND_FARM_4C_ECHO = 'Teleport and Farm 4C Echo'
 ADDITIONAL_TASKS = 'Additional Tasks to Run After Daily Task'
+DRAIN_NATURAL_STAMINA = 'Drain Current Natural Stamina'
 
 
 class DailyTask(WWOneTimeTask, BaseCombatTask):
@@ -30,6 +31,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.support_schedule_task = True
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
         self.default_config = {
+            DRAIN_NATURAL_STAMINA: False,
             'Which to Farm': self.support_tasks[0],
             'Which Tacet Suppression to Farm': 1,  # starts with 1
             'Which Forgery Challenge to Farm': 1,  # starts with 1
@@ -38,6 +40,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             ADDITIONAL_TASKS: [CHECK_WEEKLY_GARDEN],
         }
         self.config_description = {
+            DRAIN_NATURAL_STAMINA: 'Farm the configured target until current stamina is below its cost, regardless of activity or daily consumption. Never use reserve stamina in this mode.',
             'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
@@ -86,7 +89,8 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         condition2 = self.config.get('Farm Nightmare Nest for Daily Echo')
 
         used_stamina, daily_reward_ready = self.open_daily()
-        need_stamina = not daily_reward_ready and used_stamina < 180
+        drain_natural = self.config.get(DRAIN_NATURAL_STAMINA, False)
+        need_stamina = drain_natural or (not daily_reward_ready and used_stamina < 180)
         need_nightmare = condition1 or (
                 condition2
                 and not daily_reward_ready
@@ -116,7 +120,10 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
 
         if need_stamina:
             target = self.config.get('Which to Farm', self.support_tasks[0])
-            if target == self.support_tasks[0]:
+            if drain_natural:
+                from src.task.NaturalStamina import farm_current_stamina
+                farm_current_stamina(self)
+            elif target == self.support_tasks[0]:
                 self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina,
                                                              config=self.config)
             elif target == self.support_tasks[1]:
