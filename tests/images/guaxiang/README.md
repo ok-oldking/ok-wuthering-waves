@@ -5,7 +5,7 @@ SHA-256。原图按字节复制，未去除红框、改变颜色或压缩尺寸�
 
 全部 11 张原始截图保存在本目录，其中 `douling_gua_blue.png` 和
 `douling_gua_yellow.png` 为模板来源，移动后保留原始字节及 SHA-256。
-运行时模板页为 `assets/images/douling_gua.png`，采用 1600×900 不透明白色画布，
+运行时模板页为 `assets/images/49.png`，采用 1600×900 不透明白色画布，
 无损复制两张来源图中 `[782, 746, 21, 27]` 的原始像素，不缩放或重采样。
 COCO 标签 `douling_gua_blue`、`douling_gua_yellow` 在模板页中的标注分别为
 `[782, 746, 21, 27]`、`[820, 746, 21, 27]`。加载时整页只解码一次；

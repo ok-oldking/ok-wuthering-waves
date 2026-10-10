@@ -133,12 +133,12 @@ class TestGuaxiang(unittest.TestCase):
             images = [item for item in data['images'] if item['id'] == annotation['image_id']]
             self.assertEqual(len(images), 1)
             self.assertTrue((ASSET_ROOT / images[0]['file_name']).is_file())
-            self.assertEqual(images[0]['file_name'], 'images/douling_gua.png')
+            self.assertEqual(images[0]['file_name'], 'images/49.png')
             self.assertEqual((images[0]['width'], images[0]['height']), (1600, 900))
             self.assertEqual(annotation['bbox'], expected_boxes[label])
 
     def test_template_page_preserves_source_pixels_and_is_decoded_once(self):
-        page = cv2.imdecode(np.fromfile(ASSET_ROOT / 'images/douling_gua.png', dtype=np.uint8),
+        page = cv2.imdecode(np.fromfile(ASSET_ROOT / 'images/49.png', dtype=np.uint8),
                             cv2.IMREAD_COLOR)
         for name, x in (('blue1', 782), ('yellow1', 820)):
             with self.subTest(sample=name):
