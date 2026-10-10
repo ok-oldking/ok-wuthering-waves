@@ -166,12 +166,11 @@ class HsinRotationTest(unittest.TestCase):
             check_f_break=lambda: None, get_current_char=lambda: char,
             on_combat_check=lambda: True, combat_end_condition=None,
             has_target=lambda: not lost_before_hold and char.task.mouse_start is None,
-            check_health_bar=lambda: False, target_enemy_time_out=3,
             should_check_monthly_card=lambda: False)
 
-        def retarget(wait=True, time_out=None, check_health=False):
+        def retarget(wait=True, **kwargs):
             retargets.append(self.clock.now)
-            self.clock.advance(checker.target_enemy_time_out if time_out is None else time_out)
+            self.clock.advance(3)
             return False
 
         def reset(reason=''):
