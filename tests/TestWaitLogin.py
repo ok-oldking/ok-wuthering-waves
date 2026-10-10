@@ -51,6 +51,9 @@ class FakeLoginTask:
     def click(self, target, after_sleep=0):
         self.clicked.append([b.name for b in target])
 
+    def click_login(self, target, after_sleep=0):
+        self.click(target, after_sleep=after_sleep)
+
     def sleep(self, timeout):
         self.slept.append(timeout)
 
