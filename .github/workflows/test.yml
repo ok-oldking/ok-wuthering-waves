@@ -81,7 +81,20 @@ jobs:
             Remove-Item "Env:\$_" -ErrorAction SilentlyContinue
           }
 
-          python .github/scripts/run_tests.py --runner run_test.py --timeout 150
-          exit $LASTEXITCODE
+          Get-ChildItem -Path ".\tests\*.py" | ForEach-Object {
+              Write-Host "Running tests in $($_.FullName)"
+              try {
+                  python -u run_test.py $_.FullName
+
+                  # Check if the previous command succeeded
+                  if ($LASTEXITCODE -ne 0) {
+                      throw "Tests failed in $($_.FullName)"
+                  }
+              } catch {
+                  # Stop the loop and return the error
+                  Write-Error $_
+                  exit 1
+              }
+          }
 
   

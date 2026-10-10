@@ -3,11 +3,12 @@ from config import config
 from ok.test.TaskTestCase import TaskTestCase
 from src.task.FiveToOneTask import FiveToOneTask
 
+config['debug'] = True
+
 
 class TestConfirm(TaskTestCase):
     task_class = FiveToOneTask
-    # Template matching does not need the background OCR model initialization.
-    config = {**config, 'debug': True, 'ocr': None}
+    config = config
 
     def test_confirm(self):
         self.task.do_reset_to_false()
