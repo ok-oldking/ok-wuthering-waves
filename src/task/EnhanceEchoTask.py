@@ -56,6 +56,16 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
     def is_0_level(self):
         return self.ocr(0.65, 0.35, 1, 0.57, match=re.compile('声骸技能'))
 
+    def select_0_level_echo(self):
+        # 3.7 起从培养界面返回后, 背包选中并滚动到刚强化的声骸, 不再停在第一格
+        self.click(0.13, 0.21, after_sleep=0.5)  # 第一格
+        if self.is_0_level():
+            return True
+        for _ in range(2):  # 升降序切换两次, 列表回到顶部
+            self.click(0.35, 0.917, after_sleep=0.5)
+        self.click(0.13, 0.21, after_sleep=0.5)
+        return self.is_0_level()
+
     def run(self):
         self.info_set('成功声骸数量', 0)
         self.info_set('失败声骸数量', 0)
@@ -64,8 +74,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             enhance = self.find_echo_enhance()
             if not enhance:
                 raise Exception('必须在背包声骸界面过滤后开始!')
-            current_level = self.is_0_level()
-            if not current_level:
+            if not self.select_0_level_echo():
                 total = self.info_get('成功声骸数量') + self.info_get('失败声骸数量')
                 if self.debug:
                     self.screenshot('无可强化声骸')

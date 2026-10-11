@@ -979,6 +979,9 @@ msgstr "在思考輔助方法、任務 API、狀態、切人、冷卻和戰鬥�
 msgid "Rover: Spectro"
 msgstr "漂泊者·衍射"
 
+msgid "Rover: Electro"
+msgstr "漂泊者·導電"
+
 msgid "Rover: Havoc"
 msgstr "漂泊者·湮滅"
 

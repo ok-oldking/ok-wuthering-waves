@@ -1,9 +1,10 @@
 import time
 from ok import Logger
-from src.char.BaseChar import BaseChar, Elements
+from src.char.BaseChar import BaseChar, CharType, Elements
 
 _ROVER_FORM_NAMES = {
     Elements.SPECTRO: 'Rover: Spectro',
+    Elements.ELECTRIC: 'Rover: Electro',
     Elements.WIND: 'Rover: Aero',
     Elements.HAVOC: 'Rover: Havoc',
 }
@@ -11,11 +12,14 @@ _ROVER_FORM_NAMES = {
 
 class Rover(BaseChar):
     def __init__(self, *args, **kwargs):
+        self._last_known_form = -1
         super().__init__(*args, **kwargs)
         self.use_skyfall_severance = False
         self._bind_form_logger()
 
     def reset_state(self):
+        if self.ring_index >= 0:
+            self._last_known_form = self.ring_index
         self.ring_index = -1
         super().reset_state()
         self._bind_form_logger()
@@ -23,6 +27,11 @@ class Rover(BaseChar):
     @property
     def display_name(self):
         return _ROVER_FORM_NAMES.get(self.ring_index, 'Rover')
+
+    def get_char_type(self):
+        form = self.ring_index if self.ring_index >= 0 else self._last_known_form
+        # 首次识别前按辅助调度，上场仍重新确认形态。
+        return CharType.SUB_DPS if form in (-1, Elements.ELECTRIC) else super().get_char_type()
 
     def __repr__(self):
         return self.display_name
@@ -64,6 +73,9 @@ class Rover(BaseChar):
             self.intro_motion_freeze_duration = 0.52
             self.logger.info('rover: form-dispatch ring=WIND routine=wind')
             self.perform_wind_routine()
+        elif self.ring_index == Elements.ELECTRIC:
+            self.logger.info('rover: form-dispatch ring=ELECTRIC routine=electric')
+            self.perform_electric_routine()
         else:
             self.logger.info('rover: form-dispatch ring=UNKNOWN routine=basic')
             self.perform_basic_routine()
@@ -87,6 +99,52 @@ class Rover(BaseChar):
             self.task.info_set('Chars', ', '.join(names))
         if self.ring_index == Elements.WIND:
             self.init_wind()
+
+    def electric_skill_ready(self):
+        # 小E提示可能误匹配，须同时确认回路满格标记。
+        return self.is_forte_full() and bool(self.is_e_forte_full())
+
+    def perform_electric_routine(self):
+        self.wait_down(click=False)
+        self.click_echo()
+        # Q后图标可能暂时变暗，让helper处理就绪重试，避免单帧判断漏放R。
+        self.click_liberation(click_f=False)
+        if not self.electric_skill_ready() and self.resonance_available():
+            if self.click_resonance(send_click=False, time_out=1)[0]:
+                self.sleep(0.1)
+        start = time.time()
+        duration = 8 if self.has_intro else 12
+        while not self.electric_skill_ready() and self.time_elapsed_accounting_for_freeze(start) < duration:
+            self.click()
+            self.sleep(0.1)
+        if not self.electric_skill_ready():
+            self.logger.info('rover: electric forte not ready before rotation timeout')
+            return
+        if not self.short_electric_skill():
+            self.logger.info('rover: electric enhanced resonance not confirmed, switch out')
+            return
+        if not self.is_con_full():
+            self.click_liberation(click_f=False)
+        if not self.is_con_full():
+            self.continues_normal_attack(2, until_con_full=True)
+
+    def short_electric_skill(self):
+        # 强化E能在普通E冷却期间触发，不能用普通冷却拦截。
+        for attempt in range(2):
+            if not self.electric_skill_ready():
+                return False
+            start = time.time()
+            self.send_resonance_key(down_time=0.05)
+            # 回路在尾段消耗；过滤瞬间变暗，同时保留必要的动作保护。
+            consumed = bool(self.task.wait_until(
+                lambda: self.time_elapsed_accounting_for_freeze(start) >= 1.5
+                        and not self.is_forte_full() and not self.is_e_forte_full(),
+                time_out=2.6, settle_time=0.2, pre_action=self.check_combat))
+            if consumed:
+                self.record_resonance_use()
+                return True
+            self.logger.info(f'rover: electric enhanced resonance attempt {attempt + 1} not confirmed')
+        return False
 
     def perform_spectro_routine(self):
         if self.has_intro:

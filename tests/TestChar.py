@@ -1086,6 +1086,35 @@ class TestChar(TaskTestCase):
         aemeath.do_perform()
         self.assertEqual(aemeath.actions, ['switch'])
 
+    def test_aemeath_runs_rotation_without_intro_when_no_sub_dps_teammate(self):
+        class Task:
+            chars = []
+
+        class TrackingAemeath(Aemeath):
+            def __init__(self):
+                super().__init__(Task(), 0)
+                self.actions = []
+
+            def has_long_action(self):
+                return False
+
+            def perform_everything(self):
+                self.actions.append('perform')
+
+            def switch_next_char(self):
+                self.actions.append('switch')
+
+        aemeath = TrackingAemeath()
+        aemeath.task.chars = [aemeath, BaseChar(None, 1, char_type=CharType.HEALER),
+                              BaseChar(None, 2, char_type=CharType.HEALER)]
+        aemeath.do_perform()
+        self.assertEqual(aemeath.actions, ['perform', 'switch'])
+
+        aemeath.actions.clear()
+        aemeath.task.chars[1] = BaseChar(None, 1, char_type=CharType.SUB_DPS)
+        aemeath.do_perform()
+        self.assertEqual(aemeath.actions, ['switch'])
+
     def test_aemeath_handle_heavy_uses_highlight_wait(self):
         class TrackingAemeath(Aemeath):
             def __init__(self):

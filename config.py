@@ -236,7 +236,7 @@ config = {
             'sponsor': 'https://afdian.com/a/ok-oldking',
             'share': '下载okww https://ok-script.com/ok-ww',
             'faq': 'https://ok-script.com/ok-ww',
-            'qq_group': 'https://qm.qq.com/q/SUQpIpmq4',
+            'qq_group': 'https://qm.qq.com/q/jw2NltIEWA',
             'qq_channel': 'https://pd.qq.com/s/djmm6l44y',
         },
     },

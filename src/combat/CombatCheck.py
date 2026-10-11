@@ -154,7 +154,9 @@ class CombatCheck(BaseWWTask):
                 return self.scene.set_in_combat()
             if self.combat_end_condition is not None and self.combat_end_condition():
                 return self.reset_to_false(reason='end condition reached')
-            if self.target_enemy(wait=True):
+            has_health = self.check_health_bar()
+            retarget_timeout = 30 if has_health else self.target_enemy_time_out
+            if self.target_enemy(wait=True, time_out=retarget_timeout, check_health=has_health):
                 logger.debug(f'retarget enemy succeeded')
                 return self.scene.set_in_combat()
             if self.should_check_monthly_card() and self.handle_monthly_card():
@@ -294,20 +296,32 @@ class CombatCheck(BaseWWTask):
                     return self.has_target(double_check=True)
         return best and best.name == has_name
 
-    def target_enemy(self, wait=True):
+    def target_enemy(self, wait=True, time_out=None, check_health=False):
         if not wait:
             self.middle_click()
         else:
             if self.has_target():
                 return True
             else:
-                logger.info(f'target lost try retarget {self.target_enemy_time_out}')
+                timeout = self.target_enemy_time_out if time_out is None else time_out
+                logger.info(f'target lost try retarget {timeout}')
                 start = time.time()
-                while time.time() - start < self.target_enemy_time_out:
+                health_lost_start = None
+                while time.time() - start < timeout:
                     self.middle_click(interval=0.2)
                     if self.has_target():
                         return True
                     self.next_frame()
+                    if check_health:
+                        if not self.check_health_bar():
+                            if health_lost_start is None:
+                                health_lost_start = time.time()
+                            elif time.time() - health_lost_start > 1.2:
+                                logger.info('health bar disappeared during retarget')
+                                return False
+                        else:
+                            health_lost_start = None
+                return False
 
     def has_health_bar(self):
         if self._in_combat:

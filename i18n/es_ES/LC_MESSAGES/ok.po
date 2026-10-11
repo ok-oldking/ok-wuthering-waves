@@ -1025,6 +1025,9 @@ msgstr "Rover"
 msgid "Rover: Spectro"
 msgstr "Rover: Espectro"
 
+msgid "Rover: Electro"
+msgstr "Rover: Electro"
+
 msgid "Rover: Havoc"
 msgstr "Rover: Caos"
 
