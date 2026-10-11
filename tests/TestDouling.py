@@ -1,292 +1,292 @@
 import unittest
 from types import SimpleNamespace
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, patch
 
 import numpy as np
 
+from ok.task.exceptions import TaskDisabledException
 from src.char.Douling import Douling
+from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException
+from src.utils.douling_energy import recognize_energy
+from tests.TestDoulingEnergy import SAMPLES as ENERGY_SAMPLES, read_image
 
 
-class TestDoulingGuaxiang(unittest.TestCase):
-    def make_char(self):
-        char = Douling.__new__(Douling)
-        char.index = 1
-        char.task = SimpleNamespace(
-            frame=np.zeros((4, 4, 3), dtype=np.uint8),
-            in_team=Mock(return_value=(True, 1, 3)),
-            screenshot=Mock(),
-            debug=False,
-            check_combat=Mock(),
-        )
-        char.logger = Mock()
-        char._waiting_for_guaxiang = False
-        char.clock = [0.0]
-        timer = patch('src.char.Douling.time.monotonic', side_effect=lambda: char.clock[0])
+class TestDouling(unittest.TestCase):
+    def make_char(self, readings=None):
+        clock, events = [0.0], []
+        task = SimpleNamespace(frame=np.zeros((4, 4, 3), np.uint8), _in_combat=True,
+                               in_team=Mock(return_value=(True, 1, 3)), check_combat=Mock(), jump=Mock())
+        task.next_frame = Mock(side_effect=lambda: task.frame)
+        task.mouse_down = Mock(side_effect=lambda: events.append(('down', clock[0])))
+        task.mouse_up = Mock(side_effect=lambda: events.append(('up', clock[0])))
+        char = Douling(task, 1)
+        char.clock, char.events, char.logger = clock, events, Mock()
+        char.sleep = Mock(side_effect=lambda duration: clock.__setitem__(0, clock[0] + duration))
+        char.normal_attack = Mock(side_effect=lambda: events.append(('attack', clock[0])))
+        char.flying, char.wait_down = Mock(return_value=False), Mock()
+        char.click_echo = Mock(side_effect=lambda **kwargs: events.append(('echo', clock[0])))
+        char.click_liberation = Mock(side_effect=lambda: events.append(('liberation', clock[0])))
+        char.switch_next_char = Mock(side_effect=lambda: events.append(('switch', clock[0])))
+        timer = patch('src.char.Douling.time.monotonic', side_effect=lambda: clock[0])
         timer.start()
         self.addCleanup(timer.stop)
-        char.sleep = Mock(side_effect=lambda duration: char.clock.__setitem__(0, char.clock[0] + duration))
-        char.normal_attack = Mock()
+        self.addCleanup(char._cancel_post_heavy_observation)
+        if readings is not None:
+            char.recognize_guaxiang = Mock(side_effect=readings)
         return char
 
-    def test_entry_recognition_runs_once_for_each_segment(self):
+    def test_entry_four_energy_states_and_same_copied_frame(self):
         for segment in (1, 2):
-            with self.subTest(segment=segment):
-                char = self.make_char()
-                char._segment = segment
-                char.recognize_guaxiang = Mock()
-                branch = Mock()
-                setattr(char, f'_do_segment{segment}', branch)
-
-                char.do_perform()
-
-                char.recognize_guaxiang.assert_called_once_with('entry')
-                branch.assert_called_once_with()
-
-    def test_gate_attacks_until_four_gua_and_then_returns(self):
-        char = self.make_char()
-        char.task.next_frame = Mock(side_effect=[char.task.frame] * 4)
-        char.recognize_guaxiang = Mock(
-            side_effect=[[], ['蓝'], None, ['黄', '蓝', '蓝', '蓝']])
-        char.normal_attack = Mock()
-
-        self.assertTrue(char._normal_attack_until_four_guaxiang())
-
-        self.assertEqual(char.normal_attack.call_count, 1)
-        self.assertEqual(char.sleep.call_count, 3)
-        self.assertAlmostEqual(char.clock[0], .3)
-        self.assertEqual(char.recognize_guaxiang.call_args_list,
-                         [call('before_heavy')] * 4)
-        self.assertFalse(char._waiting_for_guaxiang)
-
-    def test_capture_failure_does_not_accept_stale_four_gua(self):
-        char = self.make_char()
-        char.task.next_frame = Mock(side_effect=[None, char.task.frame])
-        char.recognize_guaxiang = Mock(return_value=['蓝'] * 4)
-        char.normal_attack = Mock()
-
-        self.assertTrue(char._normal_attack_until_four_guaxiang())
-
-        char.normal_attack.assert_called_once_with()
-        char.recognize_guaxiang.assert_called_once_with('before_heavy')
-
-    def test_four_gua_returns_before_next_attack_is_due(self):
-        for ready_at in (0, .1):
-            with self.subTest(ready_at=ready_at):
-                char = self.make_char()
-                char.task.next_frame = Mock(return_value=char.task.frame)
-                char.recognize_guaxiang = Mock(
-                    side_effect=lambda _: ['蓝'] * 4 if char.clock[0] >= ready_at else [])
-                self.assertTrue(char._normal_attack_until_four_guaxiang())
-                self.assertAlmostEqual(char.clock[0], ready_at)
-                self.assertEqual(char.normal_attack.call_count, int(ready_at > 0))
-
-    def test_slow_work_does_not_catch_up_attacks_or_polls(self):
-        for stage in ('frame', 'recognition', 'attack'):
-            for delay in (.04, .45):
-                with self.subTest(stage=stage, delay=delay):
+            for name, state in ENERGY_SAMPLES.items():
+                with self.subTest(segment=segment, state=state):
                     char = self.make_char()
-                    polls, attacks = [], []
+                    char._segment, char.task.frame = segment, read_image(name)
+                    branch = Mock(side_effect=lambda: self.assertEqual(char._energy_state, state))
+                    setattr(char, f'_do_segment{segment}', branch)
+                    with patch('src.char.Douling.detect_guaxiang') as gua, \
+                            patch('src.char.Douling.detect_energy', wraps=recognize_energy) as energy:
+                        gua.return_value = SimpleNamespace(sequence=[], reason='ok')
+                        char.do_perform()
+                    branch.assert_called_once()
+                    gua.assert_called_once()
+                    energy.assert_called_once()
+                    self.assertIs(gua.call_args.args[0], energy.call_args.args[0])
+                    self.assertIsNot(gua.call_args.args[0], char.task.frame)
+                    np.testing.assert_array_equal(gua.call_args.args[0], char.task.frame)
+                    char.task.next_frame.assert_not_called()
+                    self.assertEqual(char.logger.info.call_count, 2)
 
-                    def advance():
-                        char.clock[0] += delay
+    def test_hidden_hud_and_recognition_failures_clear_energy(self):
+        for team in ((False, -1, 1), (True, 0, 3)):
+            char = self.make_char()
+            char.task.frame, char.task.in_team.return_value = read_image('shaoyang'), team
+            char._energy_state = 'both'
+            char.recognize_guaxiang('entry', require_current_char=True)
+            self.assertIsNone(char._energy_state)
+            self.assertIn('status=uncertain', char.logger.info.call_args.args[0])
+        for stage in ('in_team', 'detect_energy', 'detect_guaxiang'):
+            with self.subTest(stage=stage):
+                char = self.make_char()
+                char.task.frame, char._energy_state = read_image('shaoyang'), 'both'
+                target = patch.object(char.task, stage) if stage == 'in_team' else patch('src.char.Douling.' + stage)
+                with target as failed:
+                    failed.side_effect = RuntimeError('unavailable')
+                    char.recognize_guaxiang('entry')
+                self.assertEqual(char._energy_state, 'shaoyang' if stage == 'detect_guaxiang' else None)
+                char.logger.warning.assert_called_once()
 
-                    def refresh():
-                        polls.append(char.clock[0])
-                        if stage == 'frame':
-                            advance()
-                        return char.task.frame
+    def test_gate_polls_until_four_without_extra_attacks(self):
+        for readings, attacks in (([['蓝'] * 4], 0), ([[], ['蓝'] * 4], 1),
+                                   ([[], ['蓝'], None, ['蓝'] * 5, ['黄', '蓝', '蓝', '蓝']], 2)):
+            with self.subTest(readings=readings):
+                char = self.make_char()
+                char.task.frame = read_image('shaoyin_and_shaoyang')
+                with patch('src.char.Douling.detect_guaxiang', side_effect=[
+                        SimpleNamespace(sequence=sequence, reason='ok') for sequence in readings]):
+                    self.assertTrue(char._normal_attack_until_four_guaxiang())
+                self.assertEqual(char._energy_state, 'both')
+                self.assertEqual(char.normal_attack.call_count, attacks)
+                self.assertEqual(char.task.next_frame.call_count, len(readings))
+                self.assertAlmostEqual(char.clock[0], (len(readings) - 1) * .1)
+                self.assertFalse(char._waiting_for_guaxiang)
+                char.logger.info.assert_called_once()
 
-                    def recognize(_):
-                        if stage == 'recognition':
-                            advance()
-                        return None
-
-                    def attack():
-                        attacks.append(char.clock[0])
-                        if stage == 'attack':
-                            advance()
-
-                    char.task.next_frame = Mock(side_effect=refresh)
-                    char.recognize_guaxiang = Mock(side_effect=recognize)
-                    char.normal_attack = Mock(side_effect=attack)
-                    self.assertFalse(char._normal_attack_until_four_guaxiang())
-                    self.assertGreater(len(attacks), 1)
-                    self.assertTrue(all(b - a >= .3 - 1e-9 for a, b in zip(attacks, attacks[1:])))
-                    self.assertTrue(all(b - a >= .1 - 1e-9 for a, b in zip(polls, polls[1:])))
-                    self.assertTrue(all(t < 3 for t in attacks))
-                    self.assertLessEqual(len(polls), 30)
-                    if delay == .04 and stage != 'attack':
-                        self.assertAlmostEqual(polls[1], .1)
-
-    def test_sleep_is_clipped_to_deadline(self):
+    def test_failed_capture_rejects_stale_gua_and_energy(self):
+        char = self.make_char([['蓝'] * 4])
+        char.task.next_frame.side_effect = [None, char.task.frame]
+        self.assertTrue(char._normal_attack_until_four_guaxiang())
+        char.recognize_guaxiang.assert_called_once_with('before_heavy')
+        char.normal_attack.assert_called_once()
         char = self.make_char()
-        char.GUAXIANG_WAIT_TIMEOUT = .05
-        char.task.next_frame = Mock(return_value=char.task.frame)
+        char._energy_state, char.GUAXIANG_MAX_ATTEMPTS = 'both', 1
+        char.task.next_frame = Mock(return_value=None)
+        with patch('src.char.Douling.detect_energy') as energy:
+            self.assertFalse(char._normal_attack_until_four_guaxiang())
+        energy.assert_not_called()
+        self.assertIsNone(char._energy_state)
+
+    def test_gate_limits_and_deadlines(self):
+        for reason in ('timeout', 'max_attempts'):
+            char = self.make_char()
+            char.recognize_guaxiang = Mock(return_value=None)
+            char.GUAXIANG_WAIT_TIMEOUT = .05 if reason == 'timeout' else 3
+            char.GUAXIANG_MAX_ATTEMPTS = 30 if reason == 'timeout' else 2
+            self.assertFalse(char._normal_attack_until_four_guaxiang())
+            self.assertIn('reason=' + reason, char.logger.warning.call_args.args[0])
+            self.assertEqual(char.task.next_frame.call_count, 1 if reason == 'timeout' else 2)
+            self.assertFalse(char._waiting_for_guaxiang)
+            if reason == 'timeout':
+                char.sleep.assert_called_once_with(.05)
+        for stage in ('frame', 'recognition'):
+            for elapsed in (2.999, 3.0):
+                char = self.make_char()
+                def slow(*args):
+                    char.clock[0] = elapsed
+                    return char.task.frame if stage == 'frame' else ['蓝'] * 4
+                char.task.next_frame = Mock(side_effect=slow if stage == 'frame' else None,
+                                            return_value=char.task.frame)
+                char.recognize_guaxiang = Mock(side_effect=slow if stage == 'recognition' else None,
+                                               return_value=['蓝'] * 4)
+                self.assertEqual(char._normal_attack_until_four_guaxiang(), elapsed < 3)
+                char.normal_attack.assert_not_called()
+
+    def test_slow_capture_does_not_catch_up_attacks(self):
+        char = self.make_char()
+        def refresh():
+            char.clock[0] += .45
+            return char.task.frame
+        char.task.next_frame.side_effect = refresh
         char.recognize_guaxiang = Mock(return_value=[])
         self.assertFalse(char._normal_attack_until_four_guaxiang())
-        char.sleep.assert_called_once_with(.05)
-        self.assertAlmostEqual(char.clock[0], .05)
+        attacks = [at for event, at in char.events if event == 'attack']
+        self.assertGreater(len(attacks), 1)
+        self.assertTrue(all(b - a >= .3 for a, b in zip(attacks, attacks[1:])))
+        self.assertTrue(all(at < 3 for at in attacks))
 
-    def test_stop_during_poll_sleep_propagates(self):
-        from ok.task.exceptions import TaskDisabledException
+    def test_gate_interruptions_clear_waiting_state(self):
+        for stage, error in (('next_frame', TaskDisabledException()), ('check_combat', NotInCombatException()),
+                             ('sleep', TaskDisabledException())):
+            char = self.make_char()
+            char.recognize_guaxiang = Mock(return_value=[])
+            getattr(char if stage == 'sleep' else char.task, stage).side_effect = error
+            with self.assertRaises(type(error)):
+                char._normal_attack_until_four_guaxiang()
+            self.assertFalse(char._waiting_for_guaxiang)
+
+    def test_second_segment_gates_heavy_and_preserves_followup_order(self):
+        for sequence in (['黄', '蓝', '蓝', '蓝'], [], None):
+            char = self.make_char()
+            char.recognize_guaxiang = Mock(return_value=sequence)
+            char.GUAXIANG_MAX_ATTEMPTS = 1
+            char._heavy_attack_hold = lambda duration: char.events.append(('heavy', duration))
+            char._do_segment2()
+            expected = ['heavy', 'echo', 'liberation', 'switch'] if sequence else ['switch']
+            self.assertEqual([event for event, _ in char.events], expected)
+            if sequence:
+                self.assertEqual(char.events[0][1], 2.5)
+            self.assertEqual(char._segment, 1)
+
+    def test_heavy_sampling_rejects_empty_frames_and_uses_one_copy(self):
         char = self.make_char()
-        char.task.next_frame = Mock(return_value=char.task.frame)
-        char.recognize_guaxiang = Mock(return_value=[])
-        char.sleep.side_effect = TaskDisabledException()
-        with self.assertRaises(TaskDisabledException):
-            char._normal_attack_until_four_guaxiang()
-        self.assertFalse(char._waiting_for_guaxiang)
+        char.task.frame = read_image('shaoyin_and_shaoyang')
+        char.task.next_frame.side_effect = [char.task.frame, None, char.task.frame]
+        original = char.task.next_frame
+        with patch('src.char.Douling.detect_guaxiang') as gua, \
+                patch('src.char.Douling.detect_energy', wraps=recognize_energy) as energy:
+            gua.return_value = SimpleNamespace(sequence=['蓝'] * 4, reason='ok')
+            char._heavy_attack_hold(.4)
+            self.assertEqual([event for event, _ in char.events], ['down', 'up'])
+            self.assertAlmostEqual(char.events[-1][1], .4)
+            self.assertIsNone(char._energy_state)
+            char.clock[0] = .4
+            char.task.next_frame()
+        self.assertEqual(original.call_count, 3)
+        self.assertEqual(energy.call_count, 2)
+        for gua_call, energy_call in zip(gua.call_args_list, energy.call_args_list):
+            self.assertIs(gua_call.args[0], energy_call.args[0])
+        self.assertIsNone(char._energy_state)
+        self.assertIn('reason=capture_failed', char.logger.info.call_args_list[1].args[0])
 
-    def test_gate_propagates_combat_end_and_clears_waiting_state(self):
+    def test_heavy_interruptions_release_mouse_and_retries_are_bounded(self):
+        for stage, error in (('next_frame', TaskDisabledException()), ('sleep', TaskDisabledException()),
+                             ('check_combat', NotInCombatException())):
+            char = self.make_char()
+            failure = getattr(char if stage == 'sleep' else char.task, stage)
+            failure.side_effect = [None, error] if stage == 'check_combat' else error
+            with self.assertRaises(type(error)):
+                char._heavy_attack_hold(.4)
+            self.assertEqual([event for event, _ in char.events], ['down', 'up'])
+            self.assertIsNone(char._post_heavy_observer)
+        for always in (False, True):
+            char = self.make_char()
+            char.flying.side_effect = lambda: always or char.task.mouse_down.call_count == 1
+            char._heavy_attack_hold(.4)
+            self.assertEqual(char.task.mouse_down.call_count, 3 if always else 2)
+            self.assertEqual(char.task.mouse_up.call_count, char.task.mouse_down.call_count)
+            if always:
+                char.task.next_frame.assert_not_called()
+            else:
+                self.assertIn('attempt=2', char.logger.info.call_args.args[0])
+
+    def test_recognition_errors_do_not_block_heavy_release(self):
         char = self.make_char()
-        char.task.next_frame = Mock(return_value=char.task.frame)
-        char.task.check_combat.side_effect = RuntimeError('combat ended')
-        char.recognize_guaxiang = Mock()
-        char.normal_attack = Mock()
+        with patch('src.char.Douling.detect_energy', side_effect=RuntimeError()), \
+                patch('src.char.Douling.detect_guaxiang', side_effect=RuntimeError()):
+            char._heavy_attack_hold(.4)
+        self.assertEqual([event for event, _ in char.events], ['down', 'up'])
+        self.assertAlmostEqual(char.clock[0], .4)
+        self.assertIsNone(char._energy_state)
 
-        with self.assertRaisesRegex(RuntimeError, 'combat ended'):
-            char._normal_attack_until_four_guaxiang()
-
-        char.recognize_guaxiang.assert_not_called()
-        char.normal_attack.assert_not_called()
-        self.assertFalse(char._waiting_for_guaxiang)
-
-    def test_segment_two_gates_before_heavy_and_preserves_followup_order(self):
+    def test_followup_starts_immediately_and_observation_expires(self):
         char = self.make_char()
-        events = []
-        char.check_combat = lambda: events.append('check_combat')
-        char.task.jump = lambda after_sleep: events.append(('jump', after_sleep))
-        char.sleep = lambda duration: events.append(('sleep', duration))
-        char.flying = lambda: False
-        char.wait_down = lambda: events.append('wait_down')
-        char._normal_attack_until_four_guaxiang = lambda: events.append('gua_gate') or True
-        char._heavy_attack_hold = lambda duration: events.append(('heavy', duration))
-        char.click_echo = lambda time_out: events.append(('echo', time_out))
-        char.click_liberation = lambda: events.append('liberation')
-        char.switch_next_char = lambda: events.append('switch')
-
+        char._normal_attack_until_four_guaxiang = Mock(return_value=True)
+        original = char.task.next_frame
         char._do_segment2()
-
-        self.assertEqual(events, [
-            'check_combat',
-            ('jump', .01),
-            ('sleep', .05),
-            'check_combat',
-            'wait_down',
-            'check_combat',
-            'gua_gate',
-            ('heavy', 2.5),
-            ('echo', 0),
-            'liberation',
-            'switch',
-        ])
-
-    def test_timeout_switches_without_followup_skills(self):
-        for sequence, has_frame in (([], True), (None, True), (['蓝'] * 4, False)):
-            with self.subTest(sequence=sequence, has_frame=has_frame):
-                char = self.make_char()
-                char._segment = 2
-                char.task.jump = Mock()
-                char.sleep = Mock(side_effect=lambda duration: clock.__setitem__(0, clock[0] + 1.0))
-                char.flying = Mock(return_value=False)
-                char.wait_down = Mock()
-                char.task.next_frame = Mock(return_value=char.task.frame if has_frame else None)
-                char.recognize_guaxiang = Mock(return_value=sequence)
-                char._heavy_attack_hold = Mock()
-                char.click_echo = Mock()
-                char.click_liberation = Mock()
-                char.switch_next_char = Mock()
-                clock = [0.0]
-
-                char.normal_attack = Mock()
-                with patch('src.char.Douling.time.monotonic', side_effect=lambda: clock[0]):
-                    char._do_segment2()
-
-                self.assertEqual(char.task.next_frame.call_count, 3)
-                char._heavy_attack_hold.assert_not_called()
-                char.click_echo.assert_not_called()
-                char.click_liberation.assert_not_called()
-                char.switch_next_char.assert_called_once_with()
-                self.assertEqual(char._segment, 1)
-                self.assertFalse(char._waiting_for_guaxiang)
-                char.logger.warning.assert_called_once()
-                self.assertIn('reason=timeout', char.logger.warning.call_args.args[0])
-                if not has_frame:
-                    char.recognize_guaxiang.assert_not_called()
-
-    def test_attempt_limit_bounds_recognition_without_screenshots(self):
-        char = self.make_char()
-        char.task.next_frame = Mock(return_value=char.task.frame)
-        char.normal_attack = Mock()
-        detector = Mock(return_value=SimpleNamespace(sequence=None, reason='low_confidence'))
-        with patch('src.char.Douling.detect_guaxiang', detector):
-            self.assertFalse(char._normal_attack_until_four_guaxiang())
-        self.assertEqual(detector.call_count, 30)
-        char.task.screenshot.assert_not_called()
-        self.assertLessEqual(char.normal_attack.call_count, 10)
-        self.assertFalse(char._waiting_for_guaxiang)
-        char.logger.warning.assert_called_once()
-        self.assertIn('reason=max_attempts', char.logger.warning.call_args.args[0])
-
-    def test_deadline_checked_after_frame_and_recognition(self):
-        for stage in ('frame', 'recognition'):
-            for elapsed in (2.999, 3.0, 3.1):
-                with self.subTest(stage=stage, elapsed=elapsed):
-                    char = self.make_char()
-                    clock = [0.0]
-
-                    def refresh():
-                        if stage == 'frame':
-                            clock[0] = elapsed
-                        return char.task.frame
-
-                    def recognize(_):
-                        if stage == 'recognition':
-                            clock[0] = elapsed
-                        return ['蓝'] * 4
-
-                    char.task.next_frame = Mock(side_effect=refresh)
-                    char.recognize_guaxiang = Mock(side_effect=recognize)
-                    char.normal_attack = Mock()
-                    with patch('src.char.Douling.time.monotonic', side_effect=lambda: clock[0]):
-                        self.assertEqual(char._normal_attack_until_four_guaxiang(), elapsed < 3)
-                    char.normal_attack.assert_not_called()
-                    self.assertFalse(char._waiting_for_guaxiang)
-                    if stage == 'frame' and elapsed >= 3:
-                        char.recognize_guaxiang.assert_not_called()
-
-    def test_task_stop_propagates_and_clears_waiting_state(self):
-        from ok.task.exceptions import TaskDisabledException
-        char = self.make_char()
-        char.task.next_frame = Mock(side_effect=TaskDisabledException())
-        char.recognize_guaxiang = Mock()
-        with self.assertRaises(TaskDisabledException):
-            char._normal_attack_until_four_guaxiang()
-        char.recognize_guaxiang.assert_not_called()
-        self.assertFalse(char._waiting_for_guaxiang)
-
-    def test_entry_recognition_uses_frame_copy_and_logs_without_screenshots(self):
-        char = self.make_char()
-        detector = Mock(return_value=SimpleNamespace(
-            sequence=['黄', '蓝'],
-            reason='ok',
-            region=None,
-            detections=[],
-        ))
-
-        with patch.dict(Douling.recognize_guaxiang.__globals__,
-                        {'detect_guaxiang': detector}):
-            self.assertEqual(char.recognize_guaxiang('entry'), ['黄', '蓝'])
-
-        detector.assert_called_once()
-        self.assertIsNot(detector.call_args.args[0], char.task.frame)
-        np.testing.assert_array_equal(detector.call_args.args[0], char.task.frame)
-        char.task.screenshot.assert_not_called()
-        char.logger.info.assert_any_call(
-            '[DoulingRecognition] point=entry count=2 sequence=黄,蓝')
-        char.logger.info.assert_any_call(
-            '[DoulingEnergy] point=entry status=uncertain reason=invalid_frame')
+        self.assertEqual([event for event, _ in char.events], ['down', 'up', 'echo', 'liberation', 'switch'])
+        np.testing.assert_allclose([at for _, at in char.events[1:]], [2.55] * 4)
+        self.assertIsNotNone(char._post_heavy_observer)
+        char._energy_state = 'both'
+        char.logger.reset_mock()
+        original.reset_mock()
+        for offset in (.100001, .15, .300002, .400001):
+            char.clock[0] = char.events[1][1] + offset
+            char.task.next_frame()
+            self.assertEqual(char._energy_state, 'both')
+        self.assertEqual(original.call_count, 4)
         self.assertEqual(char.logger.info.call_count, 2)
+        self.assertIs(char.task.next_frame, original)
+        self.assertIsNone(char._post_heavy_observer)
+
+    def test_observation_failures_restore_frame_method(self):
+        for stage in ('capture', 'observer', 'combat_end', 'followup'):
+            with self.subTest(stage=stage):
+                char = self.make_char()
+                original = char.task.next_frame
+                if stage == 'followup':
+                    char._normal_attack_until_four_guaxiang = Mock(return_value=True)
+                    char.click_echo.side_effect = TaskDisabledException()
+                    with self.assertRaises(TaskDisabledException):
+                        char._do_segment2()
+                    char.click_liberation.assert_not_called()
+                else:
+                    char._heavy_attack_hold(.4)
+                    char._energy_state = 'both'
+                    if stage == 'capture':
+                        original.side_effect = TaskDisabledException()
+                        with self.assertRaises(TaskDisabledException):
+                            char.task.next_frame()
+                    elif stage == 'observer':
+                        with patch.object(char, '_record_heavy_recognition', side_effect=RuntimeError()):
+                            self.assertIs(char.task.next_frame(), char.task.frame)
+                    else:
+                        char.task._in_combat = False
+                        char.logger.reset_mock()
+                        char.task.next_frame()
+                        char.logger.info.assert_not_called()
+                    self.assertEqual(char._energy_state, 'both')
+                self.assertIs(char.task.next_frame, original)
+                self.assertIsNone(char._post_heavy_observer)
+                char.task.mouse_up.assert_called_once()
+
+    def test_observation_restores_inherited_method_and_only_wraps_one_task(self):
+        char = self.make_char()
+        task, other = BaseCombatTask.__new__(BaseCombatTask), BaseCombatTask.__new__(BaseCombatTask)
+        task._in_combat, task.in_team = True, Mock(return_value=(True, 1, 3))
+        char.task = task
+        original = task.next_frame.__func__
+        executor = SimpleNamespace(frame=np.zeros((4, 4, 3), np.uint8), next_frame=Mock())
+        executor.next_frame.return_value = executor.frame
+        with patch.object(BaseCombatTask, 'executor', executor):
+            char._start_post_heavy_observation(1, 0, 0, 0)
+            self.assertIs(other.next_frame.__func__, original)
+            other.next_frame()
+            char.logger.info.assert_not_called()
+            task.next_frame()
+            char.logger.info.assert_called_once()
+            char.clock[0] = .4
+            task.next_frame()
+        self.assertIs(task.next_frame.__func__, original)
+        self.assertNotIn('next_frame', vars(task))
 
 
 if __name__ == '__main__':
