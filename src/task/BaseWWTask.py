@@ -12,6 +12,7 @@ import cv2
 
 from src.Labels import Labels
 from src.scene.WWScene import WWScene
+from src.input_patch import is_mouse_button, send_mouse_button_event
 
 logger = Logger.get_logger(__name__)
 number_re = re.compile(r'(\d+)')
@@ -29,6 +30,39 @@ WIDE_MODE_UI_SCALE = 0.75
 
 class BaseWWTask(BaseTask):
     map_zoomed = False
+
+    def send_key(self, key, down_time=0.02, interval=-1, after_sleep=0):
+        if is_mouse_button(key):
+            if not self.check_interval(interval):
+                self.executor.reset_scene()
+                return False
+            self.executor.reset_scene()
+            interaction = getattr(self.executor, 'interaction', None)
+            send_mouse_button_event(key, interaction=interaction, down=True, up=True, down_time=down_time)
+            if after_sleep > 0:
+                self.sleep(after_sleep)
+            return True
+        return super().send_key(key, down_time=down_time, interval=interval, after_sleep=after_sleep)
+
+    def send_key_down(self, key, after_sleep=0):
+        if is_mouse_button(key):
+            self.executor.reset_scene()
+            interaction = getattr(self.executor, 'interaction', None)
+            send_mouse_button_event(key, interaction=interaction, down=True, up=False)
+            if after_sleep > 0:
+                self.sleep(after_sleep)
+            return
+        return super().send_key_down(key, after_sleep=after_sleep)
+
+    def send_key_up(self, key, after_sleep=0):
+        if is_mouse_button(key):
+            self.executor.reset_scene()
+            interaction = getattr(self.executor, 'interaction', None)
+            send_mouse_button_event(key, interaction=interaction, down=False, up=True)
+            if after_sleep > 0:
+                self.sleep(after_sleep)
+            return
+        return super().send_key_up(key, after_sleep=after_sleep)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

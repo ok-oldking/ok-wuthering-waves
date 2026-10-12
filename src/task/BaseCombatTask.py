@@ -803,6 +803,10 @@ class BaseCombatTask(CombatCheck):
             self.raise_not_in_combat('combat check not in combat')
 
     def set_key(self, key, box):
+        current_key = self.key_config.get(key)
+        # If the user explicitly configured mouse4, mouse5 or xbutton, never override it
+        if current_key and current_key.lower() in ['mouse4', 'mouse5', 'xbutton1', 'xbutton2']:
+            return
         best = self.find_best_match_in_box(box, ['t', 'e', 'r', 'q'], threshold=0.7)
         logger.debug(f'set_key best match {key}: {best}')
         if best and best.name != self.key_config[key]:

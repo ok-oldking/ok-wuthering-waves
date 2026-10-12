@@ -3,6 +3,7 @@ import os.path
 import cv2
 
 from ok import Config, Logger, get_path_relative_to_exe, og
+from src.input_patch import apply_patches
 
 logger = Logger.get_logger(__name__)
 
@@ -10,6 +11,7 @@ logger = Logger.get_logger(__name__)
 class Globals:
 
     def __init__(self, exit_event):
+        apply_patches()
         self._yolo_model = None
         self.mini_map_arrow = None
         self.logged_in = False
