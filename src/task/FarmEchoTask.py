@@ -43,7 +43,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Which Boss Challenge to Teleport': 'From Top to Bottom, Starting with 1',
             'Which Special Nightmare to Teleport': 'From Top to Bottom, Starting with 1',
         })
-        self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
+        self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk', 'Back and Forth']
         self.config_type['Teleport to Boss'] = {'type': "drop_down",
                                                 'options': ['No', 'Weekly Challenge',
                                                             'Boss Challenge', 'Special Nightmare'],
@@ -197,6 +197,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     elif self.config.get('Echo Pickup Method', "Yolo") == "Run in Circle":
                         dropped = self.run_in_circle_to_find_echo(circle_count=2)
                         logger.info(f'farm echo walk_circle_find_echo {dropped}')
+                    elif self.config.get('Echo Pickup Method', "Yolo") == "Back and Forth":
+                        dropped = self.back_and_forth_find_echo()
+                        logger.info(f'farm echo back_and_forth_find_echo {dropped}')
                     else:
                         dropped = self.walk_find_echo()
                         logger.info(f'farm echo walk_find_echo {dropped}')
