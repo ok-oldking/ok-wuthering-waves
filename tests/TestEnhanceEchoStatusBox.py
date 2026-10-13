@@ -1,7 +1,10 @@
 import unittest
 
-from ok.feature.Box import Box
-from src.task.EnhanceEchoTask import EnhanceEchoTask
+import cv2
+import numpy as np
+
+from ok.feature.Box import Box, relative_box
+from src.task.EnhanceEchoTask import EnhanceEchoTask, slot_corner
 
 
 class FakeEnhanceTask:
@@ -50,23 +53,65 @@ class FakeEnhanceTask:
 
 
 class FakeSelectTask:
-    """Scripts the +0 check after each click on the bag grid.
+    """Scripts the bag grid: which card holds the gold selection frame and
+    whether the selected echo is +0.
 
     3.7 keeps the just-enhanced echo selected (and scrolled into view) when
-    returning to the bag, so the task must pick a +0 echo itself.
+    returning to the bag, so the task must pick a +0 echo itself. Toggling
+    the sort order twice scrolls back to the top and selects the first card;
+    clicking an empty slot keeps the old selection.
     """
 
-    targets = {(0.13, 0.21): 'first card', (0.35, 0.917): 'sort order'}
+    list_to_top = EnhanceEchoTask.list_to_top
+    click_0_level_slot = EnhanceEchoTask.click_0_level_slot
 
-    def __init__(self, zero_level_results):
+    def __init__(self, zero_level_results=(), selected=0, empty_slots=(), frames=None):
         self.zero_level_results = list(zero_level_results)
+        self.selected = selected
+        self.empty_slots = empty_slots
+        self.frames = frames or [np.zeros((1080, 1920, 3), np.uint8)] * 2
+        self.frame = self.frames[0]
         self.clicks = []
 
     def click(self, x, y, after_sleep=0):
-        self.clicks.append(self.targets[(x, y)])
+        if (x, y) == (0.35, 0.917):
+            self.clicks.append('sort order')
+            self.selected = 0
+            self.frame = self.frames[1]
+            return
+        slot = next(i for i in range(24)
+                    if abs(slot_corner(i)[0] + 0.037 - x) < 1e-9 and abs(slot_corner(i)[1] + 0.08 - y) < 1e-9)
+        self.clicks.append(f'card {slot + 1}')
+        if slot not in self.empty_slots:
+            self.selected = slot
+
+    def find_selected_slot(self):
+        return self.selected
+
+    def box_of_screen(self, x, y, to_x, to_y):
+        return relative_box(1920, 1080, x, y, to_x=to_x, to_y=to_y)
+
+    def wait_until(self, condition, time_out=0):
+        return condition()
 
     def is_0_level(self):
         return self.zero_level_results.pop(0)
+
+    def sleep(self, timeout):
+        """No-op: the fake grid has no animation."""
+
+    def log_info(self, *args, **kwargs):
+        """No-op: logging is irrelevant to the assertions."""
+
+
+def bag_frame(gold_slot=None, edge_bgr=(177, 228, 228)):
+    """A dark bag grid; gold_slot gets a thin frame just outside its card."""
+    frame = np.full((1080, 1920, 3), (75, 70, 40), np.uint8)
+    if gold_slot is not None:
+        x, y = slot_corner(gold_slot)
+        cv2.rectangle(frame, (round(x * 1920) - 3, round(y * 1080) - 4),
+                      (round((x + 0.074) * 1920) + 2, round((y + 0.1667) * 1080) + 2), edge_bgr, 3)
+    return frame
 
 
 class TestEnhanceEchoStatusBox(unittest.TestCase):
@@ -112,26 +157,75 @@ class TestEnhanceEchoStatusBox(unittest.TestCase):
         self.assertCovers(search, locked)
         self.assertCovers(search, not_locked)
 
-    def test_first_card_is_used_when_it_is_0_level(self):
+    def test_gold_frame_marks_the_selected_card(self):
+        task = FakeSelectTask()
+        for slot in (0, 4, 18, 23):
+            task.frame = bag_frame(slot)
+            self.assertEqual(slot, EnhanceEchoTask.find_selected_slot(task))
+
+    def test_no_selected_card_without_gold_frame(self):
+        task = FakeSelectTask()
+        task.frame = bag_frame()
+        self.assertIsNone(EnhanceEchoTask.find_selected_slot(task))
+        task.frame = bag_frame(4, edge_bgr=(235, 235, 230))  # a white hover outline is not a selection
+        self.assertIsNone(EnhanceEchoTask.find_selected_slot(task))
+
+    def test_start_from_the_card_the_user_selected(self):
+        task = FakeSelectTask(selected=3)
+
+        self.assertEqual(3, EnhanceEchoTask.find_start_slot(task))
+
+        self.assertEqual(['sort order', 'sort order'], task.clicks)
+
+    def test_start_from_first_card_when_no_selection_found(self):
+        task = FakeSelectTask(selected=None)
+
+        self.assertEqual(0, EnhanceEchoTask.find_start_slot(task))
+
+    def test_start_rejected_when_list_was_scrolled(self):
+        rng = np.random.default_rng(0)
+        scrolled, top = (rng.integers(0, 256, (1080, 1920, 3), np.uint8) for _ in range(2))
+        task = FakeSelectTask(selected=3, frames=[scrolled, top])
+
+        with self.assertRaises(Exception):
+            EnhanceEchoTask.find_start_slot(task)
+
+    def test_start_card_is_used_when_it_is_0_level(self):
         task = FakeSelectTask([True])
 
-        self.assertTrue(EnhanceEchoTask.select_0_level_echo(task))
+        self.assertTrue(EnhanceEchoTask.select_0_level_echo(task, 3))
 
-        self.assertEqual(['first card'], task.clicks)
+        self.assertEqual(['card 4'], task.clicks)
 
-    def test_list_returns_to_top_when_first_visible_card_is_enhanced(self):
+    def test_list_returns_to_top_when_start_card_is_enhanced(self):
         task = FakeSelectTask([False, True])
 
-        self.assertTrue(EnhanceEchoTask.select_0_level_echo(task))
+        self.assertTrue(EnhanceEchoTask.select_0_level_echo(task, 3))
 
-        self.assertEqual(['first card', 'sort order', 'sort order', 'first card'], task.clicks)
+        self.assertEqual(['card 4', 'sort order', 'sort order', 'card 4'], task.clicks)
+
+    def test_list_returns_to_top_first_after_a_kept_echo(self):
+        task = FakeSelectTask([True])
+
+        self.assertTrue(EnhanceEchoTask.select_0_level_echo(task, 3, to_top=True))
+
+        self.assertEqual(['sort order', 'sort order', 'card 4'], task.clicks)
+
+    def test_empty_start_slot_never_enhances_skipped_echo(self):
+        # Everything from the start card on is done and gone: the start slot is
+        # empty and the selection rests on a skipped +0 echo to its left.
+        task = FakeSelectTask([True, True], selected=2, empty_slots=(3,))
+
+        self.assertFalse(EnhanceEchoTask.select_0_level_echo(task, 3))
+
+        self.assertEqual(['card 4', 'sort order', 'sort order', 'card 4'], task.clicks)
 
     def test_no_0_level_echo_left(self):
         task = FakeSelectTask([False, False])
 
-        self.assertFalse(EnhanceEchoTask.select_0_level_echo(task))
+        self.assertFalse(EnhanceEchoTask.select_0_level_echo(task, 3))
 
-        self.assertEqual(['first card', 'sort order', 'sort order', 'first card'], task.clicks)
+        self.assertEqual(['card 4', 'sort order', 'sort order', 'card 4'], task.clicks)
 
 
 if __name__ == '__main__':
