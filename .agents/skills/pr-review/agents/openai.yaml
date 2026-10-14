@@ -1,0 +1,6 @@
+interface:
+  display_name: "PR Review and Merge"
+  short_description: "Review one PR or a range, close problems, and squash merges"
+  default_prompt: "Use $pr-review to review pr starting 1752 and recommend which PRs to merge."
+policy:
+  allow_implicit_invocation: true
