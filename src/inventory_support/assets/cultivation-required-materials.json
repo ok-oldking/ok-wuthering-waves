@@ -1,0 +1,444 @@
+{
+  "schema": "cultivation-required-materials/v1",
+  "complete_catalog": false,
+  "purpose": "Required exact-quality identities, not native calibration and never a farming plan.",
+  "sources": {
+    "wuwa-forgery-current-manual": "audits/2026-10-14/wuwa-live-1146/result.json (current exact native tooltip identities, not automatic recognition acceptance)",
+    "wuwa-development": "https://wuthering.gg/zh-Hans/items/development-materials",
+    "wuwa-weapon-basic-native": "config/wuwa-inventory-selected-weapon-exp-basic.json",
+    "wuwa-weapon-medium-native": "config/wuwa-inventory-selected-weapon-exp.json",
+    "wuwa-weapon-advanced": "https://wiki.biligame.com/wutheringwaves/道具/高级能源核心",
+    "wuwa-weapon-premium": "https://wiki.biligame.com/wutheringwaves/道具/特级能源核心",
+    "wuwa-shell-credit-native": "config/wuwa-inventory-shell-credit-popup.json",
+    "wuwa-polarizer-native": "config/wuwa-inventory-selected-polarizer.json",
+    "wuwa-promotion-native": "config/wuwa-inventory-selected-promotion.json",
+    "wuwa-ring-native": "config/wuwa-inventory-selected-refined-ring.json",
+    "wuwa-skill-native": "config/wuwa-inventory-selected-skill.json",
+    "wuwa-weekly-native": "config/wuwa-inventory-selected-weekly-heart.json",
+    "wuwa-forgery-full-families": "https://wuthering.gg/zh-Hans/items/development-materials ; five weapon classes x two generations x four qualities; inherited layout trial, no live acceptance"
+  },
+  "materials": [
+    {
+      "game": "wuwa",
+      "id": "character-exp-basic",
+      "name": "初级共鸣促剂",
+      "category": "character_exp",
+      "quality": "basic",
+      "source": "wuwa-development"
+    },
+    {
+      "game": "wuwa",
+      "id": "character-exp-medium",
+      "name": "中级共鸣促剂",
+      "category": "character_exp",
+      "quality": "medium",
+      "source": "wuwa-development"
+    },
+    {
+      "game": "wuwa",
+      "id": "character-exp-advanced",
+      "name": "高级共鸣促剂",
+      "category": "character_exp",
+      "quality": "advanced",
+      "source": "wuwa-development"
+    },
+    {
+      "game": "wuwa",
+      "id": "character-exp-premium",
+      "name": "特级共鸣促剂",
+      "category": "character_exp",
+      "quality": "premium",
+      "source": "wuwa-development"
+    },
+    {
+      "game": "wuwa",
+      "id": "weapon-exp-basic",
+      "name": "初级能源核心",
+      "category": "weapon_exp",
+      "quality": "basic",
+      "source": "wuwa-weapon-basic-native"
+    },
+    {
+      "game": "wuwa",
+      "id": "weapon-exp-medium",
+      "name": "中级能源核心",
+      "category": "weapon_exp",
+      "quality": "medium",
+      "source": "wuwa-weapon-medium-native"
+    },
+    {
+      "game": "wuwa",
+      "id": "weapon-exp-advanced",
+      "name": "高级能源核心",
+      "category": "weapon_exp",
+      "quality": "advanced",
+      "source": "wuwa-weapon-advanced"
+    },
+    {
+      "game": "wuwa",
+      "id": "weapon-exp-premium",
+      "name": "特级能源核心",
+      "category": "weapon_exp",
+      "quality": "premium",
+      "source": "wuwa-weapon-premium"
+    },
+    {
+      "game": "wuwa",
+      "id": "shell-credit",
+      "name": "贝币",
+      "category": "currency",
+      "quality": "not_applicable",
+      "source": "wuwa-shell-credit-native"
+    },
+    {
+      "game": "wuwa",
+      "id": "weapon-skill-dieyipianzhenti",
+      "name": "叠翼偏振体",
+      "category": "weapon_promotion",
+      "quality": "named_variant_not_rarity_calibration",
+      "source": "wuwa-polarizer-native"
+    },
+    {
+      "game": "wuwa",
+      "id": "weapon-skill-duoyipianzhenti",
+      "name": "多翼偏振体",
+      "category": "weapon_promotion",
+      "quality": "advanced",
+      "source": "wuwa-forgery-current-manual"
+    },
+    {
+      "game": "wuwa",
+      "id": "weapon-skill-danyipianzhenti",
+      "name": "单翼偏振体",
+      "category": "weapon_promotion",
+      "quality": "medium",
+      "source": "wuwa-forgery-current-manual"
+    },
+    {
+      "game": "wuwa",
+      "id": "skill-ninggudexianxian",
+      "name": "凝固的弦线",
+      "category": "skill",
+      "quality": "advanced",
+      "source": "wuwa-forgery-current-manual"
+    },
+    {
+      "game": "wuwa",
+      "id": "weapon-skill-gaopinqiexuejingkuai",
+      "name": "高频切削晶块",
+      "category": "weapon_promotion",
+      "quality": "advanced",
+      "source": "wuwa-forgery-current-manual"
+    },
+    {
+      "game": "wuwa",
+      "id": "weapon-skill-gaopinhaishisuijing",
+      "name": "高频海蚀碎晶",
+      "category": "weapon_promotion",
+      "quality": "advanced",
+      "source": "wuwa-forgery-current-manual"
+    },
+    {
+      "game": "wuwa",
+      "id": "weapon-skill-canxiangjuran",
+      "name": "残响聚燃体",
+      "category": "weapon_promotion",
+      "quality": "advanced",
+      "source": "wuwa-forgery-current-manual"
+    },
+    {
+      "game": "wuwa",
+      "id": "promotion-denglongguo",
+      "name": "灯笼果",
+      "category": "character_promotion",
+      "quality": "named_variant_not_rarity_calibration",
+      "source": "wuwa-promotion-native"
+    },
+    {
+      "game": "wuwa",
+      "id": "promotion-refined-ring",
+      "name": "改造镣环",
+      "category": "character_promotion",
+      "quality": "named_variant_not_rarity_calibration",
+      "source": "wuwa-ring-native"
+    },
+    {
+      "game": "wuwa",
+      "id": "skill-duanxudexianxian",
+      "name": "断续的弦线",
+      "category": "skill",
+      "quality": "named_variant_not_rarity_calibration",
+      "source": "wuwa-skill-native"
+    },
+    {
+      "game": "wuwa",
+      "id": "skill-rugedexianxian",
+      "name": "如歌的弦线",
+      "category": "skill",
+      "quality": "named_variant_not_rarity_calibration",
+      "source": "wuwa-skill-native"
+    },
+    {
+      "game": "wuwa",
+      "id": "weekly-boss-tianquliulizhixin",
+      "name": "天衢琉璃之心",
+      "category": "weekly_boss",
+      "quality": "named_variant_not_rarity_calibration",
+      "source": "wuwa-weekly-native"
+    },
+    {
+      "id": "forgery-sword-old-basic",
+      "name": "惰性金属液滴",
+      "category": "weapon_promotion",
+      "quality": "basic",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-sword-old-medium",
+      "name": "活性金属液滴",
+      "category": "weapon_promotion",
+      "quality": "medium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-sword-old-advanced",
+      "name": "极化金属液滴",
+      "category": "weapon_promotion",
+      "quality": "advanced",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-sword-old-premium",
+      "name": "异构金属液滴",
+      "category": "weapon_promotion",
+      "quality": "premium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-broadblade-old-basic",
+      "name": "海蚀嵌合体210",
+      "category": "weapon_promotion",
+      "quality": "basic",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-broadblade-old-medium",
+      "name": "海蚀嵌合体226",
+      "category": "weapon_promotion",
+      "quality": "medium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-broadblade-old-advanced",
+      "name": "海蚀嵌合体235",
+      "category": "weapon_promotion",
+      "quality": "advanced",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-broadblade-old-premium",
+      "name": "海蚀嵌合体239",
+      "category": "weapon_promotion",
+      "quality": "premium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-pistol-old-basic",
+      "name": "含杂晶化燃素",
+      "category": "weapon_promotion",
+      "quality": "basic",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-pistol-old-medium",
+      "name": "粗萃晶化燃素",
+      "category": "weapon_promotion",
+      "quality": "medium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-pistol-old-advanced",
+      "name": "精馏晶化燃素",
+      "category": "weapon_promotion",
+      "quality": "advanced",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-pistol-old-premium",
+      "name": "高纯晶化燃素",
+      "category": "weapon_promotion",
+      "quality": "premium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-gauntlet-old-basic",
+      "name": "声律种核",
+      "category": "weapon_promotion",
+      "quality": "basic",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-gauntlet-old-medium",
+      "name": "声律萌芽",
+      "category": "weapon_promotion",
+      "quality": "medium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-gauntlet-old-advanced",
+      "name": "声律新叶",
+      "category": "weapon_promotion",
+      "quality": "advanced",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-gauntlet-old-premium",
+      "name": "声律花蕾",
+      "category": "weapon_promotion",
+      "quality": "premium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-rectifier-old-basic",
+      "name": "慢板涡流",
+      "category": "weapon_promotion",
+      "quality": "basic",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-rectifier-old-medium",
+      "name": "柔板涡流",
+      "category": "weapon_promotion",
+      "quality": "medium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-rectifier-old-advanced",
+      "name": "行板涡流",
+      "category": "weapon_promotion",
+      "quality": "advanced",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-rectifier-old-premium",
+      "name": "急板涡流",
+      "category": "weapon_promotion",
+      "quality": "premium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-sword-new-basic",
+      "name": "残翼偏振体",
+      "category": "weapon_promotion",
+      "quality": "basic",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-broadblade-new-basic",
+      "name": "低频切削晶块",
+      "category": "weapon_promotion",
+      "quality": "basic",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-broadblade-new-medium",
+      "name": "中频切削晶块",
+      "category": "weapon_promotion",
+      "quality": "medium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-broadblade-new-premium",
+      "name": "全频切削晶块",
+      "category": "weapon_promotion",
+      "quality": "premium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-pistol-new-basic",
+      "name": "缺损聚燃体",
+      "category": "weapon_promotion",
+      "quality": "basic",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-pistol-new-medium",
+      "name": "余音聚燃体",
+      "category": "weapon_promotion",
+      "quality": "medium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-pistol-new-premium",
+      "name": "回音聚燃体",
+      "category": "weapon_promotion",
+      "quality": "premium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-gauntlet-new-basic",
+      "name": "低频海蚀碎晶",
+      "category": "weapon_promotion",
+      "quality": "basic",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-gauntlet-new-medium",
+      "name": "中频海蚀碎晶",
+      "category": "weapon_promotion",
+      "quality": "medium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-gauntlet-new-premium",
+      "name": "全频海蚀碎晶",
+      "category": "weapon_promotion",
+      "quality": "premium",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    },
+    {
+      "id": "forgery-rectifier-new-basic",
+      "name": "拼凑的弦线",
+      "category": "weapon_promotion",
+      "quality": "basic",
+      "game": "wuwa",
+      "source": "wuwa-forgery-full-families"
+    }
+  ],
+  "remaining_categories": [
+    "wuwa promotion and weapon/skill families",
+    "zzz other EXP/promotion/skill/weapon qualities and families",
+    "both games weekly/core skill drops"
+  ],
+  "production_ready": false
+}

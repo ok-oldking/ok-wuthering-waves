@@ -167,7 +167,8 @@ config = {
     'blur_area': blur_area,
     'gui_icon': 'icons/icon.png',
     'global_configs': [basic_config_option, key_config_option, char_config_option, monthly_card_config_option],
-    'custom_tabs': [["src.gui.CharacterCodeTab", "CharacterCodeTab"]],
+    'custom_tabs': [["src.gui.CharacterCodeTab", "CharacterCodeTab"],
+                    ["src.gui.InventoryTab", "InventoryTab"]],
     'ocr': {
         'lib': 'onnxocr',
         'auto_simplify': True,
@@ -271,6 +272,8 @@ config = {
         ["src.task.EnhanceEchoTask", "EnhanceEchoTask"],
         ["src.task.ChangeEchoTask", "ChangeEchoTask"],
         ["src.task.GardenTask", "GardenTask"],
+        ["src.task.InventoryInspectionTask", "InventoryInspectionTask"],
+        ["src.task.InventoryMaintainTask", "InventoryMaintainTask"],
         # ["src.task.DiagnosisTask", "DiagnosisTask"],
     ], 'trigger_tasks': [
         ["src.task.AutoCombatTask", "AutoCombatTask"],

@@ -1,0 +1,80 @@
+{
+  "schema": "native-bag-calibration/v1",
+  "game": "wuwa",
+  "ready": true,
+  "candidate_only": true,
+  "game_version": "3.7.14 additive resource read trial; unchanged binary, inherited UI unproven",
+  "game_exe_sha256": "61746ca0ccfb39326e56d86f08f907b48cd262a3ea00299b3758b4c909177633",
+  "resource_fingerprints": {
+    "Saved/Resources/3.7.0/ResManifest/ManifestAggregated_3.7.10.txt": "f27c511f2fbd1b2c1b4cb7133dc87eb55b6096c65ba1fc454f34e3518764dd2e",
+    "Saved/Resources/3.7.0/ResManifest/ManifestAggregated_3.7.11.txt": "0c1035269a398bf38cae42e59c54b60048603b6173eb73069534e7664b7569d9",
+    "Saved/Resources/3.7.0/ResManifest/ManifestAggregated_3.7.12.txt": "c108a3a9384b82ba9b60dad91abebd2c9a3e95988cb8a32fd16e11af5ea7c28a",
+    "Saved/Resources/3.7.0/ResManifest/ManifestAggregated_3.7.13.txt": "f9bec08bc5d9e8875b427467e109df2f1ffb73171ccfe3a71c605ce4e3d87d68",
+    "Saved/Resources/3.7.0/ResManifest/ManifestAggregated_3.7.14.txt": "01e18c3b6f6cbcfcd7292892b34a7ecd3b237ecfd0e1b48877f250a854637a36",
+    "Saved/Resources/3.7.0/ResManifest/ManifestAggregated_3.7.9.txt": "899a7d94bb1545542b0fd4fbf2d39b6cf101b99669f48be2e61f5aa967633cf0",
+    "Saved/Resources/3.7.0/ResManifest/ManifestLang_en_3.7.6.txt": "a7afcb94768a94f8d5900c7ab851921c533cde10c6e7b8e93e4460a94230daa1",
+    "Saved/Resources/3.7.0/ResManifest/ManifestLang_ja_3.7.6.txt": "f606b9cef16a588e1ae0cd2e79bb5289bb9602de5ddb17fa41773659b59e6359",
+    "Saved/Resources/3.7.0/ResManifest/ManifestLang_ko_3.7.7.txt": "7c5f1359205a058de656aca4e1d982b1fd8ae58c8da9fa1f97e375222fcf83db",
+    "Saved/Resources/3.7.0/ResManifest/ManifestLang_zh_3.7.6.txt": "cd7c2ba8644d482c9efb335de51568cf5d8777c2db316e437d1d91a21341319f",
+    "Saved/Resources/3.7.0/ResManifest/ManifestLauncher_3.7.13.txt": "22796dfa6ebe754632be35a398342e3c5873a1548d44f43a2a469c9b647e02d4",
+    "Saved/Resources/3.7.0/ResManifest/ManifestLauncher_3.7.14.txt": "7f003b2bf6b0a58cab4a0a2075c11e7005b48064bc1e969a796aa8f33a732c64",
+    "Saved/Resources/3.7.0/ResManifest/ManifestLauncher_3.7.7.txt": "1d3e6eefb56d26e3ce5cfdfcca32915670a4951ed24cf28036f42fb5777d95a6",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_3.7.10.txt": "77d44baacec898571fea31209d850286ff8ca71c7f8a3e7f797bc51efb96b3ec",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_3.7.11.txt": "654aafbf03990bf16603879eca20a17f43f636dac1c663472f9a30dd38a109d2",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_3.7.12.txt": "00650c9cf5e07ccc524c78f703a343acbb9f3a5251e0d6ebbc681d83f3b82a05",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_3.7.13.txt": "63fa61dc48ce1aa5838e444547b7fb366b5939de888241cec413ce60d209b8f3",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_3.7.14.txt": "be5002346390ebb7c669718e939441916a849fde319835f80832964c3331e936",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_3.7.9.txt": "52797dea5970ab5d1fd01ac19715dc6ab7bd49575ba9241562d7e88232063ea1",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_HD_3.7.10.txt": "8d7207d379a1ea09da94455606c718925f197fe1cad80c9b71851f5dfd1a4811",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_HD_3.7.11.txt": "c5e6a8aa158ce5341aa1291e453f5034b7cbd4849b349d04371872a1087ef2a1",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_HD_3.7.12.txt": "05eb04b5db8611459ad5ff47ed3d4bf5098249f5e1b5094d98e192e3fa432543",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_HD_3.7.13.txt": "2f28a237c1dc373db8944b3077b06d4f636c314ca4c9cea510fe3d2c3b38a5b4",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_HD_3.7.14.txt": "b035a50d82fb2b0873ba56ee1982af8f81c260d692cc272dbedabee6a847f48e",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_HD_3.7.7.txt": "7cee13bd72eb873edb50f9beed3bc694d868f23219811e6044a4d70ac48b209e",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_UHD_3.7.13.txt": "d94119adcd856f425fde25cdd60c08b063834e07e52714367487bf893d8d541a",
+    "Saved/Resources/3.7.0/ResManifest/ManifestResource_UHD_3.7.14.txt": "8fd5f9d7da7a9215e04e797199c202f27330853acc9059b8a649e8434f39b6a9"
+  },
+  "scope": "selected_materials_only",
+  "native_evidence": "OLD LAYOUT ONLY; CURRENT EXACT ITEM UNPROVEN: audits/2026-10-13/wuwa-forgery-live-1855/receipt.json and popup-cpu-replay.log; exact screenshot geometry, not automatic-navigation acceptance",
+  "recognition_basis": {
+    "kind": "additive_read_trial",
+    "per_item_native_acceptance": "unproven_before_capture"
+  },
+  "page_anchor": {
+    "text": "断续的弦线",
+    "roi": [
+      722,
+      153,
+      268,
+      45
+    ]
+  },
+  "stock_anchor": {
+    "text": "拥有",
+    "roi": [
+      722,
+      368,
+      65,
+      37
+    ]
+  },
+  "materials": [
+    {
+      "id": "skill-duanxudexianxian",
+      "name": "断续的弦线",
+      "category": "skill",
+      "label_roi": [
+        722,
+        153,
+        268,
+        45
+      ],
+      "quantity_roi": [
+        790,
+        368,
+        70,
+        37
+      ]
+    }
+  ]
+}

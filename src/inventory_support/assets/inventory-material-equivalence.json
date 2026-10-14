@@ -1,0 +1,350 @@
+{
+  "schema": "inventory-material-equivalence/v1",
+  "scope": "same-family quality conversion only; virtual allocation never executes synthesis",
+  "games": {
+    "wuwa": [
+      {
+        "id": "resonator-experience",
+        "mode": "experience",
+        "members": [
+          {
+            "id": "character-exp-basic",
+            "name": "初级共鸣促剂"
+          },
+          {
+            "id": "character-exp-medium",
+            "name": "中级共鸣促剂"
+          },
+          {
+            "id": "character-exp-advanced",
+            "name": "高级共鸣促剂"
+          },
+          {
+            "id": "character-exp-premium",
+            "name": "特级共鸣促剂"
+          }
+        ],
+        "ratios": [
+          1000,
+          3000,
+          8000,
+          20000
+        ],
+        "source": "https://wuthering.gg/zh-Hans/items/development-materials ; item experience descriptions"
+      },
+      {
+        "id": "weapon-experience",
+        "mode": "experience",
+        "members": [
+          {
+            "id": "weapon-exp-basic",
+            "name": "初级能源核心"
+          },
+          {
+            "id": "weapon-exp-medium",
+            "name": "中级能源核心"
+          },
+          {
+            "id": "weapon-exp-advanced",
+            "name": "高级能源核心"
+          },
+          {
+            "id": "weapon-exp-premium",
+            "name": "特级能源核心"
+          }
+        ],
+        "ratios": [
+          1000,
+          3000,
+          8000,
+          20000
+        ],
+        "source": "https://wuthering.gg/zh-Hant/items ; https://gamewith.jp/wutheringwaves/450810 ; exact weapon EXP values"
+      },
+      {
+        "id": "forgery-sword-old",
+        "members": [
+          {
+            "id": "forgery-sword-old-basic",
+            "name": "惰性金属液滴"
+          },
+          {
+            "id": "forgery-sword-old-medium",
+            "name": "活性金属液滴"
+          },
+          {
+            "id": "forgery-sword-old-advanced",
+            "name": "极化金属液滴"
+          },
+          {
+            "id": "forgery-sword-old-premium",
+            "name": "异构金属液滴"
+          }
+        ],
+        "mode": "up_only",
+        "ratios": [
+          3,
+          3,
+          3
+        ],
+        "source": "https://www.taptap.cn/moment/549097729976960157 ; pure synthesis3:1 upward only; no cross-family exchange"
+      },
+      {
+        "id": "forgery-broadblade-old",
+        "members": [
+          {
+            "id": "forgery-broadblade-old-basic",
+            "name": "海蚀嵌合体210"
+          },
+          {
+            "id": "forgery-broadblade-old-medium",
+            "name": "海蚀嵌合体226"
+          },
+          {
+            "id": "forgery-broadblade-old-advanced",
+            "name": "海蚀嵌合体235"
+          },
+          {
+            "id": "forgery-broadblade-old-premium",
+            "name": "海蚀嵌合体239"
+          }
+        ],
+        "mode": "up_only",
+        "ratios": [
+          3,
+          3,
+          3
+        ],
+        "source": "https://www.taptap.cn/moment/549097729976960157 ; pure synthesis3:1 upward only; no cross-family exchange"
+      },
+      {
+        "id": "forgery-pistol-old",
+        "members": [
+          {
+            "id": "forgery-pistol-old-basic",
+            "name": "含杂晶化燃素"
+          },
+          {
+            "id": "forgery-pistol-old-medium",
+            "name": "粗萃晶化燃素"
+          },
+          {
+            "id": "forgery-pistol-old-advanced",
+            "name": "精馏晶化燃素"
+          },
+          {
+            "id": "forgery-pistol-old-premium",
+            "name": "高纯晶化燃素"
+          }
+        ],
+        "mode": "up_only",
+        "ratios": [
+          3,
+          3,
+          3
+        ],
+        "source": "https://www.taptap.cn/moment/549097729976960157 ; pure synthesis3:1 upward only; no cross-family exchange"
+      },
+      {
+        "id": "forgery-gauntlet-old",
+        "members": [
+          {
+            "id": "forgery-gauntlet-old-basic",
+            "name": "声律种核"
+          },
+          {
+            "id": "forgery-gauntlet-old-medium",
+            "name": "声律萌芽"
+          },
+          {
+            "id": "forgery-gauntlet-old-advanced",
+            "name": "声律新叶"
+          },
+          {
+            "id": "forgery-gauntlet-old-premium",
+            "name": "声律花蕾"
+          }
+        ],
+        "mode": "up_only",
+        "ratios": [
+          3,
+          3,
+          3
+        ],
+        "source": "https://www.taptap.cn/moment/549097729976960157 ; pure synthesis3:1 upward only; no cross-family exchange"
+      },
+      {
+        "id": "forgery-rectifier-old",
+        "members": [
+          {
+            "id": "forgery-rectifier-old-basic",
+            "name": "慢板涡流"
+          },
+          {
+            "id": "forgery-rectifier-old-medium",
+            "name": "柔板涡流"
+          },
+          {
+            "id": "forgery-rectifier-old-advanced",
+            "name": "行板涡流"
+          },
+          {
+            "id": "forgery-rectifier-old-premium",
+            "name": "急板涡流"
+          }
+        ],
+        "mode": "up_only",
+        "ratios": [
+          3,
+          3,
+          3
+        ],
+        "source": "https://www.taptap.cn/moment/549097729976960157 ; pure synthesis3:1 upward only; no cross-family exchange"
+      },
+      {
+        "id": "forgery-sword-new",
+        "members": [
+          {
+            "id": "forgery-sword-new-basic",
+            "name": "残翼偏振体"
+          },
+          {
+            "id": "weapon-skill-danyipianzhenti",
+            "name": "单翼偏振体"
+          },
+          {
+            "id": "weapon-skill-duoyipianzhenti",
+            "name": "多翼偏振体"
+          },
+          {
+            "id": "weapon-skill-dieyipianzhenti",
+            "name": "叠翼偏振体"
+          }
+        ],
+        "mode": "up_only",
+        "ratios": [
+          3,
+          3,
+          3
+        ],
+        "source": "https://www.taptap.cn/moment/549097729976960157 ; pure synthesis3:1 upward only; no cross-family exchange"
+      },
+      {
+        "id": "forgery-broadblade-new",
+        "members": [
+          {
+            "id": "forgery-broadblade-new-basic",
+            "name": "低频切削晶块"
+          },
+          {
+            "id": "forgery-broadblade-new-medium",
+            "name": "中频切削晶块"
+          },
+          {
+            "id": "weapon-skill-gaopinqiexuejingkuai",
+            "name": "高频切削晶块"
+          },
+          {
+            "id": "forgery-broadblade-new-premium",
+            "name": "全频切削晶块"
+          }
+        ],
+        "mode": "up_only",
+        "ratios": [
+          3,
+          3,
+          3
+        ],
+        "source": "https://www.taptap.cn/moment/549097729976960157 ; pure synthesis3:1 upward only; no cross-family exchange"
+      },
+      {
+        "id": "forgery-pistol-new",
+        "members": [
+          {
+            "id": "forgery-pistol-new-basic",
+            "name": "缺损聚燃体"
+          },
+          {
+            "id": "forgery-pistol-new-medium",
+            "name": "余音聚燃体"
+          },
+          {
+            "id": "weapon-skill-canxiangjuran",
+            "name": "残响聚燃体"
+          },
+          {
+            "id": "forgery-pistol-new-premium",
+            "name": "回音聚燃体"
+          }
+        ],
+        "mode": "up_only",
+        "ratios": [
+          3,
+          3,
+          3
+        ],
+        "source": "https://www.taptap.cn/moment/549097729976960157 ; pure synthesis3:1 upward only; no cross-family exchange"
+      },
+      {
+        "id": "forgery-gauntlet-new",
+        "members": [
+          {
+            "id": "forgery-gauntlet-new-basic",
+            "name": "低频海蚀碎晶"
+          },
+          {
+            "id": "forgery-gauntlet-new-medium",
+            "name": "中频海蚀碎晶"
+          },
+          {
+            "id": "weapon-skill-gaopinhaishisuijing",
+            "name": "高频海蚀碎晶"
+          },
+          {
+            "id": "forgery-gauntlet-new-premium",
+            "name": "全频海蚀碎晶"
+          }
+        ],
+        "mode": "up_only",
+        "ratios": [
+          3,
+          3,
+          3
+        ],
+        "source": "https://www.taptap.cn/moment/549097729976960157 ; pure synthesis3:1 upward only; no cross-family exchange"
+      },
+      {
+        "id": "forgery-rectifier-new",
+        "members": [
+          {
+            "id": "forgery-rectifier-new-basic",
+            "name": "拼凑的弦线"
+          },
+          {
+            "id": "skill-duanxudexianxian",
+            "name": "断续的弦线"
+          },
+          {
+            "id": "skill-ninggudexianxian",
+            "name": "凝固的弦线"
+          },
+          {
+            "id": "skill-rugedexianxian",
+            "name": "如歌的弦线"
+          }
+        ],
+        "mode": "up_only",
+        "ratios": [
+          3,
+          3,
+          3
+        ],
+        "source": "https://www.taptap.cn/moment/549097729976960157 ; pure synthesis3:1 upward only; no cross-family exchange"
+      }
+    ]
+  },
+  "pending": [
+    "WuWa remaining quality identities/current3.7.14 automatic reads and synthesis direction pending.",
+    "Currencies and weekly/core drops never mix with ordinary families. ZZZ wind/lumen and future native families need independent destination review."
+  ]
+}
