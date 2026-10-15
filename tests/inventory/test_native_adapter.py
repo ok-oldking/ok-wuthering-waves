@@ -202,6 +202,32 @@ class StockAdapterTests(unittest.TestCase):
         self.assertEqual(self.parent.config[stock.PENDING_KEY], {})
         self.assertEqual(self.parent.config[stock.HISTORY_KEY]['materials'][0]['quantity'], 1)
 
+    def test_real_merged_report_native_claim_and_regeneration_cycle(self):
+        from datetime import timedelta
+        from src.inventory_support import inventory_observation as observation
+        original_report = self.report
+        def merged_report():
+            source = original_report()
+            source.update(scope='inspection_only', farming_changed=False,
+                inventory_coverage='selected_materials_only', page_verified_twice=True,
+                game_identity={'pid': 1, 'path': 'native-game', 'created': '2026-10-15T00:00:00+00:00'},
+                game_exe_sha256='a' * 64, resource_fingerprints={'version': 'b' * 64})
+            for row in source['materials']:
+                row.pop('target', None)
+                first = datetime.fromisoformat(row['evidence'][0]['captured_at'])
+                row.update(category='character_exp', confidence=.99, evidence=[
+                    {'frame_id': 'first', 'captured_at': first.isoformat()},
+                    {'frame_id': 'second', 'captured_at': (first + timedelta(microseconds=1)).isoformat()}])
+            return observation.merge_reports('wuwa', [source])
+        self.report = merged_report
+        original_click = self.child.click_dialog_left_button
+        def claim_and_regenerate():
+            original_click()
+            self.child.current += 1
+        self.child.click_dialog_left_button = claim_and_regenerate
+        self.test_full_cycle_fresh_inspections_priority_no_saved_child_changes()
+        self.assertEqual(self.child.current, 201)
+
     def test_pending_restart_blocks_preparation_and_spending(self):
         self.parent.config[stock.PLAN_KEY] = self.rows
         self.pending()

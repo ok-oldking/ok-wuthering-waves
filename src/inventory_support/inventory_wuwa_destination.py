@@ -23,7 +23,7 @@ def resolve(task, port, native_select, expected_names, guard):
         raise ValueError('Exact reviewed four-quality family required')
     all_names = {name for family in legal for name in family}
     import json
-    navigation = json.loads((Path(__file__).resolve().parents[1] / 'config/wuwa-forgery-popup-navigation.json').read_text(encoding='utf-8'))
+    navigation = json.loads((inventory_root() / 'config/wuwa-forgery-popup-navigation.json').read_text(encoding='utf-8'))
     reference = navigation['tabs']['叠翼偏振体']
     headers = reference['entry_navigation']['forgery_anchors']
     popup_name = [722, 153, 268, 45]

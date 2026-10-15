@@ -242,6 +242,7 @@ def farm_once(parent, child, route):
             method(daily=False, used_stamina=0, config=dict(child.config))
         if state['attempts'] != 1 or state['used'] != route['cost']:
             raise RuntimeError('库存补刷未完成单场领奖，不自动重刷')
+        return {'state': 'claimed', 'cost': state['used'], 'claims': state['attempts']}
 
 def run_inventory_maintain(parent, root=ROOT):
     from src.task.InventoryInspection import run_inventory_inspection, prepare, load_module

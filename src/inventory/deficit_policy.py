@@ -57,11 +57,18 @@ def quantities(
     now = now or datetime.now(UTC)
     if (
         not isinstance(report, dict)
-        or report.get("schema") != "inventory-report/v1"
+        or report.get("schema") not in ("inventory-report/v1", "inventory-session-report/v1")
         or report.get("game") != game
         or (not isinstance(report.get("materials"), list))
     ):
         raise RuntimeError("本次仓库报告无效，停止补刷")
+    if report['schema'] == 'inventory-session-report/v1' and (
+        report.get('scope') != 'inspection_only'
+        or report.get('inventory_coverage') != 'selected_materials_only'
+        or report.get('farming_changed') is not False
+        or report.get('complete_inventory') is not False
+    ):
+        raise RuntimeError('合并库存报告范围无效，停止补刷')
     selected = {row["id"]: row for row in rows}
     found = {}
     for row in report["materials"]:
@@ -192,7 +199,10 @@ def run_cycle(
         outcome = farm_once(deepcopy(target), deepcopy(routes[target["route"]]))
         check()
         after = read_stamina()
-        if outcome is not None:
+        claimed = (isinstance(outcome, dict) and outcome.get('state') == 'claimed'
+                   and type(outcome.get('cost')) is int and outcome['cost'] == cost
+                   and type(outcome.get('claims')) is int and outcome['claims'] == 1)
+        if outcome is not None and not claimed:
             if (
                 not isinstance(outcome, dict)
                 or outcome
@@ -219,7 +229,7 @@ def run_cycle(
         regenerated = after - before + cost if type(after) is int else None
         if (
             regenerated is None
-            or before - after < cost
+            or (regenerated > 0 and not claimed)
             or not 0 <= regenerated <= int((clock() - run_started) // 360) + 2
         ):
             raise RuntimeError("单场体力消耗未核实，保留待核实记录，不重刷")
@@ -235,6 +245,8 @@ def run_cycle(
             [target["id"]],
         )
         progressed = any(latest[key] > stock[key] for key in contributing_ids)
+        if regenerated > 0 and not progressed:
+            raise RuntimeError('自然恢复期间无新库存增量，保留待核实记录')
         stagnant[target["id"]] = 0 if progressed else stagnant.get(target["id"], 0) + 1
         transaction.update(
             pending=False, stamina_after=after, stock_after=latest[target["id"]]

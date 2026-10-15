@@ -12,10 +12,29 @@ import inspect
 from math import isfinite
 from pathlib import Path
 import re
+import ast
 MATERIALS = {**{f'character-exp-{quality}': ('character_exp', 0) for quality in ('basic', 'medium', 'advanced', 'premium')}, **{f'weapon-exp-{quality}': ('weapon_exp', 1) for quality in ('basic', 'medium', 'advanced', 'premium')}, 'shell-credit': ('currency', 2)}
 FORGERY_MATERIALS = {'weapon-skill-dieyipianzhenti': ('叠翼偏振体', 'weapon_promotion'), 'skill-duanxudexianxian': ('断续的弦线', 'skill'), 'skill-rugedexianxian': ('如歌的弦线', 'skill'), 'weapon-skill-duoyipianzhenti': ('多翼偏振体', 'weapon_promotion'), 'weapon-skill-danyipianzhenti': ('单翼偏振体', 'weapon_promotion'), 'skill-ninggudexianxian': ('凝固的弦线', 'skill'), 'weapon-skill-gaopinqiexuejingkuai': ('高频切削晶块', 'weapon_promotion'), 'weapon-skill-gaopinhaishisuijing': ('高频海蚀碎晶', 'weapon_promotion'), 'weapon-skill-canxiangjuran': ('残响聚燃体', 'weapon_promotion')}
 FORGERY_REWARDS = {'weapon-skill-dieyipianzhenti': (1, 1371, '武器及技能材料·迅刀'), 'skill-duanxudexianxian': (7, 1564, '武器及技能材料·音感仪'), 'skill-rugedexianxian': (7, 1371, '武器及技能材料·音感仪'), 'weapon-skill-duoyipianzhenti': (1, 1483, '武器及技能材料·迅刀'), 'weapon-skill-danyipianzhenti': (1, 1565, '武器及技能材料·迅刀'), 'skill-ninggudexianxian': (2, 1483, '武器及技能材料·音感仪'), 'weapon-skill-gaopinqiexuejingkuai': (3, 1483, '武器及技能材料·长刃'), 'weapon-skill-gaopinhaishisuijing': (4, 1483, '武器及技能材料·臂铠'), 'weapon-skill-canxiangjuran': (5, 1483, '武器及技能材料·佩枪')}
-BASE_SOURCE_SHA256 = 'bc1676e68df70f38028264a57b5e7a5b667ce837ff8605122c11a75328f57968'
+SELECTOR_SHA256 = {
+    'click_on_book_target': '99766843b409523b0f8696b6fe0617ecbf977f7403268701ce9459c478f87f81',
+    '_find_book_scroll_top': '4ce517d72f005ef4ff3201524127b02fa8d1956efe6d5b9d61dbe71846b40203',
+}
+
+def selector_fingerprints(text):
+    """仅校验复用的选择器和滚动辅助函数，忽略其他功能与换行。"""
+    tree = ast.parse(text)
+    classes = [node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == 'BaseWWTask']
+    if len(classes) != 1:
+        raise ValueError('原生任务类缺失或重复')
+    result = {}
+    for node in classes[0].body:
+        if isinstance(node, ast.FunctionDef) and node.name in SELECTOR_SHA256:
+            if node.name in result:
+                raise ValueError('原生选择器定义重复')
+            wrapped = ast.Module(body=[node], type_ignores=[])
+            result[node.name] = hashlib.sha256(ast.dump(wrapped, include_attributes=False).encode()).hexdigest()
+    return result
 
 def exact_coordinate(value, expected):
     """按有限数值的精确表示校验原生点击常量，不放宽坐标范围。"""
@@ -184,8 +203,7 @@ def verify_forgery_selector(task):
     source = Path(inspect.getsourcefile(function) or '')
     if source.name != 'BaseWWTask.py' or not source.is_file() or source.stat().st_size > 1024 * 1024:
         raise ValueError('Native book selector changed; review before using forgery prefix')
-    canonical = source.read_text(encoding='utf-8-sig').replace('\r\n', '\n').encode('utf-8')
-    if hashlib.sha256(canonical).hexdigest() != BASE_SOURCE_SHA256:
+    if selector_fingerprints(source.read_text(encoding='utf-8-sig')) != SELECTOR_SHA256:
         raise ValueError('Native book selector changed; review before using forgery prefix')
 
 @contextmanager

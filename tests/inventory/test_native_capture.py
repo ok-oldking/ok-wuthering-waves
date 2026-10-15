@@ -39,6 +39,16 @@ class NativeCaptureTests(unittest.TestCase):
         self.assertEqual([row['id'] for row in result['materials']], ['material'])
         merged = self.observation.merge_reports('wuwa', [result])
         self.assertEqual(len(merged['materials']), 1)
+        from src.inventory import deficit_policy as policy
+        from datetime import datetime
+        moments = [datetime.fromisoformat(e['captured_at']) for e in result['materials'][0]['evidence']]
+        clock = iter((min(moments), max(moments)))
+        row = {'id': 'material', 'name': '材料', 'target': 68, 'route': 'native'}
+        outcome = policy.run_cycle([row], {'native': {'cost': 40, 'materials': ['material']}},
+            game='wuwa', inspect=lambda: merged, read_stamina=lambda: self.fail('already met'),
+            farm_once=lambda *args: self.fail('already met'), journal=lambda *args: self.fail('already met'),
+            utcnow=lambda: next(clock))
+        self.assertEqual(outcome['state'], 'targets_met')
 
     def test_unknown_selected_material_rejected(self):
         with self.assertRaises(ValueError):

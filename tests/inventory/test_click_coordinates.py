@@ -11,6 +11,18 @@ from src.inventory_support.inventory_entry_navigation import verify_forgery_sele
 
 
 class CoordinateTests(unittest.TestCase):
+    def test_real_resolver_reaches_guard_with_packaged_resources(self):
+        from src.task.BaseWWTask import BaseWWTask
+        from src.inventory_support import inventory_wuwa_destination as destination
+        from src.inventory_support.inventory_wuwa_families import families
+        task = SimpleNamespace()
+        selector = BaseWWTask.click_on_book_target.__get__(task, BaseWWTask)
+        names = [row['name'] for row in families()[0]['qualities']]
+        def stop():
+            raise RuntimeError('stop_before_input')
+        with self.assertRaisesRegex(RuntimeError, 'stop_before_input'):
+            destination.resolve(task, None, selector, names, stop)
+
     def test_current_native_selector_and_line_endings(self):
         from src.task.BaseWWTask import BaseWWTask
         task = SimpleNamespace()
@@ -20,7 +32,9 @@ class CoordinateTests(unittest.TestCase):
         text = source.read_text(encoding='utf-8-sig')
         with patch.object(Path, 'read_text', return_value=text.replace('\n', '\r\n')):
             verify_forgery_selector(task)
-        with patch.object(Path, 'read_text', return_value=text + '\n# changed'), self.assertRaises(ValueError):
+        with patch.object(Path, 'read_text', return_value=text + '\ndef unrelated_challenge_fix():\n    return True\n'):
+            verify_forgery_selector(task)
+        with patch.object(Path, 'read_text', return_value=text.replace('bar_x = 0.9730', 'bar_x = 0.9720')), self.assertRaises(ValueError):
             verify_forgery_selector(task)
 
     def test_exact_values_only(self):
