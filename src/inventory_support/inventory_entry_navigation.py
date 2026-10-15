@@ -15,7 +15,7 @@ import re
 MATERIALS = {**{f'character-exp-{quality}': ('character_exp', 0) for quality in ('basic', 'medium', 'advanced', 'premium')}, **{f'weapon-exp-{quality}': ('weapon_exp', 1) for quality in ('basic', 'medium', 'advanced', 'premium')}, 'shell-credit': ('currency', 2)}
 FORGERY_MATERIALS = {'weapon-skill-dieyipianzhenti': ('叠翼偏振体', 'weapon_promotion'), 'skill-duanxudexianxian': ('断续的弦线', 'skill'), 'skill-rugedexianxian': ('如歌的弦线', 'skill'), 'weapon-skill-duoyipianzhenti': ('多翼偏振体', 'weapon_promotion'), 'weapon-skill-danyipianzhenti': ('单翼偏振体', 'weapon_promotion'), 'skill-ninggudexianxian': ('凝固的弦线', 'skill'), 'weapon-skill-gaopinqiexuejingkuai': ('高频切削晶块', 'weapon_promotion'), 'weapon-skill-gaopinhaishisuijing': ('高频海蚀碎晶', 'weapon_promotion'), 'weapon-skill-canxiangjuran': ('残响聚燃体', 'weapon_promotion')}
 FORGERY_REWARDS = {'weapon-skill-dieyipianzhenti': (1, 1371, '武器及技能材料·迅刀'), 'skill-duanxudexianxian': (7, 1564, '武器及技能材料·音感仪'), 'skill-rugedexianxian': (7, 1371, '武器及技能材料·音感仪'), 'weapon-skill-duoyipianzhenti': (1, 1483, '武器及技能材料·迅刀'), 'weapon-skill-danyipianzhenti': (1, 1565, '武器及技能材料·迅刀'), 'skill-ninggudexianxian': (2, 1483, '武器及技能材料·音感仪'), 'weapon-skill-gaopinqiexuejingkuai': (3, 1483, '武器及技能材料·长刃'), 'weapon-skill-gaopinhaishisuijing': (4, 1483, '武器及技能材料·臂铠'), 'weapon-skill-canxiangjuran': (5, 1483, '武器及技能材料·佩枪')}
-BASE_SOURCE_SHA256 = '21bc47a464978dce6f2062eb811f8c6d695c0cc85a39fca041305c7f329acf57'
+BASE_SOURCE_SHA256 = 'bc1676e68df70f38028264a57b5e7a5b667ce837ff8605122c11a75328f57968'
 
 def exact_coordinate(value, expected):
     """按有限数值的精确表示校验原生点击常量，不放宽坐标范围。"""
@@ -182,7 +182,10 @@ def verify_forgery_selector(task):
     if function is None or function.__qualname__ != 'BaseWWTask.click_on_book_target':
         raise ValueError('Reviewed native book selector unavailable')
     source = Path(inspect.getsourcefile(function) or '')
-    if source.name != 'BaseWWTask.py' or not source.is_file() or source.stat().st_size > 1024 * 1024 or (hashlib.sha256(source.read_bytes()).hexdigest() != BASE_SOURCE_SHA256):
+    if source.name != 'BaseWWTask.py' or not source.is_file() or source.stat().st_size > 1024 * 1024:
+        raise ValueError('Native book selector changed; review before using forgery prefix')
+    canonical = source.read_text(encoding='utf-8-sig').replace('\r\n', '\n').encode('utf-8')
+    if hashlib.sha256(canonical).hexdigest() != BASE_SOURCE_SHA256:
         raise ValueError('Native book selector changed; review before using forgery prefix')
 
 @contextmanager

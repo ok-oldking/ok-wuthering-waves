@@ -5,9 +5,24 @@ import unittest
 from src.inventory_support.inventory_entry_navigation import exact_coordinate, category_click_scope
 from src.inventory_support.inventory_native_navigation import entry_module
 from src.inventory_support.runtime import import_support
+from unittest.mock import patch
+from pathlib import Path
+from src.inventory_support.inventory_entry_navigation import verify_forgery_selector
 
 
 class CoordinateTests(unittest.TestCase):
+    def test_current_native_selector_and_line_endings(self):
+        from src.task.BaseWWTask import BaseWWTask
+        task = SimpleNamespace()
+        task.click_on_book_target = BaseWWTask.click_on_book_target.__get__(task, BaseWWTask)
+        verify_forgery_selector(task)
+        source = Path(__import__('inspect').getsourcefile(BaseWWTask.click_on_book_target))
+        text = source.read_text(encoding='utf-8-sig')
+        with patch.object(Path, 'read_text', return_value=text.replace('\n', '\r\n')):
+            verify_forgery_selector(task)
+        with patch.object(Path, 'read_text', return_value=text + '\n# changed'), self.assertRaises(ValueError):
+            verify_forgery_selector(task)
+
     def test_exact_values_only(self):
         for value in (0.24, 0.3, 0.8, 0.973):
             self.assertTrue(exact_coordinate(value, value))
