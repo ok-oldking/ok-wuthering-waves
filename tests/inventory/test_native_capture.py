@@ -23,13 +23,26 @@ class NativeCaptureTests(unittest.TestCase):
             file_sha256=lambda f:'a'*64,observation=self.observation,
             verified_pair=lambda frames:len(frames)==2,atomic_json=lambda *a:None)
 
-    def run_capture(self, count='68', name='材料', guard=lambda:None):
+    def run_capture(self, count='68', name='材料', guard=lambda:None, selected_ids=None):
         def read(roi, frame):
             return {'text':count if roi==[100,0,40,40] else '资源' if roi==[0,40,100,40] else name,
                     'confidence':.99}
         port=SimpleNamespace(_frame=lambda:self.frame.copy(),_read=read)
         return self.capture.collect_page(port,'wuwa',{'pid':1,'path':'native'},'calibration',
-            10,probe=self.probe,folder=Path(self.temp.name)/'capture',guard=guard,pause=lambda _:None)
+            10,probe=self.probe,folder=Path(self.temp.name)/'capture',guard=guard,pause=lambda _:None,selected_ids=selected_ids)
+
+    def test_large_page_reads_only_selected_material(self):
+        self.cfg['scope'] = 'selected_materials_only'
+        self.cfg['materials'] += [dict(self.cfg['materials'][0], id=f'extra-{i}') for i in range(90)]
+        result = self.run_capture(selected_ids=['material'])
+        result['game_identity']['created'] = '2026-10-14T00:00:00+00:00'
+        self.assertEqual([row['id'] for row in result['materials']], ['material'])
+        merged = self.observation.merge_reports('wuwa', [result])
+        self.assertEqual(len(merged['materials']), 1)
+
+    def test_unknown_selected_material_rejected(self):
+        with self.assertRaises(ValueError):
+            self.run_capture(selected_ids=['absent'])
 
     def test_native_ocr_two_frames_confirm_exact_count(self):
         result=self.run_capture()

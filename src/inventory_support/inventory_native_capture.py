@@ -5,11 +5,17 @@ import time
 
 
 def collect_page(port, game, identity, calibration_path, timeout_seconds, *,
-                 probe, folder, guard, clock=time.monotonic, pause=time.sleep):
+                 probe, folder, guard, clock=time.monotonic, pause=time.sleep, selected_ids=None):
     import cv2
     if type(timeout_seconds) is not int or not 1 <= timeout_seconds <= 90:
         raise ValueError('库存读取时间须为1至90秒')
     cfg = probe.load_calibration(Path(calibration_path), game)
+    if selected_ids is not None:
+        if not isinstance(selected_ids, list) or len(selected_ids) != 1:
+            raise ValueError('每次只读取一个已选材料')
+        cfg = dict(cfg, materials=[row for row in cfg['materials'] if row['id'] == selected_ids[0]])
+        if len(cfg['materials']) != 1:
+            raise ValueError('已选材料未在当前识别配方中唯一定位')
     folder = Path(folder)
     folder.mkdir(parents=True, exist_ok=False)
     deadline = clock() + timeout_seconds

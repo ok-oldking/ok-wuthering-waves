@@ -79,7 +79,7 @@ def incomplete_report(game, pages, reports, *, stopped_phase, error_type, error,
         rows.append(row)
     return {'schema': 'inventory-incomplete-report/v1', 'game': game, 'reported_at': now.isoformat(), 'status': 'incomplete_inspection', 'current_inventory_verified': False, 'complete_inventory': False, 'scope': 'inspection_diagnostics_only', 'farming_changed': False, 'stopped_phase': stopped_phase, 'error_type': error_type, 'error': error[:2000], 'completed_pages': len(reports), 'planned_pages': len(pages), 'source_validation_issue': source_issue, 'materials': rows, 'note': 'Earlier observations keep their capture times; they do not prove current stock or completion.'}
 
-def inspect_session(game, calibration_paths, identity, *, navigate, current_identity, current_versions, lane_available, cancelled, audit_folder, budget_seconds=300, collector=collect_page, clock=time.monotonic, deadline_at=None, batch_scan=None):
+def inspect_session(game, calibration_paths, identity, *, navigate, current_identity, current_versions, lane_available, cancelled, audit_folder, budget_seconds=300, collector=collect_page, clock=time.monotonic, deadline_at=None, batch_scan=None, selected_material_ids=None):
     """Read-only inspection transaction for future native assistant adapters.
 
     navigate(path, cfg) must use the caller's native, read-only bag navigation,
@@ -172,7 +172,12 @@ def inspect_session(game, calibration_paths, identity, *, navigate, current_iden
             remaining = min(90, int(deadline - clock()))
             if remaining < 1:
                 raise TimeoutError('No remaining capture budget')
-            page = collector(game, identity, path, remaining)
+            if selected_material_ids is not None:
+                if len(selected_material_ids) != len(pages):
+                    raise ValueError('已选材料与识别页面不匹配')
+                page = collector(game, identity, path, remaining, selected_ids=[selected_material_ids[index]])
+            else:
+                page = collector(game, identity, path, remaining)
             guard()
             if not same_identity(identity, page.get('game_identity')) or page.get('game_exe_sha256') != expected_versions['game_exe_sha256'] or page.get('resource_fingerprints') != expected_versions['resource_fingerprints']:
                 raise RuntimeError('Capture does not match guarded process/version')

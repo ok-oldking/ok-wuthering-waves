@@ -130,7 +130,7 @@ def _run_inventory_inspection(task, root, attempt, *, prepare_gameplay=None, sel
     attempt['session_audit'] = str(folder)
     try:
         attempt.update(phase='native_navigation_and_capture', native_input_may_have_occurred=True)
-        result = bridge.inspect_session('wuwa', [file for file, _ in selections], expected, navigate=navigate, current_identity=identity, current_versions=versions, lane_available=lane_available, cancelled=cancelled, audit_folder=folder, budget_seconds=plan['budget_seconds'], deadline_at=deadline, collector=lambda game, identity, path, seconds: collect_native_page(port, game, identity, path, seconds, probe=bridge.probe, folder=folder / datetime.now().strftime('capture-%H%M%S-%f'), guard=guard), batch_scan=batch_scan if plan.get('scan_mode') in ('single_pass', 'grouped') else None)
+        result = bridge.inspect_session('wuwa', [file for file, _ in selections], expected, navigate=navigate, current_identity=identity, current_versions=versions, lane_available=lane_available, cancelled=cancelled, audit_folder=folder, budget_seconds=plan['budget_seconds'], deadline_at=deadline, selected_material_ids=[item_id for _, item_id in selections], collector=lambda game, identity, path, seconds, *, selected_ids: collect_native_page(port, game, identity, path, seconds, probe=bridge.probe, folder=folder / datetime.now().strftime('capture-%H%M%S-%f'), guard=guard, selected_ids=selected_ids), batch_scan=batch_scan if plan.get('scan_mode') in ('single_pass', 'grouped') else None)
         count = sum((row['status'] == 'confirmed' for row in result['materials']))
         task.info_set('库存检查', f'已核实{count}项；仅选定材料，不代表全仓库')
         task.log_info(f"inventory inspection report: {folder / 'report.json'}")
