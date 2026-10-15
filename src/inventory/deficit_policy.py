@@ -219,6 +219,7 @@ def run_cycle(
         regenerated = after - before + cost if type(after) is int else None
         if (
             regenerated is None
+            or before - after < cost
             or not 0 <= regenerated <= int((clock() - run_started) // 360) + 2
         ):
             raise RuntimeError("单场体力消耗未核实，保留待核实记录，不重刷")
