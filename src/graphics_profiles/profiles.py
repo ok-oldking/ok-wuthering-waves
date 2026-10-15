@@ -7,6 +7,8 @@ import json
 import re
 import sqlite3
 import subprocess
+import os
+import tempfile
 from contextlib import closing
 from datetime import datetime
 from pathlib import Path
@@ -14,6 +16,29 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parent
 PROFILES = Path(__file__).with_name("calibrated_profiles.json")
+
+
+def write_staged(stream: Any, data: bytes) -> None:
+    """完整写入并刷盘临时文件；失败时不触碰原配置。"""
+    if stream.write(data) != len(data):
+        raise OSError('INI 临时文件未完整写入')
+    stream.flush()
+    os.fsync(stream.fileno())
+
+
+def atomic_ini(path: Path, data: bytes, expected: tuple[bytes, ...]) -> None:
+    """同目录暂存，复核原文件所有权后原子替换。"""
+    name = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=path.parent, prefix=path.name + '.', suffix='.tmp', delete=False) as stream:
+            name = stream.name
+            write_staged(stream, data)
+        if path.read_bytes() not in expected:
+            raise RuntimeError('INI发生外部改动，保留原文件')
+        os.replace(name, path)
+    finally:
+        if name is not None:
+            Path(name).unlink(missing_ok=True)
 DB_KEYS = (
     "AntiAliasing",
     "AutoAdjustImageQuality",
@@ -169,7 +194,7 @@ def restore_owned_graphics(
                 "UPDATE LocalStorage SET Value=? WHERE Key=?", (before["db"][key], key)
             )
         idle()
-        ini_path.write_bytes(original)
+        atomic_ini(ini_path, original, (original, changed))
         db.commit()
     expected = {
         "db": {key: before["db"][key] for key in profile["db"]},
@@ -200,13 +225,15 @@ def apply_profile(
     if bom:
         changed = b"\xef\xbb\xbf" + changed
     before = read_graphics(db_path, ini_path)
+    backup_dir = Path(backup_dir) if backup_dir is not None else ini_path.parent / 'graphics-profile-backups'
     if backup_dir:
         backup_dir.mkdir(parents=True, exist_ok=True)
         stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         (backup_dir / (stamp + ".json")).write_text(
             json.dumps(before, ensure_ascii=False), encoding="utf-8"
         )
-        (backup_dir / (stamp + ".ini")).write_bytes(original)
+        with (backup_dir / (stamp + '.ini')).open('xb') as backup:
+            write_staged(backup, original)
     with closing(sqlite3.connect(db_path, timeout=2)) as db, db:
         db.execute("BEGIN IMMEDIATE")
         idle()
@@ -233,7 +260,7 @@ def apply_profile(
             if ini_path.read_bytes() != original:
                 raise RuntimeError("INI提交前发生外部改动，保留现场和备份")
             ini_attempted = True
-            ini_path.write_bytes(changed)
+            atomic_ini(ini_path, changed, (original,))
             db.commit()
         except Exception as error:
             if ini_attempted:
@@ -241,7 +268,8 @@ def apply_profile(
                     idle()
                     if ini_path.read_bytes() not in (original, changed):
                         raise RuntimeError("INI保存后发生外部改动")
-                    ini_path.write_bytes(original)
+                    if ini_path.read_bytes() != original:
+                        atomic_ini(ini_path, original, (changed,))
                 except Exception as rollback_error:  # noqa: BLE001 回滚失败仍须报告并保留原始写入错误
                     raise RuntimeError(
                         "INI提交失败且不能安全回滚，保留现场和备份: "
