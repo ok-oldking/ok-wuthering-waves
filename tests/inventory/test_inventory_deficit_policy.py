@@ -122,6 +122,15 @@ class DeficitPolicyTests(unittest.TestCase):
             self.run_cycle(journal=lambda _: (_ for _ in ()).throw(OSError("disk")))
         self.assertEqual(self.runs, [])
 
+    def test_partial_cost_is_not_confirmed_as_regeneration(self):
+        def underpaid(target, route):
+            self.stamina -= route['cost'] - 1
+            self.runs.append(target['id'])
+        with self.assertRaisesRegex(RuntimeError, '消耗未核实'):
+            self.run_cycle(farm_once=underpaid)
+        self.assertEqual(self.runs, ['a'])
+        self.assertTrue(self.journals[-1]['pending'])
+
     def test_pending_restart_cannot_observe_or_spend(self):
         with self.assertRaisesRegex(RuntimeError, "尚未核实"):
             self.run_cycle(
