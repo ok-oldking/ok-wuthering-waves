@@ -17,6 +17,11 @@ FORGERY_MATERIALS = {'weapon-skill-dieyipianzhenti': ('叠翼偏振体', 'weapon
 FORGERY_REWARDS = {'weapon-skill-dieyipianzhenti': (1, 1371, '武器及技能材料·迅刀'), 'skill-duanxudexianxian': (7, 1564, '武器及技能材料·音感仪'), 'skill-rugedexianxian': (7, 1371, '武器及技能材料·音感仪'), 'weapon-skill-duoyipianzhenti': (1, 1483, '武器及技能材料·迅刀'), 'weapon-skill-danyipianzhenti': (1, 1565, '武器及技能材料·迅刀'), 'skill-ninggudexianxian': (2, 1483, '武器及技能材料·音感仪'), 'weapon-skill-gaopinqiexuejingkuai': (3, 1483, '武器及技能材料·长刃'), 'weapon-skill-gaopinhaishisuijing': (4, 1483, '武器及技能材料·臂铠'), 'weapon-skill-canxiangjuran': (5, 1483, '武器及技能材料·佩枪')}
 BASE_SOURCE_SHA256 = '21bc47a464978dce6f2062eb811f8c6d695c0cc85a39fca041305c7f329acf57'
 
+def exact_coordinate(value, expected):
+    """按有限数值的精确表示校验原生点击常量，不放宽坐标范围。"""
+    return (type(value) in (int, float) and isfinite(value)
+            and float(value).hex() == float(expected).hex())
+
 def anchors(value):
     if not isinstance(value, list) or not 2 <= len(value) <= 3 or any((not isinstance(a, dict) or set(a) != {'text', 'roi'} or (not isinstance(a.get('text'), str)) or (not 1 <= len(a['text'].strip()) <= 64) for a in value)) or (len({a['text'] for a in value}) != len(value)):
         raise ValueError('Entry transport requires two distinct reviewed screen labels')
@@ -152,7 +157,7 @@ def category_click_scope(task, guard, *, y=0.3):
     def click(x, y, *args, **kwargs):
         nonlocal calls
         guard()
-        if calls or type(x) not in (int, float) or type(y) not in (int, float) or (x != 0.24) or (y != expected_y):
+        if calls or not exact_coordinate(x, 0.24) or not exact_coordinate(y, expected_y):
             raise RuntimeError('Native book category prefix changed; no extra input')
         calls += 1
         result = original(x, y, *args, **kwargs)
@@ -196,7 +201,7 @@ def forgery_click_scope(task, port, labels, guard, *, on_selected=None):
 
     def features(name, *args, **kwargs):
         guard()
-        if name != 'boss_proceed' or kwargs.get('threshold') != 0.8:
+        if name != 'boss_proceed' or not exact_coordinate(kwargs.get('threshold'), 0.8):
             raise RuntimeError('Native forgery feature selector changed')
         result = find(name, *args, **kwargs)
         boxes[:] = list(result or [])
@@ -219,7 +224,7 @@ def forgery_click_scope(task, port, labels, guard, *, on_selected=None):
             guard()
             return result
         if type(target) in (int, float):
-            if target != 0.973 or type(y) not in (int, float) or (not isfinite(y)) or (not 0.191 <= y <= 0.8806) or (scrolls >= 3):
+            if not exact_coordinate(target, 0.973) or type(y) not in (int, float) or (not isfinite(y)) or (not 0.191 <= y <= 0.8806) or (scrolls >= 3):
                 raise RuntimeError('Native forgery attempted an unreviewed click')
             scrolls += 1
             boxes.clear()

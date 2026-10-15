@@ -21,6 +21,8 @@ def import_support(path):
     if module not in MODULES:
         raise ValueError('未知的库存模块')
     aliases = {'inventory_deficit_policy': 'src.inventory.deficit_policy', 'inventory_material_equivalence': 'src.inventory.material_equivalence'}
+    if module.startswith('inventory_zzz_'):
+        raise ValueError('鸣潮库存不加载绝区零适配')
     return import_module(aliases.get(module, 'src.inventory_support.' + module))
 
 def valid_game_path(game, value):

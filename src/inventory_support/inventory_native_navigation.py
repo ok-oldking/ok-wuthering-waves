@@ -14,10 +14,11 @@ import time
 from src.inventory_support import inventory_native_probe as probe
 from src.inventory_support import inventory_scrollbar as scrollbar
 from src.inventory_support import inventory_entry_navigation as entry_navigation
-from src.inventory_support import inventory_zzz_entry_navigation as zzz_entry_navigation
 
 def entry_module(page):
-    return zzz_entry_navigation if page.get('game') == 'zzz' else entry_navigation
+    if page.get('game') != 'wuwa':
+        raise ValueError('鸣潮库存入口不接受其他游戏')
+    return entry_navigation
 
 def validated_viewport_cells(tab, cells):
     """Allow only the reviewed weapon lattice, never arbitrary port clicks."""
