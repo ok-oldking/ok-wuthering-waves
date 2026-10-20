@@ -10,7 +10,7 @@ from src.task.MergeEchoTask import MergeEchoTask
 from src.task.NightmareNestTask import NightmareNestTask
 from src.task.TacetTask import TacetTask
 from src.task.SimulationTask import SimulationTask
-from src.task.WWOneTimeTask import WWOneTimeTask
+from src.task.WWOneTimeTask import WWOneTimeTask, CLOSE_GAME_AFTER_TASK
 from src.task.BaseCombatTask import BaseCombatTask
 
 logger = Logger.get_logger(__name__)
@@ -72,6 +72,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             },
         }
         self.add_exit_after_config()
+        self.add_close_game_after_config()
         self.description = "Login, claim monthly card, farm echo, and claim daily reward"
 
     def run(self):
@@ -134,6 +135,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.claim_battle_pass()
         self.run_additional_tasks()
         self.log_info('Daily Task Completed', notify=True)
+        self.maybe_close_game_after_task()
 
     def validate_additional_tasks(self):
         additional_tasks = self.config.get(ADDITIONAL_TASKS) or []

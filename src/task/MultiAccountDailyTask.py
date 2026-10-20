@@ -9,7 +9,7 @@ import win32process
 from ok import Box
 from ok.task.exceptions import WaitFailedException
 from src.task.DailyTask import DailyTask
-from src.task.WWOneTimeTask import WWOneTimeTask
+from src.task.WWOneTimeTask import WWOneTimeTask, CLOSE_GAME_AFTER_TASK
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.BaseWWTask import LOGIN_TEXTS
 from src.task.MouseResetTask import MouseResetTask
@@ -81,6 +81,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         self.name = "👥 Multi Account Daily Task"
         self.description = "Automatically switch accounts and run Daily Task for each account"
         self.add_exit_after_config()
+        self.add_close_game_after_config()
         self.done_set = set()
         self.all_accounts = set()
         self.support_schedule_task = True
@@ -115,6 +116,8 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             self._mark_done(next_account)
             self.ensure_main(time_out=100)
             self._switch_to_login()
+
+        self.maybe_close_game_after_task()
 
     def _click_center_offset(self, offset_x, offset_y, after_sleep=0.5):
         h, w = self.frame.shape[:2]
