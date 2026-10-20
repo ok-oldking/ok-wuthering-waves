@@ -75,3 +75,7 @@ repo/
 
 assets/result.json
 src/gui/CharacterCodeTab.py
+
+# 插件安装目录与备份不进入宿主仓库
+/ok_import/
+/ok_import_backup/

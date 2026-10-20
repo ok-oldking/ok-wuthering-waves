@@ -14,6 +14,11 @@ class Globals:
         self.mini_map_arrow = None
         self.logged_in = False
 
+    def on_show_main_window(self, window):
+        from src.gui.plugin_window_hooks import install_plugin_window_hooks
+
+        install_plugin_window_hooks(window)
+
     @property
     def yolo_model(self):
         if self._yolo_model is None:
