@@ -40,7 +40,6 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
         with:
-          submodules: true
           lfs: true
           fetch-depth: 0
           persist-credentials: false
@@ -125,7 +124,6 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
         with:
-          submodules: true
           lfs: true
           fetch-depth: 0
           persist-credentials: false
@@ -193,7 +191,6 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
         with:
-          submodules: true
           lfs: true
           fetch-depth: 0
           persist-credentials: false
