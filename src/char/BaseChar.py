@@ -356,10 +356,13 @@ class BaseChar:
                                    target_low_con=target_low_con)
 
     def sleep(self, sec, check_combat=True):
+        previous_skip_combat_check = getattr(self.task, 'skip_combat_check', False)
         if not check_combat:
             self.task.skip_combat_check = True
-        self.task.sleep(sec)
-        self.task.skip_combat_check = False
+        try:
+            self.task.sleep(sec)
+        finally:
+            self.task.skip_combat_check = previous_skip_combat_check
 
     def alert_skill_failed(self):
         self.task.log_error(f'Click skill failed, check if the keybinding is correct in ok-ww settings!',
