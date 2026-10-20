@@ -705,8 +705,8 @@ class BaseChar:
         first; the named priority bands are spaced by 100 so callers can return
         values such as ``SwitchPriority.HIGH + 1``.
         """
-        if self.healer_full_con_switch_locked():
-            return SwitchPriority.NO
+        # The selector applies the shared healer lockout separately so its
+        # deadlock fallback can still respect character-specific NO priorities.
         return SwitchPriority.NORMAL
 
     def healer_full_con_switch_locked(self):

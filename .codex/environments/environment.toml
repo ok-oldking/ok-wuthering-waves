@@ -1,0 +1,17 @@
+version = 1
+name = "ok-wuthering-waves"
+
+[setup]
+script = ""
+
+[[actions]]
+name = "Run main_debug.py"
+icon = "run"
+command = 'Start-Process -FilePath (Join-Path $PWD.Path ".venv\Scripts\pythonw.exe") -ArgumentList ".\main_debug.py" -WorkingDirectory $PWD.Path -Verb RunAs'
+platform = "win32"
+
+[[actions]]
+name = "Run main.py"
+icon = "run"
+command = 'Start-Process -FilePath (Join-Path $PWD.Path ".venv\Scripts\pythonw.exe") -ArgumentList ".\main.py" -WorkingDirectory $PWD.Path -Verb RunAs'
+platform = "win32"

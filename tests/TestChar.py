@@ -1420,9 +1420,10 @@ class TestChar(TaskTestCase):
 
         healer.switch_out(con_full=True)
         self.assertEqual(healer.HEALER_FULL_CON_SWITCH_LOCKOUT, 16.0)
-        self.assertEqual(healer.get_switch_priority(), SwitchPriority.NO)
+        self.assertTrue(healer.healer_full_con_switch_locked())
 
         healer.last_full_con_switch_time = time.time() - 16.01
+        self.assertFalse(healer.healer_full_con_switch_locked())
         self.assertEqual(healer.get_switch_priority(), SwitchPriority.NORMAL)
 
         healer_without_outro = BaseChar(task, 1, char_type=CharType.HEALER)
