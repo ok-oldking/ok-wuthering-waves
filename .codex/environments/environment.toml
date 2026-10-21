@@ -7,24 +7,11 @@ script = ""
 [[actions]]
 name = "Run main_debug.py"
 icon = "run"
-command = '& .\.venv\Scripts\python.exe -X utf8 -u .\main_debug.py'
+command = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\.codex\run.ps1 -EntryPoint main_debug.py'
 platform = "win32"
 
 [[actions]]
 name = "Run main.py"
 icon = "run"
-command = '& .\.venv\Scripts\python.exe -X utf8 -u .\main.py'
-platform = "win32"
-
-# These actions launch separately; use the standard actions for terminal logs.
-[[actions]]
-name = "Run main_debug.py (administrator)"
-icon = "run"
-command = 'Start-Process -FilePath (Join-Path $PWD.Path ".venv\Scripts\pythonw.exe") -ArgumentList ".\main_debug.py" -WorkingDirectory $PWD.Path -Verb RunAs'
-platform = "win32"
-
-[[actions]]
-name = "Run main.py (administrator)"
-icon = "run"
-command = 'Start-Process -FilePath (Join-Path $PWD.Path ".venv\Scripts\pythonw.exe") -ArgumentList ".\main.py" -WorkingDirectory $PWD.Path -Verb RunAs'
+command = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\.codex\run.ps1 -EntryPoint main.py'
 platform = "win32"
