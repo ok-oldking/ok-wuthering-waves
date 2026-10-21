@@ -74,28 +74,46 @@ You can also run a specific test directly:
 
 ## PR 要求 / PR Requirements
 
+- 提交 PR 前，必须使用 AI 审查最终修改，处理审查发现的有效问题，并在 PR 描述中简要说明审查工具、结果及处理情况。
 - 保持修改范围清晰，避免把无关格式化、重构和功能修改混在同一个 PR 中。
 - 说明改动目的、主要实现方式、影响范围和测试结果。
 - 修改用户可见行为时，请补充截图、录屏或清晰的复现说明。
 - 修改配置、任务、角色逻辑或识别逻辑时，请说明适用场景和可能影响。
 - 不要提交日志、缓存、临时文件、个人配置或无关生成文件。
 
+- Before submitting a PR, have AI review the final changes, address valid findings, and briefly describe the review tool, results, and resolutions in the PR description.
 - Keep the PR focused. Avoid mixing unrelated formatting, refactoring, and feature changes in one PR.
 - Describe the purpose, implementation, impact, and test results.
 - For user-visible behavior changes, include screenshots, recordings, or clear reproduction notes.
 - For configuration, task, character logic, or recognition logic changes, describe the applicable scenarios and possible impact.
 - Do not commit logs, caches, temporary files, personal settings, or unrelated generated files.
 
+## 添加识别素材 / Adding Recognition Assets
+
+`ok_templates/` 中的源图片和标注直接保存在本仓库中。
+
+Source images and annotations in `ok_templates/` are tracked directly in this repository.
+
+1. 如需添加识别素材，在 ok-ww 的「模板」标签页中添加图片并完成标注。
+2. 点击「保存」，保存标注并生成识别素材。
+3. 检查生成的修改，将相关的 `ok_templates/` 源图片、标注和 `assets/` 识别素材一起提交。
+
+1. To add recognition assets, add the images and markup in ok-ww's Template tab.
+2. Click Save to save the annotations and generate the recognition assets.
+3. Review the generated changes and include the relevant `ok_templates/` source images, annotations, and `assets/` recognition assets in the same PR.
+
 ## 提交流程 / Submission Flow
 
 1. Fork 本仓库并创建你的功能分支。
 2. 完成修改并运行相关测试。
 3. 确认是否需要先联系作者，尤其是新功能或大幅修改现有功能。
-4. 提交 PR，并填写 PR 模板中的所有相关内容。
-5. 根据维护者反馈调整修改。
+4. 使用 AI 审查最终修改，处理有效问题并记录结果。
+5. 提交 PR，并填写 PR 模板中的所有相关内容，包括 AI 审查结果。
+6. 根据维护者反馈调整修改。
 
 1. Fork this repository and create your feature branch.
 2. Make the changes and run relevant tests.
 3. Confirm whether author contact is needed, especially for new features or major changes to existing behavior.
-4. Open a PR and fill in all relevant sections of the PR template.
-5. Update the PR based on maintainer feedback.
+4. Have AI review the final changes, address valid findings, and record the results.
+5. Open a PR and fill in all relevant sections of the PR template, including the AI review results.
+6. Update the PR based on maintainer feedback.

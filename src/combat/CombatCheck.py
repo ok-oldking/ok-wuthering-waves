@@ -3,7 +3,7 @@ import time
 
 import win32api
 
-from ok import find_boxes_by_name, Logger, calculate_color_percentage
+from ok import find_boxes_by_name, Logger, calculate_color_percentage, TaskDisabledException
 from ok import find_color_rectangles, get_mask_in_color_range, is_pure_black
 from src import text_white_color
 from src.Labels import Labels
@@ -63,6 +63,7 @@ class CombatCheck(BaseWWTask):
     def do_reset_to_false(self):
         self.cds = {}
         self._in_combat = False
+        self.skip_combat_check = False
         self.boss_lv_mask = None
         self.esc_count = 0
         self.boss_lv_template = None
@@ -188,6 +189,8 @@ class CombatCheck(BaseWWTask):
         self.in_sleep_check = True
         try:
             return self.do_check_in_combat(target)
+        except TaskDisabledException:
+            raise
         except Exception as e:
             logger.error(f'do_check_in_combat:', e)
         finally:

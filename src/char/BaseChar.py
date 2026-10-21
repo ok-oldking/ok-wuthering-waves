@@ -356,10 +356,13 @@ class BaseChar:
                                    target_low_con=target_low_con)
 
     def sleep(self, sec, check_combat=True):
+        previous_skip_combat_check = getattr(self.task, 'skip_combat_check', False)
         if not check_combat:
             self.task.skip_combat_check = True
-        self.task.sleep(sec)
-        self.task.skip_combat_check = False
+        try:
+            self.task.sleep(sec)
+        finally:
+            self.task.skip_combat_check = previous_skip_combat_check
 
     def alert_skill_failed(self):
         self.task.log_error(f'Click skill failed, check if the keybinding is correct in ok-ww settings!',
@@ -705,8 +708,8 @@ class BaseChar:
         first; the named priority bands are spaced by 100 so callers can return
         values such as ``SwitchPriority.HIGH + 1``.
         """
-        if self.healer_full_con_switch_locked():
-            return SwitchPriority.NO
+        # The selector applies the shared healer lockout separately so its
+        # deadlock fallback can still respect character-specific NO priorities.
         return SwitchPriority.NORMAL
 
     def healer_full_con_switch_locked(self):

@@ -1312,6 +1312,24 @@ def convert_dialog_icon(cv_image):
     return output_image
 
 
+def isolate_gua_strokes(image):
+    """
+    Keeps the white strokes of Buling's hexagram glyphs (卦象 艮/震) and drops the colored halo behind them.
+
+    A pixel's minimum channel is only high when the pixel is close to white, and the top-hat keeps thin
+    bright strokes while removing the smooth glow, so plain and highlighted glyphs look the same.
+
+    Args:
+        image (np.array): The input BGR image from OpenCV.
+
+    Returns:
+        np.array: Single channel 8-bit stroke map.
+    """
+    gray = image.min(axis=2) if image.ndim == 3 else image
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
+    return cv2.morphologyEx(gray, cv2.MORPH_TOPHAT, kernel)
+
+
 def binarize_for_matching(image, threshold=244):
     """
     Converts a colored image to a binary image based on a brightness threshold.
