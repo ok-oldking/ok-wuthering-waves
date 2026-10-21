@@ -2285,6 +2285,12 @@
       "file_name": "60.png",
       "width": 3840,
       "height": 2160
+    },
+    {
+      "id": 296,
+      "file_name": "douling_gua.png",
+      "width": 3840,
+      "height": 2160
     }
   ],
   "annotations": [
@@ -6361,6 +6367,32 @@
       "iscrowd": 0,
       "ignore": 0,
       "segmentation": []
+    },
+    {
+      "id": 440,
+      "image_id": 296,
+      "category_id": 287,
+      "bbox": [
+        1934.0,
+        1788.0,
+        62.0,
+        68.0
+      ],
+      "area": 4216.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 441,
+      "image_id": 296,
+      "category_id": 288,
+      "bbox": [
+        1805.0,
+        1788.0,
+        62.0,
+        68.0
+      ],
+      "area": 4216.0,
+      "iscrowd": 0
     }
   ],
   "categories": [
@@ -7792,6 +7824,16 @@
     {
       "id": 286,
       "name": "hsin_lib2",
+      "supercategory": ""
+    },
+    {
+      "id": 287,
+      "name": "douling_gen",
+      "supercategory": ""
+    },
+    {
+      "id": 288,
+      "name": "douling_zhen",
       "supercategory": ""
     }
   ]
