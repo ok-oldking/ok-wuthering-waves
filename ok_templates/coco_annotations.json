@@ -2291,6 +2291,12 @@
       "file_name": "douling_gua.png",
       "width": 3840,
       "height": 2160
+    },
+    {
+      "id": 297,
+      "file_name": "61.png",
+      "width": 3840,
+      "height": 2160
     }
   ],
   "annotations": [
@@ -4945,6 +4951,32 @@
         93
       ],
       "area": 8370,
+      "iscrowd": 0
+    },
+    {
+      "id": 191,
+      "image_id": 297,
+      "category_id": 289,
+      "bbox": [
+        3534,
+        450,
+        107,
+        69
+      ],
+      "area": 7383,
+      "iscrowd": 0
+    },
+    {
+      "id": 192,
+      "image_id": 297,
+      "category_id": 290,
+      "bbox": [
+        3209,
+        1893,
+        78,
+        74
+      ],
+      "area": 5772,
       "iscrowd": 0
     },
     {
@@ -7834,6 +7866,16 @@
     {
       "id": 288,
       "name": "douling_zhen",
+      "supercategory": ""
+    },
+    {
+      "id": 289,
+      "name": "char_suoming",
+      "supercategory": ""
+    },
+    {
+      "id": 290,
+      "name": "suoming_forte_e",
       "supercategory": ""
     }
   ]

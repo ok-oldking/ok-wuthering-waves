@@ -754,6 +754,9 @@ msgstr ""
 msgid "Chisa DPS"
 msgstr ""
 
+msgid "Suoming DPS"
+msgstr "Suoming DPS principal"
+
 msgid "Nightmare: Hecate"
 msgstr ""
 

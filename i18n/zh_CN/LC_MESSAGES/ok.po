@@ -693,6 +693,9 @@ msgstr "维里奈2链"
 msgid "Chisa DPS"
 msgstr "千咲主C"
 
+msgid "Suoming DPS"
+msgstr "锁冥主C"
+
 msgid "Use Liberation"
 msgstr "使用共鸣解放"
 
