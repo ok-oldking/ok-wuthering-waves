@@ -41,9 +41,9 @@ from src.char.CustomCharLoader import (
 
 BASE_CHAR_URL = "https://raw.githubusercontent.com/ok-oldking/ok-wuthering-waves/refs/heads/master/src/char/BaseChar.py"
 UPLOAD_TEAM_URL = "https://github.com/ok-oldking/ok-ww-char-code"
-WORKSHOP_TEAMS_ALL_URL = "https://okwwcharcode.ok-script.com/teams.json"
-WORKSHOP_TEAM_URL = "https://okwwcharcode.ok-script.com/teams/{slug}.json"
-WORKSHOP_ARCHIVE_HOSTS = {"okwwcharcode.ok-script.com", "raw.githubusercontent.com"}
+WORKSHOP_TEAMS_ALL_URL = "https://cfokwwchar.ok-script.com/teams.json"
+WORKSHOP_TEAM_URL = "https://cfokwwchar.ok-script.com/teams/{slug}.json"
+WORKSHOP_ARCHIVE_HOSTS = {"cfokwwchar.ok-script.com", "raw.githubusercontent.com"}
 logger = Logger.get_logger(__name__)
 
 # The team list marks each team with a haloed dot, and both switch buttons wear the

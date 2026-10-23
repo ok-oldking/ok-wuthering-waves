@@ -154,13 +154,13 @@ class TestCharacterCodeTab(unittest.TestCase):
     def test_workshop_url_uses_sorted_team_slug(self):
         self.assertEqual(
             workshop_team_url((Baizhi, Augusta, Aemeath)),
-            "https://okwwcharcode.ok-script.com/teams/Aemeath_Augusta_Baizhi.json",
+            "https://cfokwwchar.ok-script.com/teams/Aemeath_Augusta_Baizhi.json",
         )
 
     def test_workshop_url_sanitizes_character_name_punctuation(self):
         self.assertEqual(
             workshop_team_url((YangYangSp, Chisa, Suisui)),
-            "https://okwwcharcode.ok-script.com/teams/Chisa_Suisui_Yangyang_Xuanling.json",
+            "https://cfokwwchar.ok-script.com/teams/Chisa_Suisui_Yangyang_Xuanling.json",
         )
 
     def test_workshop_codes_are_sorted_by_timestamp_descending(self):
@@ -187,7 +187,7 @@ class TestCharacterCodeTab(unittest.TestCase):
         self.assertEqual([code["name"] for code in codes], ["newer", "older"])
         log_info.assert_called_once_with(
             "char code workshop request: "
-            "https://okwwcharcode.ok-script.com/teams/Aemeath_Augusta_Baizhi.json"
+            "https://cfokwwchar.ok-script.com/teams/Aemeath_Augusta_Baizhi.json"
         )
 
     def test_workshop_404_is_an_empty_list(self):
