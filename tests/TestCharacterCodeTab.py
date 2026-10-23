@@ -36,7 +36,8 @@ from src.char.Verina import Verina
 from src.char.YangYangSp import YangYangSp
 from src.gui.CharacterCodeTab import (
     STATE_DOT_SIZE, CharacterCodeTab, ExportTeamDialog, ImportTeamDialog,
-    TeamSelectionDialog, WorkshopDialog, fetch_workshop_codes, team_state_color, workshop_team_url,
+    TeamSelectionDialog, WorkshopDialog, fetch_all_workshop_teams, fetch_workshop_codes,
+    team_state_color, workshop_team_url,
 )
 
 
@@ -180,11 +181,15 @@ class TestCharacterCodeTab(unittest.TestCase):
                 return json.dumps(payload).encode("utf-8")
 
         with (
-            patch("src.gui.CharacterCodeTab.urlopen", return_value=Response()),
+            patch("src.gui.CharacterCodeTab.urlopen", return_value=Response()) as open_url,
             patch("src.gui.CharacterCodeTab.logger.info") as log_info,
         ):
             codes = fetch_workshop_codes((Aemeath, Augusta, Baizhi))
         self.assertEqual([code["name"] for code in codes], ["newer", "older"])
+        request = open_url.call_args.args[0]
+        self.assertEqual(request.full_url, workshop_team_url((Aemeath, Augusta, Baizhi)))
+        self.assertEqual(request.get_header("User-agent"), "ok-wuthering-waves")
+        self.assertEqual(open_url.call_args.kwargs, {"timeout": 15})
         log_info.assert_called_once_with(
             "char code workshop request: "
             "https://cfokwwchar.ok-script.com/teams/Aemeath_Augusta_Baizhi.json"
@@ -194,6 +199,49 @@ class TestCharacterCodeTab(unittest.TestCase):
         error = HTTPError("https://example.invalid", 404, "Not Found", {}, None)
         with patch("src.gui.CharacterCodeTab.urlopen", side_effect=error):
             self.assertEqual(fetch_workshop_codes((Aemeath, Augusta, Baizhi)), [])
+
+    def test_workshop_index_sends_app_user_agent(self):
+        payload = {"teams": [{"team": "Test team", "members": ["Aemeath"],
+                              "codes": [{"name": "Test code", "timestamp": 1}]}]}
+        with patch("src.gui.CharacterCodeTab.urlopen") as open_url:
+            open_url.return_value.__enter__.return_value.read.return_value = json.dumps(payload).encode()
+            codes = fetch_all_workshop_teams()
+
+        self.assertEqual(codes[0]["name"], "Test code")
+        self.assertEqual(codes[0]["team"], "Test team")
+        request = open_url.call_args.args[0]
+        self.assertEqual(request.full_url, "https://cfokwwchar.ok-script.com/teams.json")
+        self.assertEqual(request.get_header("User-agent"), "ok-wuthering-waves")
+        self.assertEqual(open_url.call_args.kwargs, {"timeout": 15})
+
+    def test_workshop_archive_sends_app_user_agent(self):
+        tab = CharacterCodeTab()
+        try:
+            for field, url, expected_url in (
+                ("downloadUrl", "https://cfokwwchar.ok-script.com/team.zip",
+                 "https://cfokwwchar.ok-script.com/team.zip"),
+                ("rawUrl", "https://raw.githubusercontent.com/example/team.zip",
+                 "https://raw.githubusercontent.com/example/team.zip"),
+                ("downloadUrl", "https://okwwcharcode.ok-script.com/codes/team%20name.zip",
+                 "https://cfokwwchar.ok-script.com/codes/team%20name.zip"),
+            ):
+                with (
+                    self.subTest(url=url),
+                    patch("src.gui.CharacterCodeTab.urlopen") as open_url,
+                    patch.object(tab, "_preview_and_import_archive") as preview,
+                ):
+                    open_url.return_value.__enter__.return_value.read.return_value = b"archive contents"
+                    preview.side_effect = lambda path, **kwargs: self.assertEqual(
+                        path.read_bytes(), b"archive contents")
+                    tab._import_workshop_code({field: url}, tab)
+
+                    request = open_url.call_args.args[0]
+                    self.assertEqual(request.full_url, expected_url)
+                    self.assertEqual(request.get_header("User-agent"), "ok-wuthering-waves")
+                    self.assertEqual(open_url.call_args.kwargs, {"timeout": 30})
+                    preview.assert_called_once()
+        finally:
+            tab.deleteLater()
 
     def test_team_dialogs_use_fluent_widgets(self):
         parent = CharacterCodeTab()

@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.parse import quote, urlparse
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 from PySide6.QtCore import QEvent, QPointF, Qt, QSize, QUrl, Signal
 from PySide6.QtGui import (
@@ -44,6 +44,7 @@ UPLOAD_TEAM_URL = "https://github.com/ok-oldking/ok-ww-char-code"
 WORKSHOP_TEAMS_ALL_URL = "https://cfokwwchar.ok-script.com/teams.json"
 WORKSHOP_TEAM_URL = "https://cfokwwchar.ok-script.com/teams/{slug}.json"
 WORKSHOP_ARCHIVE_HOSTS = {"cfokwwchar.ok-script.com", "raw.githubusercontent.com"}
+WORKSHOP_USER_AGENT = "ok-wuthering-waves"
 logger = Logger.get_logger(__name__)
 
 # The team list marks each team with a haloed dot, and both switch buttons wear the
@@ -458,7 +459,7 @@ def fetch_all_workshop_teams():
     url = WORKSHOP_TEAMS_ALL_URL
     logger.info(f"char code workshop all teams request: {url}")
     try:
-        with urlopen(url, timeout=15) as response:
+        with urlopen(Request(url, headers={"User-Agent": WORKSHOP_USER_AGENT}), timeout=15) as response:
             content = response.read(5_000_001)
     except HTTPError as error:
         if error.code == 404:
@@ -498,7 +499,7 @@ def fetch_workshop_codes(team):
     url = workshop_team_url(team)
     logger.info(f"char code workshop request: {url}")
     try:
-        with urlopen(url, timeout=15) as response:
+        with urlopen(Request(url, headers={"User-Agent": WORKSHOP_USER_AGENT}), timeout=15) as response:
             content = response.read(2_000_001)
     except HTTPError as error:
         if error.code == 404:
@@ -1481,11 +1482,15 @@ class CharacterCodeTab(CustomTab):
     def _import_workshop_code(self, code, parent):
         url = code.get("downloadUrl") or code.get("rawUrl")
         parsed = urlparse(str(url or ""))
+        # Published workshop indexes can still contain the previous server's URLs.
+        if parsed.hostname == "okwwcharcode.ok-script.com":
+            parsed = parsed._replace(netloc=urlparse(WORKSHOP_TEAMS_ALL_URL).netloc)
+            url = parsed.geturl()
         if parsed.scheme != "https" or parsed.hostname not in WORKSHOP_ARCHIVE_HOSTS:
             show_info_bar(parent, self.tr("Workshop download URL is invalid."), title=self.tr("Error"), error=True)
             return
         try:
-            with urlopen(url, timeout=30) as response:
+            with urlopen(Request(url, headers={"User-Agent": WORKSHOP_USER_AGENT}), timeout=30) as response:
                 content = response.read(20_000_001)
             if len(content) > 20_000_000:
                 raise ValueError(self.tr("Workshop archive is too large."))
