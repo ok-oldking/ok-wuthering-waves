@@ -1,0 +1,219 @@
+{
+  "schema": "inventory-inspection-plan/v1",
+  "game": "wuwa",
+  "ready": true,
+  "candidate_only": true,
+  "scan_mode": "grouped",
+  "budget_seconds": 600,
+  "navigation": "wuwa-forgery-popup-navigation.json",
+  "pages": [
+    {
+      "calibration": "trial-wuwa-inventory-selected-character-exp-premium.json",
+      "material_id": "character-exp-premium"
+    },
+    {
+      "calibration": "trial-wuwa-inventory-selected-character-exp.json",
+      "material_id": "character-exp-advanced"
+    },
+    {
+      "calibration": "trial-wuwa-inventory-selected-character-exp-medium.json",
+      "material_id": "character-exp-medium"
+    },
+    {
+      "calibration": "trial-wuwa-inventory-selected-character-exp-basic.json",
+      "material_id": "character-exp-basic"
+    },
+    {
+      "calibration": "trial-wuwa-inventory-selected-weapon-exp-basic.json",
+      "material_id": "weapon-exp-basic"
+    },
+    {
+      "calibration": "trial-wuwa-inventory-selected-weapon-exp.json",
+      "material_id": "weapon-exp-medium"
+    },
+    {
+      "calibration": "trial-wuwa-inventory-weapon-exp-layout-selection.json",
+      "material_id": "weapon-exp-advanced"
+    },
+    {
+      "calibration": "trial-wuwa-inventory-weapon-exp-layout-selection.json",
+      "material_id": "weapon-exp-premium"
+    },
+    {
+      "calibration": "wuwa-forgery-popup-polarizer.json",
+      "material_id": "weapon-skill-dieyipianzhenti"
+    },
+    {
+      "calibration": "trial-wuwa-inventory-selected-refined-ring.json",
+      "material_id": "promotion-refined-ring"
+    },
+    {
+      "calibration": "wuwa-forgery-popup-duanxu.json",
+      "material_id": "skill-duanxudexianxian"
+    },
+    {
+      "calibration": "wuwa-forgery-popup-ruge.json",
+      "material_id": "skill-rugedexianxian"
+    },
+    {
+      "calibration": "trial-wuwa-inventory-selected-weekly-heart.json",
+      "material_id": "weekly-boss-tianquliulizhixin"
+    },
+    {
+      "calibration": "trial-wuwa-inventory-shell-credit-popup.json",
+      "material_id": "shell-credit"
+    },
+    {
+      "calibration": "trial-wuwa-inventory-selected-promotion.json",
+      "material_id": "promotion-denglongguo"
+    },
+    {
+      "calibration": "wuwa-forgery-popup-weapon-skill-duoyipianzhenti.json",
+      "material_id": "weapon-skill-duoyipianzhenti"
+    },
+    {
+      "calibration": "wuwa-forgery-popup-weapon-skill-danyipianzhenti.json",
+      "material_id": "weapon-skill-danyipianzhenti"
+    },
+    {
+      "calibration": "wuwa-forgery-popup-skill-ninggudexianxian.json",
+      "material_id": "skill-ninggudexianxian"
+    },
+    {
+      "calibration": "wuwa-forgery-popup-weapon-skill-gaopinqiexuejingkuai.json",
+      "material_id": "weapon-skill-gaopinqiexuejingkuai"
+    },
+    {
+      "calibration": "wuwa-forgery-popup-weapon-skill-gaopinhaishisuijing.json",
+      "material_id": "weapon-skill-gaopinhaishisuijing"
+    },
+    {
+      "calibration": "wuwa-forgery-popup-weapon-skill-canxiangjuran.json",
+      "material_id": "weapon-skill-canxiangjuran"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-sword-old-basic"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-sword-old-medium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-sword-old-advanced"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-sword-old-premium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-broadblade-old-basic"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-broadblade-old-medium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-broadblade-old-advanced"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-broadblade-old-premium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-pistol-old-basic"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-pistol-old-medium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-pistol-old-advanced"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-pistol-old-premium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-gauntlet-old-basic"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-gauntlet-old-medium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-gauntlet-old-advanced"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-gauntlet-old-premium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-rectifier-old-basic"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-rectifier-old-medium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-rectifier-old-advanced"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-rectifier-old-premium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-sword-new-basic"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-broadblade-new-basic"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-broadblade-new-medium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-broadblade-new-premium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-pistol-new-basic"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-pistol-new-medium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-pistol-new-premium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-gauntlet-new-basic"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-gauntlet-new-medium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-gauntlet-new-premium"
+    },
+    {
+      "calibration": "wuwa-forgery-resource-selection.json",
+      "material_id": "forgery-rectifier-new-basic"
+    }
+  ]
+}
