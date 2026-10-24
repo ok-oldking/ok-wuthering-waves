@@ -17,6 +17,7 @@ from ok.util.config import Config
 from qfluentwidgets import FluentIcon
 
 from src.gui.MultiAccountConfigTab import AccountStatusTable, AccountTaskCard, MultiAccountConfigTab
+from src.task.BaseWWTask import LOGIN_TEXTS
 from src.task.DailyTask import DailyTask
 from src.task.MultiAccountConfigTask import MultiAccountConfigTask
 from src.task.WWOneTimeTask import WWOneTimeTask
@@ -345,6 +346,63 @@ class TestMultiAccountConfig(unittest.TestCase):
             self.assertEqual(task.info, {})
             for path, content in files.items():
                 self.assertEqual(path.read_bytes(), content)
+
+    def test_consecutive_runs_recover_login_state_and_return_to_login(self):
+        for initial_screen in ('world', 'login'):
+            with self.subTest(initial_screen=initial_screen), tempfile.TemporaryDirectory() as folder:
+                MultiAccountConfigStore(folder).save([account()])
+                state = SimpleNamespace(screen=initial_screen, logged_in=True)
+                runner = object.__new__(MultiAccountConfigTask)
+                runner._executor = executor_for([], folder)
+                runner._executor.debug = False
+                runner._app = SimpleNamespace(tr=lambda text: text)
+                runner.logger = Mock()
+                runner.info = {}
+                runner.sleep = Mock()
+                runner.log_info = Mock()
+                runner.log_debug = Mock()
+                runner.log_warning = Mock()
+                runner.in_team_and_world = lambda: state.screen == 'world'
+                runner.in_realm = lambda: False
+                runner.handle_monthly_card = lambda: False
+                runner.find_one = Mock(return_value=None)
+                runner.ocr = lambda **kwargs: ['Log In'] if state.screen == 'login' else []
+                runner.box_of_screen = Mock()
+                runner.find_boxes = lambda texts, match=None, **kwargs: texts if match == LOGIN_TEXTS else None
+                runner.back = Mock()
+                runner.send_key = Mock()
+                runner.wait_feature = Mock()
+                runner.click_confirm = Mock()
+                runner._login_combo = lambda: state.screen == 'login'
+
+                def wait_until(callback, **kwargs):
+                    for _ in range(3):
+                        result = callback()
+                        if result:
+                            return result
+                    return None
+
+                runner.wait_until = wait_until
+                runner.click = Mock(side_effect=lambda *args, **kwargs: setattr(state, 'screen', 'world'))
+                runner.click_relative = Mock(side_effect=lambda *args, **kwargs: setattr(state, 'screen', 'login'))
+
+                def login_target(key):
+                    state.screen = 'world'
+                    runner.logged_in = False
+                    runner.ensure_main(time_out=180)
+
+                runner._login_target_account = Mock(side_effect=login_target)
+                # Keep the real run/logout/ensure_main/is_main/wait_login chain;
+                # stub only OS input, screen recognition, and account selection.
+                with patch.object(og, 'my_app', state, create=True), patch.object(WWOneTimeTask, 'run'):
+                    runner.run()
+                    runner.run()
+
+                self.assertEqual(runner._login_target_account.call_count, 2)
+                self.assertEqual(runner.click.call_count, 1 if initial_screen == 'world' else 2)
+                self.assertEqual(state.screen, 'login')
+                self.assertFalse(state.logged_in)
+                self.assertEqual(MultiAccountConfigStore(folder).load_results()['1231234']['status'], 'success')
 
     def test_runner_failure_and_cancellation_restore_and_stop(self):
         for error in (RuntimeError('failed'), TaskDisabledException()):

@@ -704,6 +704,9 @@ msgstr "벨리나 2돌파"
 msgid "Chisa DPS"
 msgstr "치사 메인 딜러"
 
+msgid "Suoming DPS"
+msgstr "Suoming 메인 딜러"
+
 msgid "Nightmare: Hecate"
 msgstr "악몽 ・헤카테"
 

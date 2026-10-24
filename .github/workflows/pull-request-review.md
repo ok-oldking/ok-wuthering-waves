@@ -13,8 +13,10 @@ permissions:
   contents: read
   pull-requests: read
 
-engine: copilot
-model: gpt-5.6-luna?effort=medium
+engine:
+  id: copilot
+  version: "1.0.94"
+model: claude-haiku-5.5?effort=medium
 
 tools:
   github:

@@ -704,6 +704,9 @@ msgstr "ヴェリーナ2凸"
 msgid "Chisa DPS"
 msgstr "千咲 アタッカー"
 
+msgid "Suoming DPS"
+msgstr "Suoming アタッカー"
+
 msgid "Nightmare: Hecate"
 msgstr ""
 

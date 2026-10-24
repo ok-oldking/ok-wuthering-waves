@@ -44,6 +44,14 @@ Please describe the tests, verification steps, or why testing could not be compl
 
 -
 
+## 提交前 AI 审查 / AI Review Before Submission
+
+提交 PR 前，必须使用 AI 审查最终修改并处理有效问题。请说明使用的审查工具、审查结果及处理情况。
+
+Before submitting this PR, have AI review the final changes and address valid findings. Describe the review tool, results, and resolutions.
+
+-
+
 ## 截图或录屏 / Screenshots or Recordings
 
 如果修改会影响界面、识别结果或用户可见行为，请补充截图或录屏。
@@ -58,6 +66,8 @@ If the change affects UI, recognition results, or user-visible behavior, please 
 - [ ] 我已阅读 README 中的免责声明 / I have read the disclaimer in the README
 - [ ] 我已尽量保持 PR 范围清晰，没有混入无关修改 / I have kept this PR focused and avoided unrelated changes
 - [ ] 我已说明测试结果或无法测试的原因 / I have described the test results or why testing was not possible
+- [ ] 我已在提交前使用 AI 审查最终修改，处理有效问题并说明结果 / I had AI review the final changes before submission, addressed valid findings, and described the results
+- [ ] 如新增识别素材，我已在 ok-ww 的「模板」标签页中添加标注并点击「保存」，并包含相关源文件和生成素材；或本 PR 不涉及新增素材 / If adding recognition assets, I added markup in ok-ww's Template tab, clicked Save, and included the relevant source files and generated assets; or this PR adds no recognition assets
 - [ ] 我没有提交日志、缓存、临时文件或个人配置 / I have not committed logs, caches, temporary files, or personal settings
 
 ## 社区联系方式 / Community Contact
