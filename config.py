@@ -177,6 +177,7 @@ config = {
             'use_npu': True,
         }
     },
+    'plugin':True,
     'my_app': ['src.globals', 'Globals'],
     'start_timeout': 120,  # default 60
     'wait_until_settle_time': 0,
