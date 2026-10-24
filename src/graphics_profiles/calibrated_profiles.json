@@ -1,0 +1,113 @@
+{
+  "schema": 1,
+  "ready": false,
+  "reference_only": true,
+  "reason": "Reference values only. Require user hardware/version validation before enabling.",
+  "profiles": {
+    "high": {
+      "db": {
+        "AntiAliasing": "1",
+        "AutoAdjustImageQuality": "0",
+        "BloomEnable": "1",
+        "NpcDensity": "2",
+        "VegetationDensity": "3",
+        "CustomFrameRate": "2",
+        "ImageDetail": "2",
+        "ImageQuality": "3",
+        "IsUsingQualityPreset": "\"___0B___\"",
+        "MotionBlur": "3",
+        "NiagaraQuality": "2",
+        "NvidiaSuperSamplingEnable": "1",
+        "NvidiaSuperSamplingFrameGenerate": "3",
+        "NvidiaSuperSamplingQuality": "1",
+        "NvidiaSuperSamplingSharpness": "0",
+        "PcVsync": "1",
+        "RayTracedShadow": "1",
+        "RayTracing": "3",
+        "SceneAo": "3",
+        "ShadowQuality": "3",
+        "VolumeFog": "3",
+        "VolumeLight": "1"
+      },
+      "ini": {
+        "ScalabilityGroups": {
+          "sg.ResolutionQuality": "100.000000",
+          "sg.ViewDistanceQuality": "3",
+          "sg.AntiAliasingQuality": "3",
+          "sg.ShadowQuality": "3",
+          "sg.PostProcessQuality": "3",
+          "sg.TextureQuality": "4",
+          "sg.EffectsQuality": "3",
+          "sg.FoliageQuality": "3",
+          "sg.ShadingQuality": "3",
+          "sg.KuroRenderQuality": "3",
+          "sg.RayTracingQuality": "3",
+          "sg.KuroLocalRenderQuality": "0"
+        },
+        "/Script/Engine.GameUserSettings": {
+          "bUseVSync": "True",
+          "bUseDynamicResolution": "False",
+          "GameQualitySettingLevel": "3",
+          "FrameRateLimit": "60.000000"
+        }
+      },
+      "post_capture_edits": {
+        "2026-10-02T11:36:28-04:00": {
+          "AutoAdjustImageQuality": {
+            "before": "1",
+            "after": "0",
+            "reason": "User requests fixed maximum quality for manual desktop launch; off value was already verified in native low calibration"
+          }
+        }
+      }
+    },
+    "low": {
+      "db": {
+        "AntiAliasing": "1",
+        "AutoAdjustImageQuality": "0",
+        "BloomEnable": "0",
+        "NpcDensity": "0",
+        "VegetationDensity": "0",
+        "CustomFrameRate": "0",
+        "ImageDetail": "0",
+        "ImageQuality": "1",
+        "IsUsingQualityPreset": "\"___0B___\"",
+        "MotionBlur": "0",
+        "NiagaraQuality": "0",
+        "NvidiaSuperSamplingEnable": "1",
+        "NvidiaSuperSamplingFrameGenerate": "0",
+        "NvidiaSuperSamplingQuality": "99",
+        "NvidiaSuperSamplingSharpness": "0",
+        "PcVsync": "1",
+        "RayTracedShadow": "0",
+        "RayTracing": "0",
+        "SceneAo": "0",
+        "ShadowQuality": "0",
+        "VolumeFog": "0",
+        "VolumeLight": "0"
+      },
+      "ini": {
+        "ScalabilityGroups": {
+          "sg.ResolutionQuality": "100.000000",
+          "sg.ViewDistanceQuality": "3",
+          "sg.AntiAliasingQuality": "3",
+          "sg.ShadowQuality": "0",
+          "sg.PostProcessQuality": "3",
+          "sg.TextureQuality": "4",
+          "sg.EffectsQuality": "3",
+          "sg.FoliageQuality": "3",
+          "sg.ShadingQuality": "3",
+          "sg.KuroRenderQuality": "1",
+          "sg.RayTracingQuality": "1",
+          "sg.KuroLocalRenderQuality": "0"
+        },
+        "/Script/Engine.GameUserSettings": {
+          "bUseVSync": "True",
+          "bUseDynamicResolution": "False",
+          "GameQualitySettingLevel": "1",
+          "FrameRateLimit": "30.000000"
+        }
+      }
+    }
+  }
+}
