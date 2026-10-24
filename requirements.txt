@@ -35,6 +35,8 @@ openvino==2026.3.0
     # via ok-ww (pyproject.toml)
 openvino-telemetry==2025.2.0
     # via openvino
+packaging==26.3
+    # via ok-script
 pillow==12.3.0
     # via onnxocr-ppocrv5
 psutil==7.2.2
