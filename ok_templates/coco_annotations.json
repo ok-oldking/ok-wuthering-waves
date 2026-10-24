@@ -2297,6 +2297,12 @@
       "file_name": "61.png",
       "width": 3840,
       "height": 2160
+    },
+    {
+      "id": 298,
+      "file_name": "lingyang.png",
+      "width": 2560,
+      "height": 1440
     }
   ],
   "annotations": [
@@ -6425,6 +6431,19 @@
       ],
       "area": 4216.0,
       "iscrowd": 0
+    },
+    {
+      "id": 442,
+      "image_id": 298,
+      "category_id": 291,
+      "bbox": [
+        2355,
+        304,
+        62,
+        52
+      ],
+      "area": 3224,
+      "iscrowd": 0
     }
   ],
   "categories": [
@@ -7876,6 +7895,11 @@
     {
       "id": 290,
       "name": "suoming_forte_e",
+      "supercategory": ""
+    },
+    {
+      "id": 291,
+      "name": "char_lingyang",
       "supercategory": ""
     }
   ]
