@@ -106,10 +106,6 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
             self.info_set('Error', str(error))
             raise
 
-    def _switch_to_login(self):
-        super()._switch_to_login()
-        self.logged_in = False
-
     def _find_target_account(self, account_key):
         matches = [box for box in self.ocr()
                    if account_key_from_ocr(box.name) == account_key]

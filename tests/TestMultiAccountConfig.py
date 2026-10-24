@@ -17,6 +17,7 @@ from ok.util.config import Config
 from qfluentwidgets import FluentIcon
 
 from src.gui.MultiAccountConfigTab import AccountStatusTable, AccountTaskCard, MultiAccountConfigTab
+from src.task.AutoLoginTask import AutoLoginTask
 from src.task.BaseWWTask import LOGIN_TEXTS
 from src.task.DailyTask import DailyTask
 from src.task.MultiAccountConfigTask import MultiAccountConfigTask
@@ -362,6 +363,7 @@ class TestMultiAccountConfig(unittest.TestCase):
                 runner.log_info = Mock()
                 runner.log_debug = Mock()
                 runner.log_warning = Mock()
+                runner.scene = SimpleNamespace(in_team=lambda callback: callback())
                 runner.in_team_and_world = lambda: state.screen == 'world'
                 runner.in_realm = lambda: False
                 runner.handle_monthly_card = lambda: False
@@ -397,11 +399,12 @@ class TestMultiAccountConfig(unittest.TestCase):
                 with patch.object(og, 'my_app', state, create=True), patch.object(WWOneTimeTask, 'run'):
                     runner.run()
                     runner.run()
+                    AutoLoginTask.run(runner)
 
                 self.assertEqual(runner._login_target_account.call_count, 2)
                 self.assertEqual(runner.click.call_count, 1 if initial_screen == 'world' else 2)
                 self.assertEqual(state.screen, 'login')
-                self.assertFalse(state.logged_in)
+                self.assertTrue(state.logged_in)
                 self.assertEqual(MultiAccountConfigStore(folder).load_results()['1231234']['status'], 'success')
 
     def test_runner_failure_and_cancellation_restore_and_stop(self):
