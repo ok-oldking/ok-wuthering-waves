@@ -42,6 +42,7 @@ from src.char.Roccia import Roccia
 from src.char.Sanhua import Sanhua
 from src.char.ShoreKeeper import ShoreKeeper
 from src.char.Suisui import Suisui
+from src.char.Suoming import Suoming
 from src.char.Taoqi import Taoqi
 from src.char.Verina import Verina
 from src.char.Xiangliyao import Xiangliyao
@@ -135,6 +136,8 @@ _char_dict_raw = {
     Labels.char_qingxiao: {'cls': Qingxiao, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.WIND},
     Labels.char_jingran: {'cls': JingRan, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.FIRE},
     Labels.char_hsin: {'cls': Hsin, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.ELECTRIC},
+    Labels.char_suoming: {'cls': Suoming, 'char_type': CharType.SUB_DPS, 'buff_time': 8,
+                         'ring_index': Elements.ELECTRIC},
 }
 
 char_dict = {}
