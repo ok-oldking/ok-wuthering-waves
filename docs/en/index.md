@@ -65,7 +65,9 @@ If you encounter issues, please check the following steps one by one before aski
 
 1.  **Antivirus Software**: Add the software's installation directory to the **exceptions or whitelist** of your antivirus software (including Windows Defender) to prevent files from being mistakenly deleted or blocked.
 2.  **Display Settings**:
-    *   In-game filters can generally be enabled, but graphics driver filters such as NVIDIA RTX Dynamic Vibrance and AMD sharpening must be disabled.
+    *   In-game filters can generally be enabled.
+    *   Windows HDR can be enabled, but Auto HDR must be turned off.
+    *   It is recommended to turn off GPU filters such as RTX HDR, RTX Dynamic Vibrance, and AMD sharpening.
     *   Use the game's default brightness settings.
     *   Disable any overlays that display information on the game screen (e.g., frame rates from MSI Afterburner, Fraps, etc.).
 3.  **Custom Keybinds**: If you have changed the default in-game keybinds, you must update them accordingly in the `ok-ww` settings. Only the keybinds listed in the settings are supported.

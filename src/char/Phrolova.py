@@ -13,6 +13,15 @@ class Phrolova(BaseChar):
     def skip_combat_check(self):
         return self.time_elapsed_accounting_for_freeze(self.last_liberation) < 2
 
+    def f_break(self, check_f_on_switch=False, force=False):
+        if (check_f_on_switch and not force and self.last_liberation >= 0
+                and self.time_elapsed_accounting_for_freeze(self.last_liberation) < 24):
+            in_team, current_index, _ = self.task.in_team()
+            # Hecate cannot execute; keep the post-switch attempt for the teammate.
+            if in_team and current_index == self.index:
+                return False
+        return super().f_break(check_f_on_switch=check_f_on_switch, force=force)
+
     def do_perform(self):
         self.last_liberation = -1
         perform_under_outro = False

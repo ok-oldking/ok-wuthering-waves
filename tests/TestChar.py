@@ -1,5 +1,6 @@
 import time
 import unittest
+from unittest.mock import patch
 from config import config
 from ok.test.TaskTestCase import TaskTestCase
 from src.Labels import Labels
@@ -21,6 +22,7 @@ from src.char.Qingxiao import Qingxiao
 from src.char.Rebecca import Rebecca
 from src.char.ShoreKeeper import ShoreKeeper
 from src.char.Suisui import Suisui
+from src.char.Suoming import Suoming
 from src.char.Verina import Verina
 from src.char.Yangyang import Yangyang
 from src.char.YangYangSp import YangYangSp
@@ -1436,9 +1438,10 @@ class TestChar(TaskTestCase):
 
         healer.switch_out(con_full=True)
         self.assertEqual(healer.HEALER_FULL_CON_SWITCH_LOCKOUT, 16.0)
-        self.assertEqual(healer.get_switch_priority(), SwitchPriority.NO)
+        self.assertTrue(healer.healer_full_con_switch_locked())
 
         healer.last_full_con_switch_time = time.time() - 16.01
+        self.assertFalse(healer.healer_full_con_switch_locked())
         self.assertEqual(healer.get_switch_priority(), SwitchPriority.NORMAL)
 
         healer_without_outro = BaseChar(task, 1, char_type=CharType.HEALER)
@@ -2115,6 +2118,18 @@ class TestChar(TaskTestCase):
         self.task.load_chars()
         self.assertTrue(len(self.task.chars) > 0)
         self.assertEqual(self.task.chars[0].name, 'Iuno')
+
+    def test_suoming_portrait(self):
+        with patch.object(self.task, 'char_config', {'Suoming DPS': False}):
+            self.task.do_reset_to_false()
+            self.set_image('ok_templates/61.png')
+            self.task.load_chars()
+            char = self.task.chars[0]
+            self.assertIsInstance(char, Suoming)
+            self.assertEqual(char.char_name, Labels.char_suoming)
+            self.assertEqual(char.char_type, CharType.SUB_DPS)
+            self.assertEqual(char.ring_index, Elements.ELECTRIC)
+            self.assertEqual(char.buff_time, 8)
 
     def test_luhesi_cd(self):
         self.task.do_reset_to_false()

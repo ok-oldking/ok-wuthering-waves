@@ -9,6 +9,7 @@ class ShoreKeeper(BaseChar):
         self.outrotime = -1
         self.dodge_count = 0
         self.attribute = 0
+        self.check_f_on_switch = True
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         self.decide_teammate()
