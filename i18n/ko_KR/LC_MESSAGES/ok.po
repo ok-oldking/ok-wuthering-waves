@@ -1394,8 +1394,18 @@ msgstr "팀을 삭제했습니다."
 msgid "JingRan"
 msgstr "경연"
 
+msgid "Multi Account Config Task"
+msgstr "다중 계정 설정 작업"
+
+msgid "Log in to accounts in card order and run tasks with independent configurations"
+msgstr "카드 순서대로 계정에 로그인하고 계정별 설정으로 작업을 실행합니다"
+
 msgid "Special Nightmare"
 msgstr "특이 악몽"
 
 msgid "Which Special Nightmare to Teleport"
 msgstr "텔레포트할 특이 악몽 번호"
+
+
+msgid "Failed to read game assets quality config. Starting with HD assets."
+msgstr "게임 리소스 품질 설정을 읽지 못했습니다. HD 리소스로 시작합니다."

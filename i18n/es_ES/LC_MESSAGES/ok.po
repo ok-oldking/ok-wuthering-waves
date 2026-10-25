@@ -1320,8 +1320,18 @@ msgstr "Equipo eliminado."
 msgid "JingRan"
 msgstr "Jingran"
 
+msgid "Multi Account Config Task"
+msgstr "Tarea de configuración multicuenta"
+
+msgid "Log in to accounts in card order and run tasks with independent configurations"
+msgstr "Inicia sesión en el orden de las tarjetas y ejecuta tareas con configuraciones independientes"
+
 msgid "Special Nightmare"
 msgstr "Pesadilla especial"
 
 msgid "Which Special Nightmare to Teleport"
 msgstr "Pesadilla especial a la que teletransportar"
+
+
+msgid "Failed to read game assets quality config. Starting with HD assets."
+msgstr "No se pudo leer la configuración de calidad de los recursos del juego. Se iniciará con recursos HD."

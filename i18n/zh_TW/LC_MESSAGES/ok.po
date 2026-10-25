@@ -1520,6 +1520,12 @@ msgstr "隊伍已刪除。"
 msgid "JingRan"
 msgstr "景燃"
 
+msgid "Multi Account Config Task"
+msgstr "多帳號設定執行"
+
+msgid "Log in to accounts in card order and run tasks with independent configurations"
+msgstr "依卡片順序登入帳號，並使用各帳號的獨立設定執行任務"
+
 msgid "Hsin"
 msgstr "心"
 
@@ -1528,3 +1534,7 @@ msgstr "特異夢魘"
 
 msgid "Which Special Nightmare to Teleport"
 msgstr "傳送到第幾個特異夢魘"
+
+
+msgid "Failed to read game assets quality config. Starting with HD assets."
+msgstr "讀取遊戲資源畫質設定失敗，將使用高畫質（HD）資源啟動。"

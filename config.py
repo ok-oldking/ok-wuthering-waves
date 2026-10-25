@@ -125,10 +125,6 @@ def blur_area(width, height):
 
 
 basic_config_option = create_basic_options(enable_blur=True)
-basic_config_option.default_config['Game Package'] = 'hd'
-basic_config_option.config_type['Game Package'] = {
-    'type': 'drop_down', 'options': ['sd', 'hd', 'uhd'],
-}
 
 key_config_option = ConfigOption('Game Hotkey', {
     'Echo Key': 'q',
@@ -168,7 +164,10 @@ config = {
     'blur_area': blur_area,
     'gui_icon': 'icons/icon.png',
     'global_configs': [basic_config_option, key_config_option, char_config_option, monthly_card_config_option],
-    'custom_tabs': [["src.gui.CharacterCodeTab", "CharacterCodeTab"]],
+    'custom_tabs': [
+        ["src.gui.CharacterCodeTab", "CharacterCodeTab"],
+        ["src.gui.MultiAccountConfigTab", "MultiAccountConfigTab"],
+    ],
     'ocr': {
         'lib': 'onnxocr',
         'auto_simplify': True,
@@ -177,6 +176,7 @@ config = {
             'use_npu': True,
         }
     },
+    'plugin':True,
     'my_app': ['src.globals', 'Globals'],
     'start_timeout': 120,  # default 60
     'wait_until_settle_time': 0,
@@ -189,7 +189,8 @@ config = {
         'feature_processor': process_feature,
         'vcenter_features': ['monthly_card', 'skip_dialog_check'],
         'hcenter_features': ['monthly_card', 'suisui_forte3', 'message_dialog', 'claim_stamina_sign',
-                             'skip_dialog_check', 'login_close', 'garden_confirm', 'garden_continue_game',
+                             'skip_dialog_check', 'skip_quest_confirm', 'skip_quest_confirm_new',
+                             'login_close', 'garden_confirm', 'garden_continue_game',
                              'garden_unpause', 'garden_get_gold', 'garden_get_purple', 'garden_get_skip',
                              'garden_not_interested_confirm', 'garden_not_interested', 'a_garden_back',
                              'garden_get_confirm_gray', 'the_garden_max', 'garden_shop_close', 'garden_new_stage',
@@ -269,6 +270,7 @@ config = {
         ["src.task.ForgeryTask", "ForgeryTask"],
         ["src.task.SimulationTask", "SimulationTask"],
         ["src.task.MultiAccountDailyTask", "MultiAccountDailyTask"],
+        ["src.task.MultiAccountConfigTask", "MultiAccountConfigTask"],
         ["src.task.MergeEchoTask", "MergeEchoTask"],
         ["src.task.EnhanceEchoTask", "EnhanceEchoTask"],
         ["src.task.ChangeEchoTask", "ChangeEchoTask"],

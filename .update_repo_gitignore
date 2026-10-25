@@ -1,6 +1,7 @@
 __pycache__/
 **/__pycache__/
 .venv
+ok_import/
 __pycache__
 *.pyc
 logs/
