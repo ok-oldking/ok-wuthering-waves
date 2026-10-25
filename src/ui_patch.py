@@ -58,6 +58,9 @@ def apply_executor_patch():
             self.reset_scene(check_enabled=False)
             self.pause_start = time.time()
             return True
+        else:
+            communicate.executor_paused.emit(True)
+            return True
 
     def patched_start(self):
         if self.current_task is not None and getattr(self.current_task, '_paused', False):
@@ -78,6 +81,7 @@ def apply_qt_patch():
         from ok.ui.qt.common.OKIcon import OKIcon
         from ok.ui.qt.start.StartCard import StartCard
         from ok.ui.qt.tasks.TaskCard import TaskCard
+        from ok.task.task import TriggerTask
         from ok import og
     except ImportError:
         logger.debug("Qt not available in current environment; skipping Qt UI patches")
@@ -90,6 +94,15 @@ def apply_qt_patch():
     orig_task_card_init = TaskCard.__init__
     orig_task_card_update_buttons = TaskCard.update_buttons
     orig_task_card_start_clicked = TaskCard.start_clicked
+    orig_task_card_stop_clicked = TaskCard.stop_clicked
+
+    def patched_task_card_stop_clicked(self):
+        self.task.disable()
+        self.task.running = False
+        self.task._paused = False
+        if og.executor.current_task == self.task:
+            og.executor.current_task = None
+        communicate.task.emit(self.task)
 
     def patched_task_card_init(self, task, onetime):
         orig_task_card_init(self, task, onetime)
@@ -153,6 +166,7 @@ def apply_qt_patch():
         TaskCard.dispose = patched_task_card_dispose
     TaskCard.update_buttons = patched_task_card_update_buttons
     TaskCard.start_clicked = patched_task_card_start_clicked
+    TaskCard.stop_clicked = patched_task_card_stop_clicked
 
     # Patch StartCard for Stop button, Rescan Window label/guard, and F10 hotkey
     orig_start_card_init = StartCard.__init__
@@ -181,9 +195,29 @@ def apply_qt_patch():
 
     def start_card_stop_clicked(self):
         logger.info("StartCard Stop button clicked")
-        if og.executor.current_task:
-            og.executor.stop_current_task()
-        og.executor.pause()
+        cur_task = getattr(og.executor, 'current_task', None)
+        if cur_task is not None:
+            if not isinstance(cur_task, TriggerTask):
+                cur_task.disable()
+                cur_task.running = False
+                cur_task._paused = False
+                communicate.task.emit(cur_task)
+            og.executor.current_task = None
+
+        with og.executor.lock:
+            og.executor.onetime_task_queue.clear()
+        for ot in getattr(og.executor, 'onetime_tasks', []):
+            if getattr(ot, 'enabled', False):
+                ot.disable()
+                ot.running = False
+                ot._paused = False
+
+        if not og.executor.paused:
+            og.executor.pause()
+        else:
+            communicate.executor_paused.emit(True)
+
+        self.update_status()
 
     def patched_start_card_update_status(self, *args, **kwargs):
         orig_start_card_update_status(self)

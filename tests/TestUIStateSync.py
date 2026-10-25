@@ -183,13 +183,34 @@ class TestUIStateSync(unittest.TestCase):
         task = DummyTask(executor=self.executor)
         task.running = True
         self.executor.current_task = task
-        self.executor.stop_current_task = MagicMock()
-
-        self.executor.pause = MagicMock()
+        self.executor.paused = False
 
         start_card.stop_clicked()
-        self.executor.stop_current_task.assert_called_once()
-        self.executor.pause.assert_called_once()
+        self.assertFalse(task._enabled)
+        self.assertFalse(task.running)
+        self.assertIsNone(self.executor.current_task)
+        self.assertTrue(self.executor.paused)
+        self.assertEqual(start_card.start_button.text(), f"{start_card.tr('Start')}(F9)")
+        self.assertFalse(start_card.stop_button.isEnabled())
+        self.assertTrue(start_card.status_bar.isHidden())
+
+    def test_task_card_stop_button_disables_without_unpausing_executor(self):
+        from ok.ui.qt.tasks.TaskCard import TaskCard
+
+        task = DummyTask(executor=self.executor)
+        task.running = True
+        task._paused = True
+        self.executor.current_task = task
+        self.executor.paused = True
+
+        card = TaskCard(task, onetime=True)
+        card.stop_clicked()
+
+        self.assertFalse(task._enabled)
+        self.assertFalse(task.running)
+        self.assertFalse(task._paused)
+        self.assertIsNone(self.executor.current_task)
+        self.assertTrue(self.executor.paused)
 
 
 if __name__ == '__main__':
