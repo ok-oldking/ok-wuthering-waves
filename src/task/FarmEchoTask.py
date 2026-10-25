@@ -121,6 +121,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         try:
             return self.do_run()
         except TaskDisabledException as e:
+            self.reset_combat_state('farm echo task disabled')
             pass
         except Exception as e:
             logger.error('farm 4c error, try handle monthly card', e)
