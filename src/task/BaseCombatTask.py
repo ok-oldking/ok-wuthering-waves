@@ -534,17 +534,25 @@ class BaseCombatTask(CombatCheck):
             return current_char
 
         prioritized_candidates = []
+        locked_healers = []
         for char in candidates:
+            switch_priority = char.get_switch_priority(current_char=current_char, has_intro=has_intro,
+                                                       target_low_con=target_low_con)
             if char.healer_full_con_switch_locked():
+                if switch_priority > SwitchPriority.NO:
+                    locked_healers.append(char)
                 switch_priority = SwitchPriority.NO
-            else:
-                switch_priority = char.get_switch_priority(current_char=current_char, has_intro=has_intro,
-                                                           target_low_con=target_low_con)
             self._log_switch_candidate(char, switch_priority)
             if switch_priority > SwitchPriority.NO:
                 prioritized_candidates.append((switch_priority, char))
 
         if not prioritized_candidates:
+            if locked_healers and (not current_char.is_healer or has_intro):
+                target = min(locked_healers, key=lambda char: (
+                    char.HEALER_FULL_CON_SWITCH_LOCKOUT
+                    - char.time_elapsed_accounting_for_freeze(char.last_full_con_switch_time),
+                    char.last_switch_in_time, char.index))
+                return self._log_switch_choice(current_char, target, has_intro, 'healer_lockout_fallback')
             return self._log_switch_choice(
                 current_char, current_char, has_intro, 'no_candidate_above_no_priority')
 

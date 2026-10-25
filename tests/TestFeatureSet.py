@@ -9,6 +9,27 @@ from ok.feature.FeatureSet import FeatureSet
 
 
 class TestFeatureSet(unittest.TestCase):
+    def test_registered_character_templates_exist(self):
+        from src.char.CharFactory import char_names
+
+        feature_set = FeatureSet(False, 'assets/coco_annotations.json', 0.002, 0.002)
+        frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
+        for name in char_names:
+            with self.subTest(name=name):
+                self.assertIsNotNone(feature_set.get_feature_by_name(frame, name))
+
+    def test_lingyang_portrait_matches_restored_source_image(self):
+        frame = cv2.imread('ok_templates/lingyang.png')
+        self.assertIsNotNone(frame)
+        for coco_json in ('assets/coco_annotations.json', 'ok_templates/coco_annotations.json'):
+            with self.subTest(coco_json=coco_json):
+                feature_set = FeatureSet(False, coco_json, 0.002, 0.002)
+                matches = feature_set.find_one_feature(frame, 'char_lingyang', threshold=0.95)
+
+                self.assertTrue(matches)
+                self.assertEqual(matches[0].name, 'char_lingyang')
+                self.assertGreaterEqual(float(matches[0].confidence), 0.95)
+
     def test_chisa_e2_template_loads_from_current_source_image(self):
         frame = cv2.imread('ok_templates/Chisa_e2.png')
         self.assertIsNotNone(frame)

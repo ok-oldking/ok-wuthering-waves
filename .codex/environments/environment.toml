@@ -1,0 +1,17 @@
+version = 1
+name = "ok-wuthering-waves"
+
+[setup]
+script = ""
+
+[[actions]]
+name = "Run main_debug.py"
+icon = "run"
+command = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\.codex\run.ps1 -EntryPoint main_debug.py'
+platform = "win32"
+
+[[actions]]
+name = "Run main.py"
+icon = "run"
+command = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\.codex\run.ps1 -EntryPoint main.py'
+platform = "win32"

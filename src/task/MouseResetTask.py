@@ -1,7 +1,5 @@
 import math
 
-import win32api
-
 from ok import TriggerTask, Logger
 
 logger = Logger.get_logger(__name__)
@@ -35,6 +33,8 @@ class MouseResetTask(TriggerTask):
         if not self.enabled or self.is_browser():
             return
         try:
+            import win32api
+
             current_position = win32api.GetCursorPos()
             if self.mouse_pos and self.hwnd and self.hwnd.exists and not self.hwnd.visible and self.executor.interaction and self.executor.interaction.capture:
                 center_pos = self.executor.interaction.capture.get_abs_cords(self.width_of_screen(0.5),

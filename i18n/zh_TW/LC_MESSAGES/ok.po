@@ -693,6 +693,9 @@ msgstr "維里奈2鏈"
 msgid "Chisa DPS"
 msgstr "千咲主C"
 
+msgid "Suoming DPS"
+msgstr "鎖冥主C"
+
 msgid "Use Liberation"
 msgstr "使用共鳴解放"
 
@@ -1524,6 +1527,12 @@ msgstr "必要時，使用背包中的聲骸箱子獲取聲骸完成每日任務
 
 msgid "JingRan"
 msgstr "景燃"
+
+msgid "Multi Account Config Task"
+msgstr "多帳號設定執行"
+
+msgid "Log in to accounts in card order and run tasks with independent configurations"
+msgstr "依卡片順序登入帳號，並使用各帳號的獨立設定執行任務"
 
 msgid "Hsin"
 msgstr "心"
