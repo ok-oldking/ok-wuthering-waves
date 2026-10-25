@@ -6,6 +6,7 @@ class Cantarella(BaseChar):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.last_heavy = -1
+        self.check_f_on_switch = True
 
     def get_switch_priority(self, current_char=None, has_intro=False, target_low_con=False):
         if has_intro and current_char and current_char.char_name in {'char_roccia', 'char_sanhua'}:

@@ -147,6 +147,7 @@ key_config_option = ConfigOption('Game Hotkey', {
 char_config_option = ConfigOption('Character Config', {
     'Iuno C6': False,
     'Chisa DPS': False,
+    'Suoming DPS': False,
 }, description='Character Config', show_at_tab=True, icon=Icon.PEOPLE)
 
 monthly_card_config_option = ConfigOption('Monthly Card Config', {
@@ -167,7 +168,10 @@ config = {
     'blur_area': blur_area,
     'gui_icon': 'icons/icon.png',
     'global_configs': [basic_config_option, key_config_option, char_config_option, monthly_card_config_option],
-    'custom_tabs': [["src.gui.CharacterCodeTab", "CharacterCodeTab"]],
+    'custom_tabs': [
+        ["src.gui.CharacterCodeTab", "CharacterCodeTab"],
+        ["src.gui.MultiAccountConfigTab", "MultiAccountConfigTab"],
+    ],
     'ocr': {
         'lib': 'onnxocr',
         'auto_simplify': True,
@@ -176,6 +180,7 @@ config = {
             'use_npu': True,
         }
     },
+    'plugin':True,
     'my_app': ['src.globals', 'Globals'],
     'start_timeout': 120,  # default 60
     'wait_until_settle_time': 0,
@@ -188,7 +193,8 @@ config = {
         'feature_processor': process_feature,
         'vcenter_features': ['monthly_card', 'skip_dialog_check'],
         'hcenter_features': ['monthly_card', 'suisui_forte3', 'message_dialog', 'claim_stamina_sign',
-                             'skip_dialog_check', 'login_close', 'garden_confirm', 'garden_continue_game',
+                             'skip_dialog_check', 'skip_quest_confirm', 'skip_quest_confirm_new',
+                             'login_close', 'garden_confirm', 'garden_continue_game',
                              'garden_unpause', 'garden_get_gold', 'garden_get_purple', 'garden_get_skip',
                              'garden_not_interested_confirm', 'garden_not_interested', 'a_garden_back',
                              'garden_get_confirm_gray', 'the_garden_max', 'garden_shop_close', 'garden_new_stage',
@@ -204,9 +210,10 @@ config = {
         'exe': 'Client-Win64-Shipping.exe',
         'hwnd_class': 'UnrealWindow',
         'interaction': 'PostMessage',
-        'capture_method': ['WGC', 'BitBlt_RenderFull'],  # Windows版本支持的话, 优先使用WGC, 否则使用BitBlt_Full
+        'capture_method': ['WGC', 'WGC_HDR','BitBlt_RenderFull'],  # Windows版本支持的话, 优先使用WGC, 否则使用BitBlt_Full
         'check_hdr': False,
         'force_no_hdr': False,
+        'check_auto_hdr': True,
         'check_night_light': True,
         'force_no_night_light': False,
     },
@@ -267,6 +274,7 @@ config = {
         ["src.task.ForgeryTask", "ForgeryTask"],
         ["src.task.SimulationTask", "SimulationTask"],
         ["src.task.MultiAccountDailyTask", "MultiAccountDailyTask"],
+        ["src.task.MultiAccountConfigTask", "MultiAccountConfigTask"],
         ["src.task.MergeEchoTask", "MergeEchoTask"],
         ["src.task.EnhanceEchoTask", "EnhanceEchoTask"],
         ["src.task.ChangeEchoTask", "ChangeEchoTask"],

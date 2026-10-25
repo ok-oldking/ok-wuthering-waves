@@ -704,6 +704,9 @@ msgstr "ヴェリーナ2凸"
 msgid "Chisa DPS"
 msgstr "千咲 アタッカー"
 
+msgid "Suoming DPS"
+msgstr "Suoming アタッカー"
+
 msgid "Nightmare: Hecate"
 msgstr ""
 
@@ -1389,6 +1392,12 @@ msgstr "チームを削除しました。"
 
 msgid "JingRan"
 msgstr "景燃"
+
+msgid "Multi Account Config Task"
+msgstr "複数アカウント設定タスク"
+
+msgid "Log in to accounts in card order and run tasks with independent configurations"
+msgstr "カードの順番でアカウントにログインし、個別の設定でタスクを実行します"
 
 msgid "Special Nightmare"
 msgstr "特異悪夢"

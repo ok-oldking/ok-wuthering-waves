@@ -693,6 +693,9 @@ msgstr "维里奈2链"
 msgid "Chisa DPS"
 msgstr "千咲主C"
 
+msgid "Suoming DPS"
+msgstr "锁冥主C"
+
 msgid "Use Liberation"
 msgstr "使用共鸣解放"
 
@@ -1438,6 +1441,12 @@ msgstr "队伍已删除。"
 
 msgid "JingRan"
 msgstr "景燃"
+
+msgid "Multi Account Config Task"
+msgstr "多账号配置执行"
+
+msgid "Log in to accounts in card order and run tasks with independent configurations"
+msgstr "按卡片顺序登录账号，并使用各账号的独立配置执行任务"
 
 msgid "Hsin"
 msgstr "心"

@@ -168,7 +168,7 @@ class HsinRotationTest(unittest.TestCase):
             has_target=lambda: not lost_before_hold and char.task.mouse_start is None,
             should_check_monthly_card=lambda: False)
 
-        def retarget(wait=True):
+        def retarget(wait=True, **kwargs):
             retargets.append(self.clock.now)
             self.clock.advance(3)
             return False

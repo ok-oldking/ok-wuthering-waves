@@ -35,8 +35,8 @@ class SkipBaseTask(BaseWWTask):
             return True
 
     def find_skip(self):
-        return self.find_one('skip_dialog', horizontal_variance=0.02, threshold=0.75,
-                             frame_processor=convert_dialog_icon) or self.find_one('skip_dialog_new',
+        return self.find_one('skip_dialog', horizontal_variance=0.02, threshold=0.85,
+                             use_gray_scale=True) or self.find_one('skip_dialog_new',
                                                                                    threshold=0.75,
                                                                                    frame_processor=convert_dialog_icon)
 
@@ -51,6 +51,8 @@ class SkipBaseTask(BaseWWTask):
     def check_skip(self):
         if self.try_click_skip():
             return self.wait_until(self.skip_confirm, time_out=3, raise_if_not_found=False)
+        # Retry a confirmation left open after the initial wait timed out.
+        return self.skip_confirm()
 
 
 dialog_white_color = {
