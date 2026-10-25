@@ -185,8 +185,11 @@ class TestUIStateSync(unittest.TestCase):
         self.executor.current_task = task
         self.executor.stop_current_task = MagicMock()
 
+        self.executor.pause = MagicMock()
+
         start_card.stop_clicked()
         self.executor.stop_current_task.assert_called_once()
+        self.executor.pause.assert_called_once()
 
 
 if __name__ == '__main__':

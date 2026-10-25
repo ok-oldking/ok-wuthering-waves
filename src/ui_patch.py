@@ -183,6 +183,7 @@ def apply_qt_patch():
         logger.info("StartCard Stop button clicked")
         if og.executor.current_task:
             og.executor.stop_current_task()
+        og.executor.pause()
 
     def patched_start_card_update_status(self, *args, **kwargs):
         orig_start_card_update_status(self)
