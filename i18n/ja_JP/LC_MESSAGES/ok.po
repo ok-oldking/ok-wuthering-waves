@@ -1404,3 +1404,7 @@ msgstr "特異悪夢"
 
 msgid "Which Special Nightmare to Teleport"
 msgstr "テレポートする特異悪夢"
+
+
+msgid "Failed to read game assets quality config. Starting with HD assets."
+msgstr "ゲームアセットの品質設定を読み取れませんでした。HDアセットで起動します。"

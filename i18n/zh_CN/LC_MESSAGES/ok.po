@@ -1456,3 +1456,7 @@ msgstr "特异梦魇"
 
 msgid "Which Special Nightmare to Teleport"
 msgstr "传送到第几个特异梦魇"
+
+
+msgid "Failed to read game assets quality config. Starting with HD assets."
+msgstr "读取游戏资源画质配置失败，将使用高清（HD）资源启动。"

@@ -1331,3 +1331,7 @@ msgstr "Pesadilla especial"
 
 msgid "Which Special Nightmare to Teleport"
 msgstr "Pesadilla especial a la que teletransportar"
+
+
+msgid "Failed to read game assets quality config. Starting with HD assets."
+msgstr "No se pudo leer la configuración de calidad de los recursos del juego. Se iniciará con recursos HD."
