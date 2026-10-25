@@ -4,6 +4,7 @@ from pathlib import Path
 
 from ok import Box, ConfigOption, Icon
 from ok.util.GlobalConfig import create_basic_options
+import src.ui_patch
 from src.game_launcher import get_game_launch_arguments
 from src.task.process_feature import process_feature
 
