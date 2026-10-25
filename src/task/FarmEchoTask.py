@@ -43,7 +43,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             'Which Boss Challenge to Teleport': 'From Top to Bottom, Starting with 1',
             'Which Special Nightmare to Teleport': 'From Top to Bottom, Starting with 1',
         })
-        self.find_echo_method = ['Yolo', 'Run in Circle', 'Walk']
+        self.find_echo_method = self.get_find_echo_methods()
         self.config_type['Teleport to Boss'] = {'type': "drop_down",
                                                 'options': ['No', 'Weekly Challenge',
                                                             'Boss Challenge', 'Special Nightmare'],
@@ -190,22 +190,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 if self.is_revived:
                     continue
 
-                if self.pick_echo():
-                    logger.info(f'farm echo on the face')
-                    dropped = True
-                else:
-                    self.middle_click(after_sleep=0.2)
-                    if self.config.get('Echo Pickup Method', "Yolo") == "Yolo":
-                        dropped = \
-                            self.yolo_find_echo(turn=self._in_realm, use_color=False, time_out=self.yolo_time_out,
-                                                threshold=self.yolo_threshold)[0]
-                        logger.info(f'farm echo yolo find {dropped}')
-                    elif self.config.get('Echo Pickup Method', "Yolo") == "Run in Circle":
-                        dropped = self.run_in_circle_to_find_echo(circle_count=2)
-                        logger.info(f'farm echo walk_circle_find_echo {dropped}')
-                    else:
-                        dropped = self.walk_find_echo()
-                        logger.info(f'farm echo walk_find_echo {dropped}')
+                dropped = self.pick_echo_by_method(turn=self._in_realm, yolo_time_out=self.yolo_time_out,
+                                                   yolo_threshold=self.yolo_threshold)
                 self.incr_drop(dropped)
                 if not self.bypass_end_wait:
                     if dropped and not self._has_treasure:

@@ -78,6 +78,48 @@ class TestFarmEchoPickup(unittest.TestCase):
         )
         task.incr_drop.assert_called_once_with(True)
 
+    def test_pick_echo_failure_triggers_middle_click_before_walk(self):
+        task = make_task({"Repeat Farm Count": 1, "Echo Pickup Method": "Walk"})
+        task.pick_echo.return_value = False
+        task.walk_find_echo.return_value = True
+        steps = Mock()
+        steps.attach_mock(task.middle_click, 'middle_click')
+        steps.attach_mock(task.walk_find_echo, 'walk_find_echo')
+
+        task.do_run()
+
+        self.assertEqual(
+            [call.middle_click(after_sleep=0.2), call.walk_find_echo()],
+            steps.mock_calls
+        )
+        task.incr_drop.assert_called_once_with(True)
+
+    def test_get_find_echo_methods_dynamic(self):
+        task = make_task()
+        methods = task.get_find_echo_methods()
+        if hasattr(task, 'back_and_forth_find_echo'):
+            self.assertEqual(['Yolo', 'Run in Circle', 'Walk', 'Back and Forth'], methods)
+        else:
+            self.assertEqual(['Yolo', 'Run in Circle', 'Walk'], methods)
+            task.back_and_forth_find_echo = Mock()
+            self.assertEqual(['Yolo', 'Run in Circle', 'Walk', 'Back and Forth'], task.get_find_echo_methods())
+
+    def test_pick_echo_failure_triggers_back_and_forth_when_available(self):
+        task = make_task({"Repeat Farm Count": 1, "Echo Pickup Method": "Back and Forth"})
+        task.pick_echo.return_value = False
+        task.back_and_forth_find_echo = Mock(return_value=True)
+        steps = Mock()
+        steps.attach_mock(task.middle_click, 'middle_click')
+        steps.attach_mock(task.back_and_forth_find_echo, 'back_and_forth_find_echo')
+
+        task.do_run()
+
+        self.assertEqual(
+            [call.middle_click(after_sleep=0.2), call.back_and_forth_find_echo()],
+            steps.mock_calls
+        )
+        task.incr_drop.assert_called_once_with(True)
+
 
 if __name__ == '__main__':
     unittest.main()
