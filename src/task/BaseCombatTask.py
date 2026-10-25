@@ -82,6 +82,15 @@ class BaseCombatTask(CombatCheck):
         # 由副本恢复循环维护: 本轮从信标直接进本时, 退本即回到信标并自动回血
         self.realm_entry_at_heal_point = False
 
+    def reset_combat_state(self, reason='combat reset'):
+        self.reset_to_false(reason)
+        self.chars = [None, None, None]
+        self.freeze_durations = []
+
+    def disable(self):
+        self.reset_combat_state('task disabled')
+        super().disable()
+
     def add_freeze_duration(self, start, duration=-1.0, freeze_time=0.1):
         """添加冻结持续时间。用于精确计算技能冷却等。
 

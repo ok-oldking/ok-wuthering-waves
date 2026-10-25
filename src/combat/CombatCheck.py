@@ -76,7 +76,8 @@ class CombatCheck(BaseWWTask):
         self.last_in_realm_not_combat = 0
         self.has_lavitator = False
         self.can_break = False
-        self.scene.set_not_in_combat()
+        if self.scene is not None:
+            self.scene.set_not_in_combat()
         return False
 
     def check_f_break(self):
