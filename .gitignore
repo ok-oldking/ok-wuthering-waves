@@ -1,6 +1,7 @@
 .venv
 onnxocr/
 ok_tasks/
+ok_import/
 updates/
 working/
 update/
