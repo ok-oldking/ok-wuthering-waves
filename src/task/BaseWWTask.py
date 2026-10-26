@@ -766,6 +766,13 @@ class BaseWWTask(BaseTask):
                         self.click(login, after_sleep=1)
                         self.log_info('点击登录按钮!')
                 return False
+            if connect := self.find_boxes(texts,
+                                          boundary=self.box_of_screen(0.2, 0.75, 0.8, 0.98),
+                                          match=re.compile(r'点击连接|Click to Connect', re.IGNORECASE)):
+                # 3.6.x 登录/连接界面:点击"点击连接"后直接进入游戏主界面
+                self.click(connect[0], after_sleep=2)
+                self.log_info('点击连接按钮!')
+                return False
             if agree := self.find_boxes(texts, boundary=login_box, match="同意"):
                 self.log_debug(f'found agree {agree}')
                 if self.find_boxes(texts, boundary=login_box, match=re.compile("隐私")):
