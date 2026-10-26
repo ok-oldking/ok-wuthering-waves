@@ -16,6 +16,8 @@ darkdetect==0.8.0
     #   pyside6-fluent-widgets
 idna==3.18
     # via requests
+mcp==2.3.0
+    # via ok-ww (pyproject.toml)
 mouse==0.7.1
     # via ok-script
 numpy==2.5.2
@@ -23,7 +25,7 @@ numpy==2.5.2
     #   opencv-python
     #   openvino
     #   shapely
-ok-script[ocr,qt]==2.0.15b3
+ok-script[ocr,qt]==2.0.15
     # via ok-ww (pyproject.toml)
 onnxocr-ppocrv5>=0.0.20
     # via

@@ -1335,3 +1335,13 @@ msgstr "Pesadilla especial a la que teletransportar"
 
 msgid "Failed to read game assets quality config. Starting with HD assets."
 msgstr "No se pudo leer la configuración de calidad de los recursos del juego. Se iniciará con recursos HD."
+
+msgid "Tacet Elimination"
+msgstr "Eliminación tácita"
+
+msgid ""
+"Start on the Tacet Elimination event screen. Complete unfinished stages and "
+"claim rewards."
+msgstr ""
+"Inicia en la pantalla del evento, completa las fases pendientes y recoge las"
+" recompensas. Mantén el juego en primer plano."
