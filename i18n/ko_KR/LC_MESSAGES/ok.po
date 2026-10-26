@@ -1409,3 +1409,11 @@ msgstr "텔레포트할 특이 악몽 번호"
 
 msgid "Failed to read game assets quality config. Starting with HD assets."
 msgstr "게임 리소스 품질 설정을 읽지 못했습니다. HD 리소스로 시작합니다."
+
+msgid "Tacet Elimination"
+msgstr "무음 소거"
+
+msgid ""
+"Start on the Tacet Elimination event screen. Complete unfinished stages and "
+"claim rewards."
+msgstr "이벤트 화면에서 시작하여 미완료 스테이지를 완료하고 보상을 받습니다. 실행 중에는 게임을 전면에 표시하세요."

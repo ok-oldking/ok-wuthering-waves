@@ -1538,3 +1538,11 @@ msgstr "傳送到第幾個特異夢魘"
 
 msgid "Failed to read game assets quality config. Starting with HD assets."
 msgstr "讀取遊戲資源畫質設定失敗，將使用高畫質（HD）資源啟動。"
+
+msgid "Tacet Elimination"
+msgstr "無音消除"
+
+msgid ""
+"Start on the Tacet Elimination event screen. Complete unfinished stages and "
+"claim rewards."
+msgstr "從無音消除活動目前介面開始，完成未完成的關卡並領取獎勵。執行期間需要遊戲位於前景。"
