@@ -1335,3 +1335,23 @@ msgstr "Pesadilla especial a la que teletransportar"
 
 msgid "Failed to read game assets quality config. Starting with HD assets."
 msgstr "No se pudo leer la configuración de calidad de los recursos del juego. Se iniciará con recursos HD."
+
+msgid "Start Combat with F Key"
+msgstr "Iniciar combate con la tecla F"
+
+msgid "F Key Start Delay"
+msgstr "Retraso tras la tecla F (s)"
+
+msgid ""
+"After pressing F in a challenge or domain, start combat without waiting for "
+"a target or health bar. Only recommended for hard combat content such as "
+"Matrix, Tower of Adversity and Whimpering Wastes. F is ignored in the open "
+"world, but turning this off there is still recommended"
+msgstr ""
+"Tras pulsar F en un desafío o dominio, inicia el combate sin esperar a un "
+"objetivo o barra de vida. Solo se recomienda en contenido de combate difícil"
+" como Matrix, Tower of Adversity o Whimpering Wastes. En el mundo abierto se"
+" ignora F, pero aun así se recomienda desactivarlo allí"
+
+msgid "Seconds to wait after pressing F before starting combat"
+msgstr "Segundos de espera tras pulsar F antes de iniciar el combate"

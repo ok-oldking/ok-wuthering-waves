@@ -167,6 +167,8 @@ class CombatCheck(BaseWWTask):
         else:
             from src.task.AutoCombatTask import AutoCombatTask
             chars_loaded = self.load_chars()
+            if chars_loaded and self.should_start_combat_by_key():
+                return self.start_combat_by_key()
             has_target = self.has_target()
             if not has_target and target:
                 self.log_debug('try target')
@@ -184,6 +186,18 @@ class CombatCheck(BaseWWTask):
                 self.log_info(f'enter combat {self.has_lavitator}')
                 self._in_combat = chars_loaded or self.load_chars()
                 return self._in_combat
+
+    def should_start_combat_by_key(self):
+        return False
+
+    def start_combat_by_key(self):
+        self.has_lavitator = self.find_one('edge_levitator', threshold=0.65)
+        if self.config.get('Auto Target'):
+            self.middle_click()
+        self.log_info(f'enter combat by F key {self.has_lavitator}')
+        self._in_combat = True
+        # middle_click resets the scene, mark it afterwards so the first sleep check in perform() sees combat
+        return self.scene.set_in_combat()
 
     def in_combat(self, target=False):
         self.in_sleep_check = True

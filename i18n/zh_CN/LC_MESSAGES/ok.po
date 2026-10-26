@@ -1460,3 +1460,21 @@ msgstr "传送到第几个特异梦魇"
 
 msgid "Failed to read game assets quality config. Starting with HD assets."
 msgstr "读取游戏资源画质配置失败，将使用高清（HD）资源启动。"
+
+msgid "Start Combat with F Key"
+msgstr "按 F 立即开始战斗"
+
+msgid "F Key Start Delay"
+msgstr "按 F 后等待(秒)"
+
+msgid ""
+"After pressing F in a challenge or domain, start combat without waiting for "
+"a target or health bar. Only recommended for hard combat content such as "
+"Matrix, Tower of Adversity and Whimpering Wastes. F is ignored in the open "
+"world, but turning this off there is still recommended"
+msgstr ""
+"在挑战或副本里按下 F 后, 不等锁定目标或血条出现就直接开始战斗。仅建议在【矩阵/深塔/海墟等高难战斗本】中开启。大世界里按 F 不会触发, "
+"但仍建议在大世界中关闭此功能"
+
+msgid "Seconds to wait after pressing F before starting combat"
+msgstr "按下 F 到开始战斗之间等待的秒数"

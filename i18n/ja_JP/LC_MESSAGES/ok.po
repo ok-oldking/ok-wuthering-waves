@@ -1408,3 +1408,22 @@ msgstr "テレポートする特異悪夢"
 
 msgid "Failed to read game assets quality config. Starting with HD assets."
 msgstr "ゲームアセットの品質設定を読み取れませんでした。HDアセットで起動します。"
+
+msgid "Start Combat with F Key"
+msgstr "F キーで即座に戦闘開始"
+
+msgid "F Key Start Delay"
+msgstr "F キー後の待機(秒)"
+
+msgid ""
+"After pressing F in a challenge or domain, start combat without waiting for "
+"a target or health bar. Only recommended for hard combat content such as "
+"Matrix, Tower of Adversity and Whimpering Wastes. F is ignored in the open "
+"world, but turning this off there is still recommended"
+msgstr ""
+"挑戦やダンジョン内で F キーを押した後、ターゲットや HP "
+"バーを待たずに戦闘を開始します。マトリックス・逆境の深塔・冥歌海墟などの高難度バトルでのみオンにすることをおすすめします。オープンワールドでは F "
+"キーは無視されますが、オープンワールドではこの機能をオフにすることをおすすめします"
+
+msgid "Seconds to wait after pressing F before starting combat"
+msgstr "F キーを押してから戦闘開始までの待機秒数"
