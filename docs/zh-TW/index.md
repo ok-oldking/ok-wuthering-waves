@@ -83,20 +83,27 @@
 
 ## 💻 開發者專區
 
-### 從原始碼執行 (Python)
+### 從原始碼執行
 
-建議使用 Python 3.12。需要 Python 3.9 或以上版本，但其他版本尚未經過完整測試。
+開發環境、原始碼執行和貢獻說明請參閱[貢獻指南](../development/contributing.md)。
 
-```bash
-# 安裝或更新相依套件
-pip install -r requirements.txt --upgrade
+### AI 技能
 
-# 執行 Release 版本
-python main.py
+在支援專案技能的編碼代理中開啟本倉庫，即可透過技能名稱或自然語言提出相關請求。詳細用法、準備工作和執行流程請詢問編碼代理。
 
-# 執行 Debug 版本
-python main_debug.py
-```
+使用隊伍評估或改進技能前，請先選好隊伍，並進入遊戲中的「深境再臨」或「終焉矩陣」。
+
+| 技能 | 簡介 |
+| --- | --- |
+| [evaluate-team](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/evaluate-team/SKILL.md) | 透過多次戰鬥評估目前隊伍的自動戰鬥循環並提出建議。 |
+| [improve-team](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/improve-team/SKILL.md) | 根據隊伍評估結果提出並驗證角色自動戰鬥改進。 |
+| [ok-script-develop](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-script-develop/SKILL.md) | 使用 ok-script 開發和驗證遊戲自動化功能。 |
+| [ok-script-tasks](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-script-tasks/SKILL.md) | 建立、修改或審查自動化任務。 |
+| [ok-ww-characters](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-ww-characters/SKILL.md) | 開發、審查和測試角色自動戰鬥邏輯。 |
+| [ok-script-i18n](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-script-i18n/SKILL.md) | 新增、同步和編譯任務介面翻譯。 |
+| [pr-review](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/pr-review/SKILL.md) | 審查或合併本專案的 GitHub PR。 |
+| [deploy](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/deploy/SKILL.md) | 提交已完成的修改、建立版本標籤並發布。 |
+| [use-local-venv](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/use-local-venv/SKILL.md) | 執行 Python 命令時優先使用倉庫的本地虛擬環境。 |
 
 ### 命令列參數
 
@@ -115,17 +122,6 @@ ok-ww.exe -t 1 -e
 *   **Discord**: [點擊加入](https://discord.gg/vVyCatEBgA)
 
 本專案基於 [ok-script](https://ok-script.com) 框架開發，簡單易維護。歡迎有興趣的開發者使用 [ok-script](https://ok-script.com) 開發您自己的自動化專案。
-
-## 🔗 使用 ok-script 的專案：
-
-* 鳴潮 [https://github.com/ok-oldking/ok-wuthering-waves](https://github.com/ok-oldking/ok-wuthering-waves)
-* 原神（停止維護，但背景過劇情可用） [https://github.com/ok-oldking/ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact)
-* 少女前線2 [https://github.com/ok-oldking/ok-gf2](https://github.com/ok-oldking/ok-gf2)
-* 崩壞：星穹鐵道 [https://github.com/Shasnow/ok-starrailassistant](https://github.com/Shasnow/ok-starrailassistant)
-* 星痕共鳴 [https://github.com/Sanheiii/ok-star-resonance](https://github.com/Sanheiii/ok-star-resonance)
-* 二重螺旋 [https://github.com/BnanZ0/ok-duet-night-abyss](https://github.com/BnanZ0/ok-duet-night-abyss)
-* 白荊迴廊（停止更新） [https://github.com/ok-oldking/ok-baijing](https://github.com/ok-oldking/ok-baijing)
-
 
 ## ❤️ 贊助與致謝
 

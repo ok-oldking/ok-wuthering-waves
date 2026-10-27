@@ -83,20 +83,27 @@ If you encounter issues, please check the following steps one by one before aski
 
 ## 💻 Developer Zone
 
-### Running from Source (Python)
+### Running from Source
 
-Python 3.12 is recommended. Python 3.9 or later is required, but other versions have not been fully tested.
+See the [contributor guide](../development/contributing.md) for development setup, running from source, and contributions.
 
-```bash
-# Install or update dependencies
-pip install -r requirements.txt --upgrade
+### AI Skills
 
-# Run Release version
-python main.py
+Open this repository in a coding agent that supports project skills. Ask the agent for detailed usage, preparation, and workflow.
 
-# Run Debug version
-python main_debug.py
-```
+Before evaluating or improving a team, select the team and enter 深境再临 or 终焉矩阵 in the game.
+
+| Skill | Description |
+| --- | --- |
+| [evaluate-team](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/evaluate-team/SKILL.md) | Evaluate the current team's automated combat over multiple runs and suggest improvements. |
+| [improve-team](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/improve-team/SKILL.md) | Propose and validate combat improvements based on a team evaluation. |
+| [ok-script-develop](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-script-develop/SKILL.md) | Develop and validate game automation with ok-script. |
+| [ok-script-tasks](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-script-tasks/SKILL.md) | Create, modify, or review automation tasks. |
+| [ok-ww-characters](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-ww-characters/SKILL.md) | Develop, review, and test character combat logic. |
+| [ok-script-i18n](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-script-i18n/SKILL.md) | Add, synchronize, and compile task UI translations. |
+| [pr-review](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/pr-review/SKILL.md) | Review or merge this project's GitHub PRs. |
+| [deploy](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/deploy/SKILL.md) | Commit completed changes, create a version tag, and publish. |
+| [use-local-venv](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/use-local-venv/SKILL.md) | Prefer the repository's local virtual environment for Python commands. |
 
 ### Command-Line Arguments
 
@@ -113,17 +120,6 @@ ok-ww.exe -t 1 -e
 ## 💬 Join Us
 
 This project is developed using the [ok-script](https://ok-script.com) framework and is designed to be simple and easy to maintain. Developers interested in creating their own automation projects are welcome to use [ok-script](https://ok-script.com).
-
-## 🔗 Projects using ok-script:
-
-*   Wuthering Waves: [https://github.com/ok-oldking/ok-wuthering-waves](https://github.com/ok-oldking/ok-wuthering-waves)
-*   Genshin Impact (No longer maintained, but can still be used for auto-skipping dialogue in the background): [https://github.com/ok-oldking/ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact)
-*   Girls' Frontline 2: [https://github.com/ok-oldking/ok-gf2](https://github.com/ok-oldking/ok-gf2)
-*   Honkai: Star Rail: [https://github.com/Shasnow/ok-starrailassistant](https://github.com/Shasnow/ok-starrailassistant)
-*   Starsee: [https://github.com/Sanheiii/ok-star-resonance](https://github.com/Sanheiii/ok-star-resonance)
-*   Duet Night Abyss: [https://github.com/BnanZ0/ok-duet-night-abyss](https://github.com/BnanZ0/ok-duet-night-abyss)
-*   Ash Echoes (Updates stopped): [https://github.com/ok-oldking/ok-baijing](https://github.com/ok-oldking/ok-baijing)
-
 
 ## ❤️ Sponsors & Acknowledgements
 

@@ -83,20 +83,27 @@
 
 ## 💻 開発者向け
 
-### ソースコードからの実行（Python）
+### ソースコードからの実行
 
-Python 3.12 を推奨します。Python 3.9 以降が必要ですが、その他のバージョンは十分にテストされていません。
+開発環境、ソースからの実行、貢献については[貢献ガイド](../development/contributing.md)を参照してください。
 
-```bash
-# 依存関係のインストールまたは更新
-pip install -r requirements.txt --upgrade
+### AI スキル
 
-# リリース版の実行
-python main.py
+プロジェクトスキルに対応したコーディングエージェントでこのリポジトリを開き、スキル名または自然言語で依頼できます。詳しい使い方、準備、実行手順はエージェントに確認してください。
 
-# デバッグ版の実行
-python main_debug.py
-```
+チームの評価または改善を行う前に、チームを選択し、ゲーム内の「深境再临」または「终焉矩阵」に入ってください。
+
+| スキル | 概要 |
+| --- | --- |
+| [evaluate-team](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/evaluate-team/SKILL.md) | 複数回の戦闘で現在のチームの自動戦闘を評価し、改善案を提示します。 |
+| [improve-team](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/improve-team/SKILL.md) | チームの評価に基づき、自動戦闘の改善を提案・検証します。 |
+| [ok-script-develop](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-script-develop/SKILL.md) | ok-script を使ってゲーム自動化機能を開発・検証します。 |
+| [ok-script-tasks](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-script-tasks/SKILL.md) | 自動化タスクを作成、変更、レビューします。 |
+| [ok-ww-characters](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-ww-characters/SKILL.md) | キャラクターの自動戦闘ロジックを開発、レビュー、テストします。 |
+| [ok-script-i18n](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-script-i18n/SKILL.md) | タスク UI の翻訳を追加、同期、コンパイルします。 |
+| [pr-review](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/pr-review/SKILL.md) | 本プロジェクトの GitHub PR をレビューまたはマージします。 |
+| [deploy](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/deploy/SKILL.md) | 完了した変更をコミットし、バージョンタグを作成して公開します。 |
+| [use-local-venv](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/use-local-venv/SKILL.md) | Python コマンドにリポジトリ内の仮想環境を優先して使用します。 |
 
 ### コマンドライン引数
 
@@ -113,17 +120,6 @@ ok-ww.exe -t 1 -e
 ## 💬 参加しよう
 
 本プロジェクトは [ok-script](https://ok-script.com) フレームワークをベースに開発されており、シンプルでメンテナンスしやすい構成です。独自の自動化プロジェクトを作成したい開発者の方は、ぜひ [ok-script](https://ok-script.com) をご利用ください。
-
-## 🔗 ok-script を使用しているプロジェクト:
-
-*   鳴潮（Wuthering Waves）: [https://github.com/ok-oldking/ok-wuthering-waves](https://github.com/ok-oldking/ok-wuthering-waves)
-*   原神（メンテナンス終了。ただしバックグラウンドでの会話自動スキップには引き続き使用可能）: [https://github.com/ok-oldking/ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact)
-*   ドールズフロントライン2: [https://github.com/ok-oldking/ok-gf2](https://github.com/ok-oldking/ok-gf2)
-*   崩壊：スターレイル: [https://github.com/Shasnow/ok-starrailassistant](https://github.com/Shasnow/ok-starrailassistant)
-*   スターレゾナンス: [https://github.com/Sanheiii/ok-star-resonance](https://github.com/Sanheiii/ok-star-resonance)
-*   デュエットナイトアビス: [https://github.com/BnanZ0/ok-duet-night-abyss](https://github.com/BnanZ0/ok-duet-night-abyss)
-*   アッシュエコーズ（更新停止）: [https://github.com/ok-oldking/ok-baijing](https://github.com/ok-oldking/ok-baijing)
-
 
 ## ❤️ スポンサーと謝辞
 
