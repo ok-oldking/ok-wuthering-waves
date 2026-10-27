@@ -1483,3 +1483,6 @@ msgstr "导出当前队伍"
 
 msgid "No current team detected."
 msgstr "未检测到当前队伍。"
+
+msgid "Team Info"
+msgstr "队伍说明"

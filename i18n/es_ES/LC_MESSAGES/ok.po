@@ -1360,3 +1360,6 @@ msgstr "Exportar equipo actual"
 
 msgid "No current team detected."
 msgstr "No se ha detectado el equipo actual."
+
+msgid "Team Info"
+msgstr "Info del equipo"

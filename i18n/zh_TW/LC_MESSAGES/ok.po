@@ -1561,3 +1561,6 @@ msgstr "匯出目前隊伍"
 
 msgid "No current team detected."
 msgstr "未偵測到目前隊伍。"
+
+msgid "Team Info"
+msgstr "隊伍說明"

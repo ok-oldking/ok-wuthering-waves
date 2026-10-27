@@ -1432,3 +1432,6 @@ msgstr "현재 팀 내보내기"
 
 msgid "No current team detected."
 msgstr "현재 팀을 감지하지 못했습니다."
+
+msgid "Team Info"
+msgstr "팀 설명"
