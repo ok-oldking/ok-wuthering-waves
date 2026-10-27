@@ -81,6 +81,7 @@ class TestCombatCheck(TaskTestCase):
 
     def test_enter_combat_loads_chars_before_target_check(self):
         task = AutoCombatTask.__new__(AutoCombatTask)
+        task._abyss_force_combat_until = 0
         task._in_combat = False
         task.in_liberation = False
         task.chars = [None, None, None]
@@ -110,6 +111,7 @@ class TestCombatCheck(TaskTestCase):
 
     def test_in_combat_retarget_with_health_bar_extends_timeout(self):
         task = AutoCombatTask.__new__(AutoCombatTask)
+        task._abyss_force_combat_until = 0
         task._in_combat = True
         task.in_liberation = False
         task.scene = type('Scene', (), {'in_combat': lambda *args, **kwargs: None, 'set_in_combat': lambda *args, **kwargs: True})()
@@ -130,6 +132,7 @@ class TestCombatCheck(TaskTestCase):
 
     def test_in_combat_retarget_without_health_bar_uses_default_timeout(self):
         task = AutoCombatTask.__new__(AutoCombatTask)
+        task._abyss_force_combat_until = 0
         task._in_combat = True
         task.in_liberation = False
         task.scene = type('Scene', (), {'in_combat': lambda *args, **kwargs: None, 'set_in_combat': lambda *args, **kwargs: True})()
