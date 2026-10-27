@@ -1472,3 +1472,6 @@ msgstr "从无音消除活动当前界面开始，完成未完成的关卡并领
 
 msgid "Roccia C6"
 msgstr "洛可可6链（主输出）"
+
+msgid "Team Info"
+msgstr "队伍说明"

@@ -1421,3 +1421,6 @@ msgstr "이벤트 화면에서 시작하여 미완료 스테이지를 완료하�
 
 msgid "Roccia C6"
 msgstr "로코코 6돌 (메인 딜러)"
+
+msgid "Team Info"
+msgstr "팀 설명"

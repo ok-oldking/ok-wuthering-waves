@@ -1349,3 +1349,6 @@ msgstr ""
 
 msgid "Roccia C6"
 msgstr "Roccia C6 (DPS principal)"
+
+msgid "Team Info"
+msgstr "Info del equipo"

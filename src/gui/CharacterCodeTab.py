@@ -35,7 +35,7 @@ from src.char.CustomCharLoader import (
     changed_import_members, create_custom_team, delete_custom_team, drifted_team_members,
     export_custom_team, get_english_char_name,
     import_custom_team, inspect_team_archive, list_custom_teams, normalize_custom_teams,
-    normalize_team, read_builtin_char_code, read_team_char_code,
+    normalize_team, read_builtin_char_code, read_team_char_code, read_team_manifest,
     save_team_code_as_import, switch_all_teams_code_mode, switch_team_code_mode, team_code_state,
 )
 
@@ -626,6 +626,30 @@ class ImportTeamDialog(TranslatedDialog):
         self.cancelButton.setText(self.tr("Cancel"))
 
 
+class TeamInfoDialog(TranslatedDialog):
+    """The team.json an import keeps, so the author's notes stay readable after importing."""
+
+    def __init__(self, manifest, translated_team, parent=None):
+        super().__init__(parent)
+        self.widget.setMinimumWidth(560)
+        self.set_dialog_title(self.tr("Team Info"))
+        self.add_field(self.tr("Name"), manifest.get("name", ""))
+        self.add_field(self.tr("Author"), manifest.get("author", ""))
+        self.add_field(self.tr("Version"), manifest.get("version", ""))
+        self.add_field(self.tr("Team"), translated_team)
+        self.viewLayout.addWidget(BodyLabel(self.tr("Description"), self.widget))
+        self.description_text = TextEdit(self.widget)
+        self.description_text.setPlainText(str(manifest.get("description", "")))
+        self.description_text.setReadOnly(True)
+        self.description_text.setLineWrapMode(QTextEdit.WidgetWidth)
+        self.description_text.setFixedHeight(260)
+        self.description_text.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.description_text.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.viewLayout.addWidget(self.description_text)
+        self.yesButton.setText(self.tr("Close"))
+        self.hideCancelButton()
+
+
 class WorkshopDialog(TranslatedDialog):
     import_requested = Signal(object)
 
@@ -927,12 +951,16 @@ class CharacterCodeTab(CustomTab):
         self.member_combo = ComboBox(right)
         self.member_combo.setMinimumWidth(190)
         self.member_combo.currentIndexChanged.connect(self._member_selected)
+        self.team_info_button = PushButton(FluentIcon.INFO, self.tr("Team Info"))
+        self.team_info_button.clicked.connect(self._show_team_info)
+        self.team_info_button.hide()
         self.ask_ai_button = PushButton(FluentIcon.ROBOT, self.tr("Ask AI"))
         self.ask_ai_button.clicked.connect(self._copy_ask_ai_template)
         top.addWidget(self.char_image_label)
         top.addWidget(BodyLabel(self.tr("Character Code")))
         top.addWidget(self.member_combo)
         top.addStretch(1)
+        top.addWidget(self.team_info_button)
         top.addWidget(self.ask_ai_button)
         right_layout.addLayout(top)
 
@@ -1012,6 +1040,7 @@ class CharacterCodeTab(CustomTab):
             self.current_char_cls = None
             self.member_combo.clear()
             self._set_editor_enabled(False)
+            self._update_team_info_button()
         self._update_switch_all_button(states)
         self._update_code_mode_button()
 
@@ -1060,6 +1089,21 @@ class CharacterCodeTab(CustomTab):
         self.member_combo.blockSignals(False)
         self._set_editor_enabled(True)
         self._member_selected(member_index)
+
+    def _update_team_info_button(self):
+        """The author's description belongs to the imported code, so it hides while built in code
+        is in effect; a team created here has none. Teams imported before code modes existed
+        never got imported copies and still show it."""
+        visible = self.current_team is not None and self.current_code_state != TEAM_CODE_MODE_BUILTIN
+        if visible:
+            visible = bool(str(read_team_manifest(self.current_team).get("description") or "").strip())
+        self.team_info_button.setVisible(visible)
+
+    def _show_team_info(self):
+        item = self.team_list.currentItem()
+        if self.current_team is None or item is None:
+            return
+        TeamInfoDialog(read_team_manifest(self.current_team), item.text(), self.window()).exec()
 
     def _member_selected(self, index):
         if index < 0 or self.current_team is None or self.suppress_selection_guard:
@@ -1274,6 +1318,7 @@ class CharacterCodeTab(CustomTab):
             self.reset_button.setText(translate_ui("Reset to Built In"))
         self._set_switch_icon(self.reset_button, target)
         self._update_reset_enabled()
+        self._update_team_info_button()
 
     def _update_reset_enabled(self):
         """A never imported team has nothing to switch; its button only resets the

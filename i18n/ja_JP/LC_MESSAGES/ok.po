@@ -1420,3 +1420,6 @@ msgstr "イベント画面から開始し、未クリアのステージをクリ
 
 msgid "Roccia C6"
 msgstr "ロココ 6凸（メインアタッカー）"
+
+msgid "Team Info"
+msgstr "チーム説明"

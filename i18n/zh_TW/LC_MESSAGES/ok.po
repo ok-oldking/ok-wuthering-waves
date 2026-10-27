@@ -1550,3 +1550,6 @@ msgstr "從無音消除活動目前介面開始，完成未完成的關卡並領
 
 msgid "Roccia C6"
 msgstr "洛可可6鏈（主輸出）"
+
+msgid "Team Info"
+msgstr "隊伍說明"

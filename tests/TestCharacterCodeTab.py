@@ -14,7 +14,7 @@ from PySide6.QtCore import QPoint, QRect, QSize, Qt
 from PySide6.QtGui import QFontDatabase, QImage, QPainter
 
 from PySide6.QtWidgets import QApplication, QDialog, QStyleOptionViewItem
-from qfluentwidgets import ComboBox, LineEdit, MessageBox, MessageBoxBase, TableWidget, TextEdit
+from qfluentwidgets import BodyLabel, ComboBox, LineEdit, MessageBox, MessageBoxBase, TableWidget, TextEdit
 
 from ok.util.config import Config
 from src.char.Chixia import Chixia
@@ -26,16 +26,16 @@ from src.Labels import Labels
 from src.char.CustomCharLoader import (
     TEAM_CODE_MODE_BUILTIN, TEAM_CODE_MODE_IMPORT, TEAM_CODE_STATE_NONE, clear_team_char_cache,
     create_custom_team, delete_custom_team, export_custom_team, get_custom_team_folder, get_team_code_mode,
-    read_builtin_char_code, read_team_char_code, read_team_import_code, save_team_char_code,
+    read_builtin_char_code, read_team_char_code, read_team_import_code, read_team_manifest, save_team_char_code,
     save_team_import_code, set_team_code_mode, switch_all_teams_code_mode, switch_team_code_mode,
-    team_code_state,
+    team_code_state, write_team_manifest,
 )
 from src.char.Mortefi import Mortefi
 from src.char.Suisui import Suisui
 from src.char.Verina import Verina
 from src.char.YangYangSp import YangYangSp
 from src.gui.CharacterCodeTab import (
-    STATE_DOT_SIZE, CharacterCodeTab, ExportTeamDialog, ImportTeamDialog,
+    STATE_DOT_SIZE, CharacterCodeTab, ExportTeamDialog, ImportTeamDialog, TeamInfoDialog,
     TeamSelectionDialog, WorkshopDialog, fetch_all_workshop_teams, fetch_workshop_codes,
     team_state_color, workshop_team_url,
 )
@@ -806,6 +806,99 @@ class TestCharacterCodeTab(unittest.TestCase):
             self.assertEqual(tab.current_team, self._names(team_b))
             self.assertEqual(tuple(tab.team_list.currentItem().data(Qt.UserRole)), self._names(team_b))
             self.assertEqual(team_code_state(team_b), TEAM_CODE_MODE_IMPORT)
+        finally:
+            tab.deleteLater()
+
+    def test_team_info_shows_the_description_an_import_keeps(self):
+        imported = (Chisa, Baizhi, Aemeath)
+        local = (Mortefi, Chixia, Verina)
+        create_custom_team(imported)
+        archive = export_custom_team(
+            imported, Path(self.temp_dir.name) / "out", "Showcase", "Line 1\nLine 2", "Tester", "1.2.3")
+        delete_custom_team(imported)
+        create_custom_team(local)
+
+        tab = CharacterCodeTab()
+        try:
+            self.assertEqual(tab.current_team, self._names(local))
+            self.assertTrue(tab.team_info_button.isHidden())
+
+            with (
+                patch.object(ImportTeamDialog, "exec", return_value=True),
+                patch("src.gui.CharacterCodeTab.show_info_bar"),
+            ):
+                tab._preview_and_import_archive(archive)
+            self.assertEqual(tab.current_team, self._names(imported))
+            self.assertFalse(tab.team_info_button.isHidden())
+
+            shown = []
+            with patch.object(TeamInfoDialog, "exec", lambda dialog: shown.append(dialog)):
+                tab.team_info_button.click()
+            dialog, = shown
+            self.assertEqual(dialog.description_text.toPlainText(), "Line 1\nLine 2")
+            labels = {label.text() for label in dialog.findChildren(BodyLabel)}
+            self.assertTrue({"Showcase", "Tester", "1.2.3", tab.team_list.currentItem().text()} <= labels)
+            self.assertEqual(dialog.yesButton.text(), "Close")
+
+            # the description is about the imported code, so it leaves with it
+            with (
+                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.show_info_bar"),
+            ):
+                message_box.return_value.exec.return_value = True
+                tab.reset_button.click()
+                self.assertEqual(team_code_state(imported), TEAM_CODE_MODE_BUILTIN)
+                self.assertTrue(tab.team_info_button.isHidden())
+                tab.reset_button.click()
+                self.assertEqual(team_code_state(imported), TEAM_CODE_MODE_IMPORT)
+                self.assertFalse(tab.team_info_button.isHidden())
+
+            row, _item = self._row(tab, local)
+            tab.team_list.setCurrentRow(row)
+            self.assertTrue(tab.team_info_button.isHidden())
+        finally:
+            tab.deleteLater()
+
+    def test_team_info_follows_the_latest_import_of_the_same_team(self):
+        team = (Chisa, Baizhi, Aemeath)
+        create_custom_team(team)
+        out = Path(self.temp_dir.name) / "out"
+        first = export_custom_team(team, out, "First", "First notes", "Author A", "1.0.0")
+        second = export_custom_team(team, out, "Second", "Second notes", "Author B", "2.0.0")
+        delete_custom_team(team)
+
+        tab = CharacterCodeTab()
+        try:
+            shown = []
+            with (
+                patch.object(ImportTeamDialog, "exec", return_value=True),
+                patch.object(TeamInfoDialog, "exec", lambda dialog: shown.append(dialog)),
+                patch("src.gui.CharacterCodeTab.show_info_bar"),
+            ):
+                for archive in (first, second):
+                    tab._preview_and_import_archive(archive)
+                    tab.team_info_button.click()
+            self.assertEqual(tab.team_list.count(), 1)
+            self.assertEqual(shown[0].description_text.toPlainText(), "First notes")
+            self.assertEqual(shown[1].description_text.toPlainText(), "Second notes")
+            labels = {label.text() for label in shown[1].findChildren(BodyLabel)}
+            self.assertTrue({"Second", "Author B", "2.0.0"} <= labels)
+            self.assertFalse({"First", "Author A", "1.0.0"} & labels)
+        finally:
+            tab.deleteLater()
+
+    def test_team_info_shows_for_a_team_imported_before_code_modes(self):
+        """Older imports wrote team.json but no imported copies, so they never count as imported."""
+        team = (Mortefi, Chixia, Verina)
+        create_custom_team(team)
+        manifest = read_team_manifest(team)
+        manifest["description"] = "Written by the author"
+        write_team_manifest(team, manifest)
+
+        tab = CharacterCodeTab()
+        try:
+            self.assertEqual(team_code_state(team), TEAM_CODE_STATE_NONE)
+            self.assertFalse(tab.team_info_button.isHidden())
         finally:
             tab.deleteLater()
 
