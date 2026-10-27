@@ -1,6 +1,6 @@
 ---
 name: ok-script-tasks
-description: Create and modify automation task classes for the ok-script Python library, including BaseTask one-time tasks, TriggerTask background tasks, task config UI metadata, registration in ok-script app config, custom ok_tasks scripts, and bilingual English/Chinese task behavior. Use when Codex needs to implement, refactor, review, or explain ok-script tasks in any project, independent of any particular app.
+description: Create and modify automation task classes using the ok-script library's development skills and MCP workflow, including BaseTask, TriggerTask, task config UI metadata, registration, custom ok_tasks scripts, and bilingual English/Chinese behavior. Also use to review or explain ok-script tasks.
 ---
 
 # OK Script Tasks
@@ -8,6 +8,13 @@ description: Create and modify automation task classes for the ok-script Python 
 ## Overview
 
 Use this skill to create or modify tasks built on the PyPI `ok-script` library. Keep guidance generic to `ok-script`; inspect the current project only to discover its local base classes, scene helpers, feature names, and registration style.
+
+Before developing or modifying game task behavior, follow
+[ok-script-develop](../ok-script-develop/SKILL.md): locate and read the library's
+own skills through the linked `<cwd>/ok` folder first, then the project's installed
+`site-packages`, and use its MCP tools to inspect, reload, and validate changes.
+The library's current development instructions are the basis for this workflow;
+the references below are supplemental examples to verify against that library.
 
 When more detail is needed, read:
 
@@ -30,8 +37,10 @@ When more detail is needed, read:
 5. Register the task according to the project style:
    built-in config list, `ok_tasks` custom task folder, or imported script package.
 6. If the project uses gettext catalogs, sync task translations with `$ok-script-i18n`.
-7. Validate with the project test or headless path when available.
-   At minimum, import the task module and instantiate the class if device-dependent execution cannot be run.
+7. Validate using the library's development/reload workflow through MCP and the
+   project's relevant offline checks. For registered tasks, wait for a successful
+   reload before testing their actual implementation. If the game/runtime is
+   unavailable, report that gap; imports alone do not establish game success.
 
 ## Bilingual Output
 

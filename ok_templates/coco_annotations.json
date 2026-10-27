@@ -2303,6 +2303,30 @@
       "file_name": "lingyang.png",
       "width": 2560,
       "height": 1440
+    },
+    {
+      "id": 299,
+      "file_name": "abyss_start.png",
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": 300,
+      "file_name": "abyss_tower_start.png",
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": 301,
+      "file_name": "roccia_air_forte.png",
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": 302,
+      "file_name": "roccia_air_forte_second.png",
+      "width": 3840,
+      "height": 2160
     }
   ],
   "annotations": [
@@ -6444,6 +6468,58 @@
       ],
       "area": 3224,
       "iscrowd": 0
+    },
+    {
+      "id": 443,
+      "image_id": 299,
+      "category_id": 292,
+      "bbox": [
+        1912.0,
+        994.0,
+        52.0,
+        52.0
+      ],
+      "area": 2704.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 444,
+      "image_id": 300,
+      "category_id": 293,
+      "bbox": [
+        1900.0,
+        1062.0,
+        85.0,
+        78.0
+      ],
+      "area": 6630.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 445,
+      "image_id": 301,
+      "category_id": 294,
+      "bbox": [
+        1684.0,
+        1978.0,
+        42.0,
+        43.0
+      ],
+      "area": 1806.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 446,
+      "image_id": 302,
+      "category_id": 295,
+      "bbox": [
+        1866.0,
+        1977.0,
+        56.0,
+        47.0
+      ],
+      "area": 2632.0,
+      "iscrowd": 0
     }
   ],
   "categories": [
@@ -7900,6 +7976,26 @@
     {
       "id": 291,
       "name": "char_lingyang",
+      "supercategory": ""
+    },
+    {
+      "id": 292,
+      "name": "abyss_start_marker",
+      "supercategory": ""
+    },
+    {
+      "id": 293,
+      "name": "abyss_tower_start_marker",
+      "supercategory": ""
+    },
+    {
+      "id": 294,
+      "name": "roccia_air_forte",
+      "supercategory": ""
+    },
+    {
+      "id": 295,
+      "name": "roccia_air_forte_second",
       "supercategory": ""
     }
   ]

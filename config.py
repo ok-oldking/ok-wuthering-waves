@@ -142,6 +142,7 @@ key_config_option = ConfigOption('Game Hotkey', {
 
 char_config_option = ConfigOption('Character Config', {
     'Iuno C6': False,
+    'Roccia C6': False,
     'Chisa DPS': False,
     'Suoming DPS': False,
 }, description='Character Config', show_at_tab=True, icon=Icon.PEOPLE)

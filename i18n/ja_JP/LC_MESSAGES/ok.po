@@ -1416,3 +1416,7 @@ msgid ""
 "Start on the Tacet Elimination event screen. Complete unfinished stages and "
 "claim rewards."
 msgstr "イベント画面から開始し、未クリアのステージをクリアして報酬を受け取ります。実行中はゲームを前面に表示してください。"
+
+
+msgid "Roccia C6"
+msgstr "ロココ 6凸（メインアタッカー）"

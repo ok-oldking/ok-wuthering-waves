@@ -1345,3 +1345,7 @@ msgid ""
 msgstr ""
 "Inicia en la pantalla del evento, completa las fases pendientes y recoge las"
 " recompensas. Mantén el juego en primer plano."
+
+
+msgid "Roccia C6"
+msgstr "Roccia C6 (DPS principal)"
