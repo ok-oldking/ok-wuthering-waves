@@ -13,7 +13,6 @@ class TestFeatureSet(unittest.TestCase):
         from config import config
 
         matching = dict(config['template_matching'])
-        coco_json = matching.pop('coco_feature_json')
         cases = (
             ('ok_templates/23.png', 'suisui_forte2', 947, False),
             ('ok_templates/23.png', 'suisui_forte3', 1036, False),
@@ -23,7 +22,7 @@ class TestFeatureSet(unittest.TestCase):
             source = cv2.imread(image_path)
             self.assertIsNotNone(source)
             source_height, source_width = source.shape[:2]
-            feature_set = FeatureSet(False, coco_json, **matching)
+            feature_set = FeatureSet(False, None, **matching)
             for width, height in ((1920, 1080), (2560, 1080), (3440, 1440), (5120, 2160)):
                 with self.subTest(feature=name, resolution=(width, height)):
                     scale = height / source_height
@@ -47,7 +46,7 @@ class TestFeatureSet(unittest.TestCase):
     def test_registered_character_templates_exist(self):
         from src.char.CharFactory import char_names
 
-        feature_set = FeatureSet(False, 'assets/coco_annotations.json', 0.002, 0.002)
+        feature_set = FeatureSet(False, None, 0.002, 0.002, template_folder='assets/templates')
         frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
         for name in char_names:
             with self.subTest(name=name):
@@ -56,9 +55,9 @@ class TestFeatureSet(unittest.TestCase):
     def test_lingyang_portrait_matches_restored_source_image(self):
         frame = cv2.imread('ok_templates/lingyang.png')
         self.assertIsNotNone(frame)
-        for coco_json in ('assets/coco_annotations.json', 'ok_templates/coco_annotations.json'):
-            with self.subTest(coco_json=coco_json):
-                feature_set = FeatureSet(False, coco_json, 0.002, 0.002)
+        for coco_json, template_folder in ((None, 'assets/templates'), ('ok_templates/coco_annotations.json', None)):
+            with self.subTest(coco_json=coco_json, template_folder=template_folder):
+                feature_set = FeatureSet(False, coco_json, 0.002, 0.002, template_folder=template_folder)
                 matches = feature_set.find_one_feature(frame, 'char_lingyang', threshold=0.95)
 
                 self.assertTrue(matches)
@@ -71,10 +70,11 @@ class TestFeatureSet(unittest.TestCase):
 
         feature_set = FeatureSet(
             False,
-            'assets/coco_annotations.json',
+            None,
             0.002,
             0.002,
             default_threshold=0.7,
+            template_folder='assets/templates',
         )
         matches = feature_set.find_one_feature(
             frame,

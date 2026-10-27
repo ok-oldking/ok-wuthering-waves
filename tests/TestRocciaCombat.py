@@ -23,7 +23,7 @@ class TestRocciaCombat(unittest.TestCase):
             for scale in (1, .5):
                 with self.subTest(positive=positive, scale=scale):
                     image = cv2.resize(frame, (0, 0), fx=scale, fy=scale)
-                    features = FeatureSet(False, str(root / 'assets/coco_annotations.json'), .002, .002)
+                    features = FeatureSet(False, None, .002, .002, template_folder=str(root / 'assets/templates'))
                     matches = features.find_feature(image, 'roccia_air_forte', threshold=.7,
                                                    box=Box(int(1580*scale), int(1930*scale), int(610*scale), int(110*scale)))
                     self.assertEqual(bool(matches), positive)
@@ -40,7 +40,7 @@ class TestRocciaCombat(unittest.TestCase):
         for sequence in sequences:
             strip = cv2.imread(str(fixtures / sequence['file']))
             for scale in (1, .5):
-                features = FeatureSet(False, str(root / 'assets/coco_annotations.json'), .002, .002)
+                features = FeatureSet(False, None, .002, .002, template_folder=str(root / 'assets/templates'))
                 char = self.make_char(True)
                 box = Box(int(1580*scale), int(1930*scale), int(610*scale), int(110*scale))
                 char.task.box_of_screen_scaled.return_value = box
@@ -106,7 +106,7 @@ class TestRocciaCombat(unittest.TestCase):
                 with self.subTest(trial=sequence['trial'], scale=scale):
                     strip = cv2.imread(str(fixtures / sequence['file']))
                     crops = [strip[i*110:(i+1)*110] for i in range(len(sequence['samples']))]
-                    features = FeatureSet(False, str(root / 'assets/coco_annotations.json'), .002, .002)
+                    features = FeatureSet(False, None, .002, .002, template_folder=str(root / 'assets/templates'))
                     char = self.make_char(True)
                     char.need_fast_perform = Mock(return_value=False)
                     clock = SimpleNamespace(now=0, index=0, held=False)
