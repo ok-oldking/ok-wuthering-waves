@@ -212,6 +212,17 @@ class Mortefi(BuiltinMortefi):
             (cls.__name__ for cls in valid_team), key=str.casefold
         ))])
 
+    def test_export_detected_team_without_saved_team_uses_builtin_code(self):
+        team = (Mortefi, Chixia, Verina)
+        archive = export_custom_team(
+            team, self.temp_dir.name, name="Current", description="Rotation",
+            author="Tester", version="1", allow_builtin=True,
+        )
+        info = inspect_team_archive(archive)
+        for char_cls in team:
+            self.assertEqual(info["codes"][char_cls.__name__], read_builtin_char_code(char_cls))
+        self.assertEqual(list_custom_teams(), [])
+
     def test_export_and_import_team_archive(self):
         team = (Mortefi, Chixia, Verina)
         create_custom_team(team)

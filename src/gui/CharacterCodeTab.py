@@ -24,7 +24,7 @@ from qfluentwidgets import (
     isDarkTheme, qconfig,
 )
 
-from ok import Logger
+from ok import Logger, og
 from ok.gui.tasks.EditTaskTab import CodeEditor
 from ok.gui.tasks.PythonHighlighter import PythonHighlighter
 from ok.gui.util.app import show_info_bar
@@ -897,7 +897,7 @@ class CharacterCodeTab(CustomTab):
         second_team_button_row = QHBoxLayout()
         self.import_team_button = PushButton(FluentIcon.DOWNLOAD, self.tr("Import Team"))
         self.import_team_button.clicked.connect(self._import_team)
-        self.export_team_button = PushButton(FluentIcon.SHARE, self.tr("Export Team"))
+        self.export_team_button = PushButton(FluentIcon.SHARE, self.tr("Export Selected"))
         self.export_team_button.clicked.connect(self._export_team)
         second_team_button_row.addWidget(self.workshop_button)
         second_team_button_row.addWidget(self.import_team_button)
@@ -906,6 +906,12 @@ class CharacterCodeTab(CustomTab):
         self.upload_team_button.clicked.connect(self._open_upload_team)
         third_team_button_row.addWidget(self.export_team_button)
         third_team_button_row.addWidget(self.upload_team_button)
+        self.export_current_button = None
+        if (getattr(og, "app", None) and getattr(og.app, "config", {}).get("debug", False)
+                and (Path.cwd() / ".git").is_dir()):
+            self.export_current_button = PushButton(FluentIcon.SHARE, self.tr("Export Current"))
+            self.export_current_button.clicked.connect(self._export_current_team)
+            team_buttons.addWidget(self.export_current_button)
         team_buttons.addLayout(first_team_button_row)
         team_buttons.addLayout(second_team_button_row)
         team_buttons.addLayout(third_team_button_row)
@@ -1441,10 +1447,20 @@ class CharacterCodeTab(CustomTab):
     def _export_team(self):
         if self.current_team is None:
             return
-        if self._has_unsaved_changes():
+        self._export_team_codes(self.current_team)
+
+    def _export_current_team(self):
+        team = self._detected_team()
+        if not team:
+            show_info_bar(self.window(), self.tr("No current team detected."), title=self.tr("Error"), error=True)
+            return
+        self._export_team_codes(normalize_team(team), allow_builtin=True)
+
+    def _export_team_codes(self, team, allow_builtin=False):
+        if team == self.current_team and self._has_unsaved_changes():
             show_info_bar(self.window(), self.tr("Save changes before exporting."), title=self.tr("Error"), error=True)
             return
-        default_name = "_".join(get_english_char_name(name).replace(" ", "_") for name in self.current_team)
+        default_name = "_".join(get_english_char_name(name).replace(" ", "_") for name in team)
         dialog = ExportTeamDialog(default_name, self.window())
         if not dialog.exec():
             return
@@ -1452,7 +1468,7 @@ class CharacterCodeTab(CustomTab):
         if not destination:
             return
         try:
-            path = export_custom_team(self.current_team, destination, **dialog.values())
+            path = export_custom_team(team, destination, **dialog.values(), allow_builtin=allow_builtin)
             show_info_bar(self.window(), self.tr("Team exported to {path}").format(path=path), title=self.tr("Success"))
         except Exception as e:
             show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)

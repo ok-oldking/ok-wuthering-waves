@@ -483,7 +483,7 @@ def _load_team_char_class_from_file(char_cls, team, path):
     return custom_cls
 
 
-def export_custom_team(team, destination, name, description, author, version):
+def export_custom_team(team, destination, name, description, author, version, allow_builtin=False):
     class_names = normalize_team(team)
     values = {"name": name, "description": description, "author": author, "version": version}
     for field, value in values.items():
@@ -491,7 +491,7 @@ def export_custom_team(team, destination, name, description, author, version):
             raise ValueError(f"{field.title()} is required")
         values[field] = value.strip()
     folder = get_custom_team_folder(class_names)
-    if not folder.is_dir():
+    if not folder.is_dir() and not allow_builtin:
         raise ValueError("Team does not exist")
     normalized_name = re.sub(r"\s+", "_", values["name"])
     manifest = dict(values)
@@ -511,10 +511,13 @@ def export_custom_team(team, destination, name, description, author, version):
     with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.writestr(TEAM_MANIFEST_FILE, json.dumps(manifest, ensure_ascii=False, indent=2))
         for class_name in class_names:
-            code_path = get_team_import_file(class_names, class_name) if imported else folder / f"{class_name}.py"
-            if not code_path.is_file():
-                raise ValueError(f"Missing code for {get_english_char_name(class_name)}")
-            archive.write(code_path, f"{class_name}.py")
+            if not folder.is_dir():
+                archive.writestr(f"{class_name}.py", read_builtin_char_code(_registered_char_classes()[class_name]))
+            else:
+                code_path = get_team_import_file(class_names, class_name) if imported else folder / f"{class_name}.py"
+                if not code_path.is_file():
+                    raise ValueError(f"Missing code for {get_english_char_name(class_name)}")
+                archive.write(code_path, f"{class_name}.py")
     return archive_path
 
 

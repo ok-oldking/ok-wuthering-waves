@@ -83,6 +83,29 @@ class TestCharacterCodeTab(unittest.TestCase):
         finally:
             tab.deleteLater()
 
+    def test_export_current_button_requires_debug_and_git_directory(self):
+        for debug, git_exists in ((False, False), (False, True), (True, False), (True, True)):
+            app = SimpleNamespace(config={"debug": debug}, tr=lambda text: text, locale=None)
+            with (patch("src.gui.CharacterCodeTab.og.app", app),
+                  patch("src.gui.CharacterCodeTab.Path.is_dir", return_value=git_exists)):
+                tab = CharacterCodeTab()
+                try:
+                    self.assertEqual(tab.export_current_button is not None, debug and git_exists)
+                    self.assertEqual(tab.export_team_button.text(), "Export Selected")
+                finally:
+                    tab.deleteLater()
+
+    def test_export_current_uses_detected_team(self):
+        tab = CharacterCodeTab()
+        try:
+            team = (Chixia, Mortefi, Verina)
+            with (patch.object(tab, "_detected_team", return_value=team),
+                  patch.object(tab, "_export_team_codes") as export):
+                tab._export_current_team()
+            export.assert_called_once_with(self._names(team), allow_builtin=True)
+        finally:
+            tab.deleteLater()
+
     def test_delete_team_button_deletes_selected_team(self):
         team = (Mortefi, Chixia, Verina)
         create_custom_team(team)
