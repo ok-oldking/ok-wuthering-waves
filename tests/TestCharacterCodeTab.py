@@ -2,6 +2,7 @@ import os
 import json
 import tempfile
 import unittest
+from concurrent.futures import Future
 from collections import Counter
 from pathlib import Path
 from types import SimpleNamespace
@@ -14,7 +15,7 @@ from PySide6.QtCore import QPoint, QRect, QSize, Qt
 from PySide6.QtGui import QFontDatabase, QImage, QPainter
 
 from PySide6.QtWidgets import QApplication, QDialog, QStyleOptionViewItem
-from qfluentwidgets import ComboBox, LineEdit, MessageBox, MessageBoxBase, TableWidget, TextEdit
+from qfluentwidgets import ComboBox, LineEdit, MessageBox, MessageBoxBase, PushButton, TableWidget, TextEdit
 
 from ok.util.config import Config
 from src.char.Chixia import Chixia
@@ -99,10 +100,42 @@ class TestCharacterCodeTab(unittest.TestCase):
         tab = CharacterCodeTab()
         try:
             team = (Chixia, Mortefi, Verina)
-            with (patch.object(tab, "_detected_team", return_value=team),
-                  patch.object(tab, "_export_team_codes") as export):
-                tab._export_current_team()
+            task = SimpleNamespace(chars=[SimpleNamespace(char_name=label) for label in
+                                          (Labels.char_chixia, Labels.char_mortefi, Labels.char_verina)])
+            task.next_frame = lambda: object()
+            task.load_chars = lambda: True
+            future = Future()
+            future.set_result(tab._load_current_team(task))
+            with patch.object(tab, "_export_team_codes") as export:
+                tab._on_current_team_loaded(future)
             export.assert_called_once_with(self._names(team), allow_builtin=True)
+        finally:
+            tab.deleteLater()
+
+    def test_current_team_detection_rejects_stale_chars_when_loading_fails(self):
+        task = SimpleNamespace(chars=[object(), object(), object()], next_frame=lambda: object(),
+                               load_chars=lambda: False)
+        self.assertIsNone(CharacterCodeTab._load_current_team(task))
+
+    def test_export_current_submits_recognition_to_executor(self):
+        tab = CharacterCodeTab()
+        try:
+            calls = []
+            task = SimpleNamespace(chars=[SimpleNamespace(char_name=label) for label in
+                                          (Labels.char_chixia, Labels.char_mortefi, Labels.char_verina)],
+                                   next_frame=lambda: calls.append("frame") or object(),
+                                   load_chars=lambda: calls.append("load") or True)
+            future = Future()
+            def submit(fn, **kwargs):
+                calls.append("submit")
+                future.set_result(fn())
+                return SimpleNamespace(future=future)
+            tab.executor = SimpleNamespace(onetime_tasks=[task], trigger_tasks=[], submit=submit)
+            tab.export_current_button = PushButton()
+            with patch.object(tab, "_export_team_codes") as export:
+                tab._export_current_team()
+            self.assertEqual(calls, ["submit", "frame", "load"])
+            export.assert_called_once_with(self._names((Chixia, Mortefi, Verina)), allow_builtin=True)
         finally:
             tab.deleteLater()
 
