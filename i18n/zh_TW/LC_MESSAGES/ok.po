@@ -1546,3 +1546,7 @@ msgid ""
 "Start on the Tacet Elimination event screen. Complete unfinished stages and "
 "claim rewards."
 msgstr "從無音消除活動目前介面開始，完成未完成的關卡並領取獎勵。執行期間需要遊戲位於前景。"
+
+
+msgid "Roccia C6"
+msgstr "洛可可6鏈（主輸出）"
