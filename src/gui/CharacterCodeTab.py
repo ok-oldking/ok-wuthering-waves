@@ -849,8 +849,11 @@ class WorkshopDialog(TranslatedDialog):
 
 
 class CharacterCodeTab(CustomTab):
+    current_team_loaded = Signal(object)
+
     def __init__(self):
         super().__init__()
+        self.current_team_loaded.connect(self._on_current_team_loaded)
         self.characters = self._unique_characters()
         self.char_by_name = {char_cls.__name__: char_cls for char_cls in self.characters}
         self.current_team = None
@@ -1450,11 +1453,46 @@ class CharacterCodeTab(CustomTab):
         self._export_team_codes(self.current_team)
 
     def _export_current_team(self):
-        team = self._detected_team()
+        if self.executor is None:
+            self._on_current_team_loaded(None)
+            return
+        tasks = list(getattr(self.executor, "onetime_tasks", [])) + list(getattr(self.executor, "trigger_tasks", []))
+        task = next((item for item in tasks if callable(getattr(item, "load_chars", None))), None)
+        if task is None:
+            self._on_current_team_loaded(None)
+            return
+        self.export_current_button.setEnabled(False)
+        try:
+            job = self.executor.submit(lambda: self._load_current_team(task), name="detect current team")
+            job.future.add_done_callback(self.current_team_loaded.emit)
+        except Exception as e:
+            self.export_current_button.setEnabled(True)
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+
+    @staticmethod
+    def _load_current_team(task):
+        if task.next_frame() is None or not task.load_chars():
+            return None
+        chars = getattr(task, "chars", ())
+        if len(chars) != 3 or any(char is None for char in chars):
+            return None
+        classes = [char_dict.get(getattr(char, "char_name", None), {}).get("cls") for char in chars]
+        if None in classes or len(set(classes)) != 3:
+            return None
+        return normalize_team(classes)
+
+    def _on_current_team_loaded(self, future):
+        if self.export_current_button is not None:
+            self.export_current_button.setEnabled(True)
+        try:
+            team = future.result() if future is not None else None
+        except Exception as e:
+            show_info_bar(self.window(), str(e), title=self.tr("Error"), error=True)
+            return
         if not team:
             show_info_bar(self.window(), self.tr("No current team detected."), title=self.tr("Error"), error=True)
             return
-        self._export_team_codes(normalize_team(team), allow_builtin=True)
+        self._export_team_codes(team, allow_builtin=True)
 
     def _export_team_codes(self, team, allow_builtin=False):
         if team == self.current_team and self._has_unsaved_changes():
