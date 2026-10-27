@@ -44,6 +44,10 @@ class AutoPickTask(TriggerTask, BaseWWTask):
                 self.log_debug(f'f white color percent: {percent} wait')
                 self.next_frame()
                 continue
+            interaction_row = f.copy(x_offset=f.width * 2, width_offset=f.width * 16,
+                                     height_offset=f.height * 2, y_offset=-f.height)
+            if self.find_one('pick_up_xinyao_well', box=interaction_row, threshold=0.8):
+                return False
             dialog_search = f.copy(x_offset=f.width * 3, width_offset=f.width * 2, height_offset=f.height * 2,
                                    y_offset=-f.height,
                                    name='search_dialog')

@@ -2327,6 +2327,12 @@
       "file_name": "roccia_air_forte_second.png",
       "width": 3840,
       "height": 2160
+    },
+    {
+      "id": 303,
+      "file_name": "62.png",
+      "width": 1600,
+      "height": 900
     }
   ],
   "annotations": [
@@ -5007,6 +5013,19 @@
         74
       ],
       "area": 5772,
+      "iscrowd": 0
+    },
+    {
+      "id": 193,
+      "image_id": 303,
+      "category_id": 296,
+      "bbox": [
+        1075,
+        449,
+        207,
+        32
+      ],
+      "area": 6624,
       "iscrowd": 0
     },
     {
@@ -7996,6 +8015,11 @@
     {
       "id": 295,
       "name": "roccia_air_forte_second",
+      "supercategory": ""
+    },
+    {
+      "id": 296,
+      "name": "pick_up_xinyao_well",
       "supercategory": ""
     }
   ]
