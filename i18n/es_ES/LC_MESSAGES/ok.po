@@ -1350,5 +1350,16 @@ msgstr ""
 msgid "Roccia C6"
 msgstr "Roccia C6 (DPS principal)"
 
+msgid "Export Selected"
+msgstr "Exportar equipo seleccionado"
+
+
+msgid "Export Current"
+msgstr "Exportar equipo actual"
+
+
+msgid "No current team detected."
+msgstr "No se ha detectado el equipo actual."
+
 msgid "Team Info"
 msgstr "Info del equipo"

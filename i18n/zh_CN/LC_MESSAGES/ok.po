@@ -1473,5 +1473,16 @@ msgstr "从无音消除活动当前界面开始，完成未完成的关卡并领
 msgid "Roccia C6"
 msgstr "洛可可6链（主输出）"
 
+msgid "Export Selected"
+msgstr "导出所选队伍"
+
+
+msgid "Export Current"
+msgstr "导出当前队伍"
+
+
+msgid "No current team detected."
+msgstr "未检测到当前队伍。"
+
 msgid "Team Info"
 msgstr "队伍说明"

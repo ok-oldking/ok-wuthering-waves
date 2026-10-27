@@ -183,7 +183,7 @@ config = {
     'wait_until_settle_time': 0,
     # required if using feature detection
     'template_matching': {
-        'coco_feature_json': os.path.join('assets', 'coco_annotations.json'),
+        'template_folder': os.path.join('assets', 'templates'),
         'default_horizontal_variance': 0.002,
         'default_vertical_variance': 0.002,
         'default_threshold': 0.8,
