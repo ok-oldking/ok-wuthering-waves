@@ -1465,9 +1465,9 @@ msgid "Tacet Elimination"
 msgstr "无音消除"
 
 msgid ""
-"Start on the Tacet Elimination event screen. Complete unfinished stages and "
-"claim rewards."
-msgstr "从无音消除活动当前界面开始，完成未完成的关卡并领取奖励。运行期间需要游戏处于前台。"
+"Start on the current event screen. Complete prerequisite stages, then play "
+"Final Elimination for the highest possible score until turns run out."
+msgstr "从活动当前界面开始，完成前置关卡后挑战一局终局消除，尽可能争取高分，直到回合耗尽后自然结算。运行期间需要游戏处于前台。"
 
 
 msgid "Roccia C6"

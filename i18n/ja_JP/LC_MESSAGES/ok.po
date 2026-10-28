@@ -1413,9 +1413,10 @@ msgid "Tacet Elimination"
 msgstr "無音消去"
 
 msgid ""
-"Start on the Tacet Elimination event screen. Complete unfinished stages and "
-"claim rewards."
-msgstr "イベント画面から開始し、未クリアのステージをクリアして報酬を受け取ります。実行中はゲームを前面に表示してください。"
+"Start on the current event screen. Complete prerequisite stages, then play "
+"Final Elimination for the highest possible score until turns run out."
+msgstr ""
+"現在のイベント画面から開始します。前提ステージをクリアした後、終局消去に1回挑戦し、残りターンがなくなるまで最高得点を目指します。ゲームを最前面にしてください。"
 
 
 msgid "Roccia C6"
