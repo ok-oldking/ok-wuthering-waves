@@ -344,6 +344,7 @@ class BaseCombatTask(CombatCheck):
         raise exception_type(message)
 
     def do_reset_to_false(self):
+        self.scene.reset_abyss_start()
         self._abyss_force_combat_until = 0
         self._abyss_combat_active = False
         self._abyss_timer_checked_at = 0
@@ -377,12 +378,47 @@ class BaseCombatTask(CombatCheck):
                 break
         return self._abyss_timer_value
 
-    def find_abyss_start_marker(self):
+    def find_abyss_start_marker(self, box=None):
         # Exclude the identical quest icon at the left edge of the HUD.
-        box = self.box_of_screen(0.15, 0.15, 0.85, 0.85)
+        if box is None:
+            box = self.box_of_screen(0.15, 0.15, 0.85, 0.85)
         return (self.find_one('abyss_start_marker', box=box, threshold=0.75)
                 or self.find_one('abyss_tower_start_marker', box=box, threshold=0.75,
                                  frame_processor=binarize_for_matching))
+
+    def check_abyss_start(self, has_f):
+        now = time.monotonic()
+        last_seen = self.scene.abyss_start_seen_at
+        if not has_f:
+            if last_seen is None or now - last_seen >= 5:
+                self.scene.reset_abyss_start()
+                return False
+            if self.scene.abyss_f_disappeared_at is None:
+                self.scene.abyss_f_disappeared_at = now
+            elif now - self.scene.abyss_f_disappeared_at > 0.5:
+                self.scene.reset_abyss_start()
+                return False
+        marker = self.find_abyss_start_marker(box=None if has_f else self.scene.abyss_start_marker_box)
+        if has_f:
+            self.scene.abyss_start_seen_at = time.monotonic() if marker else None
+            self.scene.abyss_f_disappeared_at = None
+            # Keep some margin for the marker's motion while it fades out.
+            self.scene.abyss_start_marker_box = marker.scale(1.5) if marker else None
+            return False
+        if marker:
+            # F can disappear slightly before the start marker fades out.
+            return False
+        self.scene.reset_abyss_start()
+        if not self.in_team()[0] or not self.load_chars():
+            return False
+        self.log_info('Abyss start prompt disappeared, force enter combat')
+        return self.force_abyss_combat(started_at=last_seen)
+
+    def force_abyss_combat(self, started_at=None):
+        self._in_combat = True
+        self._abyss_combat_active = True
+        self._abyss_force_combat_until = (time.monotonic() if started_at is None else started_at) + 5
+        return self.scene.set_in_combat()
 
     def restart_combat_in_abyss(self):
         """Restart the current Abyss challenge and return with combat active.
@@ -459,10 +495,7 @@ class BaseCombatTask(CombatCheck):
             if not self.load_chars():
                 raise RuntimeError('Could not load the Abyss team')
             self.send_key('f')
-            self._in_combat = True
-            self._abyss_combat_active = True
-            self._abyss_force_combat_until = time.monotonic() + 5
-            return True
+            return self.force_abyss_combat()
         finally:
             self.skip_combat_check = previous_skip
 
