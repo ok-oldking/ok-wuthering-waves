@@ -1340,11 +1340,12 @@ msgid "Tacet Elimination"
 msgstr "Eliminación tácita"
 
 msgid ""
-"Start on the Tacet Elimination event screen. Complete unfinished stages and "
-"claim rewards."
+"Start on the current event screen. Complete prerequisite stages, then play "
+"Final Elimination for the highest possible score until turns run out."
 msgstr ""
-"Inicia en la pantalla del evento, completa las fases pendientes y recoge las"
-" recompensas. Mantén el juego en primer plano."
+"Empieza en la pantalla actual del evento. Completa las fases previas y juega"
+" una partida de Eliminación final para conseguir la mayor puntuación posible"
+" hasta agotar los turnos. Mantén el juego en primer plano."
 
 
 msgid "Roccia C6"
