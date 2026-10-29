@@ -1,8 +1,8 @@
 import time
 
-from ok import FindFeature, Logger
+from ok import Logger
 from ok import TriggerTask
-from src.scene.WWScene import WWScene
+from src.task.AutoCombatTask import AutoCombatTask
 from src.task.BaseWWTask import BaseWWTask, f_white_color
 
 logger = Logger.get_logger(__name__)
@@ -21,6 +21,7 @@ class AutoPickTask(TriggerTask, BaseWWTask):
         })
 
     def send_fs(self):
+        self.scene.reset_abyss_start()
         # if self.debug:
         #     self.screenshot('pick_up', show_box=True)
         self.send_key('f')
@@ -32,21 +33,25 @@ class AutoPickTask(TriggerTask, BaseWWTask):
 
     def run(self):
         if not self.scene.in_team(self.in_team_and_world):
+            self.scene.reset_abyss_start()
             return
+        combat = self.get_task_by_class(AutoCombatTask)
         start = time.time()
         while time.time() - start < 1:
             f = self.find_one('pick_up_f_hcenter_vcenter', box=self.f_search_box,
                               threshold=0.8)
             if not f:
-                return
+                return combat.check_abyss_start(False)
             percent = self.calculate_color_percentage(f_white_color, f)
             if percent < 0.5:
+                combat.check_abyss_start(True)
                 self.log_debug(f'f white color percent: {percent} wait')
                 self.next_frame()
                 continue
             interaction_row = f.copy(x_offset=f.width * 2, width_offset=f.width * 16,
                                      height_offset=f.height * 2, y_offset=-f.height)
             if self.find_one('pick_up_xinyao_well', box=interaction_row, threshold=0.8):
+                combat.check_abyss_start(True)
                 return False
             dialog_search = f.copy(x_offset=f.width * 3, width_offset=f.width * 2, height_offset=f.height * 2,
                                    y_offset=-f.height,
@@ -70,7 +75,9 @@ class AutoPickTask(TriggerTask, BaseWWTask):
                     f = self.find_f_with_text(self.config.get('Pick Up Black List'))
                     if f:
                         logger.info(f'found Pick Up Black List: {f}')
+                        combat.check_abyss_start(True)
                         return False
                 self.send_fs()
                 return True
+            combat.check_abyss_start(True)
             self.next_frame()

@@ -3,12 +3,14 @@ from unittest.mock import Mock, patch
 from types import SimpleNamespace
 
 from src.combat.CombatCheck import CombatCheck
+from src.scene.WWScene import WWScene
 from src.task.BaseCombatTask import BaseCombatTask
 
 
 class TestAbyssRestart(unittest.TestCase):
     def make_task(self):
         task = BaseCombatTask.__new__(BaseCombatTask)
+        task.scene = WWScene()
         task.skip_combat_check = False
         task._in_combat = False
         task._abyss_force_combat_until = 0

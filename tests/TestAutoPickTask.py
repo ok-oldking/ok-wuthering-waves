@@ -16,6 +16,9 @@ def make_task(frame):
         frame=frame, feature_set=FeatureSet(False, None, **config['template_matching']))
     task.scene = Mock()
     task.scene.in_team.return_value = True
+    combat = Mock()
+    combat.check_abyss_start.return_value = None
+    task.get_task_by_class = Mock(return_value=combat)
     task.config = {'Pick Up White List': [], 'Pick Up Black List': []}
     task.send_key = Mock()
     task.sleep = Mock()
