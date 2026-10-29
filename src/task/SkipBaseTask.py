@@ -40,7 +40,7 @@ class SkipBaseTask(BaseWWTask):
                                                                    threshold=0.75,
                                                                    frame_processor=convert_dialog_icon) or self.find_one(
             'skip_dialog_lb', threshold=0.8, use_gray_scale=True) or self.find_one(
-            'skip_dialog_lb_top', threshold=0.8, use_gray_scale=True)
+            'skip_dialog_lb_top', threshold=0.8, frame_processor=convert_dialog_icon)
 
     def try_click_skip(self):
         skipped = False
