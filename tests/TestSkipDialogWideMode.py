@@ -32,6 +32,16 @@ class TestSkipDialogWideMode(TaskTestCase):
                 self.assertIsNotNone(skip)
                 self.assertEqual(expected_feature, skip.name)
 
+    def test_finds_controller_skip_icon_at_top_position(self):
+        self.set_image('tests/images/skip_dialog_lb_top.jpg')
+
+        skip = self.task.find_skip()
+
+        self.assertIsNotNone(skip)
+        self.assertEqual('skip_dialog_lb_top', skip.name)
+        self.assertAlmostEqual(skip.x, 133, delta=2)
+        self.assertAlmostEqual(skip.y, 98, delta=2)
+
     def test_clicks_tinted_skip_icon_on_ultrawide_screens(self):
         # The fixture keeps its original screen dimensions, with unrelated areas white.
         original = cv2.imread('tests/images/21-9_quest_skip.png')
