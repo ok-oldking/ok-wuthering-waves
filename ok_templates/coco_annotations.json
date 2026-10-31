@@ -5020,12 +5020,12 @@
       "image_id": 303,
       "category_id": 296,
       "bbox": [
-        1075,
+        1076,
         449,
-        207,
-        32
+        30,
+        31
       ],
-      "area": 6624,
+      "area": 930,
       "iscrowd": 0
     },
     {
@@ -8019,7 +8019,7 @@
     },
     {
       "id": 296,
-      "name": "pick_up_xinyao_well",
+      "name": "pick_up_xinyao_icon",
       "supercategory": ""
     }
   ]
