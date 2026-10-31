@@ -64,7 +64,7 @@ class TestNightmareNestTask(unittest.TestCase):
                 task.find_f_with_text = lambda: False
                 task.run_until = lambda *args, **kwargs: None
                 task.combat_once = lambda **kwargs: combat_calls.append(kwargs) or True
-                task.walk_find_echo = lambda **kwargs: pickup_calls.append(kwargs) or True
+                task.pick_echo_by_method = lambda **kwargs: pickup_calls.append(kwargs) or True
                 task.wait_combat = lambda **kwargs: next(combat_results)
                 task.log_info = lambda *args, **kwargs: None
                 task.send_key = lambda *args, **kwargs: None
@@ -186,6 +186,49 @@ class TestNightmareNestTask(unittest.TestCase):
         shifted = task._make_nest_cache_key(FakeBox('0/36', y=202), '36')
 
         self.assertEqual(first, shifted)
+
+    def test_init_configures_echo_pickup_method(self):
+        task = NightmareNestTask.__new__(NightmareNestTask)
+        task.default_config = {'_enabled': True}
+        task.config_type = {}
+        task.find_echo_method = task.get_find_echo_methods()
+        task.default_config.update({
+            'Which to Farm': ['Nightmare Purification', 'Tacet Discord Nest'],
+            'Echo Pickup Method': 'Walk',
+        })
+        task.config_type['Which to Farm'] = {'type': "multi_selection",
+                                             'options': ['Nightmare Purification', 'Tacet Discord Nest']}
+        task.config_type['Echo Pickup Method'] = {'type': "drop_down", 'options': task.find_echo_method}
+
+        expected_methods = ['Yolo', 'Run in Circle', 'Walk']
+        if hasattr(task, 'back_and_forth_find_echo'):
+            expected_methods.append('Back and Forth')
+
+        self.assertEqual('Walk', task.default_config.get('Echo Pickup Method'))
+        self.assertEqual(expected_methods, task.find_echo_method)
+        self.assertEqual({'type': 'drop_down', 'options': expected_methods},
+                         task.config_type.get('Echo Pickup Method'))
+
+    def test_combat_nest_calls_pick_echo_by_method(self):
+        task = NightmareNestTask.__new__(NightmareNestTask)
+        task._capture_mode = False
+        task._capture_success = False
+        calls = []
+
+        task.click = lambda *args, **kwargs: None
+        task.wait_feature = lambda *args, **kwargs: FakeBox('team_close')
+        task.click_team_challenge = lambda: None
+        task.wait_in_team_and_world = lambda *args, **kwargs: True
+        task.sleep = lambda *args, **kwargs: None
+        task.combat_once = lambda **kwargs: True
+        task.pick_echo_by_method = lambda **kwargs: calls.append(kwargs) or True
+        task.wait_combat = lambda **kwargs: False
+        task.esc_world_confirm = lambda *args, **kwargs: None
+
+        task.combat_nest(FakeBox('nest'))
+
+        self.assertEqual([{'turn': True}], calls)
+        self.assertTrue(task._capture_success)
 
 
 if __name__ == '__main__':
