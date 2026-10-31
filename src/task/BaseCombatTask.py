@@ -591,6 +591,36 @@ class BaseCombatTask(CombatCheck):
                         return True
                 total_index += 1
 
+    def get_find_echo_methods(self):
+        methods = ['Yolo', 'Run in Circle', 'Walk']
+        if hasattr(self, 'back_and_forth_find_echo'):
+            methods.append('Back and Forth')
+        return methods
+
+    def pick_echo_by_method(self, method=None, turn=True, yolo_time_out=8, yolo_threshold=0.5):
+        if self.pick_echo():
+            logger.info('farm echo on the face')
+            return True
+        self.middle_click(after_sleep=0.2)
+        method = method or self.config.get('Echo Pickup Method', 'Walk')
+        if method == "Yolo":
+            dropped = self.yolo_find_echo(turn=turn, use_color=False, time_out=yolo_time_out,
+                                          threshold=yolo_threshold)[0]
+            logger.info(f'farm echo yolo find {dropped}')
+            return dropped
+        elif method == "Run in Circle":
+            dropped = self.run_in_circle_to_find_echo(circle_count=2)
+            logger.info(f'farm echo walk_circle_find_echo {dropped}')
+            return dropped
+        elif method == "Back and Forth" and hasattr(self, 'back_and_forth_find_echo'):
+            dropped = self.back_and_forth_find_echo()
+            logger.info(f'farm echo back_and_forth_find_echo {dropped}')
+            return dropped
+        else:
+            dropped = self.walk_find_echo()
+            logger.info(f'farm echo walk_find_echo {dropped}')
+            return dropped
+
     def _oldest_switch_target(self, chars):
         chars = [char for char in chars if char is not None]
         if not chars:
