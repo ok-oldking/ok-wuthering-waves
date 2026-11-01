@@ -23,7 +23,7 @@ numpy==2.5.2
     #   opencv-python
     #   openvino
     #   shapely
-ok-script[ocr,qt]==2.0.9
+ok-script[ocr,qt] @ git+https://github.com/vb2250158/ok-script.git@659be8ba9b0c1f1fe3b7b1dfe2c76774c4d83b03
     # via ok-ww (pyproject.toml)
 onnxocr-ppocrv5>=0.0.20
     # via
