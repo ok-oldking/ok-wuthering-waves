@@ -1564,3 +1564,695 @@ msgstr "未偵測到目前隊伍。"
 
 msgid "Team Info"
 msgstr "隊伍說明"
+
+#, python-brace-format
+msgid "could not find char {index} {info} {highest_confidence}"
+msgstr "無法識別角色 {index} {info} {highest_confidence}"
+
+msgid "can not open wheel"
+msgstr "無法開啟工具輪盤"
+
+msgid "on_combat_check failed"
+msgstr "戰鬥狀態檢查失敗"
+
+#, python-brace-format
+msgid "enter combat {has_lavitator}"
+msgstr "進入戰鬥，控物狀態：{has_lavitator}"
+
+msgid "Characters dead"
+msgstr "角色已陣亡"
+
+msgid "click m to open the map"
+msgstr "按 M 開啟地圖"
+
+msgid "Abyss start prompt disappeared, force enter combat"
+msgstr "深淵開始提示已消失，強制進入戰鬥"
+
+msgid "Can not find a teleport to heal"
+msgstr "找不到用於治療的傳送點"
+
+msgid "Can not find the travel button"
+msgstr "找不到快速旅行按鈕"
+
+msgid "raise_not_in_combat char dead"
+msgstr "角色陣亡，已離開戰鬥"
+
+msgid "wait condition failed while walking"
+msgstr "行走時等待條件失敗"
+
+#, python-brace-format
+msgid "set_key {key} to {name}"
+msgstr "將按鍵 {key} 識別為 {name}"
+
+msgid "Could not reach the Abyss challenge start"
+msgstr "無法到達深淵挑戰起點"
+
+msgid "Could not load the Abyss team"
+msgstr "無法載入深淵隊伍"
+
+#, python-brace-format
+msgid "loaded chars success {c} {confidence}"
+msgstr "角色載入成功：{c}，置信度：{confidence}"
+
+msgid "start walk_to_treasure"
+msgstr "開始走向獎勵"
+
+#, python-brace-format
+msgid "angle: {my_angle}, to_turn: {to_turn}"
+msgstr "當前角度：{my_angle}，需轉動：{to_turn}"
+
+#, python-brace-format
+msgid "open_boss_book {name}"
+msgstr "開啟殘象探尋：{name}"
+
+#, python-brace-format
+msgid "click {book_key} to open the book"
+msgstr "按 {book_key} 開啟終端"
+
+msgid "zoom map to max"
+msgstr "將地圖縮放至最大"
+
+#, python-brace-format
+msgid "Can not find {feature} on minimap"
+msgstr "小地圖上找不到 {feature}"
+
+#, python-brace-format
+msgid "changed direction {angle} {current_direction} -> {new_direction}"
+msgstr "轉向 {angle}：{current_direction} -> {new_direction}"
+
+msgid "monthly_card found click"
+msgstr "檢測到月卡獎勵，點選領取"
+
+#, python-brace-format
+msgid "send {book_key} key to open"
+msgstr "按 {book_key} 開啟"
+
+msgid "send f2 key mouse key to open the book"
+msgstr "按 F2 並點選滑鼠以開啟終端"
+
+msgid "can't find boss_proceed"
+msgstr "找不到前往挑戰按鈕"
+
+msgid "find_function not found, change to opposite direction"
+msgstr "未找到互動提示，改為反方向移動"
+
+msgid "cant find the f to enter"
+msgstr "找不到進入的 F 互動提示"
+
+msgid "can not walk to treasure!"
+msgstr "無法走到獎勵處！"
+
+#, python-brace-format
+msgid "yolo found echo {echos}"
+msgstr "YOLO 檢測到聲骸：{echos}"
+
+msgid "Close the notice!"
+msgstr "關閉公告!"
+
+msgid "Game update completed; the game will restart"
+msgstr "遊戲更新成功, 遊戲即將重啟"
+
+#, python-brace-format
+msgid "start_device end {result}"
+msgstr "裝置啟動結束：{result}"
+
+msgid "must be in game world and in teams"
+msgstr "必須處於遊戲大世界中且已編隊"
+
+msgid "not on the wall, stop running"
+msgstr "已離開牆面，停止奔跑"
+
+msgid "on the wall, start running"
+msgstr "已在牆面上，開始奔跑"
+
+msgid "Click the Agree button!"
+msgstr "點選同意按鈕!"
+
+#, python-brace-format
+msgid "Click Start Game! {start}"
+msgstr "點選開始遊戲! {start}"
+
+#, python-brace-format
+msgid "wait_login {switch_login} {boxes}"
+msgstr "等待登入：{switch_login} {boxes}"
+
+msgid "can't find boss_proceed after scroll"
+msgstr "滾動後仍找不到前往挑戰按鈕"
+
+msgid "Click the Login button!"
+msgstr "點選登入按鈕!"
+
+#, python-brace-format
+msgid "unknown_lang {name}"
+msgstr "不支援的語言：{name}"
+
+msgid "Start after filtering Echoes on the bag's Echo screen!"
+msgstr "必須在揹包聲骸介面過濾後開始!"
+
+#, python-brace-format
+msgid ""
+"No more Echoes to modify. Finished! Enhanced: {total}, matching: {matching}"
+msgstr "無可修改聲骸, 任務結束! 強化{total}個, 符合條件{matching}個"
+
+msgid "Cannot find the current main stat!"
+msgstr "找不到當前主屬性!"
+
+msgid "The target stat matches the current stat. Change the Echo filter!"
+msgstr "目標屬性和當前屬性相同, 請修改聲骸過濾條件!"
+
+#, python-brace-format
+msgid "Cannot open screenshot folder: {e}"
+msgstr "無法開啟截圖資料夾: {e}"
+
+#, python-brace-format
+msgid "Unknown character: {class_name}"
+msgstr "未知角色：{class_name}"
+
+msgid "Save custom code before enabling custom mode"
+msgstr "啟用自定義模式前請先儲存自定義程式碼"
+
+msgid "Character code must be text"
+msgstr "角色程式碼必須為文字"
+
+msgid "check weekly garden"
+msgstr "檢查每週樂園任務"
+
+msgid "check discarded echo"
+msgstr "檢查已棄置聲骸"
+
+msgid "battle pass"
+msgstr "領取先約電臺獎勵"
+
+msgid "open_daily"
+msgstr "開啟每日任務"
+
+msgid "claim daily reward via  coordinate"
+msgstr "透過座標領取每日獎勵"
+
+msgid "weekly garden not completed, run GardenTask"
+msgstr "每週樂園任務未完成，開始執行"
+
+msgid "can not battle pass, maybe ended"
+msgstr "無法領取先約電臺獎勵，可能已結束"
+
+msgid "no_boss_proceed, click claim"
+msgstr "沒有前往按鈕，點選領取"
+
+msgid "weekly garden already completed"
+msgstr "每週樂園任務已完成"
+
+msgid "GardenTask Failed"
+msgstr "樂園任務失敗"
+
+msgid "MergeEchoTask Failed"
+msgstr "聲骸合成任務失敗"
+
+msgid "NightmareNestTask Failed"
+msgstr "夢魘巢穴任務失敗"
+
+msgid "farm_domain: death recovered, re-enter from F2 book"
+msgstr "副本刷取：復活成功，從 F2 終端重新進入"
+
+msgid "\"self.stamina_once\" must be override"
+msgstr "必須重寫 self.stamina_once"
+
+#, python-brace-format
+msgid ""
+"farm_domain: exceeded recovery retries ({max_recovery_retries}), stop "
+"farming"
+msgstr "副本刷取：超過恢復重試上限（{max_recovery_retries}），停止刷取"
+
+msgid "farm_in_domain: death recovered, exiting domain"
+msgstr "副本內刷取：復活成功，正在退出副本"
+
+msgid "Does not meet the requirements; discarding"
+msgstr "不符合條件 丟棄"
+
+msgid "Succeeded and locked"
+msgstr "成功並上鎖"
+
+msgid "The first substat must be valid; discarding"
+msgstr "第一條必須為有效詞條, 丟棄"
+
+msgid "Not enough remaining slots for the required valid substats; discarding"
+msgstr "剩餘孔位不足以達到設定的有效詞條數量, 丟棄"
+
+msgid "Failed to discard!"
+msgstr "棄置失敗!"
+
+msgid "Failed to lock!"
+msgstr "上鎖失敗!"
+
+msgid "Matching Echo found; task paused"
+msgstr "符合條件的聲骸，已暫停任務"
+
+#, python-brace-format
+msgid ""
+"No more Echoes to enhance. Finished! Enhanced: {total}, matching: {matching}"
+msgstr "無可強化聲骸, 任務結束! 強化{total}個, 符合條件{matching}個"
+
+#, python-brace-format
+msgid "ocr values: {texts}"
+msgstr "OCR 識別結果：{texts}"
+
+#, python-brace-format
+msgid ""
+"Cannot obtain both CRIT stats ({missing_crit} missing, {remaining_slots} "
+"slots left); discarding"
+msgstr "無法湊齊雙爆 (缺{missing_crit}種, 剩{remaining_slots}孔), 丟棄"
+
+#, python-brace-format
+msgid "Combined CRIT score {total_score:.1f} < {minimum}; discarding"
+msgstr "雙爆總計 {total_score:.1f} < {minimum}，丟棄"
+
+msgid "Cannot determine the Echo's discard state!"
+msgstr "無法找到聲骸棄置狀態!"
+
+msgid "Discarded successfully!"
+msgstr "成功棄置!"
+
+msgid "Cannot determine the Echo's lock state!"
+msgstr "無法找到聲骸上鎖狀態!"
+
+msgid "Locked successfully!"
+msgstr "成功上鎖!"
+
+msgid "Enable staged material insertion in enhancement settings!"
+msgstr "強化設定需要開啟階段放入!"
+
+msgid "Enable simultaneous tuning in enhancement settings!"
+msgstr "強化設定需要開啟同步調諧!"
+
+msgid "Cannot find Enhance and Tune!"
+msgstr "找不到 強化並調諧!"
+
+#, python-brace-format
+msgid "Invalid substat {p} before both CRIT stats; discarding"
+msgstr "雙爆出現前存在無效詞條 {p}, 丟棄"
+
+#, python-brace-format
+msgid "First CRIT Rate {v} < {minimum}; discarding"
+msgstr "首條暴擊 {v} < {minimum}，丟棄"
+
+#, python-brace-format
+msgid "First CRIT DMG {v} < {minimum}; discarding"
+msgstr "首條爆傷 {v} < {minimum}，丟棄"
+
+#, python-brace-format
+msgid "in_realm: {_in_realm}"
+msgstr "處於副本中：{_in_realm}"
+
+#, python-brace-format
+msgid "teleport_to_boss prepared as {walk_result}"
+msgstr "首領傳送準備結果：{walk_result}"
+
+msgid "walk after boss teleport until combat or F"
+msgstr "傳送到首領後繼續行走，直到進入戰鬥或出現 F 提示"
+
+msgid "Teleport to boss failed"
+msgstr "傳送到首領失敗"
+
+msgid "Teleport to boss failed: can not walk to combat or F"
+msgstr "傳送到首領失敗：無法走入戰鬥或找到 F 提示"
+
+msgid "_has_treasure = True"
+msgstr "檢測到可領取獎勵"
+
+#, python-brace-format
+msgid "profile: {boss} {settings}"
+msgstr "首領配置：{boss} {settings}"
+
+#, python-brace-format
+msgid "teleport_to_nearest_boss {box}"
+msgstr "傳送到最近的首領：{box}"
+
+msgid "Teleport to boss failed: can not find F before entering realm"
+msgstr "傳送到首領失敗：進入副本前找不到 F 提示"
+
+#, python-brace-format
+msgid "Can not find boss level {boss_level}"
+msgstr "找不到首領等級 {boss_level}"
+
+#, python-brace-format
+msgid "teleport_to_nearest_boss {aim_boss}"
+msgstr "傳送到最近的首領：{aim_boss}"
+
+msgid "Can not find the boss octagon on map"
+msgstr "地圖上找不到首領的八邊形標記"
+
+msgid "scroll_and_click_buttons"
+msgstr "滾動並點選按鈕"
+
+msgid "start wait in combat"
+msgstr "開始等待戰鬥"
+
+#, python-brace-format
+msgid "combat_wait_time: {combat_wait_time}"
+msgstr "戰鬥等待時間：{combat_wait_time}"
+
+#, python-brace-format
+msgid "Night elapsed: {night_elapsed:.1f}s"
+msgstr "夜間已用時間：{night_elapsed:.1f}秒"
+
+msgid "boss not found"
+msgstr "找不到首領"
+
+msgid "farm 4c: death recovered, teleport to boss again"
+msgstr "四費聲骸刷取：復活成功，重新傳送到首領"
+
+#, python-brace-format
+msgid "Unknown Teleport to Boss config: {teleport_to_boss}"
+msgstr "未知的首領傳送配置：{teleport_to_boss}"
+
+#, python-brace-format
+msgid ""
+"farm 4c: exceeded recovery retries ({max_recovery_retries}), stop farming"
+msgstr "四費聲骸刷取：超過恢復重試上限（{max_recovery_retries}），停止刷取"
+
+msgid "Farm failed after walking into boss combat, teleporting again"
+msgstr "走入首領戰鬥後刷取失敗，正在重新傳送"
+
+msgid "Fenrico teleport_to_nearest_boss failed"
+msgstr "芬萊克最近首領傳送失敗"
+
+msgid "not in combat try click restart"
+msgstr "未進入戰鬥，嘗試點選重新挑戰"
+
+#, python-brace-format
+msgid "Loaded {loaded} from {total} Stars"
+msgstr "從 {total} 個星標中載入了 {loaded} 個"
+
+msgid "can not find my cords on big map!"
+msgstr "無法在大地圖上找到當前位置！"
+
+msgid "cannot find any stars, stop farming"
+msgstr "找不到任何星標，停止刷取"
+
+#, python-brace-format
+msgid "reached star {star} {distance} {star_move_distance_threshold}"
+msgstr "已到達星標 {star}，距離：{distance}，閾值：{star_move_distance_threshold}"
+
+msgid "too far from next star, stop farming"
+msgstr "距離下個星標過遠，停止刷取"
+
+msgid "Starting task"
+msgstr "開始任務"
+
+msgid "On the main screen"
+msgstr "在主頁"
+
+msgid "Five-to-one merge completed!"
+msgstr "五合一完成!"
+
+#, python-brace-format
+msgid "keeps: {count} set_name: {set_name} keep: {keeps}"
+msgstr "保留 {count} 個，套裝：{set_name}，保留項：{keeps}"
+
+msgid "Keep all; skipping"
+msgstr "儲存所有, 跳過"
+
+msgid "ATK% not selected; skipping step two"
+msgstr "沒有選擇攻擊力百分比, 跳過第二步"
+
+#, python-brace-format
+msgid "Failed to recognize stat list! {choices}"
+msgstr "屬性列表識別失敗! {choices}"
+
+#, python-brace-format
+msgid "Fewer than 5 Echoes in {set_name}"
+msgstr "{set_name} 不夠5個"
+
+#, python-brace-format
+msgid "Not in configuration: {set_name} {name}; selecting for merge!"
+msgstr "不在配置 {set_name} {name} 選擇合成!"
+
+#, python-brace-format
+msgid "Index out of range, max is {total_number}"
+msgstr "索引超出範圍，最大值為 {total_number}"
+
+msgid "Garden task completed; limit reached"
+msgstr "樂園任務完成, 已達到上限"
+
+#, python-brace-format
+msgid "Garden current: {current}"
+msgstr "當前樂園進度：{current}"
+
+#, python-brace-format
+msgid "click {name} {confidence:.3f}"
+msgstr "點選 {name}，置信度：{confidence:.3f}"
+
+msgid "click garden_get_confirm"
+msgstr "點選樂園獎勵確認按鈕"
+
+#, python-brace-format
+msgid "can not open bag with hotkey {hotkey}"
+msgstr "無法使用快捷鍵 {hotkey} 開啟揹包"
+
+msgid "All full batches of discarded Echoes have been merged."
+msgstr "所有滿批次的已棄置聲骸均已合成。"
+
+msgid "Must have 1000 discarded Echo to Run"
+msgstr "需要至少 1000 個已棄置聲骸才能執行"
+
+msgid "Add accounts and save the configuration first."
+msgstr "請先新增賬號並儲存配置。"
+
+#, python-brace-format
+msgid "ComboBox account switch failed; falling back to OCR: {error_type}"
+msgstr "ComboBox 切號失敗，回退 OCR：{error_type}"
+
+#, python-brace-format
+msgid "Account confirmation mismatch; retrying {attempt}/5"
+msgstr "賬號確認不匹配，重試 {attempt}/5"
+
+#, python-brace-format
+msgid "Cannot confirm target account {account}; stopping login."
+msgstr "無法確認目標賬號 {account}，停止登入。"
+
+#, python-brace-format
+msgid "{account} logged in successfully"
+msgstr "{account} 登入成功"
+
+#, python-brace-format
+msgid "Failed to save account run history: {error}"
+msgstr "儲存賬號執行記錄失敗：{error}"
+
+#, python-brace-format
+msgid "Account {account} not found in the login list"
+msgstr "賬號列表中未找到 {account}"
+
+msgid "ComboBox account selection had no effect."
+msgstr "ComboBox 賬號選擇未生效。"
+
+msgid "Current ComboBox account does not match the target."
+msgstr "ComboBox 當前賬號與目標不一致。"
+
+msgid "Login successful; task is set to None, skipping."
+msgstr "登入成功；執行任務為“無”，跳過任務。"
+
+msgid "click drop down no effect"
+msgstr "點選下拉選單無效"
+
+msgid "opened gray_book_boss"
+msgstr "已開啟殘象探尋"
+
+msgid "go nightmare"
+msgstr "前往夢魘巢穴"
+
+msgid "go nightmare scroll"
+msgstr "滾動查詢夢魘巢穴"
+
+msgid "nightmare nest: combat detected after pickup"
+msgstr "夢魘巢穴：拾取後檢測到戰鬥"
+
+#, python-brace-format
+msgid "nightmare nest unreachable, skip this run: {cache_key}"
+msgstr "夢魘巢穴無法到達，跳過本次：{cache_key}"
+
+msgid "nightmare nest unreachable, skip this run"
+msgstr "夢魘巢穴無法到達，跳過本次"
+
+msgid "nightmare nest: death recovered, re-enter from F2 book"
+msgstr "夢魘巢穴：復活成功，從 F2 終端重新進入"
+
+msgid "Captured echo during combat, skipping search."
+msgstr "戰鬥中已吸收聲骸，跳過搜尋。"
+
+msgid "farm echo walk find true"
+msgstr "行走搜尋聲骸成功"
+
+#, python-brace-format
+msgid "{count_box} is not complete"
+msgstr "{count_box} 尚未完成"
+
+msgid "no echo collected, re-teleport to current nest as fallback"
+msgstr "未吸收到聲骸，重新傳送到當前巢穴重試"
+
+#, python-brace-format
+msgid "skip cached unreachable nightmare nest: {cache_key}"
+msgstr "跳過已快取的無法到達的夢魘巢穴：{cache_key}"
+
+#, python-brace-format
+msgid "nightmare nest: died {deaths} times, skip this run: {cache_key}"
+msgstr "夢魘巢穴：陣亡 {deaths} 次，跳過本次：{cache_key}"
+
+msgid "farm echo walk find true after re-teleport"
+msgstr "重新傳送後行走搜尋聲骸成功"
+
+#, python-brace-format
+msgid "click {click}"
+msgstr "點選 {click}"
+
+msgid "Event screen action limit exceeded"
+msgstr "超過活動頁面操作上限"
+
+msgid "Could not confirm the end of the stage list"
+msgstr "未能確認選關列表末尾"
+
+#, python-brace-format
+msgid "Elimination move {start} -> {end}, score={score}; board={signature}"
+msgstr "消除移動 {start} -> {end}，得分={score}；棋盤={signature}"
+
+#, python-brace-format
+msgid "Event screen: {text}"
+msgstr "活動介面：{text}"
+
+#, python-brace-format
+msgid "Cannot recognize Tacet Elimination screen: {text}"
+msgstr "無法識別無音消除介面: {text}"
+
+msgid "Cannot focus the game window; clicking stopped"
+msgstr "無法聚焦遊戲視窗，已停止點選"
+
+msgid "Cannot focus the game window to return to the stage list"
+msgstr "無法聚焦遊戲視窗，不能返回選關列表"
+
+msgid "Failed to return to the stage list"
+msgstr "返回選關列表失敗"
+
+msgid "Start the task on the Tacet Elimination event screen"
+msgstr "請在無音消除活動介面啟動任務"
+
+#, python-brace-format
+msgid "Stage sweep: {text}"
+msgstr "關卡掃描：{text}"
+
+msgid "Board unchanged or unrecognized; check the event screen"
+msgstr "棋盤未變化或無法識別，請檢查活動介面"
+
+#, python-brace-format
+msgid "No legal move recognized: {board}"
+msgstr "未識別到合法移動：{board}"
+
+msgid "Cannot focus the game window; board dragging stopped"
+msgstr "無法聚焦遊戲視窗，已停止棋盤拖動"
+
+msgid "No unlocked Final Elimination stage found"
+msgstr "未找到已解鎖的終局消除關卡"
+
+msgid ""
+"Some stages are still locked; cannot confirm all prerequisites are complete"
+msgstr "仍有關卡未解鎖，無法確認全部前置關卡已完成"
+
+msgid ""
+"Stage list did not reach Final Elimination; check dragging or recognition"
+msgstr "選關列表未到達終局消除，請檢查拖動或識別"
+
+msgid "Result screen exit button not found"
+msgstr "未找到結算退出按鈕"
+
+msgid "Stage retry limit exceeded"
+msgstr "關卡重試超過上限"
+
+msgid ""
+"Final Elimination finished naturally; restart the task to continue scoring"
+msgstr "終局消除本局已自然結算，可再次啟動任務繼續衝分"
+
+msgid "Cannot confirm stage completion status"
+msgstr "無法確認關卡完成狀態"
+
+msgid ""
+"Prerequisite scan complete; starting Final Elimination for score, even with "
+"an existing record"
+msgstr "前置關卡掃描完成，進入終局消除衝分（已有紀錄也會挑戰）"
+
+msgid "Game window lost focus; dragging stopped"
+msgstr "遊戲視窗失去焦點，已停止拖動"
+
+msgid "No board or Start button detected after starting the challenge"
+msgstr "開始挑戰後未檢測到棋盤或開始按鈕"
+
+msgid "No board detected after starting the challenge"
+msgstr "開始挑戰後未檢測到棋盤"
+
+msgid "is not claim treasure, restart challenge"
+msgstr "未出現領取獎勵提示，重新挑戰"
+
+msgid "farm_tacet: death recovered, re-enter from F2 book"
+msgstr "無音區刷取：復活成功，從 F2 終端重新進入"
+
+#, python-brace-format
+msgid ""
+"farm_tacet: exceeded recovery retries ({max_recovery_retries}), stop farming"
+msgstr "無音區刷取：超過恢復重試上限（{max_recovery_retries}），停止刷取"
+
+#, python-brace-format
+msgid "Garden finished: {texts}"
+msgstr "樂園任務結束：{texts}"
+
+#, python-brace-format
+msgid "Task is not registered or has been removed: {module}.{class_name}"
+msgstr "任務未註冊或已移除：{module}.{class_name}"
+
+msgid "accounts must be a list of accounts."
+msgstr "accounts 必須是賬號列表。"
+
+msgid "Account configuration must be an object."
+msgstr "賬號配置必須是物件。"
+
+msgid ""
+"Use the login list text with all * removed as the account ID; it must not be"
+" empty or have leading or trailing spaces."
+msgstr "賬號標識請填寫登入列表文字去掉所有 * 後的剩餘部分，不可為空或包含首尾空格。"
+
+#, python-brace-format
+msgid "Duplicate account ID {account}; change it before saving."
+msgstr "賬號標識 {account} 重複，請修改後再儲存。"
+
+#, python-brace-format
+msgid "Enabled state for account {account} must be a boolean."
+msgstr "賬號 {account} 的啟用狀態必須是布林值。"
+
+#, python-brace-format
+msgid "Account {account} is missing its task field; select a task or None."
+msgstr "賬號 {account} 缺少執行任務欄位，請選擇任務或“無”。"
+
+msgid "Task reference must contain module and class."
+msgstr "任務標識必須包含 module 和 class。"
+
+msgid ""
+"Multi-account configuration cannot select itself or the legacy multi-account"
+" task."
+msgstr "不允許在“多賬號配置”中選擇多賬號執行器自身或舊多賬號任務。"
+
+#, python-brace-format
+msgid "Task configuration for account {account} must be an object."
+msgstr "賬號 {account} 的任務配置必須是物件。"
+
+msgid "Account run history must be an object."
+msgstr "賬號執行記錄必須是物件。"
+
+msgid "Invalid account run history format."
+msgstr "賬號執行記錄格式無效。"
+
+msgid "Multi-account configuration is missing the accounts list."
+msgstr "多賬號配置缺少 accounts 列表。"
+
+msgid "Multi-account configuration"
+msgstr "多賬號配置"
+
+msgid "Configuration saved"
+msgstr "配置已儲存"
+
+msgid "No remaining account to run; finishing multi-account daily task"
+msgstr "沒有剩餘帳號需要執行，多帳號日常任務結束"

@@ -13,6 +13,7 @@ class TestAutoCombatTask(unittest.TestCase):
         self.scene = WWScene()
         self.executor = Mock(scene=self.scene, debug=False)
         self.task = AutoCombatTask(self.executor, None)
+        self.task.tr = str
         self.task.scene = self.scene
         self.task.config = dict(self.task.default_config)
         self.task.char_config = {}

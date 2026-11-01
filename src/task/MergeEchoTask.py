@@ -27,7 +27,7 @@ class MergeEchoTask(BaseWWTask):
                 raise_if_not_found=False,
         ):
             self.log_error(
-                f"can not open bag with hotkey {hotkey}",
+                self.tr('can not open bag with hotkey {hotkey}').format(hotkey=hotkey),
                 notify=True,
             )
             return
@@ -41,7 +41,7 @@ class MergeEchoTask(BaseWWTask):
         else:
             if self.notify_if_not_enough:
                 self.log_error(
-                    "Must have 1000 discarded Echo to Run",
+                    self.tr('Must have 1000 discarded Echo to Run'),
                     notify=True,
                 )
             self.ensure_main()
@@ -81,7 +81,7 @@ class MergeEchoTask(BaseWWTask):
             match=FULL_BATCH_PATTERN,
         )
         if not full_batch:
-            self.log_info("All full batches of discarded Echoes have been merged.")
+            self.log_info(self.tr('All full batches of discarded Echoes have been merged.'))
             return False
 
         self.click_relative(0.782, 0.910)

@@ -27,4 +27,4 @@ class AutoDialogTask(TriggerTask, SkipBaseTask):
                 click = message_dialog.copy(y_offset=2.5 * message_dialog.height)
                 click.width = self.width_of_screen(0.63)
                 self.click(click, after_sleep=0.2)
-                self.log_info(f'click {click}')
+                self.log_info(self.tr('click {click}').format(click=click))

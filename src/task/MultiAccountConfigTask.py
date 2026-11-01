@@ -49,7 +49,7 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
         accounts = store.load()
         validate_accounts(accounts, self.executor)
         if not accounts:
-            raise ValueError('请先添加账号并保存配置。')
+            raise ValueError(self.tr('Add accounts and save the configuration first.'))
         # Resolve the entire plan before sending any game input.
         plan = [(account, resolve_task(self.executor, account['task'])) for account in accounts
                 if account.get('enabled', True)]
@@ -62,7 +62,7 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
             try:
                 store.record_result(account, status, message)
             except (OSError, ValueError) as error:
-                self.log_warning(f'保存账号运行记录失败：{error}')
+                self.log_warning(self.tr('Failed to save account run history: {error}').format(error=error))
         completed = []
         self.info_set('状态', '执行中')
         self.info_set('已完成', completed.copy())
@@ -82,7 +82,7 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
                         self.info_set('执行任务', self.tr(task.name) if task else '无')
                         self._login_target_account(account['account_key'])
                         if task is None:
-                            self.log_info('登录成功；执行任务为“无”，跳过任务。')
+                            self.log_info(self.tr('Login successful; task is set to None, skipping.'))
                         else:
                             with account_task_config(task, account['config']):
                                 self.run_task_by_class(type(task))
@@ -140,18 +140,18 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
                 matches = [index for index, text in enumerate(combo_items(combo))
                            if account_key_from_ocr(text) == account_key]
                 if not matches:
-                    raise WaitFailedException(f'账号列表中未找到 {display_account(account_key)}')
+                    raise WaitFailedException(self.tr('Account {account} not found in the login list').format(account=display_account(account_key)))
                 # Consistent with OCR: prefer the lower entry for duplicate labels.
                 if not select_combo_item(combo, matches[-1]):
-                    raise WaitFailedException('ComboBox 账号选择未生效。')
+                    raise WaitFailedException(self.tr('ComboBox account selection had no effect.'))
                 self.sleep(1)
                 if account_key_from_ocr(combo_selected_item(combo)) != account_key:
-                    raise WaitFailedException('ComboBox 当前账号与目标不一致。')
+                    raise WaitFailedException(self.tr('Current ComboBox account does not match the target.'))
                 return
         except TaskDisabledException:
             raise
         except Exception as error:
-            self.log_warning(f'ComboBox 切号失败，回退 OCR：{type(error).__name__}')
+            self.log_warning(self.tr('ComboBox account switch failed; falling back to OCR: {error_type}').format(error_type=type(error).__name__))
         previous_ocr_mode = getattr(self, '_ocr_account_selection', False)
         try:
             self._ocr_account_selection = True
@@ -162,14 +162,14 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
                     continue
                 if not self.wait_until(lambda: self._find_target_account(account_key),
                                        time_out=10, raise_if_not_found=False):
-                    raise WaitFailedException(f'账号列表中未找到 {display_account(account_key)}')
+                    raise WaitFailedException(self.tr('Account {account} not found in the login list').format(account=display_account(account_key)))
                 self.sleep(1)
                 current = self._detect_current_account_from_login()
                 if account_key_from_ocr(current) == account_key:
                     break
-                self.log_info(f'账号确认不匹配，重试 {attempt + 1}/5')
+                self.log_info(self.tr('Account confirmation mismatch; retrying {attempt}/5').format(attempt=attempt + 1))
             else:
-                raise WaitFailedException(f'无法确认目标账号 {display_account(account_key)}，停止登录。')
+                raise WaitFailedException(self.tr('Cannot confirm target account {account}; stopping login.').format(account=display_account(account_key)))
         finally:
             self._ocr_account_selection = previous_ocr_mode
 
@@ -193,7 +193,7 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
                     self.click_relative(0.5, 0.568, hcenter=True, vcenter=True, after_sleep=3)
                 self.logged_in = False
                 self.ensure_main(time_out=180)
-                self.log_info(f'{display_account(account_key)} 登录成功')
+                self.log_info(self.tr('{account} logged in successfully').format(account=display_account(account_key)))
             finally:
                 self._login_cursor_active = previous_cursor_mode
         finally:

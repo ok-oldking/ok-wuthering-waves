@@ -291,7 +291,7 @@ class BaseCombatTask(CombatCheck):
     def teleport_to_heal(self):
         """按 M 开图, 就近找传送点回血 (供 FarmEchoTask 在 boss 点使用)。"""
         self.ensure_main(time_out=10)
-        self.log_info('click m to open the map')
+        self.log_info(self.tr('click m to open the map'))
         start = time.time()
         while self.in_team_and_world() and time.time() - start < 20:
             self.send_key('m', after_sleep=2)
@@ -303,7 +303,7 @@ class BaseCombatTask(CombatCheck):
         teleport = self.find_best_match_in_box(self.box_of_screen(0.1, 0.1, 0.9, 0.9),
                                                ['map_way_point', 'map_way_point_big'], 0.6)
         if not teleport:
-            raise RuntimeError(f'Can not find a teleport to heal')
+            raise RuntimeError(self.tr('Can not find a teleport to heal'))
         self.click(teleport, after_sleep=1)
         travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
         if not travel:
@@ -312,7 +312,7 @@ class BaseCombatTask(CombatCheck):
                 self.click(pop_up, after_sleep=1)
                 travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
         if not travel:
-            raise RuntimeError(f'Can not find the travel button')
+            raise RuntimeError(self.tr('Can not find the travel button'))
         self.click_box(travel, relative_x=1.5)
         self.wait_in_team_and_world(time_out=20)
         self.sleep(2)
@@ -327,7 +327,7 @@ class BaseCombatTask(CombatCheck):
         exception_type = None
         logger.error(message)
         if self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2):
-            self.log_info('raise_not_in_combat char dead')
+            self.log_info(self.tr('raise_not_in_combat char dead'))
             if self.reset_to_false(reason=message):
                 logger.error(f'reset to false failed: {message}')
             from src.task.AutoCombatTask import AutoCombatTask
@@ -411,7 +411,7 @@ class BaseCombatTask(CombatCheck):
         self.scene.reset_abyss_start()
         if not self.in_team()[0] or not self.load_chars():
             return False
-        self.log_info('Abyss start prompt disappeared, force enter combat')
+        self.log_info(self.tr('Abyss start prompt disappeared, force enter combat'))
         return self.force_abyss_combat(started_at=last_seen)
 
     def force_abyss_combat(self, started_at=None):
@@ -491,9 +491,9 @@ class BaseCombatTask(CombatCheck):
                                 raise_if_not_found=True, post_action=handle_restart_dialog)
             if not self.walk_to_box(find_start_for_restart,
                                     end_condition=self.find_f_with_text, time_out=30):
-                raise RuntimeError('Could not reach the Abyss challenge start')
+                raise RuntimeError(self.tr('Could not reach the Abyss challenge start'))
             if not self.load_chars():
-                raise RuntimeError('Could not load the Abyss team')
+                raise RuntimeError(self.tr('Could not load the Abyss team'))
             self.send_key('f')
             return self.force_abyss_combat()
         finally:
@@ -510,7 +510,7 @@ class BaseCombatTask(CombatCheck):
             self.sleep(0.02)
 
         if raise_if_not_found and not result:
-            raise Exception('wait condition failed while walking')
+            raise Exception(self.tr('wait condition failed while walking'))
         return result
 
     def available(self, name, check_color=True, check_cd=True):
@@ -982,7 +982,7 @@ class BaseCombatTask(CombatCheck):
         logger.debug(f'set_key best match {key}: {best}')
         if best and best.name != self.key_config[key]:
             self.key_config[key] = best.name
-            self.log_info(f'set_key {key} to {best.name}')
+            self.log_info(self.tr('set_key {key} to {name}').format(key=key, name=best.name))
 
     def has_short_action(self):
         """是否有短动作条"""
@@ -1061,7 +1061,7 @@ class BaseCombatTask(CombatCheck):
                         translated_names.append(translated_name)
                 self.info_set('Chars', ', '.join(translated_names))
                 for c in self.chars:
-                    self.log_info(f'loaded chars success {c} {c.confidence}')
+                    self.log_info(self.tr('loaded chars success {c} {confidence}').format(c=c, confidence=c.confidence))
             return True
 
     @staticmethod

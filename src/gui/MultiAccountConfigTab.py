@@ -322,7 +322,7 @@ class MultiAccountConfigTab(CustomTab):
         card.deleteLater()
 
     def show_error(self, error):
-        InfoBar.error('多账号配置', str(error), parent=self, duration=6000)
+        InfoBar.error(self.tr('Multi-account configuration'), str(error), parent=self, duration=6000)
 
     def save_accounts(self, notify=True):
         if not self.loaded or (self.runner and self.runner.enabled):
@@ -333,7 +333,7 @@ class MultiAccountConfigTab(CustomTab):
             self.show_error(error)
             return False
         if notify:
-            InfoBar.success('多账号配置', '配置已保存', parent=self, duration=2000)
+            InfoBar.success(self.tr('Multi-account configuration'), self.tr('Configuration saved'), parent=self, duration=2000)
         return True
 
     def start_clicked(self):
