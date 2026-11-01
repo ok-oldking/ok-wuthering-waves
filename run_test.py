@@ -6,6 +6,12 @@ import unittest
 from unittest.mock import patch
 
 
+def translate_for_test(task, message):
+    # Isolated fixtures and TaskTestCase construct tasks without an app.
+    app = getattr(task, '_app', None)
+    return app.tr(message) if app is not None else message
+
+
 def main():
     # Windows CI hosts can advertise AMX instructions that the VM cannot execute.
     # Keep real OCR inference on a portable oneDNN path, before OpenVINO loads.
@@ -14,7 +20,8 @@ def main():
     faulthandler.dump_traceback_later(120, repeat=True)
     # TaskExecutor.ocr_lib still loads real models synchronously when a test
     # needs OCR. Template-only tests never start the native model loader.
-    with patch('ok.task.TaskExecutor.TaskExecutor.init_default_ocr', lambda self: None):
+    with patch('ok.task.TaskExecutor.TaskExecutor.init_default_ocr', lambda self: None), \
+            patch('ok.task.task.BaseTask.tr', translate_for_test):
         unittest.main(module=None, verbosity=2)
 
 

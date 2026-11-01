@@ -57,6 +57,9 @@ class FakeLoginTask:
     def log_info(self, *args, **kwargs):
         pass
 
+    def tr(self, message):
+        return message
+
     def log_debug(self, *args, **kwargs):
         pass
 
