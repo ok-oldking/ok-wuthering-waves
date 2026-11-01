@@ -46,19 +46,19 @@ class ChangeEchoTask(BaseWWTask, FindFeature):
         while True:
             enhance = self.find_echo_enhance()
             if not enhance:
-                raise Exception('必须在背包声骸界面过滤后开始!')
+                raise Exception(self.tr("Start after filtering Echoes on the bag's Echo screen!"))
             current_level = self.is_0_level()
             if not current_level:
                 total = self.info_get('成功声骸数量') + self.info_get('失败声骸数量')
                 if self.debug:
                     self.screenshot('无可强化声骸')
-                self.log_info(f'无可修改声骸, 任务结束! 强化{total}个, 符合条件{self.info_get("成功声骸数量")}个',
+                self.log_info(self.tr('No more Echoes to modify. Finished! Enhanced: {total}, matching: {matching}').format(total=total, matching=self.info_get('成功声骸数量')),
                               notify=True)
                 if self.info_get('成功声骸数量') >= 1:
                     try:
                         os.startfile(os.path.abspath("screenshots"))
                     except Exception as e:
-                        self.log_error(f"无法打开截图文件夹: {e}")
+                        self.log_error(self.tr('Cannot open screenshot folder: {e}').format(e=e))
                 return
             start = time.time()
             while time.time() - start < 5:
@@ -73,9 +73,9 @@ class ChangeEchoTask(BaseWWTask, FindFeature):
             self.sleep(0.5)
             current_main = self.wait_ocr(0.09, 0.20, 0.15, 0.26)
             if not current_main:
-                raise Exception('找不到当前主属性!')
+                raise Exception(self.tr('Cannot find the current main stat!'))
             if target_main in current_main[0].name:
-                raise Exception('目标属性和当前属性相同, 请修改声骸过滤条件!')
+                raise Exception(self.tr('The target stat matches the current stat. Change the Echo filter!'))
             self.click(0.04, 0.41)
             self.wait_ocr(match='主音属性', raise_if_not_found=True)
             self.sleep(0.8)

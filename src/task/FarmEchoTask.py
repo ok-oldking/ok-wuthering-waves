@@ -136,7 +136,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         self.realm_entry_at_heal_point = False
         self._in_realm = self.in_realm()
         self.manage_boss_parameters()
-        self.log_info(f'in_realm: {self._in_realm}')
+        self.log_info(self.tr('in_realm: {_in_realm}').format(_in_realm=self._in_realm))
         self._farm_start_time = time.time()
         self._has_treasure = False
         self.is_revived = False
@@ -170,20 +170,20 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                     target=True) or self.find_f_with_text(),
                                 time_out=5, raise_if_not_found=False)
                         if not self.in_combat():
-                            self.log_info('not in combat try click restart')
+                            self.log_info(self.tr('not in combat try click restart'))
                             if self.walk_to_treasure_and_restart():
                                 self.handle_boss_restart_after_treasure()
                             else:
                                 self.scroll_and_click_buttons()
 
                 count += 1
-                self.log_info('start wait in combat')
+                self.log_info(self.tr('start wait in combat'))
                 if not self._in_realm and not self._has_treasure and not self.in_combat():
                     self.go_to_boss_minimap()
                     self.execute_treasure_hunt()
 
                 self.sleep(self.combat_wait_time)
-                self.log_info(f'combat_wait_time: {self.combat_wait_time}')
+                self.log_info(self.tr('combat_wait_time: {combat_wait_time}').format(combat_wait_time=self.combat_wait_time))
                 self.check_boss_name()
 
                 self.combat_once(wait_combat_time=5, raise_if_not_found=False)
@@ -219,10 +219,10 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     raise
                 recovery_retries += 1
                 if recovery_retries >= max_recovery_retries:
-                    self.log_info(f'farm 4c: exceeded recovery retries ({max_recovery_retries}), stop farming',
+                    self.log_info(self.tr('farm 4c: exceeded recovery retries ({max_recovery_retries}), stop farming').format(max_recovery_retries=max_recovery_retries),
                                   notify=True)
                     return
-                self.log_info('farm 4c: death recovered, teleport to boss again')
+                self.log_info(self.tr('farm 4c: death recovered, teleport to boss again'))
                 count = round_start_count  # 死亡那一轮不计入刷取次数
                 self.is_revived = False
                 self.realm_entry_at_heal_point = True  # 恢复后站在信标上; 走大世界进本时会被重置
@@ -230,7 +230,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 continue
             except Exception as e:
                 if self.should_reteleport_after_farm_exception():
-                    self.log_error('Farm failed after walking into boss combat, teleporting again', e)
+                    self.log_error(self.tr('Farm failed after walking into boss combat, teleporting again'), e)
                     self.is_revived = False
                     self.teleport_to_configured_boss_and_prepare()
                     continue
@@ -245,7 +245,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self._in_realm = self.in_realm()
             if self._in_realm:
                 self.init_parameters()
-                self.log_info(f'in_realm: {self._in_realm}')
+                self.log_info(self.tr('in_realm: {_in_realm}').format(_in_realm=self._in_realm))
 
     def teleport_to_boss_enabled(self):
         return self.config.get('Teleport to Boss', 'No') != 'No'
@@ -263,7 +263,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             else:
                 walk_result = self.walk_after_boss_teleport()
         except Exception as e:
-            raise RuntimeError('Teleport to boss failed') from e
+            raise RuntimeError(self.tr('Teleport to boss failed')) from e
 
         self._teleport_walk_result = walk_result
         self._has_treasure = False
@@ -274,9 +274,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self._in_realm = True
             self.treat_as_not_in_realm = False
         else:
-            raise RuntimeError('Teleport to boss failed')
+            raise RuntimeError(self.tr('Teleport to boss failed'))
         self.init_parameters()
-        self.log_info(f'teleport_to_boss prepared as {walk_result}')
+        self.log_info(self.tr('teleport_to_boss prepared as {walk_result}').format(walk_result=walk_result))
 
     def teleport_to_configured_boss(self):
         teleport_to_boss = self.config.get('Teleport to Boss', 'No')
@@ -296,7 +296,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             structure = self.nightmare_structure
             total_number = sum(structure)
         else:
-            raise RuntimeError(f'Unknown Teleport to Boss config: {teleport_to_boss}')
+            raise RuntimeError(self.tr('Unknown Teleport to Boss config: {teleport_to_boss}').format(teleport_to_boss=teleport_to_boss))
 
         self.info_set('Teleport to Boss', f'{teleport_to_boss} {serial_number - 1}')
         self.openF2Book('gray_book_boss')
@@ -317,14 +317,14 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         return is_team
 
     def walk_after_boss_teleport(self):
-        self.log_info('walk after boss teleport until combat or F')
+        self.log_info(self.tr('walk after boss teleport until combat or F'))
         result = self.walk_until_f_or_combat(time_out=20)
         if result == 'combat':
             return 'combat'
         if result == 'f':
             self.enter_configured_boss_realm_from_f()
             return 'realm'
-        raise RuntimeError('Teleport to boss failed')
+        raise RuntimeError(self.tr('Teleport to boss failed'))
 
     def walk_until_f_or_combat(self, direction='w', time_out=20):
         if self.wait_until(lambda: self.in_combat(target=True) or self.in_combat() or self.find_f_with_text(),
@@ -350,11 +350,11 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.send_key_up(direction)
             self.sleep(0.1)
             self.mouse_up(key='right')
-        raise RuntimeError('Teleport to boss failed: can not walk to combat or F')
+        raise RuntimeError(self.tr('Teleport to boss failed: can not walk to combat or F'))
 
     def enter_configured_boss_realm_from_f(self):
         if not self.wait_until(self.find_f_with_text, time_out=2, raise_if_not_found=False):
-            raise RuntimeError('Teleport to boss failed: can not find F before entering realm')
+            raise RuntimeError(self.tr('Teleport to boss failed: can not find F before entering realm'))
         self.send_key('f', after_sleep=3)
         self.click_configured_boss_level()
         self.sleep(1)
@@ -376,7 +376,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         else:
             level_box = level_boxes
         if not level_box:
-            raise RuntimeError(f'Can not find boss level {boss_level}')
+            raise RuntimeError(self.tr('Can not find boss level {boss_level}').format(boss_level=boss_level))
         self.click_box(level_box)
 
     def click_solo_challenge(self):
@@ -387,7 +387,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
     def handle_boss_restart_after_treasure(self):
         self._has_treasure = True
-        self.log_info('_has_treasure = True')
+        self.log_info(self.tr('_has_treasure = True'))
         if self.teleport_to_boss_enabled() and self._in_realm:
             self.enter_configured_boss_realm_from_f()
         else:
@@ -408,11 +408,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                                         'Nameless Explorer')
         self.treat_as_not_in_realm = boss in ('Nightmare: Hecate')
         self.log_info(
-            f"profile: {boss} { {
-                'combat_wait_time': self.combat_wait_time,
-                'bypass_end_wait': self.bypass_end_wait,
-                'treat_as_not_in_realm': self.treat_as_not_in_realm
-            } }"
+            self.tr('profile: {boss} {settings}').format(boss=boss, settings={'combat_wait_time': self.combat_wait_time, 'bypass_end_wait': self.bypass_end_wait, 'treat_as_not_in_realm': self.treat_as_not_in_realm})
         )
 
     def manage_boss_interactions(self):
@@ -422,7 +418,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         if boss != 'Other':
             if boss in ('Lorelei'):
                 night_elapsed = time.time() - self.last_night_change
-                self.log_info(f"Night elapsed: {night_elapsed:.1f}s")
+                self.log_info(self.tr('Night elapsed: {night_elapsed:.1f}s').format(night_elapsed=night_elapsed))
                 if night_elapsed > 660:
                     self.change_time_to_night()
                     self.last_night_change = time.time()
@@ -442,7 +438,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                     self.teleport_to_nearest_boss()
                     self.sleep(2)
                 except Exception:
-                    self.log_info('Fenrico teleport_to_nearest_boss failed')
+                    self.log_info(self.tr('Fenrico teleport_to_nearest_boss failed'))
                     self.ensure_main()
                 self.run_until(lambda: self.find_treasure_icon() or self.in_combat() or self.find_f_with_text(), 'w',
                                time_out=5, target=True)
@@ -552,12 +548,12 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 targets.extend(boxes)
                 box = max(targets, key=lambda box: box.confidence, default=None)
             if box is None:
-                raise Exception(f"boss not found")
+                raise Exception(self.tr('boss not found'))
         return box
 
     def teleport_to_nearest_boss(self):
         if self.aim_boss is not None:
-            self.log_info(f'teleport_to_nearest_boss {self.aim_boss}')
+            self.log_info(self.tr('teleport_to_nearest_boss {aim_boss}').format(aim_boss=self.aim_boss))
             self.ensure_main(time_out=180)
             self.openF2Book("gray_book_all_monsters")
             self.click(0.13, 0.14, after_sleep=0.5)
@@ -576,7 +572,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
         box = self.find_boss_check_mark()
 
-        self.log_info(f'teleport_to_nearest_boss {box}')
+        self.log_info(self.tr('teleport_to_nearest_boss {box}').format(box=box))
         if box:
             self.click_box(box)
             self.wait_click_travel()
@@ -645,7 +641,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
         # 点击轮廓中心
         if best_match is None:
-            raise RuntimeError('Can not find the boss octagon on map')
+            raise RuntimeError(self.tr('Can not find the boss octagon on map'))
 
         x0, y0 = self.width_of_screen(0.3), self.height_of_screen(0.3)
         x, y, w, h = cv2.boundingRect(best_match)
@@ -655,7 +651,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
 
     def teleport_to_octagon_boss(self):
         """传送到八边形Boss图标。"""
-        self.log_info('click m to open the map')
+        self.log_info(self.tr('click m to open the map'))
         self.send_key('m', after_sleep=2)
 
         self.click_boss_octagon()
@@ -666,7 +662,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
                 self.click(pop_up, after_sleep=1)
                 travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
         if not travel:
-            raise RuntimeError(f'Can not find the travel button')
+            raise RuntimeError(self.tr('Can not find the travel button'))
         self.click_box(travel, relative_x=1.5)
         self.wait_in_team_and_world(time_out=20)
         self.sleep(2)
@@ -678,7 +674,7 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
             self.scroll_relative(0.5, 0.5, 1)
             self.sleep(0.2)
         while self.find_f_with_text() and not self.in_combat() and time.time() - start < 5:
-            self.log_info('scroll_and_click_buttons')
+            self.log_info(self.tr('scroll_and_click_buttons'))
             self.scroll_relative(0.5, 0.5, 1)
             self.sleep(0.2)
             self.send_key('f')

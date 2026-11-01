@@ -42,7 +42,7 @@ class TestTacetElimination(unittest.TestCase):
                 self.assertIsNotNone(choose_move(board))
 
     def stage_sweep_task(self, pages):
-        task = SimpleNamespace(width=1600, height=900, text=TacetEliminationTask.text)
+        task = SimpleNamespace(tr=str, width=1600, height=900, text=TacetEliminationTask.text)
         for name in ('next_frame', 'drag_relative', 'sleep', 'log_info', 'click'):
             setattr(task, name, Mock())
         task.ocr = Mock(side_effect=pages)
@@ -60,7 +60,7 @@ class TestTacetElimination(unittest.TestCase):
     def test_final_stage_without_record_still_requires_prerequisites(self):
         final = [SimpleNamespace(name='终局消除', x=1200), SimpleNamespace(name='暂无记录')]
         task = self.stage_sweep_task([final, final])
-        with self.assertRaisesRegex(RuntimeError, '完成状态'):
+        with self.assertRaisesRegex(RuntimeError, 'completion status'):
             TacetEliminationTask.open_unfinished_stage(task)
         task.click.assert_not_called()
 
@@ -81,12 +81,12 @@ class TestTacetElimination(unittest.TestCase):
 
     def test_locked_prerequisite_blocks_final_stage(self):
         task = self.stage_sweep_task([[SimpleNamespace(name='1天后解锁')]])
-        with self.assertRaisesRegex(RuntimeError, '未解锁'):
+        with self.assertRaisesRegex(RuntimeError, 'still locked'):
             TacetEliminationTask.open_unfinished_stage(task)
         task.click.assert_not_called()
 
     def test_board_continues_past_twenty_and_one_hundred_twenty_moves(self):
-        task = SimpleNamespace(frame=None)
+        task = SimpleNamespace(tr=str, frame=None)
         for name in ('next_frame', 'wait_board_settled', 'screenshot', 'sleep',
                      'info_set', 'log_info', 'swap', 'send_key'):
             setattr(task, name, Mock())
@@ -101,7 +101,7 @@ class TestTacetElimination(unittest.TestCase):
 
     def test_mouse_reset_is_restored_on_failure(self):
         reset = SimpleNamespace(enabled=True, _enabled=True, config={'_enabled': True}, post_mouse_reset=Mock())
-        task = SimpleNamespace(prepare_event=Mock(), sleep=Mock(),
+        task = SimpleNamespace(tr=str, prepare_event=Mock(), sleep=Mock(),
                                get_task_by_class=Mock(return_value=reset),
                                run_event=Mock(side_effect=RuntimeError('capture failed')))
         with patch.object(WWOneTimeTask, 'run'), self.assertRaisesRegex(RuntimeError, 'capture failed'):
@@ -116,7 +116,7 @@ class TestTacetElimination(unittest.TestCase):
             reset.config['_enabled'] = False
             reset._enabled = False
 
-        task = SimpleNamespace(prepare_event=Mock(), sleep=Mock(),
+        task = SimpleNamespace(tr=str, prepare_event=Mock(), sleep=Mock(),
                                get_task_by_class=Mock(return_value=reset), run_event=change_setting)
         with patch.object(WWOneTimeTask, 'run'):
             TacetEliminationTask.run(task)
@@ -126,7 +126,7 @@ class TestTacetElimination(unittest.TestCase):
     def test_success_page_exits_instead_of_replaying(self):
         success = [SimpleNamespace(name=name) for name in ('挑战成功', '退出关卡', '再次挑战')]
         completed = [SimpleNamespace(name='已完成')]
-        task = SimpleNamespace(text=TacetEliminationTask.text)
+        task = SimpleNamespace(tr=str, text=TacetEliminationTask.text)
         for name in ('prepare_event', 'info_set', 'next_frame', 'log_info', 'screenshot'):
             setattr(task, name, Mock())
         task.is_board = Mock(side_effect=[True, True, False, False])
@@ -151,7 +151,7 @@ class TestTacetElimination(unittest.TestCase):
     def test_finished_final_detail_does_not_start_another_round(self):
         success = [SimpleNamespace(name=name) for name in ('挑战成功', '退出关卡', '再次挑战')]
         details = [SimpleNamespace(name='终局消除'), SimpleNamespace(name='开始挑战')]
-        task = SimpleNamespace(text=TacetEliminationTask.text, return_to_stage_list=Mock())
+        task = SimpleNamespace(tr=str, text=TacetEliminationTask.text, return_to_stage_list=Mock())
         for name in ('info_set', 'next_frame', 'log_info', 'screenshot'):
             setattr(task, name, Mock())
         task.is_board = Mock(side_effect=[True, True, False, False])
@@ -175,7 +175,7 @@ class TestTacetElimination(unittest.TestCase):
     def test_return_to_stage_list_retries_ineffective_posted_escape(self):
         window = SimpleNamespace(bring_to_front=Mock(), is_foreground=Mock(return_value=True))
         interaction = SimpleNamespace(hwnd_window=window, capture=Mock())
-        task = SimpleNamespace(executor=SimpleNamespace(interaction=interaction),
+        task = SimpleNamespace(tr=str, executor=SimpleNamespace(interaction=interaction),
                                send_key=Mock(), reset_scene=Mock(),
                                ocr=Mock(side_effect=[[SimpleNamespace(name='开始挑战')], []]),
                                wait_until=lambda predicate, **kwargs: predicate())
@@ -186,7 +186,7 @@ class TestTacetElimination(unittest.TestCase):
     def test_resumed_final_board_can_finish_when_initial_record_ocr_is_empty(self):
         success = [SimpleNamespace(name=name) for name in ('挑战成功', '退出关卡', '再次挑战')]
         details = [SimpleNamespace(name='终局消除'), SimpleNamespace(name='开始挑战')]
-        task = SimpleNamespace(text=TacetEliminationTask.text, return_to_stage_list=Mock())
+        task = SimpleNamespace(tr=str, text=TacetEliminationTask.text, return_to_stage_list=Mock())
         for name in ('info_set', 'next_frame', 'log_info', 'screenshot', 'play_board', 'sleep'):
             setattr(task, name, Mock())
         task.is_board = Mock(side_effect=[True, True, True, False, False, False])
@@ -232,19 +232,21 @@ class TestTacetElimination(unittest.TestCase):
 
     def test_blank_stage_list_cannot_report_completion(self):
         task = TacetEliminationTask.__new__(TacetEliminationTask)
+        task.tr = str
         for name in ('next_frame', 'drag_relative', 'sleep', 'log_info', 'click'):
             setattr(task, name, Mock())
         task.ocr = Mock(return_value=[])
-        with self.assertRaisesRegex(RuntimeError, '完成状态'):
+        with self.assertRaisesRegex(RuntimeError, 'completion status'):
             task.open_unfinished_stage()
         task.click.assert_not_called()
 
     def test_wrong_start_screen_does_not_click(self):
         task = TacetEliminationTask.__new__(TacetEliminationTask)
+        task.tr = str
         task.next_frame = Mock()
         task.ocr = Mock(return_value=[])
         task.click = Mock()
-        with self.assertRaisesRegex(RuntimeError, '活动界面'):
+        with self.assertRaisesRegex(RuntimeError, 'event screen'):
             task.prepare_event()
         task.click.assert_not_called()
 

@@ -202,7 +202,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
                 if drop_down:
                     self.click(drop_down, after_sleep=2)
                 if self.do_find_account_drop_down():
-                    self.log_error('click drop down no effect')
+                    self.log_error(self.tr('click drop down no effect'))
                     self.screenshot('multi')
                     continue
                 account = self.wait_until(

@@ -73,18 +73,18 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
         while True:
             enhance = self.find_echo_enhance()
             if not enhance:
-                raise Exception('必须在背包声骸界面过滤后开始!')
+                raise Exception(self.tr("Start after filtering Echoes on the bag's Echo screen!"))
             if not self.select_0_level_echo():
                 total = self.info_get('成功声骸数量') + self.info_get('失败声骸数量')
                 if self.debug:
                     self.screenshot('无可强化声骸')
-                self.log_info(f'无可强化声骸, 任务结束! 强化{total}个, 符合条件{self.info_get("成功声骸数量")}个',
+                self.log_info(self.tr('No more Echoes to enhance. Finished! Enhanced: {total}, matching: {matching}').format(total=total, matching=self.info_get('成功声骸数量')),
                               notify=True)
                 if self.info_get('成功声骸数量') >= 1:
                     try:
                         os.startfile(os.path.abspath("screenshots"))
                     except Exception as e:
-                        self.log_error(f"无法打开截图文件夹: {e}")
+                        self.log_error(self.tr('Cannot open screenshot folder: {e}').format(e=e))
                 return
             start = time.time()
             while time.time() - start < 5:
@@ -107,15 +107,15 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                         if have_add_mat:
                             break
                 if not have_add_mat:
-                    raise Exception('强化设置需要开启阶段放入!')
+                    raise Exception(self.tr('Enable staged material insertion in enhancement settings!'))
 
                 if not self.wait_click_ocr(0.1, 0.88, 0.29, 0.96, match=['强化并调谐'],
                                            settle_time=0.1,
                                            after_sleep=1.5):
                     if self.ocr(0.17, 0.88, 0.29, 0.96, match=['强化']):
-                        raise Exception('强化设置需要开启同步调谐!')
+                        raise Exception(self.tr('Enable simultaneous tuning in enhancement settings!'))
                     else:
-                        raise Exception('找不到 强化并调谐!')
+                        raise Exception(self.tr('Cannot find Enhance and Tune!'))
                 while handle := self.wait_ocr(0.24, 0.18, 0.75, 0.98,
                                               match=[re.compile('不再提示'), '调谐成功', re.compile('点击任')],
                                               time_out=2):
@@ -127,7 +127,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                         self.sleep(0.5)
                 self.sleep(0.1)
                 texts = self.ocr(0.09, 0.3, 0.40, 0.53)
-                self.log_info(f'ocr values: {texts}')
+                self.log_info(self.tr('ocr values: {texts}').format(texts=texts))
                 properties = [p for p in self.find_boxes(texts, match=property_pattern) if '辅音' not in p.name]
                 for p in properties:
                     match = property_pattern.search(p.name)
@@ -210,7 +210,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                 if not is_crit_stat:
                     if p not in valid_stats:
                         self.fail_reason = f'双爆前含无效_{p}'
-                        self.log_info(f'双爆出现前存在无效词条 {p}, 丢弃')
+                        self.log_info(self.tr('Invalid substat {p} before both CRIT stats; discarding').format(p=p))
                         return False
                 else:
                     has_encountered_crit = True
@@ -226,7 +226,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                     checked_first_crit = True
                     if v < self.config.get('首条双爆>='):
                         self.fail_reason = f'首条暴击不足_{v}'
-                        self.log_info(f'首条暴击 {v} < {self.config.get("首条双爆>=")}，丢弃')
+                        self.log_info(self.tr('First CRIT Rate {v} < {minimum}; discarding').format(v=v, minimum=self.config.get('首条双爆>=')))
                         return False
 
             elif p == '暴击伤害':
@@ -236,7 +236,7 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
                     checked_first_crit = True
                     if v / 2 < self.config.get('首条双爆>='):
                         self.fail_reason = f'首条爆伤不足_{v}'
-                        self.log_info(f'首条爆伤 {v} < {self.config.get("首条双爆>=")}，丢弃')
+                        self.log_info(self.tr('First CRIT DMG {v} < {minimum}; discarding').format(v=v, minimum=self.config.get('首条双爆>=')))
                         return False
 
             if not is_valid_prop:
@@ -249,26 +249,26 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             remaining_slots = 5 - total_count
             if remaining_slots < missing_crit:
                 self.fail_reason = f'无法凑齐双爆_缺{missing_crit}'
-                self.log_info(f'无法凑齐双爆 (缺{missing_crit}种, 剩{remaining_slots}孔), 丢弃')
+                self.log_info(self.tr('Cannot obtain both CRIT stats ({missing_crit} missing, {remaining_slots} slots left); discarding').format(missing_crit=missing_crit, remaining_slots=remaining_slots))
                 return False
 
         if has_crit_rate and has_crit_dmg:
             total_score = crit_rate_val + (crit_dmg_val / 2)
             if total_score < self.config.get('双爆总计>='):
                 self.fail_reason = f'双爆总计不足_{total_score:.1f}'
-                self.log_info(f'双爆总计 {total_score:.1f} < {self.config.get("双爆总计>=")}，丢弃')
+                self.log_info(self.tr('Combined CRIT score {total_score:.1f} < {minimum}; discarding').format(total_score=total_score, minimum=self.config.get('双爆总计>=')))
                 return False
 
         if total_count == 1 and self.config.get('第一条必须为有效词条') and invalid_count == 1:
             self.fail_reason = '首条无效'
-            self.log_info('第一条必须为有效词条, 丢弃')
+            self.log_info(self.tr('The first substat must be valid; discarding'))
             return False
 
         valid_count = total_count - invalid_count
         remaining_slots = 5 - total_count
         if (valid_count + remaining_slots) < self.config.get('有效词条>='):
             self.fail_reason = f'有效词条不足_上限{valid_count + remaining_slots}'
-            self.log_info(f'剩余孔位不足以达到设定的有效词条数量, 丢弃')
+            self.log_info(self.tr('Not enough remaining slots for the required valid substats; discarding'))
             return False
 
         return True
@@ -294,19 +294,19 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             drop_status = self.find_best_match_in_box(drop_status_box,
                                                       ['echo_dropped', 'echo_not_dropped'], threshold=0.7)
             if not drop_status:
-                raise Exception('无法找到声骸弃置状态!')
+                raise Exception(self.tr("Cannot determine the Echo's discard state!"))
             if drop_status.name == 'echo_not_dropped':
                 self.send_key('z', after_sleep=1)
             else:
-                self.log_info('成功弃置!')
+                self.log_info(self.tr('Discarded successfully!'))
                 success = True
                 break
         if not success:
-            raise Exception('弃置失败!')
+            raise Exception(self.tr('Failed to discard!'))
         safe_reason = re.sub(r'[<>:"/\\|?*]', '', self.fail_reason)
         self.screenshot_echo(f'failed/{self.info_get("失败声骸数量")}_{safe_reason}')
         self.esc()
-        self.log_info('不符合条件 丢弃')
+        self.log_info(self.tr('Does not meet the requirements; discarding'))
         self.wait_ocr(0.82, 0.86, 0.97, 0.96, match='培养', settle_time=0.1)
 
     def screenshot_echo(self, name):
@@ -325,19 +325,19 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
             drop_status = self.find_best_match_in_box(lock_status_box,
                                                       ['echo_locked', 'echo_not_locked'], threshold=0.7)
             if not drop_status:
-                raise Exception('无法找到声骸上锁状态!')
+                raise Exception(self.tr("Cannot determine the Echo's lock state!"))
             if drop_status.name == 'echo_not_locked':
                 self.send_key('c', after_sleep=1)
             else:
-                self.log_info('成功上锁!')
+                self.log_info(self.tr('Locked successfully!'))
                 success = True
                 break
         if not success:
-            raise Exception('上锁失败!')
+            raise Exception(self.tr('Failed to lock!'))
         self.screenshot_echo(f'success/{self.info_get("成功声骸数量")}')
-        self.log_info('成功并上锁')
+        self.log_info(self.tr('Succeeded and locked'))
         if self.config.get('Pause after Success'):
-            self.log_info('符合条件的声骸，已暂停任务', notify=True)
+            self.log_info(self.tr('Matching Echo found; task paused'), notify=True)
             self.pause()
         self.esc()
         self.wait_ocr(0.82, 0.86, 0.97, 0.96, match='培养', settle_time=0.1)

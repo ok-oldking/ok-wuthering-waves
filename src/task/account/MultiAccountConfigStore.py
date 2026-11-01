@@ -5,6 +5,12 @@ from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 
+from ok import og
+
+
+def _tr(message):
+    return og.app.tr(message) if og.app else message
+
 
 MULTI_ACCOUNT_TASKS = {
     ('src.task.MultiAccountDailyTask', 'MultiAccountDailyTask'),
@@ -35,39 +41,39 @@ def resolve_task(executor, reference):
     for task in collect_available_tasks(executor):
         if task_reference(task) == reference:
             return task
-    raise ValueError(f"任务未注册或已移除：{reference['module']}.{reference['class']}")
+    raise ValueError(_tr('Task is not registered or has been removed: {module}.{class_name}').format(module=reference['module'], class_name=reference['class']))
 
 
 def validate_accounts(accounts, executor=None):
     if not isinstance(accounts, list):
-        raise ValueError('accounts 必须是账号列表。')
+        raise ValueError(_tr('accounts must be a list of accounts.'))
     seen = set()
     for account in accounts:
         if not isinstance(account, dict):
-            raise ValueError('账号配置必须是对象。')
+            raise ValueError(_tr('Account configuration must be an object.'))
         key = account.get('account_key')
         if (not isinstance(key, str) or not key.strip() or key != key.strip()
                 or '*' in key or any(ord(char) < 32 for char in key)):
-            raise ValueError('账号标识请填写登录列表文本去掉所有 * 后的剩余部分，不可为空或包含首尾空格。')
+            raise ValueError(_tr('Use the login list text with all * removed as the account ID; it must not be empty or have leading or trailing spaces.'))
         if key in seen:
-            raise ValueError(f'账号标识 {key} 重复，请修改后再保存。')
+            raise ValueError(_tr('Duplicate account ID {account}; change it before saving.').format(account=key))
         seen.add(key)
         if not isinstance(account.get('enabled', True), bool):
-            raise ValueError(f'账号 {key} 的启用状态必须是布尔值。')
+            raise ValueError(_tr('Enabled state for account {account} must be a boolean.').format(account=key))
         if 'task' not in account:
-            raise ValueError(f'账号 {key} 缺少执行任务字段，请选择任务或“无”。')
+            raise ValueError(_tr('Account {account} is missing its task field; select a task or None.').format(account=key))
         reference = account.get('task')
         if reference is not None:
             if (not isinstance(reference, dict)
                     or set(reference) != {'module', 'class'}
                     or not all(isinstance(value, str) for value in reference.values())):
-                raise ValueError('任务标识必须包含 module 和 class。')
+                raise ValueError(_tr('Task reference must contain module and class.'))
             if (reference['module'], reference['class']) in MULTI_ACCOUNT_TASKS:
-                raise ValueError('不允许在“多账号配置”中选择多账号执行器自身或旧多账号任务。')
+                raise ValueError(_tr('Multi-account configuration cannot select itself or the legacy multi-account task.'))
             if executor is not None and account.get('enabled', True):
                 resolve_task(executor, reference)
         if not isinstance(account.get('config'), dict):
-            raise ValueError(f'账号 {key} 的任务配置必须是对象。')
+            raise ValueError(_tr('Task configuration for account {account} must be an object.').format(account=key))
 
 
 class MultiAccountConfigStore:
@@ -81,12 +87,12 @@ class MultiAccountConfigStore:
         with self.results_path.open(encoding='utf-8') as stream:
             results = json.load(stream)
         if not isinstance(results, dict):
-            raise ValueError('账号运行记录必须是对象。')
+            raise ValueError(_tr('Account run history must be an object.'))
         if any(not isinstance(result, dict)
                or result.get('status') not in {'success', 'failed', 'cancelled'}
                or not isinstance(result.get('finished_at'), str)
                for result in results.values()):
-            raise ValueError('账号运行记录格式无效。')
+            raise ValueError(_tr('Invalid account run history format.'))
         return results
 
     def record_result(self, account, status, message=''):
@@ -106,7 +112,7 @@ class MultiAccountConfigStore:
         with self.path.open(encoding='utf-8') as stream:
             document = json.load(stream)
         if not isinstance(document, dict) or 'accounts' not in document:
-            raise ValueError('多账号配置缺少 accounts 列表。')
+            raise ValueError(_tr('Multi-account configuration is missing the accounts list.'))
         accounts = document['accounts']
         validate_accounts(accounts)
         return deepcopy(accounts)

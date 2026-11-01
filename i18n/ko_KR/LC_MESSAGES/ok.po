@@ -1437,3 +1437,699 @@ msgstr "현재 팀을 감지하지 못했습니다."
 
 msgid "Team Info"
 msgstr "팀 설명"
+
+#, python-brace-format
+msgid "could not find char {index} {info} {highest_confidence}"
+msgstr "캐릭터 인식 실패: {index} {info} {highest_confidence}"
+
+msgid "can not open wheel"
+msgstr "도구 휠을 열 수 없습니다"
+
+msgid "on_combat_check failed"
+msgstr "전투 상태 확인 실패"
+
+#, python-brace-format
+msgid "enter combat {has_lavitator}"
+msgstr "전투 진입, 공중 부양 상태: {has_lavitator}"
+
+msgid "Target enemy failed, please disable Nvidia/AMD Filter or Sharpening!"
+msgstr "적 조준 실패. Nvidia/AMD 필터 또는 선명화 기능을 끄세요!"
+
+msgid "Characters dead"
+msgstr "캐릭터가 사망했습니다"
+
+msgid "click m to open the map"
+msgstr "M 키로 지도를 엽니다"
+
+msgid "Abyss start prompt disappeared, force enter combat"
+msgstr "심연 시작 안내가 사라져 전투에 진입합니다"
+
+msgid "Can not find a teleport to heal"
+msgstr "회복용 워프 포인트를 찾을 수 없습니다"
+
+msgid "Can not find the travel button"
+msgstr "빠른 이동 버튼을 찾을 수 없습니다"
+
+msgid "raise_not_in_combat char dead"
+msgstr "캐릭터 사망으로 전투를 종료합니다"
+
+msgid "wait condition failed while walking"
+msgstr "이동 중 대기 조건을 충족하지 못했습니다"
+
+#, python-brace-format
+msgid "set_key {key} to {name}"
+msgstr "{key} 키를 {name}(으)로 인식했습니다"
+
+msgid "Could not reach the Abyss challenge start"
+msgstr "심연 도전 시작 지점에 도달할 수 없습니다"
+
+msgid "Could not load the Abyss team"
+msgstr "심연 파티를 불러올 수 없습니다"
+
+#, python-brace-format
+msgid "loaded chars success {c} {confidence}"
+msgstr "캐릭터 불러오기 성공: {c}, 신뢰도: {confidence}"
+
+msgid "start walk_to_treasure"
+msgstr "보상으로 이동합니다"
+
+#, python-brace-format
+msgid "angle: {my_angle}, to_turn: {to_turn}"
+msgstr "현재 각도: {my_angle}, 회전량: {to_turn}"
+
+#, python-brace-format
+msgid "open_boss_book {name}"
+msgstr "잔상 탐색 열기: {name}"
+
+#, python-brace-format
+msgid "click {book_key} to open the book"
+msgstr "{book_key} 키로 가이드북을 엽니다"
+
+msgid "zoom map to max"
+msgstr "지도를 최대로 확대합니다"
+
+#, python-brace-format
+msgid "Can not find {feature} on minimap"
+msgstr "미니맵에서 {feature}을(를) 찾을 수 없습니다"
+
+#, python-brace-format
+msgid "changed direction {angle} {current_direction} -> {new_direction}"
+msgstr "방향 전환 {angle}: {current_direction} -> {new_direction}"
+
+msgid "monthly_card found click"
+msgstr "월정액 보상을 감지하여 수령합니다"
+
+#, python-brace-format
+msgid "send {book_key} key to open"
+msgstr "{book_key} 키로 엽니다"
+
+msgid "send f2 key mouse key to open the book"
+msgstr "F2 키와 마우스 클릭으로 가이드북을 엽니다"
+
+msgid "can't find boss_proceed"
+msgstr "도전 이동 버튼을 찾을 수 없습니다"
+
+msgid "find_function not found, change to opposite direction"
+msgstr "상호작용 안내를 찾지 못해 반대 방향으로 이동합니다"
+
+msgid "cant find the f to enter"
+msgstr "입장용 F 상호작용 안내를 찾을 수 없습니다"
+
+msgid "can not walk to treasure!"
+msgstr "보상 위치로 이동할 수 없습니다!"
+
+#, python-brace-format
+msgid "yolo found echo {echos}"
+msgstr "YOLO가 에코를 감지했습니다: {echos}"
+
+msgid "Close the notice!"
+msgstr "공지를 닫습니다!"
+
+msgid "Game update completed; the game will restart"
+msgstr "게임 업데이트 완료. 게임을 재시작합니다"
+
+#, python-brace-format
+msgid "start_device end {result}"
+msgstr "장치 시작 완료: {result}"
+
+msgid "must be in game world and in teams"
+msgstr "오픈 월드에서 파티를 편성해야 합니다"
+
+msgid "not on the wall, stop running"
+msgstr "벽에서 벗어나 달리기를 중지합니다"
+
+msgid "on the wall, start running"
+msgstr "벽에 있어 달리기를 시작합니다"
+
+msgid "Click the Agree button!"
+msgstr "동의 버튼을 누릅니다!"
+
+#, python-brace-format
+msgid "Click Start Game! {start}"
+msgstr "게임 시작을 누릅니다! {start}"
+
+#, python-brace-format
+msgid "wait_login {switch_login} {boxes}"
+msgstr "로그인 대기 중: {switch_login} {boxes}"
+
+msgid "can't find boss_proceed after scroll"
+msgstr "스크롤 후에도 도전 이동 버튼을 찾을 수 없습니다"
+
+msgid "Click the Login button!"
+msgstr "로그인 버튼을 누릅니다!"
+
+#, python-brace-format
+msgid "unknown_lang {name}"
+msgstr "지원하지 않는 언어: {name}"
+
+msgid "Start after filtering Echoes on the bag's Echo screen!"
+msgstr "가방의 에코 화면에서 필터를 적용한 후 시작하세요!"
+
+#, python-brace-format
+msgid ""
+"No more Echoes to modify. Finished! Enhanced: {total}, matching: {matching}"
+msgstr "변경할 에코가 없습니다. 완료! 강화: {total}, 조건 충족: {matching}"
+
+msgid "Cannot find the current main stat!"
+msgstr "현재 메인 속성을 찾을 수 없습니다!"
+
+msgid "The target stat matches the current stat. Change the Echo filter!"
+msgstr "목표 속성과 현재 속성이 같습니다. 에코 필터를 변경하세요!"
+
+#, python-brace-format
+msgid "Cannot open screenshot folder: {e}"
+msgstr "스크린샷 폴더를 열 수 없습니다: {e}"
+
+#, python-brace-format
+msgid "Unknown character: {class_name}"
+msgstr "알 수 없는 캐릭터: {class_name}"
+
+msgid "Save custom code before enabling custom mode"
+msgstr "사용자 지정 모드를 켜기 전에 코드를 저장하세요"
+
+msgid "Character code must be text"
+msgstr "캐릭터 코드는 텍스트여야 합니다"
+
+msgid "check weekly garden"
+msgstr "주간 낙원 임무를 확인합니다"
+
+msgid "check discarded echo"
+msgstr "폐기 표시한 에코를 확인합니다"
+
+msgid "battle pass"
+msgstr "선약 방송 보상을 수령합니다"
+
+msgid "open_daily"
+msgstr "일일 임무를 엽니다"
+
+msgid "claim daily reward via  coordinate"
+msgstr "좌표를 클릭하여 일일 보상을 수령합니다"
+
+msgid "weekly garden not completed, run GardenTask"
+msgstr "주간 낙원 임무가 미완료여서 실행합니다"
+
+msgid "can not battle pass, maybe ended"
+msgstr "선약 방송 보상을 수령할 수 없습니다. 종료되었을 수 있습니다"
+
+msgid "no_boss_proceed, click claim"
+msgstr "이동 버튼이 없어 수령을 클릭합니다"
+
+msgid "weekly garden already completed"
+msgstr "주간 낙원 임무가 이미 완료되었습니다"
+
+msgid "GardenTask Failed"
+msgstr "낙원 임무 실패"
+
+msgid "MergeEchoTask Failed"
+msgstr "에코 합성 임무 실패"
+
+msgid "NightmareNestTask Failed"
+msgstr "악몽의 둥지 임무 실패"
+
+msgid "farm_domain: death recovered, re-enter from F2 book"
+msgstr "던전 파밍: 부활 후 F2 가이드북에서 다시 입장합니다"
+
+msgid "\"self.stamina_once\" must be override"
+msgstr "self.stamina_once를 재정의해야 합니다"
+
+#, python-brace-format
+msgid ""
+"farm_domain: exceeded recovery retries ({max_recovery_retries}), stop "
+"farming"
+msgstr "던전 파밍: 복구 재시도 한도({max_recovery_retries})를 초과하여 중지합니다"
+
+msgid "farm_in_domain: death recovered, exiting domain"
+msgstr "던전 내 파밍: 부활 후 던전에서 나갑니다"
+
+msgid "Does not meet the requirements; discarding"
+msgstr "조건을 충족하지 않아 폐기합니다"
+
+msgid "Succeeded and locked"
+msgstr "성공하여 잠갔습니다"
+
+msgid "The first substat must be valid; discarding"
+msgstr "첫 부가 속성이 유효하지 않아 폐기합니다"
+
+msgid "Not enough remaining slots for the required valid substats; discarding"
+msgstr "남은 슬롯으로 필요한 유효 부가 속성 수를 채울 수 없어 폐기합니다"
+
+msgid "Failed to discard!"
+msgstr "폐기 실패!"
+
+msgid "Failed to lock!"
+msgstr "잠금 실패!"
+
+msgid "Matching Echo found; task paused"
+msgstr "조건에 맞는 에코를 찾아 임무를 일시 정지했습니다"
+
+#, python-brace-format
+msgid ""
+"No more Echoes to enhance. Finished! Enhanced: {total}, matching: {matching}"
+msgstr "강화할 에코가 없습니다. 완료! 강화: {total}, 조건 충족: {matching}"
+
+#, python-brace-format
+msgid "ocr values: {texts}"
+msgstr "OCR 인식 결과: {texts}"
+
+#, python-brace-format
+msgid ""
+"Cannot obtain both CRIT stats ({missing_crit} missing, {remaining_slots} "
+"slots left); discarding"
+msgstr ""
+"치명타 속성 2종을 갖출 수 없습니다(부족: {missing_crit}, 남은 슬롯: {remaining_slots}). 폐기합니다"
+
+#, python-brace-format
+msgid "Combined CRIT score {total_score:.1f} < {minimum}; discarding"
+msgstr "치명타 합계 {total_score:.1f} < {minimum}. 폐기합니다"
+
+msgid "Cannot determine the Echo's discard state!"
+msgstr "에코의 폐기 상태를 확인할 수 없습니다!"
+
+msgid "Discarded successfully!"
+msgstr "폐기 성공!"
+
+msgid "Cannot determine the Echo's lock state!"
+msgstr "에코의 잠금 상태를 확인할 수 없습니다!"
+
+msgid "Locked successfully!"
+msgstr "잠금 성공!"
+
+msgid "Enable staged material insertion in enhancement settings!"
+msgstr "강화 설정에서 단계별 재료 투입을 켜세요!"
+
+msgid "Enable simultaneous tuning in enhancement settings!"
+msgstr "강화 설정에서 동시 튜닝을 켜세요!"
+
+msgid "Cannot find Enhance and Tune!"
+msgstr "강화 및 튜닝을 찾을 수 없습니다!"
+
+#, python-brace-format
+msgid "Invalid substat {p} before both CRIT stats; discarding"
+msgstr "치명타 속성 2종 전에 무효 부가 속성 {p}이(가) 나와 폐기합니다"
+
+#, python-brace-format
+msgid "First CRIT Rate {v} < {minimum}; discarding"
+msgstr "첫 치명타 확률 {v} < {minimum}. 폐기합니다"
+
+#, python-brace-format
+msgid "First CRIT DMG {v} < {minimum}; discarding"
+msgstr "첫 치명타 피해 {v} < {minimum}. 폐기합니다"
+
+#, python-brace-format
+msgid "in_realm: {_in_realm}"
+msgstr "던전 내부: {_in_realm}"
+
+#, python-brace-format
+msgid "teleport_to_boss prepared as {walk_result}"
+msgstr "보스 워프 준비 결과: {walk_result}"
+
+msgid "walk after boss teleport until combat or F"
+msgstr "보스 워프 후 전투 또는 F 안내가 나타날 때까지 이동합니다"
+
+msgid "Teleport to boss failed"
+msgstr "보스 워프 실패"
+
+msgid "Teleport to boss failed: can not walk to combat or F"
+msgstr "보스 워프 실패: 전투에 진입하거나 F 안내를 찾을 수 없습니다"
+
+msgid "_has_treasure = True"
+msgstr "수령 가능한 보상을 감지했습니다"
+
+#, python-brace-format
+msgid "profile: {boss} {settings}"
+msgstr "보스 설정: {boss} {settings}"
+
+#, python-brace-format
+msgid "teleport_to_nearest_boss {box}"
+msgstr "가장 가까운 보스로 워프합니다: {box}"
+
+msgid "Teleport to boss failed: can not find F before entering realm"
+msgstr "보스 워프 실패: 던전 입장 전 F 안내를 찾을 수 없습니다"
+
+#, python-brace-format
+msgid "Can not find boss level {boss_level}"
+msgstr "보스 레벨 {boss_level}을(를) 찾을 수 없습니다"
+
+#, python-brace-format
+msgid "teleport_to_nearest_boss {aim_boss}"
+msgstr "가장 가까운 보스로 워프합니다: {aim_boss}"
+
+msgid "Can not find the boss octagon on map"
+msgstr "지도에서 보스의 팔각형 표시를 찾을 수 없습니다"
+
+msgid "scroll_and_click_buttons"
+msgstr "스크롤한 후 버튼을 클릭합니다"
+
+msgid "start wait in combat"
+msgstr "전투 대기를 시작합니다"
+
+#, python-brace-format
+msgid "combat_wait_time: {combat_wait_time}"
+msgstr "전투 대기 시간: {combat_wait_time}"
+
+#, python-brace-format
+msgid "Night elapsed: {night_elapsed:.1f}s"
+msgstr "야간 경과 시간: {night_elapsed:.1f}초"
+
+msgid "boss not found"
+msgstr "보스를 찾을 수 없습니다"
+
+msgid "farm 4c: death recovered, teleport to boss again"
+msgstr "4코스트 에코 파밍: 부활 후 보스로 다시 워프합니다"
+
+#, python-brace-format
+msgid "Unknown Teleport to Boss config: {teleport_to_boss}"
+msgstr "알 수 없는 보스 워프 설정: {teleport_to_boss}"
+
+#, python-brace-format
+msgid ""
+"farm 4c: exceeded recovery retries ({max_recovery_retries}), stop farming"
+msgstr "4코스트 에코 파밍: 복구 재시도 한도({max_recovery_retries})를 초과하여 중지합니다"
+
+msgid "Farm failed after walking into boss combat, teleporting again"
+msgstr "보스 전투 진입 후 파밍에 실패하여 다시 워프합니다"
+
+msgid "Fenrico teleport_to_nearest_boss failed"
+msgstr "펜리코의 가장 가까운 보스 워프 실패"
+
+msgid "not in combat try click restart"
+msgstr "전투 중이 아니므로 재도전을 클릭합니다"
+
+#, python-brace-format
+msgid "Loaded {loaded} from {total} Stars"
+msgstr "별 표시 {total}개 중 {loaded}개를 불러왔습니다"
+
+msgid "can not find my cords on big map!"
+msgstr "전체 지도에서 현재 위치를 찾을 수 없습니다!"
+
+msgid "cannot find any stars, stop farming"
+msgstr "별 표시를 찾을 수 없어 파밍을 중지합니다"
+
+#, python-brace-format
+msgid "reached star {star} {distance} {star_move_distance_threshold}"
+msgstr "별 표시 {star} 도착, 거리: {distance}, 기준: {star_move_distance_threshold}"
+
+msgid "too far from next star, stop farming"
+msgstr "다음 별 표시가 너무 멀어 파밍을 중지합니다"
+
+msgid "Starting task"
+msgstr "임무를 시작합니다"
+
+msgid "On the main screen"
+msgstr "메인 화면입니다"
+
+msgid "Five-to-one merge completed!"
+msgstr "5개 합성 완료!"
+
+#, python-brace-format
+msgid "keeps: {count} set_name: {set_name} keep: {keeps}"
+msgstr "보존 수: {count}, 세트: {set_name}, 보존 항목: {keeps}"
+
+msgid "Keep all; skipping"
+msgstr "모두 보존하므로 건너뜁니다"
+
+msgid "ATK% not selected; skipping step two"
+msgstr "공격력%가 선택되지 않아 두 번째 단계를 건너뜁니다"
+
+#, python-brace-format
+msgid "Failed to recognize stat list! {choices}"
+msgstr "속성 목록 인식 실패! {choices}"
+
+#, python-brace-format
+msgid "Fewer than 5 Echoes in {set_name}"
+msgstr "{set_name}의 에코가 5개 미만입니다"
+
+#, python-brace-format
+msgid "Not in configuration: {set_name} {name}; selecting for merge!"
+msgstr "설정에 없는 {set_name} {name}을(를) 합성 대상으로 선택합니다!"
+
+#, python-brace-format
+msgid "Index out of range, max is {total_number}"
+msgstr "인덱스가 범위를 벗어났습니다. 최댓값: {total_number}"
+
+msgid "Garden task completed; limit reached"
+msgstr "낙원 임무 완료. 상한에 도달했습니다"
+
+#, python-brace-format
+msgid "Garden current: {current}"
+msgstr "현재 낙원 진행도: {current}"
+
+#, python-brace-format
+msgid "click {name} {confidence:.3f}"
+msgstr "{name} 클릭, 신뢰도: {confidence:.3f}"
+
+msgid "click garden_get_confirm"
+msgstr "낙원 보상 확인 버튼을 클릭합니다"
+
+#, python-brace-format
+msgid "can not open bag with hotkey {hotkey}"
+msgstr "단축키 {hotkey}(으)로 가방을 열 수 없습니다"
+
+msgid "All full batches of discarded Echoes have been merged."
+msgstr "폐기 표시한 에코의 모든 전체 배치를 합성했습니다."
+
+msgid "Must have 1000 discarded Echo to Run"
+msgstr "실행하려면 폐기 표시한 에코가 1000개 이상 필요합니다"
+
+msgid "Add accounts and save the configuration first."
+msgstr "먼저 계정을 추가하고 설정을 저장하세요."
+
+#, python-brace-format
+msgid "ComboBox account switch failed; falling back to OCR: {error_type}"
+msgstr "콤보 상자 계정 전환 실패. OCR로 전환합니다: {error_type}"
+
+#, python-brace-format
+msgid "Account confirmation mismatch; retrying {attempt}/5"
+msgstr "계정 확인 불일치. 재시도 {attempt}/5"
+
+#, python-brace-format
+msgid "Cannot confirm target account {account}; stopping login."
+msgstr "대상 계정 {account}을(를) 확인할 수 없어 로그인을 중지합니다."
+
+#, python-brace-format
+msgid "{account} logged in successfully"
+msgstr "{account} 로그인 성공"
+
+#, python-brace-format
+msgid "Failed to save account run history: {error}"
+msgstr "계정 실행 기록 저장 실패: {error}"
+
+#, python-brace-format
+msgid "Account {account} not found in the login list"
+msgstr "로그인 목록에서 계정 {account}을(를) 찾을 수 없습니다"
+
+msgid "ComboBox account selection had no effect."
+msgstr "콤보 상자의 계정 선택이 적용되지 않았습니다."
+
+msgid "Current ComboBox account does not match the target."
+msgstr "콤보 상자의 현재 계정이 대상과 일치하지 않습니다."
+
+msgid "Login successful; task is set to None, skipping."
+msgstr "로그인 성공. 실행 임무가 '없음'이므로 건너뜁니다."
+
+msgid "click drop down no effect"
+msgstr "드롭다운 클릭이 작동하지 않습니다"
+
+msgid "opened gray_book_boss"
+msgstr "잔상 탐색을 열었습니다"
+
+msgid "go nightmare"
+msgstr "악몽의 둥지로 이동합니다"
+
+msgid "go nightmare scroll"
+msgstr "스크롤하여 악몽의 둥지를 찾습니다"
+
+msgid "nightmare nest: combat detected after pickup"
+msgstr "악몽의 둥지: 수집 후 전투를 감지했습니다"
+
+#, python-brace-format
+msgid "nightmare nest unreachable, skip this run: {cache_key}"
+msgstr "악몽의 둥지에 도달할 수 없어 이번 실행을 건너뜁니다: {cache_key}"
+
+msgid "nightmare nest unreachable, skip this run"
+msgstr "악몽의 둥지에 도달할 수 없어 이번 실행을 건너뜁니다"
+
+msgid "nightmare nest: death recovered, re-enter from F2 book"
+msgstr "악몽의 둥지: 부활 후 F2 가이드북에서 다시 입장합니다"
+
+msgid "Captured echo during combat, skipping search."
+msgstr "전투 중 에코를 흡수하여 탐색을 건너뜁니다."
+
+msgid "farm echo walk find true"
+msgstr "이동하며 에코 탐색 성공"
+
+#, python-brace-format
+msgid "{count_box} is not complete"
+msgstr "{count_box} 미완료"
+
+msgid "no echo collected, re-teleport to current nest as fallback"
+msgstr "에코를 수집하지 못해 현재 둥지로 다시 워프합니다"
+
+#, python-brace-format
+msgid "skip cached unreachable nightmare nest: {cache_key}"
+msgstr "도달 불가로 기록된 악몽의 둥지를 건너뜁니다: {cache_key}"
+
+#, python-brace-format
+msgid "nightmare nest: died {deaths} times, skip this run: {cache_key}"
+msgstr "악몽의 둥지: {deaths}회 사망하여 이번 실행을 건너뜁니다: {cache_key}"
+
+msgid "farm echo walk find true after re-teleport"
+msgstr "다시 워프한 후 이동하며 에코 탐색 성공"
+
+#, python-brace-format
+msgid "click {click}"
+msgstr "{click} 클릭"
+
+msgid "Event screen action limit exceeded"
+msgstr "이벤트 화면 조작 횟수 한도를 초과했습니다"
+
+msgid "Could not confirm the end of the stage list"
+msgstr "스테이지 목록의 끝을 확인할 수 없습니다"
+
+#, python-brace-format
+msgid "Elimination move {start} -> {end}, score={score}; board={signature}"
+msgstr "제거 이동 {start} -> {end}, 점수={score}, 보드={signature}"
+
+#, python-brace-format
+msgid "Event screen: {text}"
+msgstr "이벤트 화면: {text}"
+
+#, python-brace-format
+msgid "Cannot recognize Tacet Elimination screen: {text}"
+msgstr "무음 제거 화면을 인식할 수 없습니다: {text}"
+
+msgid "Cannot focus the game window; clicking stopped"
+msgstr "게임 창에 포커스를 맞출 수 없어 클릭을 중지했습니다"
+
+msgid "Cannot focus the game window to return to the stage list"
+msgstr "게임 창에 포커스를 맞출 수 없어 스테이지 목록으로 돌아갈 수 없습니다"
+
+msgid "Failed to return to the stage list"
+msgstr "스테이지 목록으로 돌아가지 못했습니다"
+
+msgid "Start the task on the Tacet Elimination event screen"
+msgstr "무음 제거 이벤트 화면에서 임무를 시작하세요"
+
+#, python-brace-format
+msgid "Stage sweep: {text}"
+msgstr "스테이지 스캔: {text}"
+
+msgid "Board unchanged or unrecognized; check the event screen"
+msgstr "보드가 변하지 않거나 인식되지 않습니다. 이벤트 화면을 확인하세요"
+
+#, python-brace-format
+msgid "No legal move recognized: {board}"
+msgstr "유효한 이동을 인식하지 못했습니다: {board}"
+
+msgid "Cannot focus the game window; board dragging stopped"
+msgstr "게임 창에 포커스를 맞출 수 없어 보드 드래그를 중지했습니다"
+
+msgid "No unlocked Final Elimination stage found"
+msgstr "해제된 최종 제거 스테이지를 찾을 수 없습니다"
+
+msgid ""
+"Some stages are still locked; cannot confirm all prerequisites are complete"
+msgstr "아직 잠긴 스테이지가 있어 모든 선행 스테이지 완료를 확인할 수 없습니다"
+
+msgid ""
+"Stage list did not reach Final Elimination; check dragging or recognition"
+msgstr "목록이 최종 제거에 도달하지 못했습니다. 드래그 또는 인식을 확인하세요"
+
+msgid "Result screen exit button not found"
+msgstr "결과 화면의 나가기 버튼을 찾을 수 없습니다"
+
+msgid "Stage retry limit exceeded"
+msgstr "스테이지 재시도 한도를 초과했습니다"
+
+msgid ""
+"Final Elimination finished naturally; restart the task to continue scoring"
+msgstr "최종 제거가 정상 종료되었습니다. 점수 도전을 계속하려면 임무를 다시 시작하세요"
+
+msgid "Cannot confirm stage completion status"
+msgstr "스테이지 완료 상태를 확인할 수 없습니다"
+
+msgid ""
+"Prerequisite scan complete; starting Final Elimination for score, even with "
+"an existing record"
+msgstr "선행 스테이지 스캔 완료. 기존 기록이 있어도 최종 제거 점수 도전을 시작합니다"
+
+msgid "Game window lost focus; dragging stopped"
+msgstr "게임 창이 포커스를 잃어 드래그를 중지했습니다"
+
+msgid "No board or Start button detected after starting the challenge"
+msgstr "도전 시작 후 보드 또는 시작 버튼이 감지되지 않습니다"
+
+msgid "No board detected after starting the challenge"
+msgstr "도전 시작 후 보드가 감지되지 않습니다"
+
+msgid "is not claim treasure, restart challenge"
+msgstr "보상 수령 안내가 없어 재도전합니다"
+
+msgid "farm_tacet: death recovered, re-enter from F2 book"
+msgstr "무음 구역 파밍: 부활 후 F2 가이드북에서 다시 입장합니다"
+
+#, python-brace-format
+msgid ""
+"farm_tacet: exceeded recovery retries ({max_recovery_retries}), stop farming"
+msgstr "무음 구역 파밍: 복구 재시도 한도({max_recovery_retries})를 초과하여 중지합니다"
+
+#, python-brace-format
+msgid "Garden finished: {texts}"
+msgstr "낙원 임무 종료: {texts}"
+
+#, python-brace-format
+msgid "Task is not registered or has been removed: {module}.{class_name}"
+msgstr "임무가 등록되지 않았거나 제거되었습니다: {module}.{class_name}"
+
+msgid "accounts must be a list of accounts."
+msgstr "accounts는 계정 목록이어야 합니다."
+
+msgid "Account configuration must be an object."
+msgstr "계정 설정은 객체여야 합니다."
+
+msgid ""
+"Use the login list text with all * removed as the account ID; it must not be"
+" empty or have leading or trailing spaces."
+msgstr "로그인 목록에서 모든 *를 제거한 텍스트를 계정 ID로 사용하세요. 비어 있거나 앞뒤 공백이 있으면 안 됩니다."
+
+#, python-brace-format
+msgid "Duplicate account ID {account}; change it before saving."
+msgstr "계정 ID {account}이(가) 중복됩니다. 변경 후 저장하세요."
+
+#, python-brace-format
+msgid "Enabled state for account {account} must be a boolean."
+msgstr "계정 {account}의 활성화 상태는 불리언이어야 합니다."
+
+#, python-brace-format
+msgid "Account {account} is missing its task field; select a task or None."
+msgstr "계정 {account}에 실행 임무 필드가 없습니다. 임무 또는 '없음'을 선택하세요."
+
+msgid "Task reference must contain module and class."
+msgstr "임무 참조에는 module과 class가 필요합니다."
+
+msgid ""
+"Multi-account configuration cannot select itself or the legacy multi-account"
+" task."
+msgstr "다중 계정 설정에서 자기 자신 또는 이전 다중 계정 임무를 선택할 수 없습니다."
+
+#, python-brace-format
+msgid "Task configuration for account {account} must be an object."
+msgstr "계정 {account}의 임무 설정은 객체여야 합니다."
+
+msgid "Account run history must be an object."
+msgstr "계정 실행 기록은 객체여야 합니다."
+
+msgid "Invalid account run history format."
+msgstr "계정 실행 기록 형식이 올바르지 않습니다."
+
+msgid "Multi-account configuration is missing the accounts list."
+msgstr "다중 계정 설정에 accounts 목록이 없습니다."
+
+msgid "Multi-account configuration"
+msgstr "다중 계정 설정"
+
+msgid "Configuration saved"
+msgstr "설정을 저장했습니다"
+
+msgid "No remaining account to run; finishing multi-account daily task"
+msgstr "실행할 계정이 더 없어 다중 계정 일일 임무를 종료합니다"

@@ -1364,3 +1364,754 @@ msgstr "No se ha detectado el equipo actual."
 
 msgid "Team Info"
 msgstr "Info del equipo"
+
+#, python-brace-format
+msgid "could not find char {index} {info} {highest_confidence}"
+msgstr ""
+"No se pudo reconocer el personaje: {index} {info} {highest_confidence}"
+
+msgid "can not open wheel"
+msgstr "No se puede abrir la rueda de herramientas"
+
+msgid "on_combat_check failed"
+msgstr "Error al comprobar el estado de combate"
+
+#, python-brace-format
+msgid "enter combat {has_lavitator}"
+msgstr "Inicio de combate, estado del levitador: {has_lavitator}"
+
+msgid "Target enemy failed, please disable Nvidia/AMD Filter or Sharpening!"
+msgstr ""
+"No se pudo fijar al enemigo. Desactiva los filtros o la nitidez de "
+"Nvidia/AMD."
+
+msgid "Characters dead"
+msgstr "Los personajes han caído"
+
+msgid "click m to open the map"
+msgstr "Pulsa M para abrir el mapa"
+
+msgid "Abyss start prompt disappeared, force enter combat"
+msgstr "El aviso de inicio del Abismo desapareció; se inicia el combate"
+
+msgid "Can not find a teleport to heal"
+msgstr "No se encuentra un punto de viaje para curarse"
+
+msgid "Can not find the travel button"
+msgstr "No se encuentra el botón de viaje rápido"
+
+msgid "raise_not_in_combat char dead"
+msgstr "Personaje caído; se sale del combate"
+
+msgid "wait condition failed while walking"
+msgstr "No se cumplió la condición de espera durante el desplazamiento"
+
+#, python-brace-format
+msgid "set_key {key} to {name}"
+msgstr "Se reconoció la tecla {key} como {name}"
+
+msgid "Could not reach the Abyss challenge start"
+msgstr "No se pudo llegar al inicio del desafío del Abismo"
+
+msgid "Could not load the Abyss team"
+msgstr "No se pudo cargar el equipo del Abismo"
+
+#, python-brace-format
+msgid "loaded chars success {c} {confidence}"
+msgstr "Personaje cargado: {c}, confianza: {confidence}"
+
+msgid "start walk_to_treasure"
+msgstr "Se inicia el desplazamiento hacia la recompensa"
+
+#, python-brace-format
+msgid "angle: {my_angle}, to_turn: {to_turn}"
+msgstr "Ángulo actual: {my_angle}, giro necesario: {to_turn}"
+
+#, python-brace-format
+msgid "open_boss_book {name}"
+msgstr "Se abre la búsqueda de enemigos: {name}"
+
+#, python-brace-format
+msgid "click {book_key} to open the book"
+msgstr "Pulsa {book_key} para abrir la guía"
+
+msgid "zoom map to max"
+msgstr "Se amplía el mapa al máximo"
+
+#, python-brace-format
+msgid "Can not find {feature} on minimap"
+msgstr "No se encuentra {feature} en el minimapa"
+
+#, python-brace-format
+msgid "changed direction {angle} {current_direction} -> {new_direction}"
+msgstr "Cambio de dirección {angle}: {current_direction} -> {new_direction}"
+
+msgid "monthly_card found click"
+msgstr "Se detectó la recompensa mensual; se pulsa para recogerla"
+
+#, python-brace-format
+msgid "send {book_key} key to open"
+msgstr "Pulsa {book_key} para abrir"
+
+msgid "send f2 key mouse key to open the book"
+msgstr "Pulsa F2 y haz clic para abrir la guía"
+
+msgid "can't find boss_proceed"
+msgstr "No se encuentra el botón para ir al desafío"
+
+msgid "find_function not found, change to opposite direction"
+msgstr "No se encuentra la interacción; se cambia a la dirección opuesta"
+
+msgid "cant find the f to enter"
+msgstr "No se encuentra el aviso F para entrar"
+
+msgid "can not walk to treasure!"
+msgstr "No se puede llegar a la recompensa"
+
+#, python-brace-format
+msgid "yolo found echo {echos}"
+msgstr "YOLO detectó Ecos: {echos}"
+
+msgid "Close the notice!"
+msgstr "Se cierra el aviso"
+
+msgid "Game update completed; the game will restart"
+msgstr "Actualización completada; el juego se reiniciará"
+
+#, python-brace-format
+msgid "start_device end {result}"
+msgstr "Inicio del dispositivo finalizado: {result}"
+
+msgid "must be in game world and in teams"
+msgstr "Debes estar en el mundo abierto y tener un equipo formado"
+
+msgid "not on the wall, stop running"
+msgstr "Se ha dejado la pared; se deja de correr"
+
+msgid "on the wall, start running"
+msgstr "Se está en la pared; se empieza a correr"
+
+msgid "Click the Agree button!"
+msgstr "Se pulsa el botón Aceptar"
+
+#, python-brace-format
+msgid "Click Start Game! {start}"
+msgstr "Se pulsa Iniciar juego: {start}"
+
+#, python-brace-format
+msgid "wait_login {switch_login} {boxes}"
+msgstr "Esperando el inicio de sesión: {switch_login} {boxes}"
+
+msgid "can't find boss_proceed after scroll"
+msgstr "No se encuentra el botón para ir al desafío después de desplazarse"
+
+msgid "Click the Login button!"
+msgstr "Se pulsa el botón Iniciar sesión"
+
+#, python-brace-format
+msgid "unknown_lang {name}"
+msgstr "Idioma no compatible: {name}"
+
+msgid "Start after filtering Echoes on the bag's Echo screen!"
+msgstr ""
+"Inicia después de filtrar los Ecos en la pantalla de Ecos de la mochila"
+
+#, python-brace-format
+msgid ""
+"No more Echoes to modify. Finished! Enhanced: {total}, matching: {matching}"
+msgstr ""
+"No hay más Ecos para modificar. Finalizado. Mejorados: {total}, válidos: "
+"{matching}"
+
+msgid "Cannot find the current main stat!"
+msgstr "No se encuentra el atributo principal actual"
+
+msgid "The target stat matches the current stat. Change the Echo filter!"
+msgstr "El atributo objetivo coincide con el actual. Cambia el filtro de Ecos"
+
+#, python-brace-format
+msgid "Cannot open screenshot folder: {e}"
+msgstr "No se puede abrir la carpeta de capturas: {e}"
+
+#, python-brace-format
+msgid "Unknown character: {class_name}"
+msgstr "Personaje desconocido: {class_name}"
+
+msgid "Save custom code before enabling custom mode"
+msgstr "Guarda el código personalizado antes de activar el modo personalizado"
+
+msgid "Character code must be text"
+msgstr "El código del personaje debe ser texto"
+
+msgid "check weekly garden"
+msgstr "Se comprueba la tarea semanal del jardín"
+
+msgid "check discarded echo"
+msgstr "Se comprueban los Ecos descartados"
+
+msgid "battle pass"
+msgstr "Se recogen las recompensas del pase de batalla"
+
+msgid "open_daily"
+msgstr "Se abren las misiones diarias"
+
+msgid "claim daily reward via  coordinate"
+msgstr "Se recoge la recompensa diaria mediante coordenadas"
+
+msgid "weekly garden not completed, run GardenTask"
+msgstr "La tarea semanal del jardín está pendiente; se inicia"
+
+msgid "can not battle pass, maybe ended"
+msgstr "No se pueden recoger las recompensas del pase; puede haber terminado"
+
+msgid "no_boss_proceed, click claim"
+msgstr "No hay botón para ir al desafío; se pulsa Recoger"
+
+msgid "weekly garden already completed"
+msgstr "La tarea semanal del jardín ya está completada"
+
+msgid "GardenTask Failed"
+msgstr "Error en la tarea del jardín"
+
+msgid "MergeEchoTask Failed"
+msgstr "Error en la tarea de fusión de Ecos"
+
+msgid "NightmareNestTask Failed"
+msgstr "Error en la tarea de nidos de pesadilla"
+
+msgid "farm_domain: death recovered, re-enter from F2 book"
+msgstr ""
+"Farmeo de dominio: recuperación tras morir; se vuelve a entrar desde la guía"
+" F2"
+
+msgid "\"self.stamina_once\" must be override"
+msgstr "Se debe sobrescribir self.stamina_once"
+
+#, python-brace-format
+msgid ""
+"farm_domain: exceeded recovery retries ({max_recovery_retries}), stop "
+"farming"
+msgstr ""
+"Farmeo de dominio: se superó el límite de recuperación "
+"({max_recovery_retries}); se detiene"
+
+msgid "farm_in_domain: death recovered, exiting domain"
+msgstr ""
+"Farmeo dentro del dominio: recuperación tras morir; se sale del dominio"
+
+msgid "Does not meet the requirements; discarding"
+msgstr "No cumple los requisitos; se descarta"
+
+msgid "Succeeded and locked"
+msgstr "Operación completada y Eco bloqueado"
+
+msgid "The first substat must be valid; discarding"
+msgstr "El primer atributo secundario debe ser válido; se descarta"
+
+msgid "Not enough remaining slots for the required valid substats; discarding"
+msgstr ""
+"No quedan suficientes espacios para los atributos válidos necesarios; se "
+"descarta"
+
+msgid "Failed to discard!"
+msgstr "No se pudo descartar"
+
+msgid "Failed to lock!"
+msgstr "No se pudo bloquear"
+
+msgid "Matching Echo found; task paused"
+msgstr "Se encontró un Eco válido; tarea en pausa"
+
+#, python-brace-format
+msgid ""
+"No more Echoes to enhance. Finished! Enhanced: {total}, matching: {matching}"
+msgstr ""
+"No hay más Ecos para mejorar. Finalizado. Mejorados: {total}, válidos: "
+"{matching}"
+
+#, python-brace-format
+msgid "ocr values: {texts}"
+msgstr "Resultados de OCR: {texts}"
+
+#, python-brace-format
+msgid ""
+"Cannot obtain both CRIT stats ({missing_crit} missing, {remaining_slots} "
+"slots left); discarding"
+msgstr ""
+"No se pueden obtener ambos atributos CRIT (faltan {missing_crit}, quedan "
+"{remaining_slots} espacios); se descarta"
+
+#, python-brace-format
+msgid "Combined CRIT score {total_score:.1f} < {minimum}; discarding"
+msgstr "Puntuación CRIT combinada {total_score:.1f} < {minimum}; se descarta"
+
+msgid "Cannot determine the Echo's discard state!"
+msgstr "No se puede determinar el estado de descarte del Eco"
+
+msgid "Discarded successfully!"
+msgstr "Descartado correctamente"
+
+msgid "Cannot determine the Echo's lock state!"
+msgstr "No se puede determinar el estado de bloqueo del Eco"
+
+msgid "Locked successfully!"
+msgstr "Bloqueado correctamente"
+
+msgid "Enable staged material insertion in enhancement settings!"
+msgstr "Activa la inserción de materiales por etapas en los ajustes de mejora"
+
+msgid "Enable simultaneous tuning in enhancement settings!"
+msgstr "Activa la afinación simultánea en los ajustes de mejora"
+
+msgid "Cannot find Enhance and Tune!"
+msgstr "No se encuentra Mejorar y afinar"
+
+#, python-brace-format
+msgid "Invalid substat {p} before both CRIT stats; discarding"
+msgstr "Atributo inválido {p} antes de ambos atributos CRIT; se descarta"
+
+#, python-brace-format
+msgid "First CRIT Rate {v} < {minimum}; discarding"
+msgstr "Primera probabilidad CRIT {v} < {minimum}; se descarta"
+
+#, python-brace-format
+msgid "First CRIT DMG {v} < {minimum}; discarding"
+msgstr "Primer daño CRIT {v} < {minimum}; se descarta"
+
+#, python-brace-format
+msgid "in_realm: {_in_realm}"
+msgstr "Dentro del dominio: {_in_realm}"
+
+#, python-brace-format
+msgid "teleport_to_boss prepared as {walk_result}"
+msgstr "Resultado de preparación del viaje al jefe: {walk_result}"
+
+msgid "walk after boss teleport until combat or F"
+msgstr ""
+"Tras viajar al jefe, se camina hasta entrar en combate o ver el aviso F"
+
+msgid "Teleport to boss failed"
+msgstr "No se pudo viajar al jefe"
+
+msgid "Teleport to boss failed: can not walk to combat or F"
+msgstr ""
+"Error al viajar al jefe: no se puede entrar en combate ni encontrar el aviso"
+" F"
+
+msgid "_has_treasure = True"
+msgstr "Se detectó una recompensa disponible"
+
+#, python-brace-format
+msgid "profile: {boss} {settings}"
+msgstr "Configuración del jefe: {boss} {settings}"
+
+#, python-brace-format
+msgid "teleport_to_nearest_boss {box}"
+msgstr "Se viaja al jefe más cercano: {box}"
+
+msgid "Teleport to boss failed: can not find F before entering realm"
+msgstr ""
+"Error al viajar al jefe: no se encuentra el aviso F antes de entrar al "
+"dominio"
+
+#, python-brace-format
+msgid "Can not find boss level {boss_level}"
+msgstr "No se encuentra el nivel de jefe {boss_level}"
+
+#, python-brace-format
+msgid "teleport_to_nearest_boss {aim_boss}"
+msgstr "Se viaja al jefe más cercano: {aim_boss}"
+
+msgid "Can not find the boss octagon on map"
+msgstr "No se encuentra el marcador octogonal del jefe en el mapa"
+
+msgid "scroll_and_click_buttons"
+msgstr "Se desplaza y se pulsan los botones"
+
+msgid "start wait in combat"
+msgstr "Se empieza a esperar el combate"
+
+#, python-brace-format
+msgid "combat_wait_time: {combat_wait_time}"
+msgstr "Tiempo de espera de combate: {combat_wait_time}"
+
+#, python-brace-format
+msgid "Night elapsed: {night_elapsed:.1f}s"
+msgstr "Tiempo nocturno transcurrido: {night_elapsed:.1f}s"
+
+msgid "boss not found"
+msgstr "No se encuentra el jefe"
+
+msgid "farm 4c: death recovered, teleport to boss again"
+msgstr ""
+"Farmeo de Ecos de coste 4: recuperación tras morir; se vuelve a viajar al "
+"jefe"
+
+#, python-brace-format
+msgid "Unknown Teleport to Boss config: {teleport_to_boss}"
+msgstr "Configuración de viaje al jefe desconocida: {teleport_to_boss}"
+
+#, python-brace-format
+msgid ""
+"farm 4c: exceeded recovery retries ({max_recovery_retries}), stop farming"
+msgstr ""
+"Farmeo de Ecos de coste 4: se superó el límite de recuperación "
+"({max_recovery_retries}); se detiene"
+
+msgid "Farm failed after walking into boss combat, teleporting again"
+msgstr "Falló el farmeo tras entrar al combate del jefe; se vuelve a viajar"
+
+msgid "Fenrico teleport_to_nearest_boss failed"
+msgstr "Error al viajar al jefe más cercano de Fenrico"
+
+msgid "not in combat try click restart"
+msgstr "Fuera de combate; se intenta pulsar Reintentar"
+
+#, python-brace-format
+msgid "Loaded {loaded} from {total} Stars"
+msgstr "Se cargaron {loaded} de {total} estrellas"
+
+msgid "can not find my cords on big map!"
+msgstr "No se puede encontrar la posición actual en el mapa"
+
+msgid "cannot find any stars, stop farming"
+msgstr "No se encuentran estrellas; se detiene el farmeo"
+
+#, python-brace-format
+msgid "reached star {star} {distance} {star_move_distance_threshold}"
+msgstr ""
+"Estrella {star} alcanzada, distancia: {distance}, umbral: "
+"{star_move_distance_threshold}"
+
+msgid "too far from next star, stop farming"
+msgstr "La siguiente estrella está demasiado lejos; se detiene el farmeo"
+
+msgid "Starting task"
+msgstr "Iniciando tarea"
+
+msgid "On the main screen"
+msgstr "En la pantalla principal"
+
+msgid "Five-to-one merge completed!"
+msgstr "Fusión de cinco en uno completada"
+
+#, python-brace-format
+msgid "keeps: {count} set_name: {set_name} keep: {keeps}"
+msgstr "Se conservan {count}, conjunto: {set_name}, conservados: {keeps}"
+
+msgid "Keep all; skipping"
+msgstr "Se conserva todo; se omite"
+
+msgid "ATK% not selected; skipping step two"
+msgstr "ATQ% no seleccionado; se omite el segundo paso"
+
+#, python-brace-format
+msgid "Failed to recognize stat list! {choices}"
+msgstr "No se pudo reconocer la lista de atributos: {choices}"
+
+#, python-brace-format
+msgid "Fewer than 5 Echoes in {set_name}"
+msgstr "Hay menos de 5 Ecos en {set_name}"
+
+#, python-brace-format
+msgid "Not in configuration: {set_name} {name}; selecting for merge!"
+msgstr ""
+"Fuera de configuración: {set_name} {name}; se selecciona para fusionar"
+
+#, python-brace-format
+msgid "Index out of range, max is {total_number}"
+msgstr "Índice fuera de rango; el máximo es {total_number}"
+
+msgid "Garden task completed; limit reached"
+msgstr "Tarea del jardín completada; se alcanzó el límite"
+
+#, python-brace-format
+msgid "Garden current: {current}"
+msgstr "Progreso actual del jardín: {current}"
+
+#, python-brace-format
+msgid "click {name} {confidence:.3f}"
+msgstr "Se pulsa {name}, confianza: {confidence:.3f}"
+
+msgid "click garden_get_confirm"
+msgstr "Se pulsa la confirmación de recompensa del jardín"
+
+#, python-brace-format
+msgid "can not open bag with hotkey {hotkey}"
+msgstr "No se puede abrir la mochila con la tecla {hotkey}"
+
+msgid "All full batches of discarded Echoes have been merged."
+msgstr "Se fusionaron todos los lotes completos de Ecos descartados."
+
+msgid "Must have 1000 discarded Echo to Run"
+msgstr "Se necesitan al menos 1000 Ecos descartados para ejecutar"
+
+msgid "Add accounts and save the configuration first."
+msgstr "Primero añade cuentas y guarda la configuración."
+
+#, python-brace-format
+msgid "ComboBox account switch failed; falling back to OCR: {error_type}"
+msgstr ""
+"Falló el cambio de cuenta en el desplegable; se usará OCR: {error_type}"
+
+#, python-brace-format
+msgid "Account confirmation mismatch; retrying {attempt}/5"
+msgstr "La cuenta no coincide; reintentando {attempt}/5"
+
+#, python-brace-format
+msgid "Cannot confirm target account {account}; stopping login."
+msgstr ""
+"No se puede confirmar la cuenta {account}; se detiene el inicio de sesión."
+
+#, python-brace-format
+msgid "{account} logged in successfully"
+msgstr "{account} inició sesión correctamente"
+
+#, python-brace-format
+msgid "Failed to save account run history: {error}"
+msgstr "No se pudo guardar el historial de la cuenta: {error}"
+
+#, python-brace-format
+msgid "Account {account} not found in the login list"
+msgstr "La cuenta {account} no aparece en la lista de inicio de sesión"
+
+msgid "ComboBox account selection had no effect."
+msgstr "La selección de cuenta en el desplegable no tuvo efecto."
+
+msgid "Current ComboBox account does not match the target."
+msgstr "La cuenta actual del desplegable no coincide con el objetivo."
+
+msgid "Login successful; task is set to None, skipping."
+msgstr "Inicio de sesión correcto; la tarea es Ninguna, se omite."
+
+msgid "click drop down no effect"
+msgstr "Pulsar el desplegable no tuvo efecto"
+
+msgid "opened gray_book_boss"
+msgstr "Se abrió la búsqueda de enemigos"
+
+msgid "go nightmare"
+msgstr "Se va al nido de pesadilla"
+
+msgid "go nightmare scroll"
+msgstr "Se desplaza para buscar el nido de pesadilla"
+
+msgid "nightmare nest: combat detected after pickup"
+msgstr "Nido de pesadilla: se detectó combate tras recoger"
+
+#, python-brace-format
+msgid "nightmare nest unreachable, skip this run: {cache_key}"
+msgstr ""
+"No se puede llegar al nido de pesadilla; se omite esta vez: {cache_key}"
+
+msgid "nightmare nest unreachable, skip this run"
+msgstr "No se puede llegar al nido de pesadilla; se omite esta vez"
+
+msgid "nightmare nest: death recovered, re-enter from F2 book"
+msgstr ""
+"Nido de pesadilla: recuperación tras morir; se vuelve a entrar desde la guía"
+" F2"
+
+msgid "Captured echo during combat, skipping search."
+msgstr "Se absorbió un Eco durante el combate; se omite la búsqueda."
+
+msgid "farm echo walk find true"
+msgstr "Se encontró el Eco buscando a pie"
+
+#, python-brace-format
+msgid "{count_box} is not complete"
+msgstr "{count_box} no está completado"
+
+msgid "no echo collected, re-teleport to current nest as fallback"
+msgstr "No se recogió ningún Eco; se vuelve a viajar al nido actual"
+
+#, python-brace-format
+msgid "skip cached unreachable nightmare nest: {cache_key}"
+msgstr ""
+"Se omite el nido de pesadilla registrado como inaccesible: {cache_key}"
+
+#, python-brace-format
+msgid "nightmare nest: died {deaths} times, skip this run: {cache_key}"
+msgstr "Nido de pesadilla: {deaths} muertes; se omite esta vez: {cache_key}"
+
+msgid "farm echo walk find true after re-teleport"
+msgstr "Se encontró el Eco buscando a pie tras volver a viajar"
+
+#, python-brace-format
+msgid "click {click}"
+msgstr "Se pulsa {click}"
+
+msgid "Event screen action limit exceeded"
+msgstr "Se superó el límite de acciones en la pantalla del evento"
+
+msgid "Could not confirm the end of the stage list"
+msgstr "No se pudo confirmar el final de la lista de fases"
+
+#, python-brace-format
+msgid "Elimination move {start} -> {end}, score={score}; board={signature}"
+msgstr ""
+"Movimiento de eliminación {start} -> {end}, puntuación={score}; "
+"tablero={signature}"
+
+#, python-brace-format
+msgid "Event screen: {text}"
+msgstr "Pantalla del evento: {text}"
+
+#, python-brace-format
+msgid "Cannot recognize Tacet Elimination screen: {text}"
+msgstr "No se reconoce la pantalla de Eliminación Tácita: {text}"
+
+msgid "Cannot focus the game window; clicking stopped"
+msgstr "No se puede enfocar la ventana del juego; se detienen los clics"
+
+msgid "Cannot focus the game window to return to the stage list"
+msgstr ""
+"No se puede enfocar la ventana del juego para volver a la lista de fases"
+
+msgid "Failed to return to the stage list"
+msgstr "No se pudo volver a la lista de fases"
+
+msgid "Start the task on the Tacet Elimination event screen"
+msgstr "Inicia la tarea en la pantalla del evento Eliminación Tácita"
+
+#, python-brace-format
+msgid "Stage sweep: {text}"
+msgstr "Exploración de fases: {text}"
+
+msgid "Board unchanged or unrecognized; check the event screen"
+msgstr "El tablero no cambió o no se reconoce; revisa la pantalla del evento"
+
+#, python-brace-format
+msgid "No legal move recognized: {board}"
+msgstr "No se reconoce ningún movimiento válido: {board}"
+
+msgid "Cannot focus the game window; board dragging stopped"
+msgstr ""
+"No se puede enfocar la ventana del juego; se detiene el arrastre del tablero"
+
+msgid "No unlocked Final Elimination stage found"
+msgstr "No se encuentra ninguna fase desbloqueada de Eliminación Final"
+
+msgid ""
+"Some stages are still locked; cannot confirm all prerequisites are complete"
+msgstr ""
+"Quedan fases bloqueadas; no se puede confirmar que se completaron todos los "
+"requisitos"
+
+msgid ""
+"Stage list did not reach Final Elimination; check dragging or recognition"
+msgstr ""
+"La lista no llegó a Eliminación Final; revisa el arrastre o el "
+"reconocimiento"
+
+msgid "Result screen exit button not found"
+msgstr "No se encuentra el botón de salida de los resultados"
+
+msgid "Stage retry limit exceeded"
+msgstr "Se superó el límite de reintentos de la fase"
+
+msgid ""
+"Final Elimination finished naturally; restart the task to continue scoring"
+msgstr ""
+"Eliminación Final terminó de forma natural; reinicia la tarea para seguir "
+"sumando puntos"
+
+msgid "Cannot confirm stage completion status"
+msgstr "No se puede confirmar el estado de finalización de la fase"
+
+msgid ""
+"Prerequisite scan complete; starting Final Elimination for score, even with "
+"an existing record"
+msgstr ""
+"Exploración previa completada; se inicia Eliminación Final para puntuar, "
+"aunque ya haya récord"
+
+msgid "Game window lost focus; dragging stopped"
+msgstr "La ventana del juego perdió el foco; se detiene el arrastre"
+
+msgid "No board or Start button detected after starting the challenge"
+msgstr "No se detecta el tablero ni el botón Iniciar tras comenzar el desafío"
+
+msgid "No board detected after starting the challenge"
+msgstr "No se detecta el tablero tras comenzar el desafío"
+
+msgid "is not claim treasure, restart challenge"
+msgstr ""
+"No aparece el aviso para recoger la recompensa; se reinicia el desafío"
+
+msgid "farm_tacet: death recovered, re-enter from F2 book"
+msgstr ""
+"Farmeo de campo tácito: recuperación tras morir; se vuelve a entrar desde la"
+" guía F2"
+
+#, python-brace-format
+msgid ""
+"farm_tacet: exceeded recovery retries ({max_recovery_retries}), stop farming"
+msgstr ""
+"Farmeo de campo tácito: se superó el límite de recuperación "
+"({max_recovery_retries}); se detiene"
+
+#, python-brace-format
+msgid "Garden finished: {texts}"
+msgstr "Tarea del jardín finalizada: {texts}"
+
+#, python-brace-format
+msgid "Task is not registered or has been removed: {module}.{class_name}"
+msgstr "La tarea no está registrada o fue eliminada: {module}.{class_name}"
+
+msgid "accounts must be a list of accounts."
+msgstr "accounts debe ser una lista de cuentas."
+
+msgid "Account configuration must be an object."
+msgstr "La configuración de cuenta debe ser un objeto."
+
+msgid ""
+"Use the login list text with all * removed as the account ID; it must not be"
+" empty or have leading or trailing spaces."
+msgstr ""
+"Usa como ID el texto de la lista de acceso sin ningún *. No puede estar "
+"vacío ni tener espacios al principio o al final."
+
+#, python-brace-format
+msgid "Duplicate account ID {account}; change it before saving."
+msgstr "El ID de cuenta {account} está duplicado; cámbialo antes de guardar."
+
+#, python-brace-format
+msgid "Enabled state for account {account} must be a boolean."
+msgstr "El estado de activación de {account} debe ser booleano."
+
+#, python-brace-format
+msgid "Account {account} is missing its task field; select a task or None."
+msgstr "Falta el campo de tarea de {account}; selecciona una tarea o Ninguna."
+
+msgid "Task reference must contain module and class."
+msgstr "La referencia de tarea debe contener module y class."
+
+msgid ""
+"Multi-account configuration cannot select itself or the legacy multi-account"
+" task."
+msgstr ""
+"La configuración multicuenta no puede seleccionarse a sí misma ni la tarea "
+"multicuenta antigua."
+
+#, python-brace-format
+msgid "Task configuration for account {account} must be an object."
+msgstr "La configuración de tarea de {account} debe ser un objeto."
+
+msgid "Account run history must be an object."
+msgstr "El historial de ejecución debe ser un objeto."
+
+msgid "Invalid account run history format."
+msgstr "Formato de historial de ejecución no válido."
+
+msgid "Multi-account configuration is missing the accounts list."
+msgstr "Falta la lista accounts en la configuración multicuenta."
+
+msgid "Multi-account configuration"
+msgstr "Configuración multicuenta"
+
+msgid "Configuration saved"
+msgstr "Configuración guardada"
+
+msgid "No remaining account to run; finishing multi-account daily task"
+msgstr "No quedan cuentas por ejecutar; finaliza la tarea diaria multicuenta"

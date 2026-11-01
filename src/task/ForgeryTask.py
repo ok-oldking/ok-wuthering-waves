@@ -61,7 +61,7 @@ class ForgeryTask(DomainTask):
         self.open_boss_book('ningsu')
         self.info_set('Teleport to Forgery Challenge', serial_number - 1)
         if serial_number > self.total_number:
-            raise IndexError(f'Index out of range, max is {self.total_number}')
+            raise IndexError(self.tr('Index out of range, max is {total_number}').format(total_number=self.total_number))
         self.click_on_book_target(serial_number, self.total_number, self.structure)
         self.click(0.891, 0.910, after_sleep=1)
         self.click_team_challenge()
