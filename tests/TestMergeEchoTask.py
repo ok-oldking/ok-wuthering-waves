@@ -14,11 +14,12 @@ from src.task.DailyTask import (
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.MergeEchoTask import FULL_BATCH_PATTERN, MergeEchoTask
 from src.task.NightmareNestTask import NightmareNestTask
+from src.task.task_icons import task_icon
 
 
 class TestMergeEchoTask(unittest.TestCase):
 
-    def test_ungrouped_tasks_and_global_bag_hotkey_metadata(self):
+    def test_task_categories_and_global_bag_hotkey_metadata(self):
         executor = Mock()
         executor.scene = None
         executor.global_config.get_config.return_value = {}
@@ -27,8 +28,10 @@ class TestMergeEchoTask(unittest.TestCase):
         merge_task = MergeEchoTask(executor, app)
         farm_task = FarmEchoTask(executor, app)
 
-        self.assertIsNone(merge_task.group_name)
-        self.assertIsNone(farm_task.group_name)
+        self.assertEqual('Echo Management', merge_task.group_name)
+        self.assertEqual(task_icon('category-echo'), merge_task.group_icon)
+        self.assertEqual('Daily Activities', farm_task.group_name)
+        self.assertEqual(task_icon('category-daily'), farm_task.group_icon)
         self.assertNotIn("Bag Key", merge_task.default_config)
         self.assertEqual(key_config_option.default_config["Bag Key"], "b")
         self.assertIn("Bag Key", key_config_option.config_description)
