@@ -11,6 +11,8 @@ class MergeEchoTask(BaseWWTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "♻️ Merge Discarded Echoes"
+        self.group_name = 'Echo Management'
+        self.group_icon = 'layers'
         self.description = (
             "Must have 1000 discarded Echo to Run, "
             "Merge discarded Echoes in full batches of 100."

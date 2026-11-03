@@ -115,6 +115,8 @@ class TacetEliminationTask(WWOneTimeTask, BaseWWTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = 'Tacet Elimination'
+        self.group_name = 'Daily Activities'
+        self.group_icon = 'calendar'
         self.description = 'Start on the current event screen. Complete prerequisite stages, then play Final Elimination for the highest possible score until turns run out.'
 
     def event_text(self):

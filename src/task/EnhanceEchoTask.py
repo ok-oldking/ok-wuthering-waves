@@ -20,6 +20,8 @@ class EnhanceEchoTask(BaseWWTask, FindFeature):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "⬆️ 批量强化声骸(游戏与okww语言必须为简体/繁体中文)"
+        self.group_name = 'Echo Management'
+        self.group_icon = 'layers'
         self.description = "点击B进入背包, 在过滤器中选择需要强化的声骸, 并按照等级从0排序后开始."
         self.fail_reason = ""
         self.supported_languages = ["zh_CN", "zh_TW"]

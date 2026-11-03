@@ -11,6 +11,8 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.description = "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
         self.name = "🌊 Tacet Suppression"
+        self.group_name = 'Daily Activities'
+        self.group_icon = 'calendar'
         self.support_schedule_task = True
         default_config = {
             'Which Tacet Suppression to Farm': 1,  # starts with 1

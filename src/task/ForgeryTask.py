@@ -11,6 +11,8 @@ class ForgeryTask(DomainTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = '⚒️ Forgery Challenge'
+        self.group_name = 'Daily Activities'
+        self.group_icon = 'calendar'
         self.description = 'Farms the selected Forgery Challenge. Must be able to teleport (F2).'
         self.support_schedule_task = True
         self.default_config = {

@@ -25,6 +25,8 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = 'Multi Account Config Task'
+        self.group_name = 'Multi-account'
+        self.group_icon = 'users'
         self.description = 'Log in to accounts in card order and run tasks with independent configurations'
         self.default_config = {}
         self.config_description = {}

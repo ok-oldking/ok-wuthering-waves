@@ -11,6 +11,8 @@ class SimulationTask(DomainTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = '🧪 Simulation Challenge'
+        self.group_name = 'Daily Activities'
+        self.group_icon = 'calendar'
         self.description = 'Farms the selected Simulation Challenge. Must be able to teleport (F2).'
         self.support_schedule_task = True
         self.default_config = {

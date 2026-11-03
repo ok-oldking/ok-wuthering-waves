@@ -27,6 +27,8 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "📅 Daily Task"
+        self.group_name = 'Daily Activities'
+        self.group_icon = 'calendar'
         self.support_schedule_task = True
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
         self.default_config = {

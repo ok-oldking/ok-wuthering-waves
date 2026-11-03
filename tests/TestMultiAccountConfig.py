@@ -12,9 +12,8 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 from PySide6.QtWidgets import QApplication, QTableWidgetItem
 from ok import BaseTask, Box, PostMessageInteraction, og
 from ok.task.exceptions import TaskDisabledException, WaitFailedException
-from ok.ui.qt.tasks.ConfigCard import ConfigCard
+from ok.ui.qt.tasks.config_form import ConfigForm
 from ok.util.config import Config
-from qfluentwidgets import FluentIcon
 
 from src.gui.MultiAccountConfigTab import AccountStatusTable, AccountTaskCard, MultiAccountConfigTab
 from src.task.AutoLoginTask import AutoLoginTask
@@ -648,7 +647,7 @@ class TestMultiAccountConfigUI(unittest.TestCase):
         try:
             card.resize(1100, card.height())
             card.show()
-            card.setExpand(True)
+            card.set_expanded(True)
             for _ in range(3):
                 self.app.processEvents()
             tall_height = card.height()
@@ -665,17 +664,19 @@ class TestMultiAccountConfigUI(unittest.TestCase):
             for _ in range(3):
                 card.task_combo.setCurrentIndex(0)
                 self.app.processEvents()
-                self.assertTrue(card.isExpand)
+                self.assertTrue(card.expanded)
                 self.assertLess(card.height(), tall_height)
-                self.assertEqual(card.height(), card.card.height() + card.viewLayout.sizeHint().height())
+                self.assertTrue(card.details.isVisible())
+                self.assertLess(card.details.geometry().bottom(), card.height())
                 card.task_combo.setCurrentIndex(1)
                 self.app.processEvents()
                 self.assertEqual(card.height(), tall_height)
-            card.setExpand(False)
+            card.set_expanded(False)
             card.task_combo.setCurrentIndex(0)
             self.app.processEvents()
-            self.assertFalse(card.isExpand)
-            self.assertEqual(card.height(), card.card.height())
+            self.assertFalse(card.expanded)
+            self.assertTrue(card.details.isHidden())
+            self.assertLess(card.header.geometry().bottom(), card.height())
         finally:
             card.close()
             card.deleteLater()
@@ -686,8 +687,8 @@ class TestMultiAccountConfigUI(unittest.TestCase):
         task = DailyTask(executor, None)
         task.config = RuntimeTaskConfig(task.default_config, task.default_config)
         card = AccountTaskCard(account(task=task), [task], Mock())
-        original = ConfigCard(task, task.name, task.config, task.description, task.default_config,
-                              task.config_description, task.config_type, FluentIcon.INFO)
+        original = ConfigForm(task, task.config, task.default_config,
+                              task.config_description, task.config_type)
         try:
             content = card.content
             self.assertIs(content.default_config, task.default_config)
@@ -735,7 +736,7 @@ class TestMultiAccountConfigUI(unittest.TestCase):
                 tab.refresh_status()
                 self.assertFalse(tab.status_card.isHidden())
                 self.assertIn('Running:', tab.status_card.titleLabel.text())
-                self.assertIn('0h 1m', tab.status_card.titleLabel.text())
+                self.assertIn('01:05', tab.status_card.titleLabel.text())
                 self.assertEqual(tab.status_table.rowCount(), 3)
                 self.assertEqual(tab.status_table.item(2, 1).text(), '')
                 self.assertEqual(MultiAccountConfigStore(folder).load()[0]['config'], task.config)

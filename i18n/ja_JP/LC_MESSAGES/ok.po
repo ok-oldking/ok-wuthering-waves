@@ -723,7 +723,7 @@ msgid "Use Liberation"
 msgstr ""
 
 msgid "Daily"
-msgstr ""
+msgstr "デイリー"
 
 msgid "Dungeon"
 msgstr ""
@@ -2130,3 +2130,23 @@ msgstr "設定を保存しました"
 
 msgid "No remaining account to run; finishing multi-account daily task"
 msgstr "実行するアカウントがないため、複数アカウントのデイリータスクを終了します"
+
+#: config.py
+msgid "Wuthering Waves"
+msgstr "鳴潮"
+
+#: src/task/MergeEchoTask.py src/task/EnhanceEchoTask.py
+#: src/task/ChangeEchoTask.py
+msgid "Echo Management"
+msgstr "音骸管理"
+
+#: src/task/MultiAccountDailyTask.py src/task/MultiAccountConfigTask.py
+msgid "Multi-account"
+msgstr "複数アカウント"
+
+#: src/task/DailyTask.py src/task/FarmEchoTask.py src/task/ForgeryTask.py
+#: src/task/GardenTask.py src/task/NightmareNestTask.py
+#: src/task/SimulationTask.py src/task/TacetEliminationTask.py
+#: src/task/TacetTask.py
+msgid "Daily Activities"
+msgstr "デイリー・イベント"

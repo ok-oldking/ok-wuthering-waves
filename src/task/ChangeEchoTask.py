@@ -19,6 +19,8 @@ class ChangeEchoTask(BaseWWTask, FindFeature):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "🎛️ 批量修改声骸主属性(仅支持简中游戏语言)"
+        self.group_name = 'Echo Management'
+        self.group_icon = 'layers'
         self.description = "点击B进入背包, 在过滤器中选择需要修改主属性的声骸, 并按照等级从0排序后开始."
         self.supported_languages = ["zh_CN"]
         self.fail_reason = ""

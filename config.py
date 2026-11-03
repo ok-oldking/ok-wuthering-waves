@@ -257,6 +257,7 @@ config = {
 """,
     'screenshots_folder': "screenshots",
     'gui_title': 'OK-WW',  # Optional
+    'game_name': 'Wuthering Waves',
     # 'coco_feature_folder': get_path(__file__, 'assets/coco_feature'),  # required if using feature detection
     'log_file': 'logs/ok-ww.log',  # Optional, auto rotating every day
     'error_log_file': 'logs/ok-ww_error.log',

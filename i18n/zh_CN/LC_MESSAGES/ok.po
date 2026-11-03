@@ -2178,3 +2178,23 @@ msgstr "配置已保存"
 
 msgid "No remaining account to run; finishing multi-account daily task"
 msgstr "没有剩余账号需要执行，多账号日常任务结束"
+
+#: config.py
+msgid "Wuthering Waves"
+msgstr "鸣潮"
+
+#: src/task/MergeEchoTask.py src/task/EnhanceEchoTask.py
+#: src/task/ChangeEchoTask.py
+msgid "Echo Management"
+msgstr "声骸管理"
+
+#: src/task/MultiAccountDailyTask.py src/task/MultiAccountConfigTask.py
+msgid "Multi-account"
+msgstr "多账号"
+
+#: src/task/DailyTask.py src/task/FarmEchoTask.py src/task/ForgeryTask.py
+#: src/task/GardenTask.py src/task/NightmareNestTask.py
+#: src/task/SimulationTask.py src/task/TacetEliminationTask.py
+#: src/task/TacetTask.py
+msgid "Daily Activities"
+msgstr "日常活动"

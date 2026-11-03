@@ -16,6 +16,8 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "🎡 自动周常乐园"
+        self.group_name = 'Daily Activities'
+        self.group_icon = 'calendar'
         self.description = "Detect and click garden actions until the task is stopped."
         self.garden_features = [
             label.value for label in Labels

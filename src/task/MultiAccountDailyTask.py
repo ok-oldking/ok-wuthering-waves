@@ -79,6 +79,8 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "👥 Multi Account Daily Task"
+        self.group_name = 'Multi-account'
+        self.group_icon = 'users'
         self.description = "Automatically switch accounts and run Daily Task for each account"
         self.add_exit_after_config()
         self.done_set = set()
