@@ -231,16 +231,6 @@
         79
       ],
       "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiLogin/Atlas/SP_LoginIcon2.png"
-    },
-    "skip-dialog.png": {
-      "path": "UI/UIResources/UiPlot/Atlas/SP_BtnSkip.png",
-      "blob_sha": "0470ec7a25f426f4fddc01605922f4b4afbe51f1",
-      "sha256": "e58bf7c6e748692c3733a045c1202acf944ed5d93dcf435a1e4ac098d9422c89",
-      "size": [
-        52,
-        53
-      ],
-      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiPlot/Atlas/SP_BtnSkip.png"
     }
   }
 }

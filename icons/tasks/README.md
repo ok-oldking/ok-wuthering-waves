@@ -12,10 +12,13 @@ Related native symbols represent app-specific concepts: Friends for multiple
 accounts, map switching for Fast Travel, the Bag for Auto Pick, and repair tools
 for Diagnosis. Tacet Elimination uses the general activities symbol.
 `login.svg` is an original fallback because automatic login has no corresponding
-game-menu action icon in the inspected assets.
+game-menu action icon in the inspected assets. `skip-dialog.svg` is an original
+vector skip symbol, replacing the small, soft-edged game bitmap so it stays
+sharp on high-DPI displays.
 
 Tasks set `self.icon` and `self.group_icon` to absolute paths using
-`src.task.task_icons`, which prefers PNGs and falls back to SVGs.
+`src.task.task_icons`, which prefers SVG replacements when available, including
+when an older release's PNG remains on disk after an update.
 The existing emoji-prefixed `self.name` values remain gettext keys; ok-script's
 task page removes that prefix from the displayed title and prefers `self.icon`
 over the emoji tile. This preserves translations and saved task settings.

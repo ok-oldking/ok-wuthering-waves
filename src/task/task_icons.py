@@ -1,6 +1,6 @@
 """Task-card artwork, kept separate from localized task names.
 
-Original game PNGs are preferred, with SVGs for automation-specific fallbacks.
+Original game PNGs are used unless a crisp SVG replacement is available.
 Resolve from this module so launchers can use any cwd without creating Qt objects.
 """
 
@@ -13,5 +13,5 @@ _ICON_ALIASES = {'category-echo': 'echo-tuning'}
 
 def task_icon(name: str) -> str:
     name = _ICON_ALIASES.get(name, name)
-    png = _ICON_FOLDER / f'{name}.png'
-    return str(png if png.is_file() else _ICON_FOLDER / f'{name}.svg')
+    svg = _ICON_FOLDER / f'{name}.svg'
+    return str(svg if svg.is_file() else _ICON_FOLDER / f'{name}.png')
