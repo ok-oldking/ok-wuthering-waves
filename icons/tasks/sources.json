@@ -1,0 +1,246 @@
+{
+  "repository": "https://github.com/555me/Wuthering-Waves-GameAssets",
+  "revision": "a59e6fccfd7e04bc6470315737941609bc7b4acf",
+  "assets": {
+    "daily.png": {
+      "path": "UI/UIResources/UiDevelopmentGuide/Atlas/SP_TabIconDevelopment01.png",
+      "blob_sha": "16817b5a9088119d16f617ffc8b721249e3f6f71",
+      "sha256": "198b634ea9e164ef31fe927d4a321e49e08786decb9d9a0bfe9b658555d2bfc9",
+      "size": [
+        108,
+        108
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiDevelopmentGuide/Atlas/SP_TabIconDevelopment01.png"
+    },
+    "boss.png": {
+      "path": "UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconDevelopment08.png",
+      "blob_sha": "1fbf1cda84efb33504a316f6db7e3047be8ebb68",
+      "sha256": "8dce20ed80fa4cad07b8dea93d69263becec0e20d676cd07311f40ed18ff69ba",
+      "size": [
+        128,
+        128
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconDevelopment08.png"
+    },
+    "nightmare.png": {
+      "path": "UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconDevelopment13.png",
+      "blob_sha": "eb5c680ac32fff3b03c1d878272d11b237d51871",
+      "sha256": "3e66fbe1dda705a94c9fe31da612e31332ab33fcf049f703f89cf1f6cf9e121f",
+      "size": [
+        128,
+        128
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconDevelopment13.png"
+    },
+    "tacet.png": {
+      "path": "UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconDevelopment06.png",
+      "blob_sha": "b693e0d1f8ec129c140abd8bcd7fb5a8b2d4c35f",
+      "sha256": "57ad0483e94dcd522698e03383dcc7bf9eb65a078ef2cc4c63a98cf10ed59bc9",
+      "size": [
+        128,
+        128
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconDevelopment06.png"
+    },
+    "forgery.png": {
+      "path": "UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconDevelopment03.png",
+      "blob_sha": "c52aabc54b0bdf750fc23e13acf0e44e515bdac8",
+      "sha256": "39c150311ecc54dbdfb40ff6ae39463434dc7f62363c4b273fd9db2ca835a46e",
+      "size": [
+        128,
+        128
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconDevelopment03.png"
+    },
+    "simulation.png": {
+      "path": "UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconDevelopment09.png",
+      "blob_sha": "7133aeb1d84acd37f66b9b388f070eb988e0ed90",
+      "sha256": "02b18999f96faed5774123bbb51b6b18962748ab219b85e0feef33aa61c5ee7d",
+      "size": [
+        128,
+        127
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconDevelopment09.png"
+    },
+    "multi-account.png": {
+      "path": "UI/UIResources/UiFunc/Atlas/SP_FuncIconFriends.png",
+      "blob_sha": "b7e275d6e45d3fea13cbf74a7e1a97010910e247",
+      "sha256": "534cd409b8b4cc9f73df16334a1b2d1fc8a251a74ca6ea2d67c556a603cc3bcd",
+      "size": [
+        128,
+        128
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiFunc/Atlas/SP_FuncIconFriends.png"
+    },
+    "synthesis.png": {
+      "path": "UI/UIResources/UiFunc/Atlas/SP_FuncIconSynthesis.png",
+      "blob_sha": "eaf1299fe65c7144be8e5554007cb7368b19908d",
+      "sha256": "ab023a3bef644155b974502cdc2b6971ff652fd60a0b82ad2a6b07fac52649ac",
+      "size": [
+        128,
+        128
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiFunc/Atlas/SP_FuncIconSynthesis.png"
+    },
+    "echo-upgrade.png": {
+      "path": "UI/UIResources/UiDevelopmentGuide/Atlas/SP_TabIconDevelopment05.png",
+      "blob_sha": "8d5fe00ff75230f7c69df6017a5b782070b0954b",
+      "sha256": "bc361fa947f9f6f17e2b3e8bb731e0480efb816562f4eaa03b9ac575ee77ca92",
+      "size": [
+        108,
+        109
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiDevelopmentGuide/Atlas/SP_TabIconDevelopment05.png"
+    },
+    "echo-tuning.png": {
+      "path": "UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconTypeVision.png",
+      "blob_sha": "3571f4b1ac9632488c84bc3b6fbe20e1f39892a2",
+      "sha256": "ffc43a354985711dd5dbe175e4d6f191cc020c854c9a1c672b824aad704978de",
+      "size": [
+        120,
+        80
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconTypeVision.png"
+    },
+    "garden.png": {
+      "path": "UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconDevelopment07.png",
+      "blob_sha": "6120c5c566e9cdd08f830e68c03fd2ae9d0c90a0",
+      "sha256": "ee9a4d16707f4f10edc755563c72a2eb47db0dbce7f4945e827365f417094e76",
+      "size": [
+        128,
+        128
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconDevelopment07.png"
+    },
+    "tacet-elimination.png": {
+      "path": "UI/UIResources/UiFunc/Atlas/SP_FuncIconActivity.png",
+      "blob_sha": "f9deaaef4e9589d7be18afb31bd7c203f29f500e",
+      "sha256": "8e884b904fcc54b99aae25be1fe00b2847ff7ba18cbfbc8a6b6f01608c591de6",
+      "size": [
+        128,
+        128
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiFunc/Atlas/SP_FuncIconActivity.png"
+    },
+    "combat.png": {
+      "path": "UI/UIResources/UiDevelopmentGuide/Atlas/SP_TabIconDevelopment04.png",
+      "blob_sha": "2f402c3373fd60583b40d1c3619d44003cb3298c",
+      "sha256": "9eb189be0a6dff69fbf27db246cee7166166c80149588d6944addeec771e0e40",
+      "size": [
+        108,
+        107
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiDevelopmentGuide/Atlas/SP_TabIconDevelopment04.png"
+    },
+    "pickup.png": {
+      "path": "UI/UIResources/UiFunc/Atlas/SP_FuncIconBag.png",
+      "blob_sha": "67d421eb81fb6432914a6946d7a936c505f8ff8d",
+      "sha256": "88d32556dcc77e89e3cc6f091e79f3cacf028d7b743fbd25d6324e7e61758deb",
+      "size": [
+        128,
+        128
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiFunc/Atlas/SP_FuncIconBag.png"
+    },
+    "settings.png": {
+      "path": "UI/UIResources/UiFunc/Atlas/SP_FuncIconSetup.png",
+      "blob_sha": "5cab97ad10ba06ad870ff247f6a732b27a643ed0",
+      "sha256": "435237d7372c42b0f5bef8cab0d00b8db6eb422135babac8e856ef90b3c7f488",
+      "size": [
+        84,
+        84
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiFunc/Atlas/SP_FuncIconSetup.png"
+    },
+    "map.png": {
+      "path": "UI/UIResources/UiFunc/Atlas/SP_FuncIconMap.png",
+      "blob_sha": "b277292c24edeaf6d0ce629dfc024983d4af8c0f",
+      "sha256": "28422c346f9645e50cd064cc79e6943369773a3ab33f08c0d739156de720a0d9",
+      "size": [
+        128,
+        128
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiFunc/Atlas/SP_FuncIconMap.png"
+    },
+    "category-all.png": {
+      "path": "UI/UIResources/Common/Atlas/SP_TabIconAll.png",
+      "blob_sha": "94e930d1acd5a0bcd6510c86f1af09e3da48a26e",
+      "sha256": "47ba60b3392767598bd9771752d73eeba8798c5ac6e88d4bde371f634805c7b2",
+      "size": [
+        109,
+        107
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/Common/Atlas/SP_TabIconAll.png"
+    },
+    "category-daily.png": {
+      "path": "UI/UIResources/UiFunc/Atlas/SP_FuncIconManual.png",
+      "blob_sha": "d65c280624efd08b224fcb628ea091b61212a71b",
+      "sha256": "b74a8a2fd8312ebd697ea7de706708404070b79a9ac35dfc85a373e1c8b8eedf",
+      "size": [
+        128,
+        128
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiFunc/Atlas/SP_FuncIconManual.png"
+    },
+    "category-echo.png": {
+      "path": "UI/UIResources/UiFunc/Atlas/SP_FuncIconShuJuWu.png",
+      "blob_sha": "d0559c2d30e0e12403f09d8d3dbdcda0b294e608",
+      "sha256": "ad56c3a80ca6a8fe7da109a915871b98ddc5a55ee3f67b813055d162cea910be",
+      "size": [
+        128,
+        128
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiFunc/Atlas/SP_FuncIconShuJuWu.png"
+    },
+    "category-onetime.png": {
+      "path": "UI/UIResources/UiFunc/Atlas/SP_FuncIconQuest.png",
+      "blob_sha": "33f8f7e71375c4b19405278472403e636e774e70",
+      "sha256": "59888dcc22d239bd5e338b6f0fbc10557401721ff30c59adc78478b9b25e504a",
+      "size": [
+        128,
+        128
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiFunc/Atlas/SP_FuncIconQuest.png"
+    },
+    "category-trigger.png": {
+      "path": "UI/UIResources/UiDevelopmentGuide/Atlas/Active/SP_IconActiveChallengeDay.png",
+      "blob_sha": "7ef99914bb9941562bfb7a727b9c0da15cef8a30",
+      "sha256": "6ca328338746b44a949282255ab9c1849c88214a06f8d4bc6e8af476e3ccb016",
+      "size": [
+        48,
+        48
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiDevelopmentGuide/Atlas/Active/SP_IconActiveChallengeDay.png"
+    },
+    "fast-travel.png": {
+      "path": "UI/UIResources/Common/Atlas/TabIcon/SP_IconMapChange.png",
+      "blob_sha": "6a9e29649aa0b230edf8097de28cd89fda35ac96",
+      "sha256": "04bfd2a986f1396ad1d94ed93255afdae0bb25cf92a1544fd5829945888fc72e",
+      "size": [
+        109,
+        108
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/Common/Atlas/TabIcon/SP_IconMapChange.png"
+    },
+    "diagnosis.png": {
+      "path": "UI/UIResources/UiLogin/Atlas/SP_LoginIcon2.png",
+      "blob_sha": "7f95707ba8f28e0d32e4054aa57a1c71f872c084",
+      "sha256": "e0999b695ec3ac823c0d166c73e5a472ed0668fd222a49bb93a20efbe5f58d1f",
+      "size": [
+        80,
+        79
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiLogin/Atlas/SP_LoginIcon2.png"
+    },
+    "skip-dialog.png": {
+      "path": "UI/UIResources/UiPlot/Atlas/SP_BtnSkip.png",
+      "blob_sha": "0470ec7a25f426f4fddc01605922f4b4afbe51f1",
+      "sha256": "e58bf7c6e748692c3733a045c1202acf944ed5d93dcf435a1e4ac098d9422c89",
+      "size": [
+        52,
+        53
+      ],
+      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiPlot/Atlas/SP_BtnSkip.png"
+    }
+  }
+}

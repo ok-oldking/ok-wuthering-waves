@@ -3,6 +3,7 @@ import time
 
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.WWOneTimeTask import WWOneTimeTask
+from src.task.task_icons import task_icon
 
 
 class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
@@ -11,6 +12,7 @@ class DiagnosisTask(WWOneTimeTask, BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.description = "Diagnosis Problem, Performance Test, Run in Game World"
         self.name = "🩺 Diagnosis"
+        self.icon = task_icon('diagnosis')
         self.start = 0
 
     def run(self):

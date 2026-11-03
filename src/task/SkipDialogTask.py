@@ -1,5 +1,6 @@
 from ok import TriggerTask, Logger
 from src.task.SkipBaseTask import SkipBaseTask
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 
@@ -12,6 +13,7 @@ class AutoDialogTask(TriggerTask, SkipBaseTask):
         self.skip = None
         self.trigger_interval = 0.5
         self.name = "⏭️ Skip Dialog during Quests"
+        self.icon = task_icon('skip-dialog')
 
     def run(self):
         if self.scene.in_team(self.in_team_and_world):

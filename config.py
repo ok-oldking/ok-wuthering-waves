@@ -6,6 +6,7 @@ from ok import Box, ConfigOption, Icon
 from ok.util.GlobalConfig import create_basic_options
 from src.game_launcher import get_game_launch_arguments
 from src.task.process_feature import process_feature
+from src.task.task_icons import task_icon
 
 version = "dev"
 
@@ -160,6 +161,19 @@ config = {
     'custom_tasks': True,
     "gui": {
         "type": "qt",
+    },
+    'task_category_icons': {
+        'all': task_icon('category-all'),
+        'onetime': task_icon('category-onetime'),
+        'trigger': task_icon('category-trigger'),
+    },
+    'task_category_colors': {
+        'all': {'light': '#526174', 'dark': '#B5BECF'},
+        'onetime': {'light': '#087C70', 'dark': '#72D9CC'},
+        'trigger': {'light': '#AC3652', 'dark': '#F09AA8'},
+        'group:Daily Activities': {'light': '#2668AA', 'dark': '#8ABCF0'},
+        'group:Echo Management': {'light': '#8C651A', 'dark': '#E8C27C'},
+        'group:Multi-account': {'light': '#7650A5', 'dark': '#C2A3EA'},
     },
     'config_folder': 'configs',
     'blur_area': blur_area,
