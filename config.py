@@ -242,13 +242,11 @@ config = {
         'default': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
-            'sponsor': 'https://patreon.com/ok_oldking',
             'faq': 'https://ok-script.com/ok-ww/'
         },
         'zh_CN': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
-            'sponsor': 'https://afdian.com/a/ok-oldking',
             'faq': 'https://ok-script.com/ok-ww',
         },
     },
