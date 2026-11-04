@@ -13,6 +13,7 @@ from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.BaseWWTask import LOGIN_TEXTS
 from src.task.MouseResetTask import MouseResetTask
+from src.task.task_icons import task_icon
 
 account_pattern = re.compile(r'\*\*\*\*')
 
@@ -79,6 +80,9 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "👥 Multi Account Daily Task"
+        self.icon = task_icon('multi-account')
+        self.group_name = 'Multi-account'
+        self.group_icon = task_icon('multi-account')
         self.description = "Automatically switch accounts and run Daily Task for each account"
         self.add_exit_after_config()
         self.done_set = set()

@@ -15,8 +15,6 @@
 <!-- Badges -->
 <div class="badge-row">
   <img src="https://img.shields.io/badge/platform-Windows-blue" alt="平台" />
-  <a href="https://github.com/ok-oldking/ok-wuthering-waves/releases"><img src="https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves" alt="GitHub release" /></a>
-  <a href="https://github.com/ok-oldking/ok-wuthering-waves/releases"><img src="https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total" alt="總下載量" /></a>
   <a href="https://discord.gg/vVyCatEBgA"><img src="https://img.shields.io/discord/296598043787132928?color=5865f2&amp;label=%20Discord" alt="Discord" /></a>
 </div>
 
@@ -40,16 +38,6 @@
 > 一經查證，我們將視違規情況與次數，採取包括但不限於扣除違規收益、凍結或永久停權遊戲帳號等措施。
 
 **使用本軟體即表示您已閱讀、理解並同意以上聲明，並自願承擔一切潛在風險。**
-
-## 🚀 快速開始
-
-1.  **下載安裝檔**：從下方的「下載管道」下載最新的 `ok-ww-win32-Global-setup.exe` 安裝檔。
-2.  **安裝程式**：雙擊 `ok-ww-win32-Global-setup.exe` 檔案，並依照安裝精靈的指示完成安裝。
-3.  **執行程式**：安裝完成後，從桌面捷徑或開始功能表啟動 `ok-ww` 即可。
-
-## 📥 下載管道
-
-*   **[GitHub](https://github.com/ok-oldking/ok-wuthering-waves/releases)**: 官方發布頁，全球存取速度快。（**請下載 `setup.exe` 安裝檔，而不是 `Source Code` 原始碼壓縮檔**）
 
 ## ✨ 主要功能
 <img width="1774" height="1182" alt="QQ_1762960844719" src="https://github.com/user-attachments/assets/c5eb0145-0d45-44f9-85b3-184de0ef20bf" />
@@ -109,9 +97,9 @@
 
 您可以透過命令列參數實現自動化啟動。
 
-```bash
+```powershell
 # 範例：啟動後自動執行第一個任務（一條龍），並在任務完成後結束程式
-ok-ww.exe -t 1 -e
+.\.venv\Scripts\python.exe main.py -t 1 -e
 ```
 
 *   `-t` 或 `--task`: 啟動後自動執行第 N 個任務。`1` 代表任務清單中的第一個。

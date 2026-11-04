@@ -72,5 +72,4 @@ If the change affects UI, recognition results, or user-visible behavior, please 
 
 ## 社区联系方式 / Community Contact
 
-- 开发者群 / Developer QQ group: `926858895`
 - Discord: [https://discord.gg/vVyCatEBgA](https://discord.gg/vVyCatEBgA)

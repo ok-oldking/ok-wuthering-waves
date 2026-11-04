@@ -12,6 +12,7 @@ from src.task.TacetTask import TacetTask
 from src.task.SimulationTask import SimulationTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 
@@ -27,6 +28,9 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "📅 Daily Task"
+        self.icon = task_icon('daily')
+        self.group_name = 'Daily Activities'
+        self.group_icon = task_icon('category-daily')
         self.support_schedule_task = True
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
         self.default_config = {

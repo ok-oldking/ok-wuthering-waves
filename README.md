@@ -18,8 +18,6 @@
 <div align="center">
 
 ![平台](https://img.shields.io/badge/platform-Windows-blue)
-[![GitHub release](https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
-[![总下载量](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
 [![Discord](https://img.shields.io/discord/296598043787132928?color=5865f2&label=%20Discord)](https://discord.gg/vVyCatEBgA)
 
 </div>
@@ -45,19 +43,6 @@
 
 **使用本软件即表示您已阅读、理解并同意以上声明，并自愿承担一切潜在风险。**
 
-## 🚀 快速开始
-
-1.  **下载安装包**：从下方的“下载渠道”中选择一个，下载最新的 `ok-ww-win32-China-setup.exe` 安装文件。
-2.  **安装程序**：双击 `ok-ww-win32-China-setup.exe` 文件，并按照安装向导的提示完成安装。
-3.  **运行程序**：安装完成后，从桌面快捷方式或开始菜单启动 `ok-ww` 即可。
-
-## 📥 下载渠道
-
-*   **[GitHub](https://github.com/ok-oldking/ok-wuthering-waves/releases)**: 官方发布页，全球访问速度快。（**请下载 `setup.exe` 安装包，而不是 `Source Code` 源码压缩包**）
-*   **[Mirror酱](https://mirrorchyan.com/zh/projects?rid=okww&source=ok-ww-readme)**: 国内镜像，下载可能需要购买其平台的 CD-KEY。
-*   **[百度网盘](https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww)**: 免费下载
-*   **[夸克网盘](https://pan.quark.cn/s/80730a808d0e)**: 免费下载
-
 ## ✨ 主要功能
 <img width="1774" height="1182" alt="QQ_1762960844719" src="https://github.com/user-attachments/assets/c5eb0145-0d45-44f9-85b3-184de0ef20bf" />
 
@@ -82,7 +67,7 @@
 5.  **游戏性能**：请确保游戏能稳定在 **60 FPS** 运行。如果帧率不稳定，请尝试降低游戏画质或分辨率。
 6.  **游戏断线**：在 `ok-ww` 设置中开启“启动后关闭启动器”，确保启动器进程未在运行；或者使用源码运行。
 7.  **OpenVINO 报错**：如果遇到 `0x000005` 报错，并且使用的是带 NPU 的 Intel CPU，请更新至 Intel 最新的 NPU 驱动。
-8.  **寻求帮助**：如果以上步骤都无法解决您的问题，请通过社区渠道提交详细的错误报告。
+8.  **寻求帮助**：如果以上步骤都无法解决您的问题，请通过 Discord 提交详细的错误报告。
 9.  **关闭自动奔跑**：游戏设置里关闭自动奔跑。
 10. **为所有角色装备主声骸**：队伍中的每个角色都必须装备主声骸（画面右下角应显示声骸技能图标）。任何一个角色未装备主声骸时，自动战斗将无法正常运行，并可能反复锁定敌人而不攻击。
 
@@ -116,9 +101,9 @@
 
 您可以通过命令行参数实现自动化启动。
 
-```bash
+```powershell
 # 示例：启动后自动执行第一个任务（一条龙），并在任务完成后退出程序
-ok-ww.exe -t 1 -e
+.\.venv\Scripts\python.exe main.py -t 1 -e
 ```
 
 *   `-t` 或 `--task`: 启动后自动执行第 N 个任务。`1` 代表任务列表中的第一个。
@@ -126,9 +111,7 @@ ok-ww.exe -t 1 -e
 
 ## 💬 加入我们
 
-*   **QQ 交流群**: `1126263229` (入群答案: `老王同学OK`)
-*   **QQ 频道**: [点击加入](https://pd.qq.com/s/djmm6l44y) (群满或获取最新资讯)
-*   **开发者群**: `926858895` ( **注意**: 此群仅面向有开发能力、希望参与贡献的开发者，入群前请确保您已能够从源码成功运行项目。)
+*   **Discord**: [点击加入](https://discord.gg/vVyCatEBgA)
 
 本项目基于 [ok-script](https://ok-script.com) 框架开发，简单易维护。欢迎有兴趣的开发者使用 [ok-script](https://ok-script.com) 开发您自己的自动化项目。
 

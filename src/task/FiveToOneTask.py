@@ -4,6 +4,7 @@ import numpy as np
 import re
 from ok import find_boxes_by_name, find_boxes_within_boundary, Logger
 from src.task.BaseCombatTask import BaseCombatTask
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 chinese_regex = re.compile(r'[\u4e00-\u9fff]{5,12}')
@@ -15,6 +16,7 @@ class FiveToOneTask(BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.description = "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
         self.name = "♻️ 数据坞五合一"
+        self.icon = task_icon('synthesis')
         self.default_config = {
         }
         self.sets = [

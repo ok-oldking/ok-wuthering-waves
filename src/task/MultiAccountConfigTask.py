@@ -14,6 +14,7 @@ from src.task.account.MultiAccountConfigStore import (
     resolve_task, validate_accounts,
 )
 from src.task.account.RuntimeTaskConfig import account_task_config, isolated_task_configs
+from src.task.task_icons import task_icon
 
 
 class MultiAccountConfigTask(MultiAccountDailyTask):
@@ -25,6 +26,8 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = 'Multi Account Config Task'
+        self.group_name = 'Multi-account'
+        self.group_icon = task_icon('multi-account')
         self.description = 'Log in to accounts in card order and run tasks with independent configurations'
         self.default_config = {}
         self.config_description = {}

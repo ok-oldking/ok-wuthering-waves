@@ -9,6 +9,7 @@ from ok import Logger, Box, get_bounding_box
 from src.task.BaseCombatTask import BaseCombatTask
 from src.task.BaseWWTask import calculate_angle_clockwise
 from src.task.WWOneTimeTask import WWOneTimeTask
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 
@@ -150,6 +151,7 @@ class FarmMapTask(BigMap):
         super().__init__(*args, **kwargs)
         self.description = "Farm world map with a marked path of stars (diamond as the starting point), start in the map screen"
         self.name = "🗺️ Farm Map with Star Path"
+        self.icon = task_icon('map')
         self.max_star_distance = 1000
         self.stuck_keys = [['space', 0.02], ['a', 2], ['d', 2], ['t', 0.02]]
         self.stuck_index = 0

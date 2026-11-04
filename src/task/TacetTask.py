@@ -1,6 +1,7 @@
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException
 from src.task.WWOneTimeTask import WWOneTimeTask
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 
@@ -11,6 +12,9 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.description = "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
         self.name = "🌊 Tacet Suppression"
+        self.icon = task_icon('tacet')
+        self.group_name = 'Daily Activities'
+        self.group_icon = task_icon('category-daily')
         self.support_schedule_task = True
         default_config = {
             'Which Tacet Suppression to Farm': 1,  # starts with 1

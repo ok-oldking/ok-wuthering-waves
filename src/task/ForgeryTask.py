@@ -2,6 +2,7 @@ import cv2
 
 from ok import Logger, find_color_rectangles
 from src.task.DomainTask import DomainTask
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 
@@ -11,6 +12,9 @@ class ForgeryTask(DomainTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = '⚒️ Forgery Challenge'
+        self.icon = task_icon('forgery')
+        self.group_name = 'Daily Activities'
+        self.group_icon = task_icon('category-daily')
         self.description = 'Farms the selected Forgery Challenge. Must be able to teleport (F2).'
         self.support_schedule_task = True
         self.default_config = {

@@ -6,6 +6,7 @@ from config import config
 from src.Labels import Labels
 from src.task.BaseWWTask import BaseWWTask
 from src.task.WWOneTimeTask import WWOneTimeTask
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 
@@ -16,6 +17,9 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "🎡 自动周常乐园"
+        self.icon = task_icon('garden')
+        self.group_name = 'Daily Activities'
+        self.group_icon = task_icon('category-daily')
         self.description = "Detect and click garden actions until the task is stopped."
         self.garden_features = [
             label.value for label in Labels

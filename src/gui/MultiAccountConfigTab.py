@@ -1,19 +1,22 @@
+import time
 from copy import deepcopy
 from datetime import datetime
 
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QFontMetrics
-from PySide6.QtWidgets import QHBoxLayout, QSizePolicy, QStyleOptionViewItem, QTableWidgetItem, QVBoxLayout, QWidget
-from qfluentwidgets import (
-    BodyLabel, ComboBox, ExpandSettingCard, FluentIcon, InfoBar, LineEdit,
-    PrimaryPushButton, PushButton, SubtitleLabel, SwitchButton, ToolButton,
+from PySide6.QtWidgets import (
+    QHBoxLayout, QLabel, QLineEdit, QSizePolicy, QStyleOptionViewItem, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget,
 )
 
-from ok import og
-from ok.ui.qt.tasks.ConfigCard import ConfigContentMixin
-from ok.ui.qt.tasks.LabelAndWidget import LabelAndWidget
-from ok.ui.qt.tasks.TaskTab import TaskTab
-from ok.ui.qt.tasks.TooltipTableWidget import TooltipTableWidget
+from ok import og, Icon
+from ok.ui.qt.kit.buttons import Button
+from ok.ui.qt.kit.cards import Card, SettingRow
+from ok.ui.qt.kit.feedback import show_toast
+from ok.ui.qt.kit.inputs import ComboBox
+from ok.ui.qt.kit.switch import Switch
+from ok.ui.qt.tasks.config_form import ConfigForm
+from ok.ui.qt.shell.run_bar import format_elapsed
 from ok.ui.qt.widget.CustomTab import CustomTab
 from ok.ui.qt.widget.UpdateConfigWidgetItem import value_to_string
 from src.task.MultiAccountConfigTask import MultiAccountConfigTask
@@ -23,11 +26,13 @@ from src.task.account.MultiAccountConfigStore import (
 from src.task.account.RuntimeTaskConfig import effective_config
 
 
-class AccountStatusTable(TooltipTableWidget):
+class AccountStatusTable(QTableWidget):
     """Show complete wrapped rows; let the page own vertical scrolling."""
 
     def __init__(self):
-        super().__init__(width_percentages=[0.3, 0.7])
+        super().__init__()
+        self.verticalHeader().hide()
+        self.setWordWrap(True)
         self.setTextElideMode(Qt.ElideNone)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -65,25 +70,44 @@ class AccountStatusTable(TooltipTableWidget):
         self.updateGeometry()
 
 
-class AccountConfigContent(ConfigContentMixin, QWidget):
-    """Use exactly the task page's widget factory and sub-config visibility rules."""
+class AccountConfigContent(ConfigForm):
+    """Use the task page's editors and sub-config visibility rules."""
 
     def __init__(self, task, config, owner):
-        super().__init__(owner)
         self.owner = owner
-        self.viewLayout = QVBoxLayout(self)
-        self._init_config_content(task, config, task.default_config,
-                                  task.config_description, task.config_type)
+        super().__init__(task, config, task.default_config,
+                         task.config_description, task.config_type, owner)
 
     def _adjust_config_content_size(self):
-        self.viewLayout.invalidate()
+        super()._adjust_config_content_size()
         self.updateGeometry()
         self.owner.schedule_resize()
 
 
-class AccountTaskCard(ExpandSettingCard):
+class AccountTaskCard(Card):
     def __init__(self, account, tasks, remove, parent=None):
-        super().__init__(FluentIcon.PEOPLE, '新账号', '无', parent)
+        super().__init__(parent)
+        self.expanded = False
+        self.header = QWidget(self)
+        self.header_layout = QHBoxLayout(self.header)
+        self.title_label = QLabel('新账号')
+        self.title_label.setProperty('role', 'strong')
+        self.description_label = QLabel('无')
+        self.description_label.setProperty('role', 'secondary')
+        labels = QVBoxLayout()
+        labels.addWidget(self.title_label)
+        labels.addWidget(self.description_label)
+        self.header_layout.addLayout(labels, 1)
+        self.expand_button = Button(icon="chevron-down", variant="subtle")
+        self.expand_button.clicked.connect(lambda: self.set_expanded(not self.expanded))
+        self.details = QWidget(self)
+        self.viewLayout = QVBoxLayout(self.details)
+        self.details.hide()
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 6, 12, 6)
+        layout.addWidget(self.header)
+        layout.addWidget(self.details)
+        self.header_layout.addWidget(self.expand_button)
         self.tasks = tasks
         self.reference = deepcopy(account.get('task'))
         self.values = deepcopy(account.get('config', {}))
@@ -92,20 +116,19 @@ class AccountTaskCard(ExpandSettingCard):
         self.resize_timer = QTimer(self)
         self.resize_timer.setSingleShot(True)
         self.resize_timer.timeout.connect(self.resize_content)
-        self.result_label = BodyLabel('未运行')
-        self.addWidget(self.result_label)
-        self.enabled_switch = SwitchButton(parent=self)
-        self.enabled_switch.setOnText('启用')
-        self.enabled_switch.setOffText('停用')
+        self.result_label = QLabel('未运行')
+        self.header_layout.insertWidget(1, self.result_label)
+        self.enabled_switch = Switch(parent=self)
+        self.enabled_switch.setToolTip('启用 / 停用')
         self.enabled_switch.setChecked(account.get('enabled', True))
-        self.addWidget(self.enabled_switch)
+        self.header_layout.insertWidget(2, self.enabled_switch)
 
-        self.account_edit = LineEdit()
+        self.account_edit = QLineEdit()
         self.account_edit.setPlaceholderText('去掉所有 *，例如 1231234 或 Ab12@outlook.com')
         self.account_edit.setMinimumWidth(280)
         self.account_edit.setText(account.get('account_key', ''))
-        row = LabelAndWidget('账号标识')
-        row.add_widget(self.account_edit, stretch=0)
+        row = SettingRow('账号标识', control_width=320)
+        row.set_control(self.account_edit)
         self.viewLayout.addWidget(row)
 
         self.task_combo = ComboBox()
@@ -121,15 +144,15 @@ class AccountTaskCard(ExpandSettingCard):
             self.task_combo.setPlaceholderText(f"任务不可用：{self.reference['class']}，请重新选择")
             selected_index = -1
         self.task_combo.setCurrentIndex(selected_index)
-        row = LabelAndWidget('执行任务', '选择一次性任务；“无”仅测试切号。')
-        row.add_widget(self.task_combo, stretch=0)
+        row = SettingRow('执行任务', '选择一次性任务；“无”仅测试切号。', control_width=320)
+        row.set_control(self.task_combo)
         self.viewLayout.addWidget(row)
 
         self.config_container = QWidget()
         self.config_layout = QVBoxLayout(self.config_container)
         self.config_layout.setContentsMargins(0, 0, 0, 0)
         self.viewLayout.addWidget(self.config_container)
-        self.delete_button = PushButton(FluentIcon.DELETE, '删除账号')
+        self.delete_button = Button('删除账号', icon="trash")
         self.delete_button.clicked.connect(lambda: remove(self))
         footer = QHBoxLayout()
         footer.addStretch(1)
@@ -159,25 +182,19 @@ class AccountTaskCard(ExpandSettingCard):
     def schedule_resize(self):
         self.resize_timer.start(0)
 
+    def set_expanded(self, expanded):
+        self.expanded = expanded
+        self.details.setVisible(expanded)
+        self.expand_button.set_icon("chevron-up" if expanded else "chevron-down")
+        self.resize_content()
+
     def resize_content(self):
-        # Flush nested layout hints only after Qt has added/removed the widgets.
-        # An old expand animation must not reapply the previous task's height.
-        self.expandAni.stop()
-        if self.content is not None:
-            self.content.viewLayout.invalidate()
-            self.content.viewLayout.activate()
-            self.content.updateGeometry()
-        self.config_layout.invalidate()
-        self.config_layout.activate()
-        self.config_container.updateGeometry()
         self.viewLayout.invalidate()
         self.viewLayout.activate()
-        self._adjustViewSize()
-        if self.isExpand:
-            self.verticalScrollBar().setValue(0)
-            self.setFixedHeight(self.card.height() + self.viewLayout.sizeHint().height())
-        else:
-            self.setFixedHeight(self.card.height())
+        self.layout().invalidate()
+        self.layout().activate()
+        self.setFixedHeight(self.layout().sizeHint().height())
+        self.updateGeometry()
 
     def update_result(self, result):
         if not result:
@@ -197,15 +214,19 @@ class AccountTaskCard(ExpandSettingCard):
 
     def task_changed(self, index):
         # Retain unsaved edits when switching away and back within this card.
-        self.drafts[str(self.reference)] = deepcopy(dict(self.values))
+        # Qt's QVariant conversion can change dictionary insertion order.
+        self.drafts[self.reference_key()] = deepcopy(dict(self.values))
         self.reference = self.task_combo.itemData(index)
-        self.values = self.drafts.get(str(self.reference), {})
+        self.values = self.drafts.get(self.reference_key(), {})
         self.render_config()
         self.update_header()
 
+    def reference_key(self):
+        return (self.reference['module'], self.reference['class']) if self.reference else None
+
     def update_header(self, *_):
-        self.card.setTitle(display_account(self.account_edit.text()) or '新账号')
-        self.card.setContent(self.task_combo.currentText() or '任务不可用，请重新选择')
+        self.title_label.setText(display_account(self.account_edit.text()) or '新账号')
+        self.description_label.setText(self.task_combo.currentText() or '任务不可用，请重新选择')
 
     def snapshot(self):
         return {'account_key': self.account_edit.text(), 'task': deepcopy(self.reference),
@@ -226,17 +247,19 @@ class MultiAccountConfigTab(CustomTab):
         self.results_signature = None
         self.run_results = {}
         header = QHBoxLayout()
-        header.addWidget(SubtitleLabel('多账号配置'))
+        title = QLabel('多账号配置')
+        title.setProperty('role', 'subtitle')
+        header.addWidget(title)
         header.addStretch(1)
-        self.start_button = PrimaryPushButton(FluentIcon.PLAY, '开始执行')
-        self.stop_button = PushButton(FluentIcon.CLOSE, '停止执行')
+        self.start_button = Button('开始执行', icon="play", variant="primary")
+        self.stop_button = Button('停止执行', icon="x")
         self.start_button.clicked.connect(self.start_clicked)
         self.stop_button.clicked.connect(self.stop_clicked)
         header.addWidget(self.start_button)
         header.addWidget(self.stop_button)
         self.addLayout(header)
-        self.add_widget(BodyLabel('按卡片顺序执行。配置独立保存，任务失败时停止后续账号。'))
-        self.account_hint = BodyLabel(
+        self.add_widget(QLabel('按卡片顺序执行。配置独立保存，任务失败时停止后续账号。'))
+        self.account_hint = QLabel(
             '账号统一删除所有 * 后完整匹配，保留大小写。'
             '例如 Ab****12@outlook.com 填 Ab12@outlook.com；159****1234 填 1591234。'
         )
@@ -245,9 +268,9 @@ class MultiAccountConfigTab(CustomTab):
         self.status_table = AccountStatusTable()
         self.status_table.setColumnCount(2)
         self.status_table.setHorizontalHeaderLabels([self.tr('Info'), self.tr('Value')])
-        self.status_table.setEditTriggers(TooltipTableWidget.NoEditTriggers)
+        self.status_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.status_card = self.add_card('运行状态 / 日志', self.status_table)
-        self.close_info_button = ToolButton(FluentIcon.CLOSE, self.status_card)
+        self.close_info_button = Button(icon="x", variant="subtle", parent=self.status_card)
         self.close_info_button.setFixedSize(28, 28)
         self.close_info_button.setToolTip(self.tr('Close'))
         self.close_info_button.clicked.connect(self.close_task_info)
@@ -262,8 +285,8 @@ class MultiAccountConfigTab(CustomTab):
         self.accounts_layout.setSpacing(6)
         self.add_widget(self.accounts_widget)
         footer = QHBoxLayout()
-        self.add_button = PushButton(FluentIcon.ADD, '新增账号')
-        self.save_button = PrimaryPushButton(FluentIcon.SAVE, '保存配置')
+        self.add_button = Button('新增账号', icon="plus")
+        self.save_button = Button('保存配置', icon="check", variant="primary")
         self.add_button.clicked.connect(lambda: self.add_account())
         self.save_button.clicked.connect(lambda: self.save_accounts())
         footer.addWidget(self.add_button)
@@ -282,7 +305,7 @@ class MultiAccountConfigTab(CustomTab):
 
     @property
     def icon(self):
-        return FluentIcon.PEOPLE
+        return Icon.PEOPLE
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -313,7 +336,7 @@ class MultiAccountConfigTab(CustomTab):
         self.update_card_result(card)
         self.accounts_layout.addWidget(card)
         if not account['account_key']:
-            card.setExpand(True)
+            card.set_expanded(True)
 
     def remove_account(self, card):
         self.cards.remove(card)
@@ -322,7 +345,7 @@ class MultiAccountConfigTab(CustomTab):
         card.deleteLater()
 
     def show_error(self, error):
-        InfoBar.error(self.tr('Multi-account configuration'), str(error), parent=self, duration=6000)
+        show_toast(self, str(error), title=self.tr('Multi-account configuration'), tone='danger', duration=6000)
 
     def save_accounts(self, notify=True):
         if not self.loaded or (self.runner and self.runner.enabled):
@@ -333,7 +356,7 @@ class MultiAccountConfigTab(CustomTab):
             self.show_error(error)
             return False
         if notify:
-            InfoBar.success(self.tr('Multi-account configuration'), self.tr('Configuration saved'), parent=self, duration=2000)
+            show_toast(self, self.tr('Configuration saved'), title=self.tr('Multi-account configuration'), tone='success', duration=2000)
         return True
 
     def start_clicked(self):
@@ -365,9 +388,9 @@ class MultiAccountConfigTab(CustomTab):
             return
         if self.info_run != start_time:
             self.info_run = start_time
-            self.elapsed_text = TaskTab.time_elapsed(start_time)
+            self.elapsed_text = format_elapsed(time.time() - start_time)
         if busy:
-            self.elapsed_text = TaskTab.time_elapsed(start_time)
+            self.elapsed_text = format_elapsed(time.time() - start_time)
         status = self.tr('Running') if busy else self.tr('Completed')
         self.status_card.titleLabel.setText(
             f'{status}: {self.tr(self.runner.name)} {self.tr("Time Elapsed")}: {self.elapsed_text}')

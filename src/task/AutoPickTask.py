@@ -4,6 +4,7 @@ from ok import Logger
 from ok import TriggerTask
 from src.task.AutoCombatTask import AutoCombatTask
 from src.task.BaseWWTask import BaseWWTask, f_white_color
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 
@@ -13,6 +14,7 @@ class AutoPickTask(TriggerTask, BaseWWTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "🌸 Auto Pick"
+        self.icon = task_icon('pickup')
         self.description = "Auto Pick Flowers in Game World"
         self.default_config.update({
             '_enabled': True,

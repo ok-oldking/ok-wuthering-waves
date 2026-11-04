@@ -8,27 +8,27 @@ from urllib.error import HTTPError
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 
-from PySide6.QtCore import QEvent, QPointF, Qt, QSize, QUrl, Signal
+from PySide6.QtCore import QPointF, Qt, QSize, QUrl, Signal
 from PySide6.QtGui import (
     QColor, QDesktopServices, QFontMetricsF, QPainter, QPixmap, QTextCursor, QTextFormat, QTextLayout,
 )
 from PySide6.QtWidgets import (
     QApplication, QFileDialog, QAbstractItemView, QHBoxLayout, QHeaderView, QLabel,
-    QListWidgetItem, QSplitter, QStyle, QStyleOptionViewItem, QTableWidgetItem, QTextEdit, QVBoxLayout,
-    QWidget,
+    QLineEdit, QListWidget, QListWidgetItem, QPlainTextEdit, QSplitter, QStyle,
+    QStyledItemDelegate, QStyleOptionViewItem, QTableWidget, QTableWidgetItem, QTextEdit,
+    QVBoxLayout, QWidget,
 )
-from qfluentwidgets.common.style_sheet import setCustomStyleSheet
-from qfluentwidgets import (
-    BodyLabel, CaptionLabel, ComboBox, FluentIcon, LineEdit, ListItemDelegate, ListWidget, MessageBox, MessageBoxBase,
-    PlainTextEdit, PrimaryPushButton, PushButton, SearchLineEdit, SubtitleLabel, TableWidget, TextEdit,
-    isDarkTheme, qconfig,
-)
+from ok.ui.qt.kit.buttons import Button
+from ok.ui.qt.kit.dialogs import Dialog
+from ok.ui.qt.kit.feedback import show_toast
+from ok.ui.qt.kit.icons import icon
+from ok.ui.qt.kit.inputs import ComboBox
+from ok.ui.qt.kit.theme import theme
 
 from ok import Logger, og
-from ok.gui.tasks.EditTaskTab import CodeEditor
-from ok.gui.tasks.PythonHighlighter import PythonHighlighter
-from ok.gui.util.app import show_info_bar
-from ok.gui.widget.CustomTab import CustomTab
+from ok.ui.qt.tasks.EditTaskTab import CodeEditor
+from ok.ui.qt.tasks.PythonHighlighter import PythonHighlighter
+from ok.ui.qt.widget.CustomTab import CustomTab
 from src.char.CharFactory import apply_team_char_classes, char_dict
 from src.char.CustomCharLoader import (
     TEAM_CODE_MODE_BUILTIN, TEAM_CODE_MODE_IMPORT, TEAM_CODE_STATE_NONE,
@@ -69,7 +69,7 @@ def _state_colors(state):
 def team_state_color(state):
     """Return the color of `state` in the current theme."""
     light, dark = _state_colors(state)
-    return QColor(dark if isDarkTheme() else light)
+    return QColor(dark if theme.is_dark() else light)
 
 
 def _text_middle_y(option, text_rect):
@@ -84,7 +84,7 @@ def _text_middle_y(option, text_rect):
     return top + line.ascent() + glyph.center().y()
 
 
-class TeamListDelegate(ListItemDelegate):
+class TeamListDelegate(QStyledItemDelegate):
     """Paints the code state dot of a team level with the middle of its name.
 
     An icon would be centered on the row, while the text lands up to two pixels lower
@@ -99,14 +99,12 @@ class TeamListDelegate(ListItemDelegate):
             option.decorationSize = QSize(STATE_DOT_SIZE, STATE_DOT_SIZE)
 
     def paint(self, painter, option, index):
-        # the base paint moves option.rect in by the margin, so keep an untouched copy
         opt = QStyleOptionViewItem(option)
         super().paint(painter, option, index)
         state = index.data(TEAM_CODE_STATE_ROLE)
         if state is None:
             return
         self.initStyleOption(opt, index)
-        opt.rect.adjust(0, self.margin, 0, -self.margin)
         style = opt.widget.style() if opt.widget else QApplication.style()
         icon_rect = style.subElementRect(QStyle.SE_ItemViewItemDecoration, opt, opt.widget)
         text_rect = style.subElementRect(QStyle.SE_ItemViewItemText, opt, opt.widget)
@@ -425,21 +423,31 @@ def translate_ui(message):
     return message
 
 
-class TranslatedDialog(MessageBoxBase):
+def confirmation_dialog(title, content, parent):
+    return Dialog(parent, title, content)
+
+
+def show_info_bar(parent, message, title=None, error=False):
+    show_toast(parent, message, title=title, tone="danger" if error else "success")
+
+
+class TranslatedDialog(Dialog):
+    def __init__(self, parent):
+        super().__init__(parent, "")
+
     def tr(self, message):
         return translate_ui(message)
 
     def set_dialog_title(self, title):
         self.setWindowTitle(title)
-        self.title_label = SubtitleLabel(title, self.widget)
-        self.viewLayout.addWidget(self.title_label)
+        self.title_label.setText(title)
 
     def add_field(self, label, value):
-        label_widget = BodyLabel(label, self.widget)
-        value_widget = BodyLabel(str(value), self.widget)
+        label_widget = QLabel(label, self.panel)
+        value_widget = QLabel(str(value), self.panel)
         value_widget.setWordWrap(True)
-        self.viewLayout.addWidget(label_widget)
-        self.viewLayout.addWidget(value_widget)
+        self.body.addWidget(label_widget)
+        self.body.addWidget(value_widget)
         return value_widget
 
 
@@ -535,12 +543,12 @@ def format_workshop_local_time(code, date_only=False):
 class TeamSelectionDialog(TranslatedDialog):
     def __init__(self, characters, defaults, parent=None):
         super().__init__(parent)
-        self.widget.setMinimumWidth(440)
+        self.panel.setFixedWidth(440)
         self.set_dialog_title(self.tr("Create Team"))
-        self.viewLayout.addWidget(BodyLabel(self.tr("Select 3 different characters"), self.widget))
+        self.body.addWidget(QLabel(self.tr("Select 3 different characters"), self.panel))
         self.combos = []
         for index in range(3):
-            combo = ComboBox(self.widget)
+            combo = ComboBox(parent=self.panel)
             for char_cls in characters:
                 combo.addItem(self.tr(get_english_char_name(char_cls)), userData=char_cls.__name__)
             default_name = defaults[index].__name__ if index < len(defaults) else None
@@ -548,14 +556,14 @@ class TeamSelectionDialog(TranslatedDialog):
             combo.setCurrentIndex(default_index if default_index >= 0 else index)
             combo.currentIndexChanged.connect(self._update_create_enabled)
             self.combos.append(combo)
-            self.viewLayout.addWidget(combo)
-        self.yesButton.setText(self.tr("Create Team"))
-        self.cancelButton.setText(self.tr("Cancel"))
+            self.body.addWidget(combo)
+        self.ok_button.setText(self.tr("Create Team"))
+        self.cancel_button.setText(self.tr("Cancel"))
         self._update_create_enabled()
 
     def _update_create_enabled(self):
         names = [combo.currentData() for combo in self.combos]
-        self.yesButton.setEnabled(len(set(names)) == 3)
+        self.ok_button.setEnabled(len(set(names)) == 3)
 
     def selected_names(self):
         return [combo.currentData() for combo in self.combos]
@@ -564,23 +572,23 @@ class TeamSelectionDialog(TranslatedDialog):
 class ExportTeamDialog(TranslatedDialog):
     def __init__(self, default_name, parent=None):
         super().__init__(parent)
-        self.widget.setMinimumWidth(520)
+        self.panel.setFixedWidth(520)
         self.set_dialog_title(self.tr("Export Team"))
-        self.name_edit = LineEdit(self.widget)
+        self.name_edit = QLineEdit(self.panel)
         self.name_edit.setText(default_name)
-        self.description_edit = TextEdit(self.widget)
+        self.description_edit = QTextEdit(self.panel)
         self.description_edit.setFixedHeight(90)
-        self.author_edit = LineEdit(self.widget)
-        self.version_edit = LineEdit(self.widget)
+        self.author_edit = QLineEdit(self.panel)
+        self.version_edit = QLineEdit(self.panel)
         self.version_edit.setText("1.0.0")
         for label, field in (
             (self.tr("Name"), self.name_edit), (self.tr("Description"), self.description_edit),
             (self.tr("Author"), self.author_edit), (self.tr("Version"), self.version_edit),
         ):
-            self.viewLayout.addWidget(BodyLabel(label, self.widget))
-            self.viewLayout.addWidget(field)
-        self.yesButton.setText(self.tr("Export"))
-        self.cancelButton.setText(self.tr("Cancel"))
+            self.body.addWidget(QLabel(label, self.panel))
+            self.body.addWidget(field)
+        self.ok_button.setText(self.tr("Export"))
+        self.cancel_button.setText(self.tr("Cancel"))
 
     def validate(self):
         values = (self.name_edit.text(), self.description_edit.toPlainText(),
@@ -603,27 +611,27 @@ class ExportTeamDialog(TranslatedDialog):
 class ImportTeamDialog(TranslatedDialog):
     def __init__(self, manifest, translated_team, parent=None):
         super().__init__(parent)
-        self.widget.setMinimumWidth(560)
+        self.panel.setFixedWidth(560)
         self.set_dialog_title(self.tr("Import Team"))
         self.add_field(self.tr("Name"), manifest["name"])
         # Description: 固定高度的只读滚动区域，避免长说明撑开导入对话框。
-        self.viewLayout.addWidget(BodyLabel(self.tr("Description"), self.widget))
-        self.description_text = TextEdit(self.widget)
+        self.body.addWidget(QLabel(self.tr("Description"), self.panel))
+        self.description_text = QTextEdit(self.panel)
         self.description_text.setPlainText(str(manifest["description"]))
         self.description_text.setReadOnly(True)
         self.description_text.setLineWrapMode(QTextEdit.WidgetWidth)
         self.description_text.setFixedHeight(220)
         self.description_text.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.description_text.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.viewLayout.addWidget(self.description_text)
+        self.body.addWidget(self.description_text)
         self.add_field(self.tr("Team"), translated_team)
         self.add_field(self.tr("Version"), manifest["version"])
-        warning = BodyLabel(self.tr("Importing will override the local code for this team."), self.widget)
+        warning = QLabel(self.tr("Importing will override the local code for this team."), self.panel)
         warning.setWordWrap(True)
         warning.setStyleSheet("color: #d13438;")
-        self.viewLayout.addWidget(warning)
-        self.yesButton.setText(self.tr("Confirm Import"))
-        self.cancelButton.setText(self.tr("Cancel"))
+        self.body.addWidget(warning)
+        self.ok_button.setText(self.tr("Confirm Import"))
+        self.cancel_button.setText(self.tr("Cancel"))
 
 
 class TeamInfoDialog(TranslatedDialog):
@@ -631,23 +639,23 @@ class TeamInfoDialog(TranslatedDialog):
 
     def __init__(self, manifest, translated_team, parent=None):
         super().__init__(parent)
-        self.widget.setMinimumWidth(560)
+        self.panel.setFixedWidth(560)
         self.set_dialog_title(self.tr("Team Info"))
         self.add_field(self.tr("Name"), manifest.get("name", ""))
         self.add_field(self.tr("Author"), manifest.get("author", ""))
         self.add_field(self.tr("Version"), manifest.get("version", ""))
         self.add_field(self.tr("Team"), translated_team)
-        self.viewLayout.addWidget(BodyLabel(self.tr("Description"), self.widget))
-        self.description_text = TextEdit(self.widget)
+        self.body.addWidget(QLabel(self.tr("Description"), self.panel))
+        self.description_text = QTextEdit(self.panel)
         self.description_text.setPlainText(str(manifest.get("description", "")))
         self.description_text.setReadOnly(True)
         self.description_text.setLineWrapMode(QTextEdit.WidgetWidth)
         self.description_text.setFixedHeight(260)
         self.description_text.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.description_text.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.viewLayout.addWidget(self.description_text)
-        self.yesButton.setText(self.tr("Close"))
-        self.hideCancelButton()
+        self.body.addWidget(self.description_text)
+        self.ok_button.setText(self.tr("Close"))
+        self.set_cancel_visible(False)
 
 
 class WorkshopDialog(TranslatedDialog):
@@ -657,7 +665,8 @@ class WorkshopDialog(TranslatedDialog):
         super().__init__(parent)
         self.all_codes = list(codes)
         self.filtered_codes = list(codes)
-        self.widget.setMinimumSize(1100, 560)
+        self.panel.setFixedWidth(1100)
+        self.panel.setMinimumHeight(560)
         if team_name:
             title = self.tr("{team_name} - Team Workshop").format(team_name=team_name)
         else:
@@ -665,14 +674,14 @@ class WorkshopDialog(TranslatedDialog):
         self.set_dialog_title(title)
 
         filter_layout = QHBoxLayout()
-        self.search_edit = SearchLineEdit(self.widget)
+        self.search_edit = QLineEdit(self.panel)
         self.search_edit.setPlaceholderText(
             self.tr("Search by team, character, author or description...")
         )
         self.search_edit.setClearButtonEnabled(True)
         self.search_edit.textChanged.connect(self._apply_filter)
 
-        self.char_filter_combo = ComboBox(self.widget)
+        self.char_filter_combo = ComboBox(parent=self.panel)
         self.char_filter_combo.setMinimumWidth(160)
         self.char_filter_combo.addItem(self.tr("All Characters"), userData="")
 
@@ -691,15 +700,15 @@ class WorkshopDialog(TranslatedDialog):
             self.char_filter_combo.addItem(display_name, userData=char_name)
         self.char_filter_combo.currentIndexChanged.connect(self._apply_filter)
 
-        self.count_label = CaptionLabel("", self.widget)
+        self.count_label = QLabel("", self.panel)
 
         filter_layout.addWidget(self.search_edit, 1)
-        filter_layout.addWidget(BodyLabel(self.tr("Character:"), self.widget))
+        filter_layout.addWidget(QLabel(self.tr("Character:"), self.panel))
         filter_layout.addWidget(self.char_filter_combo)
         filter_layout.addWidget(self.count_label)
-        self.viewLayout.addLayout(filter_layout)
+        self.body.addLayout(filter_layout)
 
-        self.table = TableWidget(self.widget)
+        self.table = QTableWidget(self.panel)
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels([
             self.tr("Team"), self.tr("Description"), self.tr("Author"),
@@ -722,43 +731,18 @@ class WorkshopDialog(TranslatedDialog):
         self.table.setColumnWidth(3, 85)
         self.table.setColumnWidth(4, 120)
         self.table.setColumnWidth(5, 80)
-        setCustomStyleSheet(
-            self.table,
-            "QTableView::item { padding-left: 5px; padding-right: 5px; }",
-            "QTableView::item { padding-left: 5px; padding-right: 5px; }",
-        )
+        self.table.setStyleSheet("QTableView::item { padding-left: 5px; padding-right: 5px; }")
         self.table.cellDoubleClicked.connect(self._on_row_double_clicked)
 
-        # Container for table and external vertical scrollbar
-        table_container = QWidget(self.widget)
-        table_container_layout = QHBoxLayout(table_container)
-        table_container_layout.setContentsMargins(0, 0, 16, 0)
-        table_container_layout.setSpacing(0)
-        table_container_layout.addWidget(self.table)
+        self.body.addWidget(self.table, 1)
 
-        # Place the floating vertical scrollbar into table_container, cleanly outside the table
-        sb = self.table.scrollDelagate.vScrollBar
-        sb.setParent(table_container)
-        sb.raise_()
-
-        orig_event_filter = self.table.scrollDelagate.eventFilter
-        def _scroll_event_filter(obj, e):
-            res = orig_event_filter(obj, e)
-            if e.type() == QEvent.Resize and obj is self.table.viewport():
-                sb.resize(12, self.table.height() - 2)
-                sb.move(self.table.x() + self.table.width() + 4, self.table.y() + 1)
-            return res
-        self.table.scrollDelagate.eventFilter = _scroll_event_filter
-
-        self.viewLayout.addWidget(table_container, 1)
-
-        self.empty_label = BodyLabel(self.tr("No shared code matches the search criteria."), self.widget)
+        self.empty_label = QLabel(self.tr("No shared code matches the search criteria."), self.panel)
         self.empty_label.setAlignment(Qt.AlignCenter)
-        self.viewLayout.addWidget(self.empty_label)
+        self.body.addWidget(self.empty_label)
         self.empty_label.hide()
 
-        self.yesButton.setText(self.tr("Close"))
-        self.hideCancelButton()
+        self.ok_button.setText(self.tr("Close"))
+        self.set_cancel_visible(False)
         self._apply_filter()
 
     def _team_display_text(self, code):
@@ -840,7 +824,7 @@ class WorkshopDialog(TranslatedDialog):
             container_layout = QHBoxLayout(container)
             container_layout.setContentsMargins(0, 2, 0, 2)
             container_layout.setAlignment(Qt.AlignCenter)
-            button = PrimaryPushButton(self.tr("Import"), container)
+            button = Button(self.tr("Import"), variant="primary", parent=container)
             button.setFixedSize(60, 28)
             button.clicked.connect(lambda _checked=False, item=code: self.import_requested.emit(item))
             container_layout.addWidget(button)
@@ -850,7 +834,7 @@ class WorkshopDialog(TranslatedDialog):
         if 0 <= row < len(self.filtered_codes):
             code = self.filtered_codes[row]
             dialog = TranslatedDialog(self.window())
-            dialog.widget.setMinimumWidth(560)
+            dialog.panel.setFixedWidth(560)
             dialog.set_dialog_title(self.tr("Configuration Details"))
             dialog.add_field(self.tr("Team"), self._team_display_text(code))
             dialog.add_field(self.tr("Name"), code.get("name", ""))
@@ -858,16 +842,16 @@ class WorkshopDialog(TranslatedDialog):
             dialog.add_field(self.tr("Version"), code.get("version", ""))
             dialog.add_field(self.tr("Modified"), format_workshop_local_time(code))
             
-            desc_label = BodyLabel(self.tr("Description"), dialog.widget)
-            desc_edit = TextEdit(dialog.widget)
+            desc_label = QLabel(self.tr("Description"), dialog.panel)
+            desc_edit = QTextEdit(dialog.panel)
             desc_edit.setPlainText(code.get("description", ""))
             desc_edit.setReadOnly(True)
             desc_edit.setFixedHeight(180)
-            dialog.viewLayout.addWidget(desc_label)
-            dialog.viewLayout.addWidget(desc_edit)
+            dialog.body.addWidget(desc_label)
+            dialog.body.addWidget(desc_edit)
 
-            dialog.yesButton.setText(self.tr("Import"))
-            dialog.cancelButton.setText(self.tr("Close"))
+            dialog.ok_button.setText(self.tr("Import"))
+            dialog.cancel_button.setText(self.tr("Close"))
             if dialog.exec():
                 self.import_requested.emit(code)
 
@@ -899,44 +883,44 @@ class CharacterCodeTab(CustomTab):
         left = QWidget(splitter)
         left_layout = QVBoxLayout(left)
         left_layout.setContentsMargins(0, 0, 8, 0)
-        left_layout.addWidget(BodyLabel(self.tr("Teams")))
-        self.team_list = ListWidget(left)
+        left_layout.addWidget(QLabel(self.tr("Teams")))
+        self.team_list = QListWidget(left)
         self.team_list.setMinimumWidth(210)
         self.team_list.setMaximumWidth(300)
         self.team_list.setItemDelegate(TeamListDelegate(self.team_list))
         self.team_list.currentRowChanged.connect(self._team_selected)
         left_layout.addWidget(self.team_list, 1)
-        self.switch_all_button = PushButton(translate_ui("Switch All to Built In Code"))
+        self.switch_all_button = Button(translate_ui("Switch All to Built In Code"))
         self.switch_all_button.setToolTip(
             translate_ui("Switch every team between imported and built in code"))
         self.switch_all_button.clicked.connect(self._switch_all_code_mode)
         left_layout.addWidget(self.switch_all_button)
         team_buttons = QVBoxLayout()
         first_team_button_row = QHBoxLayout()
-        self.create_team_button = PrimaryPushButton(FluentIcon.ADD, self.tr("Create Team"))
+        self.create_team_button = Button(self.tr("Create Team"), icon="plus", variant="primary")
         self.create_team_button.clicked.connect(self._create_team)
-        self.delete_team_button = PushButton(FluentIcon.DELETE, self.tr("Delete Team"))
+        self.delete_team_button = Button(self.tr("Delete Team"), icon="trash")
         self.delete_team_button.clicked.connect(self._delete_team)
-        self.workshop_button = PushButton(FluentIcon.LIBRARY, self.tr("Workshop"))
+        self.workshop_button = Button(self.tr("Workshop"), icon="layers")
         self.workshop_button.clicked.connect(self._open_workshop)
         first_team_button_row.addWidget(self.create_team_button)
         first_team_button_row.addWidget(self.delete_team_button)
         second_team_button_row = QHBoxLayout()
-        self.import_team_button = PushButton(FluentIcon.DOWNLOAD, self.tr("Import Team"))
+        self.import_team_button = Button(self.tr("Import Team"), icon="download")
         self.import_team_button.clicked.connect(self._import_team)
-        self.export_team_button = PushButton(FluentIcon.SHARE, self.tr("Export Selected"))
+        self.export_team_button = Button(self.tr("Export Selected"), icon="export")
         self.export_team_button.clicked.connect(self._export_team)
         second_team_button_row.addWidget(self.workshop_button)
         second_team_button_row.addWidget(self.import_team_button)
         third_team_button_row = QHBoxLayout()
-        self.upload_team_button = PushButton(FluentIcon.GITHUB, self.tr("Upload Team"))
+        self.upload_team_button = Button(self.tr("Upload Team"), icon="github")
         self.upload_team_button.clicked.connect(self._open_upload_team)
         third_team_button_row.addWidget(self.export_team_button)
         third_team_button_row.addWidget(self.upload_team_button)
         self.export_current_button = None
         if (getattr(og, "app", None) and getattr(og.app, "config", {}).get("debug", False)
                 and (Path.cwd() / ".git").is_dir()):
-            self.export_current_button = PushButton(FluentIcon.SHARE, self.tr("Export Current"))
+            self.export_current_button = Button(self.tr("Export Current"), icon="export")
             self.export_current_button.clicked.connect(self._export_current_team)
             team_buttons.addWidget(self.export_current_button)
         team_buttons.addLayout(first_team_button_row)
@@ -951,16 +935,16 @@ class CharacterCodeTab(CustomTab):
         self.char_image_label = QLabel()
         self.char_image_label.setFixedSize(52, 52)
         self.char_image_label.setAlignment(Qt.AlignCenter)
-        self.member_combo = ComboBox(right)
+        self.member_combo = ComboBox(parent=right)
         self.member_combo.setMinimumWidth(190)
         self.member_combo.currentIndexChanged.connect(self._member_selected)
-        self.team_info_button = PushButton(FluentIcon.INFO, self.tr("Team Info"))
+        self.team_info_button = Button(self.tr("Team Info"), icon="info")
         self.team_info_button.clicked.connect(self._show_team_info)
         self.team_info_button.hide()
-        self.ask_ai_button = PushButton(FluentIcon.ROBOT, self.tr("Ask AI"))
+        self.ask_ai_button = Button(self.tr("Ask AI"), icon="chat")
         self.ask_ai_button.clicked.connect(self._copy_ask_ai_template)
         top.addWidget(self.char_image_label)
-        top.addWidget(BodyLabel(self.tr("Character Code")))
+        top.addWidget(QLabel(self.tr("Character Code")))
         top.addWidget(self.member_combo)
         top.addStretch(1)
         top.addWidget(self.team_info_button)
@@ -969,7 +953,7 @@ class CharacterCodeTab(CustomTab):
 
         self.editor = CodeEditor(right)
         self.editor.setMinimumHeight(520)
-        self.editor.setLineWrapMode(PlainTextEdit.NoWrap)
+        self.editor.setLineWrapMode(QPlainTextEdit.NoWrap)
         font = self.editor.font()
         font.setFamily("Consolas")
         font.setPointSize(10)
@@ -979,10 +963,10 @@ class CharacterCodeTab(CustomTab):
         right_layout.addWidget(self.editor, 1)
 
         bottom = QHBoxLayout()
-        self.status_label = BodyLabel("")
-        self.reset_button = PushButton(FluentIcon.SYNC, self.tr("Reset to Built In"))
+        self.status_label = QLabel("")
+        self.reset_button = Button(self.tr("Reset to Built In"), icon="refresh")
         self.reset_button.clicked.connect(self._switch_code_mode)
-        self.save_button = PrimaryPushButton(FluentIcon.SAVE, self.tr("Save"))
+        self.save_button = Button(self.tr("Save"), icon="check", variant="primary")
         self.save_button.clicked.connect(self._save_current)
         bottom.addWidget(self.status_label, 1)
         bottom.addWidget(self.reset_button)
@@ -997,7 +981,12 @@ class CharacterCodeTab(CustomTab):
         self._set_editor_enabled(False)
         normalize_custom_teams()
         self._refresh_team_list()
-        qconfig.themeChangedFinished.connect(self.team_list.viewport().update)
+        theme.changed.connect(self._refresh_theme)
+
+    def _refresh_theme(self):
+        self.team_list.viewport().update()
+        self._update_switch_all_button()
+        self._update_code_mode_button()
 
     @property
     def name(self):
@@ -1005,7 +994,7 @@ class CharacterCodeTab(CustomTab):
 
     @property
     def icon(self):
-        return FluentIcon.CODE
+        return icon("code")
 
     def _unique_characters(self):
         return sorted({info["cls"] for info in char_dict.values()},
@@ -1159,7 +1148,7 @@ class CharacterCodeTab(CustomTab):
         return self.current_team is not None and self.editor.toPlainText() != self.clean_code
 
     def _confirm_discard_changes(self):
-        box = MessageBox(self.tr("Unsaved Changes"), self.tr("Discard unsaved character code changes?"), self.window())
+        box = confirmation_dialog(self.tr("Unsaved Changes"), self.tr("Discard unsaved character code changes?"), self.window())
         return bool(box.exec())
 
     def _guard_unsaved_changes(self):
@@ -1195,7 +1184,7 @@ class CharacterCodeTab(CustomTab):
         team = self.current_team
         display_team = sorted(team, key=lambda name: get_english_char_name(name).casefold())
         team_name = ", ".join(self.tr(get_english_char_name(name)) for name in display_team)
-        box = MessageBox(
+        box = confirmation_dialog(
             self.tr("Delete Team"),
             self.tr("Permanently delete the team {team}?").format(team=team_name),
             self.window(),
@@ -1269,14 +1258,14 @@ class CharacterCodeTab(CustomTab):
         if not changed:
             return True
         names = ", ".join(self.tr(get_english_char_name(name)) for name in changed)
-        box = MessageBox(
+        box = confirmation_dialog(
             translate_ui("Replace Imported Code"),
             translate_ui("This team runs built in code. Saving makes the whole team's current code its imported code "
                          "and replaces the imported code of: {names}").format(names=names),
             self.window(),
         )
-        box.yesButton.setText(self.tr("Save"))
-        box.cancelButton.setText(translate_ui("Cancel"))
+        box.ok_button.setText(self.tr("Save"))
+        box.cancel_button.setText(translate_ui("Cancel"))
         return bool(box.exec())
 
     @staticmethod
@@ -1293,7 +1282,7 @@ class CharacterCodeTab(CustomTab):
         """Color a switch button like the dot of the state it switches to, which
         turns the two buttons into the legend for the team list dots."""
         light, dark = _state_colors(target_mode)
-        button.setIcon(FluentIcon.SYNC.colored(QColor(light), QColor(dark)))
+        button.setIcon(icon("refresh", QColor(dark if theme.is_dark() else light)))
 
     def _update_switch_all_button(self, states=None):
         if states is None:
@@ -1358,9 +1347,9 @@ class CharacterCodeTab(CustomTab):
         content = (translate_ui("Switch all teams to built in code?")
                    if target == TEAM_CODE_MODE_BUILTIN
                    else translate_ui("Switch all teams to imported code?"))
-        box = MessageBox(translate_ui("Switch All Team Code"), content, self.window())
-        box.yesButton.setText(translate_ui("Switch"))
-        box.cancelButton.setText(translate_ui("Cancel"))
+        box = confirmation_dialog(translate_ui("Switch All Team Code"), content, self.window())
+        box.ok_button.setText(translate_ui("Switch"))
+        box.cancel_button.setText(translate_ui("Cancel"))
         if not box.exec():
             return
         try:
@@ -1425,9 +1414,9 @@ class CharacterCodeTab(CustomTab):
             content = (translate_ui("Switch the whole team to built in code?")
                        if target == TEAM_CODE_MODE_BUILTIN
                        else translate_ui("Switch the whole team to imported code?"))
-            box = MessageBox(translate_ui("Switch Character Code"), content, self.window())
-            box.yesButton.setText(translate_ui("Switch"))
-            box.cancelButton.setText(translate_ui("Cancel"))
+            box = confirmation_dialog(translate_ui("Switch Character Code"), content, self.window())
+            box.ok_button.setText(translate_ui("Switch"))
+            box.cancel_button.setText(translate_ui("Cancel"))
             if not box.exec():
                 return
         try:
@@ -1449,42 +1438,32 @@ class CharacterCodeTab(CustomTab):
         self._refresh_team_state_marker()
 
     def _confirm_switch_changes(self, title=None, content=None, save_text=None):
-        box = MessageBox(
+        box = confirmation_dialog(
             title or translate_ui("Unsaved Changes"),
             content or translate_ui("Save the current character code changes before switching?"),
             self.window(),
         )
-        box.yesButton.setText(save_text or translate_ui("Save and Switch"))
-        box.cancelButton.setText(translate_ui("Cancel"))
-        discard_button = PushButton(translate_ui("Discard and Switch"), box.buttonGroup)
-        buttons = [box.yesButton, discard_button, box.cancelButton]
-        box.buttonLayout.insertWidget(1, discard_button, 1, Qt.AlignVCenter)
-        # MessageBox pins the widget size at construction time, before the
-        # layout runs, and only accounts for its own two buttons. Grow it from
-        # the real hints so the third button is not squeezed: every button gets
-        # an equal share of the row, so the widest label decides the width.
-        text_width = max(box.titleLabel.sizeHint().width(), box.contentLabel.sizeHint().width()) + 48
+        box.ok_button.setText(save_text or translate_ui("Save and Switch"))
+        box.cancel_button.setText(translate_ui("Cancel"))
+        discard_button = box.add_button("discard", translate_ui("Discard and Switch"))
+        buttons = [box.ok_button, discard_button, box.cancel_button]
+        # Size the panel for all three translated action labels.
+        text_width = max(box.title_label.sizeHint().width(), box.message_label.sizeHint().width()) + 48
         button_width = max(button.sizeHint().width() for button in buttons) * len(buttons) + 96
-        box.widget.setFixedSize(max(box.widget.width(), text_width, button_width), box.widget.height())
-        result = "cancel"
-
-        def choose(action):
-            nonlocal result
-            result = action
-
-        box.yesButton.clicked.connect(lambda: choose("save"))
-        discard_button.clicked.connect(lambda: choose("discard"))
-        discard_button.clicked.connect(box.accept)
-        box.cancelButton.clicked.connect(lambda: choose("cancel"))
-        box.exec()
-        return result
+        box.panel.setFixedWidth(max(text_width, button_width))
+        try:
+            if box.exec():
+                return "save"
+            return "discard" if box.choice == "discard" else "cancel"
+        finally:
+            box.deleteLater()
 
     def _reset_to_builtin_code(self):
         """Put the built in code of the current character into the editor. Nothing
         is written; saving it afterwards works like saving any other edit."""
         if self.current_char_cls is None:
             return
-        box = MessageBox(
+        box = confirmation_dialog(
             translate_ui("Reset Character Code"),
             translate_ui("Reset this character to built in code for this team?"),
             self.window())
@@ -1606,9 +1585,9 @@ class CharacterCodeTab(CustomTab):
             if expected_team is not None and normalize_team(info["team"]) != normalize_team(expected_team):
                 raise ValueError(self.tr("The archive is for a different team."))
         except Exception as e:
-            box = MessageBox(translate_ui("Invalid Team Archive"), str(e), self.window())
-            box.yesButton.setText(translate_ui("Close"))
-            box.cancelButton.hide()
+            box = confirmation_dialog(translate_ui("Invalid Team Archive"), str(e), self.window())
+            box.ok_button.setText(translate_ui("Close"))
+            box.cancel_button.hide()
             box.exec()
             return False
         translated_team = ", ".join(

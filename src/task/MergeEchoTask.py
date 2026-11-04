@@ -2,6 +2,7 @@ import re
 
 from src.Labels import Labels
 from src.task.BaseWWTask import BaseWWTask
+from src.task.task_icons import task_icon
 
 FULL_BATCH_PATTERN = re.compile(r"100\s*/\s*100")
 
@@ -11,6 +12,9 @@ class MergeEchoTask(BaseWWTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "♻️ Merge Discarded Echoes"
+        self.icon = task_icon('synthesis')
+        self.group_name = 'Echo Management'
+        self.group_icon = task_icon('category-echo')
         self.description = (
             "Must have 1000 discarded Echo to Run, "
             "Merge discarded Echoes in full batches of 100."

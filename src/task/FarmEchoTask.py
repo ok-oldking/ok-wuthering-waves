@@ -8,6 +8,7 @@ from ok import Logger, TaskDisabledException, color_range_to_bound
 from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException, white_color
 from src.task.WWOneTimeTask import WWOneTimeTask
 from ok import find_boxes_by_name
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 
@@ -19,6 +20,9 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.description = "Click Start after Entering Dungeon or Teleporting to The Boss"
         self.name = "🌀 Farm 4C Echo in Dungeon/World"
+        self.icon = task_icon('boss')
+        self.group_name = 'Daily Activities'
+        self.group_icon = task_icon('category-daily')
         self.default_config.update({
             'Teleport to Boss': 'No',
             'Boss Level': "80",

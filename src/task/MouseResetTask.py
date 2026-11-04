@@ -1,6 +1,7 @@
 import math
 
 from ok import TriggerTask, Logger
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 
@@ -12,6 +13,7 @@ class MouseResetTask(TriggerTask):
         self.default_config = {'_enabled': True}
         self.trigger_interval = 10
         self.name = "🖱️ Prevent Wuthering Waves from moving the mouse"
+        self.icon = task_icon('settings')
         self.description = "Turn on if you mouse jumps around"
         self.mouse_pos = None
 

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException
 from src.task.WWOneTimeTask import WWOneTimeTask
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 TRAVEL_FEATURES = ['fast_travel_custom', 'gray_teleport', 'remove_custom']
@@ -26,6 +27,9 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self.trigger_interval = 0.1
         self.target_enemy_time_out = 10
         self.name = "🌙 Nightmare Nest Task"
+        self.icon = task_icon('nightmare')
+        self.group_name = 'Daily Activities'
+        self.group_icon = task_icon('category-daily')
         self.description = "Auto Farm all Nightmare Nest"
         self.support_schedule_task = True
         self.count_re = re.compile(r"(\d{1,2})/(\d{1,2})")

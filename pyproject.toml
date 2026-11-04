@@ -8,7 +8,8 @@ version = "0.0.1"
 requires-python = ">=3.11"
 dependencies = [
     "mcp==2.3.0",
-    "ok-script[ocr,qt]>=2.0.22",
+    "ok-script[ocr,qt]==3.0.2",
+    "ok-pyside-minimal==6.12.0.post2",
     "onnxocr-ppocrv5>=0.0.20",
     "openvino",
     "opencv-python",
@@ -24,5 +25,5 @@ docs = [
     "mkdocs-material>=9.5,<10",
 ]
 web-test = [
-    "ok-script[web]==2.0.22",
+    "ok-script[web]==3.0.2",
 ]

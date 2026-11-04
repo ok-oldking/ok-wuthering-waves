@@ -7,6 +7,7 @@ import numpy as np
 from src.task.BaseWWTask import BaseWWTask
 from src.task.MouseResetTask import MouseResetTask
 from src.task.WWOneTimeTask import WWOneTimeTask
+from src.task.task_icons import task_icon
 
 
 ROWS, COLS = 7, 8
@@ -115,6 +116,9 @@ class TacetEliminationTask(WWOneTimeTask, BaseWWTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = 'Tacet Elimination'
+        self.icon = task_icon('tacet-elimination')
+        self.group_name = 'Daily Activities'
+        self.group_icon = task_icon('category-daily')
         self.description = 'Start on the current event screen. Complete prerequisite stages, then play Final Elimination for the highest possible score until turns run out.'
 
     def event_text(self):
