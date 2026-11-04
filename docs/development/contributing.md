@@ -20,12 +20,7 @@ Please check the scope of your change first:
 
 ## 联系方式 / Contact
 
-- 开发者群 / Developer QQ group: `926858895`
 - Discord: [https://discord.gg/vVyCatEBgA](https://discord.gg/vVyCatEBgA)
-
-开发者群仅面向有开发能力、希望参与贡献的开发者。入群前请确保你已经能够从源码成功运行项目。
-
-The developer group is for developers who can contribute to the project. Please make sure you can run the project from source before joining.
 
 ## 开发环境 / Development Environment
 

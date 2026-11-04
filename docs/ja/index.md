@@ -15,8 +15,6 @@
 <!-- Badges -->
 <div class="badge-row">
   <img src="https://img.shields.io/badge/platform-Windows-blue" alt="Platform" />
-  <a href="https://github.com/ok-oldking/ok-wuthering-waves/releases"><img src="https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves" alt="GitHub release" /></a>
-  <a href="https://github.com/ok-oldking/ok-wuthering-waves/releases"><img src="https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total" alt="Total Downloads" /></a>
   <a href="https://discord.gg/vVyCatEBgA"><img src="https://img.shields.io/discord/296598043787132928?color=5865f2&amp;label=%20Discord" alt="Discord" /></a>
 </div>
 
@@ -40,16 +38,6 @@
 > 違反が確認された場合、その重大性と頻度に応じて、不正に得た利益の没収、ゲームアカウントの一時停止または永久凍結などを含む（ただしこれらに限定されない）処罰を科します。
 
 **本ソフトウェアを使用することにより、あなたは上記の声明を読み、理解し、同意したものとみなされ、起こりうるすべてのリスクを自らの意思で負うことになります。**
-
-## 🚀 クイックスタート
-
-1.  **インストーラーのダウンロード**: 下記の「ダウンロード」セクションから、最新の `ok-ww-win32-Global-setup.exe` インストーラーファイルをダウンロードします。
-2.  **プログラムのインストール**: `ok-ww-win32-Global-setup.exe` ファイルをダブルクリックし、画面の指示に従ってインストールを完了します。
-3.  **プログラムの実行**: インストール後、デスクトップのショートカットまたはスタートメニューから `ok-ww` を起動します。
-
-## 📥 ダウンロード
-
-*   **[GitHub](https://github.com/ok-oldking/ok-wuthering-waves/releases)**: 公式リリースページ。世界中から高速にアクセスできます。（**`Source Code` のアーカイブではなく、`setup.exe` インストーラーをダウンロードしてください**）。
 
 ## ✨ 主な機能
 <img width="1778" height="1186" alt="QQ_1762961412161" src="https://github.com/user-attachments/assets/0109c68e-d714-4c34-b016-b4b45f9861fd" />
@@ -109,9 +97,9 @@
 
 コマンドライン引数を使用して自動起動できます。
 
-```bash
+```powershell
 # 例: 起動後に最初のタスクを自動実行し、完了したらプログラムを終了する
-ok-ww.exe -t 1 -e
+.\.venv\Scripts\python.exe main.py -t 1 -e
 ```
 
 *   `-t` または `--task`: 起動後にリストの N 番目のタスクを自動的に実行します。`1` は最初のタスクを表します。

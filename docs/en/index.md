@@ -15,8 +15,6 @@
 <!-- Badges -->
 <div class="badge-row">
   <img src="https://img.shields.io/badge/platform-Windows-blue" alt="Platform" />
-  <a href="https://github.com/ok-oldking/ok-wuthering-waves/releases"><img src="https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves" alt="GitHub release" /></a>
-  <a href="https://github.com/ok-oldking/ok-wuthering-waves/releases"><img src="https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total" alt="Total Downloads" /></a>
   <a href="https://discord.gg/vVyCatEBgA"><img src="https://img.shields.io/discord/296598043787132928?color=5865f2&amp;label=%20Discord" alt="Discord" /></a>
 </div>
 
@@ -40,16 +38,6 @@ Please note, according to Kuro Games' official Fair Play Declaration for Wutheri
 > Once verified, we will impose penalties based on the severity and frequency of the violation, including but not limited to deducting illicit gains, and suspending or permanently banning the game account.
 
 **By using this software, you acknowledge that you have read, understood, and agreed to the above statement, and you voluntarily assume all potential risks.**
-
-## 🚀 Quick Start
-
-1.  **Download the Installer**: From the "Downloads" section below, download the latest `ok-ww-win32-Global-setup.exe` installer file.
-2.  **Install the Program**: Double-click the `ok-ww-win32-Global-setup.exe` file and follow the on-screen instructions to complete the installation.
-3.  **Run the Program**: After installation, launch `ok-ww` from the desktop shortcut or the Start Menu.
-
-## 📥 Downloads
-
-*   **[GitHub](https://github.com/ok-oldking/ok-wuthering-waves/releases)**: Official release page, fast access worldwide. (**Please download the `setup.exe` installer, not the `Source Code` archive**).
 
 ## ✨ Main Features
 <img width="1778" height="1186" alt="QQ_1762961412161" src="https://github.com/user-attachments/assets/0109c68e-d714-4c34-b016-b4b45f9861fd" />
@@ -109,9 +97,9 @@ Before evaluating or improving a team, select the team and enter 深境再临 or
 
 You can use command-line arguments for automated startup.
 
-```bash
+```powershell
 # Example: Automatically run the first task after launch and exit the program upon completion
-ok-ww.exe -t 1 -e
+.\.venv\Scripts\python.exe main.py -t 1 -e
 ```
 
 *   `-t` or `--task`: Automatically runs the Nth task in the list after launch. `1` represents the first task.
