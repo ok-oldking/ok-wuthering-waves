@@ -190,6 +190,7 @@ config = {
     'plugin':True,
     'my_app': ['src.globals', 'Globals'],
     'start_timeout': 120,  # default 60
+    'update_only_game_exit': True,  # if startup skipped the update check, check 10s after the game exits
     'wait_until_settle_time': 0,
     # required if using feature detection
     'template_matching': {
