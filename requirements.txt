@@ -62,9 +62,9 @@ ok-pyside-minimal==6.12.0.post2
     # via
     #   ok-script
     #   ok-ww (pyproject.toml)
-ok-script[ocr,qt]==3.0.2
+ok-script[ocr,qt]==3.0.3
     # via ok-ww (pyproject.toml)
-onnxocr-ppocrv5==0.0.22
+onnxocr-ppocrv5==0.0.23
     # via
     #   ok-script
     #   ok-ww (pyproject.toml)
