@@ -17,8 +17,8 @@ class TestInstallDependencies(unittest.TestCase):
         with patch.object(installer.subprocess, 'run', side_effect=[
             subprocess.CompletedProcess([], 1), subprocess.CompletedProcess([], 0),
         ]) as run, patch.object(installer.time, 'sleep') as sleep:
-            self.assertEqual(0, installer.pip_install(['ok-script==3.0.0b3'], attempts=3))
-        command = [sys.executable, '-m', 'pip', 'install', '--no-cache-dir', 'ok-script==3.0.0b3']
+            self.assertEqual(0, installer.pip_install(['ok-script==3.0.0'], attempts=3))
+        command = [sys.executable, '-m', 'pip', 'install', '--no-cache-dir', 'ok-script==3.0.0']
         self.assertEqual([call(command), call(command)], run.call_args_list)
         sleep.assert_called_once_with(30)
 
