@@ -1,0 +1,205 @@
+{
+  "source_run": "4c56be81a988486b99a94c3b871bfe34",
+  "description": "Real HUD crops: face, flash/transition, remaining face, depleted charges. No new named template.",
+  "sequences": [
+    {
+      "trial": 1,
+      "file": "trial_1.png",
+      "crop_size": [
+        610,
+        110
+      ],
+      "samples": [
+        {
+          "visible": true,
+          "phase": "face",
+          "source": "1_0010_idle_after_launch.png",
+          "score": 0.9287581443786621,
+          "offset": 0.0
+        },
+        {
+          "visible": true,
+          "phase": "face",
+          "source": "1_0011_idle_after_launch.png",
+          "score": 0.7151238918304443,
+          "offset": 0.438
+        },
+        {
+          "visible": false,
+          "phase": "transition",
+          "source": "1_0012_idle_after_launch.png",
+          "score": 0.381462037563324,
+          "offset": 0.563
+        },
+        {
+          "visible": false,
+          "phase": "transition",
+          "source": "1_0013_idle_after_launch.png",
+          "score": 0.4013853073120117,
+          "offset": 0.672
+        },
+        {
+          "visible": false,
+          "phase": "transition",
+          "source": "1_0014_idle_after_launch.png",
+          "score": 0.3878844082355499,
+          "offset": 0.781
+        },
+        {
+          "visible": true,
+          "phase": "face",
+          "source": "1_0015_idle_after_launch.png",
+          "score": 0.7192721962928772,
+          "offset": 0.891
+        },
+        {
+          "visible": true,
+          "phase": "face",
+          "source": "1_0016_idle_after_launch.png",
+          "score": 0.9159864187240601,
+          "offset": 1.016
+        },
+        {
+          "visible": false,
+          "phase": "depleted",
+          "source": "1_0034_after_attack_3.png",
+          "score": 0.3919134736061096,
+          "offset": 1.616
+        }
+      ]
+    },
+    {
+      "trial": 2,
+      "file": "trial_2.png",
+      "crop_size": [
+        610,
+        110
+      ],
+      "samples": [
+        {
+          "visible": true,
+          "phase": "face",
+          "source": "2_0053_idle_after_launch.png",
+          "score": 0.8896245360374451,
+          "offset": 0.0
+        },
+        {
+          "visible": true,
+          "phase": "face",
+          "source": "2_0054_idle_after_launch.png",
+          "score": 0.8476434946060181,
+          "offset": 0.438
+        },
+        {
+          "visible": false,
+          "phase": "transition",
+          "source": "2_0055_idle_after_launch.png",
+          "score": 0.3590802848339081,
+          "offset": 0.563
+        },
+        {
+          "visible": false,
+          "phase": "transition",
+          "source": "2_0056_idle_after_launch.png",
+          "score": 0.3981180191040039,
+          "offset": 0.656
+        },
+        {
+          "visible": false,
+          "phase": "transition",
+          "source": "2_0057_idle_after_launch.png",
+          "score": 0.4965730905532837,
+          "offset": 0.781
+        },
+        {
+          "visible": true,
+          "phase": "face",
+          "source": "2_0058_idle_after_launch.png",
+          "score": 0.8673878312110901,
+          "offset": 0.875
+        },
+        {
+          "visible": true,
+          "phase": "face",
+          "source": "2_0059_idle_after_launch.png",
+          "score": 0.8138213157653809,
+          "offset": 0.984
+        },
+        {
+          "visible": false,
+          "phase": "depleted",
+          "source": "2_0078_after_attack_3.png",
+          "score": 0.41977056860923767,
+          "offset": 1.584
+        }
+      ]
+    },
+    {
+      "trial": 3,
+      "file": "trial_3.png",
+      "crop_size": [
+        610,
+        110
+      ],
+      "samples": [
+        {
+          "visible": true,
+          "phase": "face",
+          "source": "3_0097_idle_after_launch.png",
+          "score": 0.9286577701568604,
+          "offset": 0.0
+        },
+        {
+          "visible": false,
+          "phase": "transition",
+          "source": "3_0098_idle_after_launch.png",
+          "score": 0.5429001450538635,
+          "offset": 0.484
+        },
+        {
+          "visible": false,
+          "phase": "transition",
+          "source": "3_0099_idle_after_launch.png",
+          "score": 0.390824556350708,
+          "offset": 0.594
+        },
+        {
+          "visible": false,
+          "phase": "transition",
+          "source": "3_0100_idle_after_launch.png",
+          "score": 0.41898301243782043,
+          "offset": 0.703
+        },
+        {
+          "visible": false,
+          "phase": "transition",
+          "source": "3_0101_idle_after_launch.png",
+          "score": 0.6102491021156311,
+          "offset": 0.813
+        },
+        {
+          "visible": true,
+          "phase": "face",
+          "source": "3_0102_idle_after_launch.png",
+          "score": 0.7907307744026184,
+          "offset": 0.922
+        },
+        {
+          "visible": true,
+          "phase": "face",
+          "source": "3_0103_idle_after_launch.png",
+          "score": 0.8151982426643372,
+          "offset": 1.016
+        },
+        {
+          "visible": false,
+          "phase": "depleted",
+          "source": "3_0123_after_attack_3.png",
+          "score": 0.4734697937965393,
+          "offset": 1.616
+        }
+      ]
+    }
+  ],
+  "timing": "Face and flash offsets preserve original capture timing. The real depleted HUD crop is scheduled 0.6 seconds after the final recovery frame to exercise bounded exit; this endpoint timing is a test scenario, not a measured game animation duration."
+}

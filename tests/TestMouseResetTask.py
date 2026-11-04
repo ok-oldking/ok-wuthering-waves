@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from src.task.MouseResetTask import MouseResetTask
@@ -53,8 +54,8 @@ class TestMouseResetTask(unittest.TestCase):
         task.run()
         callback = task.handler.pop()
 
-        with patch('src.task.MouseResetTask.win32api') as win32api:
-            win32api.GetCursorPos.return_value = (100, 100)
+        win32api = SimpleNamespace(GetCursorPos=MagicMock(return_value=(100, 100)))
+        with patch.dict('sys.modules', {'win32api': win32api}):
             callback()
 
         self.assertEqual(len(task.handler.posts), 1)

@@ -2,6 +2,7 @@ import os
 import json
 import tempfile
 import unittest
+from concurrent.futures import Future
 from collections import Counter
 from pathlib import Path
 from types import SimpleNamespace
@@ -10,11 +11,14 @@ from urllib.error import HTTPError
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import QPoint, QRect, QSize, Qt
+from PySide6.QtCore import QPoint, QRect, QSize, Qt, QTimer
 from PySide6.QtGui import QFontDatabase, QImage, QPainter
 
-from PySide6.QtWidgets import QApplication, QDialog, QStyleOptionViewItem
-from qfluentwidgets import ComboBox, LineEdit, MessageBox, MessageBoxBase, TableWidget, TextEdit
+from PySide6.QtWidgets import QApplication, QStyleOptionViewItem
+from PySide6.QtWidgets import QLabel, QLineEdit, QTableWidget, QTextEdit
+from ok.ui.qt.kit.buttons import Button
+from ok.ui.qt.kit.dialogs import Dialog
+from ok.ui.qt.kit.inputs import ComboBox
 
 from ok.util.config import Config
 from src.char.Chixia import Chixia
@@ -26,17 +30,18 @@ from src.Labels import Labels
 from src.char.CustomCharLoader import (
     TEAM_CODE_MODE_BUILTIN, TEAM_CODE_MODE_IMPORT, TEAM_CODE_STATE_NONE, clear_team_char_cache,
     create_custom_team, delete_custom_team, export_custom_team, get_custom_team_folder, get_team_code_mode,
-    read_builtin_char_code, read_team_char_code, read_team_import_code, save_team_char_code,
+    read_builtin_char_code, read_team_char_code, read_team_import_code, read_team_manifest, save_team_char_code,
     save_team_import_code, set_team_code_mode, switch_all_teams_code_mode, switch_team_code_mode,
-    team_code_state,
+    team_code_state, write_team_manifest,
 )
 from src.char.Mortefi import Mortefi
 from src.char.Suisui import Suisui
 from src.char.Verina import Verina
 from src.char.YangYangSp import YangYangSp
 from src.gui.CharacterCodeTab import (
-    STATE_DOT_SIZE, CharacterCodeTab, ExportTeamDialog, ImportTeamDialog,
-    TeamSelectionDialog, WorkshopDialog, fetch_workshop_codes, team_state_color, workshop_team_url,
+    STATE_DOT_SIZE, CharacterCodeTab, ExportTeamDialog, ImportTeamDialog, TeamInfoDialog,
+    TeamSelectionDialog, WorkshopDialog, fetch_all_workshop_teams, fetch_workshop_codes,
+    team_state_color, workshop_team_url,
 )
 
 
@@ -82,13 +87,68 @@ class TestCharacterCodeTab(unittest.TestCase):
         finally:
             tab.deleteLater()
 
+    def test_export_current_button_requires_debug_and_git_directory(self):
+        for debug, git_exists in ((False, False), (False, True), (True, False), (True, True)):
+            app = SimpleNamespace(config={"debug": debug}, tr=lambda text: text, locale=None)
+            with (patch("src.gui.CharacterCodeTab.og.app", app),
+                  patch("src.gui.CharacterCodeTab.Path.is_dir", return_value=git_exists)):
+                tab = CharacterCodeTab()
+                try:
+                    self.assertEqual(tab.export_current_button is not None, debug and git_exists)
+                    self.assertEqual(tab.export_team_button.text(), "Export Selected")
+                finally:
+                    tab.deleteLater()
+
+    def test_export_current_uses_detected_team(self):
+        tab = CharacterCodeTab()
+        try:
+            team = (Chixia, Mortefi, Verina)
+            task = SimpleNamespace(chars=[SimpleNamespace(char_name=label) for label in
+                                          (Labels.char_chixia, Labels.char_mortefi, Labels.char_verina)])
+            task.next_frame = lambda: object()
+            task.load_chars = lambda: True
+            future = Future()
+            future.set_result(tab._load_current_team(task))
+            with patch.object(tab, "_export_team_codes") as export:
+                tab._on_current_team_loaded(future)
+            export.assert_called_once_with(self._names(team), allow_builtin=True)
+        finally:
+            tab.deleteLater()
+
+    def test_current_team_detection_rejects_stale_chars_when_loading_fails(self):
+        task = SimpleNamespace(chars=[object(), object(), object()], next_frame=lambda: object(),
+                               load_chars=lambda: False)
+        self.assertIsNone(CharacterCodeTab._load_current_team(task))
+
+    def test_export_current_submits_recognition_to_executor(self):
+        tab = CharacterCodeTab()
+        try:
+            calls = []
+            task = SimpleNamespace(chars=[SimpleNamespace(char_name=label) for label in
+                                          (Labels.char_chixia, Labels.char_mortefi, Labels.char_verina)],
+                                   next_frame=lambda: calls.append("frame") or object(),
+                                   load_chars=lambda: calls.append("load") or True)
+            future = Future()
+            def submit(fn, **kwargs):
+                calls.append("submit")
+                future.set_result(fn())
+                return SimpleNamespace(future=future)
+            tab.executor = SimpleNamespace(onetime_tasks=[task], trigger_tasks=[], submit=submit)
+            tab.export_current_button = Button()
+            with patch.object(tab, "_export_team_codes") as export:
+                tab._export_current_team()
+            self.assertEqual(calls, ["submit", "frame", "load"])
+            export.assert_called_once_with(self._names((Chixia, Mortefi, Verina)), allow_builtin=True)
+        finally:
+            tab.deleteLater()
+
     def test_delete_team_button_deletes_selected_team(self):
         team = (Mortefi, Chixia, Verina)
         create_custom_team(team)
         tab = CharacterCodeTab()
         try:
             with (
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
                 patch("src.gui.CharacterCodeTab.show_info_bar"),
             ):
                 message_box.return_value.exec.return_value = True
@@ -123,7 +183,7 @@ class TestCharacterCodeTab(unittest.TestCase):
         tab = CharacterCodeTab()
         try:
             with (
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
                 patch("src.gui.CharacterCodeTab.show_info_bar"),
             ):
                 message_box.return_value.exec.return_value = True
@@ -154,13 +214,13 @@ class TestCharacterCodeTab(unittest.TestCase):
     def test_workshop_url_uses_sorted_team_slug(self):
         self.assertEqual(
             workshop_team_url((Baizhi, Augusta, Aemeath)),
-            "https://okwwcharcode.ok-script.com/teams/Aemeath_Augusta_Baizhi.json",
+            "https://cfokwwchar.ok-script.com/teams/Aemeath_Augusta_Baizhi.json",
         )
 
     def test_workshop_url_sanitizes_character_name_punctuation(self):
         self.assertEqual(
             workshop_team_url((YangYangSp, Chisa, Suisui)),
-            "https://okwwcharcode.ok-script.com/teams/Chisa_Suisui_Yangyang_Xuanling.json",
+            "https://cfokwwchar.ok-script.com/teams/Chisa_Suisui_Yangyang_Xuanling.json",
         )
 
     def test_workshop_codes_are_sorted_by_timestamp_descending(self):
@@ -180,14 +240,18 @@ class TestCharacterCodeTab(unittest.TestCase):
                 return json.dumps(payload).encode("utf-8")
 
         with (
-            patch("src.gui.CharacterCodeTab.urlopen", return_value=Response()),
+            patch("src.gui.CharacterCodeTab.urlopen", return_value=Response()) as open_url,
             patch("src.gui.CharacterCodeTab.logger.info") as log_info,
         ):
             codes = fetch_workshop_codes((Aemeath, Augusta, Baizhi))
         self.assertEqual([code["name"] for code in codes], ["newer", "older"])
+        request = open_url.call_args.args[0]
+        self.assertEqual(request.full_url, workshop_team_url((Aemeath, Augusta, Baizhi)))
+        self.assertEqual(request.get_header("User-agent"), "ok-wuthering-waves")
+        self.assertEqual(open_url.call_args.kwargs, {"timeout": 15})
         log_info.assert_called_once_with(
             "char code workshop request: "
-            "https://okwwcharcode.ok-script.com/teams/Aemeath_Augusta_Baizhi.json"
+            "https://cfokwwchar.ok-script.com/teams/Aemeath_Augusta_Baizhi.json"
         )
 
     def test_workshop_404_is_an_empty_list(self):
@@ -195,7 +259,50 @@ class TestCharacterCodeTab(unittest.TestCase):
         with patch("src.gui.CharacterCodeTab.urlopen", side_effect=error):
             self.assertEqual(fetch_workshop_codes((Aemeath, Augusta, Baizhi)), [])
 
-    def test_team_dialogs_use_fluent_widgets(self):
+    def test_workshop_index_sends_app_user_agent(self):
+        payload = {"teams": [{"team": "Test team", "members": ["Aemeath"],
+                              "codes": [{"name": "Test code", "timestamp": 1}]}]}
+        with patch("src.gui.CharacterCodeTab.urlopen") as open_url:
+            open_url.return_value.__enter__.return_value.read.return_value = json.dumps(payload).encode()
+            codes = fetch_all_workshop_teams()
+
+        self.assertEqual(codes[0]["name"], "Test code")
+        self.assertEqual(codes[0]["team"], "Test team")
+        request = open_url.call_args.args[0]
+        self.assertEqual(request.full_url, "https://cfokwwchar.ok-script.com/teams.json")
+        self.assertEqual(request.get_header("User-agent"), "ok-wuthering-waves")
+        self.assertEqual(open_url.call_args.kwargs, {"timeout": 15})
+
+    def test_workshop_archive_sends_app_user_agent(self):
+        tab = CharacterCodeTab()
+        try:
+            for field, url, expected_url in (
+                ("downloadUrl", "https://cfokwwchar.ok-script.com/team.zip",
+                 "https://cfokwwchar.ok-script.com/team.zip"),
+                ("rawUrl", "https://raw.githubusercontent.com/example/team.zip",
+                 "https://raw.githubusercontent.com/example/team.zip"),
+                ("downloadUrl", "https://okwwcharcode.ok-script.com/codes/team%20name.zip",
+                 "https://cfokwwchar.ok-script.com/codes/team%20name.zip"),
+            ):
+                with (
+                    self.subTest(url=url),
+                    patch("src.gui.CharacterCodeTab.urlopen") as open_url,
+                    patch.object(tab, "_preview_and_import_archive") as preview,
+                ):
+                    open_url.return_value.__enter__.return_value.read.return_value = b"archive contents"
+                    preview.side_effect = lambda path, **kwargs: self.assertEqual(
+                        path.read_bytes(), b"archive contents")
+                    tab._import_workshop_code({field: url}, tab)
+
+                    request = open_url.call_args.args[0]
+                    self.assertEqual(request.full_url, expected_url)
+                    self.assertEqual(request.get_header("User-agent"), "ok-wuthering-waves")
+                    self.assertEqual(open_url.call_args.kwargs, {"timeout": 30})
+                    preview.assert_called_once()
+        finally:
+            tab.deleteLater()
+
+    def test_team_dialogs_use_qt_kit_widgets(self):
         parent = CharacterCodeTab()
         try:
             create_dialog = TeamSelectionDialog(
@@ -209,15 +316,34 @@ class TestCharacterCodeTab(unittest.TestCase):
                 "version": "1.0.0", "timestamp": 1, "sizeFormatted": "1 KB",
             }], "Aemeath, Augusta, Baizhi", parent)
             dialogs = (create_dialog, export_dialog, import_dialog, workshop_dialog)
-            self.assertTrue(all(isinstance(dialog, MessageBoxBase) for dialog in dialogs))
+            self.assertTrue(all(isinstance(dialog, Dialog) for dialog in dialogs))
             self.assertTrue(all(isinstance(combo, ComboBox) for combo in create_dialog.combos))
-            self.assertIsInstance(export_dialog.name_edit, LineEdit)
-            self.assertIsInstance(export_dialog.description_edit, TextEdit)
-            self.assertIsNotNone(workshop_dialog.findChild(TableWidget))
+            self.assertIsInstance(export_dialog.name_edit, QLineEdit)
+            self.assertIsInstance(export_dialog.description_edit, QTextEdit)
+            self.assertIsNotNone(workshop_dialog.findChild(QTableWidget))
             self.assertIn("Aemeath, Augusta, Baizhi", workshop_dialog.windowTitle())
-            self.assertEqual(workshop_dialog.yesButton.text(), "Close")
+            self.assertEqual(workshop_dialog.ok_button.text(), "Close")
         finally:
             parent.deleteLater()
+
+    def test_switch_confirmation_buttons_return_save_discard_and_cancel(self):
+        tab = CharacterCodeTab()
+        tab.resize(1500, 1000)
+        tab.show()
+        try:
+            for label, expected in [('Save and Switch', 'save'),
+                                    ('Discard and Switch', 'discard'), ('Cancel', 'cancel')]:
+                with self.subTest(action=expected):
+                    def click_action():
+                        dialog = next(d for d in tab.findChildren(Dialog) if d.isVisible())
+                        button = next(b for b in dialog.findChildren(Button) if b.text() == label)
+                        button.click()
+
+                    QTimer.singleShot(0, click_action)
+                    self.assertEqual(tab._confirm_switch_changes(), expected)
+        finally:
+            tab.close()
+            tab.deleteLater()
 
     # --- team code mode marker and global switch ---------------------------------
 
@@ -360,7 +486,7 @@ class TestCharacterCodeTab(unittest.TestCase):
             self.assertEqual(tab.reset_button.text(), "Reset to Built In")
             self.assertTrue(tab.reset_button.isEnabled())
             with (
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
                 patch("src.gui.CharacterCodeTab.show_info_bar"),
             ):
                 message_box.return_value.exec.return_value = True
@@ -383,7 +509,7 @@ class TestCharacterCodeTab(unittest.TestCase):
             self.assertIs(tab.current_char_cls, Chixia)
             tab.editor.setPlainText(code)
             with (
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
                 patch("src.gui.CharacterCodeTab.show_info_bar") as info_bar,
             ):
                 tab.save_button.click()
@@ -410,7 +536,7 @@ class TestCharacterCodeTab(unittest.TestCase):
             edited_code = read_builtin_char_code(char_cls) + "\n# edited\n"
             tab.editor.setPlainText(edited_code)
             with (
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
                 patch("src.gui.CharacterCodeTab.show_info_bar"),
             ):
                 message_box.return_value.exec.return_value = False
@@ -439,7 +565,7 @@ class TestCharacterCodeTab(unittest.TestCase):
             tab.team_list.setCurrentRow(row)
 
             with (
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
                 patch("src.gui.CharacterCodeTab.show_info_bar"),
                 patch.object(CharacterCodeTab, "_reload_live_team_code", return_value=0),
             ):
@@ -481,7 +607,7 @@ class TestCharacterCodeTab(unittest.TestCase):
         tab = CharacterCodeTab()
         try:
             with (
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
                 patch("src.gui.CharacterCodeTab.show_info_bar"),
             ):
                 message_box.return_value.exec.return_value = True
@@ -494,7 +620,7 @@ class TestCharacterCodeTab(unittest.TestCase):
             self.assertEqual(team_code_state(team_c), TEAM_CODE_STATE_NONE)
 
             with (
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
                 patch("src.gui.CharacterCodeTab.show_info_bar"),
             ):
                 message_box.return_value.exec.return_value = True
@@ -516,7 +642,7 @@ class TestCharacterCodeTab(unittest.TestCase):
         tab = CharacterCodeTab()
         try:
             with (
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
                 patch("src.gui.CharacterCodeTab.show_info_bar"),
             ):
                 message_box.return_value.exec.return_value = True
@@ -539,7 +665,7 @@ class TestCharacterCodeTab(unittest.TestCase):
         tab = CharacterCodeTab()
         try:
             with (
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
                 patch("src.gui.CharacterCodeTab.show_info_bar"),
             ):
                 message_box.return_value.exec.return_value = True
@@ -559,7 +685,7 @@ class TestCharacterCodeTab(unittest.TestCase):
             self.assertFalse(tab.switch_all_button.isEnabled())
             with (
                 patch("src.gui.CharacterCodeTab.show_info_bar") as info_bar,
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
             ):
                 tab._switch_all_code_mode()
 
@@ -581,7 +707,7 @@ class TestCharacterCodeTab(unittest.TestCase):
             char_cls = tab.current_char_cls
             tab.editor.setPlainText(tab.editor.toPlainText() + "\n# unsaved\n")
             with (
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
                 patch("src.gui.CharacterCodeTab.show_info_bar"),
                 patch.object(CharacterCodeTab, "_confirm_switch_changes", return_value="discard"),
                 patch.object(CharacterCodeTab, "_confirm_discard_changes", return_value=True) as discard,
@@ -621,7 +747,7 @@ class TestCharacterCodeTab(unittest.TestCase):
         tab = CharacterCodeTab()
         try:
             with (
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
                 patch("src.gui.CharacterCodeTab.show_info_bar"),
                 patch.object(CharacterCodeTab, "_reload_live_team_code", return_value=0) as reload,
             ):
@@ -647,7 +773,7 @@ class TestCharacterCodeTab(unittest.TestCase):
         tab = CharacterCodeTab()
         try:
             with (
-                patch("src.gui.CharacterCodeTab.MessageBox") as message_box,
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
                 patch("src.gui.CharacterCodeTab.show_info_bar") as info_bar,
                 patch("src.char.CustomCharLoader._load_team_char_class_from_file", side_effect=load_or_fail),
             ):
@@ -735,6 +861,99 @@ class TestCharacterCodeTab(unittest.TestCase):
             self.assertEqual(tab.current_team, self._names(team_b))
             self.assertEqual(tuple(tab.team_list.currentItem().data(Qt.UserRole)), self._names(team_b))
             self.assertEqual(team_code_state(team_b), TEAM_CODE_MODE_IMPORT)
+        finally:
+            tab.deleteLater()
+
+    def test_team_info_shows_the_description_an_import_keeps(self):
+        imported = (Chisa, Baizhi, Aemeath)
+        local = (Mortefi, Chixia, Verina)
+        create_custom_team(imported)
+        archive = export_custom_team(
+            imported, Path(self.temp_dir.name) / "out", "Showcase", "Line 1\nLine 2", "Tester", "1.2.3")
+        delete_custom_team(imported)
+        create_custom_team(local)
+
+        tab = CharacterCodeTab()
+        try:
+            self.assertEqual(tab.current_team, self._names(local))
+            self.assertTrue(tab.team_info_button.isHidden())
+
+            with (
+                patch.object(ImportTeamDialog, "exec", return_value=True),
+                patch("src.gui.CharacterCodeTab.show_info_bar"),
+            ):
+                tab._preview_and_import_archive(archive)
+            self.assertEqual(tab.current_team, self._names(imported))
+            self.assertFalse(tab.team_info_button.isHidden())
+
+            shown = []
+            with patch.object(TeamInfoDialog, "exec", lambda dialog: shown.append(dialog)):
+                tab.team_info_button.click()
+            dialog, = shown
+            self.assertEqual(dialog.description_text.toPlainText(), "Line 1\nLine 2")
+            labels = {label.text() for label in dialog.findChildren(QLabel)}
+            self.assertTrue({"Showcase", "Tester", "1.2.3", tab.team_list.currentItem().text()} <= labels)
+            self.assertEqual(dialog.ok_button.text(), "Close")
+
+            # the description is about the imported code, so it leaves with it
+            with (
+                patch("src.gui.CharacterCodeTab.confirmation_dialog") as message_box,
+                patch("src.gui.CharacterCodeTab.show_info_bar"),
+            ):
+                message_box.return_value.exec.return_value = True
+                tab.reset_button.click()
+                self.assertEqual(team_code_state(imported), TEAM_CODE_MODE_BUILTIN)
+                self.assertTrue(tab.team_info_button.isHidden())
+                tab.reset_button.click()
+                self.assertEqual(team_code_state(imported), TEAM_CODE_MODE_IMPORT)
+                self.assertFalse(tab.team_info_button.isHidden())
+
+            row, _item = self._row(tab, local)
+            tab.team_list.setCurrentRow(row)
+            self.assertTrue(tab.team_info_button.isHidden())
+        finally:
+            tab.deleteLater()
+
+    def test_team_info_follows_the_latest_import_of_the_same_team(self):
+        team = (Chisa, Baizhi, Aemeath)
+        create_custom_team(team)
+        out = Path(self.temp_dir.name) / "out"
+        first = export_custom_team(team, out, "First", "First notes", "Author A", "1.0.0")
+        second = export_custom_team(team, out, "Second", "Second notes", "Author B", "2.0.0")
+        delete_custom_team(team)
+
+        tab = CharacterCodeTab()
+        try:
+            shown = []
+            with (
+                patch.object(ImportTeamDialog, "exec", return_value=True),
+                patch.object(TeamInfoDialog, "exec", lambda dialog: shown.append(dialog)),
+                patch("src.gui.CharacterCodeTab.show_info_bar"),
+            ):
+                for archive in (first, second):
+                    tab._preview_and_import_archive(archive)
+                    tab.team_info_button.click()
+            self.assertEqual(tab.team_list.count(), 1)
+            self.assertEqual(shown[0].description_text.toPlainText(), "First notes")
+            self.assertEqual(shown[1].description_text.toPlainText(), "Second notes")
+            labels = {label.text() for label in shown[1].findChildren(QLabel)}
+            self.assertTrue({"Second", "Author B", "2.0.0"} <= labels)
+            self.assertFalse({"First", "Author A", "1.0.0"} & labels)
+        finally:
+            tab.deleteLater()
+
+    def test_team_info_shows_for_a_team_imported_before_code_modes(self):
+        """Older imports wrote team.json but no imported copies, so they never count as imported."""
+        team = (Mortefi, Chixia, Verina)
+        create_custom_team(team)
+        manifest = read_team_manifest(team)
+        manifest["description"] = "Written by the author"
+        write_team_manifest(team, manifest)
+
+        tab = CharacterCodeTab()
+        try:
+            self.assertEqual(team_code_state(team), TEAM_CODE_STATE_NONE)
+            self.assertFalse(tab.team_info_button.isHidden())
         finally:
             tab.deleteLater()
 

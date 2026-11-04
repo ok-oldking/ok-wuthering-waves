@@ -1,5 +1,6 @@
 import re
 import time
+import unicodedata
 from decimal import Decimal, ROUND_UP, ROUND_DOWN
 
 import cv2
@@ -75,12 +76,21 @@ class BaseCombatTask(CombatCheck):
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']  # 角色文本标识符列表
         self.mouse_pos = None  # 当前鼠标位置
         self.combat_start = 0  # 战斗开始时间戳
+        self._abyss_force_combat_until = 0
+        self._abyss_combat_active = False
+        self._abyss_timer_checked_at = 0
+        self._abyss_timer_value = None
 
         self.char_texts = ['char_1_text', 'char_2_text', 'char_3_text']
         self.add_text_fix({'Ｅ': 'e'})
         self.use_liberation = True
         # 由副本恢复循环维护: 本轮从信标直接进本时, 退本即回到信标并自动回血
         self.realm_entry_at_heal_point = False
+
+    def reset_combat_state(self, reason='combat reset'):
+        self.reset_to_false(reason)
+        self.chars = [None, None, None]
+        self.freeze_durations = []
 
     def add_freeze_duration(self, start, duration=-1.0, freeze_time=0.1):
         """添加冻结持续时间。用于精确计算技能冷却等。
@@ -281,7 +291,7 @@ class BaseCombatTask(CombatCheck):
     def teleport_to_heal(self):
         """按 M 开图, 就近找传送点回血 (供 FarmEchoTask 在 boss 点使用)。"""
         self.ensure_main(time_out=10)
-        self.log_info('click m to open the map')
+        self.log_info(self.tr('click m to open the map'))
         start = time.time()
         while self.in_team_and_world() and time.time() - start < 20:
             self.send_key('m', after_sleep=2)
@@ -293,7 +303,7 @@ class BaseCombatTask(CombatCheck):
         teleport = self.find_best_match_in_box(self.box_of_screen(0.1, 0.1, 0.9, 0.9),
                                                ['map_way_point', 'map_way_point_big'], 0.6)
         if not teleport:
-            raise RuntimeError(f'Can not find a teleport to heal')
+            raise RuntimeError(self.tr('Can not find a teleport to heal'))
         self.click(teleport, after_sleep=1)
         travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
         if not travel:
@@ -302,7 +312,7 @@ class BaseCombatTask(CombatCheck):
                 self.click(pop_up, after_sleep=1)
                 travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
         if not travel:
-            raise RuntimeError(f'Can not find the travel button')
+            raise RuntimeError(self.tr('Can not find the travel button'))
         self.click_box(travel, relative_x=1.5)
         self.wait_in_team_and_world(time_out=20)
         self.sleep(2)
@@ -317,7 +327,7 @@ class BaseCombatTask(CombatCheck):
         exception_type = None
         logger.error(message)
         if self.wait_feature('revive_confirm_hcenter_vcenter', threshold=0.8, time_out=2):
-            self.log_info('raise_not_in_combat char dead')
+            self.log_info(self.tr('raise_not_in_combat char dead'))
             if self.reset_to_false(reason=message):
                 logger.error(f'reset to false failed: {message}')
             from src.task.AutoCombatTask import AutoCombatTask
@@ -333,6 +343,162 @@ class BaseCombatTask(CombatCheck):
             exception_type = NotInCombatException
         raise exception_type(message)
 
+    def do_reset_to_false(self):
+        self.scene.reset_abyss_start()
+        self._abyss_force_combat_until = 0
+        self._abyss_combat_active = False
+        self._abyss_timer_checked_at = 0
+        self._abyss_timer_value = None
+        return super().do_reset_to_false()
+
+    def do_check_in_combat(self, target):
+        if time.monotonic() < self._abyss_force_combat_until:
+            return True
+        # A lost lock-on during an Abyss phase is not the end of the challenge.
+        # Require actual timer OCR instead of trusting white HUD pixels.
+        if getattr(self, '_abyss_combat_active', False) and self.in_team()[0]:
+            remaining = self.get_abyss_remaining_time()
+            if remaining is not None and remaining > 0:
+                return self.scene.set_in_combat()
+        return super().do_check_in_combat(target)
+
+    def get_abyss_remaining_time(self, force=False):
+        now = time.monotonic()
+        if not force and now - getattr(self, '_abyss_timer_checked_at', 0) < 0.4:
+            return self._abyss_timer_value
+        self._abyss_timer_checked_at = now
+        box = self.box_of_screen_scaled(3840, 2160, 1820, 266, 2100, 340,
+                                        name='abyss_remaining_time', hcenter=True)
+        self._abyss_timer_value = None
+        for item in self.ocr(box=box):
+            text = unicodedata.normalize('NFKC', item.name).strip()
+            if match := re.fullmatch(r'(\d{1,2}):([0-5]\d)(?:[:.](\d{1,2}))?', text):
+                fraction = int(match[3]) / 10 ** len(match[3]) if match[3] else 0
+                self._abyss_timer_value = int(match[1]) * 60 + int(match[2]) + fraction
+                break
+        return self._abyss_timer_value
+
+    def find_abyss_start_marker(self, box=None):
+        # Exclude the identical quest icon at the left edge of the HUD.
+        if box is None:
+            box = self.box_of_screen(0.15, 0.15, 0.85, 0.85)
+        return (self.find_one('abyss_start_marker', box=box, threshold=0.75)
+                or self.find_one('abyss_tower_start_marker', box=box, threshold=0.75,
+                                 frame_processor=binarize_for_matching))
+
+    def check_abyss_start(self, has_f):
+        now = time.monotonic()
+        last_seen = self.scene.abyss_start_seen_at
+        if not has_f:
+            if last_seen is None or now - last_seen >= 5:
+                self.scene.reset_abyss_start()
+                return False
+            if self.scene.abyss_f_disappeared_at is None:
+                self.scene.abyss_f_disappeared_at = now
+            elif now - self.scene.abyss_f_disappeared_at > 0.5:
+                self.scene.reset_abyss_start()
+                return False
+        marker = self.find_abyss_start_marker(box=None if has_f else self.scene.abyss_start_marker_box)
+        if has_f:
+            self.scene.abyss_start_seen_at = time.monotonic() if marker else None
+            self.scene.abyss_f_disappeared_at = None
+            # Keep some margin for the marker's motion while it fades out.
+            self.scene.abyss_start_marker_box = marker.scale(1.5) if marker else None
+            return False
+        if marker:
+            # F can disappear slightly before the start marker fades out.
+            return False
+        self.scene.reset_abyss_start()
+        if not self.in_team()[0] or not self.load_chars():
+            return False
+        self.log_info(self.tr('Abyss start prompt disappeared, force enter combat'))
+        return self.force_abyss_combat(started_at=last_seen)
+
+    def force_abyss_combat(self, started_at=None):
+        self._in_combat = True
+        self._abyss_combat_active = True
+        self._abyss_force_combat_until = (time.monotonic() if started_at is None else started_at) + 5
+        return self.scene.set_in_combat()
+
+    def restart_combat_in_abyss(self):
+        """Restart the current Abyss challenge and return with combat active.
+
+        Call from an Abyss arena, its pause/result screen, or its selected floor.
+        Combat detection is forced true for five seconds after pressing F;
+        subsequent combat loops use the usual checks again.
+        """
+        rechallenge_text = re.compile(r'^\s*(?:重新挑战|重新挑戰|再次挑战|再次挑戰|Rechallenge)\s*$',
+                                      re.IGNORECASE)
+        confirm_text = re.compile(r'^\s*(?:确认|確認|确定|確定|Confirm)\s*$', re.IGNORECASE)
+        start_text = re.compile(r'^\s*(?:挑战开始|挑戰開始|开始挑战|開始挑戰|开启挑战|開啟挑戰|Start\s*Challenge)\s*$', re.I)
+
+        def dismiss_environment_details():
+            if self.ocr(box=self.box_of_screen(0.02, 0.25, 0.35, 0.4),
+                        match=re.compile(r'^\s*(?:环境特性|環境特性|Environment(?:al)?\s*(?:Details|Features))\s*$', re.I)):
+                self.send_key('esc', after_sleep=0.5)
+                self.next_frame()
+                return True
+            return False
+
+        def find_start_for_restart():
+            # This help overlay may appear after the arena has already loaded.
+            dismiss_environment_details()
+            marker = self.find_abyss_start_marker()
+            if not marker:
+                handle_restart_dialog()
+            return marker
+
+        def handle_restart_dialog():
+            # Result screens ask whether to reuse the current team. A result
+            # can also replace the pause menu if its timer expires meanwhile.
+            if dismiss_environment_details():
+                return
+            if buttons := self.ocr(box=self.box_of_screen(0.5, 0.5, 0.8, 0.75), match=confirm_text):
+                self.click(buttons[0], after_sleep=1)
+            elif buttons := self.ocr(match=rechallenge_text):
+                self.click(buttons[0], after_sleep=1)
+            elif buttons := self.ocr(box=self.box_of_screen(0.55, 0.75, 0.98, 0.98), match=start_text):
+                # Tower success returns to the still-selected floor/team.
+                self.click(buttons[0], after_sleep=1)
+
+        previous_skip = self.skip_combat_check
+        self.reset_to_false(reason='restart Abyss challenge')
+        self.skip_combat_check = True
+        try:
+            result_confirm_text = re.compile(r'^\s*(?:确认成绩|確認成績|Confirm\s*Results?)\s*$', re.I)
+            result_button = self.ocr(box=self.box_of_screen(0.3, 0.7, 0.7, 0.95), match=result_confirm_text)
+            if not result_button and self.ocr(box=self.box_of_screen(0.3, 0.2, 0.7, 0.4),
+                                              match=re.compile(r'挑战成功|挑戰成功|Challenge\s*(?:Complete|Success)', re.I)):
+                result_button = self.wait_ocr(match=result_confirm_text, time_out=5)
+            if result_button:
+                self.click(result_button[0], after_sleep=1)
+                if self.ocr(box=self.box_of_screen(0.2, 0.3, 0.8, 0.6),
+                            match=re.compile(r'是否覆盖|是否覆蓋|overwrite', re.I)):
+                    self.send_key('esc', after_sleep=0.5)
+            rechallenge = self.ocr(match=rechallenge_text)
+            if not rechallenge and not self.find_abyss_start_marker():
+                if start_buttons := self.ocr(box=self.box_of_screen(0.55, 0.75, 0.98, 0.98), match=start_text):
+                    self.click(start_buttons[0], after_sleep=1)
+                    self.wait_until(self.find_abyss_start_marker, time_out=30,
+                                    raise_if_not_found=True, post_action=handle_restart_dialog)
+                else:
+                    # Active combat and dead characters both use the pause menu.
+                    self.send_key('esc', after_sleep=1)
+                    rechallenge = self.wait_ocr(match=rechallenge_text, time_out=5)
+            if rechallenge:
+                self.click(rechallenge[0], after_sleep=1)
+                self.wait_until(self.find_abyss_start_marker, time_out=30,
+                                raise_if_not_found=True, post_action=handle_restart_dialog)
+            if not self.walk_to_box(find_start_for_restart,
+                                    end_condition=self.find_f_with_text, time_out=30):
+                raise RuntimeError(self.tr('Could not reach the Abyss challenge start'))
+            if not self.load_chars():
+                raise RuntimeError(self.tr('Could not load the Abyss team'))
+            self.send_key('f')
+            return self.force_abyss_combat()
+        finally:
+            self.skip_combat_check = previous_skip
+
     def wait_combat(self, target=True, time_out=10, raise_if_not_found=True):
         start = time.time()
         result = None
@@ -344,7 +510,7 @@ class BaseCombatTask(CombatCheck):
             self.sleep(0.02)
 
         if raise_if_not_found and not result:
-            raise Exception('wait condition failed while walking')
+            raise Exception(self.tr('wait condition failed while walking'))
         return result
 
     def available(self, name, check_color=True, check_cd=True):
@@ -534,17 +700,25 @@ class BaseCombatTask(CombatCheck):
             return current_char
 
         prioritized_candidates = []
+        locked_healers = []
         for char in candidates:
+            switch_priority = char.get_switch_priority(current_char=current_char, has_intro=has_intro,
+                                                       target_low_con=target_low_con)
             if char.healer_full_con_switch_locked():
+                if switch_priority > SwitchPriority.NO:
+                    locked_healers.append(char)
                 switch_priority = SwitchPriority.NO
-            else:
-                switch_priority = char.get_switch_priority(current_char=current_char, has_intro=has_intro,
-                                                           target_low_con=target_low_con)
             self._log_switch_candidate(char, switch_priority)
             if switch_priority > SwitchPriority.NO:
                 prioritized_candidates.append((switch_priority, char))
 
         if not prioritized_candidates:
+            if locked_healers and (not current_char.is_healer or has_intro):
+                target = min(locked_healers, key=lambda char: (
+                    char.HEALER_FULL_CON_SWITCH_LOCKOUT
+                    - char.time_elapsed_accounting_for_freeze(char.last_full_con_switch_time),
+                    char.last_switch_in_time, char.index))
+                return self._log_switch_choice(current_char, target, has_intro, 'healer_lockout_fallback')
             return self._log_switch_choice(
                 current_char, current_char, has_intro, 'no_candidate_above_no_priority')
 
@@ -657,7 +831,8 @@ class BaseCombatTask(CombatCheck):
                 logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
                 # if self.debug:
                 #     self.screenshot(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
-                self.raise_not_in_combat(f'not in_team while switching')
+                # Intro animations can briefly hide the whole party HUD.
+                # Wait for it to return before deciding that combat ended.
                 if now - start > self.switch_char_time_out:
                     self.raise_not_in_combat(
                         f'switch too long failed chars_{current_char}_to_{switch_to}, {now - start}')
@@ -807,7 +982,7 @@ class BaseCombatTask(CombatCheck):
         logger.debug(f'set_key best match {key}: {best}')
         if best and best.name != self.key_config[key]:
             self.key_config[key] = best.name
-            self.log_info(f'set_key {key} to {best.name}')
+            self.log_info(self.tr('set_key {key} to {name}').format(key=key, name=best.name))
 
     def has_short_action(self):
         """是否有短动作条"""
@@ -886,7 +1061,7 @@ class BaseCombatTask(CombatCheck):
                         translated_names.append(translated_name)
                 self.info_set('Chars', ', '.join(translated_names))
                 for c in self.chars:
-                    self.log_info(f'loaded chars success {c} {c.confidence}')
+                    self.log_info(self.tr('loaded chars success {c} {confidence}').format(c=c, confidence=c.confidence))
             return True
 
     @staticmethod

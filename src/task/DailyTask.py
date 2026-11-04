@@ -12,6 +12,7 @@ from src.task.TacetTask import TacetTask
 from src.task.SimulationTask import SimulationTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 
@@ -27,6 +28,9 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "📅 Daily Task"
+        self.icon = task_icon('daily')
+        self.group_name = 'Daily Activities'
+        self.group_icon = task_icon('category-daily')
         self.support_schedule_task = True
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
         self.default_config = {
@@ -107,7 +111,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             except TaskDisabledException:
                 raise
             except Exception as e:
-                self.log_error("NightmareNestTask Failed", e)
+                self.log_error(self.tr('NightmareNestTask Failed'), e)
                 self.screenshot('NightmareNestTask')
                 self.ensure_main(time_out=180)
             finally:
@@ -133,7 +137,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.sleep(1)
         self.claim_battle_pass()
         self.run_additional_tasks()
-        self.log_info('Daily Task Completed', notify=True)
+        self.log_info(self.tr('Daily Task Completed'), notify=True)
 
     def validate_additional_tasks(self):
         additional_tasks = self.config.get(ADDITIONAL_TASKS) or []
@@ -162,30 +166,30 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         if MERGE_ECHO_IF_DISCARDED_OVER_1000 in additional_tasks:
             self.check_discarded_echo()
         if TELEPORT_AND_FARM_4C_ECHO in additional_tasks:
-            self.log_info('Daily task completed, start teleport to farm 4C echo', notify=True)
+            self.log_info(self.tr('Daily task completed, start teleport to farm 4C echo'), notify=True)
             self.run_task_by_class(FarmEchoTask)
 
     def check_weekly_garden(self):
         self.info_set('current task', 'check weekly garden')
-        self.log_info('check weekly garden')
+        self.log_info(self.tr('check weekly garden'))
         try:
             garden_task = self.get_task_by_class(GardenTask)
             garden_task.open_garden_weekly_page()
             if garden_task.is_weekly_garden_completed():
-                self.log_info('weekly garden already completed')
+                self.log_info(self.tr('weekly garden already completed'))
                 return
-            self.log_info('weekly garden not completed, run GardenTask')
+            self.log_info(self.tr('weekly garden not completed, run GardenTask'))
             self.run_task_by_class(GardenTask)
         except TaskDisabledException:
             raise
         except Exception as e:
-            self.log_error("GardenTask Failed", e)
+            self.log_error(self.tr('GardenTask Failed'), e)
             self.screenshot('GardenTask')
             self.ensure_main(time_out=180)
 
     def check_discarded_echo(self):
         self.info_set('current task', 'check discarded echo')
-        self.log_info('check discarded echo')
+        self.log_info(self.tr('check discarded echo'))
         merge_echo_task = self.get_task_by_class(MergeEchoTask)
         old_notify_if_not_enough = merge_echo_task.notify_if_not_enough
         try:
@@ -194,20 +198,20 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         except TaskDisabledException:
             raise
         except Exception as e:
-            self.log_error("MergeEchoTask Failed", e)
+            self.log_error(self.tr('MergeEchoTask Failed'), e)
             self.screenshot('MergeEchoTask')
             self.ensure_main(time_out=180)
         finally:
             merge_echo_task.notify_if_not_enough = old_notify_if_not_enough
 
     def claim_battle_pass(self):
-        self.log_info('battle pass')
+        self.log_info(self.tr('battle pass'))
         self.send_key_down('alt')
         self.sleep(0.05)
         self.click_relative(0.86, 0.05)
         self.send_key_up('alt')
         if not self.wait_ocr(0.2, 0.13, 0.32, 0.22, match=re.compile(r'\d+'), settle_time=1, raise_if_not_found=False):
-            self.log_error('can not battle pass, maybe ended')
+            self.log_error(self.tr('can not battle pass, maybe ended'))
         else:
             self.click_relative(0.04, 0.3, after_sleep=1)
             self.click_relative(0.68, 0.91, hcenter=True, after_sleep=3)
@@ -219,7 +223,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.ensure_main()
 
     def open_daily(self):
-        self.log_info('open_daily')
+        self.log_info(self.tr('open_daily'))
         self.openF2Book("gray_book_quest")
         self.click(0.17, 0.12, after_sleep=1)
         progress = self.ocr(0.1, 0.1, 0.5, 0.75, match=re.compile(r'^(\d+)/180$'))
@@ -250,10 +254,10 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.info_set('current task', 'claim daily')
         self.openF2Book('gray_book_quest')
         if not self.find_one('boss_proceed', box=self.box_of_screen(0.803, 0.189, 0.960, 0.312)):
-            self.log_info('no_boss_proceed, click claim')
+            self.log_info(self.tr('no_boss_proceed, click claim'))
             # Click [Guidebook] in [Terminal] interface
             self.click(0.885, 0.250, after_sleep=2)
-        self.log_info(f'claim daily reward via  coordinate')
+        self.log_info(self.tr('claim daily reward via  coordinate'))
         self.click(0.930, 0.882, after_sleep=1)
         self.ensure_main(time_out=10)
 

@@ -4,18 +4,53 @@
 #
 #    pip-compile --pip-args='--index-url https://pypi.org/simple --timeout 60 --retries 10' pyproject.toml
 #
+annotated-types==0.8.0
+    # via pydantic
+anyio==4.16.0
+    # via
+    #   httpx2
+    #   mcp
+    #   sse-starlette
+    #   starlette
+attrs==26.1.0
+    # via
+    #   jsonschema
+    #   referencing
 certifi==2026.7.22
     # via requests
+cffi==2.1.1
+    # via cryptography
 charset-normalizer==3.5.1
     # via requests
+click==8.5.0
+    # via uvicorn
 comtypes==1.4.16
     # via pycaw
-darkdetect==0.8.0
+cryptography==50.0.2
+    # via pyjwt
+h11==0.16.0
+    # via
+    #   httpcore2
+    #   uvicorn
+httpcore2==2.16.0
+    # via httpx2
+httpx2==2.16.0
+    # via mcp
+idna==3.18
+    # via
+    #   anyio
+    #   httpx2
+    #   requests
+jsonschema==4.26.0
+    # via mcp
+jsonschema-specifications==2025.9.1
+    # via jsonschema
+mcp==2.3.0
     # via
     #   ok-script
-    #   pyside6-fluent-widgets
-idna==3.18
-    # via requests
+    #   ok-ww (pyproject.toml)
+mcp-types==2.3.0
+    # via mcp
 mouse==0.7.1
     # via ok-script
 numpy==2.5.2
@@ -23,14 +58,20 @@ numpy==2.5.2
     #   opencv-python
     #   openvino
     #   shapely
-ok-script[ocr,qt]==2.0.8
+ok-pyside-minimal==6.12.0.post2
+    # via
+    #   ok-script
+    #   ok-ww (pyproject.toml)
+ok-script[ocr,qt]==3.0.0
     # via ok-ww (pyproject.toml)
-onnxocr-ppocrv5>=0.0.20
+onnxocr-ppocrv5==0.0.22
     # via
     #   ok-script
     #   ok-ww (pyproject.toml)
 opencv-python==5.0.0.93
     # via ok-ww (pyproject.toml)
+opentelemetry-api==1.45.2
+    # via mcp
 openvino==2026.3.0
     # via ok-ww (pyproject.toml)
 openvino-telemetry==2025.2.0
@@ -49,41 +90,70 @@ pycaw==20240210
     # via ok-script
 pyclipper==1.4.0
     # via onnxocr-ppocrv5
+pycparser==3.12
+    # via cffi
+pydantic==2.14.2
+    # via
+    #   mcp
+    #   mcp-types
+pydantic-core==2.50.2
+    # via pydantic
 pydirectinput==1.0.4
     # via ok-script
+pyjwt[crypto]==2.15.1
+    # via mcp
 pynput==1.8.2
     # via ok-script
-pyside6==6.11.1
-    # via pyside6-fluent-widgets
-pyside6-addons==6.11.1
-    # via pyside6
-pyside6-essentials==6.11.1
-    # via
-    #   ok-script
-    #   pyside6
-    #   pyside6-addons
-pyside6-fluent-widgets==1.11.3
-    # via ok-script
-pysidesix-frameless-window==0.8.2
-    # via
-    #   ok-script
-    #   pyside6-fluent-widgets
+python-multipart==0.0.33
+    # via mcp
 pywin32==311
     # via
+    #   mcp
     #   ok-script
-    #   pysidesix-frameless-window
+referencing==0.37.0
+    # via
+    #   jsonschema
+    #   jsonschema-specifications
 requests==2.34.2
     # via ok-script
+rpds-py==2026.9.1
+    # via
+    #   jsonschema
+    #   referencing
 shapely==2.1.2
     # via onnxocr-ppocrv5
-shiboken6==6.11.1
-    # via
-    #   pyside6
-    #   pyside6-addons
-    #   pyside6-essentials
+shiboken6==6.12.0
+    # via ok-pyside-minimal
 six==1.17.0
     # via pynput
+sse-starlette==3.6.0
+    # via mcp
+starlette==1.10.0
+    # via
+    #   mcp
+    #   sse-starlette
+truststore==0.10.5
+    # via
+    #   httpcore2
+    #   httpx2
 typing-extensions==4.16.0
-    # via ok-script
+    # via
+    #   anyio
+    #   httpx2
+    #   mcp
+    #   mcp-types
+    #   ok-script
+    #   opentelemetry-api
+    #   pydantic
+    #   pydantic-core
+    #   referencing
+    #   starlette
+    #   typing-inspection
+typing-inspection==0.4.4
+    # via
+    #   mcp
+    #   pydantic
 urllib3==2.7.0
     # via requests
+uvicorn==0.54.0
+    # via mcp

@@ -1,6 +1,11 @@
 import time
 
+from src.Labels import Labels
 from src.char.BaseChar import BaseChar, SwitchPriority
+from src.task.BaseWWTask import isolate_gua_strokes
+
+GEN = 'G'  # 艮
+ZHEN = 'Z'  # 震
 
 
 class Douling(BaseChar):
@@ -65,18 +70,48 @@ class Douling(BaseChar):
             self.click()
             self.cycle_sleep()
 
+    def gua(self):
+        """Reads the hexagram row (卦象) above the skill bar, left to right, e.g. 'GZZZ' (G = 艮, Z = 震).
+
+        Returns '' when no hexagram can be read.
+        """
+        box = self.task.box_of_screen_scaled(3840, 2160, 1664, 1776, 2138, 1869, name='douling_gua', hcenter=True)
+        found = []
+        for label, kind in ((Labels.douling_gen, GEN), (Labels.douling_zhen, ZHEN)):
+            for b in self.task.find_feature(label, box=box, threshold=0.65, frame_processor=isolate_gua_strokes):
+                found.append((b, kind))
+        kept = []
+        for b, kind in sorted(found, key=lambda f: f[0].confidence, reverse=True):
+            # both glyphs can match the same slot weakly, keep the better one
+            if all(abs(b.x - k.x) > b.width * 0.6 for k, _ in kept):
+                kept.append((b, kind))
+        return ''.join(kind for _, kind in sorted(kept, key=lambda f: f[0].x))
+
     def _heavy_attack_hold(self, duration):
         retries = 3
         for _ in range(retries):
             self.check_combat()
+            # read again on every retry, an interrupted hold may already have consumed some hexagrams
+            gua = self.gua()
+            if len(gua) == 1:
+                # one hexagram is not enough for an enhanced heavy, holding would cast 鬼门占卦 (self damage) instead
+                return
             self.task.mouse_down()
             start = time.time()
             interrupted = False
+            spent = 0
             while time.time() - start < duration:
                 if self.flying():
                     interrupted = True
                     break
-                self.sleep(0.1)
+                if gua:
+                    # each enhanced heavy consumes two hexagrams, release once fewer than two are left
+                    self.task.next_frame()
+                    spent = spent + 1 if len(self.gua()) < 2 else 0
+                    if spent >= 2:
+                        break
+                else:
+                    self.sleep(0.1)
             self.task.mouse_up()
             self.sleep(0.01)
             if not interrupted:

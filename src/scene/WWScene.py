@@ -11,6 +11,12 @@ class WWScene(BaseScene):
         self._echo_enhance_btn = None
         self._in_combat = None
         self.cd_refreshed = False
+        self.reset_abyss_start()
+
+    def reset_abyss_start(self):
+        self.abyss_start_seen_at = None
+        self.abyss_f_disappeared_at = None
+        self.abyss_start_marker_box = None
 
     def reset(self):
         self._in_team = None

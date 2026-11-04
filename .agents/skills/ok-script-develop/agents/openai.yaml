@@ -1,0 +1,4 @@
+interface:
+  display_name: "OK Script Game Development"
+  short_description: "Develop game automation using library skills and MCP"
+  default_prompt: "Use $ok-script-develop to load the linked or installed ok-script skills and develop game behavior through MCP."

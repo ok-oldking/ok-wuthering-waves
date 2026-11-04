@@ -40,7 +40,6 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
         with:
-          submodules: true
           lfs: true
           fetch-depth: 0
           persist-credentials: false
@@ -55,9 +54,7 @@ jobs:
             pyproject.toml
 
       - name: Install dependencies
-        run: |
-          python -m pip install -r requirements.txt
-          python -m pip install ".[dev]"
+        run: python .github/scripts/install_dependencies.py
 
       - name: Prepare release requirements
         env:
@@ -125,7 +122,6 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
         with:
-          submodules: true
           lfs: true
           fetch-depth: 0
           persist-credentials: false
@@ -140,9 +136,7 @@ jobs:
             pyproject.toml
 
       - name: Install dependencies
-        run: |
-          python -m pip install -r requirements.txt
-          python -m pip install ".[dev]"
+        run: python .github/scripts/install_dependencies.py
 
       - name: Prepare release requirements
         env:
@@ -193,7 +187,6 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
         with:
-          submodules: true
           lfs: true
           fetch-depth: 0
           persist-credentials: false
@@ -208,9 +201,7 @@ jobs:
             pyproject.toml
 
       - name: Install dependencies
-        run: |
-          python -m pip install -r requirements.txt
-          python -m pip install ".[dev]"
+        run: python .github/scripts/install_dependencies.py
 
       - name: Prepare release requirements
         env:
@@ -225,6 +216,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           use_release: ${{ env.USE_RELEASE }}
+          add_version_name: true
 
       - name: Build portable executable
         id: build_executable
@@ -232,6 +224,7 @@ jobs:
         if: env.BUILD_EXE == 'true' && env.USE_RELEASE == ''
         with:
           build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
+          add_version_name: true
 
       - name: Upload portable executable for signing
         id: upload_executable
@@ -310,6 +303,8 @@ jobs:
         id: build_installers
         uses: ok-oldking/pyappify-action@master
         if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
+        with:
+          add_version_name: true
 
       - name: Upload China installer for signing
         id: upload_china_installer
@@ -317,7 +312,7 @@ jobs:
         if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
         with:
           name: china-installer-to-sign
-          path: pyappify_dist/ok-ww-win32-China-setup.exe
+          path: pyappify_dist/ok-ww-win32-China-setup-*.exe
           if-no-files-found: error
           retention-days: 1
 
@@ -404,6 +399,11 @@ jobs:
           name: release-assets
           path: pyappify_dist
 
+      - name: Get app version
+        id: app_version
+        shell: bash
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         env:
@@ -412,14 +412,8 @@ jobs:
           body: |
             ### 更新日志 ${{ needs.synchronize.outputs.start_tag }} -> ${{ needs.synchronize.outputs.end_tag }}:
               ${{ needs.synchronize.outputs.changes }}
-            ### 下载包说明
-              * [ok-ww-win32-China-setup.exe](https://github.com/ok-oldking/ok-wuthering-waves/releases/download/${{ github.ref_name }}/ok-ww-win32-China-setup.exe) 完整安装包, 更新使用阿里云+腾讯CNB.
-              * [ok-ww-win32-Global-setup.exe](https://github.com/ok-oldking/ok-wuthering-waves/releases/download/${{ github.ref_name }}/ok-ww-win32-Global-setup.exe) full package with dependencies, using GitHub and PyPi as update source
-              * 不要下载ok-ww-win32.zip,和SourceCode.zip, Do Not Download the SourceCode, ok-ww-win32.zip
-            ### 如果无法下载或下载慢, 可以使用其他下载源
-              * [Mirror酱下载渠道](https://mirrorchyan.com/zh/projects?rid=okww&source=ok-ww-release), 国内网页直链, 下载需要购买CD-KEY, 已有Mirror酱CD-KEY可免费下载
-              * [百度网盘](https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww) 免费下载
-              * [夸克网盘](https://pan.quark.cn/s/24433f3febc1) 免费下载
+            ### Install from source
+              See the [source installation guide](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/docs/development/contributing.md).
           draft: false
           prerelease: ${{ needs.synchronize.outputs.is_release != 'true' }}
           files: pyappify_dist/*

@@ -1,6 +1,7 @@
 import re
 from ok import TriggerTask, Logger
 from src.task.BaseWWTask import BaseWWTask
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 
@@ -11,6 +12,7 @@ class FastTravelTask(BaseWWTask, TriggerTask):
         super().__init__(*args, **kwargs)
         self.default_config = {'_enabled': False}
         self.name = "✈️ Fast Travel"
+        self.icon = task_icon('fast-travel')
         self.description = 'Auto Click Fast Travel in Map'
         self.match = [re.compile(r'Travel'), '快速旅行', '前往', 'Proceed']
 

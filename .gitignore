@@ -1,6 +1,7 @@
 .venv
 onnxocr/
 ok_tasks/
+ok_import/
 updates/
 working/
 update/
@@ -14,6 +15,7 @@ __pycache__/
 issue*.json
 *.py[cod]
 *$py.class
+# Local account configuration and execution history (may contain private data).
 configs/
 paddle_model/
 md5.txt

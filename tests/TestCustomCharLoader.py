@@ -134,6 +134,41 @@ class Mortefi(BuiltinMortefi):
         apply_team_char_classes(other_task, other_task.chars)
         self.assertIs(type(other_task.chars[0]), Mortefi)
 
+    def test_team_logging_override_hot_loads_and_restores_existing_instances(self):
+        class Task:
+            pass
+
+        team = (Mortefi, Chixia, Verina)
+        create_custom_team(team)
+        baseline = read_team_char_code(team, Mortefi)
+        task = Task()
+        task.chars = [
+            Mortefi(task, 0, char_name=Labels.char_mortefi),
+            Chixia(task, 1, char_name=Labels.char_chixia),
+            Verina(task, 2, char_name=Labels.char_verina),
+        ]
+        original_class = type(task.chars[0])
+        task.chars[0].last_res = 123.0
+        diagnostic = """
+from src.char.Mortefi import Mortefi as BuiltinMortefi
+
+class Mortefi(BuiltinMortefi):
+    evaluation_logging_marker = True
+"""
+        try:
+            save_team_char_code(team, Mortefi, diagnostic)
+            apply_team_char_classes(task, task.chars)
+            self.assertIsNot(type(task.chars[0]), original_class)
+            self.assertTrue(task.chars[0].evaluation_logging_marker)
+            self.assertEqual(task.chars[0].last_res, 123.0)
+        finally:
+            save_team_char_code(team, Mortefi, baseline)
+            apply_team_char_classes(task, task.chars)
+        self.assertIs(type(task.chars[0]), original_class)
+        self.assertFalse(hasattr(task.chars[0], 'evaluation_logging_marker'))
+        self.assertEqual(task.chars[0].last_res, 123.0)
+        self.assertEqual(read_team_char_code(team, Mortefi), baseline)
+
     def test_same_character_can_have_different_code_in_two_teams(self):
         first_team = (Mortefi, Chixia, Verina)
         second_team = (Mortefi, Chixia, Baizhi)
@@ -176,6 +211,17 @@ class Mortefi(BuiltinMortefi):
         self.assertEqual(teams, [tuple(sorted(
             (cls.__name__ for cls in valid_team), key=str.casefold
         ))])
+
+    def test_export_detected_team_without_saved_team_uses_builtin_code(self):
+        team = (Mortefi, Chixia, Verina)
+        archive = export_custom_team(
+            team, self.temp_dir.name, name="Current", description="Rotation",
+            author="Tester", version="1", allow_builtin=True,
+        )
+        info = inspect_team_archive(archive)
+        for char_cls in team:
+            self.assertEqual(info["codes"][char_cls.__name__], read_builtin_char_code(char_cls))
+        self.assertEqual(list_custom_teams(), [])
 
     def test_export_and_import_team_archive(self):
         team = (Mortefi, Chixia, Verina)

@@ -15,8 +15,6 @@
 <!-- Badges -->
 <div class="badge-row">
   <img src="https://img.shields.io/badge/platform-Windows-blue" alt="Platform" />
-  <a href="https://github.com/ok-oldking/ok-wuthering-waves/releases"><img src="https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves" alt="GitHub release" /></a>
-  <a href="https://github.com/ok-oldking/ok-wuthering-waves/releases"><img src="https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total" alt="Total Downloads" /></a>
   <a href="https://discord.gg/vVyCatEBgA"><img src="https://img.shields.io/discord/296598043787132928?color=5865f2&amp;label=%20Discord" alt="Discord" /></a>
 </div>
 
@@ -41,16 +39,6 @@ Please note, according to Kuro Games' official Fair Play Declaration for Wutheri
 
 **By using this software, you acknowledge that you have read, understood, and agreed to the above statement, and you voluntarily assume all potential risks.**
 
-## 🚀 Quick Start
-
-1.  **Download the Installer**: From the "Downloads" section below, download the latest `ok-ww-win32-Global-setup.exe` installer file.
-2.  **Install the Program**: Double-click the `ok-ww-win32-Global-setup.exe` file and follow the on-screen instructions to complete the installation.
-3.  **Run the Program**: After installation, launch `ok-ww` from the desktop shortcut or the Start Menu.
-
-## 📥 Downloads
-
-*   **[GitHub](https://github.com/ok-oldking/ok-wuthering-waves/releases)**: Official release page, fast access worldwide. (**Please download the `setup.exe` installer, not the `Source Code` archive**).
-
 ## ✨ Main Features
 <img width="1778" height="1186" alt="QQ_1762961412161" src="https://github.com/user-attachments/assets/0109c68e-d714-4c34-b016-b4b45f9861fd" />
 
@@ -65,7 +53,9 @@ If you encounter issues, please check the following steps one by one before aski
 
 1.  **Antivirus Software**: Add the software's installation directory to the **exceptions or whitelist** of your antivirus software (including Windows Defender) to prevent files from being mistakenly deleted or blocked.
 2.  **Display Settings**:
-    *   In-game filters can generally be enabled, but graphics driver filters such as NVIDIA RTX Dynamic Vibrance and AMD sharpening must be disabled.
+    *   In-game filters can generally be enabled.
+    *   Windows HDR can be enabled, but Auto HDR must be turned off.
+    *   It is recommended to turn off GPU filters such as RTX HDR, RTX Dynamic Vibrance, and AMD sharpening.
     *   Use the game's default brightness settings.
     *   Disable any overlays that display information on the game screen (e.g., frame rates from MSI Afterburner, Fraps, etc.).
 3.  **Custom Keybinds**: If you have changed the default in-game keybinds, you must update them accordingly in the `ok-ww` settings. Only the keybinds listed in the settings are supported.
@@ -81,28 +71,35 @@ If you encounter issues, please check the following steps one by one before aski
 
 ## 💻 Developer Zone
 
-### Running from Source (Python)
+### Running from Source
 
-Python 3.12 is recommended. Python 3.9 or later is required, but other versions have not been fully tested.
+See the [contributor guide](../development/contributing.md) for development setup, running from source, and contributions.
 
-```bash
-# Install or update dependencies
-pip install -r requirements.txt --upgrade
+### AI Skills
 
-# Run Release version
-python main.py
+Open this repository in a coding agent that supports project skills. Ask the agent for detailed usage, preparation, and workflow.
 
-# Run Debug version
-python main_debug.py
-```
+Before evaluating or improving a team, select the team and enter 深境再临 or 终焉矩阵 in the game.
+
+| Skill | Description |
+| --- | --- |
+| [evaluate-team](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/evaluate-team/SKILL.md) | Evaluate the current team's automated combat over multiple runs and suggest improvements. |
+| [improve-team](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/improve-team/SKILL.md) | Propose and validate combat improvements based on a team evaluation. |
+| [ok-script-develop](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-script-develop/SKILL.md) | Develop and validate game automation with ok-script. |
+| [ok-script-tasks](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-script-tasks/SKILL.md) | Create, modify, or review automation tasks. |
+| [ok-ww-characters](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-ww-characters/SKILL.md) | Develop, review, and test character combat logic. |
+| [ok-script-i18n](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/ok-script-i18n/SKILL.md) | Add, synchronize, and compile task UI translations. |
+| [pr-review](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/pr-review/SKILL.md) | Review or merge this project's GitHub PRs. |
+| [deploy](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/deploy/SKILL.md) | Commit completed changes, create a version tag, and publish. |
+| [use-local-venv](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/.agents/skills/use-local-venv/SKILL.md) | Prefer the repository's local virtual environment for Python commands. |
 
 ### Command-Line Arguments
 
 You can use command-line arguments for automated startup.
 
-```bash
+```powershell
 # Example: Automatically run the first task after launch and exit the program upon completion
-ok-ww.exe -t 1 -e
+.\.venv\Scripts\python.exe main.py -t 1 -e
 ```
 
 *   `-t` or `--task`: Automatically runs the Nth task in the list after launch. `1` represents the first task.
@@ -111,17 +108,6 @@ ok-ww.exe -t 1 -e
 ## 💬 Join Us
 
 This project is developed using the [ok-script](https://ok-script.com) framework and is designed to be simple and easy to maintain. Developers interested in creating their own automation projects are welcome to use [ok-script](https://ok-script.com).
-
-## 🔗 Projects using ok-script:
-
-*   Wuthering Waves: [https://github.com/ok-oldking/ok-wuthering-waves](https://github.com/ok-oldking/ok-wuthering-waves)
-*   Genshin Impact (No longer maintained, but can still be used for auto-skipping dialogue in the background): [https://github.com/ok-oldking/ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact)
-*   Girls' Frontline 2: [https://github.com/ok-oldking/ok-gf2](https://github.com/ok-oldking/ok-gf2)
-*   Honkai: Star Rail: [https://github.com/Shasnow/ok-starrailassistant](https://github.com/Shasnow/ok-starrailassistant)
-*   Starsee: [https://github.com/Sanheiii/ok-star-resonance](https://github.com/Sanheiii/ok-star-resonance)
-*   Duet Night Abyss: [https://github.com/BnanZ0/ok-duet-night-abyss](https://github.com/BnanZ0/ok-duet-night-abyss)
-*   Ash Echoes (Updates stopped): [https://github.com/ok-oldking/ok-baijing](https://github.com/ok-oldking/ok-baijing)
-
 
 ## ❤️ Sponsors & Acknowledgements
 
