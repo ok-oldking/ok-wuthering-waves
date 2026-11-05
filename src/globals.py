@@ -14,6 +14,11 @@ class Globals:
         self.mini_map_arrow = None
         self.logged_in = False
 
+    def on_show_main_window(self, main_window):
+        from src.gui.input_wheel_guard import install_input_wheel_guard
+
+        install_input_wheel_guard()
+
     @property
     def yolo_model(self):
         if self._yolo_model is None:
