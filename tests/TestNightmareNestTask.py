@@ -48,7 +48,7 @@ class TestNightmareNestTask(unittest.TestCase):
         self.assertEqual('echo captured', task.out_of_combat_reason)
 
     def test_combat_nest_rechecks_after_pickup_in_team_and_open_world(self):
-        for feature_name in ('team_close', 'fast_travel_custom'):
+        for feature_name in ('team_close', 'team_start_challenge', 'fast_travel_custom'):
             with self.subTest(feature_name=feature_name):
                 task = NightmareNestTask.__new__(NightmareNestTask)
                 task.tr = str
@@ -77,6 +77,36 @@ class TestNightmareNestTask(unittest.TestCase):
 
                 self.assertEqual([10, 1], [call['wait_combat_time'] for call in combat_calls])
                 self.assertEqual(2, len(pickup_calls))
+
+    def test_team_screen_is_detected_when_close_button_is_hovered(self):
+        task = NightmareNestTask.__new__(NightmareNestTask)
+        task.tr = str
+        task._capture_mode = False
+        task._capture_success = False
+        challenge_clicks = []
+        probes = []
+
+        def wait_feature(features, **kwargs):
+            probes.append(list(features))
+            return FakeBox('team_start_challenge')
+
+        task.click = lambda *args, **kwargs: None
+        task.wait_feature = wait_feature
+        task.click_team_challenge = lambda: challenge_clicks.append(True)
+        task.wait_in_team_and_world = lambda *args, **kwargs: True
+        task.combat_once = lambda **kwargs: False
+        task.sleep = lambda *args, **kwargs: None
+        task.walk_find_echo = lambda **kwargs: True
+        task.wait_combat = lambda **kwargs: False
+        task._should_continue_combat_after_pickup = lambda: False
+        task.log_info = lambda *args, **kwargs: None
+        task.esc_world_confirm = lambda *args, **kwargs: None
+
+        task.combat_nest(FakeBox('nest'))
+
+        self.assertIn('team_close', probes[0])
+        self.assertIn('team_start_challenge', probes[0])
+        self.assertEqual([True], challenge_clicks)
 
     def test_capture_mode_does_not_check_combat_after_pickup(self):
         task = NightmareNestTask.__new__(NightmareNestTask)
