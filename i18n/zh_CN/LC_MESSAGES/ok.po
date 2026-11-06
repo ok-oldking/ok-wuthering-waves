@@ -2198,3 +2198,39 @@ msgstr "多账号"
 #: src/task/TacetTask.py
 msgid "Daily Activities"
 msgstr "日常活动"
+
+msgid "Double Drop Rules"
+msgstr "双倍刷取规则"
+
+msgid "Double Drop Simulation Count"
+msgstr "双倍模拟领域次数"
+
+msgid "Double Drop Simulation Material"
+msgstr "双倍模拟领域材料"
+
+msgid "Double Drop Forgery Count"
+msgstr "双倍凝素领域次数"
+
+msgid "Double Drop Forgery Number"
+msgstr "双倍凝素领域编号"
+
+msgid "Double Drop Tacet Count"
+msgstr "双倍无音区次数"
+
+msgid "Double Drop Tacet Number"
+msgstr "双倍无音区编号"
+
+msgid "Detect the UP event badge on the Material Acquisition page and farm those domains first. The original \"Which to Farm\" setting is not changed."
+msgstr "识别素材获取页面的 UP 活动标记，优先刷取对应副本；不会修改原“刷什么”配置。"
+
+msgid "Simulation Challenge runs during the event, 0-3. Simulation + Forgery cannot exceed 3 in total."
+msgstr "活动期间模拟领域的刷取次数，0-3；模拟领域与凝素领域合计不能超过 3 次。"
+
+msgid "Material type for Simulation Challenge."
+msgstr "模拟领域使用的材料类型。"
+
+msgid "Forgery Challenge runs during the event, 0-3. Simulation + Forgery cannot exceed 3 in total."
+msgstr "活动期间凝素领域的刷取次数，0-3；模拟领域与凝素领域合计不能超过 3 次。"
+
+msgid "Tacet Suppression runs during the event, 0-3."
+msgstr "活动期间无音区的刷取次数，0-3。"
