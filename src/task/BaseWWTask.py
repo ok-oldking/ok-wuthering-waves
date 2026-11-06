@@ -7,7 +7,7 @@ from typing import List
 import numpy as np
 
 from ok import BaseTask, Logger, find_boxes_by_name, og, find_color_rectangles, mask_white, Box
-from ok import CannotFindException
+from ok import CannotFindException, WaitFailedException
 import cv2
 
 from src.Labels import Labels
@@ -1113,7 +1113,25 @@ class BaseWWTask(BaseTask):
         )
 
     def click_team_challenge(self):
-        self.wait_click_feature('team_start_challenge', raise_if_not_found=True, click_after_delay=0.5, after_sleep=1)
+        # 3.7 队伍界面把「开启挑战」从右下角图标挪成了文字按钮（约 x=0.83），
+        # 旧模板 team_start_challenge 仍锁在 x≈0.91，容差只有约 4px，会一直匹配失败。
+        start_texts = ['开启挑战', '開啟挑戰', '開始挑戰', 'Start Challenge']
+
+        def find_and_click():
+            if box := self.find_one('team_start_challenge'):
+                self.sleep(0.5)
+                self.click_box(box, after_sleep=1)
+                return True
+            if box := self.ocr(0.50, 0.82, 0.98, 0.98, match=start_texts):
+                self.log_info(f'click team challenge by OCR {box[0].name}')
+                self.sleep(0.5)
+                self.click_box(box, after_sleep=1)
+                return True
+            return False
+
+        if not self.wait_until(find_and_click, time_out=10, raise_if_not_found=False):
+            self.screenshot('team_start_challenge')
+            raise WaitFailedException('team_start_challenge')
         self.wait_click_skip_dialog_confirm()
 
     def wait_click_travel(self):
