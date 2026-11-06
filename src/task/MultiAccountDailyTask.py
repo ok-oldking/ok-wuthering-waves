@@ -85,6 +85,17 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         self.group_icon = task_icon('multi-account')
         self.description = "Automatically switch accounts and run Daily Task for each account"
         self.add_exit_after_config()
+        self.default_config['Per-account Configuration'] = False
+        self.config_description.update({
+            'Per-account Configuration': 'Configure tasks separately for each account. When disabled, run the original multi-account daily task.',
+            'Account Configuration': 'Edit account order, enabled accounts, tasks and task settings.',
+        })
+        self.config_type.update({
+            'Per-account Configuration': {'sub_configs': {True: ['Account Configuration']}},
+            'Account Configuration': {
+                'type': 'button', 'text': 'Configure Accounts', 'callback': self.configure_accounts,
+            },
+        })
         self.done_set = set()
         self.all_accounts = set()
         self.support_schedule_task = True
@@ -101,6 +112,10 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         return normalize_account_name(left) == normalize_account_name(right)
 
     def run(self):
+        if self.config.get('Per-account Configuration', False):
+            # Import lazily: the configured runner inherits the shared login helpers.
+            from src.task.MultiAccountConfigTask import MultiAccountConfigTask
+            return self.run_task_by_class(MultiAccountConfigTask)
         WWOneTimeTask.run(self)
         self.done_set.clear()
         self.all_accounts.clear()
@@ -119,6 +134,17 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             self._mark_done(next_account)
             self.ensure_main(time_out=100)
             self._switch_to_login()
+
+    def configure_accounts(self):
+        # Config button callbacks run on the Qt thread; game work stays in run().
+        from PySide6.QtWidgets import QApplication
+        from src.gui.MultiAccountConfigDialog import MultiAccountConfigDialog
+
+        dialog = MultiAccountConfigDialog(QApplication.activeWindow(), self)
+        try:
+            dialog.exec()
+        finally:
+            dialog.deleteLater()
 
     def _click_center_offset(self, offset_x, offset_y, after_sleep=0.5):
         h, w = self.frame.shape[:2]
