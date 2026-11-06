@@ -53,7 +53,23 @@ class TestDoubleDropRecognition(TaskTestCase):
         activities = self.task.detect_double_drop_activities_from_frame()
         self.assertEqual(activities, expected)
 
-    def test_original_frame_recognizes_tacet_badge_only(self):
+    def test_all_badges_active(self):
+        self.assert_activities('tests/images/double_drop_badges_all.png', {
+            SIMULATION: True, FORGERY: True, TACET: True})
+
+    def test_no_badge_active(self):
+        self.assert_activities('tests/images/double_drop_badges_none.png', {
+            SIMULATION: False, FORGERY: False, TACET: False})
+
+    def test_simulation_badge_only(self):
+        self.assert_activities('tests/images/double_drop_badges_simulation.png', {
+            SIMULATION: True, FORGERY: False, TACET: False})
+
+    def test_forgery_badge_only(self):
+        self.assert_activities('tests/images/double_drop_badges_forgery.png', {
+            SIMULATION: False, FORGERY: True, TACET: False})
+
+    def test_tacet_badge_only(self):
         self.assert_activities('tests/images/double_drop_badges_tacet.png', {
             SIMULATION: False, FORGERY: False, TACET: True})
 
