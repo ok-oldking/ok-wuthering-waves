@@ -71,7 +71,7 @@ class CharacterCodeTask(WebCustomTab):
         characters, _labels = self._characters_by_name()
         char_cls = characters.get(str(class_name or ""))
         if char_cls is None:
-            raise ValueError(f"Unknown character: {class_name}")
+            raise ValueError(self.tr('Unknown character: {class_name}').format(class_name=class_name))
         return char_cls
 
     def _character_payload(self, char_cls):
@@ -175,7 +175,7 @@ class CharacterCodeTask(WebCustomTab):
         char_cls = self._character_class(payload.get("class_name"))
         use_custom = bool(payload.get("use_custom"))
         if use_custom and not has_custom_char_code(char_cls):
-            raise ValueError("Save custom code before enabling custom mode")
+            raise ValueError(self.tr('Save custom code before enabling custom mode'))
         set_custom_char_enabled(char_cls, use_custom)
         result = self._character_payload(char_cls)
         self.emit_web_event("character-changed", result)
@@ -186,7 +186,7 @@ class CharacterCodeTask(WebCustomTab):
         char_cls = self._character_class(payload.get("class_name"))
         code = payload.get("code")
         if not isinstance(code, str):
-            raise ValueError("Character code must be text")
+            raise ValueError(self.tr('Character code must be text'))
         builtin_code = read_builtin_char_code(char_cls)
         if code == builtin_code:
             remove_custom_char_code(char_cls)

@@ -12,9 +12,8 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 from PySide6.QtWidgets import QApplication, QTableWidgetItem
 from ok import BaseTask, Box, PostMessageInteraction, og
 from ok.task.exceptions import TaskDisabledException, WaitFailedException
-from ok.ui.qt.tasks.ConfigCard import ConfigCard
+from ok.ui.qt.tasks.config_form import ConfigForm
 from ok.util.config import Config
-from qfluentwidgets import FluentIcon
 
 from src.gui.MultiAccountConfigTab import AccountStatusTable, AccountTaskCard, MultiAccountConfigTab
 from src.task.AutoLoginTask import AutoLoginTask
@@ -79,6 +78,7 @@ class TestMultiAccountConfig(unittest.TestCase):
 
         interaction.post = post
         runner = object.__new__(MultiAccountConfigTask)
+        runner.tr = str
         runner._executor = SimpleNamespace(interaction=interaction, reset_scene=Mock())
         runner._login_cursor_active = True
         runner.sleep = Mock()
@@ -94,6 +94,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         interaction = PostMessageInteraction(SimpleNamespace(), SimpleNamespace())
         interaction.click = Mock()
         runner = object.__new__(MultiAccountConfigTask)
+        runner.tr = str
         runner._executor = SimpleNamespace(interaction=interaction, reset_scene=Mock())
         with patch('win32api.SetCursorPos') as move:
             runner.click(1279, 792)
@@ -105,6 +106,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         interaction = PostMessageInteraction(capture, SimpleNamespace())
         interaction.click = Mock()
         runner = object.__new__(MultiAccountConfigTask)
+        runner.tr = str
         runner._executor = SimpleNamespace(interaction=interaction, reset_scene=Mock(),
                                            method=SimpleNamespace(width=2560, height=1440))
         runner._login_cursor_active = True
@@ -116,7 +118,7 @@ class TestMultiAccountConfig(unittest.TestCase):
 
     def test_login_cursor_mode_restores_after_cancellation_during_wait_main(self):
         mouse = SimpleNamespace(enabled=True, disable=Mock(), enable=Mock())
-        runner = SimpleNamespace(
+        runner = SimpleNamespace(tr=str,
             executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
             _login_combo=lambda: None,
             sleep=Mock(), click=Mock(), find_account_drop_down=lambda: 'dropdown',
@@ -155,7 +157,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         for target, displayed in [('Ab12@outlook.com', 'Ab****12@outlook.com'),
                                   ('Some Name', 'Some Name'), ('1231234', '123**1234')]:
             with self.subTest(target=target):
-                runner = SimpleNamespace(_login_combo=lambda: 42, sleep=Mock(),
+                runner = SimpleNamespace(tr=str, _login_combo=lambda: 42, sleep=Mock(),
                                          ocr=Mock(side_effect=AssertionError('unexpected OCR')),
                                          click=Mock(side_effect=AssertionError('unexpected click')))
                 with patch(module + 'combo_items', return_value=['Other', displayed, displayed]), \
@@ -173,7 +175,7 @@ class TestMultiAccountConfig(unittest.TestCase):
                                          (['Ab**12@outlook.com'], True, 'Other')]:
             with self.subTest(items=items, selected=selected, current=current):
                 mouse = SimpleNamespace(enabled=True, disable=Mock(), enable=Mock())
-                runner = SimpleNamespace(executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
+                runner = SimpleNamespace(tr=str, executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
                                          _login_combo=lambda: 42, sleep=Mock(), ocr=Mock(), click=Mock(),
                                          find_account_drop_down=Mock(side_effect=WaitFailedException()),
                                          log_warning=Mock(), ensure_main=Mock())
@@ -190,7 +192,7 @@ class TestMultiAccountConfig(unittest.TestCase):
 
     def test_combo_error_falls_back_to_ocr_and_confirms_without_combo(self):
         for error in (OSError('invalid window'), WaitFailedException()):
-            runner = SimpleNamespace(
+            runner = SimpleNamespace(tr=str,
                 _login_combo=Mock(side_effect=error), sleep=Mock(), log_warning=Mock(),
                 click=Mock(), find_account_drop_down=Mock(return_value='dropdown'),
                 do_find_account_drop_down=Mock(side_effect=[None, SimpleNamespace(name='Ab**12@outlook.com')]),
@@ -204,7 +206,7 @@ class TestMultiAccountConfig(unittest.TestCase):
             self.assertFalse(runner._ocr_account_selection)
 
     def test_combo_cancellation_does_not_start_ocr_fallback(self):
-        runner = SimpleNamespace(sleep=Mock(), _login_combo=Mock(side_effect=TaskDisabledException()),
+        runner = SimpleNamespace(tr=str, sleep=Mock(), _login_combo=Mock(side_effect=TaskDisabledException()),
                                  find_account_drop_down=Mock())
         with self.assertRaises(TaskDisabledException):
             MultiAccountConfigTask._select_target_account(runner, '1231234')
@@ -214,7 +216,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         for text, target in [('Ab*1**2@outlook.com', 'Ab12@outlook.com'), ('Some Name', 'Some Name')]:
             with self.subTest(text=text):
                 box = SimpleNamespace(name=text, y=100, height=30)
-                runner = SimpleNamespace(ocr=lambda: [box], click=Mock(),
+                runner = SimpleNamespace(tr=str, ocr=lambda: [box], click=Mock(),
                                          _target_account_key=target, find_boxes=Mock(return_value=['login']))
                 self.assertTrue(MultiAccountConfigTask._find_target_account(runner, target))
                 runner.click.assert_called_once_with(box, after_sleep=2)
@@ -235,7 +237,7 @@ class TestMultiAccountConfig(unittest.TestCase):
             store.save(accounts)
             original = store.path.read_bytes()
             self.assertEqual(store.load(), accounts)
-            with self.assertRaisesRegex(ValueError, '重复'):
+            with self.assertRaisesRegex(ValueError, 'Duplicate'):
                 store.save([account(), account()])
             self.assertEqual(store.path.read_bytes(), original)
             with patch('os.replace', side_effect=OSError('disk error')):
@@ -261,14 +263,14 @@ class TestMultiAccountConfig(unittest.TestCase):
         self.assertIs(resolve_task(executor, task_reference(one)), one)
         with self.assertRaises(ValueError):
             resolve_task(executor, task_reference(trigger))
-        with self.assertRaisesRegex(ValueError, '未注册'):
+        with self.assertRaisesRegex(ValueError, 'not registered'):
             resolve_task(executor, {'module': 'src.task.Removed', 'class': 'Removed'})
 
     def test_both_multi_account_runners_are_rejected(self):
         for name in ('MultiAccountDailyTask', 'MultiAccountConfigTask'):
             entry = account()
             entry['task'] = {'module': f'src.task.{name}', 'class': name}
-            with self.assertRaisesRegex(ValueError, '多账号执行器'):
+            with self.assertRaisesRegex(ValueError, 'cannot select itself'):
                 validate_accounts([entry])
 
     def test_schema_merge_and_deepcopy(self):
@@ -299,7 +301,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         self.assertEqual(nested.config['Items'], ['base'])
 
     def make_runner(self, executor):
-        runner = SimpleNamespace(executor=executor, info={}, config={}, default_config={})
+        runner = SimpleNamespace(tr=str, executor=executor, info={}, config={}, default_config={})
         runner.info_set = lambda key, value: runner.info.__setitem__(key, value)
         runner.tr = lambda text: text
         runner.log_info = Mock()
@@ -354,6 +356,7 @@ class TestMultiAccountConfig(unittest.TestCase):
                 MultiAccountConfigStore(folder).save([account()])
                 state = SimpleNamespace(screen=initial_screen, logged_in=True)
                 runner = object.__new__(MultiAccountConfigTask)
+                runner.tr = str
                 runner._executor = executor_for([], folder)
                 runner._executor.debug = False
                 runner._app = SimpleNamespace(tr=lambda text: text)
@@ -473,7 +476,7 @@ class TestMultiAccountConfig(unittest.TestCase):
     def test_find_target_matches_exactly_and_prefers_lowest_duplicate(self):
         boxes = [SimpleNamespace(name=name, y=index * 100, height=30)
                  for index, name in enumerate(('123****1234', '234****2345', '345****3456'))]
-        runner = SimpleNamespace(ocr=lambda **_: boxes, click=Mock())
+        runner = SimpleNamespace(tr=str, ocr=lambda **_: boxes, click=Mock())
         self.assertTrue(MultiAccountConfigTask._find_target_account(runner, '3453456'))
         runner.click.assert_called_once_with(boxes[2], after_sleep=2)
         self.assertFalse(MultiAccountConfigTask._find_target_account(runner, '1112222'))
@@ -484,7 +487,7 @@ class TestMultiAccountConfig(unittest.TestCase):
 
     def test_failed_dropdown_never_attempts_login_and_restores_mouse(self):
         mouse = SimpleNamespace(enabled=True, disable=Mock(), enable=Mock())
-        runner = SimpleNamespace(
+        runner = SimpleNamespace(tr=str,
             executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
             _login_combo=lambda: None,
             sleep=Mock(), click=Mock(), find_account_drop_down=Mock(return_value='dropdown'),
@@ -501,7 +504,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         for displayed in ('123****1234', '234****2345'):
             with self.subTest(displayed=displayed):
                 mouse = SimpleNamespace(enabled=True, disable=Mock(), enable=Mock())
-                runner = SimpleNamespace(
+                runner = SimpleNamespace(tr=str,
                     executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
                     _login_combo=lambda: None,
                     sleep=Mock(), click=Mock(), find_account_drop_down=Mock(return_value='dropdown'),
@@ -537,7 +540,7 @@ class TestMultiAccountConfig(unittest.TestCase):
             before = path.read_bytes()
             mouse.disable = lambda: mouse.config.__setitem__('_enabled', False)
             mouse.enable = lambda: mouse.config.__setitem__('_enabled', True)
-            runner = SimpleNamespace(
+            runner = SimpleNamespace(tr=str,
                 executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
                 _login_combo=lambda: None,
                 sleep=Mock(side_effect=TaskDisabledException()),
@@ -644,7 +647,7 @@ class TestMultiAccountConfigUI(unittest.TestCase):
         try:
             card.resize(1100, card.height())
             card.show()
-            card.setExpand(True)
+            card.set_expanded(True)
             for _ in range(3):
                 self.app.processEvents()
             tall_height = card.height()
@@ -661,17 +664,19 @@ class TestMultiAccountConfigUI(unittest.TestCase):
             for _ in range(3):
                 card.task_combo.setCurrentIndex(0)
                 self.app.processEvents()
-                self.assertTrue(card.isExpand)
+                self.assertTrue(card.expanded)
                 self.assertLess(card.height(), tall_height)
-                self.assertEqual(card.height(), card.card.height() + card.viewLayout.sizeHint().height())
+                self.assertTrue(card.details.isVisible())
+                self.assertLess(card.details.geometry().bottom(), card.height())
                 card.task_combo.setCurrentIndex(1)
                 self.app.processEvents()
                 self.assertEqual(card.height(), tall_height)
-            card.setExpand(False)
+            card.set_expanded(False)
             card.task_combo.setCurrentIndex(0)
             self.app.processEvents()
-            self.assertFalse(card.isExpand)
-            self.assertEqual(card.height(), card.card.height())
+            self.assertFalse(card.expanded)
+            self.assertTrue(card.details.isHidden())
+            self.assertLess(card.header.geometry().bottom(), card.height())
         finally:
             card.close()
             card.deleteLater()
@@ -682,8 +687,8 @@ class TestMultiAccountConfigUI(unittest.TestCase):
         task = DailyTask(executor, None)
         task.config = RuntimeTaskConfig(task.default_config, task.default_config)
         card = AccountTaskCard(account(task=task), [task], Mock())
-        original = ConfigCard(task, task.name, task.config, task.description, task.default_config,
-                              task.config_description, task.config_type, FluentIcon.INFO)
+        original = ConfigForm(task, task.config, task.default_config,
+                              task.config_description, task.config_type)
         try:
             content = card.content
             self.assertIs(content.default_config, task.default_config)
@@ -731,7 +736,7 @@ class TestMultiAccountConfigUI(unittest.TestCase):
                 tab.refresh_status()
                 self.assertFalse(tab.status_card.isHidden())
                 self.assertIn('Running:', tab.status_card.titleLabel.text())
-                self.assertIn('0h 1m', tab.status_card.titleLabel.text())
+                self.assertIn('01:05', tab.status_card.titleLabel.text())
                 self.assertEqual(tab.status_table.rowCount(), 3)
                 self.assertEqual(tab.status_table.item(2, 1).text(), '')
                 self.assertEqual(MultiAccountConfigStore(folder).load()[0]['config'], task.config)

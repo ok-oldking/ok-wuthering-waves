@@ -14,11 +14,12 @@ from src.task.DailyTask import (
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.MergeEchoTask import FULL_BATCH_PATTERN, MergeEchoTask
 from src.task.NightmareNestTask import NightmareNestTask
+from src.task.task_icons import task_icon
 
 
 class TestMergeEchoTask(unittest.TestCase):
 
-    def test_ungrouped_tasks_and_global_bag_hotkey_metadata(self):
+    def test_task_categories_and_global_bag_hotkey_metadata(self):
         executor = Mock()
         executor.scene = None
         executor.global_config.get_config.return_value = {}
@@ -27,14 +28,17 @@ class TestMergeEchoTask(unittest.TestCase):
         merge_task = MergeEchoTask(executor, app)
         farm_task = FarmEchoTask(executor, app)
 
-        self.assertIsNone(merge_task.group_name)
-        self.assertIsNone(farm_task.group_name)
+        self.assertEqual('Echo Management', merge_task.group_name)
+        self.assertEqual(task_icon('category-echo'), merge_task.group_icon)
+        self.assertEqual('Daily Activities', farm_task.group_name)
+        self.assertEqual(task_icon('category-daily'), farm_task.group_icon)
         self.assertNotIn("Bag Key", merge_task.default_config)
         self.assertEqual(key_config_option.default_config["Bag Key"], "b")
         self.assertIn("Bag Key", key_config_option.config_description)
 
     def setUp(self):
         self.task = MergeEchoTask.__new__(MergeEchoTask)
+        self.task.tr = str
         self.task.key_config = {"Bag Key": "v"}
         self.task.ensure_main = Mock()
         self.task.send_key = Mock()
@@ -195,6 +199,7 @@ class TestDailyMergeEchoTask(unittest.TestCase):
 
     def test_daily_runs_only_post_daily_selected_tasks(self):
         daily_task = DailyTask.__new__(DailyTask)
+        daily_task.tr = str
         daily_task.config = {
             ADDITIONAL_TASKS: [
                 CHECK_WEEKLY_GARDEN,
@@ -231,6 +236,7 @@ class TestDailyMergeEchoTask(unittest.TestCase):
 
     def test_daily_does_not_alert_farm_echo_when_not_selected(self):
         daily_task = DailyTask.__new__(DailyTask)
+        daily_task.tr = str
         daily_task.config = {ADDITIONAL_TASKS: [CHECK_WEEKLY_GARDEN]}
         daily_task.check_weekly_garden = Mock()
         daily_task.check_discarded_echo = Mock()
@@ -244,6 +250,7 @@ class TestDailyMergeEchoTask(unittest.TestCase):
 
     def test_daily_suppresses_and_restores_not_enough_echo_notification(self):
         daily_task = DailyTask.__new__(DailyTask)
+        daily_task.tr = str
         daily_task.info_set = Mock()
         daily_task.log_info = Mock()
         merge_echo_task = Mock()
@@ -263,6 +270,7 @@ class TestDailyMergeEchoTask(unittest.TestCase):
 
     def test_daily_rejects_farm_echo_without_teleport(self):
         daily_task = DailyTask.__new__(DailyTask)
+        daily_task.tr = str
         daily_task.config = {ADDITIONAL_TASKS: [TELEPORT_AND_FARM_4C_ECHO]}
         farm_echo_task = Mock()
         farm_echo_task.config = {"Teleport to Boss": "No"}
@@ -277,6 +285,7 @@ class TestDailyMergeEchoTask(unittest.TestCase):
 
     def test_daily_rejects_nightmare_without_selection(self):
         daily_task = DailyTask.__new__(DailyTask)
+        daily_task.tr = str
         daily_task.config = {ADDITIONAL_TASKS: [AUTO_FARM_NIGHTMARE_NEST]}
         nightmare_task = Mock()
         nightmare_task.config = {"Which to Farm": []}
@@ -291,6 +300,7 @@ class TestDailyMergeEchoTask(unittest.TestCase):
 
     def test_daily_accepts_valid_additional_task_configs(self):
         daily_task = DailyTask.__new__(DailyTask)
+        daily_task.tr = str
         daily_task.config = {
             ADDITIONAL_TASKS: [TELEPORT_AND_FARM_4C_ECHO, AUTO_FARM_NIGHTMARE_NEST],
         }
@@ -311,6 +321,7 @@ class TestDailyMergeEchoTask(unittest.TestCase):
 
     def test_daily_stops_before_initialization_when_additional_config_is_invalid(self):
         daily_task = DailyTask.__new__(DailyTask)
+        daily_task.tr = str
         daily_task.validate_additional_tasks = Mock(side_effect=Exception('invalid additional task config'))
         daily_task.ensure_main = Mock()
 

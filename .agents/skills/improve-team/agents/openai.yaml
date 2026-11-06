@@ -1,0 +1,4 @@
+interface:
+  display_name: "Improve Team"
+  short_description: "Improve team automation with repeatable MCP evidence"
+  default_prompt: "Use $improve-team with the latest evaluation; suggest improvements and invite my build details, links, or videos before modifying code."

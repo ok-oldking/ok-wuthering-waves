@@ -148,7 +148,7 @@ class CombatCheck(BaseWWTask):
                 if current_char.skip_combat_check():
                     return self.scene.set_in_combat()
             if not self.on_combat_check():
-                self.log_info('on_combat_check failed')
+                self.log_info(self.tr('on_combat_check failed'))
                 return self.reset_to_false(reason='on_combat_check failed')
             if self.has_target():
                 self.last_in_realm_not_combat = 0
@@ -177,11 +177,11 @@ class CombatCheck(BaseWWTask):
                 if not has_target and not self.target_enemy(wait=True):
                     if not self.target_enemy_error_notified:
                         self.target_enemy_error_notified = True
-                        self.log_error('Target enemy failed, please disable Nvidia/AMD Filter or Sharpening!',
+                        self.log_error(self.tr('Target enemy failed, please disable Nvidia/AMD Filter or Sharpening!'),
                                        notify=True)
                     return False
                 self.has_lavitator = self.find_one('edge_levitator', threshold=0.65)
-                self.log_info(f'enter combat {self.has_lavitator}')
+                self.log_info(self.tr('enter combat {has_lavitator}').format(has_lavitator=self.has_lavitator))
                 self._in_combat = chars_loaded or self.load_chars()
                 return self._in_combat
 
@@ -216,7 +216,7 @@ class CombatCheck(BaseWWTask):
             self.send_key_down(self.key_config.get('Wheel Key'))
             self.sleep(0.4)
         if self.in_team()[0]:
-            self.log_info('can not open wheel')
+            self.log_info(self.tr('can not open wheel'))
             self.send_key_up(self.key_config.get('Wheel Key'))
             self.sleep(0.1)
             return False

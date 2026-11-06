@@ -12,6 +12,8 @@ class FakeEnhanceTask:
     larger than the search area crashes cv2.matchTemplate (#1238, #1291).
     """
 
+    tr = staticmethod(str)
+
     def __init__(self, boxes, match_name):
         self.boxes = boxes
         self.match_name = match_name

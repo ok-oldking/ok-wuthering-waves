@@ -32,9 +32,9 @@ Use this skill for gettext translation work in ok-script projects that keep cata
 Use `scripts/task_i18n_helper.py` when helpful:
 
 ```powershell
-.\.venv\Scripts\python.exe .agent\skills\ok-script-i18n\scripts\task_i18n_helper.py scan --task src\task\DailyTask.py
-.\.venv\Scripts\python.exe .agent\skills\ok-script-i18n\scripts\task_i18n_helper.py check --i18n i18n
-.\.venv\Scripts\python.exe .agent\skills\ok-script-i18n\scripts\task_i18n_helper.py compile --i18n i18n
+.\.venv\Scripts\python.exe .agents\skills\ok-script-i18n\scripts\task_i18n_helper.py scan --task src\task\DailyTask.py
+.\.venv\Scripts\python.exe .agents\skills\ok-script-i18n\scripts\task_i18n_helper.py check --i18n i18n
+.\.venv\Scripts\python.exe .agents\skills\ok-script-i18n\scripts\task_i18n_helper.py compile --i18n i18n
 ```
 
 The scanner is a helper, not a substitute for reading the task. It finds common literal strings but can miss values built through constants, imports, f-strings, comprehensions, or helper functions.

@@ -7,8 +7,10 @@ name = "ok-ww"
 version = "0.0.1"
 requires-python = ">=3.11"
 dependencies = [
-    "ok-script[ocr,qt]>=2.0.15b2",
-    "onnxocr-ppocrv5>=0.0.20",
+    "mcp==2.3.0",
+    "ok-script[ocr,qt]==3.0.4",
+    "ok-pyside-minimal==6.12.0.post2",
+    "onnxocr-ppocrv5>=0.0.23",
     "openvino",
     "opencv-python",
     "pyappify>=1.0.13"
@@ -23,5 +25,5 @@ docs = [
     "mkdocs-material>=9.5,<10",
 ]
 web-test = [
-    "ok-script[web]==2.0.15b2",
+    "ok-script[web]==3.0.4",
 ]

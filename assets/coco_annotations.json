@@ -1277,6 +1277,30 @@
             "file_name": "images/50.png",
             "width": 2560,
             "height": 1440
+        },
+        {
+            "id": 299,
+            "file_name": "images/0.png",
+            "width": 3840,
+            "height": 2160
+        },
+        {
+            "id": 300,
+            "file_name": "images/2.png",
+            "width": 3840,
+            "height": 2160
+        },
+        {
+            "id": 301,
+            "file_name": "images/1.png",
+            "width": 3840,
+            "height": 2160
+        },
+        {
+            "id": 302,
+            "file_name": "images/1.png",
+            "width": 3840,
+            "height": 2160
         }
     ],
     "annotations": [
@@ -5418,6 +5442,58 @@
             ],
             "area": 3224,
             "iscrowd": 0
+        },
+        {
+            "id": 443,
+            "image_id": 299,
+            "category_id": 292,
+            "bbox": [
+                1912,
+                994,
+                52,
+                52
+            ],
+            "area": 2704,
+            "iscrowd": 0
+        },
+        {
+            "id": 444,
+            "image_id": 300,
+            "category_id": 293,
+            "bbox": [
+                1900,
+                1062,
+                85,
+                78
+            ],
+            "area": 6630,
+            "iscrowd": 0
+        },
+        {
+            "id": 445,
+            "image_id": 301,
+            "category_id": 294,
+            "bbox": [
+                1684,
+                1978,
+                42,
+                43
+            ],
+            "area": 1806,
+            "iscrowd": 0
+        },
+        {
+            "id": 446,
+            "image_id": 302,
+            "category_id": 295,
+            "bbox": [
+                1866,
+                1977,
+                56,
+                47
+            ],
+            "area": 2632,
+            "iscrowd": 0
         }
     ],
     "categories": [
@@ -6874,6 +6950,26 @@
         {
             "id": 291,
             "name": "char_lingyang",
+            "supercategory": ""
+        },
+        {
+            "id": 292,
+            "name": "abyss_start_marker",
+            "supercategory": ""
+        },
+        {
+            "id": 293,
+            "name": "abyss_tower_start_marker",
+            "supercategory": ""
+        },
+        {
+            "id": 294,
+            "name": "roccia_air_forte",
+            "supercategory": ""
+        },
+        {
+            "id": 295,
+            "name": "roccia_air_forte_second",
             "supercategory": ""
         }
     ]

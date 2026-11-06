@@ -59,7 +59,7 @@ class BaseWWTask(BaseTask):
 
     def zoom_map(self, esc=True):
         if not self.map_zoomed:
-            self.log_info('zoom map to max')
+            self.log_info(self.tr('zoom map to max'))
             self.map_zoomed = True
             self.send_key('m', after_sleep=1)
             self.click_relative(0.94, 0.33, after_sleep=0.5)
@@ -243,7 +243,7 @@ class BaseWWTask(BaseTask):
                 last_target = treasure_icon
             if last_target is None:
                 next_direction = self.opposite_direction(last_direction)
-                self.log_info('find_function not found, change to opposite direction')
+                self.log_info(self.tr('find_function not found, change to opposite direction'))
             else:
                 x, y = last_target.center()
                 y = max(0, y - self.height_of_screen(y_offset))
@@ -275,11 +275,11 @@ class BaseWWTask(BaseTask):
                     self.send_key_down(next_direction)
             if running:
                 if not self.find_one('on_the_wall', threshold=0.7):
-                    self.log_info('not on the wall, stop running')
+                    self.log_info(self.tr('not on the wall, stop running'))
                     self.mouse_up(key='right')
             else:
                 if next_direction == 'w' and self.find_one('on_the_wall', threshold=0.7):
-                    self.log_info('on the wall, start running')
+                    self.log_info(self.tr('on the wall, start running'))
                     running = True
                     self.mouse_down(key='right')
                     self.sleep(0.1)
@@ -480,7 +480,7 @@ class BaseWWTask(BaseTask):
             self.mouse_up(key='right')
         if not f_found:
             if raise_if_not_found:
-                raise CannotFindException('cant find the f to enter')
+                raise CannotFindException(self.tr('cant find the f to enter'))
             else:
                 logger.warning(f"can't find the f to enter")
                 return False
@@ -511,7 +511,7 @@ class BaseWWTask(BaseTask):
             self.mouse_up(key='right')
 
         if raise_if_not_found and not result:
-            raise Exception('wait condition failed while walking')
+            raise Exception(self.tr('wait condition failed while walking'))
         return result
 
     def is_moving(self):
@@ -603,10 +603,10 @@ class BaseWWTask(BaseTask):
         return bool(dialog_3_dots)
 
     def walk_to_treasure(self, send_f=True, raise_if_not_found=True):
-        self.log_info('start walk_to_treasure')
+        self.log_info(self.tr('start walk_to_treasure'))
         if not self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_claim_text):
             if not self.walk_to_box(self.find_treasure_icon, end_condition=self.find_f_with_text):
-                raise Exception(f'can not walk to treasure!')
+                raise Exception(self.tr('can not walk to treasure!'))
         if send_f:
             self.walk_until_f(time_out=2, backward_time=0, raise_if_not_found=raise_if_not_found)
         self.sleep(1)
@@ -625,7 +625,7 @@ class BaseWWTask(BaseTask):
             max_echo_count = max(max_echo_count, len(echos))
             self.log_debug(f'max_echo_count {max_echo_count}')
             if echos:
-                self.log_info(f'yolo found echo {echos}')
+                self.log_info(self.tr('yolo found echo {echos}').format(echos=echos))
                 # return self.walk_to_box(self.find_echos, time_out=15, end_condition=self.pick_echo), max_echo_count > 1
                 return self.walk_to_yolo_echo(update_function=update_function, time_out=time_out), max_echo_count > 1
             if use_color:
@@ -719,7 +719,7 @@ class BaseWWTask(BaseTask):
         if not self.logged_in:
             time_out = 600
         if not self.wait_until(lambda: self.is_main(esc=esc), time_out=time_out, raise_if_not_found=False):
-            raise Exception('Please start in game world and in team!')
+            raise Exception(self.tr('Please start in game world and in team!'))
         self.sleep(0.5)
         self.info_set('current task', f'in main esc={esc}')
 
@@ -746,7 +746,7 @@ class BaseWWTask(BaseTask):
             self.handle_monthly_card()
             if login_close := self.find_one('login_close', horizontal_variance=0.15, vertical_variance=0.1):
                 self.click(login_close, after_sleep=1)
-                self.log_info('关闭公告!')
+                self.log_info(self.tr('Close the notice!'))
                 return False
             texts = self.ocr(log=self.debug)
 
@@ -764,32 +764,32 @@ class BaseWWTask(BaseTask):
                     if login and not self.find_boxes(texts, boundary=login_box,
                                                      match="+86"):
                         self.click(login, after_sleep=1)
-                        self.log_info('点击登录按钮!')
+                        self.log_info(self.tr('Click the Login button!'))
                 return False
             if agree := self.find_boxes(texts, boundary=login_box, match="同意"):
                 self.log_debug(f'found agree {agree}')
                 if self.find_boxes(texts, boundary=login_box, match=re.compile("隐私")):
                     self.click(agree, after_sleep=1)
-                    self.log_info('点击同意按钮!')
+                    self.log_info(self.tr('Click the Agree button!'))
                 return False
             if self.find_boxes(texts, match=[re.compile("游戏即将重启"), re.compile('遊戲即將重啟')]):
                 self.sleep(0.2)
-                self.log_info('游戏更新成功, 游戏即将重启')
+                self.log_info(self.tr('Game update completed; the game will restart'))
                 self.click(self.find_boxes(texts, match=["确认", "確認"]), after_sleep=60)
                 result = self.start_device()
-                self.log_info(f'start_device end {result}')
+                self.log_info(self.tr('start_device end {result}').format(result=result))
                 self.sleep(30)
                 return False
 
             if start := self.find_boxes(texts, boundary='bottom_right', match=["开始游戏", re.compile("进入游戏")]):
                 if not self.find_boxes(texts, boundary='bottom_right', match=LOGIN_TEXTS):
                     self.click(start)
-                    self.log_info(f'点击开始游戏! {start}')
+                    self.log_info(self.tr('Click Start Game! {start}').format(start=start))
                     return False
             if switch_login := self.find_one(Labels.switch_account, vertical_variance=0.1, threshold=0.7):
                 if boxes := self.find_boxes(texts, boundary=self.box_of_screen(0.37, 0.63, 0.63, 0.99, hcenter=True,
                                                                                vcenter=True)):
-                    self.log_info(f'wait_login {switch_login} {boxes}')
+                    self.log_info(self.tr('wait_login {switch_login} {boxes}').format(switch_login=switch_login, boxes=boxes))
                     self.click_relative(0.503, 0.926, hcenter=True, vcenter=True, after_sleep=3)
                     return False
 
@@ -850,7 +850,7 @@ class BaseWWTask(BaseTask):
         box = self.get_box_by_name('box_minimap')
         target = self.find_one(feature, box=box, threshold=threshold)
         if not target:
-            self.log_info(f'Can not find {feature} on minimap')
+            self.log_info(self.tr('Can not find {feature} on minimap').format(feature=feature))
             return None
         else:
             self.log_debug(f'found {box} on minimap')
@@ -859,7 +859,7 @@ class BaseWWTask(BaseTask):
         direction_angle = calculate_angle_clockwise(box, target)
         my_angle = self.get_my_angle()
         to_turn = self.get_angle_between(my_angle, direction_angle)
-        self.log_info(f'angle: {my_angle}, to_turn: {to_turn}')
+        self.log_info(self.tr('angle: {my_angle}, to_turn: {to_turn}').format(my_angle=my_angle, to_turn=to_turn))
         return to_turn
 
     def _stop_movement(self, current_direction):
@@ -913,7 +913,7 @@ class BaseWWTask(BaseTask):
 
         # 4. Change direction if needed
         if current_direction != new_direction:
-            self.log_info(f'changed direction {angle} {current_direction} -> {new_direction}')
+            self.log_info(self.tr('changed direction {angle} {current_direction} -> {new_direction}').format(angle=angle, current_direction=current_direction, new_direction=new_direction))
             if current_direction:
                 self.mouse_up(key='right')
                 self.send_key_up(current_direction)
@@ -960,7 +960,7 @@ class BaseWWTask(BaseTask):
         # self.screenshot('monthly_card1')
         if monthly_card is not None:
             # self.screenshot('monthly_card1')
-            self.log_info('monthly_card found click')
+            self.log_info(self.tr('monthly_card found click'))
             self.click_relative(0.50, 0.89)
             self.sleep(2)
             # self.screenshot('monthly_card2')
@@ -991,7 +991,7 @@ class BaseWWTask(BaseTask):
         self.sleep(0.5)
 
     def open_boss_book(self, name, after_sleep=2):
-        self.log_info(f'open_boss_book {name}')
+        self.log_info(self.tr('open_boss_book {name}').format(name=name))
         x = 0.24
         self.sleep(0.4)
         if name == 'ningsu':
@@ -1010,7 +1010,7 @@ class BaseWWTask(BaseTask):
             self.click_relative(0.356, 0.882, after_sleep=after_sleep)
             y = 0.86
         else:
-            raise Exception(f'unknown_lang {name}')
+            raise Exception(self.tr('unknown_lang {name}').format(name=name))
         self.click_relative(x, y, after_sleep=after_sleep, name=name)
 
     def openF2Book(self, feature="gray_book_all_monsters"):
@@ -1018,12 +1018,12 @@ class BaseWWTask(BaseTask):
             self.reset_to_false('opening book')
         self.ensure_main()
         book_key = self.key_config.get('Guidebook Key', self.key_config.get('索拉指南', 'f2'))
-        self.log_info(f'click {book_key} to open the book')
+        self.log_info(self.tr('click {book_key} to open the book').format(book_key=book_key))
         if self.in_team_and_world():
             self.send_key(book_key, after_sleep=4)
-            self.log_info(f'send {book_key} key to open')
+            self.log_info(self.tr('send {book_key} key to open').format(book_key=book_key))
         if self.in_team_and_world():
-            self.log_info('send f2 key mouse key to open the book')
+            self.log_info(self.tr('send f2 key mouse key to open the book'))
             self.send_key_down('alt')
             self.sleep(0.05)
             self.click_relative(0.77, 0.05)
@@ -1032,8 +1032,8 @@ class BaseWWTask(BaseTask):
             self.sleep(4)
         gray_book_boss = self.wait_book(feature)
         if not gray_book_boss:
-            self.log_error("can't find gray_book_boss, make sure f2 is the hotkey for book", notify=True)
-            raise Exception("can't find gray_book_boss, make sure f2 is the hotkey for book")
+            self.log_error(self.tr("can't find gray_book_boss, make sure f2 is the hotkey for book"), notify=True)
+            raise Exception(self.tr("can't find gray_book_boss, make sure f2 is the hotkey for book"))
         self.sleep(2)
         self.click_box(gray_book_boss, after_sleep=1.5)
         return gray_book_boss
@@ -1135,7 +1135,7 @@ class BaseWWTask(BaseTask):
             self.send_key('esc')
             self.sleep(1)
             if not self.in_team()[0]:
-                raise Exception('must be in game world and in teams')
+                raise Exception(self.tr('must be in game world and in teams'))
         return True
 
     def _find_book_scroll_top(self):
@@ -1194,7 +1194,7 @@ class BaseWWTask(BaseTask):
                 btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861),
                                          threshold=0.8)
         if not btns:
-            raise Exception("can't find boss_proceed")
+            raise Exception(self.tr("can't find boss_proceed"))
         if target_index > -1:
             if target_index < len(btns):
                 target = btns[target_index]
@@ -1209,7 +1209,7 @@ class BaseWWTask(BaseTask):
                 btns = self.find_feature('boss_proceed', box=self.box_of_screen(0.9113, 0.229, 0.9613, 0.861),
                                          threshold=0.8)
                 if not btns:
-                    raise Exception("can't find boss_proceed after scroll")
+                    raise Exception(self.tr("can't find boss_proceed after scroll"))
                 target = max(btns, key=lambda box: box.y)
         else:
             target = max(btns, key=lambda box: box.y)
