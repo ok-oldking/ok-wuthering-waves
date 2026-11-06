@@ -12,6 +12,28 @@ from src.task.TacetTask import TacetTask
 from src.task.SimulationTask import SimulationTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
+from src.task.DoubleDropRules import (
+    DOUBLE_DROP_BADGE_ROIS,
+    DOUBLE_DROP_CONFIG_KEYS,
+    DOUBLE_DROP_DEFAULTS,
+    DOUBLE_DROP_FORGERY_COUNT,
+    DOUBLE_DROP_FORGERY_NUMBER,
+    DOUBLE_DROP_RULES,
+    DOUBLE_DROP_SIMULATION_COUNT,
+    DOUBLE_DROP_SIMULATION_MATERIAL,
+    DOUBLE_DROP_TACET_COUNT,
+    DOUBLE_DROP_TACET_NUMBER,
+    FORGERY,
+    MODE_ORDER,
+    SIMULATION,
+    TACET,
+    UP_GOLD,
+    UP_PATTERN,
+    build_double_drop_plan as create_double_drop_plan,
+    is_non_negative_int,
+    is_up_badge,
+    validate_double_drop_config,
+)
 from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
@@ -39,6 +61,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Which Forgery Challenge to Farm': 1,  # starts with 1
             'Material Selection': 'Shell Credit',
             'Farm Nightmare Nest for Daily Echo': True,
+            **DOUBLE_DROP_DEFAULTS,
             ADDITIONAL_TASKS: [CHECK_WEEKLY_GARDEN],
         }
         self.config_description = {
@@ -46,6 +69,16 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
             'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.',
+            DOUBLE_DROP_RULES: 'Detect the UP event badge on the Material Acquisition page and farm those domains '
+                               'first. The original "Which to Farm" setting is not changed.',
+            DOUBLE_DROP_SIMULATION_COUNT: 'Simulation Challenge runs during the event, 0-3. Simulation + Forgery '
+                                          'cannot exceed 3 in total.',
+            DOUBLE_DROP_SIMULATION_MATERIAL: 'Material type for Simulation Challenge.',
+            DOUBLE_DROP_FORGERY_COUNT: 'Forgery Challenge runs during the event, 0-3. Simulation + Forgery cannot '
+                                       'exceed 3 in total.',
+            DOUBLE_DROP_FORGERY_NUMBER: 'The Forgery Challenge number in the F2 list.',
+            DOUBLE_DROP_TACET_COUNT: 'Tacet Suppression runs during the event, 0-3.',
+            DOUBLE_DROP_TACET_NUMBER: 'The Tacet Suppression number in the F2 list.',
             ADDITIONAL_TASKS: 'Select optional tasks. Nightmare Nest runs before stamina farming to help complete '
                               'the daily task; the other tasks run afterward.',
         }
@@ -65,6 +98,20 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 'type': 'drop_down',
                 'options': material_option_list
             },
+            DOUBLE_DROP_RULES: {
+                'sub_configs': {
+                    True: list(DOUBLE_DROP_CONFIG_KEYS),
+                },
+            },
+            DOUBLE_DROP_SIMULATION_MATERIAL: {
+                'type': 'drop_down',
+                'options': material_option_list,
+            },
+            DOUBLE_DROP_SIMULATION_COUNT: {'min': 0, 'max': 3},
+            DOUBLE_DROP_FORGERY_COUNT: {'min': 0, 'max': 3},
+            DOUBLE_DROP_TACET_COUNT: {'min': 0, 'max': 3},
+            DOUBLE_DROP_FORGERY_NUMBER: {'min': 1},
+            DOUBLE_DROP_TACET_NUMBER: {'min': 1},
             ADDITIONAL_TASKS: {
                 'type': 'multi_selection',
                 'options': [
@@ -119,16 +166,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 self.get_task_by_class(NightmareNestTask).__dict__.pop('ensure_main', None)
 
         if need_stamina:
-            target = self.config.get('Which to Farm', self.support_tasks[0])
-            if target == self.support_tasks[0]:
-                self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina,
-                                                             config=self.config)
-            elif target == self.support_tasks[1]:
-                self.get_task_by_class(ForgeryTask).farm_forgery(daily=True, used_stamina=used_stamina,
-                                                                 config=self.config)
-            else:
-                self.get_task_by_class(SimulationTask).farm_simulation(daily=True, used_stamina=used_stamina,
-                                                                       config=self.config)
+            self.run_stamina_farming(used_stamina)
             self.sleep(4)
 
         self.claim_daily()
@@ -138,6 +176,148 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.claim_battle_pass()
         self.run_additional_tasks()
         self.log_info(self.tr('Daily Task Completed'), notify=True)
+
+    def validate_config(self, key, value):
+        return validate_double_drop_config(key, value, self.config or {})
+
+    def run_stamina_farming(self, used_stamina):
+        plan = self.build_double_drop_plan_for_daily()
+        if plan:
+            plan_used = self.run_double_drop_plan(plan)
+            try:
+                recheck_used, daily_reward_ready = self.open_daily()
+                used_stamina = recheck_used if recheck_used > 0 else used_stamina + plan_used
+            except TaskDisabledException:
+                raise
+            except Exception as e:
+                daily_reward_ready = False
+                used_stamina += plan_used
+                self.log_error('Double drop: failed to recheck daily stamina, use calculated usage', e)
+            self.info_set('used stamina after double drop', used_stamina)
+            if daily_reward_ready or used_stamina >= 180:
+                self.log_info('Double drop plan completed, daily stamina requirement is met')
+                return
+            self.log_info(f'Double drop plan completed, continue original farming at {used_stamina}/180')
+        self.farm_original(used_stamina)
+
+    def build_double_drop_plan_for_daily(self):
+        if not self.config.get(DOUBLE_DROP_RULES):
+            return []
+        counts = [self.config.get(key, 0) for key in (
+            DOUBLE_DROP_SIMULATION_COUNT, DOUBLE_DROP_FORGERY_COUNT, DOUBLE_DROP_TACET_COUNT)]
+        if not any(is_non_negative_int(count) and count > 0 for count in counts):
+            self.log_info('Double drop rules enabled but every count is 0, keep original daily logic')
+            return []
+        for key in DOUBLE_DROP_CONFIG_KEYS:
+            error = validate_double_drop_config(key, self.config.get(key), self.config)
+            if error:
+                self.log_error(f'Invalid double drop config: {error} Keep original daily logic')
+                return []
+        activities = self.read_double_drop_activities()
+        try:
+            plan = create_double_drop_plan(self.config, activities)
+        except ValueError as e:
+            self.log_error(f'Invalid double drop plan: {e} Keep original daily logic')
+            return []
+        if plan:
+            self.log_info('Double drop plan: ' + ', '.join(f'{item.mode} x{item.count}' for item in plan))
+        return plan
+
+    def read_double_drop_activities(self):
+        activities = {mode: False for mode in MODE_ORDER}
+        try:
+            self.openF2Book('gray_book_boss')
+            self.next_frame()
+            self.screenshot('double_drop_activity_badges')
+            activities = self.detect_double_drop_activities_from_frame()
+            if not any(activities.values()):
+                self.log_info('Double drop: no activity badge detected, keep original daily logic')
+            return activities
+        except TaskDisabledException:
+            raise
+        except Exception as e:
+            self.log_error('Double drop recognition failed, keep original daily logic', e)
+            self.screenshot('double_drop_recognition_failed')
+            return activities
+        finally:
+            try:
+                self.ensure_main(time_out=60)
+            except TaskDisabledException:
+                raise
+            except Exception as e:
+                self.log_error('Double drop: failed to return to main after recognition', e)
+
+    def detect_double_drop_activities_from_frame(self):
+        activities = {}
+        for mode in MODE_ORDER:
+            try:
+                box = self.box_of_screen(*DOUBLE_DROP_BADGE_ROIS[mode], name=f'double_drop_{mode}')
+                texts = self.ocr(box=box, match=UP_PATTERN, log=getattr(self, 'debug', False))
+                gold_ratio = self.calculate_color_percentage(UP_GOLD, box)
+                activities[mode] = is_up_badge([text.name for text in texts], gold_ratio)
+                self.log_info(f'Double drop {mode}: UP={bool(texts)} gold={gold_ratio:.4f} '
+                              f'active={activities[mode]}')
+            except TaskDisabledException:
+                raise
+            except Exception as e:
+                activities[mode] = False
+                self.log_error(f'Double drop {mode} recognition failed, treat as inactive', e)
+        return activities
+
+    def run_double_drop_plan(self, plan):
+        total_used = 0
+        for item in plan:
+            task = None
+            used_before = 0
+            try:
+                task = self.get_double_drop_task(item.mode)
+                if task is None:
+                    raise RuntimeError(f'{item.mode} task is not registered')
+                used_before = max(0, int(task.info.get('used stamina', 0) or 0))
+                self.info_set('current task', f'double drop {item.mode}')
+                self.log_info(f'Double drop farming {item.mode} x{item.count}, config={item.config}')
+                plan_used_stamina = max(0, 180 - item.count * task.stamina_once)
+                if item.mode == SIMULATION:
+                    task.farm_simulation(daily=True, used_stamina=plan_used_stamina,
+                                         config=item.config, max_runs=item.count)
+                elif item.mode == FORGERY:
+                    task.farm_forgery(daily=True, used_stamina=plan_used_stamina,
+                                      config=item.config, max_runs=item.count)
+                elif item.mode == TACET:
+                    task.farm_tacet(daily=True, used_stamina=plan_used_stamina,
+                                    config=item.config, max_runs=item.count)
+            except TaskDisabledException:
+                raise
+            except Exception as e:
+                self.log_error(f'Double drop {item.mode} failed', e)
+                self.screenshot('double_drop_failed_' + item.mode.replace(' ', '_'))
+                self.ensure_main(time_out=180)
+            finally:
+                if task is not None:
+                    used_after = max(0, int(task.info.get('used stamina', 0) or 0))
+                    total_used += max(0, used_after - used_before)
+        return total_used
+
+    def get_double_drop_task(self, mode):
+        if mode == SIMULATION:
+            return self.get_task_by_class(SimulationTask)
+        if mode == FORGERY:
+            return self.get_task_by_class(ForgeryTask)
+        if mode == TACET:
+            return self.get_task_by_class(TacetTask)
+        return None
+
+    def farm_original(self, used_stamina):
+        target = self.config.get('Which to Farm', self.support_tasks[0])
+        if target == self.support_tasks[0]:
+            self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina,
+                                                         config=self.config)
+        elif target == self.support_tasks[1]:
+            self.get_task_by_class(ForgeryTask).farm_forgery(daily=True, used_stamina=used_stamina,
+                                                             config=self.config)
+        else:
+            self.get_task_by_class(SimulationTask).farm_simulation(daily=True, used_stamina=used_stamina,
+                                                                   config=self.config)
 
     def validate_additional_tasks(self):
         additional_tasks = self.config.get(ADDITIONAL_TASKS) or []

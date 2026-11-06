@@ -2135,3 +2135,39 @@ msgstr "Multicuenta"
 #: src/task/TacetTask.py
 msgid "Daily Activities"
 msgstr "Actividades diarias"
+
+msgid "Double Drop Rules"
+msgstr "Reglas de doble botín"
+
+msgid "Double Drop Simulation Count"
+msgstr "Cantidad de doble botín: Desafío de Simulación"
+
+msgid "Double Drop Simulation Material"
+msgstr "Material de doble botín: Desafío de Simulación"
+
+msgid "Double Drop Forgery Count"
+msgstr "Cantidad de doble botín: Desafío de Forja"
+
+msgid "Double Drop Forgery Number"
+msgstr "Número de doble botín: Desafío de Forja"
+
+msgid "Double Drop Tacet Count"
+msgstr "Cantidad de doble botín: Supresión Tácita"
+
+msgid "Double Drop Tacet Number"
+msgstr "Número de doble botín: Supresión Tácita"
+
+msgid "Detect the UP event badge on the Material Acquisition page and farm those domains first. The original \"Which to Farm\" setting is not changed."
+msgstr "Detecta la marca UP en la página de obtención de materiales y farmea primero esos dominios. No modifica el ajuste original \"Qué farmear\"."
+
+msgid "Simulation Challenge runs during the event, 0-3. Simulation + Forgery cannot exceed 3 in total."
+msgstr "Número de rondas del Desafío de Simulación durante el evento, 0-3. La suma de Simulación y Forja no puede superar 3."
+
+msgid "Material type for Simulation Challenge."
+msgstr "Tipo de material para el Desafío de Simulación."
+
+msgid "Forgery Challenge runs during the event, 0-3. Simulation + Forgery cannot exceed 3 in total."
+msgstr "Número de rondas del Desafío de Forja durante el evento, 0-3. La suma de Simulación y Forja no puede superar 3."
+
+msgid "Tacet Suppression runs during the event, 0-3."
+msgstr "Número de rondas de la Supresión Tácita durante el evento, 0-3."

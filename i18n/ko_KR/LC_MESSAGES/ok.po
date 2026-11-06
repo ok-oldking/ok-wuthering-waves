@@ -2153,3 +2153,39 @@ msgstr "다중 계정"
 #: src/task/TacetTask.py
 msgid "Daily Activities"
 msgstr "일일 활동"
+
+msgid "Double Drop Rules"
+msgstr "2배 드롭 규칙"
+
+msgid "Double Drop Simulation Count"
+msgstr "2배 드롭 시뮬레이션 횟수"
+
+msgid "Double Drop Simulation Material"
+msgstr "2배 드롭 시뮬레이션 재료"
+
+msgid "Double Drop Forgery Count"
+msgstr "2배 드롭 응소의 영역 횟수"
+
+msgid "Double Drop Forgery Number"
+msgstr "2배 드롭 응소의 영역 번호"
+
+msgid "Double Drop Tacet Count"
+msgstr "2배 드롭 무음 구역 횟수"
+
+msgid "Double Drop Tacet Number"
+msgstr "2배 드롭 무음 구역 번호"
+
+msgid "Detect the UP event badge on the Material Acquisition page and farm those domains first. The original \"Which to Farm\" setting is not changed."
+msgstr "재료 획득 화면의 UP 표시를 인식해 해당 영역을 먼저 파밍합니다. 기존 \"파밍 대상\" 설정은 변경하지 않습니다."
+
+msgid "Simulation Challenge runs during the event, 0-3. Simulation + Forgery cannot exceed 3 in total."
+msgstr "이벤트 기간 시뮬레이션 영역 파밍 횟수(0-3). 시뮬레이션과 응소의 영역 합계는 3회를 넘을 수 없습니다."
+
+msgid "Material type for Simulation Challenge."
+msgstr "시뮬레이션 영역에 사용할 재료 유형입니다."
+
+msgid "Forgery Challenge runs during the event, 0-3. Simulation + Forgery cannot exceed 3 in total."
+msgstr "이벤트 기간 응소의 영역 파밍 횟수(0-3). 시뮬레이션과 응소의 영역 합계는 3회를 넘을 수 없습니다."
+
+msgid "Tacet Suppression runs during the event, 0-3."
+msgstr "이벤트 기간 무음 구역 파밍 횟수(0-3)."
