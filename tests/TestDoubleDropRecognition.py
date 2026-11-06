@@ -10,6 +10,9 @@ from src.task.DoubleDropRules import FORGERY, SIMULATION, TACET
 config['debug'] = True
 
 
+# `double_drop_badges_tacet.png` is the original capture. The all/none/
+# simulation/forgery fixtures are composited from it; replace them with real
+# event captures after the event opens.
 class TestDoubleDropRecognition(TaskTestCase):
     task_class = DailyTask
     config = config
