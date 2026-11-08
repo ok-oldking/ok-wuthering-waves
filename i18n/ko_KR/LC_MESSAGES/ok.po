@@ -2153,3 +2153,11 @@ msgstr "다중 계정"
 #: src/task/TacetTask.py
 msgid "Daily Activities"
 msgstr "일일 활동"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation Resource Farm"
+msgstr "육성 재료 파밍"
+
+#: src/task/CultivationTask.py
+msgid "Farm Resonator Ascension Materials for the selected Guidebook cultivation target. Simplified Chinese, 16:9. Uses current Waveplates only."
+msgstr "솔라리스 가이드에서 선택한 육성 목표에 따라 공명자 돌파 재료를 수집합니다. 중국어 간체와 16:9를 지원합니다. 현재 보유한 결정 웨이브 플레이트만 사용합니다."

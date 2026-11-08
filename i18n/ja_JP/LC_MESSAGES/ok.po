@@ -2150,3 +2150,11 @@ msgstr "複数アカウント"
 #: src/task/TacetTask.py
 msgid "Daily Activities"
 msgstr "デイリー・イベント"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation Resource Farm"
+msgstr "育成素材周回"
+
+#: src/task/CultivationTask.py
+msgid "Farm Resonator Ascension Materials for the selected Guidebook cultivation target. Simplified Chinese, 16:9. Uses current Waveplates only."
+msgstr "ソラリスガイドで選択した育成目標に従い、共鳴者の突破素材を周回で集めます。簡体字中国語と 16:9 に対応。現在の結晶波長板のみを使用します。"

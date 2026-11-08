@@ -2135,3 +2135,11 @@ msgstr "Multicuenta"
 #: src/task/TacetTask.py
 msgid "Daily Activities"
 msgstr "Actividades diarias"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation Resource Farm"
+msgstr "Farmeo de recursos de mejora"
+
+#: src/task/CultivationTask.py
+msgid "Farm Resonator Ascension Materials for the selected Guidebook cultivation target. Simplified Chinese, 16:9. Uses current Waveplates only."
+msgstr "Farmea materiales de ascensión de Resonadores según el objetivo de mejora seleccionado en la Guía de Solaris. Compatible con chino simplificado y 16:9. Solo utiliza las placas de onda actuales."
