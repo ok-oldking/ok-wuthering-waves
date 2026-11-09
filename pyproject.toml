@@ -13,7 +13,7 @@ dependencies = [
     "onnxocr-ppocrv5>=0.0.23",
     "openvino",
     "opencv-python",
-    "pyappify>=1.0.13"
+    "pyappify[standalone]>=1.0.14"
 ]
 
 [project.optional-dependencies]
