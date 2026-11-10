@@ -655,16 +655,19 @@ class TestMultiAccountConfigUI(unittest.TestCase):
 
             def edit_dialog(dialog):
                 failures = []
+                observed = {}
                 def edit_and_save():
                     try:
-                        self.assertTrue(dialog.editor.loaded)
-                        self.assertIs(dialog.editor.runner, runner)
-                        self.assertTrue(dialog.editor.start_button.isHidden())
-                        self.assertTrue(dialog.editor.stop_button.isHidden())
-                        self.assertEqual(dialog.editor.cards[0].account_edit.text(), '1231234')
+                        observed.update(
+                            loaded=dialog.editor.loaded,
+                            runner=dialog.editor.runner,
+                            start_hidden=dialog.editor.start_button.isHidden(),
+                            stop_hidden=dialog.editor.stop_button.isHidden(),
+                            account=dialog.editor.cards[0].account_edit.text(),
+                        )
                         dialog.editor.cards[0].account_edit.setText('5675678')
                         dialog.ok_button.click()
-                        self.assertFalse(dialog.isVisible())
+                        observed['visible_after_save'] = dialog.isVisible()
                     except Exception as error:
                         failures.append(error)
                     finally:
@@ -673,6 +676,12 @@ class TestMultiAccountConfigUI(unittest.TestCase):
                 result = original_exec(dialog)
                 if failures:
                     raise failures[0]
+                self.assertTrue(observed['loaded'])
+                self.assertIs(observed['runner'], runner)
+                self.assertTrue(observed['start_hidden'])
+                self.assertTrue(observed['stop_hidden'])
+                self.assertEqual(observed['account'], '1231234')
+                self.assertFalse(observed['visible_after_save'])
                 self.assertFalse(dialog.editor.timer.isActive())
                 return result
 

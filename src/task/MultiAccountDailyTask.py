@@ -16,6 +16,8 @@ from src.task.MouseResetTask import MouseResetTask
 from src.task.task_icons import task_icon
 
 account_pattern = re.compile(r'\*\*\*\*')
+PER_ACCOUNT_CONFIGURATION = 'Per-account Configuration'
+ACCOUNT_CONFIGURATION = 'Account Configuration'
 
 CB_GETCOUNT, CB_GETCURSEL, CB_GETLBTEXT, CB_GETLBTEXTLEN, CB_SETCURSEL = 0x146, 0x147, 0x148, 0x149, 0x14E
 CBN_SELCHANGE = 1
@@ -85,14 +87,14 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         self.group_icon = task_icon('multi-account')
         self.description = "Automatically switch accounts and run Daily Task for each account"
         self.add_exit_after_config()
-        self.default_config['Per-account Configuration'] = False
+        self.default_config[PER_ACCOUNT_CONFIGURATION] = False
         self.config_description.update({
-            'Per-account Configuration': 'Configure tasks separately for each account. When disabled, run the original multi-account daily task.',
-            'Account Configuration': 'Edit account order, enabled accounts, tasks and task settings.',
+            PER_ACCOUNT_CONFIGURATION: 'Configure tasks separately for each account. When disabled, run the original multi-account daily task.',
+            ACCOUNT_CONFIGURATION: 'Edit account order, enabled accounts, tasks and task settings.',
         })
         self.config_type.update({
-            'Per-account Configuration': {'sub_configs': {True: ['Account Configuration']}},
-            'Account Configuration': {
+            PER_ACCOUNT_CONFIGURATION: {'sub_configs': {True: [ACCOUNT_CONFIGURATION]}},
+            ACCOUNT_CONFIGURATION: {
                 'type': 'button', 'text': 'Configure Accounts', 'callback': self.configure_accounts,
             },
         })
@@ -112,7 +114,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         return normalize_account_name(left) == normalize_account_name(right)
 
     def run(self):
-        if self.config.get('Per-account Configuration', False):
+        if self.config.get(PER_ACCOUNT_CONFIGURATION, False):
             # Import lazily: the configured runner inherits the shared login helpers.
             from src.task.MultiAccountConfigTask import MultiAccountConfigTask
             return self.run_task_by_class(MultiAccountConfigTask)
