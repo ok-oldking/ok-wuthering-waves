@@ -2276,3 +2276,23 @@ msgstr "多帳號"
 #: src/task/TacetTask.py
 msgid "Daily Activities"
 msgstr "日常活動"
+
+msgid "Per-account Configuration"
+msgstr "分別設定"
+
+msgid "Account Configuration"
+msgstr "帳號設定"
+
+msgid "Configure Accounts"
+msgstr "設定帳號"
+
+msgid "Save and Close"
+msgstr "儲存並關閉"
+
+msgid ""
+"Configure tasks separately for each account. When disabled, run the original"
+" multi-account daily task."
+msgstr "為每個帳號分別設定任務。關閉時執行原有多帳號每日任務。"
+
+msgid "Edit account order, enabled accounts, tasks and task settings."
+msgstr "編輯帳號順序、啟用狀態、執行任務及任務設定。"

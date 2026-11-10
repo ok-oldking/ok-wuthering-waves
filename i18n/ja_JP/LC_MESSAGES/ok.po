@@ -2150,3 +2150,23 @@ msgstr "複数アカウント"
 #: src/task/TacetTask.py
 msgid "Daily Activities"
 msgstr "デイリー・イベント"
+
+msgid "Per-account Configuration"
+msgstr "アカウント別設定"
+
+msgid "Account Configuration"
+msgstr "アカウント設定"
+
+msgid "Configure Accounts"
+msgstr "アカウントを設定"
+
+msgid "Save and Close"
+msgstr "保存して閉じる"
+
+msgid ""
+"Configure tasks separately for each account. When disabled, run the original"
+" multi-account daily task."
+msgstr "アカウントごとにタスクを設定します。無効の場合は従来の複数アカウントデイリータスクを実行します。"
+
+msgid "Edit account order, enabled accounts, tasks and task settings."
+msgstr "アカウントの順序、有効状態、実行タスクとタスク設定を編集します。"
