@@ -179,9 +179,6 @@ config = {
     'blur_area': blur_area,
     'gui_icon': 'icons/icon.png',
     'global_configs': [basic_config_option, key_config_option, char_config_option, monthly_card_config_option],
-    'custom_tabs': [
-        ["src.gui.MultiAccountConfigTab", "MultiAccountConfigTab"],
-    ],
     'ocr': {
         'lib': 'onnxocr',
         'auto_simplify': True,
@@ -193,6 +190,7 @@ config = {
     'plugin':True,
     'my_app': ['src.globals', 'Globals'],
     'start_timeout': 120,  # default 60
+    'update_only_game_exit': True,  # if startup skipped the update check, check 10s after the game exits
     'wait_until_settle_time': 0,
     # required if using feature detection
     'template_matching': {

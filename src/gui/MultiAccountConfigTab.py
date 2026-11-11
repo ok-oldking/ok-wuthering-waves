@@ -235,12 +235,12 @@ class AccountTaskCard(Card):
 
 
 class MultiAccountConfigTab(CustomTab):
-    def __init__(self):
+    def __init__(self, execution_owner=None):
         super().__init__()
         self.cards = []
         self.loaded = False
         self.store = None
-        self.runner = None
+        self.runner = execution_owner
         self.dismissed_run = None
         self.info_run = None
         self.elapsed_text = ''
@@ -312,7 +312,8 @@ class MultiAccountConfigTab(CustomTab):
         # MainWindow injects executor only after CustomTab construction.
         if not self.loaded and self.executor is not None:
             self.store = MultiAccountConfigStore(self.executor.config_folder)
-            self.runner = self.executor.get_task_by_class(MultiAccountConfigTask)
+            if self.runner is None:
+                self.runner = self.executor.get_task_by_class(MultiAccountConfigTask)
             try:
                 accounts = self.store.load()
             except (OSError, ValueError) as error:

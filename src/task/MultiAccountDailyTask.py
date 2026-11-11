@@ -16,6 +16,8 @@ from src.task.MouseResetTask import MouseResetTask
 from src.task.task_icons import task_icon
 
 account_pattern = re.compile(r'\*\*\*\*')
+PER_ACCOUNT_CONFIGURATION = 'Per-account Configuration'
+ACCOUNT_CONFIGURATION = 'Account Configuration'
 
 CB_GETCOUNT, CB_GETCURSEL, CB_GETLBTEXT, CB_GETLBTEXTLEN, CB_SETCURSEL = 0x146, 0x147, 0x148, 0x149, 0x14E
 CBN_SELCHANGE = 1
@@ -85,6 +87,17 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         self.group_icon = task_icon('multi-account')
         self.description = "Automatically switch accounts and run Daily Task for each account"
         self.add_exit_after_config()
+        self.default_config[PER_ACCOUNT_CONFIGURATION] = False
+        self.config_description.update({
+            PER_ACCOUNT_CONFIGURATION: 'Configure tasks separately for each account. When disabled, run the original multi-account daily task.',
+            ACCOUNT_CONFIGURATION: 'Edit account order, enabled accounts, tasks and task settings.',
+        })
+        self.config_type.update({
+            PER_ACCOUNT_CONFIGURATION: {'sub_configs': {True: [ACCOUNT_CONFIGURATION]}},
+            ACCOUNT_CONFIGURATION: {
+                'type': 'button', 'text': 'Configure Accounts', 'callback': self.configure_accounts,
+            },
+        })
         self.done_set = set()
         self.all_accounts = set()
         self.support_schedule_task = True
@@ -101,6 +114,10 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         return normalize_account_name(left) == normalize_account_name(right)
 
     def run(self):
+        if self.config.get(PER_ACCOUNT_CONFIGURATION, False):
+            # Import lazily: the configured runner inherits the shared login helpers.
+            from src.task.MultiAccountConfigTask import MultiAccountConfigTask
+            return self.run_task_by_class(MultiAccountConfigTask)
         WWOneTimeTask.run(self)
         self.done_set.clear()
         self.all_accounts.clear()
@@ -119,6 +136,17 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             self._mark_done(next_account)
             self.ensure_main(time_out=100)
             self._switch_to_login()
+
+    def configure_accounts(self):
+        # Config button callbacks run on the Qt thread; game work stays in run().
+        from PySide6.QtWidgets import QApplication
+        from src.gui.MultiAccountConfigDialog import MultiAccountConfigDialog
+
+        dialog = MultiAccountConfigDialog(QApplication.activeWindow(), self)
+        try:
+            dialog.exec()
+        finally:
+            dialog.deleteLater()
 
     def _click_center_offset(self, offset_x, offset_y, after_sleep=0.5):
         h, w = self.frame.shape[:2]

@@ -2,6 +2,7 @@ name: "ok-ww"
 uac: true
 icon: "icons/icon.png"
 website: "http://ok-script.com/ok-ww"
+keep_releases: 30
 
 profiles:
   - name: "China"

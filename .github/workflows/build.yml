@@ -217,6 +217,7 @@ jobs:
         with:
           use_release: ${{ env.USE_RELEASE }}
           add_version_name: true
+          package_zip: true
 
       - name: Build portable executable
         id: build_executable
@@ -225,6 +226,7 @@ jobs:
         with:
           build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
           add_version_name: true
+          package_zip: true
 
       - name: Upload portable executable for signing
         id: upload_executable
@@ -305,6 +307,7 @@ jobs:
         if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
         with:
           add_version_name: true
+          package_zip: true
 
       - name: Upload China installer for signing
         id: upload_china_installer
