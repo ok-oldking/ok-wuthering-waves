@@ -53,6 +53,12 @@ class CultivationTask(DomainTask):
     }
     WEEKLY_MATERIAL = '技能升级材料'
     WEEKLY_PATTERN = re.compile(r'本周剩余可收取次数[:：]?(\d+)/\d+')
+    CHALLENGE_BUTTON_X = 0.900
+    CHALLENGE_BUTTON_Y = {
+        '共鸣者突破材料': 0.320,
+        '技能升级材料': 0.597,
+    }
+    SOLO_CHALLENGE = (0.800, 0.910)
     COST = 60
     READ_ATTEMPTS = 3
     COMBAT_TIMEOUT = 600
@@ -223,20 +229,13 @@ class CultivationTask(DomainTask):
                 goal.weekly_left -= 1
 
     def enter_challenge(self, material_type):
-        row = self.read_target_row(material_type)
-        if row is None:
+        if self.read_target_row(material_type) is None:
             raise CultivationError(f'{material_type}行已消失。已停止，请检查培养目标。')
-        buttons = self.ocr(0.82, row.y - 0.035, 0.97, row.y + 0.035,
-                           match=re.compile(r'^(前往|直接挑战)$'))
-        if len(buttons) != 1:
-            raise CultivationError('未识别材料行的挑战按钮。已停止，请检查培养目标。')
-        self.click(buttons[0], after_sleep=1)
+        # 培养页行位置固定，直接使用比例坐标点击，按钮文字随版本变化也不影响。
+        self.click(self.CHALLENGE_BUTTON_X, self.CHALLENGE_BUTTON_Y[material_type], after_sleep=1)
         if not self.wait_feature('team_start_challenge', time_out=10, raise_if_not_found=False):
             # 技能材料行先打开副本详情页，需要再点单人挑战。
-            solo = self.ocr(0.55, 0.82, 0.95, 0.92, match=re.compile(r'^单人挑战$'))
-            if len(solo) != 1:
-                raise CultivationError('未进入编队页。已停止，请检查前往的副本。')
-            self.click(solo[0], after_sleep=1)
+            self.click(*self.SOLO_CHALLENGE, after_sleep=1)
             if not self.wait_feature('team_start_challenge', time_out=20, raise_if_not_found=False):
                 raise CultivationError('未进入编队页。已停止，请检查前往的副本。')
         self.click_team_challenge()
