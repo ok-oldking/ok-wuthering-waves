@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('main_debug.py', 'main.py')]
+    [ValidateSet('main_debug.py', 'main.py', 'main_updater.py')]
     [string]$EntryPoint = 'main_debug.py',
     [string]$LogPath
 )

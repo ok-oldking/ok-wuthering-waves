@@ -18,7 +18,6 @@ env:
   PYTHON_VERSION: '3.12'
   PYTHONIOENCODING: 'UTF-8'
   PYTHONLEGACYWINDOWSSTDIO: 'UTF-8'
-  SIGN_BUILD: 'true'
   BUILD_EXE: 'true'
 #  USE_RELEASE: 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.5.15'
 
@@ -168,11 +167,11 @@ jobs:
           show_author: true
 
   package:
-    name: 3 · Build and optionally sign
+    name: 3 · Build portable packages
     needs: synchronize
     runs-on: windows-latest
     env:
-      SIGN_BUILD: ${{ needs.synchronize.outputs.is_release }}
+      SIGN_BUILD: 'false'
 
     steps:
       - name: Configure runner
@@ -210,21 +209,29 @@ jobs:
 
       - name: Reuse base executable
         id: reuse_executable
-        uses: ok-oldking/pyappify-action@master
+        uses: ok-oldking/pyappify-action@69bf7ae364e8c7f0606f34df86d432168a46f4bf
         if: env.BUILD_EXE == 'true' && env.USE_RELEASE != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
+          version: v1.2.7
+          build_setup: false
           use_release: ${{ env.USE_RELEASE }}
           add_version_name: true
+          package_zip: true
+          package_zip_format: 7z
 
-      - name: Build portable executable
+      - name: Build portable packages
         id: build_executable
-        uses: ok-oldking/pyappify-action@master
+        uses: ok-oldking/pyappify-action@69bf7ae364e8c7f0606f34df86d432168a46f4bf
         if: env.BUILD_EXE == 'true' && env.USE_RELEASE == ''
         with:
+          version: v1.2.7
+          build_setup: false
           build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
           add_version_name: true
+          package_zip: true
+          package_zip_format: 7z
 
       - name: Upload portable executable for signing
         id: upload_executable
@@ -301,10 +308,14 @@ jobs:
 
       - name: Build installers
         id: build_installers
-        uses: ok-oldking/pyappify-action@master
+        uses: ok-oldking/pyappify-action@69bf7ae364e8c7f0606f34df86d432168a46f4bf
         if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
         with:
+          version: v1.2.7
+          build_setup: false
           add_version_name: true
+          package_zip: true
+          package_zip_format: 7z
 
       - name: Upload China installer for signing
         id: upload_china_installer

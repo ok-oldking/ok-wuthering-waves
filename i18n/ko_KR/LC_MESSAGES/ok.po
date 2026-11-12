@@ -2161,3 +2161,22 @@ msgstr "육성 재료 파밍"
 #: src/task/CultivationTask.py
 msgid "Farm Resonator Ascension Materials for the selected Guidebook cultivation target. Simplified Chinese, 16:9. Uses current Waveplates only."
 msgstr "솔라리스 가이드에서 선택한 육성 목표에 따라 공명자 돌파 재료를 수집합니다. 중국어 간체와 16:9를 지원합니다. 현재 보유한 결정 웨이브 플레이트만 사용합니다."
+msgid "Per-account Configuration"
+msgstr "계정별 설정"
+
+msgid "Account Configuration"
+msgstr "계정 설정"
+
+msgid "Configure Accounts"
+msgstr "계정 구성"
+
+msgid "Save and Close"
+msgstr "저장 후 닫기"
+
+msgid ""
+"Configure tasks separately for each account. When disabled, run the original"
+" multi-account daily task."
+msgstr "계정마다 작업을 따로 설정합니다. 끄면 기존 다중 계정 일일 작업을 실행합니다."
+
+msgid "Edit account order, enabled accounts, tasks and task settings."
+msgstr "계정 순서, 활성화 상태, 실행할 작업 및 작업 설정을 편집합니다."

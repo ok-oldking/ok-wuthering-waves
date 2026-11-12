@@ -9,17 +9,20 @@ from unittest.mock import Mock, patch
 
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 
-from PySide6.QtWidgets import QApplication, QTableWidgetItem
+from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QApplication, QTableWidgetItem, QWidget
 from ok import BaseTask, Box, PostMessageInteraction, og
 from ok.task.exceptions import TaskDisabledException, WaitFailedException
 from ok.ui.qt.tasks.config_form import ConfigForm
 from ok.util.config import Config
 
 from src.gui.MultiAccountConfigTab import AccountStatusTable, AccountTaskCard, MultiAccountConfigTab
+from src.gui.MultiAccountConfigDialog import MultiAccountConfigDialog
 from src.task.AutoLoginTask import AutoLoginTask
 from src.task.BaseWWTask import LOGIN_TEXTS
 from src.task.DailyTask import DailyTask
 from src.task.MultiAccountConfigTask import MultiAccountConfigTask
+from src.task.MultiAccountDailyTask import MultiAccountDailyTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.account.MultiAccountConfigStore import (
     MultiAccountConfigStore, account_key_from_ocr, collect_available_tasks,
@@ -60,6 +63,77 @@ def executor_for(tasks, folder='configs'):
         onetime_tasks=[task for task in tasks if not isinstance(task, ExampleTrigger)],
         get_task_by_class=lambda cls: next((task for task in tasks if isinstance(task, cls)), None),
     )
+
+
+def daily_runner():
+    runner = MultiAccountDailyTask(SimpleNamespace(
+        scene=None, text_fix={}, global_config=SimpleNamespace(get_config=lambda name: {})), og.app)
+    runner.config = RuntimeTaskConfig(runner.default_config, runner.default_config)
+    return runner
+
+
+class TestMultiAccountMode(unittest.TestCase):
+    def test_default_mode_keeps_original_daily_flow(self):
+        runner = daily_runner()
+        self.assertIs(runner.config['Per-account Configuration'], False)
+        runner.run_task_by_class = Mock()
+        runner.ensure_main = Mock()
+        runner._switch_to_login = Mock()
+        runner._detect_current_account_from_login = Mock(return_value='123****1234')
+        runner._select_and_login_account = Mock(return_value=None)
+        with patch.object(WWOneTimeTask, 'run') as prepare:
+            runner.run()
+        prepare.assert_called_once_with(runner)
+        runner.run_task_by_class.assert_called_once_with(DailyTask)
+        self.assertTrue(runner._is_done('123****1234'))
+
+    def test_separate_mode_delegates_and_propagates_failure_and_cancellation(self):
+        runner = daily_runner()
+        runner.config['Per-account Configuration'] = True
+        for error in (None, ValueError('invalid plan'), TaskDisabledException()):
+            with self.subTest(error=error):
+                runner.run_task_by_class = Mock(return_value='configured', side_effect=error)
+                with patch.object(WWOneTimeTask, 'run') as prepare:
+                    if error:
+                        with self.assertRaises(type(error)):
+                            runner.run()
+                    else:
+                        self.assertEqual(runner.run(), 'configured')
+                prepare.assert_not_called()
+                runner.run_task_by_class.assert_called_once_with(MultiAccountConfigTask)
+
+    def test_hidden_runner_has_no_parent_mode_or_button(self):
+        runner = MultiAccountConfigTask(SimpleNamespace(
+            scene=None, text_fix={}, global_config=SimpleNamespace(get_config=lambda name: {})), None)
+        self.assertEqual(runner.default_config, {})
+        self.assertEqual(runner.config_type, {})
+        self.assertFalse(runner.visible)
+
+    def test_real_dispatch_uses_saved_plan_and_shares_task_info(self):
+        with tempfile.TemporaryDirectory() as folder:
+            outer = daily_runner()
+            configured = MultiAccountConfigTask(outer.executor, og.app)
+            executor = executor_for([outer, configured], folder)
+            outer._executor = configured._executor = executor
+            configured.config = RuntimeTaskConfig({}, {})
+            original_info = configured.info
+            store = MultiAccountConfigStore(folder)
+            store.save([{**account(), 'enabled': False}])
+            outer.config['Per-account Configuration'] = True
+            with patch.object(WWOneTimeTask, 'run') as prepare:
+                outer.run()
+            prepare.assert_not_called()
+            self.assertEqual(outer.info['状态'], '没有启用的账号')
+            self.assertIs(configured.info, original_info)
+            # Missing accounts fail before sending game input, even through the parent.
+            store.save([])
+            outer.log_error = Mock()
+            configured.tr = str
+            with patch.object(WWOneTimeTask, 'run') as prepare:
+                with self.assertRaisesRegex(ValueError, 'Add accounts'):
+                    outer.run()
+            prepare.assert_not_called()
+            self.assertIs(configured.info, original_info)
 
 
 class TestMultiAccountConfig(unittest.TestCase):
@@ -564,6 +638,113 @@ class TestMultiAccountConfigUI(unittest.TestCase):
     def tearDown(self):
         self.app.processEvents()
         self.app_patch.stop()
+
+    def test_task_settings_switch_opens_editor_and_saves_existing_plan(self):
+        with tempfile.TemporaryDirectory() as folder:
+            runner = daily_runner()
+            task = ExampleTask()
+            runner._executor = executor_for([runner, task], folder)
+            store = MultiAccountConfigStore(folder)
+            store.save([account(task=task)])
+            window = QWidget()
+            window.resize(1100, 800)
+            window.show()
+            form = ConfigForm(runner, runner.config, runner.default_config,
+                              runner.config_description, runner.config_type, window)
+            original_exec = MultiAccountConfigDialog.exec
+
+            def edit_dialog(dialog):
+                failures = []
+                observed = {}
+                def edit_and_save():
+                    try:
+                        observed.update(
+                            loaded=dialog.editor.loaded,
+                            runner=dialog.editor.runner,
+                            start_hidden=dialog.editor.start_button.isHidden(),
+                            stop_hidden=dialog.editor.stop_button.isHidden(),
+                            account=dialog.editor.cards[0].account_edit.text(),
+                        )
+                        dialog.editor.cards[0].account_edit.setText('5675678')
+                        dialog.ok_button.click()
+                        observed['visible_after_save'] = dialog.isVisible()
+                    except Exception as error:
+                        failures.append(error)
+                    finally:
+                        dialog.reject()
+                QTimer.singleShot(0, edit_and_save)
+                result = original_exec(dialog)
+                if failures:
+                    raise failures[0]
+                self.assertTrue(observed['loaded'])
+                self.assertIs(observed['runner'], runner)
+                self.assertTrue(observed['start_hidden'])
+                self.assertTrue(observed['stop_hidden'])
+                self.assertEqual(observed['account'], '1231234')
+                self.assertFalse(observed['visible_after_save'])
+                self.assertFalse(dialog.editor.timer.isActive())
+                return result
+
+            try:
+                self.app.processEvents()
+                switch = form.config_widget_by_key['Per-account Configuration'].switch_button
+                action = form.config_widget_by_key['Account Configuration']
+                self.assertTrue(action.isHidden())
+                switch.setChecked(True)
+                self.assertTrue(runner.config['Per-account Configuration'])
+                self.assertFalse(action.isHidden())
+                from ok.ui.qt.kit.buttons import Button
+                with patch.object(MultiAccountConfigDialog, 'exec', autospec=True, side_effect=edit_dialog) as opened:
+                    action.findChild(Button).click()
+                opened.assert_called_once()
+                self.assertEqual(store.load()[0]['account_key'], '5675678')
+                switch.setChecked(False)
+                self.assertTrue(action.isHidden())
+                self.assertEqual(store.load()[0]['account_key'], '5675678')
+                og.app.start_controller.start.assert_not_called()
+            finally:
+                window.close()
+                window.deleteLater()
+
+    def test_dialog_close_discards_edits_and_locks_to_outer_task(self):
+        with tempfile.TemporaryDirectory() as folder:
+            runner = daily_runner()
+            task = ExampleTask()
+            runner._executor = executor_for([runner, task], folder)
+            store = MultiAccountConfigStore(folder)
+            store.save([account(task=task)])
+            window = QWidget()
+            window.resize(1100, 800)
+            window.show()
+            dialog = MultiAccountConfigDialog(window, runner)
+            try:
+                dialog.open()
+                self.app.processEvents()
+                # Shrinking a live dialog must refresh the layout's old minimum height.
+                for width, height in ((960, 640), (1400, 950)):
+                    window.resize(width, height)
+                    self.app.processEvents()
+                    bounds = dialog.panel.geometry()
+                    self.assertGreaterEqual(bounds.x(), 0)
+                    self.assertLess(bounds.right(), window.width())
+                    self.assertLess(bounds.bottom(), window.height())
+                dialog.editor.cards[0].account_edit.setText('5675678')
+                dialog.cancel_button.click()
+                self.assertEqual(store.load()[0]['account_key'], '1231234')
+                self.assertFalse(dialog.editor.timer.isActive())
+                runner._enabled = True
+                dialog.open()
+                dialog.editor.refresh_status()
+                self.assertFalse(dialog.editor.accounts_widget.isEnabled())
+                self.assertFalse(dialog.editor.save_button.isEnabled())
+                self.assertFalse(dialog.editor.save_accounts(notify=False))
+                dialog.ok_button.click()
+                self.assertFalse(dialog.isVisible())
+                self.assertEqual(store.load()[0]['account_key'], '1231234')
+            finally:
+                dialog.close()
+                dialog.deleteLater()
+                window.deleteLater()
 
     def test_log_table_fits_multiline_values_and_reflows_on_resize(self):
         table = AccountStatusTable()

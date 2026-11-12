@@ -2206,3 +2206,22 @@ msgstr "刷共鸣者突破材料"
 #: src/task/CultivationTask.py
 msgid "Farm Resonator Ascension Materials for the selected Guidebook cultivation target. Simplified Chinese, 16:9. Uses current Waveplates only."
 msgstr "按索拉指南的培养目标刷取共鸣者突破材料。支持简体中文和 16:9。仅使用当前结晶波片。"
+msgid "Per-account Configuration"
+msgstr "分别配置"
+
+msgid "Account Configuration"
+msgstr "账号配置"
+
+msgid "Configure Accounts"
+msgstr "配置账号"
+
+msgid "Save and Close"
+msgstr "保存并关闭"
+
+msgid ""
+"Configure tasks separately for each account. When disabled, run the original"
+" multi-account daily task."
+msgstr "为每个账号分别配置任务。关闭时执行原有多账号每日任务。"
+
+msgid "Edit account order, enabled accounts, tasks and task settings."
+msgstr "编辑账号顺序、启用状态、执行任务及任务配置。"

@@ -2143,3 +2143,25 @@ msgstr "Farmeo de recursos de mejora"
 #: src/task/CultivationTask.py
 msgid "Farm Resonator Ascension Materials for the selected Guidebook cultivation target. Simplified Chinese, 16:9. Uses current Waveplates only."
 msgstr "Farmea materiales de ascensión de Resonadores según el objetivo de mejora seleccionado en la Guía de Solaris. Compatible con chino simplificado y 16:9. Solo utiliza las placas de onda actuales."
+msgid "Per-account Configuration"
+msgstr "Configuración por cuenta"
+
+msgid "Account Configuration"
+msgstr "Configuración de cuentas"
+
+msgid "Configure Accounts"
+msgstr "Configurar cuentas"
+
+msgid "Save and Close"
+msgstr "Guardar y cerrar"
+
+msgid ""
+"Configure tasks separately for each account. When disabled, run the original"
+" multi-account daily task."
+msgstr ""
+"Configura tareas para cada cuenta por separado. Si se desactiva, se ejecuta "
+"la tarea diaria multicuenta original."
+
+msgid "Edit account order, enabled accounts, tasks and task settings."
+msgstr ""
+"Edita el orden de las cuentas, su activación, las tareas y sus ajustes."

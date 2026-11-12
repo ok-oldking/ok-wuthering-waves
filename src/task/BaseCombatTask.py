@@ -420,6 +420,19 @@ class BaseCombatTask(CombatCheck):
         self._abyss_force_combat_until = (time.monotonic() if started_at is None else started_at) + 5
         return self.scene.set_in_combat()
 
+    def dismiss_abyss_character_info(self):
+        """Close the optional character introduction shown by some Abyss arenas."""
+        header = self.ocr(
+            box=self.box_of_screen(0.38, 0.16, 0.85, 0.25),
+            match=re.compile(
+                r'^\s*(?:战斗特色|戰鬥特色|Combat\s+(?:Features|Characteristics|Style))\s*$', re.I))
+        if not header:
+            return False
+        # This overlay's top-right close control skips all introduction pages.
+        self.click(0.942, 0.058, after_sleep=0.5)
+        self.next_frame()
+        return True
+
     def restart_combat_in_abyss(self):
         """Restart the current Abyss challenge and return with combat active.
 
@@ -432,7 +445,9 @@ class BaseCombatTask(CombatCheck):
         confirm_text = re.compile(r'^\s*(?:确认|確認|确定|確定|Confirm)\s*$', re.IGNORECASE)
         start_text = re.compile(r'^\s*(?:挑战开始|挑戰開始|开始挑战|開始挑戰|开启挑战|開啟挑戰|Start\s*Challenge)\s*$', re.I)
 
-        def dismiss_environment_details():
+        def dismiss_arena_details():
+            if self.dismiss_abyss_character_info():
+                return True
             if self.ocr(box=self.box_of_screen(0.02, 0.25, 0.35, 0.4),
                         match=re.compile(r'^\s*(?:环境特性|環境特性|Environment(?:al)?\s*(?:Details|Features))\s*$', re.I)):
                 self.send_key('esc', after_sleep=0.5)
@@ -442,7 +457,7 @@ class BaseCombatTask(CombatCheck):
 
         def find_start_for_restart():
             # This help overlay may appear after the arena has already loaded.
-            dismiss_environment_details()
+            dismiss_arena_details()
             marker = self.find_abyss_start_marker()
             if not marker:
                 handle_restart_dialog()
@@ -451,7 +466,7 @@ class BaseCombatTask(CombatCheck):
         def handle_restart_dialog():
             # Result screens ask whether to reuse the current team. A result
             # can also replace the pause menu if its timer expires meanwhile.
-            if dismiss_environment_details():
+            if dismiss_arena_details():
                 return
             if buttons := self.ocr(box=self.box_of_screen(0.5, 0.5, 0.8, 0.75), match=confirm_text):
                 self.click(buttons[0], after_sleep=1)
@@ -465,6 +480,7 @@ class BaseCombatTask(CombatCheck):
         self.reset_to_false(reason='restart Abyss challenge')
         self.skip_combat_check = True
         try:
+            dismiss_arena_details()
             result_confirm_text = re.compile(r'^\s*(?:确认成绩|確認成績|Confirm\s*Results?)\s*$', re.I)
             result_button = self.ocr(box=self.box_of_screen(0.3, 0.7, 0.7, 0.95), match=result_confirm_text)
             if not result_button and self.ocr(box=self.box_of_screen(0.3, 0.2, 0.7, 0.4),

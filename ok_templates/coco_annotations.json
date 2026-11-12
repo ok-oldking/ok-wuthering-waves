@@ -2333,6 +2333,36 @@
       "file_name": "62.png",
       "width": 1600,
       "height": 900
+    },
+    {
+      "id": 304,
+      "file_name": "lily-start.png",
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": 305,
+      "file_name": "lily-heavy.png",
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": 306,
+      "file_name": "lily-slumberland.png",
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": 307,
+      "file_name": "hiyuki-skin.png",
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": 308,
+      "file_name": "hiyuki-skin-inactive.png",
+      "width": 3840,
+      "height": 2160
     }
   ],
   "annotations": [
@@ -6539,6 +6569,71 @@
       ],
       "area": 2632.0,
       "iscrowd": 0
+    },
+    {
+      "id": 458,
+      "image_id": 304,
+      "category_id": 297,
+      "bbox": [
+        3560.0,
+        476.0,
+        56.0,
+        65.0
+      ],
+      "area": 3640.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 459,
+      "image_id": 304,
+      "category_id": 298,
+      "bbox": [
+        3603.0,
+        1904.0,
+        59.0,
+        67.0
+      ],
+      "area": 3953.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 460,
+      "image_id": 305,
+      "category_id": 299,
+      "bbox": [
+        2839.0,
+        1900.0,
+        54.0,
+        60.0
+      ],
+      "area": 3240.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 461,
+      "image_id": 306,
+      "category_id": 300,
+      "bbox": [
+        3584.0,
+        1937.0,
+        44.0,
+        44.0
+      ],
+      "area": 1936.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 462,
+      "image_id": 307,
+      "category_id": 301,
+      "bbox": [
+        3558.0,
+        482.0,
+        64.0,
+        62.0
+      ],
+      "area": 3968.0,
+      "iscrowd": 0
     }
   ],
   "categories": [
@@ -8020,6 +8115,31 @@
     {
       "id": 296,
       "name": "pick_up_xinyao_icon",
+      "supercategory": ""
+    },
+    {
+      "id": 297,
+      "name": "char_lily",
+      "supercategory": ""
+    },
+    {
+      "id": 298,
+      "name": "lily_liberation",
+      "supercategory": ""
+    },
+    {
+      "id": 299,
+      "name": "lily_heavy",
+      "supercategory": ""
+    },
+    {
+      "id": 300,
+      "name": "lily_slumberland",
+      "supercategory": ""
+    },
+    {
+      "id": 301,
+      "name": "char_hiyuki2",
       "supercategory": ""
     }
   ]

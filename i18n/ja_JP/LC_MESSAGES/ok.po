@@ -2158,3 +2158,22 @@ msgstr "育成素材周回"
 #: src/task/CultivationTask.py
 msgid "Farm Resonator Ascension Materials for the selected Guidebook cultivation target. Simplified Chinese, 16:9. Uses current Waveplates only."
 msgstr "ソラリスガイドで選択した育成目標に従い、共鳴者の突破素材を周回で集めます。簡体字中国語と 16:9 に対応。現在の結晶波長板のみを使用します。"
+msgid "Per-account Configuration"
+msgstr "アカウント別設定"
+
+msgid "Account Configuration"
+msgstr "アカウント設定"
+
+msgid "Configure Accounts"
+msgstr "アカウントを設定"
+
+msgid "Save and Close"
+msgstr "保存して閉じる"
+
+msgid ""
+"Configure tasks separately for each account. When disabled, run the original"
+" multi-account daily task."
+msgstr "アカウントごとにタスクを設定します。無効の場合は従来の複数アカウントデイリータスクを実行します。"
+
+msgid "Edit account order, enabled accounts, tasks and task settings."
+msgstr "アカウントの順序、有効状態、実行タスクとタスク設定を編集します。"
