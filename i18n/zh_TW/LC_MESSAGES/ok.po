@@ -2279,11 +2279,11 @@ msgstr "日常活動"
 
 #: src/task/CultivationTask.py
 msgid "Cultivation Resource Farm"
-msgstr "刷共鳴者突破材料"
+msgstr "刷共鳴者材料"
 
 #: src/task/CultivationTask.py
-msgid "Farm Resonator Ascension Materials for the selected Guidebook cultivation target. Simplified Chinese, 16:9. Uses current Waveplates only."
-msgstr "按索拉指南的培養目標刷取共鳴者突破材料。支援簡體中文和 16:9。僅使用目前的結晶波片。"
+msgid "Farm Ascension and Skill Materials for the selected Guidebook cultivation target. Skill Materials allow 3 reward claims per week. Simplified Chinese, 16:9. Uses current Waveplates only."
+msgstr "按索拉指南的培養目標刷取共鳴者突破材料和技能升級材料。技能升級材料每週只能領取 3 次獎勵。支援簡體中文和 16:9。僅使用目前的結晶波片。"
 msgid "Per-account Configuration"
 msgstr "分別設定"
 

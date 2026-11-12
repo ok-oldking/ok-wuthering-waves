@@ -25,10 +25,20 @@ class MaterialGoal:
     name: str
     owned: int
     required: int
+    material_type: str = ''
+    weekly_left: int | None = None
 
     @property
     def missing(self):
         return max(0, self.required - self.owned)
+
+
+@dataclass
+class MaterialRow:
+    material_type: str
+    y: float
+    quantities: list
+    weekly_left: int | None = None
 
 
 class CultivationError(RuntimeError):
@@ -36,7 +46,9 @@ class CultivationError(RuntimeError):
 
 
 class CultivationTask(DomainTask):
-    MATERIAL_TYPE = '共鸣者突破材料'
+    MATERIALS = ('共鸣者突破材料', '技能升级材料')
+    WEEKLY_MATERIAL = '技能升级材料'
+    WEEKLY_PATTERN = re.compile(r'本周剩余可收取次数[:：]?(\d+)/\d+')
     COST = 60
     READ_ATTEMPTS = 3
     COMBAT_TIMEOUT = 600
@@ -44,7 +56,8 @@ class CultivationTask(DomainTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = 'Cultivation Resource Farm'
-        self.description = ('Farm Resonator Ascension Materials for the selected Guidebook cultivation target. '
+        self.description = ('Farm Ascension and Skill Materials for the selected Guidebook cultivation target. '
+                            'Skill Materials allow 3 reward claims per week. '
                             'Simplified Chinese, 16:9. Uses current Waveplates only.')
         self.icon = task_icon('forgery')
         self.group_name = 'Daily Activities'
@@ -100,23 +113,31 @@ class CultivationTask(DomainTask):
         self.info_set('current_stamina', stamina)
         return stamina
 
-    def read_material_row(self):
-        labels = self.ocr(0.38, 0.2, 0.64, 0.33)
-        labels = [b for b in labels if compact_text(b.name) == self.MATERIAL_TYPE]
+    def read_target_row(self, material_type):
+        labels = [b for b in self.ocr(0.36, 0.18, 0.64, 0.75)
+                  if compact_text(b.name) == material_type]
         if len(labels) != 1:
             return None
         y = labels[0].center()[1] / self.height
         quantities = []
-        for box in self.ocr(0.55, y + 0.015, 0.81, y + 0.052):
-            value = parse_quantity(box.name)
-            if value is not None:
+        weekly_left = None
+        for box in self.ocr(0.36, y + 0.01, 0.82, y + 0.075):
+            text = compact_text(box.name)
+            if (value := parse_quantity(text)) is not None:
                 quantities.append((box, value))
+            elif weekly_left is None and material_type == self.WEEKLY_MATERIAL:
+                if match := self.WEEKLY_PATTERN.search(text):
+                    weekly_left = int(match[1])
         quantities.sort(key=lambda entry: entry[0].x)
-        return quantities or None
+        if not quantities:
+            return None
+        return MaterialRow(material_type, y, quantities, weekly_left)
 
-    def read_item_detail(self):
+    def read_item_detail(self, material_types):
+        if isinstance(material_types, str):
+            material_types = (material_types,)
         boxes = self.ocr(0.2, 0.08, 0.8, 0.9)
-        kinds = [b for b in boxes if compact_text(b.name) == self.MATERIAL_TYPE]
+        kinds = [b for b in boxes if compact_text(b.name) in material_types]
         if len(kinds) != 1:
             return None
         kind = kinds[0]
@@ -135,45 +156,77 @@ class CultivationTask(DomainTask):
         self.click(0.5, 0.94, after_sleep=0.3)
 
     def read_goals(self):
-        def read_row():
-            row = self.read_material_row()
-            return tuple(v for _, v in row) if row else None
+        rows = []
+        for material_type in self.MATERIALS:
+            def read_row(material_type=material_type):
+                row = self.read_target_row(material_type)
+                if row is None:
+                    return None
+                return (tuple(v for _, v in row.quantities), row.weekly_left)
 
-        expected = self.read_stable(read_row, '培养材料数量')
-        row = self.read_material_row()
-        if row is None or tuple(value for _, value in row) != expected:
-            raise CultivationError('培养材料数量发生变化。已停止，请重新运行任务。')
+            expected = self.read_stable(read_row, f'{material_type}数量')
+            row = self.read_target_row(material_type)
+            if row is None or (tuple(v for _, v in row.quantities), row.weekly_left) != expected:
+                raise CultivationError(f'{material_type}数量发生变化。已停止，请重新运行任务。')
+            if material_type == self.WEEKLY_MATERIAL and row.weekly_left is None:
+                raise CultivationError('未识别技能升级材料本周剩余次数。已停止，请检查培养目标。')
+            rows.append(row)
+
         goals = []
-        for box, (owned, required) in row:
-            self.click(box, after_sleep=0.4)
-            try:
-                name, actual = self.read_stable(self.read_item_detail, '培养材料详情')
-            finally:
-                self.close_item_detail()
-            if actual != owned or any(g.name == name for g in goals):
-                raise CultivationError('材料库存与培养页不一致。已停止，请检查培养目标。')
-            goals.append(MaterialGoal(name, actual, required))
+        for row in rows:
+            for box, (owned, required) in row.quantities:
+                self.click(box, after_sleep=0.4)
+                try:
+                    name, actual = self.read_stable(
+                        lambda: self.read_item_detail((row.material_type,)), '培养材料详情')
+                finally:
+                    self.close_item_detail()
+                if actual != owned or any(g.name == name for g in goals):
+                    raise CultivationError('材料库存与培养页不一致。已停止，请检查培养目标。')
+                goals.append(MaterialGoal(name, actual, required,
+                                          row.material_type, row.weekly_left))
         self.report_goals(goals)
         return goals
 
     def report_goals(self, goals):
         for goal in goals:
             state = '已满足' if goal.missing == 0 else f'缺少 {goal.missing} 个'
+            if goal.weekly_left is not None:
+                state += f'，本周剩余 {goal.weekly_left} 次'
             self.info_set(goal.name, f'{goal.owned}/{goal.required}，{state}')
             self.log_info(f'培养材料：{goal.name}，持有 {goal.owned}，需求 {goal.required}，{state}')
 
-    def enter_challenge(self):
-        row = self.read_material_row()
+    def weekly_left(self, material_type):
+        if material_type != self.WEEKLY_MATERIAL:
+            return None
+        values = [g.weekly_left for g in self.goals
+                  if g.material_type == material_type and g.weekly_left is not None]
+        return min(values) if values else 0
+
+    def consume_weekly(self, material_type):
+        if material_type != self.WEEKLY_MATERIAL:
+            return
+        for goal in self.goals:
+            if goal.material_type == material_type and goal.weekly_left is not None:
+                goal.weekly_left -= 1
+
+    def enter_challenge(self, material_type):
+        row = self.read_target_row(material_type)
         if row is None:
-            raise CultivationError('培养材料行已消失。已停止，请检查培养目标。')
-        y = row[0][0].center()[1] / self.height - 0.032
-        buttons = self.ocr(0.82, y - 0.035, 0.95, y + 0.035,
+            raise CultivationError(f'{material_type}行已消失。已停止，请检查培养目标。')
+        buttons = self.ocr(0.82, row.y - 0.035, 0.97, row.y + 0.035,
                            match=re.compile(r'^(前往|直接挑战)$'))
         if len(buttons) != 1:
             raise CultivationError('未识别材料行的挑战按钮。已停止，请检查培养目标。')
         self.click(buttons[0], after_sleep=1)
-        if not self.wait_feature('team_start_challenge', time_out=20, raise_if_not_found=False):
-            raise CultivationError('未进入编队页。已停止，请检查前往的副本。')
+        if not self.wait_feature('team_start_challenge', time_out=10, raise_if_not_found=False):
+            # 技能材料行先打开副本详情页，需要再点单人挑战。
+            solo = self.ocr(0.55, 0.82, 0.95, 0.92, match=re.compile(r'^单人挑战$'))
+            if len(solo) != 1:
+                raise CultivationError('未进入编队页。已停止，请检查前往的副本。')
+            self.click(solo[0], after_sleep=1)
+            if not self.wait_feature('team_start_challenge', time_out=20, raise_if_not_found=False):
+                raise CultivationError('未进入编队页。已停止，请检查前往的副本。')
         self.click_team_challenge()
         self.wait_in_team_and_world(time_out=self.teleport_timeout)
 
@@ -225,7 +278,8 @@ class CultivationTask(DomainTask):
             raise CultivationError('未确认奖励领取结果。已停止，请核对奖励后再运行。')
         return before, used
 
-    def read_reward_inventory(self):
+    def read_reward_inventory(self, material_type):
+        names = {g.name for g in self.goals if g.material_type == material_type}
         boxes = self.ocr(0.12, 0.40, 0.89, 0.68)
         slots = [b for b in boxes if re.fullmatch(r'[xX×]\d{1,7}', compact_text(b.name))]
         if not 1 <= len(slots) <= 12:
@@ -235,29 +289,32 @@ class CultivationTask(DomainTask):
             self.click(slot.center()[0] - self.width * 0.018,
                        slot.center()[1] - self.height * 0.045, after_sleep=0.4)
             try:
-                detail = self.read_item_detail()
+                detail = self.read_item_detail(self.MATERIALS)
                 if detail is not None:
-                    detail = self.read_stable(self.read_item_detail, '奖励材料库存')
+                    detail = self.read_stable(
+                        lambda: self.read_item_detail(self.MATERIALS), '奖励材料库存')
                     name, owned = detail
-                    if name in {g.name for g in self.goals}:
+                    if name in names:
                         inventory[name] = owned
             finally:
                 self.close_item_detail()
-            if len(inventory) == len(self.goals):
+            if len(inventory) == len(names):
                 break
-        if set(inventory) != {g.name for g in self.goals}:
+        if set(inventory) != names:
             raise CultivationError('未核实全部目标材料的实际库存。已停止，请核对奖励。')
         return inventory
 
     def update_goals(self, inventory):
-        if set(inventory) != {g.name for g in self.goals}:
-            raise CultivationError('奖励库存缺少目标材料。已停止。')
-        if any(inventory[g.name] < g.owned for g in self.goals):
+        if not set(inventory) <= {g.name for g in self.goals}:
+            raise CultivationError('奖励库存出现未知材料。已停止，请核对奖励。')
+        if any(inventory[g.name] < g.owned for g in self.goals if g.name in inventory):
             raise CultivationError('奖励库存小于领取前库存。已停止，请核对材料。')
-        if not any(inventory[g.name] > g.owned for g in self.goals if g.missing):
+        if not any(inventory[g.name] > g.owned for g in self.goals
+                   if g.name in inventory and g.missing):
             raise CultivationError('领取后目标材料未增加。已停止，请核对奖励。')
         for goal in self.goals:
-            goal.owned = inventory[goal.name]
+            if goal.name in inventory:
+                goal.owned = inventory[goal.name]
         self.report_goals(self.goals)
 
     def restart_challenge(self):
@@ -279,43 +336,81 @@ class CultivationTask(DomainTask):
     def farm(self, stamina):
         # 上限只限制消耗；完成状态始终以领取后的实际库存为准。
         max_claims = stamina // self.COST
-        for completed in range(max_claims):
-            for attempt in range(2):
-                try:
-                    self.fight()
-                    break
-                except (NotInCombatException, CannotFindException, WaitFailedException) as error:
-                    self.log_warning(f'挑战未完成，第 {attempt + 1} 次：{error}')
-                    if attempt == 1:
-                        raise CultivationError('挑战连续失败 2 次。已停止，请检查队伍。') from error
-                    self.make_sure_in_world()
-                    self.open_cultivation()
-                    current = self.read_goals()
-                    if [(g.name, g.required, g.owned) for g in current] != [
-                            (g.name, g.required, g.owned) for g in self.goals]:
-                        raise CultivationError('挑战失败后培养目标或库存发生变化。已停止。')
-                    if self.read_current_stamina() < self.COST:
-                        self.info_set('停止原因', '当前结晶波片不足 60 点')
-                        return
-                    self.enter_challenge()
-            self.collect_optional_echo()
-            before, used = self.claim_reward()
-            inventory = self.read_reward_inventory()
-            remaining = self.read_remaining_stamina()
-            if remaining > before - self.COST + 1:
-                raise CultivationError('未确认奖励扣费后的剩余体力。已停止，请核对奖励。')
-            self.update_goals(inventory)
-            self.info_incr('used stamina', used)
+        pending = []
+        for material_type in self.MATERIALS:
+            goals = [g for g in self.goals if g.material_type == material_type]
+            if not goals or all(g.missing == 0 for g in goals):
+                continue
+            if self.weekly_left(material_type) == 0:
+                self.log_info(f'{material_type}本周剩余收取次数为 0，跳过')
+                continue
+            pending.append(material_type)
+        if not pending:
             if all(g.missing == 0 for g in self.goals):
                 self.info_set('停止原因', '培养材料已满足需求')
-                return
-            if remaining < self.COST:
-                self.info_set('停止原因', '当前结晶波片不足 60 点')
-                return
-            if completed + 1 == max_claims:
+            else:
+                self.info_set('停止原因', '技能升级材料本周剩余收取次数为 0')
+            return
+        weekly_exhausted = False
+        for index, material_type in enumerate(pending):
+            if max_claims <= 0:
                 self.info_set('停止原因', '已用完任务开始时的结晶波片预算')
                 return
-            self.restart_challenge()
+            self.enter_challenge(material_type)
+            while True:
+                for attempt in range(2):
+                    try:
+                        self.fight()
+                        break
+                    except (NotInCombatException, CannotFindException, WaitFailedException) as error:
+                        self.log_warning(f'挑战未完成，第 {attempt + 1} 次：{error}')
+                        if attempt == 1:
+                            raise CultivationError('挑战连续失败 2 次。已停止，请检查队伍。') from error
+                        self.make_sure_in_world()
+                        self.open_cultivation()
+                        current = self.read_goals()
+                        if [(g.name, g.required, g.owned, g.material_type, g.weekly_left)
+                            for g in current] != [
+                                (g.name, g.required, g.owned, g.material_type, g.weekly_left)
+                                for g in self.goals]:
+                            raise CultivationError('挑战失败后培养目标或库存发生变化。已停止。')
+                        self.goals = current
+                        if self.read_current_stamina() < self.COST:
+                            self.info_set('停止原因', '当前结晶波片不足 60 点')
+                            return
+                        self.enter_challenge(material_type)
+                self.collect_optional_echo()
+                before, used = self.claim_reward()
+                inventory = self.read_reward_inventory(material_type)
+                remaining = self.read_remaining_stamina()
+                if remaining > before - self.COST + 1:
+                    raise CultivationError('未确认奖励扣费后的剩余体力。已停止，请核对奖励。')
+                self.consume_weekly(material_type)
+                self.update_goals(inventory)
+                self.info_incr('used stamina', used)
+                max_claims -= 1
+                if all(g.missing == 0 for g in self.goals
+                       if g.material_type == material_type):
+                    if all(g.missing == 0 for g in self.goals):
+                        self.info_set('停止原因', '培养材料已满足需求')
+                        return
+                    break
+                if remaining < self.COST:
+                    self.info_set('停止原因', '当前结晶波片不足 60 点')
+                    return
+                if max_claims <= 0:
+                    self.info_set('停止原因', '已用完任务开始时的结晶波片预算')
+                    return
+                if self.weekly_left(material_type) == 0:
+                    weekly_exhausted = True
+                    self.log_info(f'{material_type}本周剩余收取次数已用完，结束该行')
+                    break
+                self.restart_challenge()
+            if index + 1 < len(pending):
+                self.leave_challenge()
+                self.open_cultivation()
+        if weekly_exhausted and any(g.missing for g in self.goals):
+            self.info_set('停止原因', '技能升级材料本周剩余收取次数为 0')
 
     def run(self):
         self._combat_deadline = 0
@@ -337,7 +432,6 @@ class CultivationTask(DomainTask):
                 self.info_set('停止原因', '当前结晶波片不足 60 点')
                 self.back(after_sleep=0.5)
                 return
-            self.enter_challenge()
             self.farm(stamina)
             self.leave_challenge()
         except TaskDisabledException:

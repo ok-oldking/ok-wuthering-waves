@@ -2141,8 +2141,8 @@ msgid "Cultivation Resource Farm"
 msgstr "Farmeo de recursos de mejora"
 
 #: src/task/CultivationTask.py
-msgid "Farm Resonator Ascension Materials for the selected Guidebook cultivation target. Simplified Chinese, 16:9. Uses current Waveplates only."
-msgstr "Farmea materiales de ascensión de Resonadores según el objetivo de mejora seleccionado en la Guía de Solaris. Compatible con chino simplificado y 16:9. Solo utiliza las placas de onda actuales."
+msgid "Farm Ascension and Skill Materials for the selected Guidebook cultivation target. Skill Materials allow 3 reward claims per week. Simplified Chinese, 16:9. Uses current Waveplates only."
+msgstr "Farmea materiales de ascensión y de mejora de habilidades según el objetivo de mejora seleccionado en la Guía de Solaris. Los materiales de mejora de habilidades permiten 3 recompensas por semana. Compatible con chino simplificado y 16:9. Solo utiliza las placas de onda actuales."
 msgid "Per-account Configuration"
 msgstr "Configuración por cuenta"
 
