@@ -574,12 +574,39 @@ class TestCultivationTask(unittest.TestCase):
         second = Box(700, 500, 80, 40, name='×2')
         self.task.ocr = Mock(return_value=[first, second])
         self.task.read_item_detail = Mock(side_effect=[
-            ('乙', 9), ('甲', 3), ('甲', 3), ('甲', 3)])
+            ('乙', 9), ('乙', 9), ('乙', 9), ('甲', 3), ('甲', 3), ('甲', 3)])
 
         inventory = CultivationTask.read_reward_inventory(self.task, '共鸣者突破材料')
 
         self.assertEqual({'甲': 3}, inventory)
+        spacing = CultivationTask.REWARD_SLOT_SPACING
+        self.assertEqual([call(0.5 - spacing / 2, CultivationTask.REWARD_SLOT_Y, after_sleep=0.4),
+                          call(0.5, 0.94, after_sleep=0.3),
+                          call(0.5 + spacing / 2, CultivationTask.REWARD_SLOT_Y, after_sleep=0.4),
+                          call(0.5, 0.94, after_sleep=0.3)],
+                         self.task.click.call_args_list)
         self.task.read_item_detail.assert_any_call(('共鸣者突破材料', '技能升级材料'))
+
+    def test_collect_optional_echo_uses_nest_search_before_claim(self):
+        self.task.pick_echo = Mock(return_value=False)
+        self.task.walk_find_echo = Mock(return_value=True)
+        self.task.yolo_find_echo = Mock()
+
+        CultivationTask.collect_optional_echo(self.task)
+
+        self.task.walk_find_echo.assert_called_once_with(time_out=5, backward_time=2.5)
+        self.task.yolo_find_echo.assert_not_called()
+
+    def test_collect_optional_echo_falls_back_to_yolo_search(self):
+        self.task.pick_echo = Mock(return_value=False)
+        self.task.walk_find_echo = Mock(return_value=None)
+        self.task.yolo_find_echo = Mock(return_value=(False, False))
+
+        CultivationTask.collect_optional_echo(self.task)
+
+        self.task.yolo_find_echo.assert_called_once_with(
+            turn=True, use_color=False, time_out=30)
+        self.task.send_key_up.assert_any_call('w')
 
 
 if __name__ == '__main__':

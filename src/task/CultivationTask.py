@@ -59,6 +59,8 @@ class CultivationTask(DomainTask):
         '技能升级材料': 0.597,
     }
     SOLO_CHALLENGE = (0.800, 0.910)
+    REWARD_SLOT_Y = 0.526
+    REWARD_SLOT_SPACING = 0.0878
     COST = 60
     READ_ATTEMPTS = 3
     COMBAT_TIMEOUT = 600
@@ -253,8 +255,10 @@ class CultivationTask(DomainTask):
         try:
             if self.pick_echo():
                 return
-            if self.find_echos():
-                self.walk_to_box(self.find_echos, time_out=3, end_condition=self.pick_echo)
+            # 残像聚落的找声骸方法：先向前找，再转向扫描。
+            if self.walk_find_echo(time_out=5, backward_time=2.5):
+                return
+            self.yolo_find_echo(turn=True, use_color=False, time_out=30)
         except TaskDisabledException:
             raise
         except Exception as error:
@@ -296,9 +300,11 @@ class CultivationTask(DomainTask):
         if not 1 <= len(slots) <= 12:
             raise CultivationError('未识别结算奖励。已停止，请检查奖励界面。')
         inventory = {}
-        for slot in sorted(slots, key=lambda b: b.x):
-            self.click(slot.center()[0] - self.width * 0.018,
-                       slot.center()[1] - self.height * 0.045, after_sleep=0.4)
+        slot_count = len(slots)
+        for index in range(slot_count):
+            # 奖励槽按数量居中排列、间距固定，点击位置由数量推算，不用文字框坐标。
+            slot_x = 0.5 + (index - (slot_count - 1) / 2) * self.REWARD_SLOT_SPACING
+            self.click(slot_x, self.REWARD_SLOT_Y, after_sleep=0.4)
             try:
                 detail = self.read_item_detail(self.MATERIALS)
                 if detail is not None:
