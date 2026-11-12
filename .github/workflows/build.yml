@@ -214,7 +214,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          version: v1.2.6
+          version: v1.2.7
           build_setup: false
           use_release: ${{ env.USE_RELEASE }}
           add_version_name: true
@@ -226,7 +226,7 @@ jobs:
         uses: ok-oldking/pyappify-action@69bf7ae364e8c7f0606f34df86d432168a46f4bf
         if: env.BUILD_EXE == 'true' && env.USE_RELEASE == ''
         with:
-          version: v1.2.6
+          version: v1.2.7
           build_setup: false
           build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
           add_version_name: true
@@ -311,7 +311,7 @@ jobs:
         uses: ok-oldking/pyappify-action@69bf7ae364e8c7f0606f34df86d432168a46f4bf
         if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
         with:
-          version: v1.2.6
+          version: v1.2.7
           build_setup: false
           add_version_name: true
           package_zip: true
