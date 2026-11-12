@@ -49,7 +49,7 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
                         self.click(purple, after_sleep=1)
                     else:
                         self.click(0.5, 0.2, after_sleep=1)
-                    self.click(self.get_box_by_name('garden_get_confirm_gray'), after_sleep=1)
+                    self._click_echo_confirm()
                     continue
                 elif target.name == 'garden_not_interested':
                     not_interested = self.find_feature('garden_not_interested', vertical_variance=0.4)
@@ -117,6 +117,35 @@ class GardenTask(WWOneTimeTask, BaseWWTask):
             if priority_matches:
                 return max(priority_matches, key=lambda box: box.confidence)
         return max(matches, key=lambda box: box.confidence, default=None)
+
+    def _click_echo_confirm(self):
+        """点「声骸选择」页的确认按钮。
+
+        旧实现直接按标注坐标点 garden_get_confirm_gray，并不要求当帧匹配成功。
+        选完声骸后按钮常变成高亮态，或者新版本把按钮挪了位置，模板失配时仍然
+        按旧坐标点下去，于是出现「选了声骸但确认没生效」，随后代码去点 next_day，
+        整个周常就卡在声骸面板上（#1793）。
+
+        这里按层次兜底：先给灰色模板 3 秒（等按钮动画），找不到就 OCR 右下角
+        找「确认」，两者都没有才回落到旧坐标。模板能匹配时行为与原来完全一致。
+        """
+        for _ in range(6):
+            box = self.find_one('garden_get_confirm_gray', horizontal_variance=0.9)
+            if box:
+                self.click(box, after_sleep=1)
+                return
+            self.sleep(0.5)
+        for box in self.ocr(0.45, 0.55, 1.0, 0.98):
+            text = str(getattr(box, 'name', box))
+            if '确认' in text or '確定' in text or 'Confirm' in text:
+                self.click(box, after_sleep=1)
+                return
+        fallback = self.get_box_by_name('garden_get_confirm_gray')
+        if not fallback:
+            self.log_info('echo confirm button not found')
+            return
+        self.log_info(self.tr('click garden_get_confirm'))
+        self.click(fallback, after_sleep=1)
 
     def _choose_first_blessing(self):
         """At Garden Entrance, choose first blessing"""
