@@ -16,6 +16,7 @@ class TestCultivationTask(unittest.TestCase):
         self.task._app = None
         self.task.info = {}
         self.task.goals = []
+        self.task.config = {'Ascension Materials': True, 'Skill Materials': True}
         self.task._combat_deadline = 0
         self.task.logger = Mock()
         for name in ('next_frame', 'sleep', 'click', 'send_key', 'log_info', 'log_warning',
@@ -499,6 +500,28 @@ class TestCultivationTask(unittest.TestCase):
         self.assertAlmostEqual(0.580, row.y, places=3)
         self.assertEqual([(left, (1, 12)), (right, (2, 26))], row.quantities)
         self.assertEqual(3, row.weekly_left)
+
+    def test_enabled_materials_follows_switches(self):
+        self.assertEqual(['共鸣者突破材料', '技能升级材料'], self.task.enabled_materials())
+
+        self.task.config['Ascension Materials'] = False
+        self.assertEqual(['技能升级材料'], self.task.enabled_materials())
+
+        self.task.config['Skill Materials'] = False
+        self.assertEqual([], self.task.enabled_materials())
+
+    def test_read_goals_skips_disabled_material_row(self):
+        self.task.config['Skill Materials'] = False
+        rows = {'共鸣者突破材料': MaterialRow(
+            '共鸣者突破材料', 0.32, [(Box(1460, 369, 56, 24), (3, 46))])}
+        self.task.read_target_row = Mock(side_effect=lambda material_type: rows[material_type])
+        self.task.read_item_detail = Mock(return_value=('甲', 3))
+
+        goals = self.task.read_goals()
+
+        self.assertEqual(['甲'], [goal.name for goal in goals])
+        self.task.read_target_row.assert_called_with('共鸣者突破材料')
+        self.task.read_item_detail.assert_called_with(('共鸣者突破材料',))
 
     def test_read_goals_reads_both_material_rows(self):
         rows = {

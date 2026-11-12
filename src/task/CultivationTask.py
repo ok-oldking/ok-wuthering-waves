@@ -47,6 +47,10 @@ class CultivationError(RuntimeError):
 
 class CultivationTask(DomainTask):
     MATERIALS = ('共鸣者突破材料', '技能升级材料')
+    MATERIAL_OPTIONS = {
+        '共鸣者突破材料': 'Ascension Materials',
+        '技能升级材料': 'Skill Materials',
+    }
     WEEKLY_MATERIAL = '技能升级材料'
     WEEKLY_PATTERN = re.compile(r'本周剩余可收取次数[:：]?(\d+)/\d+')
     COST = 60
@@ -63,8 +67,16 @@ class CultivationTask(DomainTask):
         self.group_name = 'Daily Activities'
         self.group_icon = task_icon('category-daily')
         self.supported_languages = ['zh_CN']
+        self.default_config = {
+            'Ascension Materials': True,
+            'Skill Materials': True,
+        }
         self._combat_deadline = 0
         self.goals = []
+
+    def enabled_materials(self):
+        return [material_type for material_type in self.MATERIALS
+                if self.config.get(self.MATERIAL_OPTIONS[material_type], True)]
 
     def sleep_check(self):
         if self._combat_deadline and time.monotonic() >= self._combat_deadline:
@@ -157,7 +169,7 @@ class CultivationTask(DomainTask):
 
     def read_goals(self):
         rows = []
-        for material_type in self.MATERIALS:
+        for material_type in self.enabled_materials():
             def read_row(material_type=material_type):
                 row = self.read_target_row(material_type)
                 if row is None:
@@ -421,6 +433,9 @@ class CultivationTask(DomainTask):
             if self.game_lang != 'zh_CN' or abs(self.width / self.height - 16 / 9) > 0.01:
                 raise CultivationError('本任务支持简体中文和 16:9。请调整后重试。')
             self.make_sure_in_world()
+            if not self.enabled_materials():
+                self.info_set('停止原因', '未启用任何材料行')
+                return
             self.open_cultivation()
             self.goals = self.read_goals()
             stamina = self.read_current_stamina()

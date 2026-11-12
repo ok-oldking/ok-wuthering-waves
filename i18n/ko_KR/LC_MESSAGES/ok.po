@@ -2161,6 +2161,11 @@ msgstr "육성 재료 파밍"
 #: src/task/CultivationTask.py
 msgid "Farm Ascension and Skill Materials for the selected Guidebook cultivation target. Skill Materials allow 3 reward claims per week. Simplified Chinese, 16:9. Uses current Waveplates only."
 msgstr "솔라리스 가이드에서 선택한 육성 목표에 따라 공명자 돌파 재료와 스킬 강화 재료를 수집합니다. 스킬 강화 재료는 주당 3회만 보상을 받을 수 있습니다. 중국어 간체와 16:9를 지원합니다. 현재 보유한 결정 웨이브 플레이트만 사용합니다."
+#: src/task/CultivationTask.py
+msgid "Ascension Materials"
+msgstr "공명자 돌파 재료"
+msgid "Skill Materials"
+msgstr "스킬 강화 재료"
 msgid "Per-account Configuration"
 msgstr "계정별 설정"
 
