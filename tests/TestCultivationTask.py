@@ -1,8 +1,8 @@
 import unittest
 from types import SimpleNamespace
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, PropertyMock, call, patch
 
-from ok import CannotFindException
+from ok import Box, CannotFindException
 from src.task.BaseCombatTask import NotInCombatException
 from src.task.BaseWWTask import BaseWWTask
 from src.task.CultivationTask import CultivationError, CultivationTask, MaterialGoal, parse_quantity
@@ -39,6 +39,20 @@ class TestCultivationTask(unittest.TestCase):
         self.task.use_stamina = Mock(return_value=(True, 60))
         self.task.ocr.return_value = [SimpleNamespace(name='退出副本'),
                                       SimpleNamespace(name='重新挑战')] if results else []
+
+    def prepare_enter_challenge(self, buttons):
+        row_box = Box(1460, 369, 56, 24, name='3/46')
+        self.task.read_material_row = Mock(return_value=[(row_box, (3, 46))])
+        self.task.ocr.side_effect = lambda *args, match, **kwargs: [
+            box for box in buttons if match.search(box.name)]
+        self.task.wait_feature = Mock(return_value=True)
+        self.task.click_team_challenge = Mock()
+        self.task.wait_in_team_and_world = Mock()
+        self.task.teleport_timeout = 100
+        height = patch.object(CultivationTask, 'height', new_callable=PropertyMock,
+                              return_value=1080)
+        height.start()
+        self.addCleanup(height.stop)
 
     def test_parse_quantity_accepts_zero_exact_and_excess_owned(self):
         for text, expected in (('0/28', (0, 28)), ('28/28', (28, 28)),
@@ -91,6 +105,82 @@ class TestCultivationTask(unittest.TestCase):
         self.assertEqual(0, self.task.read_stable(reader, '库存'))
 
         self.assertEqual(2, reader.call_count)
+
+    def test_enter_challenge_accepts_go_button(self):
+        button = Box(1600, 334, 140, 26, name='前往')
+        self.prepare_enter_challenge([button])
+
+        CultivationTask.enter_challenge(self.task)
+
+        self.task.click.assert_called_once_with(button, after_sleep=1)
+        self.task.wait_feature.assert_called_once_with(
+            'team_start_challenge', time_out=20, raise_if_not_found=False)
+        self.task.click_team_challenge.assert_called_once_with()
+        self.task.wait_in_team_and_world.assert_called_once_with(time_out=100)
+
+    def test_enter_challenge_accepts_direct_challenge_button(self):
+        button = Box(1600, 334, 140, 26, name='直接挑战')
+        self.prepare_enter_challenge([button])
+
+        CultivationTask.enter_challenge(self.task)
+
+        self.task.click.assert_called_once_with(button, after_sleep=1)
+        self.task.wait_feature.assert_called_once_with(
+            'team_start_challenge', time_out=20, raise_if_not_found=False)
+        self.task.click_team_challenge.assert_called_once_with()
+        self.task.wait_in_team_and_world.assert_called_once_with(time_out=100)
+
+    def test_enter_challenge_rejects_non_entry_text_without_clicking(self):
+        for text in ('前往培养', '查看推荐'):
+            with self.subTest(text=text):
+                self.prepare_enter_challenge([Box(1600, 334, 140, 26, name=text)])
+
+                with self.assertRaisesRegex(CultivationError, '未识别材料行的挑战按钮'):
+                    CultivationTask.enter_challenge(self.task)
+
+                self.task.click.assert_not_called()
+                self.task.wait_feature.assert_not_called()
+                self.task.click_team_challenge.assert_not_called()
+                self.task.wait_in_team_and_world.assert_not_called()
+
+    def test_enter_challenge_rejects_multiple_buttons_without_clicking(self):
+        self.prepare_enter_challenge([Box(1600, 334, 70, 26, name='前往'),
+                                      Box(1730, 334, 90, 26, name='直接挑战')])
+
+        with self.assertRaisesRegex(CultivationError, '未识别材料行的挑战按钮'):
+            CultivationTask.enter_challenge(self.task)
+
+        self.task.click.assert_not_called()
+        self.task.wait_feature.assert_not_called()
+        self.task.click_team_challenge.assert_not_called()
+        self.task.wait_in_team_and_world.assert_not_called()
+
+    def test_enter_challenge_rejects_missing_material_row(self):
+        self.prepare_enter_challenge([])
+        self.task.read_material_row.return_value = None
+
+        with self.assertRaisesRegex(CultivationError, '培养材料行已消失'):
+            CultivationTask.enter_challenge(self.task)
+
+        self.task.ocr.assert_not_called()
+        self.task.click.assert_not_called()
+        self.task.wait_feature.assert_not_called()
+        self.task.click_team_challenge.assert_not_called()
+        self.task.wait_in_team_and_world.assert_not_called()
+
+    def test_enter_challenge_stops_when_team_page_is_missing(self):
+        button = Box(1600, 334, 140, 26, name='直接挑战')
+        self.prepare_enter_challenge([button])
+        self.task.wait_feature.return_value = None
+
+        with self.assertRaisesRegex(CultivationError, '未进入编队页'):
+            CultivationTask.enter_challenge(self.task)
+
+        self.task.click.assert_called_once_with(button, after_sleep=1)
+        self.task.wait_feature.assert_called_once_with(
+            'team_start_challenge', time_out=20, raise_if_not_found=False)
+        self.task.click_team_challenge.assert_not_called()
+        self.task.wait_in_team_and_world.assert_not_called()
 
     def test_farm_does_not_restart_after_actual_inventory_meets_goal(self):
         self.prepare_farm([MaterialGoal('材料', 5, 28)], [{'材料': 29}], [(181, 60)], [121])

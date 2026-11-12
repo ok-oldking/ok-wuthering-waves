@@ -167,9 +167,10 @@ class CultivationTask(DomainTask):
         if row is None:
             raise CultivationError('培养材料行已消失。已停止，请检查培养目标。')
         y = row[0][0].center()[1] / self.height - 0.032
-        buttons = self.ocr(0.82, y - 0.035, 0.95, y + 0.035, match='前往')
+        buttons = self.ocr(0.82, y - 0.035, 0.95, y + 0.035,
+                           match=re.compile(r'^(前往|直接挑战)$'))
         if len(buttons) != 1:
-            raise CultivationError('未识别材料行的前往按钮。已停止，请检查培养目标。')
+            raise CultivationError('未识别材料行的挑战按钮。已停止，请检查培养目标。')
         self.click(buttons[0], after_sleep=1)
         if not self.wait_feature('team_start_challenge', time_out=20, raise_if_not_found=False):
             raise CultivationError('未进入编队页。已停止，请检查前往的副本。')
