@@ -2,7 +2,7 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import Mock, PropertyMock, call, patch
 
-from ok import Box, CannotFindException
+from ok import Box, CannotFindException, WaitFailedException
 from src.task.BaseCombatTask import NotInCombatException
 from src.task.BaseWWTask import BaseWWTask
 from src.task.CultivationTask import CultivationError, CultivationTask, MaterialGoal, MaterialRow, parse_quantity
@@ -298,6 +298,17 @@ class TestCultivationTask(unittest.TestCase):
         self.assertEqual([call(handle_claim=False)] * 2, self.task.pick_f.call_args_list)
         self.task.use_stamina.assert_not_called()
 
+    def test_claim_reward_reports_missing_treasure(self):
+        self.prepare_claim()
+        self.task.has_claim_stamina.return_value = False
+        self.task.walk_to_treasure.side_effect = WaitFailedException()
+
+        with self.assertRaisesRegex(CultivationError, '未找到奖励箱'):
+            self.task.claim_reward()
+
+        self.task.walk_to_treasure.assert_called_once_with()
+        self.task.use_stamina.assert_not_called()
+
     def test_claim_reward_does_not_use_stamina_when_insufficient(self):
         self.prepare_claim(stamina=59)
 
@@ -559,33 +570,49 @@ class TestCultivationTask(unittest.TestCase):
         self.assertEqual(120, self.task.info['used stamina'])
         self.assertEqual('当前结晶波片不足 60 点', self.task.info['停止原因'])
 
-    def test_read_reward_inventory_only_requires_materials_of_the_row(self):
-        height = patch.object(CultivationTask, 'height', new_callable=PropertyMock,
-                              return_value=1080)
-        width = patch.object(CultivationTask, 'width', new_callable=PropertyMock,
-                             return_value=1920)
-        height.start()
-        width.start()
-        self.addCleanup(height.stop)
-        self.addCleanup(width.stop)
+    def test_read_reward_inventory_clicks_fifth_slot_of_six(self):
         self.task.goals = [MaterialGoal('甲', 0, 5, '共鸣者突破材料'),
                            MaterialGoal('乙', 0, 5, '技能升级材料', 3)]
-        first = Box(400, 500, 80, 40, name='×2')
-        second = Box(700, 500, 80, 40, name='×2')
-        self.task.ocr = Mock(return_value=[first, second])
-        self.task.read_item_detail = Mock(side_effect=[
-            ('乙', 9), ('乙', 9), ('乙', 9), ('甲', 3), ('甲', 3), ('甲', 3)])
+        self.set_reward_slots(6)
+        self.task.read_item_detail = Mock(side_effect=[('甲', 3), ('甲', 3), ('甲', 3)])
 
         inventory = CultivationTask.read_reward_inventory(self.task, '共鸣者突破材料')
 
         self.assertEqual({'甲': 3}, inventory)
-        spacing = CultivationTask.REWARD_SLOT_SPACING
-        self.assertEqual([call(0.5 - spacing / 2, CultivationTask.REWARD_SLOT_Y, after_sleep=0.4),
-                          call(0.5, 0.94, after_sleep=0.3),
-                          call(0.5 + spacing / 2, CultivationTask.REWARD_SLOT_Y, after_sleep=0.4),
+        self.assertEqual([call(self.slot_x(4, 6), CultivationTask.REWARD_SLOT_Y,
+                               name='奖励槽5', after_sleep=0.4),
                           call(0.5, 0.94, after_sleep=0.3)],
                          self.task.click.call_args_list)
         self.task.read_item_detail.assert_any_call(('共鸣者突破材料', '技能升级材料'))
+
+    def test_read_reward_inventory_clicks_fifth_slot_of_seven(self):
+        self.task.goals = [MaterialGoal('甲', 0, 5, '共鸣者突破材料')]
+        self.set_reward_slots(7)
+        self.task.read_item_detail = Mock(side_effect=[('甲', 3), ('甲', 3), ('甲', 3)])
+
+        CultivationTask.read_reward_inventory(self.task, '共鸣者突破材料')
+
+        self.assertEqual(call(self.slot_x(4, 7), CultivationTask.REWARD_SLOT_Y,
+                              name='奖励槽5', after_sleep=0.4),
+                         self.task.click.call_args_list[0])
+
+    def test_read_reward_inventory_rejects_other_material_in_fifth_slot(self):
+        self.task.goals = [MaterialGoal('甲', 0, 5, '共鸣者突破材料')]
+        self.set_reward_slots(6)
+        self.task.read_item_detail = Mock(side_effect=[('乙', 9), ('乙', 9), ('乙', 9)])
+
+        with self.assertRaisesRegex(CultivationError, '不是目标材料'):
+            CultivationTask.read_reward_inventory(self.task, '共鸣者突破材料')
+
+        self.assertEqual(2, self.task.click.call_count)
+
+    def set_reward_slots(self, count):
+        self.task.ocr = Mock(return_value=[
+            Box(100 + index * 170, 500, 80, 40, name='×1') for index in range(count)])
+
+    @staticmethod
+    def slot_x(index, count):
+        return 0.5 + (index - (count - 1) / 2) * CultivationTask.REWARD_SLOT_SPACING
 
     def test_collect_optional_echo_uses_nest_search_before_claim(self):
         self.task.pick_echo = Mock(return_value=False)

@@ -61,6 +61,7 @@ class CultivationTask(DomainTask):
     SOLO_CHALLENGE = (0.800, 0.910)
     REWARD_SLOT_Y = 0.526
     REWARD_SLOT_SPACING = 0.0878
+    REWARD_SLOT_INDEX = 4
     COST = 60
     READ_ATTEMPTS = 3
     COMBAT_TIMEOUT = 600
@@ -277,7 +278,10 @@ class CultivationTask(DomainTask):
         for _ in range(2):
             if self.has_claim_stamina():
                 break
-            self.walk_to_treasure()
+            try:
+                self.walk_to_treasure()
+            except WaitFailedException as error:
+                raise CultivationError('未找到奖励箱。已停止，请确认战斗已结束。') from error
             self.pick_f(handle_claim=False)
             if self.wait_until(self.has_claim_stamina, time_out=3):
                 break
@@ -295,31 +299,23 @@ class CultivationTask(DomainTask):
 
     def read_reward_inventory(self, material_type):
         names = {g.name for g in self.goals if g.material_type == material_type}
+        if len(names) != 1:
+            raise CultivationError('培养目标材料数量异常。已停止，请检查培养目标。')
         boxes = self.ocr(0.12, 0.40, 0.89, 0.68)
         slots = [b for b in boxes if re.fullmatch(r'[xX×]\d{1,7}', compact_text(b.name))]
         if not 1 <= len(slots) <= 12:
             raise CultivationError('未识别结算奖励。已停止，请检查奖励界面。')
-        inventory = {}
-        slot_count = len(slots)
-        for index in range(slot_count):
-            # 奖励槽按数量居中排列、间距固定，点击位置由数量推算，不用文字框坐标。
-            slot_x = 0.5 + (index - (slot_count - 1) / 2) * self.REWARD_SLOT_SPACING
-            self.click(slot_x, self.REWARD_SLOT_Y, after_sleep=0.4)
-            try:
-                detail = self.read_item_detail(self.MATERIALS)
-                if detail is not None:
-                    detail = self.read_stable(
-                        lambda: self.read_item_detail(self.MATERIALS), '奖励材料库存')
-                    name, owned = detail
-                    if name in names:
-                        inventory[name] = owned
-            finally:
-                self.close_item_detail()
-            if len(inventory) == len(names):
-                break
-        if set(inventory) != names:
-            raise CultivationError('未核实全部目标材料的实际库存。已停止，请核对奖励。')
-        return inventory
+        # 目标材料固定在结算行第 5 格，只点这一格读取库存。
+        slot_x = 0.5 + (self.REWARD_SLOT_INDEX - (len(slots) - 1) / 2) * self.REWARD_SLOT_SPACING
+        self.click(slot_x, self.REWARD_SLOT_Y, name='奖励槽5', after_sleep=0.4)
+        try:
+            name, owned = self.read_stable(
+                lambda: self.read_item_detail(self.MATERIALS), '奖励材料库存')
+        finally:
+            self.close_item_detail()
+        if name not in names:
+            raise CultivationError(f'结算第 5 格为{name}，不是目标材料。已停止，请核对奖励。')
+        return {name: owned}
 
     def update_goals(self, inventory):
         if not set(inventory) <= {g.name for g in self.goals}:
