@@ -27,6 +27,7 @@ from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
 from src.char.JingRan import JingRan
 from src.char.Jiyan import Jiyan
+from src.char.Lily import Lily
 from src.char.Lingyang import Lingyang
 from src.char.Linnai import Linnai
 from src.char.Lucilla import Lucilla
@@ -137,7 +138,8 @@ _char_dict_raw = {
     Labels.char_aemeath: {'cls': Aemeath, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.FIRE},
     Labels.char_xigelika: {'cls': Xigelika, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.WIND},
     Labels.char_luhesi: {'cls': Luhesi, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
-    Labels.char_hiyuki: {'cls': Hiyuki, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.ICE},
+    (Labels.char_hiyuki, Labels.char_hiyuki2): {'cls': Hiyuki, 'char_type': CharType.MAIN_DPS,
+                                             'ring_index': Elements.ICE},
     Labels.char_lucilla: {'cls': Lucilla, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ICE,
                           'target_box_short_combat_check': True},
     Labels.char_lucy: {'cls': Lucy, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
@@ -148,6 +150,8 @@ _char_dict_raw = {
     Labels.char_hsin: {'cls': Hsin, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.ELECTRIC},
     Labels.char_suoming: {'cls': Suoming, 'char_type': CharType.SUB_DPS, 'buff_time': 8,
                          'ring_index': Elements.ELECTRIC},
+    Labels.char_lily: {'cls': Lily, 'char_type': CharType.HEALER, 'buff_time': 30,
+                      'ring_index': Elements.SPECTRO},
 }
 
 char_dict = {}
@@ -217,7 +221,7 @@ def get_char_by_pos(task, box, index, old_char):
                                                 ring_index=info.get('ring_index', -1),
                                                 char_type=_get_char_type(task, info),
                                                 buff_time=_get_buff_time(task, info)), info)
-    task.log_info(f'could not find char {index} {info} {highest_confidence}')
+    task.log_info(task.tr('could not find char {index} {info} {highest_confidence}').format(index=index, info=info, highest_confidence=highest_confidence))
     if old_char:
         return old_char
     if task.debug:

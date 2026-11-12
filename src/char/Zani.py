@@ -160,7 +160,7 @@ class Zani(BaseChar):
         self.task.in_liberation = True
         send_key = True
         not_liber_box = self.task.box_of_screen_scaled(2560, 1440, 1909, 1274, 1957, 1322, name='zani_not_liber_box', hcenter=True)
-        while not self.task.find_one('box_target_enemy_inner', box=not_liber_box, threshold=0.75):
+        while not self.task.find_one('target_enemy_long_inner', box=not_liber_box, threshold=0.75):
             if time.time() - start > 6:
                 self.task.in_liberation = False
                 if not self.check_liber():
@@ -498,9 +498,9 @@ class Zani(BaseChar):
             return self.in_liberation
         not_liber_box = self.task.box_of_screen_scaled(2560, 1440, 1909, 1274, 1957, 1322, name='zani_not_liber_box', hcenter=True)
         liber_box = self.task.box_of_screen_scaled(2560, 1440, 1779, 1273, 1830, 1322, name='zani_liber_box', hcenter=True)
-        if self.task.find_one('box_target_enemy_inner', box=not_liber_box, threshold=0.75):
+        if self.task.find_one('target_enemy_long_inner', box=not_liber_box, threshold=0.75):
             self.in_liberation = False
-        elif self.task.find_one('box_target_enemy_inner', box=liber_box, threshold=0.75):
+        elif self.task.find_one('target_enemy_long_inner', box=liber_box, threshold=0.75):
             self.in_liberation = True
         return self.in_liberation
 

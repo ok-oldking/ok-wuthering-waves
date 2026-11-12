@@ -2,6 +2,7 @@ import re
 
 from src.Labels import Labels
 from src.task.BaseWWTask import BaseWWTask
+from src.task.task_icons import task_icon
 
 FULL_BATCH_PATTERN = re.compile(r"100\s*/\s*100")
 
@@ -11,6 +12,9 @@ class MergeEchoTask(BaseWWTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "♻️ Merge Discarded Echoes"
+        self.icon = task_icon('synthesis')
+        self.group_name = 'Echo Management'
+        self.group_icon = task_icon('category-echo')
         self.description = (
             "Must have 1000 discarded Echo to Run, "
             "Merge discarded Echoes in full batches of 100."
@@ -27,7 +31,7 @@ class MergeEchoTask(BaseWWTask):
                 raise_if_not_found=False,
         ):
             self.log_error(
-                f"can not open bag with hotkey {hotkey}",
+                self.tr('can not open bag with hotkey {hotkey}').format(hotkey=hotkey),
                 notify=True,
             )
             return
@@ -41,7 +45,7 @@ class MergeEchoTask(BaseWWTask):
         else:
             if self.notify_if_not_enough:
                 self.log_error(
-                    "Must have 1000 discarded Echo to Run",
+                    self.tr('Must have 1000 discarded Echo to Run'),
                     notify=True,
                 )
             self.ensure_main()
@@ -81,7 +85,7 @@ class MergeEchoTask(BaseWWTask):
             match=FULL_BATCH_PATTERN,
         )
         if not full_batch:
-            self.log_info("All full batches of discarded Echoes have been merged.")
+            self.log_info(self.tr('All full batches of discarded Echoes have been merged.'))
             return False
 
         self.click_relative(0.782, 0.910)

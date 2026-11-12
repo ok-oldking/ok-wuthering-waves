@@ -4,6 +4,7 @@ import numpy as np
 import re
 from ok import find_boxes_by_name, find_boxes_within_boundary, Logger
 from src.task.BaseCombatTask import BaseCombatTask
+from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
 chinese_regex = re.compile(r'[\u4e00-\u9fff]{5,12}')
@@ -15,6 +16,7 @@ class FiveToOneTask(BaseCombatTask):
         super().__init__(*args, **kwargs)
         self.description = "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
         self.name = "♻️ 数据坞五合一"
+        self.icon = task_icon('synthesis')
         self.default_config = {
         }
         self.sets = [
@@ -48,9 +50,9 @@ class FiveToOneTask(BaseCombatTask):
 
     def run(self):
         self.log_debug(f"all_stats: {self.all_stats}")
-        self.log_info("开始任务")
+        self.log_info(self.tr('Starting task'))
         self.ensure_main()
-        self.log_info("在主页")
+        self.log_info(self.tr('On the main screen'))
         self.sleep(0.1)
         self.open_esc_menu()
         self.wait_click_ocr(match="数据坞", box="right", raise_if_not_found=True, settle_time=0.2)
@@ -59,7 +61,7 @@ class FiveToOneTask(BaseCombatTask):
         self.wait_click_ocr(match="批量融合", box="bottom_right", raise_if_not_found=True, settle_time=0.2,
                             after_sleep=1)
         self.loop_merge()
-        self.log_info("五合一完成!")
+        self.log_info(self.tr('Five-to-one merge completed!'))
 
     def loop_merge(self):
         name_box = self.box_of_screen(0.11, 0.19, 0.87, 0.75)
@@ -73,12 +75,12 @@ class FiveToOneTask(BaseCombatTask):
 
     def merge_set(self, name_box, set_name, step):
         keeps = self.config.get(set_name, [])
-        self.log_info(f'keeps: {len(keeps)} set_name: {set_name} keep: {keeps}')
+        self.log_info(self.tr('keeps: {count} set_name: {set_name} keep: {keeps}').format(count=len(keeps), set_name=set_name, keeps=keeps))
         if len(keeps) == 13:
-            self.log_info('保存所有, 跳过')
+            self.log_info(self.tr('Keep all; skipping'))
             return
         if step == 2 and "攻击力百分比" not in keeps:  # 4C攻击力
-            self.log_info("没有选择攻击力百分比, 跳过第二步")
+            self.log_info(self.tr('ATK% not selected; skipping step two'))
             return
         self.click_relative(0.04, 0.91, after_sleep=0.3)
         if step == 1:
@@ -99,7 +101,7 @@ class FiveToOneTask(BaseCombatTask):
         choices = self.ocr(box=name_box, match=self.all_stats)
         if step == 1:
             if len(choices) != 16:
-                raise Exception(f"属性列表识别失败! {choices}")
+                raise Exception(self.tr('Failed to recognize stat list! {choices}').format(choices=choices))
             for choice in choices:
                 in_keep = False
                 in_black_list = False
@@ -116,7 +118,7 @@ class FiveToOneTask(BaseCombatTask):
                         break
                 if not in_keep:
                     self.click_box(choice, after_sleep=0.01)
-                    self.log_info(f"不在配置 {set_name} {choice.name} 选择合成!")
+                    self.log_info(self.tr('Not in configuration: {set_name} {name}; selecting for merge!').format(set_name=set_name, name=choice.name))
         else:
             for choice in choices:
                 if "攻击力百分比" in choice.name:
@@ -133,7 +135,7 @@ class FiveToOneTask(BaseCombatTask):
                     self.claim_handled = True
             if self.ocr(match="批量融合", box="bottom_right"):
                 self.click_relative(0.26, 0.91, after_sleep=0.5)
-                self.log_info(f"{set_name} 不够5个")
+                self.log_info(self.tr('Fewer than 5 Echoes in {set_name}').format(set_name=set_name))
                 break  # 没有更多
             self.wait_ocr(match="获得声骸", box="top", raise_if_not_found=True, settle_time=1)
             self.click_relative(0.53, 0.05, after_sleep=0.5)

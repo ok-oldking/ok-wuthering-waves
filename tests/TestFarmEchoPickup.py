@@ -6,6 +6,7 @@ from src.task.FarmEchoTask import FarmEchoTask
 
 def make_task(config=None):
     task = FarmEchoTask.__new__(FarmEchoTask)
+    task.tr = str
     task.config = config or {}
     task.info = {}
     task.combat_wait_time = 0

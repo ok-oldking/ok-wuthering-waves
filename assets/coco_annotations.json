@@ -1280,9 +1280,27 @@
         },
         {
             "id": 299,
-            "file_name": "images/echo_box.png",
-            "width": 2560,
-            "height": 1440
+            "file_name": "images/0.png",
+            "width": 3840,
+            "height": 2160
+        },
+        {
+            "id": 300,
+            "file_name": "images/2.png",
+            "width": 3840,
+            "height": 2160
+        },
+        {
+            "id": 301,
+            "file_name": "images/1.png",
+            "width": 3840,
+            "height": 2160
+        },
+        {
+            "id": 302,
+            "file_name": "images/1.png",
+            "width": 3840,
+            "height": 2160
         }
     ],
     "annotations": [
@@ -5430,180 +5448,52 @@
             "image_id": 299,
             "category_id": 292,
             "bbox": [
-                484,
-                505,
-                162,
-                144
+                1912,
+                994,
+                52,
+                52
             ],
-            "area": 23328,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
+            "area": 2704,
+            "iscrowd": 0
         },
         {
             "id": 444,
-            "image_id": 299,
+            "image_id": 300,
             "category_id": 293,
             "bbox": [
-                719,
-                505,
-                162,
-                144
+                1900,
+                1062,
+                85,
+                78
             ],
-            "area": 23328,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
+            "area": 6630,
+            "iscrowd": 0
         },
         {
             "id": 445,
-            "image_id": 299,
+            "image_id": 301,
             "category_id": 294,
             "bbox": [
-                954,
-                505,
-                162,
-                144
+                1684,
+                1978,
+                42,
+                43
             ],
-            "area": 23328,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
+            "area": 1806,
+            "iscrowd": 0
         },
         {
             "id": 446,
-            "image_id": 299,
+            "image_id": 302,
             "category_id": 295,
             "bbox": [
-                1189,
-                505,
-                162,
-                144
+                1866,
+                1977,
+                56,
+                47
             ],
-            "area": 23328,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
-        },
-        {
-            "id": 447,
-            "image_id": 299,
-            "category_id": 296,
-            "bbox": [
-                1424,
-                505,
-                162,
-                144
-            ],
-            "area": 23328,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
-        },
-        {
-            "id": 448,
-            "image_id": 299,
-            "category_id": 297,
-            "bbox": [
-                249,
-                788,
-                162,
-                143
-            ],
-            "area": 23166,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
-        },
-        {
-            "id": 449,
-            "image_id": 299,
-            "category_id": 298,
-            "bbox": [
-                484,
-                788,
-                162,
-                143
-            ],
-            "area": 23166,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
-        },
-        {
-            "id": 450,
-            "image_id": 299,
-            "category_id": 299,
-            "bbox": [
-                62,
-                760,
-                80,
-                73
-            ],
-            "area": 5840,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
-        },
-        {
-            "id": 451,
-            "image_id": 299,
-            "category_id": 300,
-            "bbox": [
-                62,
-                900,
-                80,
-                82
-            ],
-            "area": 6560,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
-        },
-        {
-            "id": 452,
-            "image_id": 299,
-            "category_id": 301,
-            "bbox": [
-                62,
-                1020,
-                80,
-                82
-            ],
-            "area": 6560,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
-        },
-        {
-            "id": 453,
-            "image_id": 299,
-            "category_id": 302,
-            "bbox": [
-                62,
-                1200,
-                80,
-                80
-            ],
-            "area": 6400,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
-        },
-        {
-            "id": 454,
-            "image_id": 299,
-            "category_id": 303,
-            "bbox": [
-                249,
-                505,
-                162,
-                144
-            ],
-            "area": 23328,
-            "iscrowd": 0,
-            "ignore": 0,
-            "segmentation": []
+            "area": 2632,
+            "iscrowd": 0
         }
     ],
     "categories": [
@@ -7064,62 +6954,22 @@
         },
         {
             "id": 292,
-            "name": "echo_box_item_1",
+            "name": "abyss_start_marker",
             "supercategory": ""
         },
         {
             "id": 293,
-            "name": "echo_box_item_2",
+            "name": "abyss_tower_start_marker",
             "supercategory": ""
         },
         {
             "id": 294,
-            "name": "echo_box_item_3",
+            "name": "roccia_air_forte",
             "supercategory": ""
         },
         {
             "id": 295,
-            "name": "echo_box_item_4",
-            "supercategory": ""
-        },
-        {
-            "id": 296,
-            "name": "echo_box_item_5",
-            "supercategory": ""
-        },
-        {
-            "id": 297,
-            "name": "echo_box_item_6",
-            "supercategory": ""
-        },
-        {
-            "id": 298,
-            "name": "echo_box_item_7",
-            "supercategory": ""
-        },
-        {
-            "id": 299,
-            "name": "echo_box_sidebar_anchor",
-            "supercategory": ""
-        },
-        {
-            "id": 300,
-            "name": "echo_box_special_normal",
-            "supercategory": ""
-        },
-        {
-            "id": 301,
-            "name": "echo_box_special_hover",
-            "supercategory": ""
-        },
-        {
-            "id": 302,
-            "name": "echo_box_special_selected",
-            "supercategory": ""
-        },
-        {
-            "id": 303,
-            "name": "echo_box_item_1_selected",
+            "name": "roccia_air_forte_second",
             "supercategory": ""
         }
     ]

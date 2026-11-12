@@ -9,18 +9,20 @@ from unittest.mock import Mock, patch
 
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 
-from PySide6.QtWidgets import QApplication, QTableWidgetItem
+from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QApplication, QTableWidgetItem, QWidget
 from ok import BaseTask, Box, PostMessageInteraction, og
 from ok.task.exceptions import TaskDisabledException, WaitFailedException
-from ok.ui.qt.tasks.ConfigCard import ConfigCard
+from ok.ui.qt.tasks.config_form import ConfigForm
 from ok.util.config import Config
-from qfluentwidgets import FluentIcon
 
 from src.gui.MultiAccountConfigTab import AccountStatusTable, AccountTaskCard, MultiAccountConfigTab
+from src.gui.MultiAccountConfigDialog import MultiAccountConfigDialog
 from src.task.AutoLoginTask import AutoLoginTask
 from src.task.BaseWWTask import LOGIN_TEXTS
 from src.task.DailyTask import DailyTask
 from src.task.MultiAccountConfigTask import MultiAccountConfigTask
+from src.task.MultiAccountDailyTask import MultiAccountDailyTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.account.MultiAccountConfigStore import (
     MultiAccountConfigStore, account_key_from_ocr, collect_available_tasks,
@@ -63,6 +65,77 @@ def executor_for(tasks, folder='configs'):
     )
 
 
+def daily_runner():
+    runner = MultiAccountDailyTask(SimpleNamespace(
+        scene=None, text_fix={}, global_config=SimpleNamespace(get_config=lambda name: {})), og.app)
+    runner.config = RuntimeTaskConfig(runner.default_config, runner.default_config)
+    return runner
+
+
+class TestMultiAccountMode(unittest.TestCase):
+    def test_default_mode_keeps_original_daily_flow(self):
+        runner = daily_runner()
+        self.assertIs(runner.config['Per-account Configuration'], False)
+        runner.run_task_by_class = Mock()
+        runner.ensure_main = Mock()
+        runner._switch_to_login = Mock()
+        runner._detect_current_account_from_login = Mock(return_value='123****1234')
+        runner._select_and_login_account = Mock(return_value=None)
+        with patch.object(WWOneTimeTask, 'run') as prepare:
+            runner.run()
+        prepare.assert_called_once_with(runner)
+        runner.run_task_by_class.assert_called_once_with(DailyTask)
+        self.assertTrue(runner._is_done('123****1234'))
+
+    def test_separate_mode_delegates_and_propagates_failure_and_cancellation(self):
+        runner = daily_runner()
+        runner.config['Per-account Configuration'] = True
+        for error in (None, ValueError('invalid plan'), TaskDisabledException()):
+            with self.subTest(error=error):
+                runner.run_task_by_class = Mock(return_value='configured', side_effect=error)
+                with patch.object(WWOneTimeTask, 'run') as prepare:
+                    if error:
+                        with self.assertRaises(type(error)):
+                            runner.run()
+                    else:
+                        self.assertEqual(runner.run(), 'configured')
+                prepare.assert_not_called()
+                runner.run_task_by_class.assert_called_once_with(MultiAccountConfigTask)
+
+    def test_hidden_runner_has_no_parent_mode_or_button(self):
+        runner = MultiAccountConfigTask(SimpleNamespace(
+            scene=None, text_fix={}, global_config=SimpleNamespace(get_config=lambda name: {})), None)
+        self.assertEqual(runner.default_config, {})
+        self.assertEqual(runner.config_type, {})
+        self.assertFalse(runner.visible)
+
+    def test_real_dispatch_uses_saved_plan_and_shares_task_info(self):
+        with tempfile.TemporaryDirectory() as folder:
+            outer = daily_runner()
+            configured = MultiAccountConfigTask(outer.executor, og.app)
+            executor = executor_for([outer, configured], folder)
+            outer._executor = configured._executor = executor
+            configured.config = RuntimeTaskConfig({}, {})
+            original_info = configured.info
+            store = MultiAccountConfigStore(folder)
+            store.save([{**account(), 'enabled': False}])
+            outer.config['Per-account Configuration'] = True
+            with patch.object(WWOneTimeTask, 'run') as prepare:
+                outer.run()
+            prepare.assert_not_called()
+            self.assertEqual(outer.info['状态'], '没有启用的账号')
+            self.assertIs(configured.info, original_info)
+            # Missing accounts fail before sending game input, even through the parent.
+            store.save([])
+            outer.log_error = Mock()
+            configured.tr = str
+            with patch.object(WWOneTimeTask, 'run') as prepare:
+                with self.assertRaisesRegex(ValueError, 'Add accounts'):
+                    outer.run()
+            prepare.assert_not_called()
+            self.assertIs(configured.info, original_info)
+
+
 class TestMultiAccountConfig(unittest.TestCase):
     def test_login_click_moves_real_cursor_before_background_button_message(self):
         import win32con
@@ -79,6 +152,7 @@ class TestMultiAccountConfig(unittest.TestCase):
 
         interaction.post = post
         runner = object.__new__(MultiAccountConfigTask)
+        runner.tr = str
         runner._executor = SimpleNamespace(interaction=interaction, reset_scene=Mock())
         runner._login_cursor_active = True
         runner.sleep = Mock()
@@ -94,6 +168,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         interaction = PostMessageInteraction(SimpleNamespace(), SimpleNamespace())
         interaction.click = Mock()
         runner = object.__new__(MultiAccountConfigTask)
+        runner.tr = str
         runner._executor = SimpleNamespace(interaction=interaction, reset_scene=Mock())
         with patch('win32api.SetCursorPos') as move:
             runner.click(1279, 792)
@@ -105,6 +180,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         interaction = PostMessageInteraction(capture, SimpleNamespace())
         interaction.click = Mock()
         runner = object.__new__(MultiAccountConfigTask)
+        runner.tr = str
         runner._executor = SimpleNamespace(interaction=interaction, reset_scene=Mock(),
                                            method=SimpleNamespace(width=2560, height=1440))
         runner._login_cursor_active = True
@@ -116,7 +192,7 @@ class TestMultiAccountConfig(unittest.TestCase):
 
     def test_login_cursor_mode_restores_after_cancellation_during_wait_main(self):
         mouse = SimpleNamespace(enabled=True, disable=Mock(), enable=Mock())
-        runner = SimpleNamespace(
+        runner = SimpleNamespace(tr=str,
             executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
             _login_combo=lambda: None,
             sleep=Mock(), click=Mock(), find_account_drop_down=lambda: 'dropdown',
@@ -155,7 +231,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         for target, displayed in [('Ab12@outlook.com', 'Ab****12@outlook.com'),
                                   ('Some Name', 'Some Name'), ('1231234', '123**1234')]:
             with self.subTest(target=target):
-                runner = SimpleNamespace(_login_combo=lambda: 42, sleep=Mock(),
+                runner = SimpleNamespace(tr=str, _login_combo=lambda: 42, sleep=Mock(),
                                          ocr=Mock(side_effect=AssertionError('unexpected OCR')),
                                          click=Mock(side_effect=AssertionError('unexpected click')))
                 with patch(module + 'combo_items', return_value=['Other', displayed, displayed]), \
@@ -173,7 +249,7 @@ class TestMultiAccountConfig(unittest.TestCase):
                                          (['Ab**12@outlook.com'], True, 'Other')]:
             with self.subTest(items=items, selected=selected, current=current):
                 mouse = SimpleNamespace(enabled=True, disable=Mock(), enable=Mock())
-                runner = SimpleNamespace(executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
+                runner = SimpleNamespace(tr=str, executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
                                          _login_combo=lambda: 42, sleep=Mock(), ocr=Mock(), click=Mock(),
                                          find_account_drop_down=Mock(side_effect=WaitFailedException()),
                                          log_warning=Mock(), ensure_main=Mock())
@@ -190,7 +266,7 @@ class TestMultiAccountConfig(unittest.TestCase):
 
     def test_combo_error_falls_back_to_ocr_and_confirms_without_combo(self):
         for error in (OSError('invalid window'), WaitFailedException()):
-            runner = SimpleNamespace(
+            runner = SimpleNamespace(tr=str,
                 _login_combo=Mock(side_effect=error), sleep=Mock(), log_warning=Mock(),
                 click=Mock(), find_account_drop_down=Mock(return_value='dropdown'),
                 do_find_account_drop_down=Mock(side_effect=[None, SimpleNamespace(name='Ab**12@outlook.com')]),
@@ -204,7 +280,7 @@ class TestMultiAccountConfig(unittest.TestCase):
             self.assertFalse(runner._ocr_account_selection)
 
     def test_combo_cancellation_does_not_start_ocr_fallback(self):
-        runner = SimpleNamespace(sleep=Mock(), _login_combo=Mock(side_effect=TaskDisabledException()),
+        runner = SimpleNamespace(tr=str, sleep=Mock(), _login_combo=Mock(side_effect=TaskDisabledException()),
                                  find_account_drop_down=Mock())
         with self.assertRaises(TaskDisabledException):
             MultiAccountConfigTask._select_target_account(runner, '1231234')
@@ -214,7 +290,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         for text, target in [('Ab*1**2@outlook.com', 'Ab12@outlook.com'), ('Some Name', 'Some Name')]:
             with self.subTest(text=text):
                 box = SimpleNamespace(name=text, y=100, height=30)
-                runner = SimpleNamespace(ocr=lambda: [box], click=Mock(),
+                runner = SimpleNamespace(tr=str, ocr=lambda: [box], click=Mock(),
                                          _target_account_key=target, find_boxes=Mock(return_value=['login']))
                 self.assertTrue(MultiAccountConfigTask._find_target_account(runner, target))
                 runner.click.assert_called_once_with(box, after_sleep=2)
@@ -235,7 +311,7 @@ class TestMultiAccountConfig(unittest.TestCase):
             store.save(accounts)
             original = store.path.read_bytes()
             self.assertEqual(store.load(), accounts)
-            with self.assertRaisesRegex(ValueError, '重复'):
+            with self.assertRaisesRegex(ValueError, 'Duplicate'):
                 store.save([account(), account()])
             self.assertEqual(store.path.read_bytes(), original)
             with patch('os.replace', side_effect=OSError('disk error')):
@@ -261,14 +337,14 @@ class TestMultiAccountConfig(unittest.TestCase):
         self.assertIs(resolve_task(executor, task_reference(one)), one)
         with self.assertRaises(ValueError):
             resolve_task(executor, task_reference(trigger))
-        with self.assertRaisesRegex(ValueError, '未注册'):
+        with self.assertRaisesRegex(ValueError, 'not registered'):
             resolve_task(executor, {'module': 'src.task.Removed', 'class': 'Removed'})
 
     def test_both_multi_account_runners_are_rejected(self):
         for name in ('MultiAccountDailyTask', 'MultiAccountConfigTask'):
             entry = account()
             entry['task'] = {'module': f'src.task.{name}', 'class': name}
-            with self.assertRaisesRegex(ValueError, '多账号执行器'):
+            with self.assertRaisesRegex(ValueError, 'cannot select itself'):
                 validate_accounts([entry])
 
     def test_schema_merge_and_deepcopy(self):
@@ -299,7 +375,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         self.assertEqual(nested.config['Items'], ['base'])
 
     def make_runner(self, executor):
-        runner = SimpleNamespace(executor=executor, info={}, config={}, default_config={})
+        runner = SimpleNamespace(tr=str, executor=executor, info={}, config={}, default_config={})
         runner.info_set = lambda key, value: runner.info.__setitem__(key, value)
         runner.tr = lambda text: text
         runner.log_info = Mock()
@@ -354,6 +430,7 @@ class TestMultiAccountConfig(unittest.TestCase):
                 MultiAccountConfigStore(folder).save([account()])
                 state = SimpleNamespace(screen=initial_screen, logged_in=True)
                 runner = object.__new__(MultiAccountConfigTask)
+                runner.tr = str
                 runner._executor = executor_for([], folder)
                 runner._executor.debug = False
                 runner._app = SimpleNamespace(tr=lambda text: text)
@@ -473,7 +550,7 @@ class TestMultiAccountConfig(unittest.TestCase):
     def test_find_target_matches_exactly_and_prefers_lowest_duplicate(self):
         boxes = [SimpleNamespace(name=name, y=index * 100, height=30)
                  for index, name in enumerate(('123****1234', '234****2345', '345****3456'))]
-        runner = SimpleNamespace(ocr=lambda **_: boxes, click=Mock())
+        runner = SimpleNamespace(tr=str, ocr=lambda **_: boxes, click=Mock())
         self.assertTrue(MultiAccountConfigTask._find_target_account(runner, '3453456'))
         runner.click.assert_called_once_with(boxes[2], after_sleep=2)
         self.assertFalse(MultiAccountConfigTask._find_target_account(runner, '1112222'))
@@ -484,7 +561,7 @@ class TestMultiAccountConfig(unittest.TestCase):
 
     def test_failed_dropdown_never_attempts_login_and_restores_mouse(self):
         mouse = SimpleNamespace(enabled=True, disable=Mock(), enable=Mock())
-        runner = SimpleNamespace(
+        runner = SimpleNamespace(tr=str,
             executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
             _login_combo=lambda: None,
             sleep=Mock(), click=Mock(), find_account_drop_down=Mock(return_value='dropdown'),
@@ -501,7 +578,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         for displayed in ('123****1234', '234****2345'):
             with self.subTest(displayed=displayed):
                 mouse = SimpleNamespace(enabled=True, disable=Mock(), enable=Mock())
-                runner = SimpleNamespace(
+                runner = SimpleNamespace(tr=str,
                     executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
                     _login_combo=lambda: None,
                     sleep=Mock(), click=Mock(), find_account_drop_down=Mock(return_value='dropdown'),
@@ -537,7 +614,7 @@ class TestMultiAccountConfig(unittest.TestCase):
             before = path.read_bytes()
             mouse.disable = lambda: mouse.config.__setitem__('_enabled', False)
             mouse.enable = lambda: mouse.config.__setitem__('_enabled', True)
-            runner = SimpleNamespace(
+            runner = SimpleNamespace(tr=str,
                 executor=SimpleNamespace(get_task_by_class=lambda cls: mouse),
                 _login_combo=lambda: None,
                 sleep=Mock(side_effect=TaskDisabledException()),
@@ -561,6 +638,113 @@ class TestMultiAccountConfigUI(unittest.TestCase):
     def tearDown(self):
         self.app.processEvents()
         self.app_patch.stop()
+
+    def test_task_settings_switch_opens_editor_and_saves_existing_plan(self):
+        with tempfile.TemporaryDirectory() as folder:
+            runner = daily_runner()
+            task = ExampleTask()
+            runner._executor = executor_for([runner, task], folder)
+            store = MultiAccountConfigStore(folder)
+            store.save([account(task=task)])
+            window = QWidget()
+            window.resize(1100, 800)
+            window.show()
+            form = ConfigForm(runner, runner.config, runner.default_config,
+                              runner.config_description, runner.config_type, window)
+            original_exec = MultiAccountConfigDialog.exec
+
+            def edit_dialog(dialog):
+                failures = []
+                observed = {}
+                def edit_and_save():
+                    try:
+                        observed.update(
+                            loaded=dialog.editor.loaded,
+                            runner=dialog.editor.runner,
+                            start_hidden=dialog.editor.start_button.isHidden(),
+                            stop_hidden=dialog.editor.stop_button.isHidden(),
+                            account=dialog.editor.cards[0].account_edit.text(),
+                        )
+                        dialog.editor.cards[0].account_edit.setText('5675678')
+                        dialog.ok_button.click()
+                        observed['visible_after_save'] = dialog.isVisible()
+                    except Exception as error:
+                        failures.append(error)
+                    finally:
+                        dialog.reject()
+                QTimer.singleShot(0, edit_and_save)
+                result = original_exec(dialog)
+                if failures:
+                    raise failures[0]
+                self.assertTrue(observed['loaded'])
+                self.assertIs(observed['runner'], runner)
+                self.assertTrue(observed['start_hidden'])
+                self.assertTrue(observed['stop_hidden'])
+                self.assertEqual(observed['account'], '1231234')
+                self.assertFalse(observed['visible_after_save'])
+                self.assertFalse(dialog.editor.timer.isActive())
+                return result
+
+            try:
+                self.app.processEvents()
+                switch = form.config_widget_by_key['Per-account Configuration'].switch_button
+                action = form.config_widget_by_key['Account Configuration']
+                self.assertTrue(action.isHidden())
+                switch.setChecked(True)
+                self.assertTrue(runner.config['Per-account Configuration'])
+                self.assertFalse(action.isHidden())
+                from ok.ui.qt.kit.buttons import Button
+                with patch.object(MultiAccountConfigDialog, 'exec', autospec=True, side_effect=edit_dialog) as opened:
+                    action.findChild(Button).click()
+                opened.assert_called_once()
+                self.assertEqual(store.load()[0]['account_key'], '5675678')
+                switch.setChecked(False)
+                self.assertTrue(action.isHidden())
+                self.assertEqual(store.load()[0]['account_key'], '5675678')
+                og.app.start_controller.start.assert_not_called()
+            finally:
+                window.close()
+                window.deleteLater()
+
+    def test_dialog_close_discards_edits_and_locks_to_outer_task(self):
+        with tempfile.TemporaryDirectory() as folder:
+            runner = daily_runner()
+            task = ExampleTask()
+            runner._executor = executor_for([runner, task], folder)
+            store = MultiAccountConfigStore(folder)
+            store.save([account(task=task)])
+            window = QWidget()
+            window.resize(1100, 800)
+            window.show()
+            dialog = MultiAccountConfigDialog(window, runner)
+            try:
+                dialog.open()
+                self.app.processEvents()
+                # Shrinking a live dialog must refresh the layout's old minimum height.
+                for width, height in ((960, 640), (1400, 950)):
+                    window.resize(width, height)
+                    self.app.processEvents()
+                    bounds = dialog.panel.geometry()
+                    self.assertGreaterEqual(bounds.x(), 0)
+                    self.assertLess(bounds.right(), window.width())
+                    self.assertLess(bounds.bottom(), window.height())
+                dialog.editor.cards[0].account_edit.setText('5675678')
+                dialog.cancel_button.click()
+                self.assertEqual(store.load()[0]['account_key'], '1231234')
+                self.assertFalse(dialog.editor.timer.isActive())
+                runner._enabled = True
+                dialog.open()
+                dialog.editor.refresh_status()
+                self.assertFalse(dialog.editor.accounts_widget.isEnabled())
+                self.assertFalse(dialog.editor.save_button.isEnabled())
+                self.assertFalse(dialog.editor.save_accounts(notify=False))
+                dialog.ok_button.click()
+                self.assertFalse(dialog.isVisible())
+                self.assertEqual(store.load()[0]['account_key'], '1231234')
+            finally:
+                dialog.close()
+                dialog.deleteLater()
+                window.deleteLater()
 
     def test_log_table_fits_multiline_values_and_reflows_on_resize(self):
         table = AccountStatusTable()
@@ -644,7 +828,7 @@ class TestMultiAccountConfigUI(unittest.TestCase):
         try:
             card.resize(1100, card.height())
             card.show()
-            card.setExpand(True)
+            card.set_expanded(True)
             for _ in range(3):
                 self.app.processEvents()
             tall_height = card.height()
@@ -661,17 +845,19 @@ class TestMultiAccountConfigUI(unittest.TestCase):
             for _ in range(3):
                 card.task_combo.setCurrentIndex(0)
                 self.app.processEvents()
-                self.assertTrue(card.isExpand)
+                self.assertTrue(card.expanded)
                 self.assertLess(card.height(), tall_height)
-                self.assertEqual(card.height(), card.card.height() + card.viewLayout.sizeHint().height())
+                self.assertTrue(card.details.isVisible())
+                self.assertLess(card.details.geometry().bottom(), card.height())
                 card.task_combo.setCurrentIndex(1)
                 self.app.processEvents()
                 self.assertEqual(card.height(), tall_height)
-            card.setExpand(False)
+            card.set_expanded(False)
             card.task_combo.setCurrentIndex(0)
             self.app.processEvents()
-            self.assertFalse(card.isExpand)
-            self.assertEqual(card.height(), card.card.height())
+            self.assertFalse(card.expanded)
+            self.assertTrue(card.details.isHidden())
+            self.assertLess(card.header.geometry().bottom(), card.height())
         finally:
             card.close()
             card.deleteLater()
@@ -682,8 +868,8 @@ class TestMultiAccountConfigUI(unittest.TestCase):
         task = DailyTask(executor, None)
         task.config = RuntimeTaskConfig(task.default_config, task.default_config)
         card = AccountTaskCard(account(task=task), [task], Mock())
-        original = ConfigCard(task, task.name, task.config, task.description, task.default_config,
-                              task.config_description, task.config_type, FluentIcon.INFO)
+        original = ConfigForm(task, task.config, task.default_config,
+                              task.config_description, task.config_type)
         try:
             content = card.content
             self.assertIs(content.default_config, task.default_config)
@@ -731,7 +917,7 @@ class TestMultiAccountConfigUI(unittest.TestCase):
                 tab.refresh_status()
                 self.assertFalse(tab.status_card.isHidden())
                 self.assertIn('Running:', tab.status_card.titleLabel.text())
-                self.assertIn('0h 1m', tab.status_card.titleLabel.text())
+                self.assertIn('01:05', tab.status_card.titleLabel.text())
                 self.assertEqual(tab.status_table.rowCount(), 3)
                 self.assertEqual(tab.status_table.item(2, 1).text(), '')
                 self.assertEqual(MultiAccountConfigStore(folder).load()[0]['config'], task.config)

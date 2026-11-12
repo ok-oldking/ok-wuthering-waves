@@ -6,6 +6,7 @@ from ok import Box, ConfigOption, Icon
 from ok.util.GlobalConfig import create_basic_options
 from src.game_launcher import get_game_launch_arguments
 from src.task.process_feature import process_feature
+from src.task.task_icons import task_icon
 
 version = "dev"
 
@@ -125,10 +126,6 @@ def blur_area(width, height):
 
 
 basic_config_option = create_basic_options(enable_blur=True)
-basic_config_option.default_config['Game Package'] = 'hd'
-basic_config_option.config_type['Game Package'] = {
-    'type': 'drop_down', 'options': ['sd', 'hd', 'uhd'],
-}
 
 key_config_option = ConfigOption('Game Hotkey', {
     'Echo Key': 'q',
@@ -146,6 +143,7 @@ key_config_option = ConfigOption('Game Hotkey', {
 
 char_config_option = ConfigOption('Character Config', {
     'Iuno C6': False,
+    'Roccia C6': False,
     'Chisa DPS': False,
     'Suoming DPS': False,
 }, description='Character Config', show_at_tab=True, icon=Icon.PEOPLE)
@@ -164,14 +162,23 @@ config = {
     "gui": {
         "type": "qt",
     },
+    'task_category_icons': {
+        'all': task_icon('category-all'),
+        'onetime': task_icon('category-onetime'),
+        'trigger': task_icon('category-trigger'),
+    },
+    'task_category_colors': {
+        'all': {'light': '#526174', 'dark': '#B5BECF'},
+        'onetime': {'light': '#087C70', 'dark': '#72D9CC'},
+        'trigger': {'light': '#AC3652', 'dark': '#F09AA8'},
+        'group:Daily Activities': {'light': '#2668AA', 'dark': '#8ABCF0'},
+        'group:Echo Management': {'light': '#8C651A', 'dark': '#E8C27C'},
+        'group:Multi-account': {'light': '#7650A5', 'dark': '#C2A3EA'},
+    },
     'config_folder': 'configs',
     'blur_area': blur_area,
     'gui_icon': 'icons/icon.png',
     'global_configs': [basic_config_option, key_config_option, char_config_option, monthly_card_config_option],
-    'custom_tabs': [
-        ["src.gui.CharacterCodeTab", "CharacterCodeTab"],
-        ["src.gui.MultiAccountConfigTab", "MultiAccountConfigTab"],
-    ],
     'ocr': {
         'lib': 'onnxocr',
         'auto_simplify': True,
@@ -183,10 +190,11 @@ config = {
     'plugin':True,
     'my_app': ['src.globals', 'Globals'],
     'start_timeout': 120,  # default 60
+    'update_only_game_exit': True,  # if startup skipped the update check, check 10s after the game exits
     'wait_until_settle_time': 0,
     # required if using feature detection
     'template_matching': {
-        'coco_feature_json': os.path.join('assets', 'coco_annotations.json'),
+        'template_folder': os.path.join('assets', 'templates'),
         'default_horizontal_variance': 0.002,
         'default_vertical_variance': 0.002,
         'default_threshold': 0.8,
@@ -198,7 +206,7 @@ config = {
                              'garden_unpause', 'garden_get_gold', 'garden_get_purple', 'garden_get_skip',
                              'garden_not_interested_confirm', 'garden_not_interested', 'a_garden_back',
                              'garden_get_confirm_gray', 'the_garden_max', 'garden_shop_close', 'garden_new_stage',
-                             'a_garden_restart', 'suisui_forte2', 'suisui_e1', 'e_forte', 'f_break_full']
+                             'a_garden_restart', 'suisui_forte2', 'e_forte', 'f_break_full']
     },
     'windows': {  # required  when supporting windows game
         'top_hwnd_class': [re.compile('CAgreementDlg'), re.compile('CLoginDlg_P_'),
@@ -232,24 +240,17 @@ config = {
         'default': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
-            'download': 'https://ok-script.com/ok-ww',
-            'sponsor': 'https://patreon.com/ok_oldking',
-            'share': 'Download OK-WW from https://ok-script.com/ok-ww',
             'faq': 'https://ok-script.com/ok-ww/'
         },
         'zh_CN': {
             'github': 'https://github.com/ok-oldking/ok-wuthering-waves',
             'discord': 'https://discord.gg/vVyCatEBgA',
-            'sponsor': 'https://afdian.com/a/ok-oldking',
-            'share': '下载okww https://ok-script.com/ok-ww',
             'faq': 'https://ok-script.com/ok-ww',
-            'qq_group': 'https://qm.qq.com/q/jw2NltIEWA',
-            'qq_channel': 'https://pd.qq.com/s/djmm6l44y',
         },
     },
     'about': """
     <p style="color:red;">
-    <strong>本软件是免费开源的。</strong> 如果你被收费，请立即退款。请访问QQ频道或GitHub下载最新的官方版本。
+    <strong>本软件是免费开源的。</strong> 如果你被收费，请立即退款。
     </p>
     <p style="color:red;">
         <strong>本软件仅供个人使用，用于学习Python编程、计算机视觉、UI自动化等。</strong> 请勿将其用于任何营利性或商业用途。
@@ -260,6 +261,7 @@ config = {
 """,
     'screenshots_folder': "screenshots",
     'gui_title': 'OK-WW',  # Optional
+    'game_name': 'Wuthering Waves',
     # 'coco_feature_folder': get_path(__file__, 'assets/coco_feature'),  # required if using feature detection
     'log_file': 'logs/ok-ww.log',  # Optional, auto rotating every day
     'error_log_file': 'logs/ok-ww_error.log',
@@ -279,6 +281,7 @@ config = {
         ["src.task.EnhanceEchoTask", "EnhanceEchoTask"],
         ["src.task.ChangeEchoTask", "ChangeEchoTask"],
         ["src.task.GardenTask", "GardenTask"],
+        ["src.task.TacetEliminationTask", "TacetEliminationTask"],
         # ["src.task.DiagnosisTask", "DiagnosisTask"],
     ], 'trigger_tasks': [
         ["src.task.AutoCombatTask", "AutoCombatTask"],
