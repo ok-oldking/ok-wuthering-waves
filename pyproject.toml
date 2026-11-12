@@ -9,7 +9,7 @@ requires-python = ">=3.11"
 dependencies = [
     "dulwich==1.2.21",
     "mcp==2.3.0",
-    "ok-script[ocr,qt]==3.0.5b5",
+    "ok-script[ocr,qt]==3.0.5b7",
     "ok-pyside-minimal==6.12.0.post2",
     "onnxocr-ppocrv5>=0.0.23",
     "openvino",
@@ -26,5 +26,5 @@ docs = [
     "mkdocs-material>=9.5,<10",
 ]
 web-test = [
-    "ok-script[web]==3.0.5b5",
+    "ok-script[web]==3.0.5b7",
 ]
