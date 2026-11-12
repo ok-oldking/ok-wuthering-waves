@@ -2351,6 +2351,18 @@
       "file_name": "lily-slumberland.png",
       "width": 3840,
       "height": 2160
+    },
+    {
+      "id": 307,
+      "file_name": "hiyuki-skin.png",
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "id": 308,
+      "file_name": "hiyuki-skin-inactive.png",
+      "width": 3840,
+      "height": 2160
     }
   ],
   "annotations": [
@@ -6609,6 +6621,19 @@
       ],
       "area": 1936.0,
       "iscrowd": 0
+    },
+    {
+      "id": 462,
+      "image_id": 307,
+      "category_id": 301,
+      "bbox": [
+        3558.0,
+        482.0,
+        64.0,
+        62.0
+      ],
+      "area": 3968.0,
+      "iscrowd": 0
     }
   ],
   "categories": [
@@ -8110,6 +8135,11 @@
     {
       "id": 300,
       "name": "lily_slumberland",
+      "supercategory": ""
+    },
+    {
+      "id": 301,
+      "name": "char_hiyuki2",
       "supercategory": ""
     }
   ]

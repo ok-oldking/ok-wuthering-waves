@@ -89,6 +89,7 @@ class Labels(str, Enum):
     char_encore = 'char_encore'
     char_galbrena = 'char_galbrena'
     char_hiyuki = 'char_hiyuki'
+    char_hiyuki2 = 'char_hiyuki2'
     char_hsin = 'char_hsin'
     char_iuno = 'char_iuno'
     char_jianxin = 'char_jianxin'
