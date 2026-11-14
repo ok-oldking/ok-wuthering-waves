@@ -70,7 +70,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             if max_runs is not None:
                 runs_left = max_runs - self._domain_runs_completed
                 if runs_left <= 0:
-                    self.log_info(f'farm_domain: reached configured runs {max_runs}')
+                    self.log_info(self.tr('farm_domain: reached configured runs {max_runs}').format(max_runs=max_runs))
                     self.make_sure_in_world()
                     return
             teleport_into_domain_once()
@@ -98,9 +98,6 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         """
         if self.stamina_once <= 0:
             raise RuntimeError(self.tr('"self.stamina_once" must be override'))
-        if max_runs is not None and max_runs <= 0:
-            self.make_sure_in_world()
-            return True, must_use
         self.info_incr('used stamina', 0)
         runs = 0
         while True:
@@ -115,25 +112,20 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
                 self.log_info(self.tr('farm_in_domain: death recovered, exiting domain'))
                 self.make_sure_in_world()
                 return False, must_use
-            if max_runs is None:
-                can_continue, used = self.use_stamina(
-                    once=self.stamina_once, must_use=must_use)
+            if max_runs is not None and max_runs - runs < 2:
+                can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use, force_single=True)
             else:
-                remaining_runs = max_runs - runs
-                can_continue, used = self.use_stamina(
-                    once=self.stamina_once, must_use=must_use,
-                    force_single=remaining_runs < 2)
+                can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
             self.info_incr('used stamina', used)
-            completed = used // self.stamina_once
-            runs += completed
-            self._domain_runs_completed = getattr(self, '_domain_runs_completed', 0) + completed
             must_use -= used
             self.sleep(4)
-            if max_runs is not None and runs >= max_runs:
-                self.log_info(f'farm_domain: reached configured runs {max_runs}')
-                self.click(0.42, 0.84, after_sleep=2)
-                self.make_sure_in_world()
-                return True, must_use
+            if max_runs is not None:
+                completed = used // self.stamina_once
+                runs += completed
+                self._domain_runs_completed += completed
+                if runs >= max_runs:
+                    self.log_info(self.tr('farm_domain: reached configured runs {max_runs}').format(max_runs=max_runs))
+                    break
             if not can_continue:
                 self.log_info(self.tr('used all stamina'))
                 break

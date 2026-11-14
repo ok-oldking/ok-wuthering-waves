@@ -58,8 +58,6 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
             must_use = 0
         if max_runs is not None and max_runs <= 0:
             return
-        if self.stamina_once <= 0:
-            raise RuntimeError(self.tr('"self.stamina_once" must be override'))
         self.info_incr('used stamina', 0)
         recovery_retries = 0
         completed_runs = 0
@@ -98,22 +96,19 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                     self.esc_cancel()
                     self.log_info(self.tr('is not claim treasure, restart challenge'))
                     continue
-                if max_runs is None:
-                    can_continue, used = self.use_stamina(
-                        once=self.stamina_once, must_use=must_use)
+                if max_runs is not None and max_runs - completed_runs < 2:
+                    can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use,
+                                                          force_single=True)
                 else:
-                    remaining_runs = max_runs - completed_runs
-                    can_continue, used = self.use_stamina(
-                        once=self.stamina_once, must_use=must_use,
-                        force_single=remaining_runs < 2)
+                    can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
                 self.info_incr('used stamina', used)
-                completed_runs += used // self.stamina_once
                 self.sleep(4)
-                if max_runs is not None and completed_runs >= max_runs:
-                    self.log_info(f'farm_tacet: reached configured runs {max_runs}')
-                    self.click_relative(0.365, 0.853, hcenter=True)
-                    self.wait_in_team_and_world(time_out=120)
-                    return None
+                if max_runs is not None:
+                    completed_runs += used // self.stamina_once
+                    if completed_runs >= max_runs:
+                        self.log_info(self.tr('farm_tacet: reached configured runs {max_runs}').format(
+                            max_runs=max_runs))
+                        can_continue = False
                 if not can_continue:
                     self.click_relative(0.365, 0.853, hcenter=True)
                     self.wait_in_team_and_world(time_out=120)

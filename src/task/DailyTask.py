@@ -70,7 +70,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
             'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.',
             DOUBLE_DROP_RULES: 'Detect the UP event badge on the Material Acquisition page and farm those domains '
-                               'first. The original "Which to Farm" setting is not changed.',
+                               'first. The original "Which to Farm" setting is not changed. Supports 16:9 only.',
             DOUBLE_DROP_SIMULATION_COUNT: 'Simulation Challenge runs during the event, 0-3. Simulation + Forgery '
                                           'cannot exceed 3 in total.',
             DOUBLE_DROP_SIMULATION_MATERIAL: 'Material type for Simulation Challenge.',
@@ -178,7 +178,15 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.log_info(self.tr('Daily Task Completed'), notify=True)
 
     def validate_config(self, key, value):
-        return validate_double_drop_config(key, value, self.config or {})
+        error = validate_double_drop_config(key, value, self.config or {})
+        return self.tr_double_drop_error(error) if error else None
+
+    def tr_double_drop_error(self, error):
+        message, params = error
+        params = {name: ', '.join(map(self.tr, value)) if isinstance(value, tuple)
+                  else self.tr(value) if isinstance(value, str) else value
+                  for name, value in params.items()}
+        return self.tr(message).format(**params)
 
     def run_stamina_farming(self, used_stamina):
         plan = self.build_double_drop_plan_for_daily()
@@ -211,8 +219,12 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         for key in DOUBLE_DROP_CONFIG_KEYS:
             error = validate_double_drop_config(key, self.config.get(key), self.config)
             if error:
-                self.log_error(f'Invalid double drop config: {error} Keep original daily logic')
+                self.log_error(self.tr('Invalid double drop config: {error} Keep original daily logic').format(
+                    error=self.tr_double_drop_error(error)))
                 return []
+        if abs(self.width / self.height - 16 / 9) > 0.01:
+            self.log_info(self.tr('Double drop rules support 16:9 only, keep original daily logic'))
+            return []
         activities = self.read_double_drop_activities()
         try:
             plan = create_double_drop_plan(self.config, activities)
@@ -228,7 +240,6 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         try:
             self.openF2Book('gray_book_boss')
             self.next_frame()
-            self.screenshot('double_drop_activity_badges')
             activities = self.detect_double_drop_activities_from_frame()
             if not any(activities.values()):
                 self.log_info('Double drop: no activity badge detected, keep original daily logic')

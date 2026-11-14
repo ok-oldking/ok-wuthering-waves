@@ -69,25 +69,23 @@ def is_non_negative_int(value):
 
 
 def validate_double_drop_config(key, value, config):
-    """Return a user-facing error message, or None when the value is valid."""
+    """Return (message msgid, format params) for an invalid value, or None when it is valid."""
     if key in _COUNT_LIMITS:
         if not is_non_negative_int(value):
-            return f'{key} must be a non-negative integer.'
+            return '{key} must be a non-negative integer.', {'key': key}
         other_key, limit = _COUNT_LIMITS[key]
-        if value > limit:
-            if other_key is None:
-                return f'{key} cannot exceed {limit}.'
-            return f'{key} and {other_key} cannot exceed {limit} in total.'
-        other = (config or {}).get(other_key, 0)
-        if is_non_negative_int(other) and value + other > limit:
-            return f'{key} and {other_key} cannot exceed {limit} in total.'
+        other = (config or {}).get(other_key, 0) if other_key else 0
+        if value > limit and other_key is None:
+            return '{key} cannot exceed {limit}.', {'key': key, 'limit': limit}
+        if value > limit or (is_non_negative_int(other) and value + other > limit):
+            return '{key} and {other} cannot exceed {limit} in total.', {'key': key, 'other': other_key, 'limit': limit}
         return None
     if key in _CONTENT_NUMBERS:
         if not isinstance(value, int) or isinstance(value, bool) or value < 1:
-            return f'{key} must be a positive integer.'
+            return '{key} must be a positive integer.', {'key': key}
         return None
     if key == DOUBLE_DROP_SIMULATION_MATERIAL and value not in SIMULATION_MATERIALS:
-        return f'{key} must be one of {", ".join(SIMULATION_MATERIALS)}.'
+        return '{key} must be one of {options}.', {'key': key, 'options': SIMULATION_MATERIALS}
     return None
 
 
