@@ -2172,8 +2172,8 @@ msgstr "ダブルドロップ 無音区回数"
 msgid "Double Drop Tacet Number"
 msgstr "ダブルドロップ 無音区番号"
 
-msgid "Detect the UP event badge on the Material Acquisition page and farm those domains first. The original \"Which to Farm\" setting is not changed."
-msgstr "素材入手画面の UP マークを検出し、該当する領域を優先して周回します。元の「周回対象」設定は変更しません。"
+msgid "Detect the UP event badge on the Material Acquisition page and farm those domains first. The original \"Which to Farm\" setting is not changed. Supports 16:9 only."
+msgstr "素材入手画面の UP マークを検出し、該当する領域を優先して周回します。元の「周回対象」設定は変更しません。16:9 のみ対応です。"
 
 msgid "Simulation Challenge runs during the event, 0-3. Simulation + Forgery cannot exceed 3 in total."
 msgstr "イベント中のシミュレーション挑戦の周回数（0-3）。シミュレーションと凝素領域の合計は 3 回までです。"
@@ -2206,3 +2206,72 @@ msgstr "アカウントごとにタスクを設定します。無効の場合は
 
 msgid "Edit account order, enabled accounts, tasks and task settings."
 msgstr "アカウントの順序、有効状態、実行タスクとタスク設定を編集します。"
+
+msgid "Double drop: failed to recheck daily stamina, use calculated usage"
+msgstr "ダブルドロップ：デイリーの結晶波長板の再確認に失敗、計算値を使用"
+
+msgid "Double drop plan completed, daily stamina requirement is met"
+msgstr "ダブルドロップ計画完了、デイリーの結晶波長板の条件を満たしました"
+
+msgid "Double drop plan completed, continue original farming at {used_stamina}/180"
+msgstr "ダブルドロップ計画完了、元の周回を続行します。現在 {used_stamina}/180"
+
+msgid "Double drop rules enabled but every count is 0, keep original daily logic"
+msgstr "ダブルドロップルールは有効ですが、すべての回数が 0 のため元のデイリーロジックを維持します"
+
+msgid "Invalid double drop plan: {error} Keep original daily logic"
+msgstr "ダブルドロップ計画が無効です：{error} 元のデイリーロジックを維持します"
+
+msgid "Double drop plan: {plan}"
+msgstr "ダブルドロップ計画：{plan}"
+
+msgid "Double drop: no activity badge detected, keep original daily logic"
+msgstr "ダブルドロップ：活動マークが検出されませんでした。元のデイリーロジックを維持します"
+
+msgid "Double drop recognition failed, keep original daily logic"
+msgstr "ダブルドロップ活動の認識に失敗しました。元のデイリーロジックを維持します"
+
+msgid "Double drop: failed to return to main after recognition"
+msgstr "ダブルドロップ：認識後にメイン画面へ戻れませんでした"
+
+msgid "Double drop {mode}: UP={up} gold={gold} active={active}"
+msgstr "ダブルドロップ {mode}：UP={up} 金色割合={gold} 有効={active}"
+
+msgid "Double drop {mode} recognition failed, treat as inactive"
+msgstr "ダブルドロップ {mode} の認識に失敗、非アクティブとして扱います"
+
+msgid "{mode} task is not registered"
+msgstr "{mode} タスクが登録されていません"
+
+msgid "Double drop farming {mode} x{count}, config={config}"
+msgstr "ダブルドロップ周回 {mode} x{count}、設定={config}"
+
+msgid "Double drop {mode} failed"
+msgstr "ダブルドロップ {mode} 失敗"
+
+msgid "Invalid double drop config: {error} Keep original daily logic"
+msgstr "ダブルドロップ設定が無効です：{error} 元のデイリーロジックを維持します"
+
+msgid "Double drop rules support 16:9 only, keep original daily logic"
+msgstr "ダブルドロップルールは 16:9 のみ対応です。元のデイリーロジックを維持します"
+
+msgid "{key} must be a non-negative integer."
+msgstr "{key} は 0 以上の整数である必要があります。"
+
+msgid "{key} cannot exceed {limit}."
+msgstr "{key} は {limit} を超えることはできません。"
+
+msgid "{key} and {other} cannot exceed {limit} in total."
+msgstr "{key} と {other} の合計は {limit} を超えることはできません。"
+
+msgid "{key} must be a positive integer."
+msgstr "{key} は 1 以上の整数である必要があります。"
+
+msgid "{key} must be one of {options}."
+msgstr "{key} は {options} のいずれかである必要があります。"
+
+msgid "farm_domain: reached configured runs {max_runs}"
+msgstr "farm_domain：設定回数 {max_runs} に到達しました"
+
+msgid "farm_tacet: reached configured runs {max_runs}"
+msgstr "farm_tacet：設定回数 {max_runs} に到達しました"

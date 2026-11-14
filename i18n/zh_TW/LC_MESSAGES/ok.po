@@ -2298,8 +2298,8 @@ msgstr "雙倍無音區次數"
 msgid "Double Drop Tacet Number"
 msgstr "雙倍無音區編號"
 
-msgid "Detect the UP event badge on the Material Acquisition page and farm those domains first. The original \"Which to Farm\" setting is not changed."
-msgstr "識別素材獲取頁面的 UP 活動標記，優先刷取對應副本；不會修改原「刷取目標」配置。"
+msgid "Detect the UP event badge on the Material Acquisition page and farm those domains first. The original \"Which to Farm\" setting is not changed. Supports 16:9 only."
+msgstr "識別素材獲取頁面的 UP 活動標記，優先刷取對應副本；不會修改原「刷取目標」配置。僅支援 16:9。"
 
 msgid "Simulation Challenge runs during the event, 0-3. Simulation + Forgery cannot exceed 3 in total."
 msgstr "活動期間模擬領域的刷取次數，0-3；模擬領域與凝素領域合計不能超過 3 次。"
@@ -2332,3 +2332,72 @@ msgstr "為每個帳號分別設定任務。關閉時執行原有多帳號每日
 
 msgid "Edit account order, enabled accounts, tasks and task settings."
 msgstr "編輯帳號順序、啟用狀態、執行任務及任務設定。"
+
+msgid "Double drop: failed to recheck daily stamina, use calculated usage"
+msgstr "雙倍刷取：重新讀取每日體力失敗，改用計算值"
+
+msgid "Double drop plan completed, daily stamina requirement is met"
+msgstr "雙倍刷取計畫完成，每日體力已達標"
+
+msgid "Double drop plan completed, continue original farming at {used_stamina}/180"
+msgstr "雙倍刷取計畫完成，按原邏輯繼續刷取，當前 {used_stamina}/180"
+
+msgid "Double drop rules enabled but every count is 0, keep original daily logic"
+msgstr "已開啟雙倍刷取規則，但所有次數都為 0，沿用原每日邏輯"
+
+msgid "Invalid double drop plan: {error} Keep original daily logic"
+msgstr "雙倍刷取計畫無效：{error} 沿用原每日邏輯"
+
+msgid "Double drop plan: {plan}"
+msgstr "雙倍刷取計畫：{plan}"
+
+msgid "Double drop: no activity badge detected, keep original daily logic"
+msgstr "雙倍刷取：未識別到活動標記，沿用原每日邏輯"
+
+msgid "Double drop recognition failed, keep original daily logic"
+msgstr "雙倍活動識別失敗，沿用原每日邏輯"
+
+msgid "Double drop: failed to return to main after recognition"
+msgstr "雙倍刷取：識別後返回主介面失敗"
+
+msgid "Double drop {mode}: UP={up} gold={gold} active={active}"
+msgstr "雙倍刷取 {mode}：UP={up} 金色比例={gold} 激活={active}"
+
+msgid "Double drop {mode} recognition failed, treat as inactive"
+msgstr "雙倍刷取 {mode} 識別失敗，按未激活處理"
+
+msgid "{mode} task is not registered"
+msgstr "{mode} 任務未註冊"
+
+msgid "Double drop farming {mode} x{count}, config={config}"
+msgstr "雙倍刷取 {mode} x{count}，配置={config}"
+
+msgid "Double drop {mode} failed"
+msgstr "雙倍刷取 {mode} 失敗"
+
+msgid "Invalid double drop config: {error} Keep original daily logic"
+msgstr "雙倍刷取配置無效：{error} 沿用原每日邏輯"
+
+msgid "Double drop rules support 16:9 only, keep original daily logic"
+msgstr "雙倍刷取規則僅支援 16:9，沿用原每日邏輯"
+
+msgid "{key} must be a non-negative integer."
+msgstr "{key}必須是非負整數。"
+
+msgid "{key} cannot exceed {limit}."
+msgstr "{key}不能超過 {limit}。"
+
+msgid "{key} and {other} cannot exceed {limit} in total."
+msgstr "{key}與{other}合計不能超過 {limit}。"
+
+msgid "{key} must be a positive integer."
+msgstr "{key}必須是正整數。"
+
+msgid "{key} must be one of {options}."
+msgstr "{key}必須是以下之一：{options}。"
+
+msgid "farm_domain: reached configured runs {max_runs}"
+msgstr "farm_domain：已達到設定次數 {max_runs}"
+
+msgid "farm_tacet: reached configured runs {max_runs}"
+msgstr "farm_tacet：已達到設定次數 {max_runs}"

@@ -2175,8 +2175,8 @@ msgstr "2배 드롭 무음 구역 횟수"
 msgid "Double Drop Tacet Number"
 msgstr "2배 드롭 무음 구역 번호"
 
-msgid "Detect the UP event badge on the Material Acquisition page and farm those domains first. The original \"Which to Farm\" setting is not changed."
-msgstr "재료 획득 화면의 UP 표시를 인식해 해당 영역을 먼저 파밍합니다. 기존 \"파밍 대상\" 설정은 변경하지 않습니다."
+msgid "Detect the UP event badge on the Material Acquisition page and farm those domains first. The original \"Which to Farm\" setting is not changed. Supports 16:9 only."
+msgstr "재료 획득 화면의 UP 표시를 인식해 해당 영역을 먼저 파밍합니다. 기존 \"파밍 대상\" 설정은 변경하지 않습니다. 16:9만 지원합니다."
 
 msgid "Simulation Challenge runs during the event, 0-3. Simulation + Forgery cannot exceed 3 in total."
 msgstr "이벤트 기간 시뮬레이션 영역 파밍 횟수(0-3). 시뮬레이션과 응소의 영역 합계는 3회를 넘을 수 없습니다."
@@ -2209,3 +2209,72 @@ msgstr "계정마다 작업을 따로 설정합니다. 끄면 기존 다중 계�
 
 msgid "Edit account order, enabled accounts, tasks and task settings."
 msgstr "계정 순서, 활성화 상태, 실행할 작업 및 작업 설정을 편집합니다."
+
+msgid "Double drop: failed to recheck daily stamina, use calculated usage"
+msgstr "2배 드롭: 일일 스태미나 재확인 실패, 계산된 소모량 사용"
+
+msgid "Double drop plan completed, daily stamina requirement is met"
+msgstr "2배 드롭 계획 완료, 일일 스태미나 요건 충족"
+
+msgid "Double drop plan completed, continue original farming at {used_stamina}/180"
+msgstr "2배 드롭 계획 완료, 기존 파밍을 계속합니다. 현재 {used_stamina}/180"
+
+msgid "Double drop rules enabled but every count is 0, keep original daily logic"
+msgstr "2배 드롭 규칙이 활성화되었지만 모든 횟수가 0이므로 기존 일일 로직을 유지합니다"
+
+msgid "Invalid double drop plan: {error} Keep original daily logic"
+msgstr "2배 드롭 계획이 올바르지 않습니다: {error} 기존 일일 로직을 유지합니다"
+
+msgid "Double drop plan: {plan}"
+msgstr "2배 드롭 계획: {plan}"
+
+msgid "Double drop: no activity badge detected, keep original daily logic"
+msgstr "2배 드롭: 활동 표시를 감지하지 못했습니다. 기존 일일 로직을 유지합니다"
+
+msgid "Double drop recognition failed, keep original daily logic"
+msgstr "2배 드롭 활동 인식 실패, 기존 일일 로직을 유지합니다"
+
+msgid "Double drop: failed to return to main after recognition"
+msgstr "2배 드롭: 인식 후 메인 화면 복귀 실패"
+
+msgid "Double drop {mode}: UP={up} gold={gold} active={active}"
+msgstr "2배 드롭 {mode}: UP={up} 금색 비율={gold} 활성={active}"
+
+msgid "Double drop {mode} recognition failed, treat as inactive"
+msgstr "2배 드롭 {mode} 인식 실패, 비활성으로 처리합니다"
+
+msgid "{mode} task is not registered"
+msgstr "{mode} 작업이 등록되지 않았습니다"
+
+msgid "Double drop farming {mode} x{count}, config={config}"
+msgstr "2배 드롭 파밍 {mode} x{count}, 설정={config}"
+
+msgid "Double drop {mode} failed"
+msgstr "2배 드롭 {mode} 실패"
+
+msgid "Invalid double drop config: {error} Keep original daily logic"
+msgstr "2배 드롭 설정이 올바르지 않습니다: {error} 기존 일일 로직을 유지합니다"
+
+msgid "Double drop rules support 16:9 only, keep original daily logic"
+msgstr "2배 드롭 규칙은 16:9만 지원합니다. 기존 일일 로직을 유지합니다"
+
+msgid "{key} must be a non-negative integer."
+msgstr "{key}은(는) 0 이상의 정수여야 합니다."
+
+msgid "{key} cannot exceed {limit}."
+msgstr "{key}은(는) {limit}을(를) 초과할 수 없습니다."
+
+msgid "{key} and {other} cannot exceed {limit} in total."
+msgstr "{key}과(와) {other}의 합계는 {limit}을(를) 초과할 수 없습니다."
+
+msgid "{key} must be a positive integer."
+msgstr "{key}은(는) 양의 정수여야 합니다."
+
+msgid "{key} must be one of {options}."
+msgstr "{key}은(는) {options} 중 하나여야 합니다."
+
+msgid "farm_domain: reached configured runs {max_runs}"
+msgstr "farm_domain: 설정 횟수 {max_runs}에 도달"
+
+msgid "farm_tacet: reached configured runs {max_runs}"
+msgstr "farm_tacet: 설정 횟수 {max_runs}에 도달"

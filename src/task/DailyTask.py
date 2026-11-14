@@ -200,12 +200,13 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             except Exception as e:
                 daily_reward_ready = False
                 used_stamina += plan_used
-                self.log_error('Double drop: failed to recheck daily stamina, use calculated usage', e)
+                self.log_error(self.tr('Double drop: failed to recheck daily stamina, use calculated usage'), e)
             self.info_set('used stamina after double drop', used_stamina)
             if daily_reward_ready or used_stamina >= 180:
-                self.log_info('Double drop plan completed, daily stamina requirement is met')
+                self.log_info(self.tr('Double drop plan completed, daily stamina requirement is met'))
                 return
-            self.log_info(f'Double drop plan completed, continue original farming at {used_stamina}/180')
+            self.log_info(self.tr('Double drop plan completed, continue original farming at {used_stamina}/180').format(
+                used_stamina=used_stamina))
         self.farm_original(used_stamina)
 
     def build_double_drop_plan_for_daily(self):
@@ -214,7 +215,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         counts = [self.config.get(key, 0) for key in (
             DOUBLE_DROP_SIMULATION_COUNT, DOUBLE_DROP_FORGERY_COUNT, DOUBLE_DROP_TACET_COUNT)]
         if not any(is_non_negative_int(count) and count > 0 for count in counts):
-            self.log_info('Double drop rules enabled but every count is 0, keep original daily logic')
+            self.log_info(self.tr('Double drop rules enabled but every count is 0, keep original daily logic'))
             return []
         for key in DOUBLE_DROP_CONFIG_KEYS:
             error = validate_double_drop_config(key, self.config.get(key), self.config)
@@ -229,10 +230,11 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         try:
             plan = create_double_drop_plan(self.config, activities)
         except ValueError as e:
-            self.log_error(f'Invalid double drop plan: {e} Keep original daily logic')
+            self.log_error(self.tr('Invalid double drop plan: {error} Keep original daily logic').format(error=e))
             return []
         if plan:
-            self.log_info('Double drop plan: ' + ', '.join(f'{item.mode} x{item.count}' for item in plan))
+            self.log_info(self.tr('Double drop plan: {plan}').format(
+                plan=', '.join(f'{self.tr(item.mode)} x{item.count}' for item in plan)))
         return plan
 
     def read_double_drop_activities(self):
@@ -242,12 +244,12 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             self.next_frame()
             activities = self.detect_double_drop_activities_from_frame()
             if not any(activities.values()):
-                self.log_info('Double drop: no activity badge detected, keep original daily logic')
+                self.log_info(self.tr('Double drop: no activity badge detected, keep original daily logic'))
             return activities
         except TaskDisabledException:
             raise
         except Exception as e:
-            self.log_error('Double drop recognition failed, keep original daily logic', e)
+            self.log_error(self.tr('Double drop recognition failed, keep original daily logic'), e)
             self.screenshot('double_drop_recognition_failed')
             return activities
         finally:
@@ -256,7 +258,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             except TaskDisabledException:
                 raise
             except Exception as e:
-                self.log_error('Double drop: failed to return to main after recognition', e)
+                self.log_error(self.tr('Double drop: failed to return to main after recognition'), e)
 
     def detect_double_drop_activities_from_frame(self):
         activities = {}
@@ -266,13 +268,14 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                 texts = self.ocr(box=box, match=UP_PATTERN, log=getattr(self, 'debug', False))
                 gold_ratio = self.calculate_color_percentage(UP_GOLD, box)
                 activities[mode] = is_up_badge([text.name for text in texts], gold_ratio)
-                self.log_info(f'Double drop {mode}: UP={bool(texts)} gold={gold_ratio:.4f} '
-                              f'active={activities[mode]}')
+                self.log_info(self.tr('Double drop {mode}: UP={up} gold={gold} active={active}').format(
+                    mode=self.tr(mode), up=bool(texts), gold=f'{gold_ratio:.4f}', active=activities[mode]))
             except TaskDisabledException:
                 raise
             except Exception as e:
                 activities[mode] = False
-                self.log_error(f'Double drop {mode} recognition failed, treat as inactive', e)
+                self.log_error(self.tr('Double drop {mode} recognition failed, treat as inactive').format(
+                    mode=self.tr(mode)), e)
         return activities
 
     def run_double_drop_plan(self, plan):
@@ -283,10 +286,11 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             try:
                 task = self.get_double_drop_task(item.mode)
                 if task is None:
-                    raise RuntimeError(f'{item.mode} task is not registered')
+                    raise RuntimeError(self.tr('{mode} task is not registered').format(mode=self.tr(item.mode)))
                 used_before = max(0, int(task.info.get('used stamina', 0) or 0))
                 self.info_set('current task', f'double drop {item.mode}')
-                self.log_info(f'Double drop farming {item.mode} x{item.count}, config={item.config}')
+                self.log_info(self.tr('Double drop farming {mode} x{count}, config={config}').format(
+                    mode=self.tr(item.mode), count=item.count, config=item.config))
                 plan_used_stamina = max(0, 180 - item.count * task.stamina_once)
                 if item.mode == SIMULATION:
                     task.farm_simulation(daily=True, used_stamina=plan_used_stamina,
@@ -300,7 +304,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
             except TaskDisabledException:
                 raise
             except Exception as e:
-                self.log_error(f'Double drop {item.mode} failed', e)
+                self.log_error(self.tr('Double drop {mode} failed').format(mode=self.tr(item.mode)), e)
                 self.screenshot('double_drop_failed_' + item.mode.replace(' ', '_'))
                 self.ensure_main(time_out=180)
             finally:

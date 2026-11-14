@@ -2157,8 +2157,8 @@ msgstr "Cantidad de doble botín: Supresión Tácita"
 msgid "Double Drop Tacet Number"
 msgstr "Número de doble botín: Supresión Tácita"
 
-msgid "Detect the UP event badge on the Material Acquisition page and farm those domains first. The original \"Which to Farm\" setting is not changed."
-msgstr "Detecta la marca UP en la página de obtención de materiales y farmea primero esos dominios. No modifica el ajuste original \"Qué farmear\"."
+msgid "Detect the UP event badge on the Material Acquisition page and farm those domains first. The original \"Which to Farm\" setting is not changed. Supports 16:9 only."
+msgstr "Detecta la marca UP en la página de obtención de materiales y farmea primero esos dominios. No modifica el ajuste original \"Qué farmear\". Solo admite 16:9."
 
 msgid "Simulation Challenge runs during the event, 0-3. Simulation + Forgery cannot exceed 3 in total."
 msgstr "Número de rondas del Desafío de Simulación durante el evento, 0-3. La suma de Simulación y Forja no puede superar 3."
@@ -2194,3 +2194,72 @@ msgstr ""
 msgid "Edit account order, enabled accounts, tasks and task settings."
 msgstr ""
 "Edita el orden de las cuentas, su activación, las tareas y sus ajustes."
+
+msgid "Double drop: failed to recheck daily stamina, use calculated usage"
+msgstr "Doble botín: no se pudo volver a comprobar la energía diaria; se usa el consumo calculado"
+
+msgid "Double drop plan completed, daily stamina requirement is met"
+msgstr "Plan de doble botín completado, se cumple el requisito diario de energía"
+
+msgid "Double drop plan completed, continue original farming at {used_stamina}/180"
+msgstr "Plan de doble botín completado, se continúa el farmeo original con {used_stamina}/180"
+
+msgid "Double drop rules enabled but every count is 0, keep original daily logic"
+msgstr "Reglas de doble botín activadas, pero todos los conteos son 0; se mantiene la lógica diaria original"
+
+msgid "Invalid double drop plan: {error} Keep original daily logic"
+msgstr "Plan de doble botín no válido: {error} Se mantiene la lógica diaria original"
+
+msgid "Double drop plan: {plan}"
+msgstr "Plan de doble botín: {plan}"
+
+msgid "Double drop: no activity badge detected, keep original daily logic"
+msgstr "Doble botín: no se detectó la marca de actividad; se mantiene la lógica diaria original"
+
+msgid "Double drop recognition failed, keep original daily logic"
+msgstr "Fallo al reconocer el doble botín; se mantiene la lógica diaria original"
+
+msgid "Double drop: failed to return to main after recognition"
+msgstr "Doble botín: no se pudo volver a la pantalla principal tras el reconocimiento"
+
+msgid "Double drop {mode}: UP={up} gold={gold} active={active}"
+msgstr "Doble botín {mode}: UP={up} proporción dorada={gold} activo={active}"
+
+msgid "Double drop {mode} recognition failed, treat as inactive"
+msgstr "Fallo al reconocer el doble botín {mode}; se trata como inactivo"
+
+msgid "{mode} task is not registered"
+msgstr "La tarea {mode} no está registrada"
+
+msgid "Double drop farming {mode} x{count}, config={config}"
+msgstr "Doble botín farmeando {mode} x{count}, configuración={config}"
+
+msgid "Double drop {mode} failed"
+msgstr "Fallo del doble botín {mode}"
+
+msgid "Invalid double drop config: {error} Keep original daily logic"
+msgstr "Configuración de doble botín no válida: {error} Se mantiene la lógica diaria original"
+
+msgid "Double drop rules support 16:9 only, keep original daily logic"
+msgstr "Las reglas de doble botín solo admiten 16:9; se mantiene la lógica diaria original"
+
+msgid "{key} must be a non-negative integer."
+msgstr "{key} debe ser un entero no negativo."
+
+msgid "{key} cannot exceed {limit}."
+msgstr "{key} no puede superar {limit}."
+
+msgid "{key} and {other} cannot exceed {limit} in total."
+msgstr "{key} y {other} no pueden superar {limit} en total."
+
+msgid "{key} must be a positive integer."
+msgstr "{key} debe ser un entero positivo."
+
+msgid "{key} must be one of {options}."
+msgstr "{key} debe ser uno de {options}."
+
+msgid "farm_domain: reached configured runs {max_runs}"
+msgstr "farm_domain: se alcanzaron las ejecuciones configuradas {max_runs}"
+
+msgid "farm_tacet: reached configured runs {max_runs}"
+msgstr "farm_tacet: se alcanzaron las ejecuciones configuradas {max_runs}"
