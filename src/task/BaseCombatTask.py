@@ -298,19 +298,28 @@ class BaseCombatTask(CombatCheck):
         self._travel_to_nearest_waypoint()
 
     def _travel_to_nearest_waypoint(self):
-        """在已打开的地图界面上, 找最近传送点并传送, 等回到大世界。"""
+        """在已打开的地图界面上, 按距离从近到远尝试传送点, 等回到大世界。"""
         self.sleep(2)
-        teleport = self.find_best_match_in_box(self.box_of_screen(0.1, 0.1, 0.9, 0.9),
-                                               ['map_way_point', 'map_way_point_big'], 0.6)
-        if not teleport:
+        area = self.box_of_screen(0.1, 0.1, 0.9, 0.9)
+        teleports = []
+        for name in ('map_way_point', 'map_way_point_big'):
+            for box in self.find_feature(name, box=area, threshold=0.6):
+                if all(abs(box.x - other.x) > 30 or abs(box.y - other.y) > 30
+                       for other in teleports):
+                    teleports.append(box)
+        if not teleports:
             raise RuntimeError(self.tr('Can not find a teleport to heal'))
-        self.click(teleport, after_sleep=1)
-        travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
-        if not travel:
-            pop_up = self.find_feature('map_way_point', box='map_way_point_pop_up_box')
-            if pop_up:
-                self.click(pop_up, after_sleep=1)
-                travel = self.wait_feature('gray_teleport', raise_if_not_found=True, time_out=3)
+        center_x, center_y = self.width / 2, self.height / 2
+        teleports.sort(key=lambda box: (box.x + box.width / 2 - center_x) ** 2
+                       + (box.y + box.height / 2 - center_y) ** 2)
+        travel = None
+        for teleport in teleports:
+            self.click(teleport, after_sleep=1)
+            travel = self.wait_feature('gray_teleport', raise_if_not_found=False, time_out=3)
+            if travel:
+                break
+            # 传送点与其它图标重叠时, 游戏会先弹出图标选择列表, 点地图空白关闭后换下一个传送点
+            self.click(0.06, 0.5, after_sleep=1)
         if not travel:
             raise RuntimeError(self.tr('Can not find the travel button'))
         self.click_box(travel, relative_x=1.5)
