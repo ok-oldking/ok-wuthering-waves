@@ -66,9 +66,9 @@ ok-pyside-minimal==6.12.0.post2
     # via
     #   ok-script
     #   ok-ww (pyproject.toml)
-ok-script[ocr,qt]==3.0.5b8
+ok-script[ocr,qt]==3.0.5b9
     # via ok-ww (pyproject.toml)
-onnxocr-ppocrv5==0.0.23
+onnxocr-ppocrv6==0.0.1
     # via
     #   ok-script
     #   ok-ww (pyproject.toml)
@@ -81,7 +81,7 @@ openvino==2026.3.0
 openvino-telemetry==2025.2.0
     # via openvino
 pillow==12.3.0
-    # via onnxocr-ppocrv5
+    # via onnxocr-ppocrv6
 psutil==7.2.2
     # via
     #   ok-script
@@ -93,7 +93,7 @@ pyappify[standalone]==1.0.20
 pycaw==20240210
     # via ok-script
 pyclipper==1.4.0
-    # via onnxocr-ppocrv5
+    # via onnxocr-ppocrv6
 pycparser==3.12
     # via cffi
 pydantic==2.14.2
@@ -125,7 +125,7 @@ rpds-py==2026.9.1
     #   jsonschema
     #   referencing
 shapely==2.1.2
-    # via onnxocr-ppocrv5
+    # via onnxocr-ppocrv6
 shiboken6==6.12.0
     # via ok-pyside-minimal
 six==1.17.0
