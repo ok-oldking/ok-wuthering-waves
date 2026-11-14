@@ -741,7 +741,56 @@ class BaseWWTask(BaseTask):
             self.back(after_sleep=2)
             return False
 
+    def _click_kuro_login_card(self):
+        # The Kuro login card is a separate top-level window (process
+        # KRSDKExternal, class #32770). PostMessage clicks aimed at the game main
+        # window never reach it, so "click login" loops forever without progress.
+        # Click the card's own hwnd instead (Windows PC client only).
+        import sys
+        if sys.platform != "win32":
+            return False
+        try:
+            import ctypes
+            import ctypes.wintypes as wt
+            u = ctypes.windll.user32
+            k = ctypes.windll.kernel32
+            cards = []
+
+            def cb(hwnd, _):
+                pid = wt.DWORD()
+                u.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+                h = k.OpenProcess(0x1000, False, pid.value)
+                if not h:
+                    return True
+                buf = ctypes.create_unicode_buffer(1024)
+                sz = wt.DWORD(len(buf))
+                okq = k.QueryFullProcessImageNameW(h, 0, buf, ctypes.byref(sz))
+                k.CloseHandle(h)
+                if okq and buf.value.lower().endswith("krsdkexternal.exe"):
+                    r = wt.RECT()
+                    if u.GetClientRect(hwnd, ctypes.byref(r)):
+                        w, hh = r.right - r.left, r.bottom - r.top
+                        if 480 <= w <= 640 and 320 <= hh <= 460:
+                            cards.append((hwnd, w, hh))
+                return True
+
+            u.EnumWindows(ctypes.WINFUNCTYPE(wt.BOOL, wt.HWND, wt.LPARAM)(cb), 0)
+            if not cards:
+                return False
+            hwnd, w, hh = cards[0]
+            x, y = int(w * 0.49), int(hh * 0.62)
+            lp = (y << 16) | (x & 0xFFFF)
+            u.PostMessageW(hwnd, 0x0200, 0, lp)
+            u.PostMessageW(hwnd, 0x0201, 1, lp)
+            u.PostMessageW(hwnd, 0x0202, 0, lp)
+            self.log_info("clicked Kuro login card hwnd=%s" % hwnd)
+            return True
+        except Exception:
+            return False
+
     def wait_login(self):
+        if self._click_kuro_login_card():
+            return False
         if not self.logged_in:
             if self.in_team_and_world():
                 self.logged_in = True
