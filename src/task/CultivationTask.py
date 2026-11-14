@@ -53,6 +53,7 @@ class CultivationTask(DomainTask):
     }
     WEEKLY_MATERIAL = '技能升级材料'
     WEEKLY_PATTERN = re.compile(r'本周剩余可收取次数[:：]?(\d+)/\d+')
+    CLAIM_COST_PATTERN = re.compile(r'领取奖励需消耗\s*(\d+)\s*点结晶波片')
     CHALLENGE_BUTTON_X = 0.900
     CHALLENGE_BUTTON_Y = {
         '共鸣者突破材料': 0.320,
@@ -274,6 +275,28 @@ class CultivationTask(DomainTask):
             return buttons
         return None
 
+    def read_claim_cost(self):
+        for box in self.ocr(0.25, 0.4, 0.75, 0.55, match=self.CLAIM_COST_PATTERN):
+            if match := self.CLAIM_COST_PATTERN.search(box.name):
+                return int(match[1])
+        return None
+
+    def has_claim_stamina(self):
+        # 部分培养目标副本的领奖弹窗没有 claim_stamina_sign，改认弹窗文字。
+        return not self.in_team()[0] and (self.find_one('claim_stamina_sign') or
+                                          self.read_claim_cost() is not None)
+
+    def confirm_single_claim(self):
+        self.sleep(1)
+        claim_cost = self.read_claim_cost()
+        if claim_cost is None:
+            # 带双倍选项的弹窗，左键为单倍领取。
+            self.click_dialog_left_button()
+        elif claim_cost == self.COST:
+            self.click_dialog_right_button()
+        else:
+            raise CultivationError(f'奖励消耗为 {claim_cost} 点，预期为 {self.COST} 点。已停止。')
+
     def claim_reward(self):
         for _ in range(2):
             if self.has_claim_stamina():
@@ -291,11 +314,11 @@ class CultivationTask(DomainTask):
         if before < self.COST:
             self.send_key('esc', after_sleep=0.5)
             raise CultivationError('当前结晶波片不足 60 点。已取消领取。')
-        _, used = self.use_stamina(once=self.COST, force_single=True)
+        self.confirm_single_claim()
         # 确认后只等待领取结果，避免延迟到账时重复扣费。
         if not self.wait_until(self.result_buttons, time_out=15):
             raise CultivationError('未确认奖励领取结果。已停止，请核对奖励后再运行。')
-        return before, used
+        return before
 
     def read_reward_inventory(self, material_type):
         names = {g.name for g in self.goals if g.material_type == material_type}
@@ -393,14 +416,14 @@ class CultivationTask(DomainTask):
                             return
                         self.enter_challenge(material_type)
                 self.collect_optional_echo()
-                before, used = self.claim_reward()
+                before = self.claim_reward()
                 inventory = self.read_reward_inventory(material_type)
                 remaining = self.read_remaining_stamina()
                 if remaining > before - self.COST + 1:
                     raise CultivationError('未确认奖励扣费后的剩余体力。已停止，请核对奖励。')
                 self.consume_weekly(material_type)
                 self.update_goals(inventory)
-                self.info_incr('used stamina', used)
+                self.info_incr('used stamina', self.COST)
                 max_claims -= 1
                 if all(g.missing == 0 for g in self.goals
                        if g.material_type == material_type):

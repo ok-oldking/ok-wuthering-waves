@@ -426,27 +426,10 @@ class BaseWWTask(BaseTask):
         self.info_set('back_up_stamina', back_up)
         return current, back_up, current + back_up
 
-    def get_stamina_claim_cost(self):
-        pattern = re.compile(r'领取奖励需消耗\s*(\d+)\s*点结晶波片')
-        for box in self.ocr(0.25, 0.4, 0.75, 0.55, match=pattern):
-            if match := pattern.search(box.name):
-                return int(match.group(1))
-        return None
-
-    def use_stamina(self, once=60, must_use=0, force_single=False):
+    def use_stamina(self, once=60, must_use=0):
         self.sleep(1)
         current, back_up, total = self.get_stamina()
-        claim_cost = self.get_stamina_claim_cost()
-        if claim_cost is not None:
-            if claim_cost != once:
-                raise CannotFindException(f'奖励消耗为 {claim_cost} 点，预期为 {once} 点。已停止。')
-            used = once
-            use_double = False
-        elif force_single:
-            used = once
-            use_double = False
-            logger.info("使用单倍体力")
-        elif current >= once * 2:
+        if current >= once * 2:
             used = once * 2
             use_double = True
             logger.info(f"当前体力大于等于双倍, {current} >= {once * 2}")
@@ -458,7 +441,7 @@ class BaseWWTask(BaseTask):
             used = once
             use_double = False
             logger.info(f"使用单倍体力")
-        if claim_cost is not None or use_double:
+        if use_double:
             btn = self.click_dialog_right_button()
         else:
             btn = self.click_dialog_left_button()
@@ -546,8 +529,7 @@ class BaseWWTask(BaseTask):
             return True
 
     def has_claim_stamina(self):
-        return not self.in_team()[0] and (self.find_one('claim_stamina_sign') or
-                                          self.get_stamina_claim_cost() is not None)
+        return not self.in_team()[0] and self.find_one('claim_stamina_sign')
 
     def has_claim(self):
         return not self.in_team()[0] and self.find_one('claim_cancel_button_hcenter_vcenter', horizontal_variance=0.05,
