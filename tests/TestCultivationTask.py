@@ -12,6 +12,7 @@ class TestCultivationTask(unittest.TestCase):
 
     def setUp(self):
         self.task = CultivationTask.__new__(CultivationTask)
+        self.task.tr = str
         self.task._app = None
         self.task.info = {}
         self.task.goals = []
@@ -56,7 +57,7 @@ class TestCultivationTask(unittest.TestCase):
         self.task.restart_challenge.assert_not_called()
         self.assertEqual(0, self.task.goals[0].missing)
         self.assertEqual(60, self.task.info['used stamina'])
-        self.assertEqual('培养材料已满足需求', self.task.info['停止原因'])
+        self.assertEqual('Cultivation materials meet the target', self.task.info['Stop Reason'])
 
     def test_farm_restarts_once_then_stops_with_insufficient_stamina(self):
         self.prepare_farm([MaterialGoal('材料', 5, 28, '共鸣者突破材料')],
@@ -68,7 +69,7 @@ class TestCultivationTask(unittest.TestCase):
         self.assertEqual(2, self.task.claim_reward.call_count)
         self.assertEqual(12, self.task.goals[0].owned)
         self.assertEqual(120, self.task.info['used stamina'])
-        self.assertEqual('当前结晶波片不足 60 点', self.task.info['停止原因'])
+        self.assertEqual('Waveplates below 60', self.task.info['Stop Reason'])
 
     def test_farm_continues_until_each_material_goal_is_complete(self):
         self.prepare_farm([MaterialGoal('材料甲', 27, 28, '共鸣者突破材料'),
@@ -81,7 +82,7 @@ class TestCultivationTask(unittest.TestCase):
         self.task.restart_challenge.assert_called_once_with()
         self.assertEqual(2, self.task.claim_reward.call_count)
         self.assertEqual([0, 0], [goal.missing for goal in self.task.goals])
-        self.assertEqual('培养材料已满足需求', self.task.info['停止原因'])
+        self.assertEqual('Cultivation materials meet the target', self.task.info['Stop Reason'])
 
     def test_farm_stops_before_challenge_when_weekly_claims_are_zero(self):
         self.task.goals = [MaterialGoal('突破甲', 5, 5, '共鸣者突破材料'),
@@ -92,7 +93,7 @@ class TestCultivationTask(unittest.TestCase):
 
         self.task.enter_challenge.assert_not_called()
         self.task.claim_reward.assert_not_called()
-        self.assertEqual('技能升级材料本周剩余收取次数为 0', self.task.info['停止原因'])
+        self.assertEqual('Skill Materials have 0 weekly claims left', self.task.info['Stop Reason'])
 
     def test_farm_decrements_weekly_and_ends_row_when_exhausted(self):
         self.prepare_farm([MaterialGoal('技能乙', 1, 5, '技能升级材料', 1)],
@@ -102,7 +103,7 @@ class TestCultivationTask(unittest.TestCase):
 
         self.task.restart_challenge.assert_not_called()
         self.assertEqual(0, self.task.goals[0].weekly_left)
-        self.assertEqual('技能升级材料本周剩余收取次数为 0', self.task.info['停止原因'])
+        self.assertEqual('Skill Materials have 0 weekly claims left', self.task.info['Stop Reason'])
 
     def test_two_failed_fights_stop_without_claiming_reward(self):
         self.prepare_farm([MaterialGoal('材料', 5, 28, '共鸣者突破材料')],
@@ -112,7 +113,7 @@ class TestCultivationTask(unittest.TestCase):
         self.task.read_goals = Mock(return_value=[MaterialGoal('材料', 5, 28, '共鸣者突破材料')])
         self.task.read_current_stamina = Mock(return_value=121)
 
-        with self.assertRaisesRegex(CultivationError, '挑战连续失败 2 次'):
+        with self.assertRaisesRegex(CultivationError, 'Challenge failed 2 times in a row'):
             self.task.farm(121)
 
         self.assertEqual(2, self.task.combat_once.call_count)
@@ -131,7 +132,7 @@ class TestCultivationTask(unittest.TestCase):
         with patch('src.task.CultivationTask.time.monotonic',
                    side_effect=[started, deadline - 1, deadline]), \
                 patch.object(DomainTask, 'sleep_check'):
-            with self.assertRaisesRegex(CultivationError, '战斗超过 600 秒'):
+            with self.assertRaisesRegex(CultivationError, 'Combat exceeded 600 seconds'):
                 self.task.fight()
 
         self.assertEqual(0, self.task._combat_deadline)
@@ -139,7 +140,7 @@ class TestCultivationTask(unittest.TestCase):
     def test_update_goals_rejects_inventory_regression(self):
         self.task.goals = [MaterialGoal('材料甲', 5, 28), MaterialGoal('材料乙', 2, 10)]
 
-        with self.assertRaisesRegex(CultivationError, '奖励库存小于领取前库存'):
+        with self.assertRaisesRegex(CultivationError, 'Reward inventory is lower than before the claim'):
             self.task.update_goals({'材料甲': 4, '材料乙': 3})
 
         self.assertEqual([5, 2], [goal.owned for goal in self.task.goals])
@@ -155,13 +156,13 @@ class TestCultivationTask(unittest.TestCase):
     def test_update_goals_rejects_unknown_material(self):
         self.task.goals = [MaterialGoal('材料甲', 5, 28, '共鸣者突破材料')]
 
-        with self.assertRaisesRegex(CultivationError, '奖励库存出现未知材料'):
+        with self.assertRaisesRegex(CultivationError, 'Unknown material in the reward inventory'):
             self.task.update_goals({'材料乙': 9})
 
     def test_update_goals_rejects_no_progress(self):
         self.task.goals = [MaterialGoal('材料甲', 5, 28), MaterialGoal('材料乙', 2, 10)]
 
-        with self.assertRaisesRegex(CultivationError, '领取后目标材料未增加'):
+        with self.assertRaisesRegex(CultivationError, 'Target materials did not increase after the claim'):
             self.task.update_goals({'材料甲': 5, '材料乙': 2})
 
     def test_claim_reward_confirms_single_claim_once(self):
@@ -177,7 +178,7 @@ class TestCultivationTask(unittest.TestCase):
         self.prepare_claim()
         self.task.has_claim_stamina.return_value = False
 
-        with self.assertRaisesRegex(CultivationError, '未打开领取奖励确认框'):
+        with self.assertRaisesRegex(CultivationError, 'Claim dialog did not open'):
             self.task.claim_reward()
 
         self.assertEqual([call(), call()], self.task.walk_to_treasure.call_args_list)
@@ -186,7 +187,7 @@ class TestCultivationTask(unittest.TestCase):
     def test_claim_reward_does_not_claim_when_insufficient(self):
         self.prepare_claim(stamina=59)
 
-        with self.assertRaisesRegex(CultivationError, '当前结晶波片不足 60 点'):
+        with self.assertRaisesRegex(CultivationError, 'Waveplates below 60'):
             self.task.claim_reward()
 
         self.task.confirm_single_claim.assert_not_called()
@@ -195,7 +196,7 @@ class TestCultivationTask(unittest.TestCase):
     def test_claim_reward_does_not_retry_after_result_timeout(self):
         self.prepare_claim(results=False)
 
-        with self.assertRaisesRegex(CultivationError, '未确认奖励领取结果'):
+        with self.assertRaisesRegex(CultivationError, 'Claim result not confirmed'):
             self.task.claim_reward()
 
         self.task.confirm_single_claim.assert_called_once_with()
@@ -215,7 +216,7 @@ class TestCultivationTask(unittest.TestCase):
     def test_confirm_single_claim_rejects_unexpected_cost_without_clicking(self):
         self.prepare_dialog('领取奖励需消耗40点结晶波片，请确认是否领取?')
 
-        with self.assertRaisesRegex(CultivationError, '奖励消耗为 40 点'):
+        with self.assertRaisesRegex(CultivationError, 'Claim costs 40 Waveplates'):
             self.task.confirm_single_claim()
 
         self.task.click_dialog_left_button.assert_not_called()
@@ -232,7 +233,7 @@ class TestCultivationTask(unittest.TestCase):
     def test_enter_challenge_rejects_missing_material_row(self):
         self.task.read_target_row = Mock(return_value=None)
 
-        with self.assertRaisesRegex(CultivationError, '共鸣者突破材料行已消失'):
+        with self.assertRaisesRegex(CultivationError, 'Ascension Materials row is missing'):
             CultivationTask.enter_challenge(self.task, '共鸣者突破材料')
 
         self.task.click.assert_not_called()
@@ -259,7 +260,7 @@ class TestCultivationTask(unittest.TestCase):
         self.task.read_target_row = Mock(side_effect=lambda material_type: rows[material_type])
         self.task.read_item_detail = Mock()
 
-        with self.assertRaisesRegex(CultivationError, '未识别技能升级材料本周剩余次数'):
+        with self.assertRaisesRegex(CultivationError, 'Weekly claims left for Skill Materials not recognized'):
             self.task.read_goals()
 
         self.task.read_item_detail.assert_not_called()
@@ -270,7 +271,7 @@ class TestCultivationTask(unittest.TestCase):
             Box(100 + index * 170, 500, 80, 40, name='×1') for index in range(6)])
         self.task.read_item_detail = Mock(return_value=('乙', 9))
 
-        with self.assertRaisesRegex(CultivationError, '不是目标材料'):
+        with self.assertRaisesRegex(CultivationError, 'not a target material'):
             CultivationTask.read_reward_inventory(self.task, '共鸣者突破材料')
 
 

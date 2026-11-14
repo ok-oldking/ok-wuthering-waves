@@ -2170,3 +2170,187 @@ msgstr ""
 msgid "Edit account order, enabled accounts, tasks and task settings."
 msgstr ""
 "Edita el orden de las cuentas, su activación, las tareas y sus ajustes."
+
+#: src/task/CultivationTask.py
+msgid "Combat exceeded {seconds} seconds. Stopped. Check the team and retry."
+msgstr "Combate superior a {seconds} segundos. Detenido. Revisa el equipo y vuelve a intentarlo."
+
+#: src/task/CultivationTask.py
+msgid "Failed to read {label}. Stopped. Check the game screen and retry."
+msgstr "No se pudo leer {label}. Detenido. Revisa la pantalla del juego y vuelve a intentarlo."
+
+#: src/task/CultivationTask.py
+msgid "Cultivation target page did not open. Select a cultivation target in the Guidebook."
+msgstr "No se abrió la página de objetivos de cultivo. Selecciona un objetivo de cultivo en la Guía de Solaris."
+
+#: src/task/CultivationTask.py
+msgid "Current Waveplates"
+msgstr "Placas de onda actuales"
+
+#: src/task/CultivationTask.py
+msgid "Remaining Waveplates on the result screen"
+msgstr "Placas de onda restantes en la pantalla de resultados"
+
+#: src/task/CultivationTask.py
+msgid "{material} quantities"
+msgstr "Cantidades de {material}"
+
+#: src/task/CultivationTask.py
+msgid "{material} quantities changed. Stopped. Run the task again."
+msgstr "Las cantidades de {material} cambiaron. Detenido. Vuelve a ejecutar la tarea."
+
+#: src/task/CultivationTask.py
+msgid "Weekly claims left for Skill Materials not recognized. Stopped. Check the cultivation target."
+msgstr "No se reconocieron las recompensas semanales restantes de Materiales de mejora de habilidades. Detenido. Revisa el objetivo de cultivo."
+
+#: src/task/CultivationTask.py
+msgid "Material details"
+msgstr "Detalles del material de cultivo"
+
+#: src/task/CultivationTask.py
+msgid "Material inventory does not match the cultivation page. Stopped. Check the cultivation target."
+msgstr "El inventario de materiales no coincide con la página de cultivo. Detenido. Revisa el objetivo de cultivo."
+
+#: src/task/CultivationTask.py
+msgid "Met"
+msgstr "Cumplido"
+
+#: src/task/CultivationTask.py
+msgid "{count} missing"
+msgstr "Faltan {count}"
+
+#: src/task/CultivationTask.py
+msgid ", {count} weekly claims left"
+msgstr ", {count} reclamaciones semanales restantes"
+
+#: src/task/CultivationTask.py
+msgid "{owned}/{required}, {state}"
+msgstr "{owned}/{required}, {state}"
+
+#: src/task/CultivationTask.py
+msgid "Material: {name}, owned {owned}, required {required}, {state}"
+msgstr "Material: {name}, en posesión {owned}, necesario {required}, {state}"
+
+#: src/task/CultivationTask.py
+msgid "{material} row is missing. Stopped. Check the cultivation target."
+msgstr "Falta la fila de {material}. Detenido. Revisa el objetivo de cultivo."
+
+#: src/task/CultivationTask.py
+msgid "Team page did not open. Stopped. Check the selected challenge."
+msgstr "No se abrió la pantalla de equipo. Detenido. Revisa el desafío seleccionado."
+
+#: src/task/CultivationTask.py
+msgid "Echo pickup incomplete, continuing to claim materials: {error}"
+msgstr "Recogida de ecos incompleta, se sigue reclamando materiales: {error}"
+
+#: src/task/CultivationTask.py
+msgid "Claim costs {cost} Waveplates, expected {expected}. Stopped."
+msgstr "La reclamación cuesta {cost} placas de onda, se esperaban {expected}. Detenido."
+
+#: src/task/CultivationTask.py
+msgid "Reward chest not found. Stopped. Make sure the battle has ended."
+msgstr "No se encontró el cofre de recompensa. Detenido. Asegúrate de que el combate haya terminado."
+
+#: src/task/CultivationTask.py
+msgid "Claim dialog did not open. Stopped. Check the reward chest."
+msgstr "No se abrió el cuadro de confirmación de reclamación. Detenido. Revisa el cofre de recompensa."
+
+#: src/task/CultivationTask.py
+msgid "Waveplates below {cost}. Claim cancelled."
+msgstr "Placas de onda por debajo de {cost}. Reclamación cancelada."
+
+#: src/task/CultivationTask.py
+msgid "Claim result not confirmed. Stopped. Check the rewards before running again."
+msgstr "No se confirmó el resultado de la reclamación. Detenido. Revisa las recompensas antes de volver a ejecutar."
+
+#: src/task/CultivationTask.py
+msgid "Unexpected cultivation material count. Stopped. Check the cultivation target."
+msgstr "Cantidad anómala de materiales de cultivo. Detenido. Revisa el objetivo de cultivo."
+
+#: src/task/CultivationTask.py
+msgid "Rewards not recognized. Stopped. Check the reward screen."
+msgstr "No se reconocieron las recompensas de liquidación. Detenido. Revisa la pantalla de recompensas."
+
+#: src/task/CultivationTask.py
+msgid "Reward material inventory"
+msgstr "Inventario de materiales de recompensa"
+
+#: src/task/CultivationTask.py
+msgid "Reward slot 5 is {name}, not a target material. Stopped. Check the rewards."
+msgstr "El quinto espacio de liquidación es {name}, no un material objetivo. Detenido. Revisa las recompensas."
+
+#: src/task/CultivationTask.py
+msgid "Unknown material in the reward inventory. Stopped. Check the rewards."
+msgstr "Apareció un material desconocido en el inventario de recompensas. Detenido. Revisa las recompensas."
+
+#: src/task/CultivationTask.py
+msgid "Reward inventory is lower than before the claim. Stopped. Check the materials."
+msgstr "El inventario de recompensas es menor que antes de reclamar. Detenido. Revisa los materiales."
+
+#: src/task/CultivationTask.py
+msgid "Target materials did not increase after the claim. Stopped. Check the rewards."
+msgstr "Los materiales objetivo no aumentaron tras la reclamación. Detenido. Revisa las recompensas."
+
+#: src/task/CultivationTask.py
+msgid "Result screen closed before restarting. Stopped."
+msgstr "La pantalla de resultados se cerró antes de reiniciar. Detenido."
+
+#: src/task/CultivationTask.py
+msgid "Leaving the challenge timed out. Return to the open world manually."
+msgstr "Se agotó el tiempo para salir del desafío. Vuelve manualmente al mundo abierto."
+
+#: src/task/CultivationTask.py
+msgid "{material} has 0 weekly claims left, skipped"
+msgstr "{material}: 0 reclamaciones semanales restantes, omitido"
+
+#: src/task/CultivationTask.py
+msgid "Stop Reason"
+msgstr "Motivo de parada"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation materials meet the target"
+msgstr "Los materiales de cultivo cumplen el objetivo"
+
+#: src/task/CultivationTask.py
+msgid "Skill Materials have 0 weekly claims left"
+msgstr "Materiales de mejora de habilidades: 0 reclamaciones semanales restantes"
+
+#: src/task/CultivationTask.py
+msgid "Waveplate budget from the task start is used up"
+msgstr "Se agotó el presupuesto de placas de onda desde el inicio de la tarea"
+
+#: src/task/CultivationTask.py
+msgid "Waveplates below {cost}"
+msgstr "Placas de onda por debajo de {cost}"
+
+#: src/task/CultivationTask.py
+msgid "No material row enabled"
+msgstr "No hay ninguna fila de material activada"
+
+#: src/task/CultivationTask.py
+msgid "Challenge not completed, attempt {attempt}: {error}"
+msgstr "Desafío no completado, intento {attempt}: {error}"
+
+#: src/task/CultivationTask.py
+msgid "Challenge failed 2 times in a row. Stopped. Check the team."
+msgstr "El desafío falló 2 veces seguidas. Detenido. Revisa el equipo."
+
+#: src/task/CultivationTask.py
+msgid "Cultivation target or inventory changed after a failed challenge. Stopped."
+msgstr "El objetivo de cultivo o el inventario cambió tras un desafío fallido. Detenido."
+
+#: src/task/CultivationTask.py
+msgid "Remaining Waveplates after the claim not confirmed. Stopped. Check the rewards."
+msgstr "No se confirmaron las placas de onda restantes tras la reclamación. Detenido. Revisa las recompensas."
+
+#: src/task/CultivationTask.py
+msgid "{material} weekly claims used up, row finished"
+msgstr "{material}: reclamaciones semanales agotadas, fila finalizada"
+
+#: src/task/CultivationTask.py
+msgid "This task supports Simplified Chinese and 16:9 only. Adjust and retry."
+msgstr "Esta tarea solo admite chino simplificado y 16:9. Ajusta la configuración y vuelve a intentarlo."
+
+#: src/task/CultivationTask.py
+msgid "Failed to return to the open world. Exit manually: {error}"
+msgstr "No se pudo volver al mundo abierto. Sal manualmente: {error}"
