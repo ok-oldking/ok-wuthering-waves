@@ -2,6 +2,11 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.1 (2026-11-14)
+
+- Se corrigió que las tareas iniciadas desde la línea de comandos (`-t`/`-e`) no se ejecutaran tras iniciar el juego.
+- Menús desplegables y filtrado de la lista de tareas más fluidos.
+
 ## v3.8.0-beta.1 (2026-11-12)
 
 - Se añadió la automatización del combate de Lily.
