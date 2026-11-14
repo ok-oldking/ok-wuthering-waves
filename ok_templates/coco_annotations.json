@@ -2363,6 +2363,12 @@
       "file_name": "hiyuki-skin-inactive.png",
       "width": 3840,
       "height": 2160
+    },
+    {
+      "id": 309,
+      "file_name": "echo_box.png",
+      "width": 2560,
+      "height": 1440
     }
   ],
   "annotations": [
@@ -6634,6 +6640,162 @@
       ],
       "area": 3968.0,
       "iscrowd": 0
+    },
+    {
+      "id": 463,
+      "image_id": 309,
+      "category_id": 302,
+      "bbox": [
+        484.0,
+        505.0,
+        162.0,
+        144.0
+      ],
+      "area": 23328.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 464,
+      "image_id": 309,
+      "category_id": 303,
+      "bbox": [
+        719.0,
+        505.0,
+        162.0,
+        144.0
+      ],
+      "area": 23328.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 465,
+      "image_id": 309,
+      "category_id": 304,
+      "bbox": [
+        954.0,
+        505.0,
+        162.0,
+        144.0
+      ],
+      "area": 23328.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 466,
+      "image_id": 309,
+      "category_id": 305,
+      "bbox": [
+        1189.0,
+        505.0,
+        162.0,
+        144.0
+      ],
+      "area": 23328.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 467,
+      "image_id": 309,
+      "category_id": 306,
+      "bbox": [
+        1424.0,
+        505.0,
+        162.0,
+        144.0
+      ],
+      "area": 23328.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 468,
+      "image_id": 309,
+      "category_id": 307,
+      "bbox": [
+        249.0,
+        788.0,
+        162.0,
+        143.0
+      ],
+      "area": 23166.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 469,
+      "image_id": 309,
+      "category_id": 308,
+      "bbox": [
+        484.0,
+        788.0,
+        162.0,
+        143.0
+      ],
+      "area": 23166.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 470,
+      "image_id": 309,
+      "category_id": 309,
+      "bbox": [
+        62.0,
+        760.0,
+        80.0,
+        73.0
+      ],
+      "area": 5840.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 471,
+      "image_id": 309,
+      "category_id": 310,
+      "bbox": [
+        62.0,
+        900.0,
+        80.0,
+        82.0
+      ],
+      "area": 6560.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 472,
+      "image_id": 309,
+      "category_id": 311,
+      "bbox": [
+        62.0,
+        1020.0,
+        80.0,
+        82.0
+      ],
+      "area": 6560.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 473,
+      "image_id": 309,
+      "category_id": 312,
+      "bbox": [
+        62.0,
+        1200.0,
+        80.0,
+        80.0
+      ],
+      "area": 6400.0,
+      "iscrowd": 0
+    },
+    {
+      "id": 474,
+      "image_id": 309,
+      "category_id": 313,
+      "bbox": [
+        249.0,
+        505.0,
+        162.0,
+        144.0
+      ],
+      "area": 23328.0,
+      "iscrowd": 0
     }
   ],
   "categories": [
@@ -8140,6 +8302,66 @@
     {
       "id": 301,
       "name": "char_hiyuki2",
+      "supercategory": ""
+    },
+    {
+      "id": 302,
+      "name": "echo_box_item_1",
+      "supercategory": ""
+    },
+    {
+      "id": 303,
+      "name": "echo_box_item_2",
+      "supercategory": ""
+    },
+    {
+      "id": 304,
+      "name": "echo_box_item_3",
+      "supercategory": ""
+    },
+    {
+      "id": 305,
+      "name": "echo_box_item_4",
+      "supercategory": ""
+    },
+    {
+      "id": 306,
+      "name": "echo_box_item_5",
+      "supercategory": ""
+    },
+    {
+      "id": 307,
+      "name": "echo_box_item_6",
+      "supercategory": ""
+    },
+    {
+      "id": 308,
+      "name": "echo_box_item_7",
+      "supercategory": ""
+    },
+    {
+      "id": 309,
+      "name": "echo_box_sidebar_anchor",
+      "supercategory": ""
+    },
+    {
+      "id": 310,
+      "name": "echo_box_special_normal",
+      "supercategory": ""
+    },
+    {
+      "id": 311,
+      "name": "echo_box_special_hover",
+      "supercategory": ""
+    },
+    {
+      "id": 312,
+      "name": "echo_box_special_selected",
+      "supercategory": ""
+    },
+    {
+      "id": 313,
+      "name": "echo_box_item_1_selected",
       "supercategory": ""
     }
   ]
