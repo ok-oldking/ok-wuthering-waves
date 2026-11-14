@@ -53,19 +53,32 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         self.openF2Book('gray_book_boss')
         return self.get_stamina()
 
-    def farm_domain_with_recovery_loop(self, must_use, teleport_into_domain_once, max_recovery_retries=3):
+    def farm_domain_with_recovery_loop(self, must_use, teleport_into_domain_once, max_recovery_retries=3,
+                                       *, max_runs=None):
         """包装副本刷取循环：死亡恢复后自动从 F2 重新进入，并限制重试次数。"""
         recovery_retries = 0
         self.realm_entry_at_heal_point = False
+        self._domain_runs_completed = 0
         while True:
             current, _, total = self.open_F2_book_and_get_stamina()
-            if total < self.stamina_once or total < must_use or (must_use == 0 and current < self.stamina_once):
+            if total < self.stamina_once or (max_runs is None and total < must_use) or (
+                    must_use == 0 and current < self.stamina_once and max_runs is None):
                 self.log_info(self.tr('not enough stamina'), notify=True)
                 self.back()
                 return
+            runs_left = None
+            if max_runs is not None:
+                runs_left = max_runs - self._domain_runs_completed
+                if runs_left <= 0:
+                    self.log_info(self.tr('farm_domain: reached configured runs {max_runs}').format(max_runs=max_runs))
+                    self.make_sure_in_world()
+                    return
             teleport_into_domain_once()
             self.sleep(1)
-            finished, must_use = self.farm_in_domain(must_use=must_use)
+            if max_runs is None:
+                finished, must_use = self.farm_in_domain(must_use=must_use)
+            else:
+                finished, must_use = self.farm_in_domain(must_use=must_use, max_runs=runs_left)
             if finished:
                 return
             recovery_retries += 1
@@ -78,7 +91,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             self.realm_entry_at_heal_point = True  # 恢复后站在信标上, 从 F2 直接进本
             self.sleep(1)
 
-    def farm_in_domain(self, must_use=0):
+    def farm_in_domain(self, must_use=0, max_runs=None):
         """刷本循环；返回 (是否整段正常结束, 剩余 must_use)。
 
         第二项在死亡提前退出时仍会带上本局内已扣过的额度，供外层恢复循环继续传参。
@@ -86,6 +99,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         if self.stamina_once <= 0:
             raise RuntimeError(self.tr('"self.stamina_once" must be override'))
         self.info_incr('used stamina', 0)
+        runs = 0
         while True:
             self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
             self.pick_f()
@@ -98,10 +112,20 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
                 self.log_info(self.tr('farm_in_domain: death recovered, exiting domain'))
                 self.make_sure_in_world()
                 return False, must_use
-            can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
+            if max_runs is not None and max_runs - runs < 2:
+                can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use, force_single=True)
+            else:
+                can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
             self.info_incr('used stamina', used)
             must_use -= used
             self.sleep(4)
+            if max_runs is not None:
+                completed = used // self.stamina_once
+                runs += completed
+                self._domain_runs_completed += completed
+                if runs >= max_runs:
+                    self.log_info(self.tr('farm_domain: reached configured runs {max_runs}').format(max_runs=max_runs))
+                    break
             if not can_continue:
                 self.log_info(self.tr('used all stamina'))
                 break
