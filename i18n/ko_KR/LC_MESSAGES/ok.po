@@ -2154,6 +2154,18 @@ msgstr "다중 계정"
 msgid "Daily Activities"
 msgstr "일일 활동"
 
+#: src/task/CultivationTask.py
+msgid "Cultivation Resource Farm"
+msgstr "육성 재료 파밍"
+
+#: src/task/CultivationTask.py
+msgid "Farm Ascension and Skill Materials for the selected Guidebook cultivation target. Skill Materials allow 3 reward claims per week. Simplified Chinese, 16:9. Uses current Waveplates only."
+msgstr "솔라리스 가이드에서 선택한 육성 목표에 따라 공명자 돌파 재료와 스킬 강화 재료를 수집합니다. 스킬 강화 재료는 주당 3회만 보상을 받을 수 있습니다. 중국어 간체와 16:9를 지원합니다. 현재 보유한 스태미나만 사용합니다."
+#: src/task/CultivationTask.py
+msgid "Ascension Materials"
+msgstr "공명자 돌파 재료"
+msgid "Skill Materials"
+msgstr "스킬 강화 재료"
 msgid "Per-account Configuration"
 msgstr "계정별 설정"
 
@@ -2173,3 +2185,187 @@ msgstr "계정마다 작업을 따로 설정합니다. 끄면 기존 다중 계�
 
 msgid "Edit account order, enabled accounts, tasks and task settings."
 msgstr "계정 순서, 활성화 상태, 실행할 작업 및 작업 설정을 편집합니다."
+
+#: src/task/CultivationTask.py
+msgid "Combat exceeded {seconds} seconds. Stopped. Check the team and retry."
+msgstr "전투가 {seconds}초를 초과했습니다. 중단했습니다. 파티를 확인한 뒤 다시 시도하세요."
+
+#: src/task/CultivationTask.py
+msgid "Failed to read {label}. Stopped. Check the game screen and retry."
+msgstr "{label}을(를) 인식하지 못했습니다. 중단했습니다. 게임 화면을 확인한 뒤 다시 시도하세요."
+
+#: src/task/CultivationTask.py
+msgid "Cultivation target page did not open. Select a cultivation target in the Guidebook."
+msgstr "육성 목표 페이지가 열리지 않았습니다. 솔라리스 가이드에서 육성 목표를 선택하세요."
+
+#: src/task/CultivationTask.py
+msgid "Current Waveplates"
+msgstr "현재 스태미나"
+
+#: src/task/CultivationTask.py
+msgid "Remaining Waveplates on the result screen"
+msgstr "결과 화면의 남은 스태미나"
+
+#: src/task/CultivationTask.py
+msgid "{material} quantities"
+msgstr "{material} 수량"
+
+#: src/task/CultivationTask.py
+msgid "{material} quantities changed. Stopped. Run the task again."
+msgstr "{material} 수량이 변경되었습니다. 중단했습니다. 작업을 다시 실행하세요."
+
+#: src/task/CultivationTask.py
+msgid "Weekly claims left for Skill Materials not recognized. Stopped. Check the cultivation target."
+msgstr "스킬 강화 재료의 이번 주 남은 수령 횟수를 인식하지 못했습니다. 중단했습니다. 육성 목표를 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Material details"
+msgstr "육성 재료 상세"
+
+#: src/task/CultivationTask.py
+msgid "Material inventory does not match the cultivation page. Stopped. Check the cultivation target."
+msgstr "재료 보유량이 육성 페이지와 일치하지 않습니다. 중단했습니다. 육성 목표를 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Met"
+msgstr "충족"
+
+#: src/task/CultivationTask.py
+msgid "{count} missing"
+msgstr "{count}개 부족"
+
+#: src/task/CultivationTask.py
+msgid ", {count} weekly claims left"
+msgstr ", 이번 주 남은 수령 {count}회"
+
+#: src/task/CultivationTask.py
+msgid "{owned}/{required}, {state}"
+msgstr "{owned}/{required}, {state}"
+
+#: src/task/CultivationTask.py
+msgid "Material: {name}, owned {owned}, required {required}, {state}"
+msgstr "육성 재료: {name}, 보유 {owned}, 필요 {required}, {state}"
+
+#: src/task/CultivationTask.py
+msgid "{material} row is missing. Stopped. Check the cultivation target."
+msgstr "{material} 행이 사라졌습니다. 중단했습니다. 육성 목표를 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Team page did not open. Stopped. Check the selected challenge."
+msgstr "파티 편성 화면이 열리지 않았습니다. 중단했습니다. 선택한 도전을 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Echo pickup incomplete, continuing to claim materials: {error}"
+msgstr "에코 수집이 완료되지 않아 재료 수령을 계속합니다: {error}"
+
+#: src/task/CultivationTask.py
+msgid "Claim costs {cost} Waveplates, expected {expected}. Stopped."
+msgstr "수령 비용이 {cost}포인트이며 예상은 {expected}포인트입니다. 중단했습니다."
+
+#: src/task/CultivationTask.py
+msgid "Reward chest not found. Stopped. Make sure the battle has ended."
+msgstr "보상 상자를 찾지 못했습니다. 중단했습니다. 전투가 끝났는지 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Claim dialog did not open. Stopped. Check the reward chest."
+msgstr "보상 수령 확인창이 열리지 않았습니다. 중단했습니다. 보상 상자를 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Waveplates below {cost}. Claim cancelled."
+msgstr "스태미나가 {cost} 미만입니다. 수령을 취소했습니다."
+
+#: src/task/CultivationTask.py
+msgid "Claim result not confirmed. Stopped. Check the rewards before running again."
+msgstr "보상 수령 결과를 확인하지 못했습니다. 중단했습니다. 보상을 확인한 뒤 다시 실행하세요."
+
+#: src/task/CultivationTask.py
+msgid "Unexpected cultivation material count. Stopped. Check the cultivation target."
+msgstr "육성 목표 재료 수량이 비정상입니다. 중단했습니다. 육성 목표를 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Rewards not recognized. Stopped. Check the reward screen."
+msgstr "정산 보상을 인식하지 못했습니다. 중단했습니다. 보상 화면을 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Reward material inventory"
+msgstr "보상 재료 보유량"
+
+#: src/task/CultivationTask.py
+msgid "Reward slot 5 is {name}, not a target material. Stopped. Check the rewards."
+msgstr "정산 5번 칸이 {name}이며 목표 재료가 아닙니다. 중단했습니다. 보상을 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Unknown material in the reward inventory. Stopped. Check the rewards."
+msgstr "보상 재료 목록에 알 수 없는 재료가 있습니다. 중단했습니다. 보상을 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Reward inventory is lower than before the claim. Stopped. Check the materials."
+msgstr "보상 재료 보유량이 수령 전보다 적습니다. 중단했습니다. 재료를 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Target materials did not increase after the claim. Stopped. Check the rewards."
+msgstr "수령 후 목표 재료가 늘지 않았습니다. 중단했습니다. 보상을 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Result screen closed before restarting. Stopped."
+msgstr "재도전 전에 결과 화면이 사라졌습니다. 중단했습니다."
+
+#: src/task/CultivationTask.py
+msgid "Leaving the challenge timed out. Return to the open world manually."
+msgstr "도전에서 나가는 시간이 초과되었습니다. 수동으로 오픈 월드에 돌아가세요."
+
+#: src/task/CultivationTask.py
+msgid "{material} has 0 weekly claims left, skipped"
+msgstr "{material}의 이번 주 남은 수령 횟수가 0이므로 건너뜁니다"
+
+#: src/task/CultivationTask.py
+msgid "Stop Reason"
+msgstr "중단 사유"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation materials meet the target"
+msgstr "육성 재료가 목표를 충족했습니다"
+
+#: src/task/CultivationTask.py
+msgid "Skill Materials have 0 weekly claims left"
+msgstr "스킬 강화 재료의 이번 주 남은 수령 횟수가 0입니다"
+
+#: src/task/CultivationTask.py
+msgid "Waveplate budget from the task start is used up"
+msgstr "작업 시작 시점의 스태미나 예산을 모두 사용했습니다"
+
+#: src/task/CultivationTask.py
+msgid "Waveplates below {cost}"
+msgstr "스태미나가 {cost} 미만입니다"
+
+#: src/task/CultivationTask.py
+msgid "No material row enabled"
+msgstr "활성화된 재료 행이 없습니다"
+
+#: src/task/CultivationTask.py
+msgid "Challenge not completed, attempt {attempt}: {error}"
+msgstr "도전 미완료, {attempt}번째 시도: {error}"
+
+#: src/task/CultivationTask.py
+msgid "Challenge failed 2 times in a row. Stopped. Check the team."
+msgstr "도전이 2회 연속 실패했습니다. 중단했습니다. 파티를 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Cultivation target or inventory changed after a failed challenge. Stopped."
+msgstr "도전 실패 후 육성 목표 또는 보유량이 변경되었습니다. 중단했습니다."
+
+#: src/task/CultivationTask.py
+msgid "Remaining Waveplates after the claim not confirmed. Stopped. Check the rewards."
+msgstr "수령 후 남은 스태미나를 확인하지 못했습니다. 중단했습니다. 보상을 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "{material} weekly claims used up, row finished"
+msgstr "{material}의 이번 주 수령 횟수를 모두 사용해 이 행을 마칩니다"
+
+#: src/task/CultivationTask.py
+msgid "This task supports Simplified Chinese and 16:9 only. Adjust and retry."
+msgstr "이 작업은 중국어 간체와 16:9만 지원합니다. 설정을 조정한 뒤 다시 시도하세요."
+
+#: src/task/CultivationTask.py
+msgid "Failed to return to the open world. Exit manually: {error}"
+msgstr "오픈 월드로 돌아가지 못했습니다. 수동으로 나가세요: {error}"
