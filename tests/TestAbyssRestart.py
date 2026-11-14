@@ -25,6 +25,7 @@ class TestAbyssRestart(unittest.TestCase):
         task.load_chars = Mock(return_value=True)
         task.send_key = Mock()
         task.click = Mock()
+        task.next_frame = Mock()
         return task
 
     def test_idle_arena_starts_without_opening_menu(self):
@@ -80,10 +81,73 @@ class TestAbyssRestart(unittest.TestCase):
     def test_result_confirmation_is_accepted_before_navigation(self):
         task = self.make_task()
         retry, confirm = object(), object()
-        task.ocr.side_effect = [[], [], [retry], [], [confirm]]
+        retry_clicked = False
+
+        def ocr(*args, **kwargs):
+            if kwargs['match'].search('重新挑战') and not retry_clicked:
+                return [retry]
+            if kwargs['match'].search('确认') and retry_clicked:
+                return [confirm]
+            return []
+
+        def click(button, **kwargs):
+            nonlocal retry_clicked
+            if button is retry:
+                retry_clicked = True
+
+        task.ocr.side_effect = ocr
+        task.click.side_effect = click
         task.wait_until.side_effect = lambda *args, **kwargs: kwargs['post_action']()
         task.restart_combat_in_abyss()
         self.assertEqual([call.args[0] for call in task.click.call_args_list], [retry, confirm])
+        task.send_key.assert_called_once_with('f')
+
+    def test_character_intro_is_optional(self):
+        task = self.make_task()
+        self.assertFalse(task.dismiss_abyss_character_info())
+        task.click.assert_not_called()
+        task.next_frame.assert_not_called()
+
+    def test_character_intro_is_closed_before_restart_navigation(self):
+        task = self.make_task()
+        showing = True
+
+        def ocr(*args, **kwargs):
+            return [object()] if showing and kwargs['match'].search('战斗特色') else []
+
+        def click(*args, **kwargs):
+            nonlocal showing
+            showing = False
+
+        task.ocr.side_effect = ocr
+        task.click.side_effect = click
+        task.restart_combat_in_abyss()
+        task.click.assert_called_once_with(0.942, 0.058, after_sleep=0.5)
+        task.send_key.assert_called_once_with('f')
+
+    def test_character_intro_appearing_after_rechallenge_is_closed(self):
+        task = self.make_task()
+        retry = object()
+        showing = False
+
+        def ocr(*args, **kwargs):
+            if showing and kwargs['match'].search('战斗特色'):
+                return [object()]
+            if not showing and kwargs['match'].search('重新挑战'):
+                return [retry]
+            return []
+
+        def click(*args, **kwargs):
+            nonlocal showing
+            showing = args[0] is retry
+
+        task.ocr.side_effect = ocr
+        task.click.side_effect = click
+        task.wait_until.side_effect = lambda *args, **kwargs: kwargs['post_action']()
+        task.restart_combat_in_abyss()
+        self.assertEqual(len(task.click.call_args_list), 2)
+        self.assertEqual(task.click.call_args_list[0].args, (retry,))
+        self.assertEqual(task.click.call_args_list[1].args, (0.942, 0.058))
         task.send_key.assert_called_once_with('f')
 
     def test_forced_combat_expires_after_five_seconds(self):

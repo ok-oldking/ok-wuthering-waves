@@ -2171,3 +2171,26 @@ msgstr "Número de rondas del Desafío de Forja durante el evento, 0-3. La suma 
 
 msgid "Tacet Suppression runs during the event, 0-3."
 msgstr "Número de rondas de la Supresión Tácita durante el evento, 0-3."
+
+msgid "Per-account Configuration"
+msgstr "Configuración por cuenta"
+
+msgid "Account Configuration"
+msgstr "Configuración de cuentas"
+
+msgid "Configure Accounts"
+msgstr "Configurar cuentas"
+
+msgid "Save and Close"
+msgstr "Guardar y cerrar"
+
+msgid ""
+"Configure tasks separately for each account. When disabled, run the original"
+" multi-account daily task."
+msgstr ""
+"Configura tareas para cada cuenta por separado. Si se desactiva, se ejecuta "
+"la tarea diaria multicuenta original."
+
+msgid "Edit account order, enabled accounts, tasks and task settings."
+msgstr ""
+"Edita el orden de las cuentas, su activación, las tareas y sus ajustes."

@@ -31,6 +31,7 @@ class MultiAccountConfigTask(MultiAccountDailyTask):
         self.description = 'Log in to accounts in card order and run tasks with independent configurations'
         self.default_config = {}
         self.config_description = {}
+        self.config_type = {}
         self.visible = False
 
     def click(self, x=-1, y=-1, *args, **kwargs):

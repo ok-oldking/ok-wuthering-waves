@@ -28,6 +28,10 @@ comtypes==1.4.16
     # via pycaw
 cryptography==50.0.2
     # via pyjwt
+dulwich==1.2.21
+    # via
+    #   ok-ww (pyproject.toml)
+    #   pyappify
 h11==0.16.0
     # via
     #   httpcore2
@@ -62,7 +66,7 @@ ok-pyside-minimal==6.12.0.post2
     # via
     #   ok-script
     #   ok-ww (pyproject.toml)
-ok-script[ocr,qt]==3.0.4
+ok-script[ocr,qt]==3.0.5b8
     # via ok-ww (pyproject.toml)
 onnxocr-ppocrv5==0.0.23
     # via
@@ -82,7 +86,7 @@ psutil==7.2.2
     # via
     #   ok-script
     #   pycaw
-pyappify==1.0.13
+pyappify[standalone]==1.0.20
     # via
     #   ok-script
     #   ok-ww (pyproject.toml)
@@ -154,6 +158,8 @@ typing-inspection==0.4.4
     #   mcp
     #   pydantic
 urllib3==2.7.0
-    # via requests
+    # via
+    #   dulwich
+    #   requests
 uvicorn==0.54.0
     # via mcp
