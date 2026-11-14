@@ -2,6 +2,10 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.3 (2026-11-15)
+
+- Se añadió Pynput como método de entrada seleccionable; PostMessage sigue siendo el predeterminado.
+
 ## v3.8.2 (2026-11-15)
 
 - Se actualizó el reconocimiento de texto al modelo PP-OCRv6 small.
