@@ -2151,6 +2151,18 @@ msgstr "複数アカウント"
 msgid "Daily Activities"
 msgstr "デイリー・イベント"
 
+#: src/task/CultivationTask.py
+msgid "Cultivation Resource Farm"
+msgstr "育成素材周回"
+
+#: src/task/CultivationTask.py
+msgid "Farm Ascension and Skill Materials for the selected Guidebook cultivation target. Skill Materials allow 3 reward claims per week. Simplified Chinese, 16:9. Uses current Waveplates only."
+msgstr "ソラリスガイドで選択した育成目標に従い、共鳴者の突破素材とスキル強化素材を周回で集めます。スキル強化素材は週 3 回まで報酬を受け取れます。簡体字中国語と 16:9 に対応。現在の結晶波長板のみを使用します。"
+#: src/task/CultivationTask.py
+msgid "Ascension Materials"
+msgstr "共鳴者の突破素材"
+msgid "Skill Materials"
+msgstr "スキル強化素材"
 msgid "Per-account Configuration"
 msgstr "アカウント別設定"
 
@@ -2170,3 +2182,187 @@ msgstr "アカウントごとにタスクを設定します。無効の場合は
 
 msgid "Edit account order, enabled accounts, tasks and task settings."
 msgstr "アカウントの順序、有効状態、実行タスクとタスク設定を編集します。"
+
+#: src/task/CultivationTask.py
+msgid "Combat exceeded {seconds} seconds. Stopped. Check the team and retry."
+msgstr "戦闘が{seconds}秒を超えました。停止しました。チームを確認して再試行してください。"
+
+#: src/task/CultivationTask.py
+msgid "Failed to read {label}. Stopped. Check the game screen and retry."
+msgstr "{label}の認識に失敗しました。停止しました。ゲーム画面を確認して再試行してください。"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation target page did not open. Select a cultivation target in the Guidebook."
+msgstr "育成目標ページを開けませんでした。ソラリスガイドで育成目標を選択してください。"
+
+#: src/task/CultivationTask.py
+msgid "Current Waveplates"
+msgstr "現在の結晶波長板"
+
+#: src/task/CultivationTask.py
+msgid "Remaining Waveplates on the result screen"
+msgstr "結算画面の残り結晶波長板"
+
+#: src/task/CultivationTask.py
+msgid "{material} quantities"
+msgstr "{material}の数量"
+
+#: src/task/CultivationTask.py
+msgid "{material} quantities changed. Stopped. Run the task again."
+msgstr "{material}の数量が変化しました。停止しました。タスクを再実行してください。"
+
+#: src/task/CultivationTask.py
+msgid "Weekly claims left for Skill Materials not recognized. Stopped. Check the cultivation target."
+msgstr "スキル強化素材の今週の残り受取回数を認識できません。停止しました。育成目標を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Material details"
+msgstr "育成素材の詳細"
+
+#: src/task/CultivationTask.py
+msgid "Material inventory does not match the cultivation page. Stopped. Check the cultivation target."
+msgstr "素材の所持数が育成ページと一致しません。停止しました。育成目標を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Met"
+msgstr "達成済み"
+
+#: src/task/CultivationTask.py
+msgid "{count} missing"
+msgstr "不足 {count} 個"
+
+#: src/task/CultivationTask.py
+msgid ", {count} weekly claims left"
+msgstr "、今週の残り受取 {count} 回"
+
+#: src/task/CultivationTask.py
+msgid "{owned}/{required}, {state}"
+msgstr "{owned}/{required}、{state}"
+
+#: src/task/CultivationTask.py
+msgid "Material: {name}, owned {owned}, required {required}, {state}"
+msgstr "育成素材：{name}、所持 {owned}、必要 {required}、{state}"
+
+#: src/task/CultivationTask.py
+msgid "{material} row is missing. Stopped. Check the cultivation target."
+msgstr "{material}の行が消えました。停止しました。育成目標を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Team page did not open. Stopped. Check the selected challenge."
+msgstr "編成画面を開けませんでした。停止しました。選択した挑戦を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Echo pickup incomplete, continuing to claim materials: {error}"
+msgstr "音骸の回収が完了しませんでした。素材の受け取りを続行します：{error}"
+
+#: src/task/CultivationTask.py
+msgid "Claim costs {cost} Waveplates, expected {expected}. Stopped."
+msgstr "報酬の消費は {cost} 点、想定は {expected} 点でした。停止しました。"
+
+#: src/task/CultivationTask.py
+msgid "Reward chest not found. Stopped. Make sure the battle has ended."
+msgstr "報酬箱が見つかりません。停止しました。戦闘が終了しているか確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Claim dialog did not open. Stopped. Check the reward chest."
+msgstr "報酬受け取りの確認ダイアログを開けませんでした。停止しました。報酬箱を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Waveplates below {cost}. Claim cancelled."
+msgstr "結晶波長板が {cost} 点未満です。受け取りをキャンセルしました。"
+
+#: src/task/CultivationTask.py
+msgid "Claim result not confirmed. Stopped. Check the rewards before running again."
+msgstr "報酬の受け取り結果を確認できません。停止しました。報酬を確認してから再実行してください。"
+
+#: src/task/CultivationTask.py
+msgid "Unexpected cultivation material count. Stopped. Check the cultivation target."
+msgstr "育成目標の素材数が異常です。停止しました。育成目標を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Rewards not recognized. Stopped. Check the reward screen."
+msgstr "精算報酬を認識できません。停止しました。報酬画面を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Reward material inventory"
+msgstr "報酬素材の所持数"
+
+#: src/task/CultivationTask.py
+msgid "Reward slot 5 is {name}, not a target material. Stopped. Check the rewards."
+msgstr "精算の5番目が{name}で、対象素材ではありません。停止しました。報酬を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Unknown material in the reward inventory. Stopped. Check the rewards."
+msgstr "報酬の所持素材に未知の素材があります。停止しました。報酬を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Reward inventory is lower than before the claim. Stopped. Check the materials."
+msgstr "報酬の所持数が受け取り前より少なくなっています。停止しました。素材を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Target materials did not increase after the claim. Stopped. Check the rewards."
+msgstr "受け取り後に対象素材が増えていません。停止しました。報酬を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Result screen closed before restarting. Stopped."
+msgstr "再挑戦前に結果画面が閉じました。停止しました。"
+
+#: src/task/CultivationTask.py
+msgid "Leaving the challenge timed out. Return to the open world manually."
+msgstr "挑戦からの退出がタイムアウトしました。手動でオープンワールドに戻ってください。"
+
+#: src/task/CultivationTask.py
+msgid "{material} has 0 weekly claims left, skipped"
+msgstr "{material}の今週の残り受取回数が 0 のため、スキップします"
+
+#: src/task/CultivationTask.py
+msgid "Stop Reason"
+msgstr "停止理由"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation materials meet the target"
+msgstr "育成素材が目標を満たしました"
+
+#: src/task/CultivationTask.py
+msgid "Skill Materials have 0 weekly claims left"
+msgstr "スキル強化素材の今週の残り受取回数が 0 です"
+
+#: src/task/CultivationTask.py
+msgid "Waveplate budget from the task start is used up"
+msgstr "タスク開始時の結晶波長板の予算を使い切りました"
+
+#: src/task/CultivationTask.py
+msgid "Waveplates below {cost}"
+msgstr "結晶波長板が {cost} 点未満です"
+
+#: src/task/CultivationTask.py
+msgid "No material row enabled"
+msgstr "有効な素材行がありません"
+
+#: src/task/CultivationTask.py
+msgid "Challenge not completed, attempt {attempt}: {error}"
+msgstr "挑戦が完了していません。{attempt} 回目：{error}"
+
+#: src/task/CultivationTask.py
+msgid "Challenge failed 2 times in a row. Stopped. Check the team."
+msgstr "挑戦が2回連続で失敗しました。停止しました。編成を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation target or inventory changed after a failed challenge. Stopped."
+msgstr "挑戦失敗後に育成目標または所持数が変化しました。停止しました。"
+
+#: src/task/CultivationTask.py
+msgid "Remaining Waveplates after the claim not confirmed. Stopped. Check the rewards."
+msgstr "受け取り後の残り結晶波長板を確認できません。停止しました。報酬を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "{material} weekly claims used up, row finished"
+msgstr "{material}の今週の残り受取回数を使い切りました。この行を終了します"
+
+#: src/task/CultivationTask.py
+msgid "This task supports Simplified Chinese and 16:9 only. Adjust and retry."
+msgstr "このタスクは簡体字中国語と 16:9 のみに対応しています。設定を調整して再試行してください。"
+
+#: src/task/CultivationTask.py
+msgid "Failed to return to the open world. Exit manually: {error}"
+msgstr "オープンワールドへの復帰に失敗しました。手動で退出してください：{error}"
