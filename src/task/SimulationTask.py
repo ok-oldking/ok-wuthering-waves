@@ -32,7 +32,7 @@ class SimulationTask(DomainTask):
         self.make_sure_in_world()
         self.farm_simulation()
 
-    def farm_simulation(self, daily=False, used_stamina=0, config=None):
+    def farm_simulation(self, daily=False, used_stamina=0, config=None, max_runs=None):
         if daily:
             must_use = 180 - used_stamina
         else:
@@ -44,7 +44,7 @@ class SimulationTask(DomainTask):
         def teleport_once():
             self.teleport_into_domain(selection)
 
-        self.farm_domain_with_recovery_loop(must_use, teleport_once)
+        self.farm_domain_with_recovery_loop(must_use, teleport_once, max_runs=max_runs)
 
     def teleport_into_domain(self, selection):
         self.open_boss_book('moni')

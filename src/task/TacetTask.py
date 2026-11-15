@@ -49,15 +49,18 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.wait_in_team_and_world(esc=True)
         self.farm_tacet()
 
-    def farm_tacet(self, daily=False, used_stamina=0, config=None, max_recovery_retries=3):
+    def farm_tacet(self, daily=False, used_stamina=0, config=None, max_recovery_retries=3, *, max_runs=None):
         if config is None:
             config = self.config
         if daily:
             must_use = 180 - used_stamina
         else:
             must_use = 0
+        if max_runs is not None and max_runs <= 0:
+            return
         self.info_incr('used stamina', 0)
         recovery_retries = 0
+        completed_runs = 0
         self.realm_entry_at_heal_point = False
         while True:
             self.sleep(1)
@@ -93,9 +96,19 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                     self.esc_cancel()
                     self.log_info(self.tr('is not claim treasure, restart challenge'))
                     continue
-                can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
+                if max_runs is not None and max_runs - completed_runs < 2:
+                    can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use,
+                                                          force_single=True)
+                else:
+                    can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
                 self.info_incr('used stamina', used)
                 self.sleep(4)
+                if max_runs is not None:
+                    completed_runs += used // self.stamina_once
+                    if completed_runs >= max_runs:
+                        self.log_info(self.tr('farm_tacet: reached configured runs {max_runs}').format(
+                            max_runs=max_runs))
+                        can_continue = False
                 if not can_continue:
                     self.click_relative(0.365, 0.853, hcenter=True)
                     self.wait_in_team_and_world(time_out=120)
