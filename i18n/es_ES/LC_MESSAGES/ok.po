@@ -859,147 +859,17 @@ msgstr "Desafio de jefe al que teletransportar"
 msgid "From Top to Bottom, Starting with 1"
 msgstr "De arriba a abajo, empezando en 1"
 
-msgid "Characters"
-msgstr "Personajes"
-
-msgid "Character Code"
-msgstr "Código del personaje"
-
-msgid "Use built in"
-msgstr "Usar integrado"
-
-msgid "Use custom"
-msgstr "Usar personalizado"
-
-msgid "Ask AI"
-msgstr "Preguntar a la IA"
-
-msgid "How To"
-msgstr "Cómo usar"
-
 msgid "Save"
 msgstr "Guardar"
-
-msgid "Custom code saved"
-msgstr "Código personalizado guardado"
-
-msgid "Unsaved changes"
-msgstr "Cambios sin guardar"
-
-msgid "Unsaved Changes"
-msgstr "Cambios sin guardar"
-
-msgid "Discard unsaved character code changes?"
-msgstr "¿Descartar los cambios sin guardar del código del personaje?"
-
-msgid "Saved and reloaded"
-msgstr "Guardado y recargado"
-
-msgid "Custom character code saved and reloaded."
-msgstr "Código personalizado del personaje guardado y recargado."
-
-msgid "Custom character code saved and reloaded for loaded characters."
-msgstr ""
-"Código personalizado guardado y recargado para los personajes cargados."
 
 msgid "Success"
 msgstr "Éxito"
 
-msgid "Using built in code"
-msgstr "Usando código integrado"
-
-msgid "Built in character code selected."
-msgstr "Código integrado del personaje seleccionado."
-
 msgid "Error"
 msgstr "Error"
 
-msgid "Ask AI template copied. Paste it into an AI chatbot."
-msgstr "Plantilla para IA copiada. Pégala en un chatbot de IA."
-
-msgid "Copied"
-msgstr "Copiado"
-
-msgid ""
-"Choose Use custom to edit a character's Python code. Use built-in mode to read and select the original code.\n"
-"\n"
-"Ask AI copies a prompt to the clipboard with the full current code at the top. Paste it into an AI chatbot, describe the change after 'I want to implement:', and ask it to return the full modified code.\n"
-"\n"
-"Paste the returned code back into this editor, review the highlighted changed lines, then click Save to apply changes."
-msgstr ""
-"Elige Usar personalizado para editar el código Python de un personaje. El modo integrado permite leer y seleccionar el código original.\n"
-"\n"
-"Preguntar a la IA copia al portapapeles una plantilla con el código completo actual al principio. Pégala en un chatbot de IA, describe el cambio después de 'I want to implement:' y pídele que devuelva el código completo modificado.\n"
-"\n"
-"Pega el código devuelto en este editor, revisa las líneas resaltadas y haz clic en Guardar para aplicar los cambios."
-
-msgid "How To Modify Character Code"
-msgstr "Cómo modificar el código del personaje"
-
 msgid "Reset"
 msgstr "Restablecer"
-
-msgid "Reset Custom Code"
-msgstr "Restablecer código personalizado"
-
-msgid "Reset this character to built in code and remove the custom code?"
-msgstr ""
-"¿Restablecer este personaje al código integrado y eliminar el código "
-"personalizado?"
-
-msgid ""
-"Custom code matches built in code. Removed custom code and switched to built"
-" in."
-msgstr ""
-"El c?digo personalizado coincide con el integrado. Se elimin? el c?digo "
-"personalizado y se cambi? al integrado."
-
-msgid ""
-"Custom code matches built in code. Removed custom code, switched to built "
-"in, and reloaded loaded characters."
-msgstr ""
-"El c?digo personalizado coincide con el integrado. Se elimin?, se cambi? al "
-"integrado y se recargaron los personajes cargados."
-
-msgid "Custom code reset to built in code."
-msgstr "Código personalizado restablecido al código integrado."
-
-msgid "Custom code reset to built in code and reloaded for loaded characters."
-msgstr ""
-"Código personalizado restablecido al integrado y recargado para los "
-"personajes cargados."
-
-msgid "Contribute Code"
-msgstr "Contribuir código"
-
-msgid "I want to implement:"
-msgstr "Quiero implementar:"
-
-msgid "Please modify the full {class_name} character automation code above."
-msgstr ""
-"Modifica el código completo de automatización del personaje {class_name} "
-"anterior."
-
-msgid ""
-"Return only the complete modified Python code for the whole file, not a "
-"patch and not an explanation."
-msgstr ""
-"Devuelve solo el código Python completo modificado de todo el archivo, no un"
-" parche ni una explicación."
-
-msgid ""
-"Keep the class name as {class_name}. Preserve imports that are still needed."
-msgstr ""
-"Mantén el nombre de la clase como {class_name}. Conserva las importaciones "
-"que sigan siendo necesarias."
-
-msgid ""
-"Use this BaseChar reference while reasoning about helper methods, task APIs,"
-" state, switching, cooldowns, and combat flow:"
-msgstr ""
-"Usa esta referencia de BaseChar para razonar sobre m?todos auxiliares, API "
-"de tareas, estado, cambios de personaje, tiempos de recarga y flujo de "
-"combate:"
 
 msgid "自动周常乐园"
 msgstr "Jardín semanal automático"
@@ -1167,23 +1037,8 @@ msgstr "El juego y okww deben estar en chino simplificado/tradicional; se requie
 msgid "Switch to Healer before and after Combat"
 msgstr "Cambiar al sanador antes y después del combate"
 
-msgid "All fields are required."
-msgstr "Todos los campos son obligatorios."
-
 msgid "Author"
 msgstr "Autor"
-
-msgid "Choose Export Folder"
-msgstr "Elegir carpeta de exportación"
-
-msgid "Confirm Import"
-msgstr "Confirmar importación"
-
-msgid "Create Team"
-msgstr "Crear equipo"
-
-msgid "Create or import a team to edit character code."
-msgstr "Crea o importa un equipo para editar el código de los personajes."
 
 msgid "Description"
 msgstr "Descripción"
@@ -1191,131 +1046,20 @@ msgstr "Descripción"
 msgid "Export"
 msgstr "Exportar"
 
-msgid "Export Team"
-msgstr "Exportar equipo"
-
-msgid "Import"
-msgstr "Importar"
-
-msgid "Import Team"
-msgstr "Importar equipo"
-
-msgid "Importing will override the local code for this team."
-msgstr "La importación sobrescribirá el código local de este equipo."
-
-msgid "Invalid Team Archive"
-msgstr "Archivo de equipo no válido"
-
-msgid "Missing Information"
-msgstr "Falta información"
-
-msgid "Modified"
-msgstr "Modificado"
-
-msgid "Name"
-msgstr "Nombre"
-
 msgid "No shared code is available for this team."
 msgstr "No hay código compartido disponible para este equipo."
-
-msgid "Reset Character Code"
-msgstr "Restablecer código del personaje"
-
-msgid "Reset this character to built in code for this team?"
-msgstr "¿Restablecer este personaje al código integrado para este equipo?"
-
-msgid "Reset to Built In"
-msgstr "Restablecer al integrado"
-
-msgid "Save changes before exporting."
-msgstr "Guarda los cambios antes de exportar."
-
-msgid "Select 3 different characters"
-msgstr "Selecciona 3 personajes diferentes"
 
 msgid "Size"
 msgstr "Tamaño"
 
-msgid "Team"
-msgstr "Equipo"
-
-msgid "Team Workshop"
-msgstr "Taller de equipos"
-
-msgid "Team character code saved and reloaded for the matching team."
-msgstr "Código del personaje guardado y recargado para el equipo coincidente."
-
-msgid "Team character code saved."
-msgstr "Código del personaje del equipo guardado."
-
-msgid "Team created."
-msgstr "Equipo creado."
-
-msgid "Team exported to {path}"
-msgstr "Equipo exportado a {path}"
-
-msgid "Team imported and reloaded for the matching team."
-msgstr "Equipo importado y recargado para el equipo coincidente."
-
-msgid "Team imported."
-msgstr "Equipo importado."
-
-msgid "Teams"
-msgstr "Equipos"
-
-msgid "The archive is for a different team."
-msgstr "El archivo pertenece a otro equipo."
-
-msgid "Upload Team"
-msgstr "Subir equipo"
-
 msgid "Version"
 msgstr "Versión"
-
-msgid "Workshop"
-msgstr "Taller"
-
-msgid "Workshop Error"
-msgstr "Error del taller"
-
-msgid "Workshop archive is too large."
-msgstr "El archivo del taller es demasiado grande."
-
-msgid "Workshop download URL is invalid."
-msgstr "La URL de descarga del taller no es válida."
-
-msgid "Zip files (*.zip)"
-msgstr "Archivos ZIP (*.zip)"
-
-msgid "Workshop response is too large."
-msgstr "La respuesta del taller es demasiado grande."
-
-msgid "Workshop returned invalid JSON."
-msgstr "El taller devolvió un JSON no válido."
-
-msgid "Workshop response is invalid."
-msgstr "La respuesta del taller no es válida."
-
-msgid "Workshop returned a different team."
-msgstr "El taller devolvió un equipo diferente."
 
 msgid "Cancel"
 msgstr "Cancelar"
 
 msgid "Close"
 msgstr "Cerrar"
-
-msgid "{team_name} - Team Workshop"
-msgstr "{team_name} - Taller de equipos"
-
-msgid "Delete Team"
-msgstr "Eliminar equipo"
-
-msgid "Permanently delete the team {team}?"
-msgstr "¿Eliminar permanentemente el equipo {team}?"
-
-msgid "Team deleted."
-msgstr "Equipo eliminado."
 
 msgid "JingRan"
 msgstr "Jingran"
@@ -1336,34 +1080,8 @@ msgstr "Pesadilla especial a la que teletransportar"
 msgid "Failed to read game assets quality config. Starting with HD assets."
 msgstr "No se pudo leer la configuración de calidad de los recursos del juego. Se iniciará con recursos HD."
 
-msgid "Tacet Elimination"
-msgstr "Eliminación tácita"
-
-msgid ""
-"Start on the current event screen. Complete prerequisite stages, then play "
-"Final Elimination for the highest possible score until turns run out."
-msgstr ""
-"Empieza en la pantalla actual del evento. Completa las fases previas y juega"
-" una partida de Eliminación final para conseguir la mayor puntuación posible"
-" hasta agotar los turnos. Mantén el juego en primer plano."
-
-
 msgid "Roccia C6"
 msgstr "Roccia C6 (DPS principal)"
-
-msgid "Export Selected"
-msgstr "Exportar equipo seleccionado"
-
-
-msgid "Export Current"
-msgstr "Exportar equipo actual"
-
-
-msgid "No current team detected."
-msgstr "No se ha detectado el equipo actual."
-
-msgid "Team Info"
-msgstr "Info del equipo"
 
 #, python-brace-format
 msgid "could not find char {index} {info} {highest_confidence}"
@@ -1532,16 +1250,6 @@ msgstr "El atributo objetivo coincide con el actual. Cambia el filtro de Ecos"
 #, python-brace-format
 msgid "Cannot open screenshot folder: {e}"
 msgstr "No se puede abrir la carpeta de capturas: {e}"
-
-#, python-brace-format
-msgid "Unknown character: {class_name}"
-msgstr "Personaje desconocido: {class_name}"
-
-msgid "Save custom code before enabling custom mode"
-msgstr "Guarda el código personalizado antes de activar el modo personalizado"
-
-msgid "Character code must be text"
-msgstr "El código del personaje debe ser texto"
 
 msgid "check weekly garden"
 msgstr "Se comprueba la tarea semanal del jardín"
@@ -1941,100 +1649,6 @@ msgstr "Se encontró el Eco buscando a pie tras volver a viajar"
 msgid "click {click}"
 msgstr "Se pulsa {click}"
 
-msgid "Event screen action limit exceeded"
-msgstr "Se superó el límite de acciones en la pantalla del evento"
-
-msgid "Could not confirm the end of the stage list"
-msgstr "No se pudo confirmar el final de la lista de fases"
-
-#, python-brace-format
-msgid "Elimination move {start} -> {end}, score={score}; board={signature}"
-msgstr ""
-"Movimiento de eliminación {start} -> {end}, puntuación={score}; "
-"tablero={signature}"
-
-#, python-brace-format
-msgid "Event screen: {text}"
-msgstr "Pantalla del evento: {text}"
-
-#, python-brace-format
-msgid "Cannot recognize Tacet Elimination screen: {text}"
-msgstr "No se reconoce la pantalla de Eliminación Tácita: {text}"
-
-msgid "Cannot focus the game window; clicking stopped"
-msgstr "No se puede enfocar la ventana del juego; se detienen los clics"
-
-msgid "Cannot focus the game window to return to the stage list"
-msgstr ""
-"No se puede enfocar la ventana del juego para volver a la lista de fases"
-
-msgid "Failed to return to the stage list"
-msgstr "No se pudo volver a la lista de fases"
-
-msgid "Start the task on the Tacet Elimination event screen"
-msgstr "Inicia la tarea en la pantalla del evento Eliminación Tácita"
-
-#, python-brace-format
-msgid "Stage sweep: {text}"
-msgstr "Exploración de fases: {text}"
-
-msgid "Board unchanged or unrecognized; check the event screen"
-msgstr "El tablero no cambió o no se reconoce; revisa la pantalla del evento"
-
-#, python-brace-format
-msgid "No legal move recognized: {board}"
-msgstr "No se reconoce ningún movimiento válido: {board}"
-
-msgid "Cannot focus the game window; board dragging stopped"
-msgstr ""
-"No se puede enfocar la ventana del juego; se detiene el arrastre del tablero"
-
-msgid "No unlocked Final Elimination stage found"
-msgstr "No se encuentra ninguna fase desbloqueada de Eliminación Final"
-
-msgid ""
-"Some stages are still locked; cannot confirm all prerequisites are complete"
-msgstr ""
-"Quedan fases bloqueadas; no se puede confirmar que se completaron todos los "
-"requisitos"
-
-msgid ""
-"Stage list did not reach Final Elimination; check dragging or recognition"
-msgstr ""
-"La lista no llegó a Eliminación Final; revisa el arrastre o el "
-"reconocimiento"
-
-msgid "Result screen exit button not found"
-msgstr "No se encuentra el botón de salida de los resultados"
-
-msgid "Stage retry limit exceeded"
-msgstr "Se superó el límite de reintentos de la fase"
-
-msgid ""
-"Final Elimination finished naturally; restart the task to continue scoring"
-msgstr ""
-"Eliminación Final terminó de forma natural; reinicia la tarea para seguir "
-"sumando puntos"
-
-msgid "Cannot confirm stage completion status"
-msgstr "No se puede confirmar el estado de finalización de la fase"
-
-msgid ""
-"Prerequisite scan complete; starting Final Elimination for score, even with "
-"an existing record"
-msgstr ""
-"Exploración previa completada; se inicia Eliminación Final para puntuar, "
-"aunque ya haya récord"
-
-msgid "Game window lost focus; dragging stopped"
-msgstr "La ventana del juego perdió el foco; se detiene el arrastre"
-
-msgid "No board or Start button detected after starting the challenge"
-msgstr "No se detecta el tablero ni el botón Iniciar tras comenzar el desafío"
-
-msgid "No board detected after starting the challenge"
-msgstr "No se detecta el tablero tras comenzar el desafío"
-
 msgid "is not claim treasure, restart challenge"
 msgstr ""
 "No aparece el aviso para recoger la recompensa; se reinicia el desafío"
@@ -2131,7 +1745,7 @@ msgstr "Multicuenta"
 
 #: src/task/DailyTask.py src/task/FarmEchoTask.py src/task/ForgeryTask.py
 #: src/task/GardenTask.py src/task/NightmareNestTask.py
-#: src/task/SimulationTask.py src/task/TacetEliminationTask.py
+#: src/task/SimulationTask.py
 #: src/task/TacetTask.py
 msgid "Daily Activities"
 msgstr "Actividades diarias"

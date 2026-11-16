@@ -421,6 +421,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           body: |
+            **使用本工具存在封号风险。如果你不清楚自己在做什么，请不要使用。**
+
             ### 更新日志 ${{ needs.synchronize.outputs.start_tag }} -> ${{ needs.synchronize.outputs.end_tag }}:
               ${{ needs.synchronize.outputs.changes }}
             ### Install from source

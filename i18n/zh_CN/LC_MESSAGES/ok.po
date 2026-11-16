@@ -855,129 +855,17 @@ msgstr "传送到第几个Boss挑战"
 msgid "From Top to Bottom, Starting with 1"
 msgstr "从上到下，从1开始"
 
-msgid "Characters"
-msgstr "角色"
-
-msgid "Character Code"
-msgstr "角色代码"
-
-msgid "Use built in"
-msgstr "使用内置"
-
-msgid "Use custom"
-msgstr "使用自定义"
-
-msgid "Ask AI"
-msgstr "询问 AI"
-
-msgid "How To"
-msgstr "使用说明"
-
 msgid "Save"
 msgstr "保存"
-
-msgid "Custom code saved"
-msgstr "已保存自定义代码"
-
-msgid "Unsaved changes"
-msgstr "未保存的更改"
-
-msgid "Unsaved Changes"
-msgstr "未保存的更改"
-
-msgid "Discard unsaved character code changes?"
-msgstr "放弃未保存的角色代码更改吗？"
-
-msgid "Saved and reloaded"
-msgstr "已保存并重新加载"
-
-msgid "Custom character code saved and reloaded."
-msgstr "已保存并重新加载自定义角色代码。"
-
-msgid "Custom character code saved and reloaded for loaded characters."
-msgstr "已保存自定义角色代码，并已为已加载角色重新加载。"
 
 msgid "Success"
 msgstr "成功"
 
-msgid "Using built in code"
-msgstr "正在使用内置代码"
-
-msgid "Built in character code selected."
-msgstr "已选择内置角色代码。"
-
 msgid "Error"
 msgstr "错误"
 
-msgid "Ask AI template copied. Paste it into an AI chatbot."
-msgstr "AI 提示模板已复制。请粘贴到 AI 聊天机器人中。"
-
-msgid "Copied"
-msgstr "已复制"
-
-msgid ""
-"Choose Use custom to edit a character's Python code. Use built-in mode to read and select the original code.\n"
-"\n"
-"Ask AI copies a prompt to the clipboard with the full current code at the top. Paste it into an AI chatbot, describe the change after 'I want to implement:', and ask it to return the full modified code.\n"
-"\n"
-"Paste the returned code back into this editor, review the highlighted changed lines, then click Save to apply changes."
-msgstr ""
-"选择使用自定义来编辑角色的 Python 代码。内置模式可阅读和选择原始代码。\n"
-"\n"
-"询问 AI 会将一个提示词复制到剪贴板，提示词顶部包含当前完整代码。将其粘贴到 AI 聊天机器人中，在 'I want to implement:' 后描述你想修改的内容，并要求它返回完整修改后的代码。\n"
-"\n"
-"将返回的代码粘贴回此编辑器，检查高亮的变更行，然后点击保存以应用更改。"
-
-msgid "How To Modify Character Code"
-msgstr "如何修改角色代码"
-
 msgid "Reset"
 msgstr "重置"
-
-msgid "Reset Custom Code"
-msgstr "重置自定义代码"
-
-msgid "Reset this character to built in code and remove the custom code?"
-msgstr "将此角色重置为内置代码并移除自定义代码吗？"
-
-msgid ""
-"Custom code matches built in code. Removed custom code and switched to built"
-" in."
-msgstr "自定义代码与内置代码相同。已移除自定义代码并切换到内置。"
-
-msgid ""
-"Custom code matches built in code. Removed custom code, switched to built "
-"in, and reloaded loaded characters."
-msgstr "自定义代码与内置代码相同。已移除自定义代码，切换到内置，并重新加载已加载角色。"
-
-msgid "Custom code reset to built in code."
-msgstr "自定义代码已重置为内置代码。"
-
-msgid "Custom code reset to built in code and reloaded for loaded characters."
-msgstr "自定义代码已重置为内置代码，并已为已加载角色重新加载。"
-
-msgid "Contribute Code"
-msgstr "贡献代码"
-
-msgid "I want to implement:"
-msgstr "我想实现："
-
-msgid "Please modify the full {class_name} character automation code above."
-msgstr "请修改上面完整的 {class_name} 角色自动化代码。"
-
-msgid ""
-"Return only the complete modified Python code for the whole file, not a "
-"patch and not an explanation."
-msgstr "只返回整个文件完整修改后的 Python 代码，不要返回补丁或解释。"
-
-msgid ""
-"Keep the class name as {class_name}. Preserve imports that are still needed."
-msgstr "保持类名为 {class_name}。保留仍然需要的 import。"
-
-msgid ""
-"Use this BaseChar reference while reasoning about helper methods, task APIs,"
-" state, switching, cooldowns, and combat flow:"
-msgstr "在思考辅助方法、任务 API、状态、切人、冷却和战斗流程时，请使用这个 BaseChar 参考："
 
 msgid "Rover: Spectro"
 msgstr "漂泊者·衍射"
@@ -1289,23 +1177,8 @@ msgstr "点击B进入背包，在过滤器中选择需要强化的声骸，并�
 msgid "游戏与okww语言必须为简体/繁体中文,必须16:9分辨率,使用1600x900以上分辨率, 勾选需要的, 没勾的都会自动合成"
 msgstr "游戏与okww语言必须为简体/繁体中文，分辨率必须为16:9且不低于1600x900。勾选需要保留的声骸，未勾选的会自动合成。"
 
-msgid "All fields are required."
-msgstr "所有字段均为必填项。"
-
 msgid "Author"
 msgstr "作者"
-
-msgid "Choose Export Folder"
-msgstr "选择导出文件夹"
-
-msgid "Confirm Import"
-msgstr "确认导入"
-
-msgid "Create Team"
-msgstr "创建队伍"
-
-msgid "Create or import a team to edit character code."
-msgstr "创建或导入队伍以编辑角色代码。"
 
 msgid "Description"
 msgstr "描述"
@@ -1313,131 +1186,20 @@ msgstr "描述"
 msgid "Export"
 msgstr "导出"
 
-msgid "Export Team"
-msgstr "导出队伍"
-
-msgid "Import"
-msgstr "导入"
-
-msgid "Import Team"
-msgstr "导入队伍"
-
-msgid "Importing will override the local code for this team."
-msgstr "导入将覆盖此队伍的本地代码。"
-
-msgid "Invalid Team Archive"
-msgstr "无效的队伍压缩包"
-
-msgid "Missing Information"
-msgstr "信息不完整"
-
-msgid "Modified"
-msgstr "修改时间"
-
-msgid "Name"
-msgstr "名称"
-
 msgid "No shared code is available for this team."
 msgstr "此队伍暂无共享代码。"
-
-msgid "Reset Character Code"
-msgstr "重置角色代码"
-
-msgid "Reset this character to built in code for this team?"
-msgstr "将此队伍中的该角色重置为内置代码？"
-
-msgid "Reset to Built In"
-msgstr "重置为内置代码"
-
-msgid "Save changes before exporting."
-msgstr "请先保存更改再导出。"
-
-msgid "Select 3 different characters"
-msgstr "选择3个不同的角色"
 
 msgid "Size"
 msgstr "大小"
 
-msgid "Team"
-msgstr "队伍"
-
-msgid "Team Workshop"
-msgstr "队伍工坊"
-
-msgid "Team character code saved and reloaded for the matching team."
-msgstr "队伍角色代码已保存，并为匹配的队伍重新加载。"
-
-msgid "Team character code saved."
-msgstr "队伍角色代码已保存。"
-
-msgid "Team created."
-msgstr "队伍已创建。"
-
-msgid "Team exported to {path}"
-msgstr "队伍已导出到 {path}"
-
-msgid "Team imported and reloaded for the matching team."
-msgstr "队伍已导入，并为匹配的队伍重新加载。"
-
-msgid "Team imported."
-msgstr "队伍已导入。"
-
-msgid "Teams"
-msgstr "队伍"
-
-msgid "The archive is for a different team."
-msgstr "该压缩包属于其他队伍。"
-
-msgid "Upload Team"
-msgstr "上传队伍"
-
 msgid "Version"
 msgstr "版本"
-
-msgid "Workshop"
-msgstr "工坊"
-
-msgid "Workshop Error"
-msgstr "工坊错误"
-
-msgid "Workshop archive is too large."
-msgstr "工坊压缩包过大。"
-
-msgid "Workshop download URL is invalid."
-msgstr "工坊下载地址无效。"
-
-msgid "Zip files (*.zip)"
-msgstr "ZIP 文件 (*.zip)"
-
-msgid "Workshop response is too large."
-msgstr "工坊响应过大。"
-
-msgid "Workshop returned invalid JSON."
-msgstr "工坊返回了无效的 JSON。"
-
-msgid "Workshop response is invalid."
-msgstr "工坊响应无效。"
-
-msgid "Workshop returned a different team."
-msgstr "工坊返回了其他队伍。"
 
 msgid "Cancel"
 msgstr "取消"
 
 msgid "Close"
 msgstr "关闭"
-
-msgid "{team_name} - Team Workshop"
-msgstr "{team_name} - 队伍工坊"
-
-msgid "Delete Team"
-msgstr "删除队伍"
-
-msgid "Permanently delete the team {team}?"
-msgstr "确定要永久删除队伍 {team} 吗？"
-
-msgid "Team deleted."
-msgstr "队伍已删除。"
 
 msgid "JingRan"
 msgstr "景燃"
@@ -1461,31 +1223,8 @@ msgstr "传送到第几个特异梦魇"
 msgid "Failed to read game assets quality config. Starting with HD assets."
 msgstr "读取游戏资源画质配置失败，将使用高清（HD）资源启动。"
 
-msgid "Tacet Elimination"
-msgstr "无音消除"
-
-msgid ""
-"Start on the current event screen. Complete prerequisite stages, then play "
-"Final Elimination for the highest possible score until turns run out."
-msgstr "从活动当前界面开始，完成前置关卡后挑战一局终局消除，尽可能争取高分，直到回合耗尽后自然结算。运行期间需要游戏处于前台。"
-
-
 msgid "Roccia C6"
 msgstr "洛可可6链（主输出）"
-
-msgid "Export Selected"
-msgstr "导出所选队伍"
-
-
-msgid "Export Current"
-msgstr "导出当前队伍"
-
-
-msgid "No current team detected."
-msgstr "未检测到当前队伍。"
-
-msgid "Team Info"
-msgstr "队伍说明"
 
 #, python-brace-format
 msgid "could not find char {index} {info} {highest_confidence}"
@@ -1645,16 +1384,6 @@ msgstr "目标属性和当前属性相同, 请修改声骸过滤条件!"
 #, python-brace-format
 msgid "Cannot open screenshot folder: {e}"
 msgstr "无法打开截图文件夹: {e}"
-
-#, python-brace-format
-msgid "Unknown character: {class_name}"
-msgstr "未知角色：{class_name}"
-
-msgid "Save custom code before enabling custom mode"
-msgstr "启用自定义模式前请先保存自定义代码"
-
-msgid "Character code must be text"
-msgstr "角色代码必须为文本"
 
 msgid "check weekly garden"
 msgstr "检查每周乐园任务"
@@ -2025,88 +1754,6 @@ msgstr "重新传送后行走搜索声骸成功"
 msgid "click {click}"
 msgstr "点击 {click}"
 
-msgid "Event screen action limit exceeded"
-msgstr "超过活动页面操作上限"
-
-msgid "Could not confirm the end of the stage list"
-msgstr "未能确认选关列表末尾"
-
-#, python-brace-format
-msgid "Elimination move {start} -> {end}, score={score}; board={signature}"
-msgstr "消除移动 {start} -> {end}，得分={score}；棋盘={signature}"
-
-#, python-brace-format
-msgid "Event screen: {text}"
-msgstr "活动界面：{text}"
-
-#, python-brace-format
-msgid "Cannot recognize Tacet Elimination screen: {text}"
-msgstr "无法识别无音消除界面: {text}"
-
-msgid "Cannot focus the game window; clicking stopped"
-msgstr "无法聚焦游戏窗口，已停止点击"
-
-msgid "Cannot focus the game window to return to the stage list"
-msgstr "无法聚焦游戏窗口，不能返回选关列表"
-
-msgid "Failed to return to the stage list"
-msgstr "返回选关列表失败"
-
-msgid "Start the task on the Tacet Elimination event screen"
-msgstr "请在无音消除活动界面启动任务"
-
-#, python-brace-format
-msgid "Stage sweep: {text}"
-msgstr "关卡扫描：{text}"
-
-msgid "Board unchanged or unrecognized; check the event screen"
-msgstr "棋盘未变化或无法识别，请检查活动界面"
-
-#, python-brace-format
-msgid "No legal move recognized: {board}"
-msgstr "未识别到合法移动：{board}"
-
-msgid "Cannot focus the game window; board dragging stopped"
-msgstr "无法聚焦游戏窗口，已停止棋盘拖动"
-
-msgid "No unlocked Final Elimination stage found"
-msgstr "未找到已解锁的终局消除关卡"
-
-msgid ""
-"Some stages are still locked; cannot confirm all prerequisites are complete"
-msgstr "仍有关卡未解锁，无法确认全部前置关卡已完成"
-
-msgid ""
-"Stage list did not reach Final Elimination; check dragging or recognition"
-msgstr "选关列表未到达终局消除，请检查拖动或识别"
-
-msgid "Result screen exit button not found"
-msgstr "未找到结算退出按钮"
-
-msgid "Stage retry limit exceeded"
-msgstr "关卡重试超过上限"
-
-msgid ""
-"Final Elimination finished naturally; restart the task to continue scoring"
-msgstr "终局消除本局已自然结算，可再次启动任务继续冲分"
-
-msgid "Cannot confirm stage completion status"
-msgstr "无法确认关卡完成状态"
-
-msgid ""
-"Prerequisite scan complete; starting Final Elimination for score, even with "
-"an existing record"
-msgstr "前置关卡扫描完成，进入终局消除冲分（已有纪录也会挑战）"
-
-msgid "Game window lost focus; dragging stopped"
-msgstr "游戏窗口失去焦点，已停止拖动"
-
-msgid "No board or Start button detected after starting the challenge"
-msgstr "开始挑战后未检测到棋盘或开始按钮"
-
-msgid "No board detected after starting the challenge"
-msgstr "开始挑战后未检测到棋盘"
-
 msgid "is not claim treasure, restart challenge"
 msgstr "未出现领取奖励提示，重新挑战"
 
@@ -2194,7 +1841,7 @@ msgstr "多账号"
 
 #: src/task/DailyTask.py src/task/FarmEchoTask.py src/task/ForgeryTask.py
 #: src/task/GardenTask.py src/task/NightmareNestTask.py
-#: src/task/SimulationTask.py src/task/TacetEliminationTask.py
+#: src/task/SimulationTask.py
 #: src/task/TacetTask.py
 msgid "Daily Activities"
 msgstr "日常活动"
