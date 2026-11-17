@@ -32,6 +32,8 @@ dulwich==1.2.21
     # via
     #   ok-ww (pyproject.toml)
     #   pyappify
+greenlet==3.5.6
+    # via playwright
 h11==0.16.0
     # via
     #   httpcore2
@@ -82,6 +84,8 @@ openvino-telemetry==2025.2.0
     # via openvino
 pillow==12.3.0
     # via onnxocr-ppocrv6
+playwright==1.65.2
+    # via ok-ww (pyproject.toml)
 psutil==7.2.2
     # via
     #   ok-script

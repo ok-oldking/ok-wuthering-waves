@@ -224,6 +224,13 @@ config = {
         'check_night_light': True,
         'force_no_night_light': False,
     },
+    'browser': {
+        'url': 'https://mc.kurogames.com/cloud/#/',
+        'resolution': (1920, 1080),
+        'channels': ['msedge', 'chrome', 'chromium'],
+        'args': ['--webrtc-ip-handling-policy=default', '--force-color-profile=srgb'],
+        'nick': '云游戏(需要Win11并安装Chrome或Edge)',
+    },
     'window_size': {
         'width': 1200,
         'height': 800,
