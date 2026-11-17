@@ -443,6 +443,7 @@ class TestMultiAccountConfig(unittest.TestCase):
                 runner.scene = SimpleNamespace(in_team=lambda callback: callback())
                 runner.in_team_and_world = lambda: state.screen == 'world'
                 runner.in_realm = lambda: False
+                runner.is_browser = lambda: False
                 runner.handle_monthly_card = lambda: False
                 runner.find_one = Mock(return_value=None)
                 runner.ocr = lambda **kwargs: ['Log In'] if state.screen == 'login' else []

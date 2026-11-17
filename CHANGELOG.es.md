@@ -2,6 +2,12 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.4 (2026-11-18)
+
+- Se ha restablecido el juego en la nube a 1080p, con preferencia por Edge y colores de captura corregidos en pantallas HDR.
+- Se ha mejorado la detección de objetivos y barras de salud en el combate en la nube, incluidas las barras de acciones largas y las barras de salud baja afectadas por la compresión.
+- Se ha añadido la recuperación ante los avisos de desconexión del juego en la nube (errores 1020 y 4012).
+
 ## v3.8.3 (2026-11-15)
 
 - Se añadió Pynput como método de entrada seleccionable; PostMessage sigue siendo el predeterminado.

@@ -228,7 +228,9 @@ config = {
         'url': 'https://mc.kurogames.com/cloud/#/',
         'resolution': (1920, 1080),
         'channels': ['msedge', 'chrome', 'chromium'],
-        'args': ['--webrtc-ip-handling-policy=default', '--force-color-profile=srgb'],
+        # Keep SDR video in the compositor; direct video overlays clip WGC colors on HDR displays.
+        'args': ['--webrtc-ip-handling-policy=default', '--force-color-profile=srgb',
+                 '--disable-direct-composition'],
         'nick': '云游戏(需要Win11并安装Chrome或Edge)',
     },
     'window_size': {

@@ -129,7 +129,8 @@ class FarmEchoTask(WWOneTimeTask, BaseCombatTask):
         except Exception as e:
             logger.error('farm 4c error, try handle monthly card', e)
             # 有上限: 认不出的双按钮弹窗会被当成领奖弹窗关掉, 重进后又弹, 无限循环 (#1649)
-            if retries > 0 and (self.handle_claim_button() or self.handle_monthly_card()):
+            if retries > 0 and (self.handle_claim_button() or self.handle_monthly_card()
+                                or self.handle_cloud_disconnect()):
                 self.run(retries - 1)
             else:
                 raise
