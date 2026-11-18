@@ -37,13 +37,14 @@ Use `scripts/next_tag.py` to calculate tags; it ignores tags outside these forma
 4. Calculate the tag before committing, selecting `release`, `beta`, or `alpha` from the user's command. Include the publishing remote when configured, typically `origin`, so local and published tag names are both considered without overwriting an existing local tag:
 
    ```powershell
-   .\.venv\Scripts\python.exe .agent\skills\deploy\scripts\next_tag.py release --remote origin
-   .\.venv\Scripts\python.exe .agent\skills\deploy\scripts\next_tag.py beta --remote origin
-   .\.venv\Scripts\python.exe .agent\skills\deploy\scripts\next_tag.py alpha --remote origin
+   .\.venv\Scripts\python.exe .agents\skills\deploy\scripts\next_tag.py release --remote origin
+   .\.venv\Scripts\python.exe .agents\skills\deploy\scripts\next_tag.py beta --remote origin
+   .\.venv\Scripts\python.exe .agents\skills\deploy\scripts\next_tag.py alpha --remote origin
    ```
 
    If no repository `.venv` exists, run the script with available Python. If remote tag lookup fails, stop before creating a version tag rather than guessing from stale local tags.
-5. Stage only the intended files, inspect `git diff --cached`, then create the commit:
+5. Generate or update the release patch notes for `<calculated-tag>` using the `pyappify-patch-notes` skill (`../pyappify-patch-notes/SKILL.md`) unless `CHANGELOG.md` and its localized `CHANGELOG.*.md` files already contain a section for `<calculated-tag>`. Include the updated changelog files (and `deploy.txt` if modified) in the deployment commit.
+6. Stage only the intended files, inspect `git diff --cached`, then create the commit:
 
    ```powershell
    git add -- <intended-files>
@@ -53,14 +54,14 @@ Use `scripts/next_tag.py` to calculate tags; it ignores tags outside these forma
    ```
 
    Do not create an empty commit unless the user explicitly requests it.
-6. Create an annotated tag on the newly created commit, matching this repository's existing tags:
+7. Create an annotated tag on the newly created commit, matching this repository's existing tags:
 
    ```powershell
    git tag -a "<calculated-tag>" -m "<calculated-tag>"
    git show --no-patch --decorate HEAD
    ```
 
-7. Push the commit and annotated tag to the publishing remote, typically `origin`, unless the user explicitly requested local-only operation:
+8. Push the commit and annotated tag to the publishing remote, typically `origin`, unless the user explicitly requested local-only operation:
 
    ```powershell
    git push origin HEAD "<calculated-tag>"
@@ -68,7 +69,7 @@ Use `scripts/next_tag.py` to calculate tags; it ignores tags outside these forma
 
    Verify that the push succeeded before reporting the deployment complete.
 
-8. Report the commit subject, tag, remote, and whether the push succeeded.
+9. Report the commit subject, tag, remote, and whether the push succeeded.
 
 ## Guardrails
 

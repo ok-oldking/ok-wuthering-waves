@@ -2,6 +2,10 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.5-beta.2 (2026-11-18)
+
+- Versión de mantenimiento: se actualizó la generación de notas de lanzamiento en GitHub; sin cambios adicionales para el usuario.
+
 ## v3.8.4 (2026-11-18)
 
 - Se ha restablecido el juego en la nube a 1080p, con preferencia por Edge y colores de captura corregidos en pantallas HDR.
