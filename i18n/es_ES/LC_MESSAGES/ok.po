@@ -1772,3 +1772,13 @@ msgstr ""
 msgid "Edit account order, enabled accounts, tasks and task settings."
 msgstr ""
 "Edita el orden de las cuentas, su activación, las tareas y sus ajustes."
+
+msgid "Rahai Blocks (Score Mode)"
+msgstr "Bloques de Rahai (modo de puntuación)"
+
+msgid ""
+"Open the score board before starting. Keep the PC game in the foreground "
+"while the task plays."
+msgstr ""
+"Abre el tablero de puntuación antes de empezar. Mantén el juego de PC en "
+"primer plano durante la tarea."

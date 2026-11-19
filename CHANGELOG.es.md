@@ -2,6 +2,11 @@
 
 El historial comienza en v3.0.0.
 
+## Unreleased
+
+- Se añadió la tarea «3.8 拉海洛方块·逆转» al inicio de Actividades diarias para el cliente de Windows en chino simplificado. Abre la lista de niveles del evento y mantén el juego en primer plano. La tarea intenta superar las dificultades desbloqueadas y pendientes, y vuelve a la lista después de cada victoria.
+- Compatible con tableros de dos y tres bandejas, incluida la fase de 4500 puntos con bloques grises fijos en las esquinas. La tarea comprueba la vista previa antes de soltar cada pieza.
+
 ## v3.8.5-beta.2 (2026-11-18)
 
 - Versión de mantenimiento: se actualizó la generación de notas de lanzamiento en GitHub; sin cambios adicionales para el usuario.
