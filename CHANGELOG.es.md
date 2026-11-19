@@ -2,6 +2,11 @@
 
 El historial comienza en v3.0.0.
 
+## Unreleased
+
+- Se añadió la tarea «Bloques de Rahai (modo de puntuación)» para el cliente de Windows. Abre el tablero de puntuación y mantén el juego en primer plano. La tarea se detiene al confirmar la puntuación objetivo y deja abierta la pantalla de recompensas.
+- Compatible con tableros de dos y tres bandejas, incluida la fase de 4500 puntos con bloques grises fijos en las esquinas. La tarea comprueba la vista previa antes de soltar cada pieza.
+
 ## v3.8.5-beta.2 (2026-11-18)
 
 - Versión de mantenimiento: se actualizó la generación de notas de lanzamiento en GitHub; sin cambios adicionales para el usuario.
