@@ -4,7 +4,7 @@ Release history starts at v3.0.0.
 
 ## Unreleased
 
-- Added a Rahai Blocks (Score Mode) task for the Windows PC client. Open the score board and keep the game window in the foreground; the task stops when it confirms the target score and leaves the reward screen open.
+- Added the Simplified Chinese Windows PC task “3.8 拉海洛方块·逆转” at the top of Daily Activities. Open the event stage list and keep the game in the foreground. The task attempts unlocked, uncleared difficulties and returns to the list after each clear.
 - Supports both two-tray and three-tray boards, including the 4,500-point stage with fixed gray corner blocks. The task checks the placement preview before dropping each piece.
 
 ## v3.8.5-beta.2 (2026-11-18)

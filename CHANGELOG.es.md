@@ -4,7 +4,7 @@ El historial comienza en v3.0.0.
 
 ## Unreleased
 
-- Se añadió la tarea «Bloques de Rahai (modo de puntuación)» para el cliente de Windows. Abre el tablero de puntuación y mantén el juego en primer plano. La tarea se detiene al confirmar la puntuación objetivo y deja abierta la pantalla de recompensas.
+- Se añadió la tarea «3.8 拉海洛方块·逆转» al inicio de Actividades diarias para el cliente de Windows en chino simplificado. Abre la lista de niveles del evento y mantén el juego en primer plano. La tarea intenta superar las dificultades desbloqueadas y pendientes, y vuelve a la lista después de cada victoria.
 - Compatible con tableros de dos y tres bandejas, incluida la fase de 4500 puntos con bloques grises fijos en las esquinas. La tarea comprueba la vista previa antes de soltar cada pieza.
 
 ## v3.8.5-beta.2 (2026-11-18)
