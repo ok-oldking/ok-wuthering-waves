@@ -1815,3 +1815,11 @@ msgstr "アカウントごとにタスクを設定します。無効の場合は
 
 msgid "Edit account order, enabled accounts, tasks and task settings."
 msgstr "アカウントの順序、有効状態、実行タスクとタスク設定を編集します。"
+
+msgid "Rahai Blocks (Score Mode)"
+msgstr "ラハイロブロック（スコアモード）"
+
+msgid ""
+"Open the score board before starting. Keep the PC game in the foreground "
+"while the task plays."
+msgstr "開始前にスコアモードの盤面を開き、実行中はPC版ゲームを最前面にしてください。"

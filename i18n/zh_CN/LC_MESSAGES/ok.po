@@ -1865,3 +1865,11 @@ msgstr "为每个账号分别配置任务。关闭时执行原有多账号每日
 
 msgid "Edit account order, enabled accounts, tasks and task settings."
 msgstr "编辑账号顺序、启用状态、执行任务及任务配置。"
+
+msgid "Rahai Blocks (Score Mode)"
+msgstr "拉海洛方块（积分模式）"
+
+msgid ""
+"Open the score board before starting. Keep the PC game in the foreground "
+"while the task plays."
+msgstr "启动前打开积分棋盘。运行时请将电脑端游戏保持在前台。"
