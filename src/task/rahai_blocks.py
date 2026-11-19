@@ -1,4 +1,4 @@
-"""Vision and move planning for the 8x8 two-tray score board."""
+"""Vision and move planning for the 8x8 score board."""
 
 from dataclasses import dataclass
 from functools import lru_cache
@@ -10,7 +10,8 @@ import numpy as np
 WIDTH, HEIGHT = 2048, 1152
 SIZE = 8
 BOARD_X, BOARD_Y, CELL = 537.5, 89.4, 121.65
-TRAY_X, TRAY_Y, TILE = 1785.5, (495, 735), 38.3
+TRAY_X, TILE = 1785.5, 38.3
+TRAY_LAYOUTS = ((495, 735), (375, 615, 855))
 ROWS = tuple(255 << (SIZE * r) for r in range(SIZE))
 COLS = tuple(0x0101010101010101 << c for c in range(SIZE))
 FULL = (1 << (SIZE * SIZE)) - 1
@@ -44,6 +45,7 @@ class Move:
 class Board:
     mask: int
     pieces: tuple
+    fixed: int = 0
 
 
 def canonical_frame(frame):
@@ -57,22 +59,25 @@ def _value(frame, x, y, radius=7):
     return float(np.median(frame[y-radius:y+radius+1, x-radius:x+radius+1].max(axis=2)))
 
 
-def board_mask(frame):
+def _board_masks(frame):
     """Vote across each tile so the floating rotation hint is not a tile."""
     centers_x = BOARD_X + (np.arange(SIZE) + .5) * CELL
     centers_y = BOARD_Y + (np.arange(SIZE) + .5) * CELL
     votes = np.zeros((SIZE, SIZE), dtype=np.uint8)
+    fixed_votes = np.zeros_like(votes)
     for dx, dy in ((-24, -25), (24, -25), (-24, 25), (24, 25)):
         x = np.rint(centers_x + dx).astype(int)
         y = np.rint(centers_y + dy).astype(int)
         colors = frame[y[:, None], x[None, :]]
         bright = colors.max(axis=2)
-        votes += (bright > 88) & (bright - colors.min(axis=2) > 40)
-    return sum(1 << int(i) for i in np.flatnonzero(votes.ravel() >= 3))
+        chroma = bright - colors.min(axis=2)
+        fixed = (bright >= 80) & (bright <= 155) & (chroma <= 15)
+        votes += ((bright > 88) & (chroma > 40)) | fixed
+        fixed_votes += fixed
+    return tuple(sum(1 << int(i) for i in np.flatnonzero(v.ravel() >= 3)) for v in (votes, fixed_votes))
 
 
-def _read_piece(frame, slot):
-    cy = TRAY_Y[slot]
+def _read_piece(frame, slot, cy):
     x0, y0 = round(TRAY_X) - 88, cy - 88
     crop = frame[y0:cy+88, x0:x0+176]
     bright = crop.max(axis=2) > 105
@@ -106,25 +111,33 @@ def _read_piece(frame, slot):
 def read_board(frame):
     if frame is None:
         return None
-    # Confirm the event icon, upper grid border and both dark tray interiors.
+    # Confirm the event icon and upper grid border.
     icon = frame[44:102, 50:110]
     if np.count_nonzero(icon.min(axis=2) > 181) < 210:
         return None
-    if not (_value(frame, 1024, 73, 3) - _value(frame, 1024, 85, 2) > 45 and
-            all(_value(frame, 1704, y - 82, 3) < 65 for y in TRAY_Y)):
+    if _value(frame, 1024, 73, 3) - _value(frame, 1024, 85, 2) <= 45:
+        return None
+    # Check both the dark tray interiors and the bright gaps between them.
+    # The interior samples alone can accidentally land in neighboring trays.
+    layouts = [layout for layout in TRAY_LAYOUTS if
+               all(_value(frame, 1710, cy + dy, 3) < 65 for cy in layout for dy in (-82, 82))
+               and all(_value(frame, 1710, (a + b) // 2, 3) > 105 for a, b in zip(layout, layout[1:]))]
+    if len(layouts) != 1:
         return None
     try:
-        pieces = tuple(p for slot in range(len(TRAY_Y)) if (p := _read_piece(frame, slot)) is not None)
+        pieces = tuple(p for slot, cy in enumerate(layouts[0]) if (p := _read_piece(frame, slot, cy)) is not None)
     except ValueError:
         return None
-    return Board(board_mask(frame), pieces)
+    mask, fixed = _board_masks(frame)
+    return Board(mask, pieces, fixed)
 
 
-def clear_lines(mask):
+def clear_lines(mask, fixed=0):
+    """Gray blocks contribute to full lines but stay in place when cleared."""
     lines = [line for line in (*ROWS, *COLS) if mask & line == line]
     for line in lines:
         mask &= ~line
-    return mask, len(lines)
+    return mask | fixed, len(lines)
 
 
 @lru_cache(maxsize=128)
@@ -157,31 +170,48 @@ def board_value(mask):
 
 
 def choose_move(board, excluded=()):
-    """Search both orders and all rotations of the currently visible batch."""
-    best, best_rank = None, None
-    for piece in board.pieces:
-        rest = next((p for p in board.pieces if p.slot != piece.slot), None)
-        for move in (Move(piece.slot, *p) for p in placements(piece.cells)):
-            if move.mask & board.mask or (move.slot, move.mask) in excluded:
-                continue
-            after, lines = clear_lines(board.mask | move.mask)
-            # Simultaneous clears are worth more than the same number across moves.
-            score = lines * (lines + 1) * 30
-            if rest is None:
-                future = board_value(after)
-            else:
-                future = max((n * (n + 1) * 30 + board_value(final)
-                              for *_, mask in placements(rest.cells) if not mask & after
-                              for final, n in [clear_lines(after | mask)]), default=-10000)
-            rank = (score + future, lines, -move.turns)
-            if best_rank is None or rank > best_rank:
-                best, best_rank = move, rank
+    """Search the current batch; bound intermediate states for three trays."""
+    batch = {p.slot: placements(p.cells) for p in board.pieces}
+    states = [(board.mask, tuple(batch), 0, 0, None)]
+    best = None
+    for depth in range(len(batch)):
+        candidates = {}
+        for mask, remaining, score, first_lines, first in states:
+            for slot in remaining:
+                rest = tuple(s for s in remaining if s != slot)
+                for p in batch[slot]:
+                    tile_mask = p[-1]
+                    if tile_mask & mask or (first is None and (slot, tile_mask) in excluded):
+                        continue
+                    after, lines = clear_lines(mask | tile_mask, board.fixed)
+                    total = score + lines * (lines + 1) * 30
+                    move = first or Move(slot, *p)
+                    initial = first_lines if first else lines
+                    rank = (total + board_value(after), initial, -move.turns)
+                    key = (after, rest)
+                    if key not in candidates or rank > candidates[key][0]:
+                        candidates[key] = (rank, (after, rest, total, initial, move))
+        if not candidates:
+            break
+        ordered = sorted(candidates.values(), key=lambda candidate: candidate[0], reverse=True)
+        best = ordered[0][1][-1]
+        # Preserve alternatives for every remaining subset before the final ply.
+        if len(batch) == 3 and depth < 2:
+            counts = {}
+            states = []
+            for _, state in ordered:
+                rest = state[1]
+                if counts.get(rest, 0) < 24:
+                    states.append(state)
+                    counts[rest] = counts.get(rest, 0) + 1
+        else:
+            states = [state for _, state in ordered]
     return best
 
 
 def preview_matches(frame, board, move):
     # A matching footprint requires one new occupied cell per tile in the move.
-    return frame is not None and board_mask(frame) == (board.mask | move.mask)
+    return frame is not None and _board_masks(frame) == (board.mask | move.mask, board.fixed)
 
 
 def score_bar_full(frame):

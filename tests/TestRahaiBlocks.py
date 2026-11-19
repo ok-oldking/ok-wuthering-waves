@@ -19,6 +19,11 @@ class TestRahaiBlocks(unittest.TestCase):
     def test_intersecting_lines_clear_simultaneously(self):
         self.assertEqual(clear_lines(ROWS[2] | COLS[3] | 1), (1, 2))
 
+    def test_full_lines_include_but_do_not_remove_gray_blocks(self):
+        corners = 0x8100000000000081
+        mask = ROWS[0] | COLS[0] | corners | (1 << 9)
+        self.assertEqual(clear_lines(mask, corners), (corners | (1 << 9), 2))
+
     def test_rotations_cannot_mirror_or_wrap(self):
         moves = placements(((0, 0), (0, 1), (1, 1)))
         self.assertEqual({turns for turns, *_ in moves}, {0, 1, 2, 3})
@@ -51,6 +56,22 @@ class TestRahaiBlocks(unittest.TestCase):
         self.assertIsNone(read_board(reward))
         self.assertTrue(score_bar_full(reward))
         self.assertFalse(score_bar_full(fixture('score')))
+
+    def test_reads_three_trays_and_all_four_gray_corners(self):
+        board = read_board(fixture('score_4500'))
+        self.assertEqual(board.mask, 0x991800C3C3001899)
+        self.assertEqual(board.fixed, 0x8100000000000081)
+        self.assertEqual([(p.slot, len(p.cells)) for p in board.pieces], [(0, 5), (1, 4), (2, 5)])
+        move = choose_move(board)
+        self.assertFalse(move.mask & board.mask)
+        alternative = choose_move(board, excluded={(move.slot, move.mask)})
+        self.assertNotEqual((alternative.slot, alternative.mask), (move.slot, move.mask))
+
+    def test_partly_used_three_tray_layout_keeps_slot_ids(self):
+        board = read_board(fixture('score_4500_partial'))
+        self.assertEqual(board.mask, 0x9B1A3E0E3E001A9B)
+        self.assertEqual(board.fixed, 0x8100000000000081)
+        self.assertEqual([p.slot for p in board.pieces], [0, 1])
 
     def test_unrelated_and_non_widescreen_frames_are_rejected(self):
         self.assertIsNone(read_board(canonical_frame(np.zeros((720, 1280, 3), np.uint8))))

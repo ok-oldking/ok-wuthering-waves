@@ -57,27 +57,35 @@ class RahaiBlocksTask(BaseTask):
         interaction.mouse_down(*point(source))
         release_at_target = False
         try:
-            # Trigger the drag in the tray before moving over the board. A move
-            # after R is necessary for the client to re-anchor the preview.
+            # Trigger the drag in the tray, but rotate over the board where
+            # the game reliably accepts R even for pieces near the tray edge.
             self.sleep(.10)
             move_cursor((source[0] - 16, source[1]))
             self.sleep(.12)
-            for _ in range(move.turns):
-                if not interaction.clickable():
-                    raise RuntimeError("Game lost foreground focus during a drag")
-                interaction.send_key('r', down_time=.06)
-                self.sleep(.12)
             for i in range(1, 9):
                 move_cursor((source[0] + (dx - source[0]) * i / 8, source[1] + (dy - source[1]) * i / 8))
                 self.sleep(.025)
-            for ox, oy in ((0, 0), (0, -12), (-12, 0), (12, 0), (0, 12)):
-                if ox or oy:
+            self.sleep(.15)
+
+            def rotate():
+                if not interaction.clickable():
+                    raise RuntimeError("Game lost foreground focus during a drag")
+                interaction.send_key('r', down_time=.08)
+                move_cursor((dx + 5, dy))
+                self.sleep(.13)
+
+            for _ in range(move.turns):
+                rotate()
+            # Retry a full rotation cycle if a key press was missed.
+            for attempt in range(4):
+                if attempt:
+                    rotate()
+                for ox, oy in ((0, 0), (0, -12), (-12, 0), (12, 0), (0, 12)):
                     move_cursor((dx + ox, dy + oy))
-                self.sleep(.16)
-                preview = canonical_frame(self.next_frame())
-                if interaction.clickable() and preview_matches(preview, board, move):
-                    release_at_target = True
-                    break
+                    self.sleep(.16)
+                    if interaction.clickable() and preview_matches(canonical_frame(self.next_frame()), board, move):
+                        release_at_target = True
+                        return True
             if not release_at_target:
                 self.log_warning(f"Placement preview did not match: slot={move.slot}, turns={move.turns}, "
                                  f"row={move.row}, col={move.col}")
@@ -97,13 +105,20 @@ class RahaiBlocksTask(BaseTask):
 
     def run(self):
         self.next_frame()
-        board = self._read_board()
+        frame = canonical_frame(self.frame)
+        if frame is None:
+            raise RuntimeError("Rahai Blocks requires a 16:9 PC game capture.")
+        board = read_board(frame)
         score = self._score() if board and board.pieces else None
         if not score:
             if self._finished():
                 self._complete()
                 return
-            raise RuntimeError("Open the Rahai Blocks score board, close the tutorial, and use a 16:9 PC game window.")
+            if board is None:
+                raise RuntimeError("Rahai Blocks board layout was not recognized. Open the score board and close any overlays.")
+            if not board.pieces:
+                raise RuntimeError("No pieces were visible in the Rahai Blocks trays. Wait for the next batch and try again.")
+            raise RuntimeError("Rahai Blocks board was found, but the score and target could not be read.")
         if not self.hwnd or not self.hwnd.exists:
             raise RuntimeError("Rahai Blocks requires the native Windows PC client.")
         goal = score[1]
@@ -143,14 +158,14 @@ class RahaiBlocksTask(BaseTask):
                 continue
             misses = 0
             rejected.clear()
-            expected, lines = clear_lines(board.mask | move.mask)
+            expected, lines = clear_lines(board.mask | move.mask, board.fixed)
             self.log_info(f"Rahai Blocks: slot={move.slot + 1}, rotation={move.turns * 90}, "
                           f"cell=({move.row + 1},{move.col + 1}), lines={lines}")
             self.sleep(.95 if lines else .38)
             for _ in range(4):
                 self.next_frame()
                 actual = self._read_board()
-                if actual and actual.mask == expected:
+                if actual and actual.mask == expected and actual.fixed == board.fixed:
                     if lines and self._finished(goal):
                         self._complete()
                         return
@@ -160,5 +175,7 @@ class RahaiBlocksTask(BaseTask):
                 if lines and self._finished(goal):
                     self._complete()
                     return
+                self.log_warning(f"Rahai Blocks: expected={expected:#018x}, "
+                                 f"actual={hex(actual.mask) if actual else 'unrecognized'}")
                 raise RuntimeError("Game did not confirm the predicted board after dropping the piece.")
         raise RuntimeError("Move limit reached without confirmed completion.")
