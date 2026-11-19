@@ -52,10 +52,12 @@ class TestRahaiBlocks(unittest.TestCase):
         self.assertFalse(preview_matches(fixture('score'), board, move))
 
     def test_reward_overlay_is_not_playable_and_has_full_bar(self):
-        reward = fixture('reward')
-        self.assertIsNone(read_board(reward))
-        self.assertTrue(score_bar_full(reward))
-        self.assertFalse(score_bar_full(fixture('score')))
+        for board_name, reward_name in (('score', 'reward'), ('score_4500', 'reward_4500')):
+            with self.subTest(board=board_name):
+                reward = fixture(reward_name)
+                self.assertIsNone(read_board(reward))
+                self.assertTrue(score_bar_full(reward))
+                self.assertFalse(score_bar_full(fixture(board_name)))
 
     def test_reads_three_trays_and_all_four_gray_corners(self):
         board = read_board(fixture('score_4500'))
