@@ -75,6 +75,11 @@ class TestRahaiBlocks(unittest.TestCase):
         self.assertEqual(board.fixed, 0x8100000000000081)
         self.assertEqual([p.slot for p in board.pieces], [0, 1])
 
+    def test_bright_piece_does_not_look_like_two_tray_divider(self):
+        board = read_board(fixture('score_4500_ambiguous_trays'))
+        self.assertIsNotNone(board)
+        self.assertEqual([(piece.slot, len(piece.cells)) for piece in board.pieces], [(0, 9), (1, 4), (2, 5)])
+
     def test_unrelated_and_non_widescreen_frames_are_rejected(self):
         self.assertIsNone(read_board(canonical_frame(np.zeros((720, 1280, 3), np.uint8))))
         self.assertIsNone(canonical_frame(np.zeros((720, 1440, 3), np.uint8)))

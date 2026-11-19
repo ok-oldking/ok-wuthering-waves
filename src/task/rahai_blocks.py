@@ -122,14 +122,20 @@ def read_board(frame):
     layouts = [layout for layout in TRAY_LAYOUTS if
                all(_value(frame, 1710, cy + dy, 3) < 65 for cy in layout for dy in (-82, 82))
                and all(_value(frame, 1710, (a + b) // 2, 3) > 105 for a, b in zip(layout, layout[1:]))]
-    if len(layouts) != 1:
-        return None
-    try:
-        pieces = tuple(p for slot, cy in enumerate(layouts[0]) if (p := _read_piece(frame, slot, cy)) is not None)
-    except ValueError:
+    trays = []
+    for layout in layouts:
+        try:
+            pieces = tuple(piece for slot, cy in enumerate(layout)
+                           if (piece := _read_piece(frame, slot, cy)) is not None)
+        except ValueError:
+            # A bright piece in a three-tray board can look like a divider
+            # in the two-tray layout. Reject layouts with off-center pieces.
+            continue
+        trays.append(pieces)
+    if len(trays) != 1:
         return None
     mask, fixed = _board_masks(frame)
-    return Board(mask, pieces, fixed)
+    return Board(mask, trays[0], fixed)
 
 
 def clear_lines(mask, fixed=0):
