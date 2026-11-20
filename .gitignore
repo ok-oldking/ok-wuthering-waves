@@ -13,6 +13,7 @@ fonts
 .idea/
 __pycache__/
 issue*.json
+/.pr-reviews/
 *.py[cod]
 *$py.class
 # Local account configuration and execution history (may contain private data).
