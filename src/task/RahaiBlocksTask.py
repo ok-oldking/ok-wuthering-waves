@@ -3,7 +3,9 @@ import re
 from ok import BaseTask
 from ok.device.interaction_methods.pynput import PynputInteraction
 
-from src.task.rahai_blocks import HEIGHT, WIDTH, canonical_frame, choose_move, clear_lines, preview_matches, read_board
+from src.task.rahai_blocks import (
+    HEIGHT, WIDTH, canonical_frame, choose_move, clear_lines, preview_matches, read_board, score_bar_full,
+)
 from src.task.task_icons import task_icon
 
 
@@ -19,7 +21,7 @@ class RahaiBlocksTask(BaseTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "3.8 拉海洛方块·逆转"
-        self.description = "从活动关卡列表开始，挑战所有已解锁且未通关的关卡。请保持简体中文 PC 客户端在前台。"
+        self.description = "从活动关卡列表挑战所有已解锁关卡，或从已打开的棋盘继续当前关卡。请保持简体中文 PC 客户端在前台。"
         self.group_name = "Daily Activities"
         self.group_icon = task_icon("category-daily")
         self.supported_languages = ["zh_CN"]
@@ -144,16 +146,26 @@ class RahaiBlocksTask(BaseTask):
 
     def run(self):
         self.next_frame()
-        if not self.hwnd or not self.hwnd.exists or canonical_frame(self.frame) is None:
+        frame = canonical_frame(self.frame)
+        if not self.hwnd or not self.hwnd.exists or frame is None:
             raise RuntimeError("拉海洛方块需要 16:9 的 Windows PC 客户端。")
-        stages = self.wait_until(self._stage_list, time_out=5)
-        if not stages:
-            raise RuntimeError("请先打开简体中文的「拉海洛方块·逆转」活动关卡列表。")
+        if score_bar_full(frame) and self._reward():
+            self._report_board_cleared()
+            return
+        entry = self._start_view() or self.wait_until(self._start_view, time_out=5)
+        if not entry:
+            raise RuntimeError("请先打开简体中文的「拉海洛方块·逆转」活动关卡列表或关闭棋盘上的教程。")
+        current_board, stages = entry
         interaction = PynputInteraction(self.executor.device_manager.capture_method, self.hwnd)
         if not interaction.clickable():
             self.hwnd.bring_to_front()
             if not self.wait_until(interaction.clickable, time_out=3):
                 raise RuntimeError("请将鸣潮窗口切到前台后再次启动任务。")
+
+        if current_board:
+            self._play_board(interaction)
+            self._report_board_cleared()
+            return
 
         stages = self._first_page(interaction, stages)
         attempted = set()
@@ -186,6 +198,20 @@ class RahaiBlocksTask(BaseTask):
                     self.log_info(f"已通关 {cleared} 个难度，所有已解锁关卡已检查。", notify=True)
                     return
         raise RuntimeError("扫描关卡列表达到上限。")
+
+    def _report_board_cleared(self):
+        self.log_info("拉海洛方块当前关卡已达成目标。", notify=True)
+
+    def _open_board(self):
+        board = self._playable_board()
+        return board if board and self._score() else None
+
+    def _start_view(self):
+        if board := self._open_board():
+            return board, None
+        if stages := self._stage_list():
+            return None, stages
+        return None
 
     def _read_board(self):
         return read_board(canonical_frame(self.frame))

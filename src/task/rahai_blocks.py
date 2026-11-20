@@ -221,9 +221,11 @@ def preview_matches(frame, board, move):
 
 
 def score_bar_full(frame):
-    """The far end stays magenta even under the darkened rewards overlay."""
+    """A filled tip stays magenta (points) or yellow (medals) under the reward overlay."""
     if frame is None:
         return False
     pixels = frame[194:215, 459:470].astype(np.int16)
-    return bool(np.median(pixels[:, :, 2] - pixels[:, :, 1]) >= 6 and
-                np.median(pixels[:, :, 0] - pixels[:, :, 1]) >= 6)
+    blue, green, red = np.moveaxis(pixels, -1, 0)
+    magenta = np.median(red - green) >= 6 and np.median(blue - green) >= 6
+    yellow = np.median(red - blue) >= 6 and np.median(green - blue) >= 6
+    return bool(magenta or yellow)

@@ -2,6 +2,10 @@
 
 El historial comienza en v3.0.0.
 
+## Unreleased
+
+- Permite reanudar un desafío de puntos o medallas desde un tablero abierto. Al iniciarse desde el tablero, la tarea se detiene en la pantalla de recompensas.
+
 ## v3.8.5 (2026-11-20)
 
 - Se añadió la tarea «3.8 拉海洛方块·逆转» al inicio de Actividades diarias para el cliente de Windows en chino simplificado. Abre la lista de niveles del evento y mantén el juego en primer plano. La tarea intenta superar las dificultades desbloqueadas y pendientes, y vuelve a la lista después de cada victoria.
