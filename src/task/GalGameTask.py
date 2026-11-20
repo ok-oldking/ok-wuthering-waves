@@ -350,8 +350,15 @@ class GalGameTask(BaseTask):
         return sum(1 for row in rows if self._row_has_astrite(row.center()[1]))
 
     def _claim_rewards(self, title, button):
-        self.click(button, after_sleep=.55)
-        if not self.wait_until(lambda: self._reward_page(title), time_out=5):
+        opened = False
+        for attempt in range(3):
+            if attempt > 0:
+                button = self._label(self._read(), title, (0, .42, .2, .9)) or button
+            self.click(button, after_sleep=.55)
+            if self.wait_until(lambda: self._reward_page(title), time_out=2.5):
+                opened = True
+                break
+        if not opened:
             raise RuntimeError(f"无法打开{title}。")
 
         for _ in range(8):
@@ -387,8 +394,18 @@ class GalGameTask(BaseTask):
             button = self._label(boxes, title, (0, .42, .2, .9))
             if button:
                 self._claim_rewards(title, button)
-                boxes = self.wait_until(lambda: (frame if parent(frame := self._read())
-                                                 else None), time_out=6)
+                boxes = None
+                for _ in range(3):
+                    boxes = self.wait_until(lambda: (frame if parent(frame := self._read())
+                                                     else None), time_out=2.5)
+                    if boxes:
+                        self.sleep(.35)
+                        settled = self._read()
+                        if parent(settled):
+                            boxes = settled
+                        break
+                    if self._reward_page(title):
+                        self.click(.954, .067, after_sleep=.7)
                 if not boxes:
                     raise RuntimeError("领取奖励后无法返回活动菜单。")
         if self._claim_log:

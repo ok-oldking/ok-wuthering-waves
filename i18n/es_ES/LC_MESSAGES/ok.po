@@ -944,8 +944,8 @@ msgstr "Fusionar ecos si hay más de 1000 descartados"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "Tareas adicionales para ejecutar después de la tarea diaria"
 
-msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
-msgstr "Selecciona tareas opcionales. Nido de pesadilla se ejecuta antes de gastar energía para ayudar a completar la tarea diaria; las demás se ejecutan después."
+msgid "Nightmare Nest runs after stamina farming. If Tacet Suppression yielded rewards, daily rewards are claimed before Nightmare Nest."
+msgstr "El Nido de pesadilla se hace después de gastar energía. Si se obtuvieron recompensas en Supresión Tácita, se reclaman las recompensas diarias antes de entrar al Nido de pesadilla."
 
 msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
 msgstr "Teletransportarse y farmear eco de coste 4 requiere activar \"Teletransportarse al jefe\" en la tarea de farmeo de ecos."
