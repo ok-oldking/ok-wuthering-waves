@@ -2,6 +2,10 @@
 
 Release history starts at v3.0.0.
 
+## v3.8.6 (2026-11-20)
+
+- Added the “3.8 GalGame” task under Daily Activities for the Simplified Chinese client. Start on the Second Solaris event page to advance the semester and claim available event rewards.
+
 ## v3.8.5 (2026-11-20)
 
 - Added the Simplified Chinese Windows PC task “3.8 拉海洛方块·逆转” at the top of Daily Activities. Open the event stage list and keep the game in the foreground. The task attempts unlocked, uncleared difficulties and returns to the list after each clear.

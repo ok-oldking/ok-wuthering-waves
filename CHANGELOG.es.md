@@ -2,6 +2,10 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.6 (2026-11-20)
+
+- Se añadió la tarea «3.8 GalGame» a Actividades diarias para el cliente en chino simplificado. Iníciala desde la página del evento «第二索拉：未名之梦» para avanzar el semestre y reclamar las recompensas disponibles.
+
 ## v3.8.5 (2026-11-20)
 
 - Se añadió la tarea «3.8 拉海洛方块·逆转» al inicio de Actividades diarias para el cliente de Windows en chino simplificado. Abre la lista de niveles del evento y mantén el juego en primer plano. La tarea intenta superar las dificultades desbloqueadas y pendientes, y vuelve a la lista después de cada victoria.
