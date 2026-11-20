@@ -2,6 +2,12 @@
 
 Release history starts at v3.0.0.
 
+## v3.8.7 (2026-11-20)
+
+- Fixed the “3.8 GalGame” task failing to open or return from event reward pages during menu transitions.
+- Updated Daily Task to run Nightmare Nest after stamina farming, claiming daily rewards first when Tacet Suppression rewards were collected.
+- Improved Tacet Suppression to resume combat when the reward is not yet available during active combat, and to locate the Rechallenge button by text recognition with a fallback position.
+
 ## v3.8.6 (2026-11-20)
 
 - Added the “3.8 GalGame” task under Daily Activities for the Simplified Chinese client. Start on the Second Solaris event page to advance the semester and claim available event rewards.

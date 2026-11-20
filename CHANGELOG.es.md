@@ -2,6 +2,12 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.7 (2026-11-20)
+
+- Se corrigió el fallo de la tarea «3.8 GalGame» al abrir o volver desde las páginas de recompensas del evento durante las transiciones de menú.
+- Se actualizó la tarea diaria para ejecutar el Nido de Pesadilla después de gastar resistencia, reclamando primero las recompensas diarias si se obtuvieron recompensas de Supresión Tácita.
+- Se mejoró Supresión Tácita para reanudar el combate cuando la recompensa aún no está disponible durante una pelea activa, y para localizar el botón Reintentar mediante reconocimiento de texto con posición de respaldo.
+
 ## v3.8.6 (2026-11-20)
 
 - Se añadió la tarea «3.8 GalGame» a Actividades diarias para el cliente en chino simplificado. Iníciala desde la página del evento «第二索拉：未名之梦» para avanzar el semestre y reclamar las recompensas disponibles.
