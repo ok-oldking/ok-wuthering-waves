@@ -509,6 +509,7 @@ class GalGameTask(BaseTask):
             ("此处会显示当前历程的", (.938, .234)),
             ("可以邀请伙伴外出或赠送礼物", (.326, .5)),
             ("可进行【档案存储】", (.954, .067)),
+            ("点击【档案存储】", (.382, .808)),
             ("可查看个人信息与角色好感度", (.246, .68)),
             ("角色会发布【限时】任务", (.655, .49)),
             ("需要连续占用多天的日程", (.516, .27)),
@@ -517,6 +518,10 @@ class GalGameTask(BaseTask):
             if self._label(boxes, text, contains=True):
                 self.click(*point, after_sleep=.65)
                 return True
+        if (self._label(boxes, "A", (.22, .75, .30, .86))
+                and self._label(boxes, "D", (.70, .75, .78, .86))):
+            self.click(.963, .225, after_sleep=.55)
+            return True
         return False
 
     def _stage_goal(self, boxes):
@@ -648,6 +653,9 @@ class GalGameTask(BaseTask):
     def _schedule_activity(self, tab, activities):
         self.click(tab, .15, after_sleep=.45)
         cards = self._read()
+        if self._tutorial(cards):
+            self.click(tab, .15, after_sleep=.45)
+            cards = self._read()
         for activity in activities:
             if card := self._label(cards, activity, (.66, .2, .83, .74), contains=True):
                 _, y = card.center()
@@ -660,6 +668,8 @@ class GalGameTask(BaseTask):
             return self._schedule_tabs[date]
         self.click(.654, .15, after_sleep=.45)
         boxes = self._read()
+        if self._tutorial(boxes):
+            boxes = self._read()
         tab = self.frame[round(.135 * self.height):round(.177 * self.height),
                          round(.64 * self.width):round(.67 * self.width)]
         hsv = cv2.cvtColor(tab, cv2.COLOR_BGR2HSV)
