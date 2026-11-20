@@ -353,7 +353,13 @@ class GalGameTask(BaseTask):
         opened = False
         for attempt in range(3):
             if attempt > 0:
-                button = self._label(self._read(), title, (0, .42, .2, .9)) or button
+                boxes = self._read()
+                if self._label(boxes, "档案管理", (0, 0, .2, .12), contains=True):
+                    self.click(.954, .068, after_sleep=.65)
+                    boxes = self._read()
+                elif self._tutorial(boxes):
+                    boxes = self._read()
+                button = self._label(boxes, title, (0, .42, .2, .9)) or button
             self.click(button, after_sleep=.55)
             if self.wait_until(lambda: self._reward_page(title), time_out=2.5):
                 opened = True
@@ -506,6 +512,7 @@ class GalGameTask(BaseTask):
             ("可查看个人信息与角色好感度", (.246, .68)),
             ("角色会发布【限时】任务", (.655, .49)),
             ("需要连续占用多天的日程", (.516, .27)),
+            ("执行【休息】类行为后", (.773, .15)),
         ):
             if self._label(boxes, text, contains=True):
                 self.click(*point, after_sleep=.65)

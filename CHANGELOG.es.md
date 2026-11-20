@@ -2,6 +2,10 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.8 (2026-11-20)
+
+- Se corrigió que la tarea «3.8 GalGame» se atascara en el tutorial inicial de descanso de la agenda («执行【休息】类行为后，会【减少】疲劳») y ahora cierra la pantalla de gestión de guardados («档案管理») si bloquea la apertura de las páginas de recompensas del evento.
+
 ## v3.8.7 (2026-11-20)
 
 - Se corrigió el fallo de la tarea «3.8 GalGame» al abrir o volver desde las páginas de recompensas del evento durante las transiciones de menú.

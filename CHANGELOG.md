@@ -2,6 +2,10 @@
 
 Release history starts at v3.0.0.
 
+## v3.8.8 (2026-11-20)
+
+- Fixed the “3.8 GalGame” task getting stuck on the first-time schedule rest tutorial (`执行【休息】类行为后，会【减少】疲劳`) and closing the save-management overlay (`档案管理`) if it blocks opening event reward pages.
+
 ## v3.8.7 (2026-11-20)
 
 - Fixed the “3.8 GalGame” task failing to open or return from event reward pages during menu transitions.
