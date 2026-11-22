@@ -2,6 +2,11 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.12 (2026-11-22)
+
+- La tarea diaria vuelve a estar al principio de la lista de tareas.
+- La documentación de la línea de comandos ahora inicia las tareas por nombre de clase (por ejemplo, `-t DailyTask -e`) en lugar de por posición en la lista, e incluye los nombres de clase de las tareas habituales.
+
 ## v3.8.11 (2026-11-22)
 
 - Publica los cambios de v3.8.10 indicados abajo; la compilación v3.8.10 no se publicó. Sin otros cambios visibles para el usuario.

@@ -2,6 +2,11 @@
 
 Release history starts at v3.0.0.
 
+## v3.8.12 (2026-11-22)
+
+- Moved Daily Task back to the top of the task list.
+- The command-line docs now start tasks by class name (for example `-t DailyTask -e`) instead of list position, and list the common task class names.
+
 ## v3.8.11 (2026-11-22)
 
 - Publishes the v3.8.10 changes listed below; the v3.8.10 build was not released. No additional user-facing changes.

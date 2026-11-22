@@ -98,12 +98,30 @@ Before evaluating or improving a team, select the team and enter 深境再临 or
 You can use command-line arguments for automated startup.
 
 ```powershell
-# Example: Automatically run the first task after launch and exit the program upon completion
-.\.venv\Scripts\python.exe main.py -t 1 -e
+# Example: Automatically run the Daily Task after launch and exit the program upon completion
+.\.venv\Scripts\python.exe main.py -t DailyTask -e
 ```
 
-*   `-t` or `--task`: Automatically runs the Nth task in the list after launch. `1` represents the first task.
+*   `-t` or `--task`: Automatically runs the specified task after launch. Use the task class name (such as `DailyTask`) or the task name.
 *   `-e` or `--exit`: Automatically exits the program after the task is completed.
+
+Common tasks (use the class name with `-t`):
+
+| Class name | Task |
+| --- | --- |
+| `DailyTask` | Daily Task |
+| `FarmEchoTask` | Farm 4C Echo in Dungeon/World |
+| `NightmareNestTask` | Nightmare Nest |
+| `TacetTask` | Tacet Suppression |
+| `ForgeryTask` | Forgery Challenge |
+| `SimulationTask` | Simulation Challenge |
+| `CultivationTask` | Cultivation Resource Farm |
+| `MultiAccountDailyTask` | Multi Account Daily Task |
+| `MultiAccountConfigTask` | Multi Account Config Task |
+| `MergeEchoTask` | Merge Discarded Echoes |
+| `EnhanceEchoTask` | Batch Enhance Echoes |
+| `ChangeEchoTask` | Batch Change Echo Main Stat |
+| `GardenTask` | Auto Weekly Garden |
 
 ## 💬 Join Us
 

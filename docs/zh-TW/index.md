@@ -98,12 +98,30 @@
 您可以透過命令列參數實現自動化啟動。
 
 ```powershell
-# 範例：啟動後自動執行第一個任務（一條龍），並在任務完成後結束程式
-.\.venv\Scripts\python.exe main.py -t 1 -e
+# 範例：啟動後自動執行日常任務（一條龍），並在任務完成後結束程式
+.\.venv\Scripts\python.exe main.py -t DailyTask -e
 ```
 
-*   `-t` 或 `--task`: 啟動後自動執行第 N 個任務。`1` 代表任務清單中的第一個。
+*   `-t` 或 `--task`: 啟動後自動執行指定任務，可填寫任務的類別名稱（如 `DailyTask`）或任務名稱。
 *   `-e` 或 `--exit`: 任務執行完畢後自動結束程式。
+
+常用任務（`-t` 可填寫類別名稱）：
+
+| 類別名稱 | 任務 |
+| --- | --- |
+| `DailyTask` | 每日一條龍 |
+| `FarmEchoTask` | 刷4C(大世界/副本) |
+| `NightmareNestTask` | 夢魘巢穴 |
+| `TacetTask` | 無音區 |
+| `ForgeryTask` | 凝素領域 |
+| `SimulationTask` | 模擬領域 |
+| `CultivationTask` | 刷共鳴者材料 |
+| `MultiAccountDailyTask` | 多帳號一條龍 |
+| `MultiAccountConfigTask` | 多帳號設定執行 |
+| `MergeEchoTask` | 融合已棄置聲骸 |
+| `EnhanceEchoTask` | 批次強化聲骸 |
+| `ChangeEchoTask` | 批次修改聲骸主屬性 |
+| `GardenTask` | 自動週常樂園 |
 
 ## 💬 加入我們
 

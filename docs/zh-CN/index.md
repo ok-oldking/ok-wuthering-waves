@@ -100,12 +100,30 @@
 您可以通过命令行参数实现自动化启动。
 
 ```powershell
-# 示例：启动后自动执行第一个任务（一条龙），并在任务完成后退出程序
-.\.venv\Scripts\python.exe main.py -t 1 -e
+# 示例：启动后自动执行日常任务（一条龙），并在任务完成后退出程序
+.\.venv\Scripts\python.exe main.py -t DailyTask -e
 ```
 
-*   `-t` 或 `--task`: 启动后自动执行第 N 个任务。`1` 代表任务列表中的第一个。
+*   `-t` 或 `--task`: 启动后自动执行指定任务，可填写任务的类名（如 `DailyTask`）或任务名称。
 *   `-e` 或 `--exit`: 任务执行完毕后自动退出程序。
+
+常用任务（`-t` 可填写类名）：
+
+| 类名 | 任务 |
+| --- | --- |
+| `DailyTask` | 日常一条龙 |
+| `FarmEchoTask` | 刷4C(大世界/副本) |
+| `NightmareNestTask` | 梦魇巢穴 |
+| `TacetTask` | 无音区 |
+| `ForgeryTask` | 凝素领域 |
+| `SimulationTask` | 模拟领域 |
+| `CultivationTask` | 刷共鸣者材料 |
+| `MultiAccountDailyTask` | 多账号一条龙 |
+| `MultiAccountConfigTask` | 多账号配置执行 |
+| `MergeEchoTask` | 融合已弃置声骸 |
+| `EnhanceEchoTask` | 批量强化声骸 |
+| `ChangeEchoTask` | 批量修改声骸主属性 |
+| `GardenTask` | 自动周常乐园 |
 
 ## 💬 加入我们
 
