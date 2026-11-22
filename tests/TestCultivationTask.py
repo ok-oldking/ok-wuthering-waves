@@ -1,6 +1,6 @@
 import unittest
 from types import SimpleNamespace
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, PropertyMock, call, patch
 
 from ok import Box
 from src.task.BaseCombatTask import NotInCombatException
@@ -18,6 +18,8 @@ class TestCultivationTask(unittest.TestCase):
         self.task.goals = []
         self.task.config = {'Ascension Materials': True, 'Skill Materials': True}
         self.task._combat_deadline = 0
+        self.task._material_claims = 0
+        self.task.has_material_rows = Mock(return_value=True)
         self.task.logger = Mock()
         for name in ('next_frame', 'sleep', 'click', 'send_key', 'log_info', 'log_warning',
                      'combat_once', 'reset_combat_state', 'send_key_up', 'walk_to_treasure',
@@ -273,6 +275,175 @@ class TestCultivationTask(unittest.TestCase):
 
         with self.assertRaisesRegex(CultivationError, 'not a target material'):
             CultivationTask.read_reward_inventory(self.task, '共鸣者突破材料')
+
+    # ---- Echo set rows ----
+
+    def echo_page_boxes(self):
+        # OCR boxes captured from the live cultivation page at 1920x1080 (尤诺, resonator cultivation complete).
+        def box(text, x, y, w, h):
+            return Box(int(x * 1920), int(y * 1080), int(w * 1920), int(h * 1080), name=text)
+
+        return [
+            box('残象聚落', 0.147, 0.806, 0.058, 0.032),  # left sidebar, must be ignored
+            box('已完成共鸣者培养', 0.487, 0.144, 0.127, 0.030),
+            box('声骸培养', 0.486, 0.220, 0.058, 0.033),
+            box('海之女', 0.458, 0.379, 0.055, 0.041),
+            box('前往查看', 0.855, 0.384, 0.053, 0.033),
+            box('受蚀地梦魔聚落', 0.460, 0.502, 0.116, 0.037),
+            box('已击败残象:0/36', 0.461, 0.548, 0.116, 0.031),
+            box('直接挑战', 0.872, 0.522, 0.055, 0.031),
+            box('荒石高地无音区', 0.459, 0.698, 0.117, 0.037),
+            box('直接挑战', 0.872, 0.720, 0.054, 0.031),
+        ]
+
+    def screen_1080p(self):
+        for name, value in (('width', 1920), ('height', 1080), ('game_lang', 'zh_CN')):
+            patcher = patch.object(CultivationTask, name, new_callable=PropertyMock, return_value=value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def test_parse_echo_rows_matches_buttons_and_nightmare_count(self):
+        self.screen_1080p()
+
+        rows = {row.kind: row for row in self.task.parse_echo_rows(self.echo_page_boxes())}
+
+        self.assertEqual({'tacet', 'nightmare'}, set(rows))
+        self.assertEqual('荒石高地无音区', rows['tacet'].name)
+        self.assertAlmostEqual(0.720, rows['tacet'].button.y / 1080, places=2)
+        self.assertAlmostEqual(0.522, rows['nightmare'].button.y / 1080, places=2)
+        self.assertEqual((0, 36), (rows['nightmare'].defeated, rows['nightmare'].total))
+        self.assertFalse(rows['nightmare'].done)
+
+    def test_completed_target_counts_as_cultivation_page(self):
+        self.task.ocr = Mock(return_value=[SimpleNamespace(name='培养目标'),
+                                           SimpleNamespace(name='已完成共鸣者培养')])
+
+        self.assertTrue(CultivationTask.is_cultivation_page(self.task))
+        self.assertFalse(CultivationTask.has_material_rows(self.task))
+
+    def prepare_cultivation(self, pending):
+        self.screen_1080p()
+        self.task.config[CultivationTask.TACET_OPTION] = True
+        self.task.config[CultivationTask.NIGHTMARE_OPTION] = True
+        order = []
+        self.task.farm_nightmare_row = Mock(side_effect=lambda: order.append('nightmare'))
+
+        def farm_materials(daily=False):
+            order.append('materials')
+            self.task.goals = [MaterialGoal('甲', 0 if pending else 5, 5, '共鸣者突破材料')]
+            return 120
+
+        self.task.farm_materials = Mock(side_effect=farm_materials)
+        self.task.farm_tacet_row = Mock(side_effect=lambda **kwargs: order.append('tacet') or 60)
+        return order
+
+    def test_cultivation_farms_tacet_after_materials_are_met(self):
+        order = self.prepare_cultivation(pending=False)
+
+        spent = self.task.farm_cultivation(daily=True, used_stamina=30)
+
+        self.assertEqual(['nightmare', 'materials', 'tacet'], order)
+        self.task.farm_tacet_row.assert_called_once_with(daily=True, used_stamina=150)
+        self.assertEqual(180, spent)
+
+    def test_cultivation_skips_tacet_while_materials_still_need_stamina(self):
+        order = self.prepare_cultivation(pending=True)
+
+        spent = self.task.farm_cultivation()
+
+        self.assertEqual(['nightmare', 'materials'], order)
+        self.assertEqual(120, spent)
+
+    def test_cultivation_farms_nightmare_even_when_only_it_is_enabled(self):
+        order = self.prepare_cultivation(pending=False)
+        self.task.config.update({'Ascension Materials': False, 'Skill Materials': False,
+                                 CultivationTask.TACET_OPTION: False})
+
+        self.assertEqual(0, self.task.farm_cultivation())
+        self.assertEqual(['nightmare'], order)
+
+    def test_pending_materials_ignores_rows_without_weekly_claims(self):
+        self.task.goals = [MaterialGoal('甲', 5, 5, '共鸣者突破材料'),
+                           MaterialGoal('乙', 1, 26, '技能升级材料', weekly_left=0)]
+
+        self.assertEqual([], self.task.pending_materials())
+
+
+class TestDailyCultivationTarget(unittest.TestCase):
+
+    def make_daily(self, nightmare_enabled=True, used=0, ready=False):
+        from src.task.DailyTask import CULTIVATION_TARGET, DailyTask
+        daily = DailyTask.__new__(DailyTask)
+        daily.config = {'Which to Farm': CULTIVATION_TARGET, 'Farm Nightmare Nest for Daily Echo': True,
+                        'Additional Tasks to Run After Daily Task': []}
+        daily.tr = str
+        daily.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge", CULTIVATION_TARGET]
+        cultivation = Mock()
+        cultivation.nightmare_enabled.return_value = nightmare_enabled
+        cultivation.farm_cultivation.return_value = 120
+        tacet = Mock()
+        nightmare = Mock()
+        lookup = {CultivationTask: cultivation}
+        daily.get_task_by_class = Mock(side_effect=lambda cls: lookup.get(cls) or (
+            tacet if cls.__name__ == 'TacetTask' else nightmare))
+        for name in ('ensure_main', 'sleep', 'claim_daily', 'claim_mail', 'claim_battle_pass',
+                     'run_additional_tasks', 'log_info', 'log_debug', 'log_error', 'screenshot', 'run_task_by_class'):
+            setattr(daily, name, Mock())
+        daily.open_daily = Mock(return_value=(used, ready))
+        return daily, cultivation, tacet, nightmare
+
+    def run_daily(self, daily):
+        from src.task.WWOneTimeTask import WWOneTimeTask
+        with patch.object(WWOneTimeTask, 'run', lambda self: None), \
+                patch('src.task.DailyTask.DailyTask.logged_in', new_callable=PropertyMock, create=True):
+            daily.run()
+
+    def test_daily_runs_cultivation_and_skips_separate_daily_echo_nest(self):
+        daily, cultivation, tacet, nightmare = self.make_daily(used=30)
+
+        self.run_daily(daily)
+
+        cultivation.farm_cultivation.assert_called_once_with(daily=True, used_stamina=30)
+        tacet.farm_tacet.assert_not_called()
+        nightmare.run_capture_mode.assert_not_called()
+        daily.claim_daily.assert_called_once_with()
+
+    def test_daily_keeps_echo_nest_when_cultivation_nightmare_is_disabled(self):
+        daily, cultivation, _, nightmare = self.make_daily(nightmare_enabled=False)
+
+        self.run_daily(daily)
+
+        cultivation.farm_cultivation.assert_called_once()
+        nightmare.run_capture_mode.assert_called_once_with()
+
+    def test_daily_continues_when_cultivation_fails(self):
+        daily, cultivation, _, _ = self.make_daily()
+        cultivation.farm_cultivation.side_effect = RuntimeError('boom')
+
+        self.run_daily(daily)
+
+        daily.log_error.assert_called_once()
+        daily.claim_mail.assert_called_once_with()
+
+
+class TestTacetEntryHooks(unittest.TestCase):
+
+    def test_farm_tacet_uses_custom_entry_instead_of_f2_list(self):
+        from src.task.TacetTask import TacetTask
+        task = TacetTask.__new__(TacetTask)
+        task.stamina_once = 60
+        task.info = {}
+        for name in ('sleep', 'openF2Book', 'open_boss_book', 'teleport_to_tacet', 'click_team_challenge',
+                     'not_enough_stamina', 'info_incr'):
+            setattr(task, name, Mock())
+        task.get_stamina = Mock(return_value=(30, 0, 30))
+        open_entry, enter_tacet = Mock(), Mock()
+
+        self.assertEqual(0, task.farm_tacet(config={}, open_entry=open_entry, enter_tacet=enter_tacet))
+
+        open_entry.assert_called_once_with()
+        task.openF2Book.assert_not_called()
+        enter_tacet.assert_not_called()  # stopped on stamina before entering
 
 
 if __name__ == '__main__':

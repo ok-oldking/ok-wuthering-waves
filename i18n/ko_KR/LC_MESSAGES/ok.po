@@ -2022,3 +2022,71 @@ msgstr "이 작업은 중국어 간체와 16:9만 지원합니다. 설정을 조
 #: src/task/CultivationTask.py
 msgid "Failed to return to the open world. Exit manually: {error}"
 msgstr "오픈 월드로 돌아가지 못했습니다. 수동으로 나가세요: {error}"
+
+#: src/task/CultivationTask.py
+msgid "Echo Set Tacet Suppression"
+msgstr "에코 세트 무음 구역"
+
+#: src/task/CultivationTask.py
+msgid "Echo Set Nightmare Nest"
+msgstr "에코 세트 악몽 둥지"
+
+#: src/task/CultivationTask.py
+msgid "Spend Waveplates on the echo set Tacet Suppression once no material row needs them."
+msgstr "재료 행에 결정 파편이 더 필요 없으면 남은 양으로 에코 세트 무음 구역을 파밍합니다."
+
+#: src/task/CultivationTask.py
+msgid "Clear the echo set Nightmare Nest. Costs no Waveplates."
+msgstr "에코 세트 악몽 둥지를 정리합니다. 결정 파편을 소모하지 않습니다."
+
+#: src/task/CultivationTask.py
+msgid "Cultivation Target"
+msgstr "육성 목표"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation Target follows the Guidebook cultivation target and the Cultivation Resource Farm task settings (Simplified Chinese, 16:9)."
+msgstr "육성 목표는 가이드북의 육성 목표와 「육성 재료 파밍」 작업 설정을 따릅니다(중국어 간체, 16:9)."
+
+#: src/task/CultivationTask.py
+msgid "CultivationTask Failed"
+msgstr "육성 재료 파밍 실패"
+
+#: src/task/CultivationTask.py
+msgid "Echo set row disappeared. Stopped. Check the cultivation target."
+msgstr "에코 세트 행이 사라졌습니다. 중지했습니다. 육성 목표를 확인하세요."
+
+#: src/task/CultivationTask.py
+msgid "Farm echo set Nightmare Nest {name} ({defeated}/{total})"
+msgstr "에코 세트 악몽 둥지 {name} 파밍 ({defeated}/{total})"
+
+#: src/task/CultivationTask.py
+msgid "Farm echo set Tacet Suppression {name}"
+msgstr "에코 세트 무음 구역 {name} 파밍"
+
+#: src/task/CultivationTask.py
+msgid "Farm the selected Guidebook cultivation target: Ascension and Skill Materials first, then the echo set Tacet Suppression with the remaining Waveplates. The echo set Nightmare Nest is always farmed. Simplified Chinese, 16:9."
+msgstr "가이드북 육성 목표를 파밍합니다. 돌파 재료와 스킬 재료를 먼저 파밍하고, 남은 결정 파편으로 에코 세트 무음 구역을 파밍합니다. 에코 세트 악몽 둥지는 항상 파밍합니다. 중국어 간체, 16:9."
+
+#: src/task/CultivationTask.py
+msgid "Nightmare Nest"
+msgstr "악몽 둥지"
+
+#: src/task/CultivationTask.py
+msgid "No Resonator material rows on the cultivation page"
+msgstr "육성 페이지에 공명자 재료 행이 없습니다"
+
+#: src/task/CultivationTask.py
+msgid "No echo set Nightmare Nest on the cultivation page"
+msgstr "육성 페이지에 에코 세트 악몽 둥지가 없습니다"
+
+#: src/task/CultivationTask.py
+msgid "No echo set Tacet Suppression on the cultivation page"
+msgstr "육성 페이지에 에코 세트 무음 구역이 없습니다"
+
+#: src/task/CultivationTask.py
+msgid "Waveplates used on echo set Tacet Suppression"
+msgstr "결정 파편을 에코 세트 무음 구역에 사용했습니다"
+
+#: src/task/CultivationTask.py
+msgid "{name} already cleared ({defeated}/{total})"
+msgstr "{name} 이미 정리됨 ({defeated}/{total})"

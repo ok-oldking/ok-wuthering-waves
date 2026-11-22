@@ -1978,3 +1978,71 @@ msgstr "Esta tarea solo admite chino simplificado y 16:9. Ajusta la configuraci�
 #: src/task/CultivationTask.py
 msgid "Failed to return to the open world. Exit manually: {error}"
 msgstr "No se pudo volver al mundo abierto. Sal manualmente: {error}"
+
+#: src/task/CultivationTask.py
+msgid "Echo Set Tacet Suppression"
+msgstr "Supresión Tacet del set de ecos"
+
+#: src/task/CultivationTask.py
+msgid "Echo Set Nightmare Nest"
+msgstr "Nido de Pesadilla del set de ecos"
+
+#: src/task/CultivationTask.py
+msgid "Spend Waveplates on the echo set Tacet Suppression once no material row needs them."
+msgstr "Gasta las Ondaplacas restantes en la Supresión Tacet del set de ecos cuando ninguna fila de materiales las necesite."
+
+#: src/task/CultivationTask.py
+msgid "Clear the echo set Nightmare Nest. Costs no Waveplates."
+msgstr "Limpia el Nido de Pesadilla del set de ecos. No gasta Ondaplacas."
+
+#: src/task/CultivationTask.py
+msgid "Cultivation Target"
+msgstr "Objetivo de mejora"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation Target follows the Guidebook cultivation target and the Cultivation Resource Farm task settings (Simplified Chinese, 16:9)."
+msgstr "Objetivo de mejora sigue el objetivo de la Guía y los ajustes de la tarea Farmeo de recursos de mejora (chino simplificado, 16:9)."
+
+#: src/task/CultivationTask.py
+msgid "CultivationTask Failed"
+msgstr "Falló el farmeo de recursos de mejora"
+
+#: src/task/CultivationTask.py
+msgid "Echo set row disappeared. Stopped. Check the cultivation target."
+msgstr "La fila del set de ecos desapareció. Detenido. Revisa el objetivo de mejora."
+
+#: src/task/CultivationTask.py
+msgid "Farm echo set Nightmare Nest {name} ({defeated}/{total})"
+msgstr "Farmeando Nido de Pesadilla {name} ({defeated}/{total})"
+
+#: src/task/CultivationTask.py
+msgid "Farm echo set Tacet Suppression {name}"
+msgstr "Farmeando Supresión Tacet {name}"
+
+#: src/task/CultivationTask.py
+msgid "Farm the selected Guidebook cultivation target: Ascension and Skill Materials first, then the echo set Tacet Suppression with the remaining Waveplates. The echo set Nightmare Nest is always farmed. Simplified Chinese, 16:9."
+msgstr "Farmea el objetivo de mejora de la Guía: primero materiales de ascensión y habilidad, luego la Supresión Tacet del set de ecos con las Ondaplacas restantes. El Nido de Pesadilla del set siempre se farmea. Chino simplificado, 16:9."
+
+#: src/task/CultivationTask.py
+msgid "Nightmare Nest"
+msgstr "Nido de Pesadilla"
+
+#: src/task/CultivationTask.py
+msgid "No Resonator material rows on the cultivation page"
+msgstr "No hay filas de materiales de resonador en la página"
+
+#: src/task/CultivationTask.py
+msgid "No echo set Nightmare Nest on the cultivation page"
+msgstr "No hay Nido de Pesadilla del set de ecos en la página"
+
+#: src/task/CultivationTask.py
+msgid "No echo set Tacet Suppression on the cultivation page"
+msgstr "No hay Supresión Tacet del set de ecos en la página"
+
+#: src/task/CultivationTask.py
+msgid "Waveplates used on echo set Tacet Suppression"
+msgstr "Ondaplacas usadas en la Supresión Tacet del set de ecos"
+
+#: src/task/CultivationTask.py
+msgid "{name} already cleared ({defeated}/{total})"
+msgstr "{name} ya limpiado ({defeated}/{total})"

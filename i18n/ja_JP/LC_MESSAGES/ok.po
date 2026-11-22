@@ -2019,3 +2019,71 @@ msgstr "このタスクは簡体字中国語と 16:9 のみに対応していま
 #: src/task/CultivationTask.py
 msgid "Failed to return to the open world. Exit manually: {error}"
 msgstr "オープンワールドへの復帰に失敗しました。手動で退出してください：{error}"
+
+#: src/task/CultivationTask.py
+msgid "Echo Set Tacet Suppression"
+msgstr "エコーセットの無音区"
+
+#: src/task/CultivationTask.py
+msgid "Echo Set Nightmare Nest"
+msgstr "エコーセットの悪夢の巣"
+
+#: src/task/CultivationTask.py
+msgid "Spend Waveplates on the echo set Tacet Suppression once no material row needs them."
+msgstr "素材行に結晶波片が不要になったら、残りでエコーセットの無音区を周回します。"
+
+#: src/task/CultivationTask.py
+msgid "Clear the echo set Nightmare Nest. Costs no Waveplates."
+msgstr "エコーセットの悪夢の巣をクリアします。結晶波片は消費しません。"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation Target"
+msgstr "育成目標"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation Target follows the Guidebook cultivation target and the Cultivation Resource Farm task settings (Simplified Chinese, 16:9)."
+msgstr "育成目標はガイドブックの育成目標と「育成素材周回」タスクの設定に従います（簡体字中国語、16:9）。"
+
+#: src/task/CultivationTask.py
+msgid "CultivationTask Failed"
+msgstr "育成素材周回に失敗しました"
+
+#: src/task/CultivationTask.py
+msgid "Echo set row disappeared. Stopped. Check the cultivation target."
+msgstr "エコーセットの行が見つかりません。停止しました。育成目標を確認してください。"
+
+#: src/task/CultivationTask.py
+msgid "Farm echo set Nightmare Nest {name} ({defeated}/{total})"
+msgstr "エコーセットの悪夢の巣 {name} を周回（{defeated}/{total}）"
+
+#: src/task/CultivationTask.py
+msgid "Farm echo set Tacet Suppression {name}"
+msgstr "エコーセットの無音区 {name} を周回"
+
+#: src/task/CultivationTask.py
+msgid "Farm the selected Guidebook cultivation target: Ascension and Skill Materials first, then the echo set Tacet Suppression with the remaining Waveplates. The echo set Nightmare Nest is always farmed. Simplified Chinese, 16:9."
+msgstr "ガイドブックの育成目標を周回します。突破素材とスキル素材を優先し、残りの結晶波片でエコーセットの無音区を周回します。エコーセットの悪夢の巣は常に周回します。簡体字中国語、16:9。"
+
+#: src/task/CultivationTask.py
+msgid "Nightmare Nest"
+msgstr "悪夢の巣"
+
+#: src/task/CultivationTask.py
+msgid "No Resonator material rows on the cultivation page"
+msgstr "育成ページに共鳴者素材の行がありません"
+
+#: src/task/CultivationTask.py
+msgid "No echo set Nightmare Nest on the cultivation page"
+msgstr "育成ページにエコーセットの悪夢の巣がありません"
+
+#: src/task/CultivationTask.py
+msgid "No echo set Tacet Suppression on the cultivation page"
+msgstr "育成ページにエコーセットの無音区がありません"
+
+#: src/task/CultivationTask.py
+msgid "Waveplates used on echo set Tacet Suppression"
+msgstr "結晶波片をエコーセットの無音区に使用しました"
+
+#: src/task/CultivationTask.py
+msgid "{name} already cleared ({defeated}/{total})"
+msgstr "{name} はクリア済み（{defeated}/{total}）"

@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from ok import CannotFindException, TaskDisabledException, WaitFailedException
 from src.task.BaseCombatTask import NotInCombatException
 from src.task.DomainTask import DomainTask
+from src.task.NightmareNestTask import NestTarget, NightmareNestTask
+from src.task.TacetTask import TacetTask
 from src.task.task_icons import task_icon
 
 
@@ -41,6 +43,19 @@ class MaterialRow:
     weekly_left: int | None = None
 
 
+@dataclass
+class EchoRow:
+    kind: str  # 'tacet' or 'nightmare'
+    name: str
+    button: object
+    defeated: int | None = None
+    total: int | None = None
+
+    @property
+    def done(self):
+        return self.total is not None and self.defeated >= self.total
+
+
 class CultivationError(RuntimeError):
     pass
 
@@ -51,6 +66,10 @@ class CultivationTask(DomainTask):
         '共鸣者突破材料': 'Ascension Materials',
         '技能升级材料': 'Skill Materials',
     }
+    TACET_OPTION = 'Echo Set Tacet Suppression'
+    NIGHTMARE_OPTION = 'Echo Set Nightmare Nest'
+    DEFEATED_PATTERN = re.compile(r'已击败残象[:：]?(\d+)/(\d+)')
+    ECHO_SCROLLS = 3
     WEEKLY_MATERIAL = '技能升级材料'
     WEEKLY_PATTERN = re.compile(r'本周剩余可收取次数[:：]?(\d+)/\d+')
     CLAIM_COST_PATTERN = re.compile(r'领取奖励需消耗\s*(\d+)\s*点结晶波片')
@@ -70,9 +89,9 @@ class CultivationTask(DomainTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = 'Cultivation Resource Farm'
-        self.description = ('Farm Ascension and Skill Materials for the selected Guidebook cultivation target. '
-                            'Skill Materials allow 3 reward claims per week. '
-                            'Simplified Chinese, 16:9. Uses current Waveplates only.')
+        self.description = ('Farm the selected Guidebook cultivation target: Ascension and Skill Materials first, '
+                            'then the echo set Tacet Suppression with the remaining Waveplates. '
+                            'The echo set Nightmare Nest is always farmed. Simplified Chinese, 16:9.')
         self.icon = task_icon('forgery')
         self.group_name = 'Daily Activities'
         self.group_icon = task_icon('category-daily')
@@ -80,13 +99,38 @@ class CultivationTask(DomainTask):
         self.default_config = {
             'Ascension Materials': True,
             'Skill Materials': True,
+            self.TACET_OPTION: True,
+            self.NIGHTMARE_OPTION: True,
+        }
+        self.config_description = {
+            self.TACET_OPTION: 'Spend Waveplates on the echo set Tacet Suppression once no material row needs them.',
+            self.NIGHTMARE_OPTION: 'Clear the echo set Nightmare Nest. Costs no Waveplates.',
         }
         self._combat_deadline = 0
+        self._material_claims = 0
         self.goals = []
 
     def enabled_materials(self):
         return [material_type for material_type in self.MATERIALS
                 if self.config.get(self.MATERIAL_OPTIONS[material_type], True)]
+
+    def tacet_enabled(self):
+        return self.config.get(self.TACET_OPTION, True)
+
+    def nightmare_enabled(self):
+        return self.config.get(self.NIGHTMARE_OPTION, True)
+
+    def pending_materials(self):
+        """Material rows that still need Waveplates and can still be claimed this week."""
+        pending = []
+        for material_type in self.MATERIALS:
+            goals = [g for g in self.goals if g.material_type == material_type]
+            if not goals or all(g.missing == 0 for g in goals):
+                continue
+            if self.weekly_left(material_type) == 0:
+                continue
+            pending.append(material_type)
+        return pending
 
     def material_label(self, material_type):
         return self.tr(self.MATERIAL_OPTIONS[material_type])
@@ -117,9 +161,16 @@ class CultivationTask(DomainTask):
             raise CultivationError(
                 self.tr('Cultivation target page did not open. Select a cultivation target in the Guidebook.'))
 
+    def page_headers(self):
+        return {compact_text(b.name) for b in self.ocr(0.1, 0.12, 0.7, 0.26)}
+
     def is_cultivation_page(self):
-        texts = {compact_text(b.name) for b in self.ocr(0.1, 0.12, 0.6, 0.2)}
-        return {'培养目标', '所需材料'} <= texts
+        texts = self.page_headers()
+        # A fully cultivated resonator shows 已完成共鸣者培养 instead of the 所需材料 rows.
+        return '培养目标' in texts and bool({'所需材料', '已完成共鸣者培养', '声骸培养'} & texts)
+
+    def has_material_rows(self):
+        return '所需材料' in self.page_headers()
 
     def read_current_stamina(self):
         def read():
@@ -185,6 +236,9 @@ class CultivationTask(DomainTask):
         self.click(0.5, 0.94, after_sleep=0.3)
 
     def read_goals(self):
+        if not self.enabled_materials() or not self.has_material_rows():
+            self.log_info(self.tr('No Resonator material rows on the cultivation page'))
+            return []
         rows = []
         for material_type in self.enabled_materials():
             def read_row(material_type=material_type):
@@ -398,16 +452,12 @@ class CultivationTask(DomainTask):
     def farm(self, stamina):
         # 上限只限制消耗；完成状态始终以领取后的实际库存为准。
         max_claims = stamina // self.COST
-        pending = []
+        pending = self.pending_materials()
         for material_type in self.MATERIALS:
-            goals = [g for g in self.goals if g.material_type == material_type]
-            if not goals or all(g.missing == 0 for g in goals):
-                continue
-            if self.weekly_left(material_type) == 0:
+            if material_type not in pending and self.weekly_left(material_type) == 0 and any(
+                    g.missing for g in self.goals if g.material_type == material_type):
                 self.log_info(self.tr('{material} has 0 weekly claims left, skipped').format(
                     material=self.material_label(material_type)))
-                continue
-            pending.append(material_type)
         if not pending:
             if all(g.missing == 0 for g in self.goals):
                 self.info_set(self.tr('Stop Reason'), self.tr('Cultivation materials meet the target'))
@@ -455,6 +505,7 @@ class CultivationTask(DomainTask):
                 self.consume_weekly(material_type)
                 self.update_goals(inventory)
                 self.info_incr('used stamina', self.COST)
+                self._material_claims += 1
                 max_claims -= 1
                 if all(g.missing == 0 for g in self.goals
                        if g.material_type == material_type):
@@ -480,32 +531,141 @@ class CultivationTask(DomainTask):
         if weekly_exhausted and any(g.missing for g in self.goals):
             self.info_set(self.tr('Stop Reason'), self.tr('Skill Materials have 0 weekly claims left'))
 
-    def run(self):
+    # ---- Echo set rows (声骸培养): Tacet Suppression and Nightmare Nest ----
+
+    def parse_echo_rows(self, boxes):
+        right = [b for b in boxes if b.x > self.width * 0.35]
+        buttons = [b for b in right if compact_text(b.name) == '直接挑战']
+        rows = []
+        for label in right:
+            text = compact_text(label.name)
+            if text.endswith('无音区'):
+                kind = 'tacet'
+            elif text.endswith('聚落') and not text.startswith('产出'):
+                kind = 'nightmare'  # OCR may read 梦魇 as 梦魔, so match the suffix only
+            else:
+                continue
+            cy = label.center()[1]
+            near = [b for b in buttons if abs(b.center()[1] - cy) < self.height * 0.06]
+            if not near:
+                continue
+            row = EchoRow(kind, text, min(near, key=lambda b: abs(b.center()[1] - cy)))
+            if kind == 'nightmare':
+                for box in right:
+                    if 0 < box.y - label.y < self.height * 0.08:
+                        if match := self.DEFEATED_PATTERN.search(compact_text(box.name)):
+                            row.defeated, row.total = int(match[1]), int(match[2])
+            rows.append(row)
+        return rows
+
+    def find_echo_row(self, kind):
+        """Open the cultivation page and return the first echo row of this kind, scrolling down if needed."""
+        self.open_cultivation()
+        for attempt in range(self.ECHO_SCROLLS + 1):
+            self.next_frame()
+            rows = [r for r in self.parse_echo_rows(self.ocr(0.35, 0.12, 0.99, 0.95)) if r.kind == kind]
+            if rows:
+                return rows[0]
+            if attempt < self.ECHO_SCROLLS:
+                self.scroll_relative(0.68, 0.6, -5)
+                self.sleep(1)
+        return None
+
+    def enter_echo_row(self, kind):
+        row = self.find_echo_row(kind)
+        if row is None:
+            raise CultivationError(self.tr('Echo set row disappeared. Stopped. Check the cultivation target.'))
+        self.click(row.button, after_sleep=1)
+        if not self.wait_feature('team_start_challenge', time_out=20, raise_if_not_found=False):
+            raise CultivationError(self.tr('Team page did not open. Stopped. Check the selected challenge.'))
+
+    def farm_nightmare_row(self):
+        row = self.find_echo_row('nightmare')
+        if row is None:
+            self.log_info(self.tr('No echo set Nightmare Nest on the cultivation page'))
+            return False
+        if row.done:
+            self.log_info(self.tr('{name} already cleared ({defeated}/{total})').format(
+                name=row.name, defeated=row.defeated, total=row.total))
+            return False
+        self.log_info(self.tr('Farm echo set Nightmare Nest {name} ({defeated}/{total})').format(
+            name=row.name, defeated=row.defeated, total=row.total))
+        nightmare = self.get_task_by_class(NightmareNestTask)
+        nightmare._capture_mode = False
+        nightmare._capture_success = False
+        nightmare.combat_nest(NestTarget(row.button, f'cultivation:{row.name}'))
+        self.ensure_main(time_out=60)
+        after = self.find_echo_row('nightmare')
+        if after is not None and after.total is not None:
+            self.info_set(self.tr('Nightmare Nest'), f'{after.defeated}/{after.total}')
+        self.ensure_main(time_out=30)
+        return True
+
+    def farm_tacet_row(self, daily=False, used_stamina=0):
+        row = self.find_echo_row('tacet')
+        if row is None:
+            self.log_info(self.tr('No echo set Tacet Suppression on the cultivation page'))
+            self.ensure_main(time_out=30)
+            return 0
+        if not daily and self.read_current_stamina() < self.COST:
+            self.info_set(self.tr('Stop Reason'), self.tr('Waveplates below {cost}').format(cost=self.COST))
+            self.ensure_main(time_out=30)
+            return 0
+        self.log_info(self.tr('Farm echo set Tacet Suppression {name}').format(name=row.name))
+        tacet = self.get_task_by_class(TacetTask)
+        spent = tacet.farm_tacet(daily=daily, used_stamina=used_stamina, config=tacet.config,
+                                 open_entry=self.open_cultivation,
+                                 enter_tacet=lambda: self.enter_echo_row('tacet'))
+        self.info_incr('used stamina', spent)
+        self.info_set(self.tr('Stop Reason'), self.tr('Waveplates used on echo set Tacet Suppression'))
+        self.ensure_main(time_out=60)
+        return spent
+
+    # ---- Entry points ----
+
+    def farm_materials(self, daily=False):
+        """Spend Waveplates on unmet Ascension/Skill rows. Returns Waveplates spent."""
+        self._material_claims = 0
+        self.open_cultivation()
+        self.goals = self.read_goals()
+        if not self.pending_materials():
+            if self.goals and all(g.missing == 0 for g in self.goals):
+                self.info_set(self.tr('Stop Reason'), self.tr('Cultivation materials meet the target'))
+            self.ensure_main(time_out=30)
+            return 0
+        stamina = self.read_current_stamina()
+        if stamina < self.COST:
+            self.info_set(self.tr('Stop Reason'), self.tr('Waveplates below {cost}').format(cost=self.COST))
+            self.ensure_main(time_out=30)
+            return 0
+        self.farm(stamina)
+        self.leave_challenge()
+        return self._material_claims * self.COST
+
+    def farm_cultivation(self, daily=False, used_stamina=0):
+        """Nightmare Nest (free), then material rows, then Tacet with what is left.
+
+        Returns Waveplates spent. Raises after leaving any challenge when a step fails.
+        """
         self._combat_deadline = 0
         self.goals = []
-        self.info_set('used stamina', 0)
-        super().run()
         try:
             if self.game_lang != 'zh_CN' or abs(self.width / self.height - 16 / 9) > 0.01:
                 raise CultivationError(
                     self.tr('This task supports Simplified Chinese and 16:9 only. Adjust and retry.'))
             self.make_sure_in_world()
-            if not self.enabled_materials():
+            if not (self.enabled_materials() or self.tacet_enabled() or self.nightmare_enabled()):
                 self.info_set(self.tr('Stop Reason'), self.tr('No material row enabled'))
-                return
-            self.open_cultivation()
-            self.goals = self.read_goals()
-            stamina = self.read_current_stamina()
-            if all(g.missing == 0 for g in self.goals):
-                self.info_set(self.tr('Stop Reason'), self.tr('Cultivation materials meet the target'))
-                self.back(after_sleep=0.5)
-                return
-            if stamina < self.COST:
-                self.info_set(self.tr('Stop Reason'), self.tr('Waveplates below {cost}').format(cost=self.COST))
-                self.back(after_sleep=0.5)
-                return
-            self.farm(stamina)
-            self.leave_challenge()
+                return 0
+            if self.nightmare_enabled():
+                self.farm_nightmare_row()
+            spent = 0
+            if self.enabled_materials():
+                spent += self.farm_materials(daily=daily)
+            # Tacet only gets Waveplates once no material row can use them.
+            if self.tacet_enabled() and not self.pending_materials():
+                spent += self.farm_tacet_row(daily=daily, used_stamina=used_stamina + spent)
+            return spent
         except TaskDisabledException:
             raise
         except Exception as error:
@@ -523,3 +683,8 @@ class CultivationTask(DomainTask):
             raise
         finally:
             self._combat_deadline = 0
+
+    def run(self):
+        self.info_set('used stamina', 0)
+        super().run()
+        self.farm_cultivation()

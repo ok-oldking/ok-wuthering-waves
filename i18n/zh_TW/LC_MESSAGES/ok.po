@@ -2147,3 +2147,71 @@ msgstr "本任務支援簡體中文和 16:9。請調整後重試。"
 #: src/task/CultivationTask.py
 msgid "Failed to return to the open world. Exit manually: {error}"
 msgstr "返回大世界失敗，請手動退出：{error}"
+
+#: src/task/CultivationTask.py
+msgid "Echo Set Tacet Suppression"
+msgstr "聲骸套裝無音區"
+
+#: src/task/CultivationTask.py
+msgid "Echo Set Nightmare Nest"
+msgstr "聲骸套裝夢魘聚落"
+
+#: src/task/CultivationTask.py
+msgid "Spend Waveplates on the echo set Tacet Suppression once no material row needs them."
+msgstr "材料行不再需要體力後，用剩餘結晶波片刷聲骸套裝無音區。"
+
+#: src/task/CultivationTask.py
+msgid "Clear the echo set Nightmare Nest. Costs no Waveplates."
+msgstr "清理聲骸套裝夢魘聚落，不消耗結晶波片。"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation Target"
+msgstr "培養目標"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation Target follows the Guidebook cultivation target and the Cultivation Resource Farm task settings (Simplified Chinese, 16:9)."
+msgstr "培養目標按索拉指南中的培養目標和「刷共鳴者材料」任務設定刷取（簡體中文，16:9）。"
+
+#: src/task/CultivationTask.py
+msgid "CultivationTask Failed"
+msgstr "刷共鳴者材料失敗"
+
+#: src/task/CultivationTask.py
+msgid "Echo set row disappeared. Stopped. Check the cultivation target."
+msgstr "聲骸套裝行消失，已停止。請檢查培養目標。"
+
+#: src/task/CultivationTask.py
+msgid "Farm echo set Nightmare Nest {name} ({defeated}/{total})"
+msgstr "刷聲骸套裝夢魘聚落 {name}（{defeated}/{total}）"
+
+#: src/task/CultivationTask.py
+msgid "Farm echo set Tacet Suppression {name}"
+msgstr "刷聲骸套裝無音區 {name}"
+
+#: src/task/CultivationTask.py
+msgid "Farm the selected Guidebook cultivation target: Ascension and Skill Materials first, then the echo set Tacet Suppression with the remaining Waveplates. The echo set Nightmare Nest is always farmed. Simplified Chinese, 16:9."
+msgstr "按索拉指南的培養目標刷取：先刷共鳴者突破材料和技能升級材料，再用剩餘結晶波片刷聲骸套裝無音區；聲骸套裝夢魘聚落總會刷取。支援簡體中文和 16:9。"
+
+#: src/task/CultivationTask.py
+msgid "Nightmare Nest"
+msgstr "夢魘聚落"
+
+#: src/task/CultivationTask.py
+msgid "No Resonator material rows on the cultivation page"
+msgstr "培養頁沒有共鳴者材料行"
+
+#: src/task/CultivationTask.py
+msgid "No echo set Nightmare Nest on the cultivation page"
+msgstr "培養頁沒有聲骸套裝夢魘聚落"
+
+#: src/task/CultivationTask.py
+msgid "No echo set Tacet Suppression on the cultivation page"
+msgstr "培養頁沒有聲骸套裝無音區"
+
+#: src/task/CultivationTask.py
+msgid "Waveplates used on echo set Tacet Suppression"
+msgstr "結晶波片已用於聲骸套裝無音區"
+
+#: src/task/CultivationTask.py
+msgid "{name} already cleared ({defeated}/{total})"
+msgstr "{name} 已清理（{defeated}/{total}）"
