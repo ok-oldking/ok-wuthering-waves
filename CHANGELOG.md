@@ -2,6 +2,12 @@
 
 Release history starts at v3.0.0.
 
+## v3.8.10 (2026-11-22)
+
+- Added the manual task “Cultivation Resource Farm”, which follows the Guidebook cultivation target: it clears the echo set Nightmare Nest (no Waveplates), farms Resonator Ascension and Skill Materials first (respecting the 3 weekly Skill Material claims), then spends the remaining Waveplates on the echo set Tacet Suppression. Supports the Simplified Chinese game UI at 16:9 only.
+- Added “Cultivation Target” to the Daily Task “Which to Farm” option; it farms with the Cultivation Resource Farm task settings.
+- Added an Export Logs button to the Log tab (ok-script 3.0.10).
+
 ## v3.8.9 (2026-11-20)
 
 - Fixed “3.8 GalGame” getting stuck on additional first-time tutorials, including the save-button prompt (`点击【档案存储】`), multi-page help popups (`「疲劳」`), and the commission-tab tutorial triggered while switching schedule tabs.

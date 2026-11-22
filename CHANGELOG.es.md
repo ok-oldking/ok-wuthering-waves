@@ -2,6 +2,12 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.10 (2026-11-22)
+
+- Se añadió la tarea manual “Farmeo de recursos de mejora”, que sigue el objetivo de mejora de la Guía: limpia el Nido de Pesadilla del set de ecos (sin gastar Ondaplacas), farmea primero los materiales de ascensión y de habilidad del resonador (respetando los 3 cobros semanales de materiales de habilidad) y luego gasta las Ondaplacas restantes en la Supresión Tacet del set de ecos. Solo admite la interfaz del juego en chino simplificado a 16:9.
+- Se añadió “Objetivo de mejora” a la opción “Qué farmear” de “📅 Tarea diaria”; farmea con los ajustes de la tarea Farmeo de recursos de mejora.
+- Se añadió un botón Exportar registros a la pestaña de registro (ok-script 3.0.10).
+
 ## v3.8.9 (2026-11-20)
 
 - Se corrigió que la tarea «3.8 GalGame» se atascara en otros tutoriales iniciales, incluido el aviso de guardado («点击【档案存储】»), las ventanas de ayuda de varias páginas («疲劳») y el tutorial de encargos especiales que aparece al cambiar de pestaña en la agenda.
