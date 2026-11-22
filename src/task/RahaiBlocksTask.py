@@ -296,6 +296,8 @@ class RahaiBlocksTask(BaseTask):
     def _play_board(self, interaction):
         misses = 0
         rejected = set()
+        stagnant = 0      # moves without a board change
+        last_mask = None
         for _ in range(160):
             self.next_frame()
             board = self._playable_board() or self.wait_until(self._playable_board, time_out=2)
@@ -321,16 +323,37 @@ class RahaiBlocksTask(BaseTask):
             self.log_info(f"Rahai Blocks: slot={move.slot + 1}, rotation={move.turns * 90}, "
                           f"cell=({move.row + 1},{move.col + 1}), lines={lines}")
             self.sleep(.95 if lines else .38)
+            actual = None
+            matched = False
             for _ in range(4):
                 self.next_frame()
                 actual = self._read_board()
                 if actual and actual.mask == expected and actual.fixed == board.fixed:
+                    matched = True
                     break
                 self.sleep(.23)
-            else:
-                if lines and self.wait_until(self._reward, time_out=3):
-                    return
-                self.log_warning(f"Rahai Blocks: expected={expected:#018x}, "
-                                 f"actual={hex(actual.mask) if actual else 'unrecognized'}")
-                raise ChallengeFailed("落块后棋盘与预期状态不符。")
+
+            if not matched and lines and self.wait_until(self._reward, time_out=3):
+                return
+
+            # clear_lines() keeps fixed tiles after a clear, but some stages clear
+            # them too; the preview matched, so trust the observed board and continue.
+            if not matched:
+                mismatches += 1
+                self.log_warning(
+                    f"Rahai Blocks: prediction missed ({mismatches}x), continuing "
+                    f"from actual board; "
+                    f"expected={expected:#018x}, "
+                    f"actual={hex(actual.mask) if actual else 'unrecognized'}")
+
+            # Only a truly unchanged board means the placement failed.
+            if actual is not None:
+                if last_mask is not None and actual.mask == last_mask and actual.fixed == board.fixed:
+                    stagnant += 1
+                    if stagnant >= 4:
+                        raise ChallengeFailed("Board unchanged after 4 consecutive moves; "
+                                              "placement appears to have no effect.")
+                else:
+                    stagnant = 0
+                last_mask = actual.mask
         raise ChallengeFailed("达到落块次数上限，未确认通关。")

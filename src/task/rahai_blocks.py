@@ -115,7 +115,15 @@ def read_board(frame):
     icon = frame[44:102, 50:110]
     if np.count_nonzero(icon.min(axis=2) > 181) < 210:
         return None
-    if _value(frame, 1024, 73, 3) - _value(frame, 1024, 85, 2) <= 45:
+    # Scan for the border's bright-to-dark drop instead of sampling fixed points:
+    # a few pixels of vertical drift would otherwise reject a valid board.
+    border_x = 1024
+    best_drop = 0.0
+    for y in range(66, 92):
+        above = _value(frame, border_x, y, 3)
+        below = _value(frame, border_x, y + 8, 2)
+        best_drop = max(best_drop, above - below)
+    if best_drop <= 45:
         return None
     # Check both the dark tray interiors and the bright gaps between them.
     # The interior samples alone can accidentally land in neighboring trays.
