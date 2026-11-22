@@ -2,6 +2,10 @@
 
 Release history starts at v3.0.0.
 
+## v3.8.11 (2026-11-22)
+
+- Publishes the v3.8.10 changes listed below; the v3.8.10 build was not released. No additional user-facing changes.
+
 ## v3.8.10 (2026-11-22)
 
 - Added the manual task “Cultivation Resource Farm”, which follows the Guidebook cultivation target: it clears the echo set Nightmare Nest (no Waveplates), farms Resonator Ascension and Skill Materials first (respecting the 3 weekly Skill Material claims), then spends the remaining Waveplates on the echo set Tacet Suppression. Supports the Simplified Chinese game UI at 16:9 only.

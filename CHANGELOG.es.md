@@ -2,6 +2,10 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.11 (2026-11-22)
+
+- Publica los cambios de v3.8.10 indicados abajo; la compilación v3.8.10 no se publicó. Sin otros cambios visibles para el usuario.
+
 ## v3.8.10 (2026-11-22)
 
 - Se añadió la tarea manual “Farmeo de recursos de mejora”, que sigue el objetivo de mejora de la Guía: limpia el Nido de Pesadilla del set de ecos (sin gastar Ondaplacas), farmea primero los materiales de ascensión y de habilidad del resonador (respetando los 3 cobros semanales de materiales de habilidad) y luego gasta las Ondaplacas restantes en la Supresión Tacet del set de ecos. Solo admite la interfaz del juego en chino simplificado a 16:9.
