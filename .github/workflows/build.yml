@@ -404,6 +404,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
       - name: Download release assets
         uses: actions/download-artifact@v4
         with:
@@ -415,16 +420,24 @@ jobs:
         shell: bash
         run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
+      - name: Generate release notes
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          START_TAG: ${{ needs.synchronize.outputs.start_tag }}
+          END_TAG: ${{ needs.synchronize.outputs.end_tag }}
+          FALLBACK_CHANGES: ${{ needs.synchronize.outputs.changes }}
+        run: |
+          python3 .github/scripts/generate_release_notes.py \
+            --tag "$RELEASE_TAG" \
+            --output release_notes.md
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          body: |
-            ### 更新日志 ${{ needs.synchronize.outputs.start_tag }} -> ${{ needs.synchronize.outputs.end_tag }}:
-              ${{ needs.synchronize.outputs.changes }}
-            ### Install from source
-              See the [source installation guide](https://github.com/ok-oldking/ok-wuthering-waves/blob/master/docs/development/contributing.md).
+          body_path: release_notes.md
           draft: false
           prerelease: ${{ needs.synchronize.outputs.is_release != 'true' }}
           files: pyappify_dist/*

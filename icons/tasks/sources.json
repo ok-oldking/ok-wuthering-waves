@@ -112,16 +112,6 @@
       ],
       "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiDevelopmentGuide/Atlas/SP_IconDevelopment07.png"
     },
-    "tacet-elimination.png": {
-      "path": "UI/UIResources/UiFunc/Atlas/SP_FuncIconActivity.png",
-      "blob_sha": "f9deaaef4e9589d7be18afb31bd7c203f29f500e",
-      "sha256": "8e884b904fcc54b99aae25be1fe00b2847ff7ba18cbfbc8a6b6f01608c591de6",
-      "size": [
-        128,
-        128
-      ],
-      "source_url": "https://github.com/555me/Wuthering-Waves-GameAssets/blob/a59e6fccfd7e04bc6470315737941609bc7b4acf/UI/UIResources/UiFunc/Atlas/SP_FuncIconActivity.png"
-    },
     "combat.png": {
       "path": "UI/UIResources/UiDevelopmentGuide/Atlas/SP_TabIconDevelopment04.png",
       "blob_sha": "2f402c3373fd60583b40d1c3619d44003cb3298c",

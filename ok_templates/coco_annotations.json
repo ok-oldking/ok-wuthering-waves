@@ -2363,6 +2363,18 @@
       "file_name": "hiyuki-skin-inactive.png",
       "width": 3840,
       "height": 2160
+    },
+    {
+      "id": 309,
+      "file_name": "63.png",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "id": 310,
+      "file_name": "64.png",
+      "width": 1920,
+      "height": 1080
     }
   ],
   "annotations": [
@@ -5689,36 +5701,6 @@
       "segmentation": []
     },
     {
-      "id": 324,
-      "image_id": 154,
-      "category_id": 161,
-      "bbox": [
-        1197.8786197137904,
-        799.2471722655,
-        20.910964246782896,
-        22.43176164654892
-      ],
-      "area": 469.0697657833403,
-      "iscrowd": 0,
-      "ignore": 0,
-      "segmentation": []
-    },
-    {
-      "id": 326,
-      "image_id": 156,
-      "category_id": 192,
-      "bbox": [
-        1197.8786197137904,
-        799.2471722655,
-        20.910964246782896,
-        22.43176164654892
-      ],
-      "area": 469.0697657833403,
-      "iscrowd": 0,
-      "ignore": 0,
-      "segmentation": []
-    },
-    {
       "id": 328,
       "image_id": 158,
       "category_id": 185,
@@ -6634,6 +6616,36 @@
       ],
       "area": 3968.0,
       "iscrowd": 0
+    },
+    {
+      "id": 463,
+      "image_id": 310,
+      "category_id": 302,
+      "bbox": [
+        1433.9176432940983,
+        958.6137615730172,
+        30.623501318268836,
+        29.10609791183913
+      ],
+      "area": 891.3306277728674,
+      "iscrowd": 0,
+      "ignore": 0,
+      "segmentation": []
+    },
+    {
+      "id": 464,
+      "image_id": 309,
+      "category_id": 303,
+      "bbox": [
+        1433.9176432940983,
+        958.6137615730172,
+        30.623501318268836,
+        29.10609791183913
+      ],
+      "area": 891.3306277728674,
+      "iscrowd": 0,
+      "ignore": 0,
+      "segmentation": []
     }
   ],
   "categories": [
@@ -7438,7 +7450,7 @@
       "supercategory": ""
     },
     {
-      "id": 161,
+      "id": 302,
       "name": "has_target_cloud",
       "supercategory": ""
     },
@@ -7593,7 +7605,7 @@
       "supercategory": ""
     },
     {
-      "id": 192,
+      "id": 303,
       "name": "no_target_cloud",
       "supercategory": ""
     },

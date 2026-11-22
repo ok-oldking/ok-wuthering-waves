@@ -1,5 +1,7 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+
+from ok.task.exceptions import WaitFailedException
 
 from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException
 from src.task.DomainTask import DomainTask
@@ -36,6 +38,7 @@ class TestTacetDeathReentry(unittest.TestCase):
     def make_task(self, deaths):
         task = TacetTask.__new__(TacetTask)
         task.stamina_once = 60
+        task.tr = str
         task.teleports = []
         task.logs = []
         task.combat_once, task.combat_calls = combat_results(deaths)
@@ -54,7 +57,7 @@ class TestTacetDeathReentry(unittest.TestCase):
     def test_reenter_from_f2_book_after_revive(self):
         task = self.make_task(deaths=1)
 
-        task.farm_tacet(config={'Which Tacet Suppression to Farm': 1})
+        self.assertEqual(60, task.farm_tacet(config={'Which Tacet Suppression to Farm': 1}))
 
         self.assertEqual([0, 0], task.teleports)
         self.assertEqual(2, len(task.combat_calls))
@@ -63,7 +66,7 @@ class TestTacetDeathReentry(unittest.TestCase):
     def test_stop_after_max_recovery_retries(self):
         task = self.make_task(deaths=99)
 
-        self.assertIsNone(task.farm_tacet(config={'Which Tacet Suppression to Farm': 1}))
+        self.assertEqual(0, task.farm_tacet(config={'Which Tacet Suppression to Farm': 1}))
 
         self.assertEqual(3, len(task.teleports))
         self.assertEqual(3, len(task.combat_calls))
@@ -77,6 +80,44 @@ class TestTacetDeathReentry(unittest.TestCase):
         task.farm_tacet(config={'Which Tacet Suppression to Farm': 1})
 
         self.assertEqual([False, True, True], flags)
+
+    def test_rechallenge_clicks_detected_button_without_teleporting_again(self):
+        task = self.make_task(deaths=0)
+        task.use_stamina = Mock(side_effect=[(True, 120), (False, 120)])
+        task.wait_until = lambda condition, **kwargs: condition()
+        rechallenge_button = Mock()
+        task.ocr = Mock(return_value=[rechallenge_button])
+        task.click = Mock()
+        task.click_relative = Mock()
+
+        stamina_spent = task.farm_tacet(config={'Which Tacet Suppression to Farm': 1})
+
+        self.assertEqual(240, stamina_spent)
+        self.assertEqual([0], task.teleports)
+        self.assertEqual(2, len(task.combat_calls))
+        task.click.assert_called_once_with(rechallenge_button, after_sleep=0.2)
+        task.click_relative.assert_called_once_with(0.365, 0.853, hcenter=True)
+
+    def test_resumes_active_arena_when_combat_stopped_before_reward(self):
+        task = self.make_task(deaths=0)
+        task.walk_to_treasure = Mock(side_effect=[WaitFailedException(), None])
+        task.in_realm = Mock(return_value=True)
+        task.wait_combat = Mock(return_value=True)
+
+        self.assertEqual(60, task.farm_tacet(config={'Which Tacet Suppression to Farm': 1}))
+        self.assertEqual([0], task.teleports)
+        self.assertEqual(2, len(task.combat_calls))
+
+    def test_missing_reward_without_active_combat_still_fails(self):
+        task = self.make_task(deaths=0)
+        task.walk_to_treasure = Mock(side_effect=WaitFailedException())
+        task.in_realm = Mock(return_value=True)
+        task.wait_combat = Mock(return_value=False)
+
+        with self.assertRaises(WaitFailedException):
+            task.farm_tacet(config={'Which Tacet Suppression to Farm': 1})
+
+        self.assertEqual(1, len(task.combat_calls))
 
 
 class TestFarmEchoDeathReentry(unittest.TestCase):

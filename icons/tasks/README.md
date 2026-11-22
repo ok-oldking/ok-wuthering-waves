@@ -10,7 +10,7 @@ Game artwork belongs to its respective owners; this directory does not relicense
 Most task symbols match the guidebook and function-menu artwork directly.
 Related native symbols represent app-specific concepts: Friends for multiple
 accounts, map switching for Fast Travel, the Bag for Auto Pick, and repair tools
-for Diagnosis. Tacet Elimination uses the general activities symbol.
+for Diagnosis.
 `login.svg` is an original fallback because automatic login has no corresponding
 game-menu action icon in the inspected assets. `skip-dialog.svg` is an original
 vector skip symbol, replacing the small, soft-edged game bitmap so it stays

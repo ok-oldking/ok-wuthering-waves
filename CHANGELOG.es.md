@@ -2,6 +2,53 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.9 (2026-11-20)
+
+- Se corrigió que la tarea «3.8 GalGame» se atascara en otros tutoriales iniciales, incluido el aviso de guardado («点击【档案存储】»), las ventanas de ayuda de varias páginas («疲劳») y el tutorial de encargos especiales que aparece al cambiar de pestaña en la agenda.
+
+## v3.8.8 (2026-11-20)
+
+- Se corrigió que la tarea «3.8 GalGame» se atascara en el tutorial inicial de descanso de la agenda («执行【休息】类行为后，会【减少】疲劳») y ahora cierra la pantalla de gestión de guardados («档案管理») si bloquea la apertura de las páginas de recompensas del evento.
+
+## v3.8.7 (2026-11-20)
+
+- Se corrigió el fallo de la tarea «3.8 GalGame» al abrir o volver desde las páginas de recompensas del evento durante las transiciones de menú.
+- Se actualizó la tarea diaria para ejecutar el Nido de Pesadilla después de gastar resistencia, reclamando primero las recompensas diarias si se obtuvieron recompensas de Supresión Tácita.
+- Se mejoró Supresión Tácita para reanudar el combate cuando la recompensa aún no está disponible durante una pelea activa, y para localizar el botón Reintentar mediante reconocimiento de texto con posición de respaldo.
+
+## v3.8.6 (2026-11-20)
+
+- Se añadió la tarea «3.8 GalGame» a Actividades diarias para el cliente en chino simplificado. Iníciala desde la página del evento «第二索拉：未名之梦» para avanzar el semestre y reclamar las recompensas disponibles.
+
+## v3.8.5 (2026-11-20)
+
+- Se añadió la tarea «3.8 拉海洛方块·逆转» al inicio de Actividades diarias para el cliente de Windows en chino simplificado. Abre la lista de niveles del evento y mantén el juego en primer plano. La tarea intenta superar las dificultades desbloqueadas y pendientes, y vuelve a la lista después de cada victoria.
+- Compatible con tableros de dos y tres bandejas, incluida la fase de 4500 puntos con bloques grises fijos en las esquinas. La tarea comprueba la vista previa antes de soltar cada pieza.
+- Se corrigió la interrupción del teletransporte de recuperación cuando se superponen los iconos del mapa. Si el punto más cercano está bloqueado, la tarea prueba otros puntos cercanos.
+
+## v3.8.5-beta.2 (2026-11-18)
+
+- Versión de mantenimiento: se actualizó la generación de notas de lanzamiento en GitHub; sin cambios adicionales para el usuario.
+
+## v3.8.4 (2026-11-18)
+
+- Se ha restablecido el juego en la nube a 1080p, con preferencia por Edge y colores de captura corregidos en pantallas HDR.
+- Se ha mejorado la detección de objetivos y barras de salud en el combate en la nube, incluidas las barras de acciones largas y las barras de salud baja afectadas por la compresión.
+- Se ha añadido la recuperación ante los avisos de desconexión del juego en la nube (errores 1020 y 4012).
+
+## v3.8.3 (2026-11-15)
+
+- Se añadió Pynput como método de entrada seleccionable; PostMessage sigue siendo el predeterminado.
+
+## v3.8.2 (2026-11-15)
+
+- Se actualizó el reconocimiento de texto al modelo PP-OCRv6 small.
+
+## v3.8.1 (2026-11-14)
+
+- Se corrigió que las tareas iniciadas desde la línea de comandos (`-t`/`-e`) no se ejecutaran tras iniciar el juego.
+- Menús desplegables y filtrado de la lista de tareas más fluidos.
+
 ## v3.8.0-beta.1 (2026-11-12)
 
 - Se añadió la automatización del combate de Lily.

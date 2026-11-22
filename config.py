@@ -187,10 +187,9 @@ config = {
             'use_npu': True,
         }
     },
-    'plugin':True,
+    'plugin': False,
     'my_app': ['src.globals', 'Globals'],
     'start_timeout': 120,  # default 60
-    'update_only_game_exit': True,  # if startup skipped the update check, check 10s after the game exits
     'wait_until_settle_time': 0,
     # required if using feature detection
     'template_matching': {
@@ -217,13 +216,22 @@ config = {
         'launch_arguments': get_game_launch_arguments,
         'exe': 'Client-Win64-Shipping.exe',
         'hwnd_class': 'UnrealWindow',
-        'interaction': 'PostMessage',
+        'interaction': ['PostMessage', 'Pynput'],
         'capture_method': ['WGC', 'WGC_HDR','BitBlt_RenderFull'],  # Windows版本支持的话, 优先使用WGC, 否则使用BitBlt_Full
         'check_hdr': False,
         'force_no_hdr': False,
         'check_auto_hdr': True,
         'check_night_light': True,
         'force_no_night_light': False,
+    },
+    'browser': {
+        'url': 'https://mc.kurogames.com/cloud/#/',
+        'resolution': (1920, 1080),
+        'channels': ['msedge', 'chrome', 'chromium'],
+        # Keep SDR video in the compositor; direct video overlays clip WGC colors on HDR displays.
+        'args': ['--webrtc-ip-handling-policy=default', '--force-color-profile=srgb',
+                 '--disable-direct-composition'],
+        'nick': '云游戏(需要Win11并安装Chrome或Edge)',
     },
     'window_size': {
         'width': 1200,
@@ -269,6 +277,8 @@ config = {
     'launcher_error_log_file': 'logs/launcher_error.log',
     'version': version,
     'onetime_tasks': [  # tasks to execute
+        ["src.task.GalGameTask", "GalGameTask"],
+        ["src.task.RahaiBlocksTask", "RahaiBlocksTask"],
         ["src.task.DailyTask", "DailyTask"],
         ["src.task.FarmEchoTask", "FarmEchoTask"],
         ["src.task.NightmareNestTask", "NightmareNestTask"],
@@ -282,7 +292,6 @@ config = {
         ["src.task.EnhanceEchoTask", "EnhanceEchoTask"],
         ["src.task.ChangeEchoTask", "ChangeEchoTask"],
         ["src.task.GardenTask", "GardenTask"],
-        ["src.task.TacetEliminationTask", "TacetEliminationTask"],
         # ["src.task.DiagnosisTask", "DiagnosisTask"],
     ], 'trigger_tasks': [
         ["src.task.AutoCombatTask", "AutoCombatTask"],
