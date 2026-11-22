@@ -53,7 +53,14 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.wait_in_team_and_world(esc=True)
         self.farm_tacet()
 
-    def farm_tacet(self, daily=False, used_stamina=0, config=None, max_recovery_retries=3):
+    def farm_tacet(self, daily=False, used_stamina=0, config=None, max_recovery_retries=3,
+                   open_entry=None, enter_tacet=None):
+        """Farm Tacet Suppression until stamina runs out.
+
+        open_entry/enter_tacet let other tasks reuse this loop from another page:
+        open_entry() must show the stamina bar, enter_tacet() must open the team screen.
+        Both default to the F2 Tacet list selected by config.
+        """
         if config is None:
             config = self.config
         if daily:
@@ -66,18 +73,25 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.realm_entry_at_heal_point = False
         while True:
             self.sleep(1)
-            self.openF2Book("gray_book_boss")
-            current, back_up, total = self.get_stamina()
-            if current == -1:
-                self.click_relative(0.04, 0.4, after_sleep=1)
+            if open_entry is None:
+                self.openF2Book("gray_book_boss")
+                current, back_up, total = self.get_stamina()
+                if current == -1:
+                    self.click_relative(0.04, 0.4, after_sleep=1)
+                    current, back_up, total = self.get_stamina()
+            else:
+                open_entry()
                 current, back_up, total = self.get_stamina()
             if total < self.stamina_once:
                 self.not_enough_stamina()
                 return stamina_spent
 
-            self.open_boss_book('wuyin')
-            index = config.get('Which Tacet Suppression to Farm', 1) - 1
-            self.teleport_to_tacet(index)
+            if enter_tacet is None:
+                self.open_boss_book('wuyin')
+                index = config.get('Which Tacet Suppression to Farm', 1) - 1
+                self.teleport_to_tacet(index)
+            else:
+                enter_tacet()
             self.click_team_challenge()
             while True:
                 self.wait_in_team_and_world(time_out=120)
