@@ -2,6 +2,12 @@
 
 Release history starts at v3.0.0.
 
+## v3.8.13 (2026-11-23)
+
+- “3.8 拉海洛方块·逆转”: no longer crashes when a stage clears more blocks than predicted (explosive and faulty blocks).
+- “3.8 拉海洛方块·逆转”: closes the mechanic manuals that appear over the board in the new stages, and recognizes boards with four piece trays.
+- “3.8 拉海洛方块·逆转”: recognizes the board even when its top border sits a few pixels higher or lower.
+
 ## v3.8.12 (2026-11-22)
 
 - Moved Daily Task back to the top of the task list.

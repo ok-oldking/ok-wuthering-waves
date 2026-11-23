@@ -2,6 +2,12 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.13 (2026-11-23)
+
+- «3.8 拉海洛方块·逆转»: ya no se detiene cuando una fase elimina más bloques de los previstos (bloques explosivos y averiados).
+- «3.8 拉海洛方块·逆转»: cierra las explicaciones de mecánicas que aparecen sobre el tablero en las nuevas fases y reconoce tableros con cuatro bandejas de piezas.
+- «3.8 拉海洛方块·逆转»: reconoce el tablero aunque su borde superior esté unos píxeles más arriba o más abajo.
+
 ## v3.8.12 (2026-11-22)
 
 - La tarea diaria vuelve a estar al principio de la lista de tareas.
