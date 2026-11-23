@@ -19,6 +19,7 @@ from ``config.py`` before the GUI framework is up.
 from __future__ import annotations
 
 import argparse
+import asyncio
 import hashlib
 import json
 import os
@@ -166,8 +167,9 @@ async def _load_async(capture, path: Path) -> bool:
     if context is None or not path.exists():
         return False
     try:
-        with path.open(encoding='utf-8') as stream:
-            state = json.load(stream)
+        # S7493: never block the event loop with sync file IO inside a coroutine.
+        state_text = await asyncio.to_thread(path.read_text, encoding='utf-8')
+        state = json.loads(state_text)
         cookies = state.get('cookies') or []
         if cookies:
             await context.clear_cookies()
