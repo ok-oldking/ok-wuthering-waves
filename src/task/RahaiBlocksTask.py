@@ -206,15 +206,22 @@ class RahaiBlocksTask(BaseTask):
     def _reward(self):
         return self.ocr(.36, .216, .64, .29, match=re.compile(r"^获\s*得$"))
 
+    def _dismiss_help(self):
+        """Close a mechanic manual; it can slide in after the board is already visible."""
+        help_page = self.ocr(.05, .28, .32, .35, match=re.compile(r"模式|方块"))
+        if not help_page:
+            return False
+        # OCR sometimes drops 确 on the highlighted button.
+        confirm = self.ocr(.41, .88, .59, .95, match=re.compile(r"确?认$"))
+        if confirm:
+            self.click(confirm[0], after_sleep=.5)
+        elif self.ocr(.38, .90, .62, .96, match=re.compile(r"切换至最后一页")):
+            self.click(.75, .805, after_sleep=.5)
+        return True
+
     def _ready_board(self):
         # The first score challenge includes a manual and three guided clicks.
-        help_page = self.ocr(.05, .28, .32, .35, match=re.compile(r"积分模式|奖章模式|数据损坏方块"))
-        if help_page:
-            confirm = self.ocr(.41, .88, .59, .95, match="确认")
-            if confirm:
-                self.click(confirm[0], after_sleep=.5)
-            elif self.ocr(.38, .90, .62, .96, match=re.compile(r"切换至最后一页")):
-                self.click(.75, .805, after_sleep=.5)
+        if self._dismiss_help():
             return False
 
         for region, hint, target in (
@@ -296,7 +303,8 @@ class RahaiBlocksTask(BaseTask):
     def _play_board(self, interaction):
         misses = 0
         rejected = set()
-        stagnant = 0      # moves without a board change
+        mismatches = 0
+        stagnant = 0  # moves without a board change
         last_mask = None
         for _ in range(160):
             self.next_frame()
@@ -304,7 +312,14 @@ class RahaiBlocksTask(BaseTask):
             if not board:
                 if self.wait_until(self._reward, time_out=3):
                     return
-                raise ChallengeFailed("棋盘消失，未确认通关。")
+                if not self._dismiss_help():
+                    self.screenshot("rahai_board_lost")
+                    raise ChallengeFailed("棋盘消失，未确认通关。")
+                # A manual covered the board; earlier preview misses were caused by it.
+                self.wait_until(lambda: not self._dismiss_help(), time_out=10)
+                misses = 0
+                rejected.clear()
+                continue
             if not interaction.clickable():
                 raise RuntimeError("Game lost foreground focus; no further moves were sent.")
             move = choose_move(board, excluded=rejected)

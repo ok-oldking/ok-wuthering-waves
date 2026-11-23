@@ -82,6 +82,12 @@ class TestRahaiBlocks(unittest.TestCase):
         self.assertEqual(board.fixed, 0x8100000000000081)
         self.assertEqual([p.slot for p in board.pieces], [0, 1])
 
+    def test_four_tray_layout_is_not_read_as_its_middle_two_trays(self):
+        board = read_board(fixture('four_trays_outer'))
+        self.assertEqual(board.mask, 0xE0C0801F1F1F1F1F)
+        self.assertEqual(board.fixed, 0xE0C080000103070F)
+        self.assertEqual([(piece.slot, len(piece.cells)) for piece in board.pieces], [(0, 6), (3, 4)])
+
     def test_bright_piece_does_not_look_like_two_tray_divider(self):
         board = read_board(fixture('score_4500_ambiguous_trays'))
         self.assertIsNotNone(board)
