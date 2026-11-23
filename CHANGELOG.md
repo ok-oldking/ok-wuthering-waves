@@ -2,6 +2,11 @@
 
 Release history starts at v3.0.0.
 
+## v3.8.14 (2026-11-23)
+
+- When a task stops with an error, the screenshot is now saved even if the error came right after a wait, and goes to `screenshots/error/` named like `error_DailyTask_CannotFindException` (ok-script 3.0.11).
+- “3.8 拉海洛方块·逆转” no longer saves a screenshot every time a placement preview misses; it still retries and logs a warning.
+
 ## v3.8.13 (2026-11-23)
 
 - “3.8 拉海洛方块·逆转”: no longer crashes when a stage clears more blocks than predicted (explosive and faulty blocks).

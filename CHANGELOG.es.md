@@ -2,6 +2,11 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.14 (2026-11-23)
+
+- Cuando una tarea se detiene por un error, la captura se guarda aunque el error ocurra justo después de una espera, en `screenshots/error/` con un nombre como `error_DailyTask_CannotFindException` (ok-script 3.0.11).
+- «3.8 拉海洛方块·逆转» ya no guarda una captura cada vez que falla la vista previa de colocación; sigue reintentando y registra una advertencia.
+
 ## v3.8.13 (2026-11-23)
 
 - «3.8 拉海洛方块·逆转»: ya no se detiene cuando una fase elimina más bloques de los previstos (bloques explosivos y averiados).

@@ -286,7 +286,6 @@ class RahaiBlocksTask(BaseTask):
             if not release_at_target:
                 self.log_warning(f"Placement preview did not match: slot={move.slot}, turns={move.turns}, "
                                  f"row={move.row}, col={move.col}")
-                self.screenshot("rahai_preview_mismatch")
             return release_at_target
         finally:
             if interaction.clickable():
