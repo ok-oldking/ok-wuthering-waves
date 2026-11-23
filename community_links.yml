@@ -5,9 +5,9 @@ discord:
   - name: Discord
     url: https://discord.gg/vVyCatEBgA
 
-qq_channel: []
-  # - name: QQ频道
-  #   url: https://pd.qq.com/s/xxxxxxx
+qq_channel:
+  - name: QQ频道
+    url: https://pd.qq.com/s/djmm6l44y
 
 qq_groups:
   - name: 晒就踢群拉黑
