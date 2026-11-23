@@ -2,8 +2,10 @@
 
 El historial comienza en v3.0.0.
 
-## v3.8.14 (2026-11-23)
+## v3.8.14 (2026-11-24)
 
+- Juego en la nube: los fotogramas se leen directamente del vídeo del juego en lugar de capturar la ventana del navegador, así que la captura sigue funcionando con el navegador minimizado (ok-script 3.0.13).
+- Juego en la nube: tras un fallo al abrir el navegador, volver a iniciar funciona sin reiniciar ok-ww (ok-script 3.0.12).
 - Cuando una tarea se detiene por un error, la captura se guarda aunque el error ocurra justo después de una espera, en `screenshots/error/` con un nombre como `error_DailyTask_CannotFindException` (ok-script 3.0.11).
 - «3.8 拉海洛方块·逆转» ya no guarda una captura cada vez que falla la vista previa de colocación; sigue reintentando y registra una advertencia.
 

@@ -2,8 +2,10 @@
 
 Release history starts at v3.0.0.
 
-## v3.8.14 (2026-11-23)
+## v3.8.14 (2026-11-24)
 
+- Cloud game: frames are now read straight from the game's video stream instead of capturing the browser window, so capture keeps working while the browser is minimized (ok-script 3.0.13).
+- Cloud game: starting again after a failed browser launch now works without restarting ok-ww (ok-script 3.0.12).
 - When a task stops with an error, the screenshot is now saved even if the error came right after a wait, and goes to `screenshots/error/` named like `error_DailyTask_CannotFindException` (ok-script 3.0.11).
 - “3.8 拉海洛方块·逆转” no longer saves a screenshot every time a placement preview misses; it still retries and logs a warning.
 

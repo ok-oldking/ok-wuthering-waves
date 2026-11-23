@@ -228,6 +228,7 @@ config = {
         'url': 'https://mc.kurogames.com/cloud/#/',
         'resolution': (1920, 1080),
         'channels': ['msedge', 'chrome', 'chromium'],
+        'capture': 'webrtc',
         # Keep SDR video in the compositor; direct video overlays clip WGC colors on HDR displays.
         'args': ['--webrtc-ip-handling-policy=default', '--force-color-profile=srgb',
                  '--disable-direct-composition'],
