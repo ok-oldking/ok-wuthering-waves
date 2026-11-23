@@ -11,7 +11,7 @@ WIDTH, HEIGHT = 2048, 1152
 SIZE = 8
 BOARD_X, BOARD_Y, CELL = 537.5, 89.4, 121.65
 TRAY_X, TILE = 1785.5, 38.3
-TRAY_LAYOUTS = ((495, 735), (375, 615, 855))
+TRAY_LAYOUTS = ((495, 735), (375, 615, 855), (255, 495, 735, 975))
 ROWS = tuple(255 << (SIZE * r) for r in range(SIZE))
 COLS = tuple(0x0101010101010101 << c for c in range(SIZE))
 FULL = (1 << (SIZE * SIZE)) - 1
@@ -115,13 +115,23 @@ def read_board(frame):
     icon = frame[44:102, 50:110]
     if np.count_nonzero(icon.min(axis=2) > 181) < 210:
         return None
-    if _value(frame, 1024, 73, 3) - _value(frame, 1024, 85, 2) <= 45:
+    # Scan for the border's bright-to-dark drop instead of sampling fixed points:
+    # a few pixels of vertical drift would otherwise reject a valid board.
+    border_x = 1024
+    best_drop = 0.0
+    for y in range(66, 92):
+        above = _value(frame, border_x, y, 3)
+        below = _value(frame, border_x, y + 8, 2)
+        best_drop = max(best_drop, above - below)
+    if best_drop <= 45:
         return None
     # Check both the dark tray interiors and the bright gaps between them.
     # The interior samples alone can accidentally land in neighboring trays.
     layouts = [layout for layout in TRAY_LAYOUTS if
                all(_value(frame, 1710, cy + dy, 3) < 65 for cy in layout for dy in (-82, 82))
                and all(_value(frame, 1710, (a + b) // 2, 3) > 105 for a, b in zip(layout, layout[1:]))]
+    # The two-tray layout is the middle of the four-tray one; keep the larger match.
+    layouts = [layout for layout in layouts if not any(set(layout) < set(other) for other in layouts)]
     trays = []
     for layout in layouts:
         try:
