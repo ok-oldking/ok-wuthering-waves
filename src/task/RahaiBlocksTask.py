@@ -88,9 +88,17 @@ class RahaiBlocksTask(BaseTask):
                 return stages
         raise RuntimeError("无法定位到拉海洛方块关卡列表起点。")
 
+    def _go_now_button(self):
+        # 通关后游戏可能退回活动主页, 只有「立即前往」能回到关卡列表。
+        return self.ocr(.25, .45, 1.0, .98, match="立即前往")
+
     def _return_to_list(self):
         if self._stage_details():
             self.click(.942, .06, after_sleep=.45)
+        go_now = self.wait_until(self._go_now_button, time_out=3)
+        if go_now:
+            self.log_info("退回了活动主页，点击「立即前往」返回关卡列表。")
+            self.click(go_now[0], after_sleep=.8)
         stages = self.wait_until(self._stage_list, time_out=5)
         if not stages:
             raise RuntimeError("挑战结束后无法返回关卡列表。")
@@ -151,8 +159,14 @@ class RahaiBlocksTask(BaseTask):
             self._leave_challenge()
             raise
         self.click(.5, .88, after_sleep=.6)
-        if not self.wait_until(self._stage_details, time_out=5):
-            raise RuntimeError("领取奖励后无法识别关卡详情。")
+        if not self.wait_until(self._stage_details, time_out=3):
+            # 通关结算后游戏可能直接退回活动主页而不是关卡详情。
+            go_now = self.wait_until(self._go_now_button, time_out=4)
+            if go_now:
+                self.log_info("通关后退回了活动主页，点击「立即前往」返回关卡列表。")
+                self.click(go_now[0], after_sleep=.8)
+            elif not self.wait_until(self._stage_list, time_out=3):
+                raise RuntimeError("领取奖励后无法识别关卡详情。")
         self.log_info(f"已通关：{title.name} · {difficulty}")
 
     def run(self):
@@ -235,7 +249,11 @@ class RahaiBlocksTask(BaseTask):
         help_page = self.ocr(.05, .28, .32, .35, match=re.compile(r"模式|方块"))
         if not help_page:
             return False
-        # OCR sometimes drops 确 on the highlighted button.
+        # Prefer the top-right X of the manual popup; OCR sometimes drops 确
+        # on the highlighted confirm button.
+        self.click(.960, .210, after_sleep=.6)
+        if not self.ocr(.05, .28, .32, .35, match=re.compile(r"模式|方块")):
+            return True
         confirm = self.ocr(.41, .88, .59, .95, match=re.compile(r"确?认$"))
         if confirm:
             self.click(confirm[0], after_sleep=.5)
