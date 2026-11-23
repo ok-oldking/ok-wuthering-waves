@@ -5,6 +5,11 @@ import os
 from pathlib import Path
 
 WARNING_TEXT = "**使用本工具存在封号风险。如果你不清楚自己在做什么，请不要使用。**"
+DOWNLOAD_MIRRORS_SECTION = (
+    "### 其他下载源 / Other download sources\n\n"
+    "* [百度网盘](https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww) 免费下载\n"
+    "* [夸克网盘](https://pan.quark.cn/s/80730a808d0e) 免费下载"
+)
 INSTALL_FROM_SOURCE_SECTION = (
     "### Install from source\n\n"
     "See the [source installation guide]"
@@ -82,6 +87,7 @@ def build_release_notes(
             header = f"### 更新日志 {start_tag} -> {end_tag}".strip()
         sections.append(f"{header}\n\n{fallback_changes.strip()}")
 
+    sections.append(DOWNLOAD_MIRRORS_SECTION)
     sections.append(INSTALL_FROM_SOURCE_SECTION)
     return "\n\n".join(sections) + "\n"
 

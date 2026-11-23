@@ -139,6 +139,8 @@
 
 ## 💬 加入我们
 
+*   **社区 (QQ 群 / QQ 频道)**: [点击查看](https://ok-script.com/community/?project=ok-ww)
+*   **开发者群**: `926858895` ( **注意**: 此群仅面向有开发能力、希望参与贡献的开发者，入群前请确保您已能够从源码成功运行项目。)
 *   **Discord**: [点击加入](https://discord.gg/vVyCatEBgA)
 
 本项目基于 [ok-script](https://ok-script.com) 框架开发，简单易维护。欢迎有兴趣的开发者使用 [ok-script](https://ok-script.com) 开发您自己的自动化项目。
