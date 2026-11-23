@@ -313,12 +313,9 @@ class RahaiBlocksTask(BaseTask):
                 self.screenshot("rahai_preview_mismatch")
             return release_at_target
         finally:
-            if self.is_browser():
-                # CDP mouse events are virtual: always release, focus is irrelevant.
-                if not release_at_target:
-                    interaction.move(*point(source))
-                interaction.mouse_up()
-            elif interaction.clickable():
+            if self.is_browser() or interaction.clickable():
+                # CDP mouse events are virtual (no OS focus involved) and a
+                # clickable Pynput window releases here as well.
                 if not release_at_target:
                     # No task sleep here: cancellation must still release the button.
                     interaction.move(*point(source))

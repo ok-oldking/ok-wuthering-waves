@@ -93,7 +93,9 @@ class CloudMultiAccountTask(MultiAccountDailyTask):
                                 '无法为账号 {account} 启动独立浏览器，请检查浏览器是否可用。'
                             ).format(account=display_account(key)))
 
-                        def execute_account():
+                        # Bind loop variables explicitly: a plain closure would
+                        # see them change on the next iteration (S1515).
+                        def execute_account(account=account, task=task):
                             # 出错后整个账号流程会重跑: 先等待云端真正进入游戏,
                             # 否则点击会落在加载页/云游戏首页上。
                             self.logged_in = False

@@ -1037,16 +1037,13 @@ class BaseWWTask(BaseTask):
             self.log_info(self.tr('monthly_card found click'))
             self.click_relative(0.50, 0.89)
             self.sleep(2)
-            # self.screenshot('monthly_card2')
             self.click_relative(0.50, 0.89)
             self.sleep(2)
             entered = self.wait_until(self.in_team_and_world, time_out=10,
                             post_action=lambda: self.click_relative(0.50, 0.89, after_sleep=1))
-            # self.screenshot('monthly_card3')
             # 只有确认领完月卡回到大世界才把检查推到明天; 否则视为误判, 保留检查以便真正领取。
             if entered:
                 self.set_check_monthly_card(next_day=True)
-        # logger.debug(f'check_monthly_card {monthly_card}')
         return monthly_card is not None
 
     @property

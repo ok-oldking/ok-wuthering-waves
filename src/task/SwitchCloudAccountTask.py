@@ -51,9 +51,8 @@ class SwitchCloudAccountTask(WWOneTimeTask, BaseCombatTask):
             self.info_set('状态', '已切换配置，等待选择云游戏设备')
             return
 
-        if current and current != key:
-            if not cloud_browser.save_current(self):
-                self.log_warning(self.tr('保存上一个账号的 Cookie 失败，仍将继续切换。'))
+        if current and current != key and not cloud_browser.save_current(self):
+            self.log_warning(self.tr('保存上一个账号的 Cookie 失败，仍将继续切换。'))
 
         if not cloud_browser.restart_browser(self, account_key=key):
             raise RuntimeError(self.tr(
