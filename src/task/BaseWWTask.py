@@ -23,6 +23,13 @@ LOGIN_CLICK_SETTLE_TIME = 4  # seconds; keep below AutoLoginTask trigger_interva
 CLOUD_DISCONNECT_TEXTS = re.compile(r'云服务错误|服务器断开|断开连接')
 CLOUD_EXIT_GAME_TEXTS = re.compile(r'^(退出游戏|确定)$')
 CLOUD_RELOGIN_TIMEOUT = 600
+# CLOUD ACCOUNT ENTRY PATCH: cloud game can take minutes to load after clicking
+# "进入游戏"; the home-page button stays visible, so clicks must be throttled.
+CLOUD_START_COOLDOWN = 60
+# Graded cooldown (seconds): the first "开始游戏" click often does not register,
+# so retry quickly a couple of times, then back off to avoid restarting the queue.
+CLOUD_START_COOLDOWNS = (0, 8, 30, CLOUD_START_COOLDOWN)
+CLOUD_ENTER_TIMEOUT = 600
 f_white_color = {
     'r': (235, 255),  # Red range
     'g': (235, 255),  # Green range
@@ -816,8 +823,18 @@ class BaseWWTask(BaseTask):
 
             if start := self.find_boxes(texts, boundary='bottom_right', match=["开始游戏", re.compile("进入游戏")]):
                 if not self.find_boxes(texts, boundary='bottom_right', match=LOGIN_TEXTS):
-                    self.click(start)
-                    self.log_info(self.tr('Click Start Game! {start}').format(start=start))
+                    # CLOUD ACCOUNT ENTRY PATCH: graded cooldown. The first "开始游戏"
+                    # click often does not register, so retry quickly; then back off so
+                    # polling does not restart the cloud queue during loading.
+                    now = time.time()
+                    clicks = getattr(self, '_cloud_start_clicks', 0)
+                    cooldown = CLOUD_START_COOLDOWNS[min(clicks, len(CLOUD_START_COOLDOWNS) - 1)]
+                    if now - getattr(self, '_cloud_start_click_time', 0) >= cooldown:
+                        self._cloud_start_click_time = now
+                        self._cloud_start_clicks = clicks + 1
+                        self.click(start, after_sleep=2)
+                        self.log_info(self.tr('Click Start Game! ({clicks}) {start}')
+                                      .format(clicks=clicks + 1, start=start))
                     return False
             if switch_login := self.find_one(Labels.switch_account, vertical_variance=0.1, threshold=0.7):
                 if boxes := self.find_boxes(texts, boundary=self.box_of_screen(0.37, 0.63, 0.63, 0.99, hcenter=True,
@@ -825,6 +842,23 @@ class BaseWWTask(BaseTask):
                     self.log_info(self.tr('wait_login {switch_login} {boxes}').format(switch_login=switch_login, boxes=boxes))
                     self.click_relative(0.503, 0.926, hcenter=True, vcenter=True, after_sleep=3)
                     return False
+
+    def wait_cloud_game_ready(self, time_out=CLOUD_ENTER_TIMEOUT):
+        """CLOUD ACCOUNT ENTRY PATCH: wait until the cloud game fully entered.
+
+        Reuses the same detection chain as the local daily mode via
+        ``ensure_main``: is_main() checks in_team_and_world (reached the game
+        world), wait_login (login box / "进入游戏" button, now throttled),
+        handle_monthly_card and handle_cloud_disconnect (reconnect).  logged_in
+        is reset by the caller so ensure_main widens its timeout automatically;
+        esc=False avoids backing out to the cloud home during loading.
+        """
+        self.log_info(self.tr('Waiting for cloud game to finish entering...'), notify=True)
+        self._cloud_start_click_time = 0
+        self._cloud_start_clicks = 0
+        self.ensure_main(esc=False, time_out=time_out)
+        self.log_info(self.tr('Cloud game entered successfully'), notify=True)
+        return True
 
     def in_team_and_world(self):
         return self.in_team()[
@@ -989,6 +1023,13 @@ class BaseWWTask(BaseTask):
         return self.find_one('monthly_card', threshold=0.65, horizontal_variance=0.05, vertical_variance=0.05)
 
     def handle_monthly_card(self):
+        # MONTHLY CARD FALSE POSITIVE GUARD: 月卡弹窗只会在两个时机出现 —— 登录阶段
+        # (logged_in=False) 和每日月卡时间窗口 (should_check_monthly_card()=True)。
+        # 任务中途(已登录、非月卡时间)被 is_main 调用时, 全屏低阈值模板会把邮箱奖励
+        # 等圆形图标误判成月卡, 点击后 is_main 提前 return 使 back() 不执行、邮箱关不掉,
+        # ensure_main 超时抛异常 -> 错误恢复反复重启(死循环)。此时直接跳过检测。
+        if getattr(self, 'logged_in', True) and not self.should_check_monthly_card():
+            return False
         monthly_card = self.find_monthly_card()
         # self.screenshot('monthly_card1')
         if monthly_card is not None:
@@ -999,10 +1040,12 @@ class BaseWWTask(BaseTask):
             # self.screenshot('monthly_card2')
             self.click_relative(0.50, 0.89)
             self.sleep(2)
-            self.wait_until(self.in_team_and_world, time_out=10,
+            entered = self.wait_until(self.in_team_and_world, time_out=10,
                             post_action=lambda: self.click_relative(0.50, 0.89, after_sleep=1))
             # self.screenshot('monthly_card3')
-            self.set_check_monthly_card(next_day=True)
+            # 只有确认领完月卡回到大世界才把检查推到明天; 否则视为误判, 保留检查以便真正领取。
+            if entered:
+                self.set_check_monthly_card(next_day=True)
         # logger.debug(f'check_monthly_card {monthly_card}')
         return monthly_card is not None
 

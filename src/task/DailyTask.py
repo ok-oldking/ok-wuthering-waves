@@ -90,8 +90,10 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.logged_in = False
         self.ensure_main(time_out=180)
 
+        # 每日开始前先确认活跃度; 读不到时保守跳过体力, 不按 0 处理.
         used_stamina, daily_reward_ready = self.open_daily()
-        need_stamina = not daily_reward_ready and used_stamina < 180
+        points_unknown = getattr(self, '_daily_points_unknown', False)
+        need_stamina = not daily_reward_ready and not points_unknown and used_stamina < 180
         target = self.config.get('Which to Farm', self.support_tasks[0])
         additional_tasks = self.config.get(ADDITIONAL_TASKS) or []
         farm_all_nests = AUTO_FARM_NIGHTMARE_NEST in additional_tasks
@@ -99,6 +101,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         farm_daily_echo = (
             self.config.get('Farm Nightmare Nest for Daily Echo')
             and not daily_reward_ready
+            and not points_unknown
             and target != self.support_tasks[0]
             # The cultivation target already clears its echo set Nightmare Nest when it runs.
             and not (cultivation_task and need_stamina and cultivation_task.nightmare_enabled())
@@ -226,22 +229,54 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         finally:
             merge_echo_task.notify_if_not_enough = old_notify_if_not_enough
 
+    def _battle_pass_opened(self) -> bool:
+        return bool(self.wait_ocr(0.2, 0.13, 0.32, 0.22, match=re.compile(r'\d+'),
+                                  settle_time=1, time_out=2, raise_if_not_found=False))
+
+    def _open_battle_pass(self) -> bool:
+        """唤起先约电台界面.
+
+        原版靠 Alt + 点击右上角图标, 但云游戏浏览器会吞掉 Alt (Windows 菜单),
+        导致界面始终打不开. 浏览器模式下直接点击入口, 并准备多个候选坐标;
+        最后再走一次 Esc 主终端的文字入口作为兜底.
+        """
+        browser = self.is_browser()
+        positions = [(0.86, 0.05)] if not browser else [(0.86, 0.05), (0.90, 0.05), (0.95, 0.05)]
+        for x, y in positions:
+            if not browser:
+                self.send_key_down('alt')
+                self.sleep(0.05)
+            self.click_relative(x, y, after_sleep=1)
+            if not browser:
+                self.send_key_up('alt')
+            if self._battle_pass_opened():
+                return True
+
+        try:
+            self.back(after_sleep=1.5)
+            boxes = self.ocr(0, 0, 1, 1, match=re.compile('先约电台'))
+            if boxes:
+                self.click(boxes[0], after_sleep=2)
+                if self._battle_pass_opened():
+                    return True
+        except Exception as error:
+            self.log_debug(f'terminal battle pass fallback failed: {error}')
+        return False
+
     def claim_battle_pass(self):
         self.log_info(self.tr('battle pass'))
-        self.send_key_down('alt')
-        self.sleep(0.05)
-        self.click_relative(0.86, 0.05)
-        self.send_key_up('alt')
-        if not self.wait_ocr(0.2, 0.13, 0.32, 0.22, match=re.compile(r'\d+'), settle_time=1, raise_if_not_found=False):
+        self.ensure_main()
+        if not self._open_battle_pass():
             self.log_error(self.tr('can not battle pass, maybe ended'))
-        else:
-            self.click_relative(0.04, 0.3, after_sleep=1)
-            self.click_relative(0.68, 0.91, hcenter=True, after_sleep=3)
-            self.click_relative(0.04, 0.17, after_sleep=2)
-            self.click_relative(0.68, 0.91, hcenter=True, after_sleep=2)
-            self.wait_ocr(0.2, 0.13, 0.32, 0.22, match=re.compile(r'\d+'),
-                          post_action=lambda: self.click(0.68, 0.91, after_sleep=1), settle_time=1,
-                          raise_if_not_found=False)
+            self.ensure_main()
+            return
+        self.click_relative(0.04, 0.3, after_sleep=1)
+        self.click_relative(0.68, 0.91, hcenter=True, after_sleep=3)
+        self.click_relative(0.04, 0.17, after_sleep=2)
+        self.click_relative(0.68, 0.91, hcenter=True, after_sleep=2)
+        self.wait_ocr(0.2, 0.13, 0.32, 0.22, match=re.compile(r'\d+'),
+                      post_action=lambda: self.click(0.68, 0.91, after_sleep=1), settle_time=1,
+                      raise_if_not_found=False)
         self.ensure_main()
 
     def open_daily(self):
@@ -257,20 +292,39 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         else:
             current = 0
         self.info_set('current daily progress', current)
-        return current, self.get_total_daily_points() >= 100
+        self._daily_points_unknown = False
+        points = self.get_total_daily_points()
+        # 识别失败绝不能当成 0, 否则活跃度已满还会白刷一遍体力.
+        daily_reward_ready = points is not None and points >= 100
+        return current, daily_reward_ready
         # 请注意：如果任务【累计消耗180点结晶波片】已完成，current 也可能为 0，因为翻页后也有可能识别不到已用体力。
 
     def get_total_daily_points(self):
-        points_boxes = self.ocr(0.19, 0.8, 0.30, 0.93, match=number_re)
-        if points_boxes:
-            try:
-                points = int(re.sub(r'\D', '', points_boxes[0].name))
-            except Exception:
-                points = 0
-        else:
-            points = 0
-        self.info_set('total daily points', points)
-        return points
+        """读取当前每日活跃度; 识别不到返回 None 而不是 0.
+
+        云游戏下 OCR 偶尔读不到活跃度数字 (日志里出现过 120 被读成 0), 单次
+        失败就直接当成 0 会误判成"活跃度未满"并重复消耗体力. 这里换多个区域、
+        重试几次, 仍读不到就明确标记未知, 让调用方保守跳过体力任务.
+        """
+        regions = [(0.19, 0.8, 0.30, 0.93), (0.15, 0.75, 0.35, 0.95)]
+        for _ in range(3):
+            for x, y, to_x, to_y in regions:
+                points_boxes = self.ocr(x, y, to_x, to_y, match=number_re)
+                if not points_boxes:
+                    continue
+                try:
+                    points = int(re.sub(r'\D', '', points_boxes[0].name))
+                except (TypeError, ValueError):
+                    continue
+                if 0 <= points <= 200:
+                    self.info_set('total daily points', points)
+                    return points
+            self.sleep(0.5)
+
+        self._daily_points_unknown = True
+        self.info_set('total daily points', self.tr('未识别'))
+        self.log_warning(self.tr('无法确认当前活跃度，为避免浪费体力将跳过体力刷取。'))
+        return None
 
     def claim_daily(self):
         self.info_set('current task', 'claim daily')

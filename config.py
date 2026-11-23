@@ -4,6 +4,7 @@ from pathlib import Path
 
 from ok import Box, ConfigOption, Icon
 from ok.util.GlobalConfig import create_basic_options
+from src import cloud_browser
 from src.game_launcher import get_game_launch_arguments
 from src.task.process_feature import process_feature
 from src.task.task_icons import task_icon
@@ -231,6 +232,8 @@ config = {
         # Keep SDR video in the compositor; direct video overlays clip WGC colors on HDR displays.
         'args': ['--webrtc-ip-handling-policy=default', '--force-color-profile=srgb',
                  '--disable-direct-composition'],
+        # Evaluated at launch time so per-account cookie profiles are honoured.
+        'user_data_dir': cloud_browser.current_profile_dir,
         'nick': '云游戏(需要Win11并安装Chrome或Edge)',
     },
     'window_size': {
@@ -280,6 +283,8 @@ config = {
         ["src.task.DailyTask", "DailyTask"],
         ["src.task.GalGameTask", "GalGameTask"],
         ["src.task.RahaiBlocksTask", "RahaiBlocksTask"],
+        ["src.task.DailyTask", "DailyTask"],
+        ["src.task.CloudDailyTask", "CloudDailyTask"],
         ["src.task.FarmEchoTask", "FarmEchoTask"],
         ["src.task.NightmareNestTask", "NightmareNestTask"],
         ["src.task.TacetTask", "TacetTask"],
@@ -288,6 +293,9 @@ config = {
         ["src.task.CultivationTask", "CultivationTask"],
         ["src.task.MultiAccountDailyTask", "MultiAccountDailyTask"],
         ["src.task.MultiAccountConfigTask", "MultiAccountConfigTask"],
+        ["src.task.CloudMultiAccountTask", "CloudMultiAccountTask"],
+        ["src.task.SaveCloudAccountCookieTask", "SaveCloudAccountCookieTask"],
+        ["src.task.SwitchCloudAccountTask", "SwitchCloudAccountTask"],
         ["src.task.MergeEchoTask", "MergeEchoTask"],
         ["src.task.EnhanceEchoTask", "EnhanceEchoTask"],
         ["src.task.ChangeEchoTask", "ChangeEchoTask"],

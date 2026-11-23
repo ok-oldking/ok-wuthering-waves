@@ -26,5 +26,10 @@ class MultiAccountConfigDialog(Dialog):
         super()._fit()
 
     def validate(self):
-        # A queued/running task owns the plan. The editor already locks its inputs.
-        return self.task.enabled or self.editor.save_accounts(notify=False)
+        # Only a task that is *actually running* owns the plan.  An enabled
+        # task may merely be queued or re-enabled by a schedule after a
+        # restart; treating that as "running" silently skipped save_accounts
+        # and made the user's saved configuration appear to disappear.
+        if getattr(self.task, 'running', False):
+            return True
+        return self.editor.save_accounts(notify=False)

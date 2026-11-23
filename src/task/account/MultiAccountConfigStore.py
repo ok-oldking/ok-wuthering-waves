@@ -15,6 +15,9 @@ def _tr(message):
 MULTI_ACCOUNT_TASKS = {
     ('src.task.MultiAccountDailyTask', 'MultiAccountDailyTask'),
     ('src.task.MultiAccountConfigTask', 'MultiAccountConfigTask'),
+    ('src.task.CloudMultiAccountTask', 'CloudMultiAccountTask'),
+    ('src.task.SaveCloudAccountCookieTask', 'SaveCloudAccountCookieTask'),
+    ('src.task.SwitchCloudAccountTask', 'SwitchCloudAccountTask'),
 }
 
 
@@ -77,9 +80,37 @@ def validate_accounts(accounts, executor=None):
 
 
 class MultiAccountConfigStore:
+    """Persist the multi-account plan and keep a recovery copy.
+
+    The app is launched from several places (desktop shortcut, scheduled task,
+    command line).  Relative config paths must therefore be resolved against
+    the app's working directory instead of blindly trusting the process CWD,
+    and a corrupted or overwritten plan must not silently become an empty list.
+    """
+
+    CONFIG_NAME = 'MultiAccountConfig.json'
+    BACKUP_NAME = 'MultiAccountConfig.backup.json'
+    RESULTS_NAME = 'MultiAccountResults.json'
+
     def __init__(self, folder='configs'):
-        self.path = Path(folder) / 'MultiAccountConfig.json'
-        self.results_path = Path(folder) / 'MultiAccountResults.json'
+        folder = self._resolve_folder(folder)
+        self.path = folder / self.CONFIG_NAME
+        self.backup_path = folder / self.BACKUP_NAME
+        self.results_path = folder / self.RESULTS_NAME
+
+    @staticmethod
+    def _resolve_folder(folder):
+        path = Path(folder)
+        if path.is_absolute() or path.is_dir():
+            return path
+        # __file__ is <working>/src/task/account/MultiAccountConfigStore.py.
+        # parents[3] is the application's working directory.
+        for parent in (Path(__file__).resolve().parents[3],
+                       Path(__file__).resolve().parents[2]):
+            candidate = parent / path
+            if candidate.is_dir():
+                return candidate
+        return path
 
     def load_results(self):
         if not self.results_path.exists():
@@ -107,19 +138,32 @@ class MultiAccountConfigStore:
         self._write_json(self.results_path, results)
 
     def load(self):
-        if not self.path.exists():
-            return []
-        with self.path.open(encoding='utf-8') as stream:
-            document = json.load(stream)
-        if not isinstance(document, dict) or 'accounts' not in document:
-            raise ValueError(_tr('Multi-account configuration is missing the accounts list.'))
-        accounts = document['accounts']
-        validate_accounts(accounts)
-        return deepcopy(accounts)
+        last_error = None
+        for path in (self.path, self.backup_path):
+            if not path.exists():
+                continue
+            try:
+                with path.open(encoding='utf-8') as stream:
+                    document = json.load(stream)
+                if not isinstance(document, dict) or 'accounts' not in document:
+                    raise ValueError(_tr('Multi-account configuration is missing the accounts list.'))
+                accounts = document['accounts']
+                validate_accounts(accounts)
+                return deepcopy(accounts)
+            except (OSError, ValueError, TypeError) as error:
+                last_error = error
+        if last_error is not None:
+            raise ValueError(_tr('Multi-account configuration could not be read: {error}').format(error=last_error))
+        return []
 
     def save(self, accounts, executor=None):
         validate_accounts(accounts, executor)
-        self._write_json(self.path, {'accounts': accounts})
+        document = {'accounts': accounts}
+        self._write_json(self.path, document)
+        # Keep a same-folder recovery copy.  An interrupted write, an editor
+        # that rewrites the primary file, or an ok-ww update that restores a
+        # stale default must never make the user's account list disappear.
+        self._write_json(self.backup_path, document)
 
     @staticmethod
     def _write_json(path, document):

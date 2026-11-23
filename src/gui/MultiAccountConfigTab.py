@@ -349,8 +349,32 @@ class MultiAccountConfigTab(CustomTab):
         show_toast(self, str(error), title=self.tr('Multi-account configuration'), tone='danger', duration=6000)
 
     def save_accounts(self, notify=True):
-        if not self.loaded or (self.runner and self.runner.enabled):
+        if self.store is None and self.executor is not None:
+            self.store = MultiAccountConfigStore(self.executor.config_folder)
+        if self.store is None:
+            if notify:
+                self.show_error(self.tr('配置文件目录不可用，无法保存。'))
             return False
+        # "Enabled" includes queued/scheduled tasks and can survive a restart;
+        # only an actively running task may refuse edits.  Previously this
+        # check silently discarded every edit made after a restart.
+        if self.runner and getattr(self.runner, 'running', False):
+            if notify:
+                self.show_error(self.tr('任务正在运行，无法修改账号配置。'))
+            return False
+        if not self.loaded:
+            # The executor can arrive after construction (dialogs set it
+            # manually), and showEvent may not have run yet.  Never fail a
+            # save silently in that state.
+            try:
+                accounts = self.store.load()
+            except (OSError, ValueError) as error:
+                self.show_error(error)
+                return False
+            if not self.cards:
+                for account in accounts:
+                    self.add_account(account)
+            self.loaded = True
         try:
             self.store.save([card.snapshot() for card in self.cards], self.executor)
         except (OSError, ValueError, TypeError) as error:
@@ -358,6 +382,7 @@ class MultiAccountConfigTab(CustomTab):
             return False
         if notify:
             show_toast(self, self.tr('Configuration saved'), title=self.tr('Multi-account configuration'), tone='success', duration=2000)
+        self.refresh_status()
         return True
 
     def start_clicked(self):
@@ -377,7 +402,9 @@ class MultiAccountConfigTab(CustomTab):
 
     def refresh_status(self):
         self.refresh_results()
-        busy = bool(self.runner and self.runner.enabled)
+        # A queued/enabled task must not lock the editor across restarts;
+        # only lock while the task is genuinely running.
+        busy = bool(self.runner and getattr(self.runner, 'running', False))
         ready = self.loaded and self.runner is not None
         self.start_button.setEnabled(ready and not busy)
         self.stop_button.setEnabled(busy)

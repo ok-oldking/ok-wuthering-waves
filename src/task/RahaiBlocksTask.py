@@ -1,8 +1,10 @@
 import re
 
 from ok import BaseTask
+from ok.device.interaction_methods.browser import BrowserInteraction
 from ok.device.interaction_methods.pynput import PynputInteraction
 
+from src.cloud_recovery import FatalTaskError, run_with_cloud_recovery
 from src.task.rahai_blocks import HEIGHT, WIDTH, canonical_frame, choose_move, clear_lines, preview_matches, read_board
 from src.task.task_icons import task_icon
 
@@ -19,10 +21,21 @@ class RahaiBlocksTask(BaseTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = "3.8 拉海洛方块·逆转"
-        self.description = "从活动关卡列表开始，挑战所有已解锁且未通关的关卡。请保持简体中文 PC 客户端在前台。"
+        self.description = "从活动关卡列表开始，挑战所有已解锁且未通关的关卡。支持简体中文 PC 客户端与云鸣潮。"
         self.group_name = "Daily Activities"
         self.group_icon = task_icon("category-daily")
         self.supported_languages = ["zh_CN"]
+
+    def _make_interaction(self):
+        """Browser mode uses Playwright's virtual input; PC mode uses real mouse."""
+        capture = self.executor.device_manager.capture_method
+        if self.is_browser():
+            return BrowserInteraction(capture)
+        return PynputInteraction(capture, self.hwnd)
+
+    def _clickable(self, interaction):
+        # BrowserInteraction has no clickable(): CDP input works without OS focus.
+        return True if self.is_browser() else interaction.clickable()
 
     def _event_title(self):
         return self.ocr(.045, .04, .2, .09, match=re.compile(r"拉海洛方块"))
@@ -51,7 +64,7 @@ class RahaiBlocksTask(BaseTask):
         return self._event_title() and self.ocr(.68, .43, .82, .48, match="关卡目标")
 
     def _scroll_stages(self, interaction, direction, stages):
-        if not interaction.clickable():
+        if not self._clickable(interaction):
             raise RuntimeError("请将鸣潮窗口保持在前台。")
         left = round(self.width * .34)
         right = round(self.width * .81)
@@ -143,17 +156,28 @@ class RahaiBlocksTask(BaseTask):
         self.log_info(f"已通关：{title.name} · {difficulty}")
 
     def run(self):
+        # 云游戏出错时原地重跑整个关卡扫描流程。这里不刷新页面:
+        # 刷新会把玩家打开的活动关卡 UI 退回云游戏首页, 反而无法继续。
+        # 本地客户端保持原行为(错误直接抛出)。
+        run_with_cloud_recovery(
+            self, self._run_task, name=self.name,
+            refresh_page=False, wait_ready=False)
+
+    def _run_task(self):
         self.next_frame()
-        if not self.hwnd or not self.hwnd.exists or canonical_frame(self.frame) is None:
-            raise RuntimeError("拉海洛方块需要 16:9 的 Windows PC 客户端。")
+        if canonical_frame(self.frame) is None:
+            raise FatalTaskError("拉海洛方块需要 16:9 的游戏画面（PC 客户端或 1920x1080 云鸣潮）。")
+        # 云游戏(浏览器)没有 PC 客户端的 HwndWindow, 只在 PC 模式下检查窗口句柄。
+        if not self.is_browser() and (not self.hwnd or not self.hwnd.exists):
+            raise FatalTaskError("拉海洛方块需要处于前台的 Windows PC 客户端。")
         stages = self.wait_until(self._stage_list, time_out=5)
         if not stages:
-            raise RuntimeError("请先打开简体中文的「拉海洛方块·逆转」活动关卡列表。")
-        interaction = PynputInteraction(self.executor.device_manager.capture_method, self.hwnd)
-        if not interaction.clickable():
+            raise FatalTaskError("请先打开简体中文的「拉海洛方块·逆转」活动关卡列表。")
+        interaction = self._make_interaction()
+        if not self._clickable(interaction):
             self.hwnd.bring_to_front()
-            if not self.wait_until(interaction.clickable, time_out=3):
-                raise RuntimeError("请将鸣潮窗口切到前台后再次启动任务。")
+            if not self.wait_until(lambda: self._clickable(interaction), time_out=3):
+                raise FatalTaskError("请将鸣潮窗口切到前台后再次启动任务。")
 
         stages = self._first_page(interaction, stages)
         attempted = set()
@@ -243,7 +267,7 @@ class RahaiBlocksTask(BaseTask):
             return round(xy[0] * width / WIDTH), round(xy[1] * height / HEIGHT)
 
         def move_cursor(xy):
-            if not interaction.clickable():
+            if not self._clickable(interaction):
                 raise RuntimeError("Game lost foreground focus during a drag")
             interaction.move(*point(xy))
 
@@ -265,7 +289,7 @@ class RahaiBlocksTask(BaseTask):
             self.sleep(.15)
 
             def rotate():
-                if not interaction.clickable():
+                if not self._clickable(interaction):
                     raise RuntimeError("Game lost foreground focus during a drag")
                 interaction.send_key('r', down_time=.08)
                 move_cursor((dx + 5, dy))
@@ -280,7 +304,7 @@ class RahaiBlocksTask(BaseTask):
                 for ox, oy in ((0, 0), (0, -12), (-12, 0), (12, 0), (0, 12)):
                     move_cursor((dx + ox, dy + oy))
                     self.sleep(.16)
-                    if interaction.clickable() and preview_matches(canonical_frame(self.next_frame()), board, move):
+                    if self._clickable(interaction) and preview_matches(canonical_frame(self.next_frame()), board, move):
                         release_at_target = True
                         return True
             if not release_at_target:
@@ -289,7 +313,12 @@ class RahaiBlocksTask(BaseTask):
                 self.screenshot("rahai_preview_mismatch")
             return release_at_target
         finally:
-            if interaction.clickable():
+            if self.is_browser():
+                # CDP mouse events are virtual: always release, focus is irrelevant.
+                if not release_at_target:
+                    interaction.move(*point(source))
+                interaction.mouse_up()
+            elif interaction.clickable():
                 if not release_at_target:
                     # No task sleep here: cancellation must still release the button.
                     interaction.move(*point(source))
@@ -320,7 +349,7 @@ class RahaiBlocksTask(BaseTask):
                 misses = 0
                 rejected.clear()
                 continue
-            if not interaction.clickable():
+            if not self._clickable(interaction):
                 raise RuntimeError("Game lost foreground focus; no further moves were sent.")
             move = choose_move(board, excluded=rejected)
             if move is None:
