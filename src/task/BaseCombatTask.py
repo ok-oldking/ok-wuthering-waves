@@ -1,13 +1,11 @@
 import re
 import time
 import unicodedata
-from decimal import Decimal, ROUND_UP, ROUND_DOWN
 
 import cv2
 import numpy as np
 
-from ok import Logger, Config
-from ok import color_range_to_bound
+from ok import Logger
 from ok import safe_get
 from src import text_white_color
 from src.char import BaseChar
@@ -52,17 +50,7 @@ class BaseCombatTask(CombatCheck):
     """基础战斗任务类，封装了游戏"鸣潮"中角色自动化操作的通用逻辑。"""
     CD_OCR_REFERENCE_ASPECT_RATIO = 16 / 9
     hot_key_verified = False  # 热键是否已验证
-    con_full_size = None  # 不同角色协奏值充满时的大小记录
     freeze_durations = []  # 记录冻结/卡肉的持续时间
-    if con_full_size is None:
-        con_full_size = Config("_con_full_size", {
-            "0": 0,
-            "1": 0,
-            "2": 0,
-            "3": 0,
-            "4": 0,
-            "5": 0,
-        })
 
     def __init__(self, *args, **kwargs):
         """初始化战斗任务。
@@ -705,6 +693,11 @@ class BaseCombatTask(CombatCheck):
             if lowest_buff_remaining:
                 return lowest_buff_remaining
 
+        if self._support_chain_limit_reached(current_char):
+            main_dps = [char for char in candidates if char.is_main_dps]
+            if main_dps:
+                return self._oldest_switch_target(main_dps)
+
         unbuffed_non_main = self._unbuffed_non_main_target(current_char, candidates)
         if unbuffed_non_main:
             return unbuffed_non_main
@@ -715,6 +708,22 @@ class BaseCombatTask(CombatCheck):
                 return self._oldest_switch_target(main_dps)
 
         return self._switch_rule_3_target(candidates)
+
+    def _support_chain_limit_reached(self, current_char):
+        """True when a support was itself reached by a support-to-support switch without intro.
+
+        Supports only count as buffed after leaving with full concerto. When they keep
+        leaving early, unbuffed supports would hand the field to each other and the
+        main DPS never gets a turn, so allow one such hand-off and then return.
+        """
+        return (not current_char.is_main_dps
+                and getattr(self, 'support_chain_without_intro', 0) >= MAX_SUPPORT_CHAIN_WITHOUT_INTRO)
+
+    def _record_switch_chain(self, current_char, switch_to, has_intro):
+        if has_intro or current_char.is_main_dps or switch_to.is_main_dps:
+            self.support_chain_without_intro = 0
+        else:
+            self.support_chain_without_intro = getattr(self, 'support_chain_without_intro', 0) + 1
 
     def _choose_switch_target(self, current_char, has_intro, target_low_con=False):
         candidates = [
@@ -766,8 +775,11 @@ class BaseCombatTask(CombatCheck):
         if candidates_without_switch_cd:
             candidates = candidates_without_switch_cd
 
+        chain_limited = self._support_chain_limit_reached(current_char)
         target = self._choose_switch_target_by_buff_time(current_char, candidates)
-        if target != current_char and not target.is_main_dps and not target.has_buff():
+        if chain_limited and target.is_main_dps:
+            reason = 'support_chain_limit_return_to_main_dps'
+        elif target != current_char and not target.is_main_dps and not target.has_buff():
             reason = f'unbuffed_{target.char_type.value.lower()}'
         elif current_char.is_main_dps and not target.is_main_dps:
             reason = 'lowest_support_buff_remaining'
@@ -875,6 +887,7 @@ class BaseCombatTask(CombatCheck):
                 current_char.switch_out(con_full=has_intro)
                 switch_to.is_current_char = True
                 switch_to.last_switch_in_time = time.time()
+                self._record_switch_chain(current_char, switch_to, has_intro)
                 if has_intro:
                     current_time = time.time()
                     self.add_freeze_duration(current_time, switch_to.intro_motion_freeze_duration, -100)
@@ -1069,6 +1082,7 @@ class BaseCombatTask(CombatCheck):
                 else:
                     char.is_current_char = False
         self.combat_start = time.time()
+        self.support_chain_without_intro = 0
         if len(self.chars) >= 2:
             if self._char_identity(self.chars) != previous_char_identity:
                 translated_names = []
@@ -1170,136 +1184,57 @@ class BaseCombatTask(CombatCheck):
     def get_current_con(self):
         """获取当前角色的协奏值百分比。
 
+        The concerto bar is a coloured arc on a grey track. It does not fill as a
+        single clockwise sweep, so the value is the share of the ring's angle
+        covered by element-coloured pixels. This needs no per-resolution
+        calibration and counts short arcs that a minimum-area filter would drop.
+
         Returns:
-            float: 协奏值百分比 (0.0 到 1.0)。
+            float: 协奏值百分比 (0.0 到 1.0)。只有整圈都被覆盖时才返回 1。
         """
         box = self.get_con_box()
-        box.confidence = 0
-
-        max_area = 0
-        percent = 0
-        max_is_full = False
         target_index = self._ensure_ring_index()
-
-        cropped = box.crop_frame(self.frame)
-        for i in range(len(con_colors)):
-            if target_index != -1 and i != target_index:
-                continue
-            color_range = con_colors[i]
-            area, is_full = self.count_rings(cropped, color_range,
-                                             1500 / 3840 / 2160 * self.screen_width * self.screen_height)
-            if is_full:
-                max_is_full = is_full
-            if area > max_area:
-                max_area = int(area)
-        if max_is_full:
-            percent = 1
-        if max_is_full:
-            self.con_full_size[str(target_index)] = max_area
-
-        if percent != 1 and self.con_full_size[str(target_index)] > 0:
-            percent = max_area / self.con_full_size[str(target_index)]
-        if not max_is_full and percent >= 1:
-            self.logger.warning(
-                f'is_con_full not full but percent greater than 1, set to 0.99, {percent} {max_is_full}')
-            percent = 0.99
-        if percent > 1:
-            self.logger.error(f'is_con_full percent greater than 1, set to 1, {percent} {max_is_full}')
-            percent = 1
-
+        percent = self.measure_con_arc(box.crop_frame(self.frame), target_index)
         box.confidence = percent
         self.draw_boxes(f'is_con_full_{self}', box)
-        if percent > 1:
-            percent = 1
         return percent
 
-    def count_rings(self, image, color_range, min_area):
-        """在指定图像区域内计算特定颜色范围的能量环数量和状态。
+    def measure_con_arc(self, image, ring_index):
+        """Return the fraction (0..1) of the concerto ring covered by its element colour.
 
         Args:
-            image (numpy.ndarray): 要分析的图像 (通常是协奏值UI区域的截图)。
-            color_range (dict): 目标颜色范围。
-            min_area (float): 认为是有效能量环的最小面积。
-
-        Returns:
-            tuple: (检测到的区域面积 (int), 是否为完整环 (bool))。
+            image (numpy.ndarray): BGR crop of the con box (``get_con_box``).
+            ring_index (int): Index into ``con_colors`` / ``Elements``.
         """
-        # Define the color range
-        lower_bound, upper_bound = color_range_to_bound(color_range)
-        masked_image = image.copy()
+        if image is None or image.size == 0 or ring_index < 0:
+            return 0
         h, w = image.shape[:2]
-        center = (w // 2, h // 2)
-
-        # draw mask
-        r1, r2 = h * 0.35119, h * 0.42261
-        r1 = Decimal(str(r1)).quantize(Decimal('0'), rounding=ROUND_DOWN)
-        r2 = Decimal(str(r2)).quantize(Decimal('0'), rounding=ROUND_UP)
-
-        ring_mask = np.zeros((h, w), dtype=np.uint8)
-        cv2.circle(ring_mask, center, int(r2), 255, -1)
-        cv2.circle(ring_mask, center, int(r1), 0, -1)
-        masked_image = cv2.bitwise_and(masked_image, masked_image, mask=ring_mask)
-
-        # Perform closing operation (Dilation followed by Erosion)
-        raw_mask = cv2.inRange(masked_image, lower_bound, upper_bound)
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-        closed_mask = cv2.morphologyEx(raw_mask, cv2.MORPH_CLOSE, kernel)
-        closed_mask[center[1] - 1:center[1] + 2, center[0] + 1:] = \
-            raw_mask[center[1] - 1:center[1] + 2, center[0] + 1:]
-
-        # Find connected components
-        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(closed_mask, connectivity=8)
-
-        # Function to check if a component forms a ring
-        def is_full_ring(component_mask):
-            # Find contours
-            contours, _ = cv2.findContours(component_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            if len(contours) != 1:
-                return False
-            contour = contours[0]
-
-            # Check if the contour is closed by checking if the start and end points are the same
-            # if cv2.arcLength(contour, True) > 0:
-            #     return True
-            # Approximate the contour with polygons.
-            epsilon = 0.05 * cv2.arcLength(contour, True)
-            approx = cv2.approxPolyDP(contour, epsilon, True)
-
-            # Check if the polygon is closed (has no gaps) and has a reasonable number of vertices for a ring.
-            if not cv2.isContourConvex(approx) or len(approx) < 4:
-                return False
-
-            # All conditions met, likely a close ring.
-            return True
-
-        # output_image = image.copy()
-        # Iterate over each component
-        ring_count = 0
-        is_full = False
-        the_area = 0
-        for label in range(1, num_labels):
-            x, y, width, height, area = stats[label, :5]
-            bounding_box_area = width * height
-            component_mask = (labels == label).astype(np.uint8) * 255
-            # color = colors[label % len(colors)]
-            # mask = labels == label
-            # output_image[mask] = color
-            if bounding_box_area >= min_area:
-                # Select a color from the list based on the label index
-                if is_full_ring(component_mask):
-                    is_full = True
-                the_area = area
-                ring_count += 1
-
-        # Save or display the image with contours
-        # cv2.imwrite(fr'test\count_rings_{is_full}_{self.screen_width}_mask.png', output_image)
-        # cv2.imwrite(fr'test\count_rings_{is_full}_{self.screen_width}.png', masked_image)
-        if ring_count > 1:
-            is_full = False
-            the_area = 0
-            self.logger.warning(f'is_con_full found multiple rings {ring_count}')
-
-        return the_area, is_full
+        center_y, center_x = (h - 1) / 2, (w - 1) / 2
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        yy, xx = np.mgrid[0:h, 0:w]
+        distance = np.hypot(yy - center_y, xx - center_x)
+        band = (distance >= h * CON_RING_INNER_RATIO) & (distance <= h * CON_RING_OUTER_RATIO + 1)
+        hue_diff = np.abs(hsv[..., 0].astype(np.int16) - con_hues[ring_index])
+        hue_diff = np.minimum(hue_diff, 180 - hue_diff)
+        mask = (band & (hue_diff <= CON_HUE_TOLERANCE) & (hsv[..., 1] >= CON_MIN_SATURATION)
+                & (hsv[..., 2] >= CON_MIN_VALUE))
+        angles = (np.degrees(np.arctan2(xx - center_x, center_y - yy)) + 360) % 360
+        bin_size = 360 / CON_ANGLE_BINS
+        counts = np.bincount((angles[mask] / bin_size).astype(int) % CON_ANGLE_BINS,
+                             minlength=CON_ANGLE_BINS)
+        covered = counts >= CON_MIN_PIXELS_PER_BIN
+        if covered.all():
+            return 1
+        if not covered.any():
+            return 0
+        # Bridge single-bin gaps left by the white tick marks crossing the ring.
+        bridged = covered.copy()
+        for i in range(CON_ANGLE_BINS):
+            if not covered[i] and covered[i - 1] and covered[(i + 1) % CON_ANGLE_BINS]:
+                bridged[i] = True
+        if bridged.all():
+            return 1
+        return min(float(bridged.sum()) / CON_ANGLE_BINS, 0.99)
 
     def update_lib_portrait_icon(self):
         # self.ensure_con_lib_boxes()
@@ -1353,6 +1288,21 @@ con_colors = [  # 不同角色属性的协奏值能量环的颜色范围列表�
         'b': (145, 175)  # Blue range
     }
 ]
+
+def _con_color_hue(color_range):
+    center = np.uint8([[[sum(color_range['b']) // 2, sum(color_range['g']) // 2, sum(color_range['r']) // 2]]])
+    return int(cv2.cvtColor(center, cv2.COLOR_BGR2HSV)[0, 0, 0])
+
+
+con_hues = [_con_color_hue(color_range) for color_range in con_colors]  # OpenCV hue (0-179) per element
+MAX_SUPPORT_CHAIN_WITHOUT_INTRO = 1  # support-to-support switches without intro before returning to main DPS
+CON_RING_INNER_RATIO = 0.35119  # ring band radius as a fraction of the con box height
+CON_RING_OUTER_RATIO = 0.42261
+CON_ANGLE_BINS = 72  # 5 degrees per bin
+CON_HUE_TOLERANCE = 8
+CON_MIN_SATURATION = 100  # filled arc ~130-160; the empty grey track is ~40-65
+CON_MIN_VALUE = 170  # filled arc ~215-235; the empty track is ~120-170
+CON_MIN_PIXELS_PER_BIN = 3
 
 con_templates = [  # 协奏值能量环的模板名称列表 (对应 `con_colors`)。
     'con_spectro',
