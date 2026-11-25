@@ -18,6 +18,11 @@ number_re = re.compile(r'(\d+)')
 stamina_re = re.compile(r'(\d+)/(\d+)')
 LOGIN_TEXTS = ["登录", re.compile('Log|点击连接|Click to Connect', re.IGNORECASE), '登入']
 LOGIN_CLICK_SETTLE_TIME = 4  # seconds; keep below AutoLoginTask trigger_interval (5) so triggers don't overlap
+# 云游戏网页弹窗, 如 【云服务错误：1020】检测到您已长时间未进行操作，已和服务器断开连接。
+# 1020 弹窗按钮是"退出游戏", 4012 只有"确定"; 两者都会回到云游戏首页。
+CLOUD_DISCONNECT_TEXTS = re.compile(r'云服务错误|服务器断开|断开连接')
+CLOUD_EXIT_GAME_TEXTS = re.compile(r'^(退出游戏|确定)$')
+CLOUD_RELOGIN_TIMEOUT = 600
 f_white_color = {
     'r': (235, 255),  # Red range
     'g': (235, 255),  # Green range
@@ -736,10 +741,35 @@ class BaseWWTask(BaseTask):
             return False
         if self.handle_monthly_card():
             return False
+        if self.handle_cloud_disconnect():
+            return self.in_team_and_world()
         if esc:
             self.log_debug('main esc')
             self.back(after_sleep=2)
             return False
+
+    def find_cloud_disconnect(self):
+        """云游戏断线弹窗: 返回 '退出游戏' 按钮, 否则 None。"""
+        if not self.is_browser():
+            return None
+        texts = self.ocr(box=self.box_of_screen(0.2, 0.25, 0.8, 0.75, hcenter=True, vcenter=True),
+                         name='cloud_disconnect', log=self.debug)
+        if not self.find_boxes(texts, match=CLOUD_DISCONNECT_TEXTS):
+            return None
+        return self.find_boxes(texts, match=CLOUD_EXIT_GAME_TEXTS) or None
+
+    def handle_cloud_disconnect(self):
+        """云游戏断线(如长时间无操作的 1020/4012 错误)后退出到云游戏首页, 再点进入游戏重新登录。"""
+        exit_game = self.find_cloud_disconnect()
+        if not exit_game:
+            return False
+        self.log_info(self.tr('Cloud game disconnected, re-entering the game'), notify=True)
+        self.click(exit_game[0], after_sleep=3)
+        self.logged_in = False
+        # wait_login 在云游戏首页点击"进入游戏", 进游戏后处理登录/月卡, 回到大世界后返回 True
+        self.wait_until(self.wait_login, time_out=CLOUD_RELOGIN_TIMEOUT, raise_if_not_found=True,
+                        settle_time=1)
+        return True
 
     def wait_login(self):
         if not self.logged_in:

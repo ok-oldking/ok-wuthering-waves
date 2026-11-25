@@ -1,9 +1,13 @@
+import re
+
 from ok import Logger
+from ok.task.exceptions import WaitFailedException
 from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
+RECHALLENGE_TEXT = re.compile(r'^\s*(?:重新挑战|重新挑戰|再次挑战|再次挑戰|Rechallenge)\s*$', re.IGNORECASE)
 
 
 class TacetTask(WWOneTimeTask, BaseCombatTask):
@@ -49,44 +53,59 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.wait_in_team_and_world(esc=True)
         self.farm_tacet()
 
-    def farm_tacet(self, daily=False, used_stamina=0, config=None, max_recovery_retries=3):
+    def farm_tacet(self, daily=False, used_stamina=0, config=None, max_recovery_retries=3,
+                   open_entry=None, enter_tacet=None):
+        """Farm Tacet Suppression until stamina runs out.
+
+        open_entry/enter_tacet let other tasks reuse this loop from another page:
+        open_entry() must show the stamina bar, enter_tacet() must open the team screen.
+        Both default to the F2 Tacet list selected by config.
+        """
         if config is None:
             config = self.config
         if daily:
             must_use = 180 - used_stamina
         else:
             must_use = 0
+        stamina_spent = 0
         self.info_incr('used stamina', 0)
         recovery_retries = 0
         self.realm_entry_at_heal_point = False
         while True:
             self.sleep(1)
-            self.openF2Book("gray_book_boss")
-            current, back_up, total = self.get_stamina()
-            if current == -1:
-                self.click_relative(0.04, 0.4, after_sleep=1)
+            if open_entry is None:
+                self.openF2Book("gray_book_boss")
+                current, back_up, total = self.get_stamina()
+                if current == -1:
+                    self.click_relative(0.04, 0.4, after_sleep=1)
+                    current, back_up, total = self.get_stamina()
+            else:
+                open_entry()
                 current, back_up, total = self.get_stamina()
             if total < self.stamina_once:
-                return self.not_enough_stamina()
+                self.not_enough_stamina()
+                return stamina_spent
 
-            self.open_boss_book('wuyin')
-            index = config.get('Which Tacet Suppression to Farm', 1) - 1
-            self.teleport_to_tacet(index)
+            if enter_tacet is None:
+                self.open_boss_book('wuyin')
+                index = config.get('Which Tacet Suppression to Farm', 1) - 1
+                self.teleport_to_tacet(index)
+            else:
+                enter_tacet()
             self.click_team_challenge()
             while True:
                 self.wait_in_team_and_world(time_out=120)
                 try:
-                    self.combat_once(target=True)
+                    self.clear_tacet_and_reach_reward()
                 except CharRevivedException:
                     recovery_retries += 1
                     if recovery_retries >= max_recovery_retries:
                         self.log_info(self.tr('farm_tacet: exceeded recovery retries ({max_recovery_retries}), stop farming').format(max_recovery_retries=max_recovery_retries),
                                       notify=True)
-                        return None
+                        return stamina_spent
                     self.log_info(self.tr('farm_tacet: death recovered, re-enter from F2 book'))
                     self.realm_entry_at_heal_point = True  # 恢复后站在信标上, 从 F2 直接进本
                     break
-                self.walk_to_treasure()
                 self.pick_f(handle_claim=False)
                 self.sleep(2)
                 if not self.has_claim_stamina():
@@ -94,16 +113,39 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                     self.log_info(self.tr('is not claim treasure, restart challenge'))
                     continue
                 can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
+                stamina_spent += used
                 self.info_incr('used stamina', used)
                 self.sleep(4)
                 if not can_continue:
                     self.click_relative(0.365, 0.853, hcenter=True)
                     self.wait_in_team_and_world(time_out=120)
-                    return None
-                else:
-                    self.click_relative(0.640, 0.851, hcenter=True, after_sleep=0.2)
-                    self.wait_click_skip_dialog_confirm()
+                    return stamina_spent
+                self.rechallenge_tacet()
                 must_use -= used
+
+    def clear_tacet_and_reach_reward(self):
+        self.combat_once(target=True)
+        try:
+            self.walk_to_treasure()
+        except WaitFailedException:
+            if not self.in_realm() or not self.wait_combat(target=True, time_out=5, raise_if_not_found=False):
+                raise
+            logger.info("Tacet reward is unavailable and combat is still active. Resuming in the same arena.")
+            self.combat_once(target=True, wait_combat_time=5)
+            self.walk_to_treasure()
+
+    def find_rechallenge_button(self):
+        buttons = self.ocr(0.54, 0.81, 0.72, 0.90, match=RECHALLENGE_TEXT)
+        return buttons[0] if buttons else None
+
+    def rechallenge_tacet(self):
+        button = self.wait_until(self.find_rechallenge_button, time_out=3, raise_if_not_found=False)
+        if button:
+            self.click(button, after_sleep=0.2)
+        else:
+            # Keep the existing button position for game languages outside the OCR patterns.
+            self.click_relative(0.640, 0.851, hcenter=True, after_sleep=0.2)
+        self.wait_click_skip_dialog_confirm()
 
     def not_enough_stamina(self, back=True):
         self.log_info(self.tr('used all stamina'))

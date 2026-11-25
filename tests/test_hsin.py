@@ -167,6 +167,7 @@ class HsinRotationTest(unittest.TestCase):
             on_combat_check=lambda: True, combat_end_condition=None,
             has_target=lambda: not lost_before_hold and char.task.mouse_start is None,
             should_check_monthly_card=lambda: False)
+        checker.is_browser = lambda: False
 
         def retarget(wait=True, **kwargs):
             retargets.append(self.clock.now)

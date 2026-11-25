@@ -3,6 +3,7 @@ import re
 
 from ok import Logger, TaskDisabledException
 from src.task.BaseWWTask import number_re
+from src.task.CultivationTask import CultivationTask
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.ForgeryTask import ForgeryTask
 from src.task.GardenTask import GardenTask
@@ -21,6 +22,7 @@ AUTO_FARM_NIGHTMARE_NEST = 'Auto Farm all Nightmare Nest'
 MERGE_ECHO_IF_DISCARDED_OVER_1000 = 'Merge Echo If discarded > 1000'
 TELEPORT_AND_FARM_4C_ECHO = 'Teleport and Farm 4C Echo'
 ADDITIONAL_TASKS = 'Additional Tasks to Run After Daily Task'
+CULTIVATION_TARGET = 'Cultivation Target'
 
 
 class DailyTask(WWOneTimeTask, BaseCombatTask):
@@ -32,7 +34,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.group_name = 'Daily Activities'
         self.group_icon = task_icon('category-daily')
         self.support_schedule_task = True
-        self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
+        self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge", CULTIVATION_TARGET]
         self.default_config = {
             'Which to Farm': self.support_tasks[0],
             'Which Tacet Suppression to Farm': 1,  # starts with 1
@@ -44,10 +46,12 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.config_description = {
             'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
             'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
+            'Which to Farm': 'Cultivation Target follows the Guidebook cultivation target and the '
+                             'Cultivation Resource Farm task settings (Simplified Chinese, 16:9).',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
             'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.',
-            ADDITIONAL_TASKS: 'Select optional tasks. Nightmare Nest runs before stamina farming to help complete '
-                              'the daily task; the other tasks run afterward.',
+            ADDITIONAL_TASKS: 'Nightmare Nest runs after stamina farming. If Tacet Suppression yielded rewards, '
+                              'daily rewards are claimed before Nightmare Nest.',
         }
         material_option_list = ['Resonator EXP', 'Weapon EXP', 'Shell Credit']
         self.config_type = {
@@ -59,6 +63,7 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                     'Forgery Challenge': ['Which Forgery Challenge to Farm'],
                     'Simulation Challenge': [
                         'Material Selection'],
+                    CULTIVATION_TARGET: [],
                 }
             },
             'Material Selection': {
@@ -85,44 +90,35 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.logged_in = False
         self.ensure_main(time_out=180)
 
-        additional_tasks = self.config.get(ADDITIONAL_TASKS) or []
-        condition1 = AUTO_FARM_NIGHTMARE_NEST in additional_tasks
-        condition2 = self.config.get('Farm Nightmare Nest for Daily Echo')
-
         used_stamina, daily_reward_ready = self.open_daily()
         need_stamina = not daily_reward_ready and used_stamina < 180
-        need_nightmare = condition1 or (
-                condition2
-                and not daily_reward_ready
-                and self.config.get('Which to Farm', self.support_tasks[0]) != self.support_tasks[0]
+        target = self.config.get('Which to Farm', self.support_tasks[0])
+        additional_tasks = self.config.get(ADDITIONAL_TASKS) or []
+        farm_all_nests = AUTO_FARM_NIGHTMARE_NEST in additional_tasks
+        cultivation_task = self.get_task_by_class(CultivationTask) if target == CULTIVATION_TARGET else None
+        farm_daily_echo = (
+            self.config.get('Farm Nightmare Nest for Daily Echo')
+            and not daily_reward_ready
+            and target != self.support_tasks[0]
+            # The cultivation target already clears its echo set Nightmare Nest when it runs.
+            and not (cultivation_task and need_stamina and cultivation_task.nightmare_enabled())
         )
 
-        if need_nightmare:
-            try:
-                # 劫持 NightmareNestTask.ensure_main 避免梦魇打完关书
-                self.get_task_by_class(NightmareNestTask).ensure_main = lambda *args, **kwargs: None
-
-                if condition1:
-                    self.log_debug('Auto Farm all Nightmare Nest')
-                    self.run_task_by_class(NightmareNestTask)
-                elif condition2:
-                    self.log_debug('Farm Nightmare Nest for Daily Echo')
-                    self.get_task_by_class(NightmareNestTask).run_capture_mode()
-            except TaskDisabledException:
-                raise
-            except Exception as e:
-                self.log_error(self.tr('NightmareNestTask Failed'), e)
-                self.screenshot('NightmareNestTask')
-                self.ensure_main(time_out=180)
-            finally:
-                # 还原 ensure_main，防范实例状态污染
-                self.get_task_by_class(NightmareNestTask).__dict__.pop('ensure_main', None)
-
+        tacet_farmed = False
         if need_stamina:
-            target = self.config.get('Which to Farm', self.support_tasks[0])
             if target == self.support_tasks[0]:
-                self.get_task_by_class(TacetTask).farm_tacet(daily=True, used_stamina=used_stamina,
-                                                             config=self.config)
+                spent = self.get_task_by_class(TacetTask).farm_tacet(
+                    daily=True, used_stamina=used_stamina, config=self.config)
+                tacet_farmed = spent > 0
+            elif target == CULTIVATION_TARGET:
+                try:
+                    spent = cultivation_task.farm_cultivation(daily=True, used_stamina=used_stamina)
+                    tacet_farmed = spent > 0
+                except TaskDisabledException:
+                    raise
+                except Exception as e:
+                    self.log_error(self.tr('CultivationTask Failed'), e)
+                    self.ensure_main(time_out=180)
             elif target == self.support_tasks[1]:
                 self.get_task_by_class(ForgeryTask).farm_forgery(daily=True, used_stamina=used_stamina,
                                                                  config=self.config)
@@ -131,7 +127,33 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                                                                        config=self.config)
             self.sleep(4)
 
-        self.claim_daily()
+        if tacet_farmed:
+            self.claim_daily()
+
+        if farm_all_nests or farm_daily_echo:
+            nightmare_task = self.get_task_by_class(NightmareNestTask)
+            try:
+                if not tacet_farmed:
+                    # Keep the guidebook open for the daily reward claim.
+                    nightmare_task.ensure_main = lambda *args, **kwargs: None
+                if farm_all_nests:
+                    self.log_debug('Auto Farm all Nightmare Nest')
+                    self.run_task_by_class(NightmareNestTask)
+                else:
+                    self.log_debug('Farm Nightmare Nest for Daily Echo')
+                    nightmare_task.run_capture_mode()
+            except TaskDisabledException:
+                raise
+            except Exception as e:
+                self.log_error(self.tr('NightmareNestTask Failed'), e)
+                self.screenshot('NightmareNestTask')
+                self.ensure_main(time_out=180)
+            finally:
+                if not tacet_farmed:
+                    nightmare_task.__dict__.pop('ensure_main', None)
+
+        if not tacet_farmed:
+            self.claim_daily()
 
         self.claim_mail()
         self.sleep(1)

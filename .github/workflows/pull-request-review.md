@@ -16,7 +16,26 @@ permissions:
 engine:
   id: copilot
   version: "1.0.94"
-model: claude-haiku-5.5?effort=medium
+model: claude-sonnet-5.5
+
+# The pinned AWF catalog predates Sonnet 5.5. Supply its published per-MTok
+# prices so credit accounting does not fail with missing_model_pricing (#1769).
+# https://platform.claude.com/docs/en/models/sonnet-5-5/overview
+models:
+  providers:
+    github-copilot:
+      models:
+        claude-sonnet-5.5:
+          cost:
+            input: "2e0"
+            output: "1e1"
+            cache_read: "1e-1"
+            cache_write: "2.5e0"
+
+sandbox:
+  agent:
+    model-fallback: false
+    token-steering: false
 
 tools:
   github:

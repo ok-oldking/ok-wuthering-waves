@@ -1,21 +1,11 @@
 ---
 description: "Use GitHub Copilot to classify, tag, investigate, and answer repository issues"
 
+# Issue automation is disabled; only pull-request-review should run.
 on:
-  issues:
-    types: [opened, edited, reopened, labeled]
-    names: [request-ai-triage]
-  issue_comment:
-    types: [created, edited]
-  roles: all
+  workflow_dispatch:
 
-if: >-
-  github.event_name != 'issue_comment' ||
-  (github.event.issue.pull_request == null &&
-  github.event.comment.user.type != 'Bot' &&
-  (github.event.comment.user.login == github.event.issue.user.login ||
-  contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) &&
-  contains(github.event.issue.labels.*.name, 'more-information-needed'))
+if: "false"
 
 permissions:
   contents: read
@@ -26,7 +16,8 @@ permissions:
 engine:
   id: copilot
   version: "1.0.94"
-model: claude-haiku-5.5?effort=medium
+# Use a Copilot model with built-in AWF pricing (see #1769).
+model: claude-haiku-4.5
 
 runtimes:
   python:

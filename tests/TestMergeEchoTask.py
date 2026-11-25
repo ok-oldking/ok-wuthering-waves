@@ -1,5 +1,7 @@
 import unittest
-from unittest.mock import Mock, call
+from unittest.mock import Mock, call, patch
+
+from ok import og
 
 from config import key_config_option
 from src.Labels import Labels
@@ -14,6 +16,8 @@ from src.task.DailyTask import (
 from src.task.FarmEchoTask import FarmEchoTask
 from src.task.MergeEchoTask import FULL_BATCH_PATTERN, MergeEchoTask
 from src.task.NightmareNestTask import NightmareNestTask
+from src.task.TacetTask import TacetTask
+from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.task_icons import task_icon
 
 
@@ -171,6 +175,47 @@ class TestMergeEchoTask(unittest.TestCase):
 
 
 class TestDailyMergeEchoTask(unittest.TestCase):
+
+    def test_daily_claims_before_nightmare_when_tacet_rewards_were_collected(self):
+        self.assert_tacet_and_nightmare_order(240, [
+            call.claim_daily(), call.run_task_by_class(NightmareNestTask),
+        ])
+
+    def test_daily_claims_after_nightmare_when_tacet_yields_no_rewards(self):
+        self.assert_tacet_and_nightmare_order(0, [
+            call.run_task_by_class(NightmareNestTask), call.claim_daily(),
+        ])
+
+    def assert_tacet_and_nightmare_order(self, stamina_spent, expected_order):
+        daily_task = DailyTask.__new__(DailyTask)
+        daily_task.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
+        daily_task.config = {ADDITIONAL_TASKS: [AUTO_FARM_NIGHTMARE_NEST]}
+        daily_task.open_daily = Mock(return_value=(0, False))
+        daily_task.ensure_main = Mock()
+        daily_task.sleep = Mock()
+        daily_task.claim_mail = Mock()
+        daily_task.claim_battle_pass = Mock()
+        daily_task.log_debug = Mock()
+        daily_task.log_info = Mock()
+        daily_task.tr = str
+        actions = Mock()
+        actions.farm_tacet.return_value = stamina_spent
+        tacet_task = Mock()
+        tacet_task.farm_tacet = actions.farm_tacet
+        nightmare_task = Mock(config={"Which to Farm": ["Nightmare Purification"]})
+        daily_task.get_task_by_class = Mock(
+            side_effect={TacetTask: tacet_task, NightmareNestTask: nightmare_task}.__getitem__,
+        )
+        daily_task.run_task_by_class = actions.run_task_by_class
+        daily_task.claim_daily = actions.claim_daily
+
+        with patch.object(WWOneTimeTask, 'run'), patch.object(og, 'my_app', Mock()):
+            daily_task.run()
+
+        self.assertEqual(actions.mock_calls, [
+            call.farm_tacet(daily=True, used_stamina=0, config=daily_task.config),
+            *expected_order,
+        ])
 
     def test_daily_additional_tasks_metadata(self):
         executor = Mock()

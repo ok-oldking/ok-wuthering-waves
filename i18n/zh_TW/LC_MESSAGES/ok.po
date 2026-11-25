@@ -855,129 +855,17 @@ msgstr "傳送到第幾個Boss挑戰"
 msgid "From Top to Bottom, Starting with 1"
 msgstr "從上到下，從1開始"
 
-msgid "Characters"
-msgstr "角色"
-
-msgid "Character Code"
-msgstr "角色程式碼"
-
-msgid "Use built in"
-msgstr "使用內建"
-
-msgid "Use custom"
-msgstr "使用自訂"
-
-msgid "Ask AI"
-msgstr "詢問 AI"
-
-msgid "How To"
-msgstr "使用說明"
-
 msgid "Save"
 msgstr "儲存"
-
-msgid "Custom code saved"
-msgstr "已儲存自訂程式碼"
-
-msgid "Unsaved changes"
-msgstr "未儲存的變更"
-
-msgid "Unsaved Changes"
-msgstr "未儲存的變更"
-
-msgid "Discard unsaved character code changes?"
-msgstr "要放棄未儲存的角色程式碼變更嗎？"
-
-msgid "Saved and reloaded"
-msgstr "已儲存並重新載入"
-
-msgid "Custom character code saved and reloaded."
-msgstr "已儲存並重新載入自訂角色程式碼。"
-
-msgid "Custom character code saved and reloaded for loaded characters."
-msgstr "已儲存自訂角色程式碼，並已為已載入角色重新載入。"
 
 msgid "Success"
 msgstr "成功"
 
-msgid "Using built in code"
-msgstr "正在使用內建程式碼"
-
-msgid "Built in character code selected."
-msgstr "已選擇內建角色程式碼。"
-
 msgid "Error"
 msgstr "錯誤"
 
-msgid "Ask AI template copied. Paste it into an AI chatbot."
-msgstr "AI 提示模板已複製。請貼到 AI 聊天機器人中。"
-
-msgid "Copied"
-msgstr "已複製"
-
-msgid ""
-"Choose Use custom to edit a character's Python code. Use built-in mode to read and select the original code.\n"
-"\n"
-"Ask AI copies a prompt to the clipboard with the full current code at the top. Paste it into an AI chatbot, describe the change after 'I want to implement:', and ask it to return the full modified code.\n"
-"\n"
-"Paste the returned code back into this editor, review the highlighted changed lines, then click Save to apply changes."
-msgstr ""
-"選擇使用自訂來編輯角色的 Python 程式碼。內建模式可閱讀並選取原始程式碼。\n"
-"\n"
-"詢問 AI 會將提示詞複製到剪貼簿，提示詞頂部包含目前完整程式碼。將它貼到 AI 聊天機器人中，在 'I want to implement:' 後描述你想修改的內容，並要求它回傳完整修改後的程式碼。\n"
-"\n"
-"將回傳的程式碼貼回此編輯器，檢查醒目標示的變更行，然後點擊儲存以套用變更。"
-
-msgid "How To Modify Character Code"
-msgstr "如何修改角色程式碼"
-
 msgid "Reset"
 msgstr "重設"
-
-msgid "Reset Custom Code"
-msgstr "重設自訂程式碼"
-
-msgid "Reset this character to built in code and remove the custom code?"
-msgstr "要將此角色重設為內建程式碼並移除自訂程式碼嗎？"
-
-msgid ""
-"Custom code matches built in code. Removed custom code and switched to built"
-" in."
-msgstr "自訂程式碼與內建程式碼相同。已移除自訂程式碼並切換到內建。"
-
-msgid ""
-"Custom code matches built in code. Removed custom code, switched to built "
-"in, and reloaded loaded characters."
-msgstr "自訂程式碼與內建程式碼相同。已移除自訂程式碼，切換到內建，並重新載入已載入角色。"
-
-msgid "Custom code reset to built in code."
-msgstr "自訂程式碼已重設為內建程式碼。"
-
-msgid "Custom code reset to built in code and reloaded for loaded characters."
-msgstr "自訂程式碼已重設為內建程式碼，並已為已載入角色重新載入。"
-
-msgid "Contribute Code"
-msgstr "貢獻程式碼"
-
-msgid "I want to implement:"
-msgstr "我想實作："
-
-msgid "Please modify the full {class_name} character automation code above."
-msgstr "請修改上方完整的 {class_name} 角色自動化程式碼。"
-
-msgid ""
-"Return only the complete modified Python code for the whole file, not a "
-"patch and not an explanation."
-msgstr "只回傳整個檔案完整修改後的 Python 程式碼，不要回傳補丁或解釋。"
-
-msgid ""
-"Keep the class name as {class_name}. Preserve imports that are still needed."
-msgstr "保持類別名稱為 {class_name}。保留仍然需要的 import。"
-
-msgid ""
-"Use this BaseChar reference while reasoning about helper methods, task APIs,"
-" state, switching, cooldowns, and combat flow:"
-msgstr "在思考輔助方法、任務 API、狀態、切人、冷卻和戰鬥流程時，請使用這個 BaseChar 參考："
 
 msgid "Rover: Spectro"
 msgstr "漂泊者·衍射"
@@ -1286,8 +1174,8 @@ msgstr "已棄置聲骸超過1000時融合"
 msgid "Additional Tasks to Run After Daily Task"
 msgstr "每日任務後執行的附加任務"
 
-msgid "Select optional tasks. Nightmare Nest runs before stamina farming to help complete the daily task; the other tasks run afterward."
-msgstr "選擇可選任務。夢魘巢穴會在消耗體力前執行，以協助完成每日任務；其他任務將在之後執行。"
+msgid "Nightmare Nest runs after stamina farming. If Tacet Suppression yielded rewards, daily rewards are claimed before Nightmare Nest."
+msgstr "夢魘巢穴會在消耗波片後執行。如果已領取無音區獎勵，會先領取每日獎勵，再刷夢魘巢穴。"
 
 msgid "Teleport and Farm 4C Echo requires \"Teleport to Boss\" to be enabled in Farm Echo Task."
 msgstr "選擇「傳送並刷取4C聲骸」時，必須在刷取聲骸任務中啟用「傳送至首領」。"
@@ -1367,23 +1255,8 @@ msgstr "⏭️ 任務中跳過對話"
 msgid "🌊 Tacet Suppression"
 msgstr "🌊 無音區"
 
-msgid "All fields are required."
-msgstr "所有欄位均為必填。"
-
 msgid "Author"
 msgstr "作者"
-
-msgid "Choose Export Folder"
-msgstr "選擇匯出資料夾"
-
-msgid "Confirm Import"
-msgstr "確認匯入"
-
-msgid "Create Team"
-msgstr "建立隊伍"
-
-msgid "Create or import a team to edit character code."
-msgstr "建立或匯入隊伍以編輯角色程式碼。"
 
 msgid "Description"
 msgstr "說明"
@@ -1391,131 +1264,20 @@ msgstr "說明"
 msgid "Export"
 msgstr "匯出"
 
-msgid "Export Team"
-msgstr "匯出隊伍"
-
-msgid "Import"
-msgstr "匯入"
-
-msgid "Import Team"
-msgstr "匯入隊伍"
-
-msgid "Importing will override the local code for this team."
-msgstr "匯入將覆蓋此隊伍的本機程式碼。"
-
-msgid "Invalid Team Archive"
-msgstr "無效的隊伍壓縮檔"
-
-msgid "Missing Information"
-msgstr "資訊不完整"
-
-msgid "Modified"
-msgstr "修改時間"
-
-msgid "Name"
-msgstr "名稱"
-
 msgid "No shared code is available for this team."
 msgstr "此隊伍目前沒有共享程式碼。"
-
-msgid "Reset Character Code"
-msgstr "重設角色程式碼"
-
-msgid "Reset this character to built in code for this team?"
-msgstr "將此隊伍中的角色重設為內建程式碼？"
-
-msgid "Reset to Built In"
-msgstr "重設為內建程式碼"
-
-msgid "Save changes before exporting."
-msgstr "請先儲存變更再匯出。"
-
-msgid "Select 3 different characters"
-msgstr "選擇3個不同的角色"
 
 msgid "Size"
 msgstr "大小"
 
-msgid "Team"
-msgstr "隊伍"
-
-msgid "Team Workshop"
-msgstr "隊伍工坊"
-
-msgid "Team character code saved and reloaded for the matching team."
-msgstr "隊伍角色程式碼已儲存，並為相符的隊伍重新載入。"
-
-msgid "Team character code saved."
-msgstr "隊伍角色程式碼已儲存。"
-
-msgid "Team created."
-msgstr "隊伍已建立。"
-
-msgid "Team exported to {path}"
-msgstr "隊伍已匯出至 {path}"
-
-msgid "Team imported and reloaded for the matching team."
-msgstr "隊伍已匯入，並為相符的隊伍重新載入。"
-
-msgid "Team imported."
-msgstr "隊伍已匯入。"
-
-msgid "Teams"
-msgstr "隊伍"
-
-msgid "The archive is for a different team."
-msgstr "此壓縮檔屬於其他隊伍。"
-
-msgid "Upload Team"
-msgstr "上傳隊伍"
-
 msgid "Version"
 msgstr "版本"
-
-msgid "Workshop"
-msgstr "工坊"
-
-msgid "Workshop Error"
-msgstr "工坊錯誤"
-
-msgid "Workshop archive is too large."
-msgstr "工坊壓縮檔過大。"
-
-msgid "Workshop download URL is invalid."
-msgstr "工坊下載網址無效。"
-
-msgid "Zip files (*.zip)"
-msgstr "ZIP 檔案 (*.zip)"
-
-msgid "Workshop response is too large."
-msgstr "工坊回應過大。"
-
-msgid "Workshop returned invalid JSON."
-msgstr "工坊傳回了無效的 JSON。"
-
-msgid "Workshop response is invalid."
-msgstr "工坊回應無效。"
-
-msgid "Workshop returned a different team."
-msgstr "工坊傳回了其他隊伍。"
 
 msgid "Cancel"
 msgstr "取消"
 
 msgid "Close"
 msgstr "關閉"
-
-msgid "{team_name} - Team Workshop"
-msgstr "{team_name} - 隊伍工坊"
-
-msgid "Delete Team"
-msgstr "刪除隊伍"
-
-msgid "Permanently delete the team {team}?"
-msgstr "確定要永久刪除隊伍 {team} 嗎？"
-
-msgid "Team deleted."
-msgstr "隊伍已刪除。"
 
 msgid "JingRan"
 msgstr "景燃"
@@ -1539,31 +1301,8 @@ msgstr "傳送到第幾個特異夢魘"
 msgid "Failed to read game assets quality config. Starting with HD assets."
 msgstr "讀取遊戲資源畫質設定失敗，將使用高畫質（HD）資源啟動。"
 
-msgid "Tacet Elimination"
-msgstr "無音消除"
-
-msgid ""
-"Start on the current event screen. Complete prerequisite stages, then play "
-"Final Elimination for the highest possible score until turns run out."
-msgstr "從活動目前畫面開始，完成前置關卡後挑戰一局終局消除，盡可能爭取高分，直到回合耗盡後自然結算。執行期間需要遊戲處於前景。"
-
-
 msgid "Roccia C6"
 msgstr "洛可可6鏈（主輸出）"
-
-msgid "Export Selected"
-msgstr "匯出所選隊伍"
-
-
-msgid "Export Current"
-msgstr "匯出目前隊伍"
-
-
-msgid "No current team detected."
-msgstr "未偵測到目前隊伍。"
-
-msgid "Team Info"
-msgstr "隊伍說明"
 
 #, python-brace-format
 msgid "could not find char {index} {info} {highest_confidence}"
@@ -1723,16 +1462,6 @@ msgstr "目標屬性和當前屬性相同, 請修改聲骸過濾條件!"
 #, python-brace-format
 msgid "Cannot open screenshot folder: {e}"
 msgstr "無法開啟截圖資料夾: {e}"
-
-#, python-brace-format
-msgid "Unknown character: {class_name}"
-msgstr "未知角色：{class_name}"
-
-msgid "Save custom code before enabling custom mode"
-msgstr "啟用自定義模式前請先儲存自定義程式碼"
-
-msgid "Character code must be text"
-msgstr "角色程式碼必須為文字"
 
 msgid "check weekly garden"
 msgstr "檢查每週樂園任務"
@@ -2103,88 +1832,6 @@ msgstr "重新傳送後行走搜尋聲骸成功"
 msgid "click {click}"
 msgstr "點選 {click}"
 
-msgid "Event screen action limit exceeded"
-msgstr "超過活動頁面操作上限"
-
-msgid "Could not confirm the end of the stage list"
-msgstr "未能確認選關列表末尾"
-
-#, python-brace-format
-msgid "Elimination move {start} -> {end}, score={score}; board={signature}"
-msgstr "消除移動 {start} -> {end}，得分={score}；棋盤={signature}"
-
-#, python-brace-format
-msgid "Event screen: {text}"
-msgstr "活動介面：{text}"
-
-#, python-brace-format
-msgid "Cannot recognize Tacet Elimination screen: {text}"
-msgstr "無法識別無音消除介面: {text}"
-
-msgid "Cannot focus the game window; clicking stopped"
-msgstr "無法聚焦遊戲視窗，已停止點選"
-
-msgid "Cannot focus the game window to return to the stage list"
-msgstr "無法聚焦遊戲視窗，不能返回選關列表"
-
-msgid "Failed to return to the stage list"
-msgstr "返回選關列表失敗"
-
-msgid "Start the task on the Tacet Elimination event screen"
-msgstr "請在無音消除活動介面啟動任務"
-
-#, python-brace-format
-msgid "Stage sweep: {text}"
-msgstr "關卡掃描：{text}"
-
-msgid "Board unchanged or unrecognized; check the event screen"
-msgstr "棋盤未變化或無法識別，請檢查活動介面"
-
-#, python-brace-format
-msgid "No legal move recognized: {board}"
-msgstr "未識別到合法移動：{board}"
-
-msgid "Cannot focus the game window; board dragging stopped"
-msgstr "無法聚焦遊戲視窗，已停止棋盤拖動"
-
-msgid "No unlocked Final Elimination stage found"
-msgstr "未找到已解鎖的終局消除關卡"
-
-msgid ""
-"Some stages are still locked; cannot confirm all prerequisites are complete"
-msgstr "仍有關卡未解鎖，無法確認全部前置關卡已完成"
-
-msgid ""
-"Stage list did not reach Final Elimination; check dragging or recognition"
-msgstr "選關列表未到達終局消除，請檢查拖動或識別"
-
-msgid "Result screen exit button not found"
-msgstr "未找到結算退出按鈕"
-
-msgid "Stage retry limit exceeded"
-msgstr "關卡重試超過上限"
-
-msgid ""
-"Final Elimination finished naturally; restart the task to continue scoring"
-msgstr "終局消除本局已自然結算，可再次啟動任務繼續衝分"
-
-msgid "Cannot confirm stage completion status"
-msgstr "無法確認關卡完成狀態"
-
-msgid ""
-"Prerequisite scan complete; starting Final Elimination for score, even with "
-"an existing record"
-msgstr "前置關卡掃描完成，進入終局消除衝分（已有紀錄也會挑戰）"
-
-msgid "Game window lost focus; dragging stopped"
-msgstr "遊戲視窗失去焦點，已停止拖動"
-
-msgid "No board or Start button detected after starting the challenge"
-msgstr "開始挑戰後未檢測到棋盤或開始按鈕"
-
-msgid "No board detected after starting the challenge"
-msgstr "開始挑戰後未檢測到棋盤"
-
 msgid "is not claim treasure, restart challenge"
 msgstr "未出現領取獎勵提示，重新挑戰"
 
@@ -2272,11 +1919,23 @@ msgstr "多帳號"
 
 #: src/task/DailyTask.py src/task/FarmEchoTask.py src/task/ForgeryTask.py
 #: src/task/GardenTask.py src/task/NightmareNestTask.py
-#: src/task/SimulationTask.py src/task/TacetEliminationTask.py
+#: src/task/SimulationTask.py
 #: src/task/TacetTask.py
 msgid "Daily Activities"
 msgstr "日常活動"
 
+#: src/task/CultivationTask.py
+msgid "Cultivation Resource Farm"
+msgstr "刷共鳴者材料"
+
+#: src/task/CultivationTask.py
+msgid "Farm Ascension and Skill Materials for the selected Guidebook cultivation target. Skill Materials allow 3 reward claims per week. Simplified Chinese, 16:9. Uses current Waveplates only."
+msgstr "按索拉指南的培養目標刷取共鳴者突破材料和技能升級材料。技能升級材料每週只能領取 3 次獎勵。支援簡體中文和 16:9。僅使用目前的結晶波片。"
+#: src/task/CultivationTask.py
+msgid "Ascension Materials"
+msgstr "共鳴者突破材料"
+msgid "Skill Materials"
+msgstr "技能升級材料"
 msgid "Per-account Configuration"
 msgstr "分別設定"
 
@@ -2296,3 +1955,263 @@ msgstr "為每個帳號分別設定任務。關閉時執行原有多帳號每日
 
 msgid "Edit account order, enabled accounts, tasks and task settings."
 msgstr "編輯帳號順序、啟用狀態、執行任務及任務設定。"
+
+msgid "Rahai Blocks (Score Mode)"
+msgstr "拉海洛方塊（積分模式）"
+
+msgid ""
+"Open the score board before starting. Keep the PC game in the foreground "
+"while the task plays."
+msgstr "啟動前開啟積分棋盤。執行時請讓電腦版遊戲保持在前景。"
+
+#: src/task/CultivationTask.py
+msgid "Combat exceeded {seconds} seconds. Stopped. Check the team and retry."
+msgstr "戰鬥超過 {seconds} 秒。已停止，請檢查隊伍後重試。"
+
+#: src/task/CultivationTask.py
+msgid "Failed to read {label}. Stopped. Check the game screen and retry."
+msgstr "無法讀取{label}。已停止，請檢查遊戲畫面後重試。"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation target page did not open. Select a cultivation target in the Guidebook."
+msgstr "未開啟培養目標頁面。請在索拉指南中選擇培養目標。"
+
+#: src/task/CultivationTask.py
+msgid "Current Waveplates"
+msgstr "目前結晶波片"
+
+#: src/task/CultivationTask.py
+msgid "Remaining Waveplates on the result screen"
+msgstr "結算頁剩餘結晶波片"
+
+#: src/task/CultivationTask.py
+msgid "{material} quantities"
+msgstr "{material}數量"
+
+#: src/task/CultivationTask.py
+msgid "{material} quantities changed. Stopped. Run the task again."
+msgstr "{material}數量已變更。已停止，請重新執行任務。"
+
+#: src/task/CultivationTask.py
+msgid "Weekly claims left for Skill Materials not recognized. Stopped. Check the cultivation target."
+msgstr "未辨識技能升級材料本週剩餘次數。已停止，請檢查培養目標。"
+
+#: src/task/CultivationTask.py
+msgid "Material details"
+msgstr "培養材料詳情"
+
+#: src/task/CultivationTask.py
+msgid "Material inventory does not match the cultivation page. Stopped. Check the cultivation target."
+msgstr "材料庫存與培養頁面不一致。已停止，請檢查培養目標。"
+
+#: src/task/CultivationTask.py
+msgid "Met"
+msgstr "已滿足"
+
+#: src/task/CultivationTask.py
+msgid "{count} missing"
+msgstr "缺少 {count} 個"
+
+#: src/task/CultivationTask.py
+msgid ", {count} weekly claims left"
+msgstr "，本週剩餘 {count} 次"
+
+#: src/task/CultivationTask.py
+msgid "{owned}/{required}, {state}"
+msgstr "{owned}/{required}，{state}"
+
+#: src/task/CultivationTask.py
+msgid "Material: {name}, owned {owned}, required {required}, {state}"
+msgstr "培養材料：{name}，持有 {owned}，需求 {required}，{state}"
+
+#: src/task/CultivationTask.py
+msgid "{material} row is missing. Stopped. Check the cultivation target."
+msgstr "{material}列已消失。已停止，請檢查培養目標。"
+
+#: src/task/CultivationTask.py
+msgid "Team page did not open. Stopped. Check the selected challenge."
+msgstr "未進入編隊頁面。已停止，請檢查前往的副本。"
+
+#: src/task/CultivationTask.py
+msgid "Echo pickup incomplete, continuing to claim materials: {error}"
+msgstr "聲骸收取未完成，繼續領取材料：{error}"
+
+#: src/task/CultivationTask.py
+msgid "Claim costs {cost} Waveplates, expected {expected}. Stopped."
+msgstr "獎勵消耗為 {cost} 點，預期為 {expected} 點。已停止。"
+
+#: src/task/CultivationTask.py
+msgid "Reward chest not found. Stopped. Make sure the battle has ended."
+msgstr "未找到獎勵箱。已停止，請確認戰鬥已結束。"
+
+#: src/task/CultivationTask.py
+msgid "Claim dialog did not open. Stopped. Check the reward chest."
+msgstr "未開啟領取獎勵確認框。已停止，請檢查獎勵箱。"
+
+#: src/task/CultivationTask.py
+msgid "Waveplates below {cost}. Claim cancelled."
+msgstr "目前結晶波片不足 {cost} 點。已取消領取。"
+
+#: src/task/CultivationTask.py
+msgid "Claim result not confirmed. Stopped. Check the rewards before running again."
+msgstr "未確認獎勵領取結果。已停止，請核對獎勵後再執行。"
+
+#: src/task/CultivationTask.py
+msgid "Unexpected cultivation material count. Stopped. Check the cultivation target."
+msgstr "培養目標材料數量異常。已停止，請檢查培養目標。"
+
+#: src/task/CultivationTask.py
+msgid "Rewards not recognized. Stopped. Check the reward screen."
+msgstr "未辨識結算獎勵。已停止，請檢查獎勵畫面。"
+
+#: src/task/CultivationTask.py
+msgid "Reward material inventory"
+msgstr "獎勵材料庫存"
+
+#: src/task/CultivationTask.py
+msgid "Reward slot 5 is {name}, not a target material. Stopped. Check the rewards."
+msgstr "結算第 5 格為{name}，不是目標材料。已停止，請核對獎勵。"
+
+#: src/task/CultivationTask.py
+msgid "Unknown material in the reward inventory. Stopped. Check the rewards."
+msgstr "獎勵庫存出現未知材料。已停止，請核對獎勵。"
+
+#: src/task/CultivationTask.py
+msgid "Reward inventory is lower than before the claim. Stopped. Check the materials."
+msgstr "獎勵庫存小於領取前庫存。已停止，請核對材料。"
+
+#: src/task/CultivationTask.py
+msgid "Target materials did not increase after the claim. Stopped. Check the rewards."
+msgstr "領取後目標材料未增加。已停止，請核對獎勵。"
+
+#: src/task/CultivationTask.py
+msgid "Result screen closed before restarting. Stopped."
+msgstr "重新挑戰前結算頁已消失。已停止。"
+
+#: src/task/CultivationTask.py
+msgid "Leaving the challenge timed out. Return to the open world manually."
+msgstr "退出副本逾時。請手動返回大世界。"
+
+#: src/task/CultivationTask.py
+msgid "{material} has 0 weekly claims left, skipped"
+msgstr "{material}本週剩餘收取次數為 0，跳過"
+
+#: src/task/CultivationTask.py
+msgid "Stop Reason"
+msgstr "停止原因"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation materials meet the target"
+msgstr "培養材料已滿足需求"
+
+#: src/task/CultivationTask.py
+msgid "Skill Materials have 0 weekly claims left"
+msgstr "技能升級材料本週剩餘收取次數為 0"
+
+#: src/task/CultivationTask.py
+msgid "Waveplate budget from the task start is used up"
+msgstr "已用完任務開始時的結晶波片預算"
+
+#: src/task/CultivationTask.py
+msgid "Waveplates below {cost}"
+msgstr "目前結晶波片不足 {cost} 點"
+
+#: src/task/CultivationTask.py
+msgid "No material row enabled"
+msgstr "未啟用任何材料列"
+
+#: src/task/CultivationTask.py
+msgid "Challenge not completed, attempt {attempt}: {error}"
+msgstr "挑戰未完成，第 {attempt} 次：{error}"
+
+#: src/task/CultivationTask.py
+msgid "Challenge failed 2 times in a row. Stopped. Check the team."
+msgstr "挑戰連續失敗 2 次。已停止，請檢查隊伍。"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation target or inventory changed after a failed challenge. Stopped."
+msgstr "挑戰失敗後培養目標或庫存發生變化。已停止。"
+
+#: src/task/CultivationTask.py
+msgid "Remaining Waveplates after the claim not confirmed. Stopped. Check the rewards."
+msgstr "未確認獎勵扣費後的剩餘體力。已停止，請核對獎勵。"
+
+#: src/task/CultivationTask.py
+msgid "{material} weekly claims used up, row finished"
+msgstr "{material}本週剩餘收取次數已用完，結束該列"
+
+#: src/task/CultivationTask.py
+msgid "This task supports Simplified Chinese and 16:9 only. Adjust and retry."
+msgstr "本任務支援簡體中文和 16:9。請調整後重試。"
+
+#: src/task/CultivationTask.py
+msgid "Failed to return to the open world. Exit manually: {error}"
+msgstr "返回大世界失敗，請手動退出：{error}"
+
+#: src/task/CultivationTask.py
+msgid "Echo Set Tacet Suppression"
+msgstr "聲骸套裝無音區"
+
+#: src/task/CultivationTask.py
+msgid "Echo Set Nightmare Nest"
+msgstr "聲骸套裝夢魘聚落"
+
+#: src/task/CultivationTask.py
+msgid "Spend Waveplates on the echo set Tacet Suppression once no material row needs them."
+msgstr "材料行不再需要體力後，用剩餘結晶波片刷聲骸套裝無音區。"
+
+#: src/task/CultivationTask.py
+msgid "Clear the echo set Nightmare Nest. Costs no Waveplates."
+msgstr "清理聲骸套裝夢魘聚落，不消耗結晶波片。"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation Target"
+msgstr "培養目標"
+
+#: src/task/CultivationTask.py
+msgid "Cultivation Target follows the Guidebook cultivation target and the Cultivation Resource Farm task settings (Simplified Chinese, 16:9)."
+msgstr "培養目標按索拉指南中的培養目標和「刷共鳴者材料」任務設定刷取（簡體中文，16:9）。"
+
+#: src/task/CultivationTask.py
+msgid "CultivationTask Failed"
+msgstr "刷共鳴者材料失敗"
+
+#: src/task/CultivationTask.py
+msgid "Echo set row disappeared. Stopped. Check the cultivation target."
+msgstr "聲骸套裝行消失，已停止。請檢查培養目標。"
+
+#: src/task/CultivationTask.py
+msgid "Farm echo set Nightmare Nest {name} ({defeated}/{total})"
+msgstr "刷聲骸套裝夢魘聚落 {name}（{defeated}/{total}）"
+
+#: src/task/CultivationTask.py
+msgid "Farm echo set Tacet Suppression {name}"
+msgstr "刷聲骸套裝無音區 {name}"
+
+#: src/task/CultivationTask.py
+msgid "Farm the selected Guidebook cultivation target: Ascension and Skill Materials first, then the echo set Tacet Suppression with the remaining Waveplates. The echo set Nightmare Nest is always farmed. Simplified Chinese, 16:9."
+msgstr "按索拉指南的培養目標刷取：先刷共鳴者突破材料和技能升級材料，再用剩餘結晶波片刷聲骸套裝無音區；聲骸套裝夢魘聚落總會刷取。支援簡體中文和 16:9。"
+
+#: src/task/CultivationTask.py
+msgid "Nightmare Nest"
+msgstr "夢魘聚落"
+
+#: src/task/CultivationTask.py
+msgid "No Resonator material rows on the cultivation page"
+msgstr "培養頁沒有共鳴者材料行"
+
+#: src/task/CultivationTask.py
+msgid "No echo set Nightmare Nest on the cultivation page"
+msgstr "培養頁沒有聲骸套裝夢魘聚落"
+
+#: src/task/CultivationTask.py
+msgid "No echo set Tacet Suppression on the cultivation page"
+msgstr "培養頁沒有聲骸套裝無音區"
+
+#: src/task/CultivationTask.py
+msgid "Waveplates used on echo set Tacet Suppression"
+msgstr "結晶波片已用於聲骸套裝無音區"
+
+#: src/task/CultivationTask.py
+msgid "{name} already cleared ({defeated}/{total})"
+msgstr "{name} 已清理（{defeated}/{total}）"

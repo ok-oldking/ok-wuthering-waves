@@ -55,6 +55,10 @@ project environment with a local client script, as described by the library.
 Read the selected server's `list_skills()` and relevant `get_skill(skill_id)`
 results as well, and check that its project and library match the intended target.
 
+On Windows, run Python MCP clients and test commands with `-X utf8` (or an
+equivalent UTF-8 stream configuration). Task names and logs can contain Chinese
+and emoji; a console encoding failure is not a server/task failure.
+
 Reuse a live server for this project. Discover it through the configured artifact
 directory, normally `logs/mcp/connections/*.json`, with `connection.json` as a
 compatibility fallback. Prefer the library's `discover_mcp_servers()` helper when
@@ -71,6 +75,9 @@ terminal `get_run_status()` result before testing. A failed reload leaves old
 instances in place. New registrations and changed non-plugin helpers, including
 `src/char` modules and combat helpers, require restarting the owned runtime;
 reloading a task alone does not refresh those imported dependencies.
+Group related helper, registration, and asset edits and run their offline checks
+before restarting to test a coherent revision. Do not save restart time by
+exercising stale imported code or changing the rotation inside the harness.
 
 Exercise the registered implementation through a thin `run_task` harness with an
 absolute file path. Follow the library's `Task(BaseTask)` contract with
@@ -112,10 +119,30 @@ failure. Validate visible reward settlement and a second run that skips complete
 content. Respect a requested current-screen baseline rather than automatically
 returning to the open world.
 
-Use ok-script MCP for game development and real input/capture validation.
-Computer Use can optionally verify the OK-WW GUI task card; it is not needed by
-the game task. If the desktop plugin is unavailable, state that the GUI Start
-check remains untested while preserving the independently verified MCP results.
+Use ok-script MCP for game development and real input/capture validation. Follow
+the selected library's interface restrictions, including its prohibition on
+Computer Use in this workflow. When GUI lifecycle is in scope, exercise the task
+card only through permitted APIs and report any remaining GUI validation gap.
+
+## Wuthering Waves Abyss validation
+
+For an authorized restart, reuse the registered combat task's
+`restart_combat_in_abyss()`. Character-info introductions and environment help
+are optional: detect their presence before dismissing them, and continue when
+they are absent. If recovery needs a new overlay handler, put it in the shared
+production helper and cover both presence and absence rather than leaving the
+fix only in a temporary test harness. Avoid blind Escape/close clicks that can
+open another menu when no overlay exists.
+
+Verify the actual party HUD and loaded character identities after reset. The
+helper temporarily forces combat detection after starting; that flag alone is
+not evidence that the arena or intended character is ready.
+
+Choose completion assertions from the observed arena. Some simulation arenas
+finish by exposing an exit objective instead of a separate success popup.
+Confirm the relevant visible end state; loss of target or a truthy combat-task
+return alone does not prove completion. Keep this distinct from validating an
+individual character rotation or full-Concerto handoff.
 
 ## Apply project conventions
 

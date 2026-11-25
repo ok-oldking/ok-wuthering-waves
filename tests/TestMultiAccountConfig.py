@@ -141,7 +141,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         import win32con
 
         capture = SimpleNamespace(get_abs_cords=lambda x, y: (x + 300, y + 100))
-        interaction = PostMessageInteraction(capture, SimpleNamespace())
+        interaction = PostMessageInteraction(capture, SimpleNamespace(visible_monitors=[]))
         interaction.update_mouse_pos = Mock(return_value=0)
         cursor = [0, 0]
         delivered = []
@@ -165,7 +165,7 @@ class TestMultiAccountConfig(unittest.TestCase):
         runner.sleep.assert_any_call(0.2)
 
     def test_background_click_outside_login_does_not_move_real_cursor(self):
-        interaction = PostMessageInteraction(SimpleNamespace(), SimpleNamespace())
+        interaction = PostMessageInteraction(SimpleNamespace(), SimpleNamespace(visible_monitors=[]))
         interaction.click = Mock()
         runner = object.__new__(MultiAccountConfigTask)
         runner.tr = str
@@ -177,7 +177,7 @@ class TestMultiAccountConfig(unittest.TestCase):
 
     def test_login_relative_fallback_uses_converted_desktop_coordinates(self):
         capture = SimpleNamespace(get_abs_cords=lambda x, y: (x + 300, y + 100))
-        interaction = PostMessageInteraction(capture, SimpleNamespace())
+        interaction = PostMessageInteraction(capture, SimpleNamespace(visible_monitors=[]))
         interaction.click = Mock()
         runner = object.__new__(MultiAccountConfigTask)
         runner.tr = str
@@ -443,6 +443,7 @@ class TestMultiAccountConfig(unittest.TestCase):
                 runner.scene = SimpleNamespace(in_team=lambda callback: callback())
                 runner.in_team_and_world = lambda: state.screen == 'world'
                 runner.in_realm = lambda: False
+                runner.is_browser = lambda: False
                 runner.handle_monthly_card = lambda: False
                 runner.find_one = Mock(return_value=None)
                 runner.ocr = lambda **kwargs: ['Log In'] if state.screen == 'login' else []

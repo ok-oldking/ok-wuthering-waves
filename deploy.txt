@@ -12,3 +12,9 @@ main_debug.py
 i18n
 pyappify
 pyappify.yml
+CHANGELOG.md
+CHANGELOG.zh-CN.md
+CHANGELOG.zh-TW.md
+CHANGELOG.es.md
+CHANGELOG.ja.md
+CHANGELOG.ko.md

@@ -15,3 +15,9 @@ name = "Run main.py"
 icon = "run"
 command = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\.codex\run.ps1 -EntryPoint main.py'
 platform = "win32"
+
+[[actions]]
+name = "Run PyAppify updater"
+icon = "run"
+command = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\.codex\run.ps1 -EntryPoint main_updater.py'
+platform = "win32"

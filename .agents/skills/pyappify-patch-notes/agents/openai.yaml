@@ -1,0 +1,3 @@
+interface:
+  display_name: "PyAppify Patch Notes"
+  short_description: "Generate localized patch notes for PyAppify updates"

@@ -1,6 +1,9 @@
 import re
 import time
 
+import cv2
+import numpy as np
+
 import win32api
 
 from ok import find_boxes_by_name, Logger, calculate_color_percentage, TaskDisabledException
@@ -11,6 +14,16 @@ from src.char.Roccia import Roccia
 from src.task.BaseWWTask import BaseWWTask
 
 logger = Logger.get_logger(__name__)
+# 云游戏血条消失后仍视为战斗中的秒数, 之后才检查结束条件(声骸识别)
+CLOUD_HEALTH_LOST_GRACE = 3
+# 云游戏锁定图标: 锁定时骷髅外圈为金色, 未锁定为灰色。视频压缩后 has/no_target_cloud 模板分数只差约 0.01,
+# 只用模板定位图标(位置随角色技能栏布局变化), 再看图标内金色像素占比判断是否锁定。
+CLOUD_LOCK_SEARCH_BOX = (0.62, 0.85, 0.84, 0.95)
+CLOUD_LOCK_GOLD_RATIO = 0.02
+# 云游戏画面有串流延迟, 中键锁定后要等更久才能看到金圈, 点得太快会把刚锁定的目标又切掉
+CLOUD_RETARGET_INTERVAL = 0.8
+# 串流血条的渐变/压缩会让同一条血条仅约 60% 像素落在颜色范围内。
+CLOUD_HEALTH_BAR_FILL = 0.6
 
 
 class CombatCheck(BaseWWTask):
@@ -37,6 +50,7 @@ class CombatCheck(BaseWWTask):
         self.combat_end_condition = None
         self.has_lavitator = False
         self.target_enemy_error_notified = False
+        self._cloud_health_lost_at = 0
         self.cds = {
         }
         self.esc_count = 0
@@ -73,6 +87,7 @@ class CombatCheck(BaseWWTask):
         self.boss_lv_box = None
         self.boss_health = None
         self.boss_health_box = None
+        self._cloud_health_lost_at = 0
         self.last_in_realm_not_combat = 0
         self.has_lavitator = False
         self.can_break = False
@@ -153,9 +168,14 @@ class CombatCheck(BaseWWTask):
             if self.has_target():
                 self.last_in_realm_not_combat = 0
                 return self.scene.set_in_combat()
+            has_health = self.check_health_bar()
+            if self.is_browser() and self.cloud_health_bar_grace(has_health):
+                # 云游戏: 未锁定但敌人血条仍在(或刚消失不久)即视为战斗中,
+                # 且要先于结束条件判断, 避免技能特效/血条闪烁让声骸识别误判战斗结束
+                self.last_in_realm_not_combat = 0
+                return self.scene.set_in_combat()
             if self.combat_end_condition is not None and self.combat_end_condition():
                 return self.reset_to_false(reason='end condition reached')
-            has_health = self.check_health_bar()
             retarget_timeout = 30 if has_health else self.target_enemy_time_out
             if self.target_enemy(wait=True, time_out=retarget_timeout, check_health=has_health):
                 logger.debug(f'retarget enemy succeeded')
@@ -267,10 +287,11 @@ class CombatCheck(BaseWWTask):
         return False
 
     def has_target(self, double_check=False):
+        if self.is_browser():
+            return self.cloud_has_target()
         threshold = 0.6
         has_name, no_name = self.get_target_names()
-        scale = 1.2 if self.is_browser() else 1.1
-        best = self.find_best_match_in_box(self.get_box_by_name(has_name).scale(scale), [has_name, no_name],
+        best = self.find_best_match_in_box(self.get_box_by_name(has_name).scale(1.1), [has_name, no_name],
                                            threshold=threshold)
         if not best:
             best = self.find_best_match_in_box(self.get_box_by_name('box_target_enemy_long'),
@@ -299,11 +320,44 @@ class CombatCheck(BaseWWTask):
                     return self.has_target(double_check=True)
         return best and best.name == has_name
 
+    def cloud_health_bar_grace(self, has_health, grace=CLOUD_HEALTH_LOST_GRACE):
+        """云游戏: 血条可见, 或消失未超过 grace 秒(低血量/特效/压缩导致的闪烁), 返回 True。"""
+        now = time.time()
+        if has_health:
+            self._cloud_health_lost_at = 0
+            return True
+        if not self._cloud_health_lost_at:
+            self._cloud_health_lost_at = now
+        return now - self._cloud_health_lost_at < grace
+
+    def cloud_lock_icon_gold_ratio(self):
+        """云游戏: 定位锁定图标, 返回其中金色像素占比; 找不到图标返回 None。"""
+        icon = self.find_best_match_in_box(self.box_of_screen(*CLOUD_LOCK_SEARCH_BOX), list(self.get_target_names()),
+                                           threshold=0.6)
+        if not icon or self.frame is None:
+            return None
+        crop = self.frame[icon.y:icon.y + icon.height, icon.x:icon.x + icon.width]
+        if crop.size == 0:
+            return None
+        gold = cv2.inRange(cv2.cvtColor(crop, cv2.COLOR_BGR2HSV), (15, 90, 150), (35, 255, 255))
+        return np.count_nonzero(gold) / gold.size
+
+    def cloud_has_target(self):
+        """云游戏: 锁定图标外圈为金色即已锁定。"""
+        ratio = self.cloud_lock_icon_gold_ratio()
+        return ratio is not None and ratio >= CLOUD_LOCK_GOLD_RATIO
+
+    def target_visible(self):
+        """PC 看锁定图标; 云游戏锁定图标或敌人血条(如 boss 入场后出现)任一可见即可。"""
+        if self.is_browser():
+            return self.has_target() or self.check_health_bar()
+        return self.has_target()
+
     def target_enemy(self, wait=True, time_out=None, check_health=False):
         if not wait:
             self.middle_click()
         else:
-            if self.has_target():
+            if self.target_visible():
                 return True
             else:
                 timeout = self.target_enemy_time_out if time_out is None else time_out
@@ -311,8 +365,8 @@ class CombatCheck(BaseWWTask):
                 start = time.time()
                 health_lost_start = None
                 while time.time() - start < timeout:
-                    self.middle_click(interval=0.2)
-                    if self.has_target():
+                    self.middle_click(interval=CLOUD_RETARGET_INTERVAL if self.is_browser() else 0.2)
+                    if self.target_visible():
                         return True
                     self.next_frame()
                     if check_health:
@@ -336,15 +390,22 @@ class CombatCheck(BaseWWTask):
             max_height = min_height * 3
             min_width = self.width_of_screen(100 / 3840)
 
-        boxes = find_color_rectangles(self.frame, enemy_health_color_red, min_width, min_height, max_height=max_height)
+        browser = self.is_browser()
+        boxes = find_color_rectangles(self.frame, enemy_health_color_red, min_width, min_height,
+                                       max_height=max_height, threshold=CLOUD_HEALTH_BAR_FILL if browser else 0.95)
+        if browser:
+            # 放宽颜色填充后仍要求横向条形, 排除伤害数字和零散红色特效。
+            boxes = [box for box in boxes if box.width >= box.height * 3]
 
         if len(boxes) > 0:
             self.draw_boxes('enemy_health_bar_red', boxes, color='blue')
             return True
         else:
+            # 云游戏视频压缩会让少量血条像素偏离颜色范围, 放宽填充比例
             boxes = find_color_rectangles(self.frame, boss_health_color, min_width, min_height * 1.3,
                                           box=self.box_of_screen(1269 / 3840, 58 / 2160, 2533 / 3840, 200 / 2160,
-                                                                 hcenter=True, vcenter=True))
+                                                                 hcenter=True, vcenter=True),
+                                          threshold=0.85 if self.is_browser() else 0.95)
             if len(boxes) == 1:
                 self.boss_health_box = boxes[0]
                 self.boss_health_box.width = 10

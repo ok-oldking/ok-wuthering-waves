@@ -27,6 +27,7 @@ from src.char.Jianxin import Jianxin
 from src.char.Jinhsi import Jinhsi
 from src.char.JingRan import JingRan
 from src.char.Jiyan import Jiyan
+from src.char.Lily import Lily
 from src.char.Lingyang import Lingyang
 from src.char.Linnai import Linnai
 from src.char.Lucilla import Lucilla
@@ -57,7 +58,6 @@ from src.char.Youhu import Youhu
 from src.char.Yuanwu import Yuanwu
 from src.char.Zani import Zani
 from src.char.Zhezhi import Zhezhi
-from src.char.CustomCharLoader import load_team_char_class, normalize_team
 
 _char_dict_raw = {
     Labels.char_aalto: {'cls': Aalto, 'char_type': CharType.SUB_DPS,
@@ -137,7 +137,8 @@ _char_dict_raw = {
     Labels.char_aemeath: {'cls': Aemeath, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.FIRE},
     Labels.char_xigelika: {'cls': Xigelika, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.WIND},
     Labels.char_luhesi: {'cls': Luhesi, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
-    Labels.char_hiyuki: {'cls': Hiyuki, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.ICE},
+    (Labels.char_hiyuki, Labels.char_hiyuki2): {'cls': Hiyuki, 'char_type': CharType.MAIN_DPS,
+                                             'ring_index': Elements.ICE},
     Labels.char_lucilla: {'cls': Lucilla, 'char_type': CharType.SUB_DPS, 'ring_index': Elements.ICE,
                           'target_box_short_combat_check': True},
     Labels.char_lucy: {'cls': Lucy, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.SPECTRO},
@@ -148,6 +149,8 @@ _char_dict_raw = {
     Labels.char_hsin: {'cls': Hsin, 'char_type': CharType.MAIN_DPS, 'ring_index': Elements.ELECTRIC},
     Labels.char_suoming: {'cls': Suoming, 'char_type': CharType.SUB_DPS, 'buff_time': 8,
                          'ring_index': Elements.ELECTRIC},
+    Labels.char_lily: {'cls': Lily, 'char_type': CharType.HEALER, 'buff_time': 30,
+                      'ring_index': Elements.SPECTRO},
 }
 
 char_dict = {}
@@ -223,36 +226,6 @@ def get_char_by_pos(task, box, index, old_char):
     if task.debug:
         task.screenshot(f'could not find char {index}')
     return BaseChar(task, index, char_name=name)
-
-
-def apply_team_char_classes(task, chars):
-    """Apply custom code only after the complete three-character team is known."""
-    if len(chars) != 3 or any(char is None for char in chars):
-        return chars
-    infos = [char_dict.get(char.char_name) for char in chars]
-    if any(info is None for info in infos):
-        return chars
-    builtin_classes = [info['cls'] for info in infos]
-    try:
-        team = normalize_team(builtin_classes)
-    except ValueError:
-        return chars
-    for index, (char, builtin_cls) in enumerate(zip(chars, builtin_classes)):
-        desired_cls = load_team_char_class(builtin_cls, team)
-        if type(char) is desired_cls:
-            continue
-        replacement = desired_cls(
-            task,
-            char.index,
-            char_name=char.char_name,
-            confidence=char.confidence,
-            ring_index=char.ring_index,
-            char_type=char.char_type,
-            buff_time=char.buff_time,
-        )
-        replacement.__dict__.update(char.__dict__)
-        chars[index] = replacement
-    return chars
 
 
 def is_float(s):

@@ -1,6 +1,6 @@
 ---
 name: pr-review
-description: Review a single GitHub PR or a range of PRs in ok-wuthering-waves, verify their claims and merge value, recommend merges, and comment on and close PRs with concrete problems. Trigger on 'review pr 1752', 'review pr starting 1752', or 'merge pr 1467'. Merge requests squash through GitHub and synchronize local master.
+description: Review GitHub PRs in ok-wuthering-waves, save results locally, resume a review range, and recommend merges. Trigger on 'review pr 1752', 'review pr starting 1752', 'review pr resume', or 'merge pr 1467'. Comment on and close PRs with verified problems. Merge requests squash through GitHub and synchronize local master.
 ---
 
 # Review and merge PRs
@@ -21,6 +21,8 @@ token locally; never request a token in chat.
   inclusive, in ascending number order, including drafts. This authorizes
   posting review comments and closing PRs with verified problems. Do not merge any PR.
 - `review pr 1752`: review just that PR; comment on and close it if it has verified problems.
+- `review pr resume`: review open PRs from the saved next number, with the same
+  scope and authorization as a range review.
 - `merge pr 1467`: validate and squash-merge that PR into `master` through
   GitHub, then synchronize local `master`. The command authorizes the merge;
   do not ask for confirmation again. Never merge other recommended PRs.
@@ -33,11 +35,17 @@ or execute game automation just to review it.
 
 ## Review
 
+Keep local review state in the Git-ignored `.pr-reviews/<owner>/<repo>/` folder
+at the repository root. Use the GitHub repository from the selected remote.
+To resume, work from the checkout where the prior results were saved.
+
 1. Select the review scope from the command. For `review pr 1752`, the queue is
    exactly PR #1752: go directly to `pr_tool.py inspect 1752`, without running a
-   range query or reviewing other PRs. For `review pr starting 1752`, get the
-   complete queue with `pr_tool.py list --start 1752`. The script paginates; do
-   not silently limit the queue. Keep the selected queue as the review scope.
+   range query or reviewing other PRs. For `review pr starting 1752`, start at
+   1752. For `review pr resume`, read the positive integer in `next.txt` as the
+   inclusive start. If it is missing or invalid, ask for the starting PR number.
+   Get the complete range queue with `pr_tool.py list --start START`; it paginates.
+   After a successful list, save START in `next.txt` before reviewing the queue.
 2. For each PR, run `pr_tool.py inspect NUMBER`. It prints a snapshot directory
    with `snapshot.json`, `diff.patch`, and a detached `checkout/` at the exact
    PR head. Read the title, body, discussion, prior reviews, checks, changed-file
@@ -88,7 +96,17 @@ or execute game automation just to review it.
    both. Do not close PRs solely for drafts, pending checks, or verification limits
    without a concrete reviewed problem. Do not post clean-PR
    comments, approvals, or change-request reviews unless separately requested.
-8. Clean up with `pr_tool.py cleanup --snapshot SNAPSHOT_DIR` when the snapshot
+8. Save a UTF-8 `NUMBER.md` for every completed review before advancing the
+   checkpoint or cleaning up. Include the PR link, date, reviewed base and head
+   SHAs, claim verdicts, merge value, actionable findings, checks and limits,
+   recommendation, and any GitHub actions with links and outcomes. Read any
+   existing record when explicitly re-reviewing a PR, then update it with the
+   fresh result. After saving the result, write NUMBER + 1 to `next.txt` for a
+   range, provided every earlier PR in its queue has a saved result from this
+   run. If a PR cannot be reviewed, keep the checkpoint at or before that PR.
+   A single-PR review seeds a missing checkpoint with NUMBER + 1 and otherwise
+   leaves the range checkpoint in place. Report the saved result and next number.
+9. Clean up with `pr_tool.py cleanup --snapshot SNAPSHOT_DIR` when the snapshot
    is no longer needed. If cleanup refuses changed files, retain the directory
    and report it; never delete user work to force cleanup.
 

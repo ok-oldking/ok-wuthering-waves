@@ -98,12 +98,30 @@
 コマンドライン引数を使用して自動起動できます。
 
 ```powershell
-# 例: 起動後に最初のタスクを自動実行し、完了したらプログラムを終了する
-.\.venv\Scripts\python.exe main.py -t 1 -e
+# 例: 起動後にデイリータスクを自動実行し、完了したらプログラムを終了する
+.\.venv\Scripts\python.exe main.py -t DailyTask -e
 ```
 
-*   `-t` または `--task`: 起動後にリストの N 番目のタスクを自動的に実行します。`1` は最初のタスクを表します。
+*   `-t` または `--task`: 起動後に指定したタスクを自動的に実行します。タスクのクラス名（例: `DailyTask`）またはタスク名を指定します。
 *   `-e` または `--exit`: タスクの完了後にプログラムを自動的に終了します。
+
+よく使うタスク（`-t` にクラス名を指定）：
+
+| クラス名 | タスク |
+| --- | --- |
+| `DailyTask` | デイリータスク |
+| `FarmEchoTask` | 4C音骸を周回 (フィールド/ダンジョン) |
+| `NightmareNestTask` | 悪夢の巣 |
+| `TacetTask` | 無音区 |
+| `ForgeryTask` | 凝素領域 |
+| `SimulationTask` | シミュレーション挑戦 |
+| `CultivationTask` | 育成素材周回 |
+| `MultiAccountDailyTask` | マルチアカウントデイリータスク |
+| `MultiAccountConfigTask` | 複数アカウント設定タスク |
+| `MergeEchoTask` | 破棄済み音骸を融合 |
+| `EnhanceEchoTask` | 音骸一括強化 |
+| `ChangeEchoTask` | 音骸メインステータス一括変更 |
+| `GardenTask` | 週間楽園を自動進行 |
 
 ## 💬 参加しよう
 
