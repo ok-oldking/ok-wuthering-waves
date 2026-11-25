@@ -2087,3 +2087,6 @@ msgstr "結晶波片をエコーセットの無音区に使用しました"
 #: src/task/CultivationTask.py
 msgid "{name} already cleared ({defeated}/{total})"
 msgstr "{name} はクリア済み（{defeated}/{total}）"
+
+msgid "Timed out on the game login screen."
+msgstr "ゲームのログイン画面でタイムアウトしました。"

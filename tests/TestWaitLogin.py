@@ -1,6 +1,11 @@
 import unittest
+from types import SimpleNamespace
+from unittest.mock import Mock
 
-from src.task.BaseWWTask import BaseWWTask, LOGIN_CLICK_SETTLE_TIME, LOGIN_TEXTS
+from ok import CannotFindException
+from ok.core.events import communicate
+from src.Labels import Labels
+from src.task.BaseWWTask import BaseWWTask, CONNECT_TEXT, LOGIN_CLICK_SETTLE_TIME, LOGIN_TEXTS
 
 
 class TextBox:
@@ -107,6 +112,42 @@ class TestWaitLogin(unittest.TestCase):
 
         self.assertFalse(result)
         self.assertEqual(task.clicked, [])
+
+    def test_connect_screen_retries_without_pressing_escape(self):
+        connect = TextBox('点击连接')
+        task = FakeLoginTask(frames=[[connect]])
+        task.find_one = lambda label, **kwargs: label == Labels.switch_account
+        task.find_boxes = lambda texts, boundary=None, match=None: (
+            texts if match is CONNECT_TEXT or boundary == (0.37, 0.63, 0.63, 0.99) else None
+        )
+        task.wait_login = lambda: BaseWWTask.wait_login(task)
+        task.click_relative = Mock()
+        task.back = Mock()
+
+        self.assertFalse(BaseWWTask.is_main(task))
+
+        task.click_relative.assert_called_once()
+        task.back.assert_not_called()
+
+    def test_login_timeout_only_queues_exit_for_exit_after_task(self):
+        for exit_after in (True, False):
+            with self.subTest(exit_after=exit_after):
+                executor = Mock()
+                executor.current_task.exit_after_task = exit_after
+                task = SimpleNamespace(tr=str, info_set=Mock(), executor=executor, logged_in=False)
+
+                def wait_for_world(*args, **kwargs):
+                    task.login_screen_visible = True
+                    return False
+
+                task.wait_until = Mock(side_effect=wait_for_world)
+                with self.assertRaisesRegex(CannotFindException, 'Timed out on the game login screen'):
+                    BaseWWTask.ensure_main(task)
+
+                if exit_after:
+                    task.executor.submit.assert_called_once_with(communicate.quit.emit, name='quit after login timeout')
+                else:
+                    task.executor.submit.assert_not_called()
 
 
 if __name__ == "__main__":

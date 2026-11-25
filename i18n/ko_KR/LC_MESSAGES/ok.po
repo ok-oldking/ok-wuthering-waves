@@ -2090,3 +2090,6 @@ msgstr "결정 파편을 에코 세트 무음 구역에 사용했습니다"
 #: src/task/CultivationTask.py
 msgid "{name} already cleared ({defeated}/{total})"
 msgstr "{name} 이미 정리됨 ({defeated}/{total})"
+
+msgid "Timed out on the game login screen."
+msgstr "게임 로그인 화면에서 대기 시간이 초과되었습니다."

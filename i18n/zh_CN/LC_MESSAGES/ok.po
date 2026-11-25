@@ -2138,3 +2138,6 @@ msgstr "结晶波片已用于声骸套装无音区"
 #: src/task/CultivationTask.py
 msgid "{name} already cleared ({defeated}/{total})"
 msgstr "{name} 已清理（{defeated}/{total}）"
+
+msgid "Timed out on the game login screen."
+msgstr "等待游戏登录超时，仍停在登录界面。"

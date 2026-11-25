@@ -8,6 +8,7 @@ import numpy as np
 
 from ok import BaseTask, Logger, find_boxes_by_name, og, find_color_rectangles, mask_white, Box
 from ok import CannotFindException
+from ok.core.events import communicate
 import cv2
 
 from src.Labels import Labels
@@ -17,6 +18,7 @@ logger = Logger.get_logger(__name__)
 number_re = re.compile(r'(\d+)')
 stamina_re = re.compile(r'(\d+)/(\d+)')
 LOGIN_TEXTS = ["登录", re.compile('Log|点击连接|Click to Connect', re.IGNORECASE), '登入']
+CONNECT_TEXT = re.compile(r'點擊連線|點擊連接|点击连接|Click\s+to\s+Connect', re.IGNORECASE)
 LOGIN_CLICK_SETTLE_TIME = 4  # seconds; keep below AutoLoginTask trigger_interval (5) so triggers don't overlap
 RECHALLENGE_TEXT = re.compile(r'^\s*(?:重新挑战|重新挑戰|再次挑战|再次挑戰|Rechallenge)\s*$', re.IGNORECASE)
 # 云游戏网页弹窗, 如 【云服务错误：1020】检测到您已长时间未进行操作，已和服务器断开连接。
@@ -45,6 +47,7 @@ class BaseWWTask(BaseTask):
         self.char_config = self.get_global_config('Character Config')
         self.key_config = self.get_global_config('Game Hotkey')  # 游戏热键配置
         self.next_monthly_card_start = 0
+        self.login_screen_visible = False
         self.scene: WWScene | None = None
 
     @property
@@ -725,9 +728,18 @@ class BaseWWTask(BaseTask):
 
     def ensure_main(self, esc=True, time_out=30):
         self.info_set('current task', f'wait main esc={esc}')
+        self.login_screen_visible = False
         if not self.logged_in:
             time_out = 600
         if not self.wait_until(lambda: self.is_main(esc=esc), time_out=time_out, raise_if_not_found=False):
+            if not self.logged_in:
+                # A nested DailyTask shares the outer scheduled task's executor.
+                active_task = self.executor.current_task
+                if active_task is not None and active_task.exit_after_task:
+                    # Let the executor report the failure and save its screenshot first.
+                    self.executor.submit(communicate.quit.emit, name='quit after login timeout')
+                if self.login_screen_visible:
+                    raise CannotFindException(self.tr('Timed out on the game login screen.'))
             raise Exception(self.tr('Please start in game world and in team!'))
         self.sleep(0.5)
         self.info_set('current task', f'in main esc={esc}')
@@ -738,7 +750,7 @@ class BaseWWTask(BaseTask):
             if self.in_realm():
                 self.esc_world_confirm()
             return True
-        if self.wait_login():
+        if self.wait_login() or self.login_screen_visible:
             return False
         if self.handle_monthly_card():
             return False
@@ -773,6 +785,7 @@ class BaseWWTask(BaseTask):
         return True
 
     def wait_login(self):
+        self.login_screen_visible = False
         if not self.logged_in:
             if self.in_team_and_world():
                 self.logged_in = True
@@ -788,6 +801,7 @@ class BaseWWTask(BaseTask):
             if login := self.find_boxes(texts,
                                         boundary=login_box,
                                         match=LOGIN_TEXTS):
+                self.login_screen_visible = True
                 if not self.find_boxes(texts, boundary=login_box, match="+86"):
                     # the game may be auto logging in with saved credentials, wait and
                     # confirm the login button is still there before clicking (#1356)
@@ -795,6 +809,7 @@ class BaseWWTask(BaseTask):
                     texts = self.ocr(log=self.debug)
                     login = self.find_boxes(texts, boundary=login_box,
                                             match=LOGIN_TEXTS)
+                    self.login_screen_visible = bool(login)
                     if login and not self.find_boxes(texts, boundary=login_box,
                                                      match="+86"):
                         self.click(login, after_sleep=1)
@@ -823,6 +838,7 @@ class BaseWWTask(BaseTask):
             if switch_login := self.find_one(Labels.switch_account, vertical_variance=0.1, threshold=0.7):
                 if boxes := self.find_boxes(texts, boundary=self.box_of_screen(0.37, 0.63, 0.63, 0.99, hcenter=True,
                                                                                vcenter=True)):
+                    self.login_screen_visible = bool(self.find_boxes(boxes, match=CONNECT_TEXT))
                     self.log_info(self.tr('wait_login {switch_login} {boxes}').format(switch_login=switch_login, boxes=boxes))
                     self.click_relative(0.503, 0.926, hcenter=True, vcenter=True, after_sleep=3)
                     return False

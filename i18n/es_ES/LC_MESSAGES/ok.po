@@ -2046,3 +2046,6 @@ msgstr "Ondaplacas usadas en la Supresión Tacet del set de ecos"
 #: src/task/CultivationTask.py
 msgid "{name} already cleared ({defeated}/{total})"
 msgstr "{name} ya limpiado ({defeated}/{total})"
+
+msgid "Timed out on the game login screen."
+msgstr "Se agotó el tiempo de espera en la pantalla de inicio de sesión del juego."
