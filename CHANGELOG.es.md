@@ -2,6 +2,13 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.15 (2026-11-25)
+- Se corrigieron los errores repetidos de OCR y se restauró la conversión a chino simplificado al usar la interfaz en chino tradicional.
+- Las ejecuciones programadas se cierran si se agota el tiempo de inicio de sesión. Tras revivir, se espera más a que termine el viaje a la baliza.
+- El farmeo de dominios puede volver a entrar desde la guía si, al repetir el desafío, no aparece el aviso para iniciar la siguiente ronda.
+- El combate automático lee con mayor precisión el medidor de Concierto y reduce las esperas al intentar usar habilidades y los cambios entre personajes de apoyo. Se corrigió un cambio adicional después de la habilidad de resonancia de Suisui.
+- El combate automático tiene en cuenta la duración del sueño de Lily al elegir a quién cambiar y conserva las asignaciones personalizadas de los botones del ratón al detectar atajos con OCR.
+
 ## v3.8.14 (2026-11-24)
 
 - Juego en la nube: los fotogramas se leen directamente del vídeo del juego en lugar de capturar la ventana del navegador, así que la captura sigue funcionando con el navegador minimizado (ok-script 3.0.13).
