@@ -217,16 +217,42 @@ class TestDomainHealPoint(unittest.TestCase):
     def test_heal_point_set_only_after_recovery(self):
         task = DomainTask.__new__(DomainTask)
         task.stamina_once = 40
+        task.tr = str
         task.realm_entry_at_heal_point = True  # 上一次运行的残留
         task.open_F2_book_and_get_stamina = lambda: (120, 0, 120)
         task.sleep = task.log_info = lambda *args, **kwargs: None
-        results = iter([(False, 0), (False, 0), (True, 0)])
-        task.farm_in_domain = lambda must_use: next(results)
-        flags = record_heal_point(task, 'farm_in_domain')
+        task.info_incr = task.pick_f = task.walk_to_treasure = task.click = Mock()
+        task.make_sure_in_world = Mock()
+        task.walk_until_f = Mock(return_value=True)
+        task.combat_once = Mock(side_effect=[CharRevivedException(), CharRevivedException(), True])
+        task.use_stamina = Mock(return_value=(False, 40))
+        flags = record_heal_point(task, 'combat_once')
 
         task.farm_domain_with_recovery_loop(0, lambda: None)
 
         self.assertEqual([False, True, True], flags)
+
+    def test_missing_rechallenge_prompt_reenters_with_remaining_budget(self):
+        task = DomainTask.__new__(DomainTask)
+        task.stamina_once = 40
+        task.tr = str
+        task.open_F2_book_and_get_stamina = Mock(side_effect=[(120, 100, 220), (40, 100, 140)])
+        for name in ('sleep', 'log_info', 'info_incr', 'pick_f', 'walk_to_treasure',
+                     'click', 'make_sure_in_world', 'combat_once', 'rechallenge_domain'):
+            setattr(task, name, Mock())
+        task.walk_until_f = Mock(side_effect=[True, False, True])
+        task.use_stamina = Mock(side_effect=[(True, 80), (False, 40)])
+        enter = Mock(side_effect=lambda: self.assertFalse(task.realm_entry_at_heal_point))
+
+        task.farm_domain_with_recovery_loop(120, enter)
+
+        self.assertEqual(2, enter.call_count)
+        self.assertEqual(2, task.combat_once.call_count)
+        self.assertEqual([120, 40], [call.kwargs['must_use'] for call in task.use_stamina.call_args_list])
+        self.assertEqual([True, False, True],
+                         [call.kwargs['raise_if_not_found'] for call in task.walk_until_f.call_args_list])
+        task.rechallenge_domain.assert_called_once()
+        self.assertEqual(2, task.make_sure_in_world.call_count)
 
 
 class TestReviveAtHealPoint(unittest.TestCase):

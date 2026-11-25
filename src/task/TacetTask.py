@@ -1,13 +1,11 @@
-import re
-
 from ok import Logger
 from ok.task.exceptions import WaitFailedException
 from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException
+from src.task.BaseWWTask import RECHALLENGE_TEXT
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.task_icons import task_icon
 
 logger = Logger.get_logger(__name__)
-RECHALLENGE_TEXT = re.compile(r'^\s*(?:重新挑战|重新挑戰|再次挑战|再次挑戰|Rechallenge)\s*$', re.IGNORECASE)
 
 
 class TacetTask(WWOneTimeTask, BaseCombatTask):

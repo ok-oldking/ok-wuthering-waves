@@ -1,8 +1,7 @@
-import re
-
-
 from ok import Logger
+from ok.task.exceptions import WaitFailedException
 from src.task.BaseCombatTask import BaseCombatTask, NotInCombatException, CharDeadException
+from src.task.BaseWWTask import RECHALLENGE_TEXT
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
@@ -54,7 +53,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
         return self.get_stamina()
 
     def farm_domain_with_recovery_loop(self, must_use, teleport_into_domain_once, max_recovery_retries=3):
-        """包装副本刷取循环：死亡恢复后自动从 F2 重新进入，并限制重试次数。"""
+        """刷本中断后从 F2 重新进入，并限制重试次数。"""
         recovery_retries = 0
         self.realm_entry_at_heal_point = False
         while True:
@@ -74,20 +73,22 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
                               notify=True)
                 self.make_sure_in_world()
                 return
-            self.log_info(self.tr('farm_domain: death recovered, re-enter from F2 book'))
-            self.realm_entry_at_heal_point = True  # 恢复后站在信标上, 从 F2 直接进本
+            if self.realm_entry_at_heal_point:
+                self.log_info(self.tr('farm_domain: death recovered, re-enter from F2 book'))
             self.sleep(1)
 
     def farm_in_domain(self, must_use=0):
         """刷本循环；返回 (是否整段正常结束, 剩余 must_use)。
 
-        第二项在死亡提前退出时仍会带上本局内已扣过的额度，供外层恢复循环继续传参。
+        提前退出时保留剩余体力额度，供外层恢复循环继续刷取。
         """
         if self.stamina_once <= 0:
             raise RuntimeError(self.tr('"self.stamina_once" must be override'))
         self.info_incr('used stamina', 0)
+        rechallenging = False
         while True:
-            self.walk_until_f(time_out=4, backward_time=0, raise_if_not_found=True)
+            if not self.walk_until_f(time_out=4, raise_if_not_found=not rechallenging):
+                return self.recover_domain_rechallenge(must_use)
             self.pick_f()
             try:
                 self.combat_once()
@@ -97,6 +98,7 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             except (NotInCombatException, CharDeadException):
                 self.log_info(self.tr('farm_in_domain: death recovered, exiting domain'))
                 self.make_sure_in_world()
+                self.realm_entry_at_heal_point = True
                 return False, must_use
             can_continue, used = self.use_stamina(once=self.stamina_once, must_use=must_use)
             self.info_incr('used stamina', used)
@@ -105,22 +107,34 @@ class DomainTask(WWOneTimeTask, BaseCombatTask):
             if not can_continue:
                 self.log_info(self.tr('used all stamina'))
                 break
-            self.click(0.68, 0.84, after_sleep=1)  # farm again
-            if confirm := self.wait_feature(
-                    ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
-                    raise_if_not_found=False,
-                    threshold=0.6,
-                    time_out=2):
-                self.click(0.49, 0.55, after_sleep=0.5)  # 点击不再提醒
-                self.click(confirm, after_sleep=0.5)
-                self.wait_click_feature(
-                    ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter'],
-                    relative_x=-1, raise_if_not_found=False,
-                    threshold=0.6,
-                    time_out=1)
-            self.wait_in_team_and_world(time_out=self.teleport_timeout)
-            self.sleep(1)
-        #
+            try:
+                self.rechallenge_domain()
+            except WaitFailedException:
+                return self.recover_domain_rechallenge(must_use)
+            rechallenging = True
+
         self.click(0.42, 0.84, after_sleep=2)  # back to world
         self.make_sure_in_world()
         return True, must_use
+
+    def rechallenge_domain(self):
+        buttons = self.wait_ocr(0.54, 0.79, 0.82, 0.92, match=RECHALLENGE_TEXT,
+                                time_out=2, raise_if_not_found=False)
+        if buttons:
+            self.click(buttons[0], after_sleep=1)
+        else:
+            self.click(0.68, 0.84, after_sleep=1)
+        confirm_features = ['confirm_btn_hcenter_vcenter', 'confirm_btn_highlight_hcenter_vcenter']
+        if confirm := self.wait_feature(confirm_features, threshold=0.6, time_out=2, raise_if_not_found=False):
+            self.click(0.49, 0.55, after_sleep=0.5)  # 点击不再提醒
+            self.click(confirm, after_sleep=0.5)
+            self.wait_click_feature(confirm_features, relative_x=-1, raise_if_not_found=False,
+                                    threshold=0.6, time_out=1)
+        self.wait_in_team_and_world(time_out=self.teleport_timeout)
+        self.sleep(1)
+
+    def recover_domain_rechallenge(self, must_use):
+        logger.warning('Domain rechallenge did not reach the next start prompt. Re-entering from the guidebook.')
+        self.make_sure_in_world()
+        self.realm_entry_at_heal_point = False
+        return False, must_use

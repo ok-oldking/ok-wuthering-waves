@@ -18,6 +18,7 @@ number_re = re.compile(r'(\d+)')
 stamina_re = re.compile(r'(\d+)/(\d+)')
 LOGIN_TEXTS = ["登录", re.compile('Log|点击连接|Click to Connect', re.IGNORECASE), '登入']
 LOGIN_CLICK_SETTLE_TIME = 4  # seconds; keep below AutoLoginTask trigger_interval (5) so triggers don't overlap
+RECHALLENGE_TEXT = re.compile(r'^\s*(?:重新挑战|重新挑戰|再次挑战|再次挑戰|Rechallenge)\s*$', re.IGNORECASE)
 # 云游戏网页弹窗, 如 【云服务错误：1020】检测到您已长时间未进行操作，已和服务器断开连接。
 # 1020 弹窗按钮是"退出游戏", 4012 只有"确定"; 两者都会回到云游戏首页。
 CLOUD_DISCONNECT_TEXTS = re.compile(r'云服务错误|服务器断开|断开连接')
