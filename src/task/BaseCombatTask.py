@@ -311,7 +311,7 @@ class BaseCombatTask(CombatCheck):
         if not travel:
             raise RuntimeError(self.tr('Can not find the travel button'))
         self.click_box(travel, relative_x=1.5)
-        self.wait_in_team_and_world(time_out=20)
+        self.wait_in_team_and_world(time_out=120)
         self.sleep(2)
 
     def raise_not_in_combat(self, message):
