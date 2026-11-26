@@ -1,5 +1,6 @@
 """Vision and move planning for the 8x8 score board."""
 
+import time
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -15,6 +16,12 @@ TRAY_LAYOUTS = ((495, 735), (375, 615, 855), (255, 495, 735, 975))
 ROWS = tuple(255 << (SIZE * r) for r in range(SIZE))
 COLS = tuple(0x0101010101010101 << c for c in range(SIZE))
 FULL = (1 << (SIZE * SIZE)) - 1
+# choose_move beam-search safety valves: a hard cap on intermediate states plus
+# a wall-clock budget per search. Four-tray batches grow combinatorially and
+# without these bounds a depth-2 search can evaluate tens of millions of boards,
+# hanging the task for minutes. The budget guarantees a bounded-time answer.
+CHOOSE_MOVE_BEAM_WIDTH = 96
+CHOOSE_MOVE_TIME_BUDGET = 3.0
 
 
 @dataclass(frozen=True)
@@ -186,7 +193,15 @@ def board_value(mask):
 
 
 def choose_move(board, excluded=()):
-    """Search the current batch; bound intermediate states for three trays."""
+    """Search the current batch; bound intermediate states for any tray size.
+
+    The original code only pruned when there were exactly three trays. Stages
+    with four trays fall through to the unbounded branch and explode: depth 2
+    evaluates tens of millions of clear_lines/board_value calls, hanging the
+    task for minutes. Prune for every tray size and add a wall-clock fallback
+    that returns the best move found so far, so the search can never hang.
+    """
+    deadline = time.monotonic() + CHOOSE_MOVE_TIME_BUDGET
     batch = {p.slot: placements(p.cells) for p in board.pieces}
     states = [(board.mask, tuple(batch), 0, 0, None)]
     best = None
@@ -212,7 +227,7 @@ def choose_move(board, excluded=()):
         ordered = sorted(candidates.values(), key=lambda candidate: candidate[0], reverse=True)
         best = ordered[0][1][-1]
         # Preserve alternatives for every remaining subset before the final ply.
-        if len(batch) == 3 and depth < 2:
+        if depth < len(batch) - 1:
             counts = {}
             states = []
             for _, state in ordered:
@@ -220,8 +235,12 @@ def choose_move(board, excluded=()):
                 if counts.get(rest, 0) < 24:
                     states.append(state)
                     counts[rest] = counts.get(rest, 0) + 1
+            if len(states) > CHOOSE_MOVE_BEAM_WIDTH:
+                states = states[:CHOOSE_MOVE_BEAM_WIDTH]
         else:
             states = [state for _, state in ordered]
+        if time.monotonic() >= deadline:
+            break
     return best
 
 
