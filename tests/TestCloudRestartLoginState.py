@@ -139,7 +139,7 @@ class RestartLoginStateTest(unittest.TestCase):
         self.assertEqual(self.cookie(cb.LIVE_PROFILE), 'a-cookie')
         self.assertEqual(self.cookie(cb.profile_dir('default')), 'old-default-cookie')
         self.assertTrue(manager.capture_method.started)
-        self.assertTrue(manager.capture_method is not None)
+        self.assertIsNotNone(manager.capture_method)
 
     def test_save_current_uses_live_owner_not_stale_active(self):
         """cloud_launch 可能先把 active 写成 X，此时 Cookie 仍属于 live 的 A。"""

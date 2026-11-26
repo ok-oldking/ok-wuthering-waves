@@ -129,6 +129,53 @@ _REPLACE_RETRIES = 8
 _REPLACE_DELAY = 0.4
 
 
+def _cleanup_retired(retired: Path) -> None:
+    """Remove the parked old profile once the swap has safely completed."""
+    if retired.exists():
+        shutil.rmtree(retired, ignore_errors=True)
+
+
+def _restore_retired(retired: Path, target: Path) -> None:
+    """Put a half-swapped old profile back so nothing is left under .retired."""
+    if retired.exists() and not target.exists():
+        try:
+            os.replace(retired, target)
+        except OSError:  # pragma: no cover - still locked
+            pass
+
+
+def _try_swap(source: Path, target: Path, retired: Path):
+    """Perform one rename attempt.
+
+    Returns ``'done'`` on success, ``'retry'`` after a recoverable failure
+    (the old profile is restored first), or ``('exdev', error)`` when the
+    paths are on different volumes and a copy fallback is required.
+    """
+    try:
+        if retired.exists():
+            shutil.rmtree(retired)
+        if target.exists():
+            os.replace(target, retired)
+        os.replace(source, target)
+    except OSError as error:
+        _restore_retired(retired, target)
+        if error.errno == errno.EXDEV:
+            return 'exdev', error
+        return 'retry', error
+    return 'done', None
+
+
+def _copy_across_volumes(source: Path, target: Path, retired: Path) -> None:
+    """Cross-volume fallback for different filesystems.
+
+    The target was already moved aside, so copying creates a complete new
+    profile before the old one is deleted.
+    """
+    shutil.copytree(source, target)
+    _cleanup_retired(retired)
+    shutil.rmtree(source, ignore_errors=True)
+
+
 def _replace_dir(source: Path, target: Path) -> None:
     """Move ``source`` onto ``target``, replacing it.
 
@@ -143,38 +190,18 @@ def _replace_dir(source: Path, target: Path) -> None:
     retired = target.with_name(target.name + '.retired')
     last_error: OSError | None = None
     for attempt in range(_REPLACE_RETRIES):
-        try:
-            if retired.exists():
-                shutil.rmtree(retired)
-            if target.exists():
-                os.replace(target, retired)
-            os.replace(source, target)
-        except OSError as error:
-            last_error = error
-            # If the old profile was moved aside but the new one could not be
-            # moved in, put it back instead of leaving it under .retired.
-            if retired.exists() and not target.exists():
-                try:
-                    os.replace(retired, target)
-                except OSError:  # pragma: no cover - still locked
-                    pass
-            if error.errno == errno.EXDEV:
-                break
-            if attempt + 1 < _REPLACE_RETRIES:
-                time.sleep(_REPLACE_DELAY)
-                continue
-        else:
-            if retired.exists():
-                shutil.rmtree(retired, ignore_errors=True)
+        result, error = _try_swap(source, target, retired)
+        if result == 'done':
+            _cleanup_retired(retired)
             return
+        last_error = error
+        if result == 'exdev':
+            break
+        if attempt + 1 < _REPLACE_RETRIES:
+            time.sleep(_REPLACE_DELAY)
 
     if last_error is not None and last_error.errno == errno.EXDEV:
-        # source/target on different volumes: target was moved aside, so the
-        # copy creates a complete new profile before we delete the old one.
-        shutil.copytree(source, target)
-        if retired.exists():
-            shutil.rmtree(retired, ignore_errors=True)
-        shutil.rmtree(source, ignore_errors=True)
+        _copy_across_volumes(source, target, retired)
         return
 
     raise RuntimeError(
@@ -439,8 +466,6 @@ def main(argv=None) -> int:
     sub.add_parser('active', help='Show the active account')
     activate_parser = sub.add_parser('activate', help='Switch to an account')
     activate_parser.add_argument('account')
-    save_parser = sub.add_parser('save', help='Save the current browser login state')
-    save_parser.add_argument('account', nargs='?')
     sub.add_parser('migrate', help='Import the legacy cache/playwright profile')
     args = parser.parse_args(argv)
 
@@ -451,10 +476,6 @@ def main(argv=None) -> int:
         print(get_active_account() or '(none)')
     elif args.command == 'activate':
         print(f'profile: {prepare_live_profile(args.account)}')
-    elif args.command == 'save':
-        if args.account:
-            set_active_account(args.account)
-        print('saved' if save_current(None) else 'no running cloud browser to save')
     elif args.command == 'migrate':
         print(f'profile: {migrate_legacy_profile()}')
     return 0

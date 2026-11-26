@@ -259,6 +259,35 @@ class RecoveryIntegrationTest(unittest.TestCase):
         self.assertIn("if getattr(self, '_cloud_reward_resumed', False):", source)
         self.assertIn("wait_cloud_ready(self, time_out=600)", source)
 
+    def test_same_error_three_times_stops_instead_of_restarting(self):
+        """同一个错误连续出现 3 次必须提前停止，而不是无限刷新页面。"""
+        reward = types.SimpleNamespace(in_reward_dungeon=Mock(return_value=False),
+                                       resume_reward_dungeon=Mock(return_value=False))
+        recovery = self._load_recovery(reward)
+        task = self._task()
+        runner = Mock(side_effect=[RuntimeError('同一处失败')] * 3)
+
+        with patch.object(recovery.cloud_browser, 'restart_browser', return_value=True):
+            with self.assertRaises(RuntimeError):
+                recovery.run_with_cloud_recovery(task, runner)
+
+        self.assertEqual(runner.call_count, 3)
+
+    def test_different_errors_reset_repeat_counter(self):
+        """不同错误交替出现时不触发"相同错误"提前停止，走重启次数上限。"""
+        reward = types.SimpleNamespace(in_reward_dungeon=Mock(return_value=False),
+                                       resume_reward_dungeon=Mock(return_value=False))
+        recovery = self._load_recovery(reward)
+        task = self._task()
+        runner = Mock(side_effect=[RuntimeError('错误A'), RuntimeError('错误B'),
+                                   RuntimeError('错误A')])
+
+        with patch.object(recovery.cloud_browser, 'restart_browser', return_value=True):
+            with self.assertRaises(RuntimeError):
+                recovery.run_with_cloud_recovery(task, runner, max_restarts=2)
+
+        self.assertEqual(runner.call_count, 3)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

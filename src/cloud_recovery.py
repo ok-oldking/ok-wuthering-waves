@@ -122,6 +122,92 @@ def wait_cloud_ready(task, time_out: int = 600) -> bool:
     return True
 
 
+def _restart_browser_for_recovery(task) -> bool:
+    """Restart the browser with the account that owns the live profile.
+
+    Must pass the account explicitly: restart_browser guessing ``default``
+    would swap in an unrelated (often empty) profile, which is exactly the
+    "restart task lost my login" bug.
+    """
+    try:
+        account = cloud_browser.resolve_account()
+        return bool(cloud_browser.restart_browser(
+            task, account_key=account, save_previous=False))
+    except Exception as error:  # pragma: no cover - depends on live browser
+        task.log_warning(task.tr('重启浏览器失败：{error}').format(error=error))
+        return False
+
+
+def _reload_cloud_page(task) -> bool:
+    """Reload the cloud page, falling back to a navigation-based restart."""
+    try:
+        return bool(cloud_browser.restart_page(task))
+    except Exception as error:  # pragma: no cover - depends on live browser
+        task.log_warning(task.tr('刷新云鸣潮页面失败：{error}').format(error=error))
+        try:
+            return bool(cloud_browser.reload_page(task))
+        except Exception as fallback_error:  # pragma: no cover
+            task.log_warning(
+                task.tr('重试刷新页面仍失败：{error}').format(error=fallback_error))
+            return False
+
+
+def _reset_cloud_session_state(task) -> None:
+    """Reset "already in game" markers and grab a fresh frame.
+
+    Without this the next round would not click 进入游戏 again after a
+    reconnect or account switch.
+    """
+    task.sleep(PAGE_SETTLE_SECONDS)
+    task.logged_in = False
+    if hasattr(task, '_cloud_start_click_time'):
+        task._cloud_start_click_time = 0
+    if hasattr(task, '_cloud_start_clicks'):
+        task._cloud_start_clicks = 0
+    try:
+        task.next_frame()
+    except _NEVER_RETRY:
+        raise
+    except Exception as error:  # pragma: no cover - capture may be briefly busy
+        task.log_warning(task.tr('刷新后重新截取画面失败：{error}').format(error=error))
+
+
+def _resume_reward_dungeon_in_place(task, resume_dungeon) -> bool:
+    """Resume an in-progress reward dungeon before ``ensure_main`` escapes it.
+
+    ``ensure_main`` presses Esc in the dungeon, which would throw the run
+    away and force a re-entry from F2.  Returns True only when the run was
+    actually resumed and the reward collected.
+    """
+    task._cloud_reward_resumed = False
+    if not (_resume_reward_dungeon(task, resume_dungeon)
+            and getattr(task, '_cloud_in_reward_dungeon_before_error', False)
+            and not _is_stopped(task)):
+        return False
+    try:
+        resumed = reward_dungeon_recovery.resume_reward_dungeon(task)
+    except Exception as error:  # pragma: no cover - 恢复本身失败走原路径
+        task.log_warning(task.tr('副本现场恢复失败，按原流程重新开始：{error}')
+                         .format(error=error))
+        return False
+    if resumed:
+        task._cloud_reward_resumed = True
+    return resumed
+
+
+def _wait_cloud_ready_after_refresh(task, time_out) -> bool:
+    """Wait for the cloud game to be back in the world; False on failure."""
+    try:
+        wait_cloud_ready(task, time_out=time_out)
+    except _NEVER_RETRY:
+        raise
+    except Exception as error:
+        task.log_warning(
+            task.tr('刷新后等待进入游戏失败，将继续重试任务：{error}').format(error=error))
+        return False
+    return True
+
+
 def refresh_cloud_game(task, *, wait_ready: bool = True, time_out: int = 600,
                        restart_browser: bool | None = None,
                        resume_dungeon: bool | None = None) -> bool:
@@ -143,74 +229,117 @@ def refresh_cloud_game(task, *, wait_ready: bool = True, time_out: int = 600,
     else:
         task.log_warning(task.tr('云鸣潮出错，正在刷新页面并重新开始任务…'), notify=True)
 
-    reloaded = False
-    if use_browser_restart:
-        try:
-            # 必须显式带上当前账号：restart_browser 若猜 default，会把正在用的
-            # profile 换成 default（甚至空目录），表现就是"重启任务后掉登录"。
-            account = cloud_browser.resolve_account()
-            reloaded = bool(cloud_browser.restart_browser(
-                task, account_key=account, save_previous=False))
-        except Exception as error:  # pragma: no cover - depends on live browser
-            task.log_warning(task.tr('重启浏览器失败：{error}').format(error=error))
-            reloaded = False
-        if not reloaded:
-            task.log_warning(task.tr('浏览器重启不可用，回退到刷新页面。'))
-
+    reloaded = _restart_browser_for_recovery(task) if use_browser_restart else False
     if not reloaded:
-        try:
-            reloaded = cloud_browser.restart_page(task)
-        except Exception as error:  # pragma: no cover - depends on live browser
-            task.log_warning(task.tr('刷新云鸣潮页面失败：{error}').format(error=error))
-            try:
-                reloaded = cloud_browser.reload_page(task)
-            except Exception as fallback_error:  # pragma: no cover
-                task.log_warning(
-                    task.tr('重试刷新页面仍失败：{error}').format(error=fallback_error))
+        if use_browser_restart:
+            task.log_warning(task.tr('浏览器重启不可用，回退到刷新页面。'))
+        reloaded = _reload_cloud_page(task)
     if not reloaded:
         task.log_warning(task.tr('未能重启或刷新浏览器页面，将直接重试任务。'))
 
-    task.sleep(PAGE_SETTLE_SECONDS)
+    _reset_cloud_session_state(task)
 
-    # 重置"已进入游戏/刚点过进入游戏"的标记，让下一轮能重新点击一次进入游戏。
-    task.logged_in = False
-    if hasattr(task, '_cloud_start_click_time'):
-        task._cloud_start_click_time = 0
-    if hasattr(task, '_cloud_start_clicks'):
-        task._cloud_start_clicks = 0
-    try:
-        task.next_frame()
-    except _NEVER_RETRY:
-        raise
-    except Exception as error:  # pragma: no cover - capture may be briefly busy
-        task.log_warning(task.tr('刷新后重新截取画面失败：{error}').format(error=error))
-
-    # 战斗奖励副本现场优先：云端会话还在副本里时先续打/领奖，绝不让
-    # ensure_main 的自动 Esc 把这一场丢掉再从 F2 重进。
-    task._cloud_reward_resumed = False
-    if (_resume_reward_dungeon(task, resume_dungeon)
-            and getattr(task, '_cloud_in_reward_dungeon_before_error', False)
-            and not _is_stopped(task)):
-        try:
-            resumed = reward_dungeon_recovery.resume_reward_dungeon(task)
-        except Exception as error:  # pragma: no cover - 恢复本身失败走原路径
-            task.log_warning(task.tr('副本现场恢复失败，按原流程重新开始：{error}')
-                             .format(error=error))
-            resumed = False
-        if resumed:
-            task._cloud_reward_resumed = True
-            return reloaded
+    if _resume_reward_dungeon_in_place(task, resume_dungeon):
+        return reloaded
 
     if wait_ready and not _is_stopped(task):
-        try:
-            wait_cloud_ready(task, time_out=time_out)
-        except _NEVER_RETRY:
-            raise
-        except Exception as error:
-            task.log_warning(
-                task.tr('刷新后等待进入游戏失败，将继续重试任务：{error}').format(error=error))
-            return False
+        return _wait_cloud_ready_after_refresh(task, time_out)
     return reloaded
+
+
+def _runs_in_cloud(task) -> bool:
+    """True when the failing task runs on the cloud browser.
+
+    A local client keeps the framework's original error handling: no page
+    refresh for it.
+    """
+    try:
+        return bool(task.is_browser())
+    except Exception:
+        return False
+
+
+def _snapshot_dungeon_before_refresh(task, resume_dungeon, refresh_page) -> None:
+    """Record whether a reward dungeon was running before any refresh.
+
+    Must happen before the browser/page restart destroys the screen, so the
+    recovery chain can decide between resuming in place and re-entering.
+    Detection failure counts as "not in a dungeon".
+    """
+    task._cloud_reward_resumed = False
+    if _resume_reward_dungeon(task, resume_dungeon) and refresh_page:
+        snapshot_reward_dungeon(task)
+    else:
+        task._cloud_in_reward_dungeon_before_error = False
+
+
+def _stop_if_repeating(task, error, label, repeated) -> None:
+    """Give up early when the very same error shows up N times in a row.
+
+    For example a bad ``super()`` call fails at the same spot on every
+    restart; refreshing the page cannot help, so stop with a clear message.
+    """
+    if repeated < REPEAT_ERROR_LIMIT:
+        return
+    task.log_error(
+        task.tr('{name} 连续 {count} 次出现相同错误，判定为无法自动恢复：{error}')
+        .format(name=label, count=repeated, error=error))
+    task.info_set('状态', '执行失败')
+    raise
+
+
+def _stop_if_restart_limit(task, label, restarts, limit, error) -> None:
+    """Stop after more automatic restarts than allowed."""
+    if restarts <= limit:
+        return
+    task.log_error(
+        task.tr('{name} 已自动重启 {count} 次仍然失败，停止任务。')
+        .format(name=label, count=limit), error)
+    task.info_set('状态', '执行失败')
+    raise
+
+
+def _recover_after_error(task, refresh_page, wait_ready, time_out,
+                         restart_browser, resume_dungeon) -> None:
+    """Refresh the page, or reset lightweight state, then rerun the task."""
+    if refresh_page:
+        refresh_cloud_game(task, wait_ready=wait_ready, time_out=time_out,
+                           restart_browser=restart_browser,
+                           resume_dungeon=resume_dungeon)
+        return
+    # 活动类任务（如拉海洛方块）刷新页面会丢失当前活动关卡 UI，
+    # 这里只重置轻量状态，然后原地重跑任务流程。
+    task.log_warning(task.tr('不刷新页面，直接重新开始任务…'))
+    task.sleep(1)
+    task.logged_in = False
+
+
+def _handle_cloud_error(task, error, *, label, restarts, last_signature,
+                        repeated, limit, refresh_page, wait_ready, time_out,
+                        restart_browser, resume_dungeon):
+    """Log one cloud failure, decide whether to retry, and refresh the page.
+
+    Returns ``(restarts, last_signature, repeated)`` for the next round.
+    Raises again (the original error) when the error must not be retried: the
+    limit of restarts is exhausted or the very same failure keeps repeating.
+    """
+    if not _runs_in_cloud(task):
+        raise
+
+    restarts += 1
+    task.log_error(task.tr('{name} 运行出错').format(name=label), error)
+    _snapshot_dungeon_before_refresh(task, resume_dungeon, refresh_page)
+
+    signature = _error_signature(error)
+    repeated = repeated + 1 if signature == last_signature else 1
+    _stop_if_repeating(task, error, label, repeated)
+    _stop_if_restart_limit(task, label, restarts, limit, error)
+
+    task.info_set('状态', task.tr('出错，正在自动重启 {current}/{limit}')
+                  .format(current=restarts, limit=limit))
+    _recover_after_error(task, refresh_page, wait_ready, time_out,
+                         restart_browser, resume_dungeon)
+    return restarts, signature, repeated
 
 
 def run_with_cloud_recovery(
@@ -252,56 +381,8 @@ def run_with_cloud_recovery(
         except FatalTaskError:
             raise
         except Exception as error:
-            try:
-                is_cloud = bool(task.is_browser())
-            except Exception:
-                is_cloud = False
-            # 本地客户端沿用原有的错误处理逻辑，不刷新网页。
-            if not is_cloud:
-                raise
-
-            restarts += 1
-            task.log_error(task.tr('{name} 运行出错').format(name=label), error)
-
-            # 在画面还没被重启/刷新破坏前记录是否在奖励副本，供恢复链决定
-            # 「现场续打」还是「正常重进」。探测失败就当不在副本。
-            task._cloud_reward_resumed = False
-            if _resume_reward_dungeon(task, resume_dungeon) and refresh_page:
-                snapshot_reward_dungeon(task)
-            else:
-                task._cloud_in_reward_dungeon_before_error = False
-
-            signature = _error_signature(error)
-            if signature == last_signature:
-                repeated += 1
-            else:
-                last_signature = signature
-                repeated = 1
-
-            if repeated >= REPEAT_ERROR_LIMIT:
-                # 例如代码里的 super() 用法错误: 每次重启都会在同一处失败,
-                # 再刷新页面没有意义, 提前停止并给出明确提示。
-                task.log_error(
-                    task.tr('{name} 连续 {count} 次出现相同错误，判定为无法自动恢复：{error}')
-                    .format(name=label, count=repeated, error=error))
-                task.info_set('状态', '执行失败')
-                raise
-            if restarts > limit:
-                task.log_error(
-                    task.tr('{name} 已自动重启 {count} 次仍然失败，停止任务。')
-                    .format(name=label, count=limit), error)
-                task.info_set('状态', '执行失败')
-                raise
-
-            task.info_set('状态', task.tr('出错，正在自动重启 {current}/{limit}')
-                          .format(current=restarts, limit=limit))
-            if refresh_page:
-                refresh_cloud_game(task, wait_ready=wait_ready, time_out=time_out,
-                                   restart_browser=restart_browser,
-                                   resume_dungeon=resume_dungeon)
-            else:
-                # 活动类任务（如拉海洛方块）刷新页面会丢失当前活动关卡 UI，
-                # 这里只重置轻量状态，然后原地重跑任务流程。
-                task.log_warning(task.tr('不刷新页面，直接重新开始任务…'))
-                task.sleep(1)
-                task.logged_in = False
+            restarts, last_signature, repeated = _handle_cloud_error(
+                task, error, label=label, restarts=restarts,
+                last_signature=last_signature, repeated=repeated, limit=limit,
+                refresh_page=refresh_page, wait_ready=wait_ready, time_out=time_out,
+                restart_browser=restart_browser, resume_dungeon=resume_dungeon)

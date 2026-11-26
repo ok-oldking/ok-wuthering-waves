@@ -243,6 +243,21 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         except (OSError, ValueError) as error:
             self.log_warning(self.tr('Failed to save account run history: {error}').format(error=error))
 
+    def _switch_cloud_profile(self, key, label):
+        """Point the live browser profile at ``key`` before its run starts."""
+        active = cloud_browser.get_active_account()
+        if cloud_browser.profile_matches(key):
+            cloud_browser.set_active_account(key)
+            return
+        # 首次升级：浏览器里已经登录着活动账号，认领这份 profile，不必重开。
+        if key == active and cloud_browser.adopt_live_profile(key):
+            return
+        self.log_info(self.tr('切换到账号 {account}（重开云游戏浏览器）').format(account=label))
+        if not cloud_browser.restart_browser(self, account_key=key):
+            raise FatalTaskError(self.tr(
+                '无法为账号 {account} 启动云游戏浏览器，请检查浏览器是否可用。'
+            ).format(account=label))
+
     def _run_cloud_account(self, account):
         """换到该账号的 profile 并跑它自己的任务（account 为 None 表示当前账号）."""
         key = account['account_key'] if account else None
@@ -250,17 +265,7 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         task = resolve_task(self.executor, account['task']) if account else None
 
         if key:
-            active = cloud_browser.get_active_account()
-            if not cloud_browser.profile_matches(key):
-                # 首次升级：浏览器里已经登录着活动账号，认领这份 profile，不必重开。
-                if not (key == active and cloud_browser.adopt_live_profile(key)):
-                    self.log_info(self.tr('切换到账号 {account}（重开云游戏浏览器）').format(account=label))
-                    if not cloud_browser.restart_browser(self, account_key=key):
-                        raise FatalTaskError(self.tr(
-                            '无法为账号 {account} 启动云游戏浏览器，请检查浏览器是否可用。'
-                        ).format(account=label))
-            else:
-                cloud_browser.set_active_account(key)
+            self._switch_cloud_profile(key, label)
 
         def work():
             # 副本现场恢复成功后云端仍停在（或刚离开）副本，不能再走
