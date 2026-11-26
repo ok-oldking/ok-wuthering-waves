@@ -40,13 +40,34 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
         self._unreachable_nests = set()
         self._nest_deaths = {}
         self._nest_tab_of_current_nest = 'go_nest'
-        self.default_config.update({'Which to Farm': ['Nightmare Purification', 'Tacet Discord Nest']})
+        self.default_config.update({
+            'Which to Farm': ['Nightmare Purification', 'Tacet Discord Nest'],
+            # 双极这类敌人会飞出聚落范围: 5 秒锁不到就原地重锁 2 次, 仍失败
+            # 就放弃当前聚落去找下一个, 不追出边界浪费时间。
+            'Lock Retry Timeout (s)': 5,
+            'Lock Retries': 2,
+        })
         self.config_type['Which to Farm'] = {'type': "multi_selection",
                                              'options': ['Nightmare Purification', 'Tacet Discord Nest']}
+
+    def _apply_lock_settings(self):
+        """把任务配置落到 CombatCheck 的可配置锁敌参数上。"""
+        def as_int(value, default, low, high):
+            try:
+                return max(low, min(high, int(value)))
+            except (TypeError, ValueError):
+                return default
+
+        timeout = as_int(self.config.get('Lock Retry Timeout (s)'), 5, 1, 60)
+        self.target_enemy_time_out = timeout
+        self.target_enemy_retry_timeout = timeout
+        self.target_enemy_retry_count = as_int(self.config.get('Lock Retries'), 2, 0, 5)
+        self.target_lost_give_up = False
 
     def run(self):
         self._capture_mode = False
         self._capture_success = False
+        self._apply_lock_settings()
         self._unreachable_nests.clear()
         self._nest_deaths.clear()
         WWOneTimeTask.run(self)
@@ -60,6 +81,7 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
     def run_capture_mode(self):
         self._capture_mode = True
         self._capture_success = False
+        self._apply_lock_settings()
         self._unreachable_nests.clear()
         self._nest_deaths.clear()
         WWOneTimeTask.run(self)
@@ -86,7 +108,14 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             self._capture_success = True
         return self._capture_success
 
+    def _skip_nest_after_target_lost(self, is_team):
+        """重锁多次仍失败: 结束当前聚落, 让主循环去图鉴找下一个。"""
+        self.log_info(self.tr('聚落目标多次重锁失败，跳过当前聚落去找下一个。'), notify=True)
+        if is_team:
+            self.esc_world_confirm()
+
     def combat_nest(self, nest):
+        self.target_lost_give_up = False
         target_box = nest.box if isinstance(nest, NestTarget) else nest
         self.click(target_box, after_sleep=2)
         feature = self.wait_feature(['fast_travel_custom', 'gray_teleport', 'remove_custom', *TEAM_SCREEN_FEATURES],
@@ -109,6 +138,14 @@ class NightmareNestTask(WWOneTimeTask, BaseCombatTask):
             try:
                 need_find = self.combat_once(wait_combat_time=wait_combat_time, target=True,
                                              raise_if_not_found=False)
+                if getattr(self, 'target_lost_give_up', False):
+                    # 敌人真死了会有 F 拾取提示; 没有掉落说明是飞走/丢失,
+                    # 直接去下一个聚落, 不再原地找声骸/追出边界。
+                    self.next_frame()
+                    if not self.find_f_with_text():
+                        self._skip_nest_after_target_lost(is_team)
+                        return
+                    self.target_lost_give_up = False
             except CharRevivedException:
                 if isinstance(nest, NestTarget):
                     deaths = self._nest_deaths.get(nest.cache_key, 0) + 1

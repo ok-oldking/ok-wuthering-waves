@@ -51,6 +51,12 @@ class CombatCheck(BaseWWTask):
         self.has_lavitator = False
         self.target_enemy_error_notified = False
         self._cloud_health_lost_at = 0
+        # 聚落等场景: 敌人(如双极)飞出锁定范围时, 原地重锁 N 次再放弃, 而不是
+        # 一路追出目标区域。默认 0 = 保持框架原有行为, 只有任务显式开启才生效。
+        self.target_enemy_retry_count = 0
+        self.target_enemy_retry_timeout = 5
+        self.target_lost_give_up = False
+        self._target_retried_this_episode = False
         self.cds = {
         }
         self.esc_count = 0
@@ -91,7 +97,38 @@ class CombatCheck(BaseWWTask):
         self.last_in_realm_not_combat = 0
         self.has_lavitator = False
         self.can_break = False
+        self._target_retried_this_episode = False
         self.scene.set_not_in_combat()
+        return False
+
+    def _retry_target_before_give_up(self, has_health=False):
+        """Lock the target again in place before giving up on it.
+
+        Returns True if a retry succeeded and combat should continue. Returns
+        False when the target is really lost; in that case ``target_lost_give_up``
+        is set so the calling task can decide what to do next (e.g. move to the
+        next nest). Only active for tasks that set ``target_enemy_retry_count``.
+        """
+        # Only a real positive integer opts in. getattr + isinstance keeps this
+        # inert for partial mocks of CombatCheck used by rotation tests.
+        retries = getattr(self, 'target_enemy_retry_count', 0)
+        if not isinstance(retries, int) or retries <= 0:
+            return False
+        if self._target_retried_this_episode:
+            return False
+        self._target_retried_this_episode = True
+        for attempt in range(1, retries + 1):
+            self.log_warning(
+                self.tr('目标锁定失败，原地重锁 {current}/{total}（每次最多 {timeout} 秒）')
+                .format(current=attempt, total=retries,
+                        timeout=self.target_enemy_retry_timeout))
+            if self.target_enemy(wait=True, time_out=self.target_enemy_retry_timeout,
+                                 check_health=has_health):
+                self.target_lost_give_up = False
+                return True
+            self.sleep(0.4)
+        self.target_lost_give_up = True
+        self.log_warning(self.tr('多次重锁仍失败，放弃当前目标。'))
         return False
 
     def check_f_break(self):
@@ -166,6 +203,8 @@ class CombatCheck(BaseWWTask):
                 self.log_info(self.tr('on_combat_check failed'))
                 return self.reset_to_false(reason='on_combat_check failed')
             if self.has_target():
+                self._target_retried_this_episode = False
+                self.target_lost_give_up = False
                 self.last_in_realm_not_combat = 0
                 return self.scene.set_in_combat()
             has_health = self.check_health_bar()
@@ -176,13 +215,24 @@ class CombatCheck(BaseWWTask):
                 return self.scene.set_in_combat()
             if self.combat_end_condition is not None and self.combat_end_condition():
                 return self.reset_to_false(reason='end condition reached')
-            retarget_timeout = 30 if has_health else self.target_enemy_time_out
+            retry_count = getattr(self, 'target_enemy_retry_count', 0)
+            use_retry = isinstance(retry_count, int) and retry_count > 0
+            if use_retry:
+                # 聚落场景: 敌人飞走时不要因为残留血条等 30 秒, 用可配置的重锁超时。
+                timeout = getattr(self, 'target_enemy_retry_timeout', 0)
+                retarget_timeout = timeout if isinstance(timeout, int) and timeout > 0 else 3
+            else:
+                retarget_timeout = 30 if has_health else self.target_enemy_time_out
             if self.target_enemy(wait=True, time_out=retarget_timeout, check_health=has_health):
                 logger.debug(f'retarget enemy succeeded')
                 return self.scene.set_in_combat()
             if self.should_check_monthly_card() and self.handle_monthly_card():
                 return self.scene.set_in_combat()
             logger.error('target_enemy failed, try recheck break out of combat')
+            # Only call the retry hook for tasks that opted in; a bare Mock of
+            # CombatCheck has no such method, so guard with the same strict check.
+            if use_retry and self._retry_target_before_give_up(has_health):
+                return self.scene.set_in_combat()
             return self.reset_to_false(reason='target enemy failed')
         else:
             from src.task.AutoCombatTask import AutoCombatTask
