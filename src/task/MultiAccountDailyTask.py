@@ -158,10 +158,22 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         }
 
     def _is_cloud_device(self):
+        # The device list may not have been refreshed yet on the first visit,
+        # so device_dict has no 'browser' entry and is_browser() returns None —
+        # the save/switch buttons would be missing on first open. Prefer the
+        # actual selected device when one exists; otherwise fall back to
+        # whether a cloud browser is configured at all.
         try:
-            return bool(self.is_browser())
+            manager = self.executor.device_manager
         except Exception:
             return False
+        try:
+            preferred = manager.get_preferred_device()
+        except Exception:
+            preferred = None
+        if preferred is not None:
+            return preferred.get('device') == 'browser'
+        return bool(getattr(manager, 'browser_config', None))
 
     def _mark_done(self, account):
         normalized = normalize_account_name(account)

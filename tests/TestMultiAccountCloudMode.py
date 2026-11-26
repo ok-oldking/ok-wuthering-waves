@@ -70,6 +70,37 @@ class CloudConfigTypeTest(unittest.TestCase):
         task = MultiAccountDailyTask.__new__(MultiAccountDailyTask)
         self.assertFalse(MultiAccountDailyTask._is_cloud_device(task))
 
+    # --- First entry: the device list may not be refreshed yet yet the
+    # --- cloud buttons must still show when a cloud browser is configured.
+
+    @staticmethod
+    def _manager(preferred, browser_config):
+        import types
+        return types.SimpleNamespace(
+            get_preferred_device=lambda: preferred,
+            browser_config=browser_config,
+        )
+
+    def _assert_cloud_device(self, preferred, browser_config, expected):
+        import types
+        from unittest.mock import patch
+        executor = types.SimpleNamespace(device_manager=self._manager(preferred, browser_config))
+        task = MultiAccountDailyTask.__new__(MultiAccountDailyTask)
+        with patch.object(MultiAccountDailyTask, 'executor', new=executor):
+            self.assertEqual(MultiAccountDailyTask._is_cloud_device(task), expected)
+
+    def test_cloud_device_first_entry_falls_back_to_browser_config(self):
+        self._assert_cloud_device(None, {'url': 'https://x'}, True)
+
+    def test_cloud_device_preferred_browser(self):
+        self._assert_cloud_device({'device': 'browser'}, {}, True)
+
+    def test_cloud_device_preferred_windows_hides_buttons(self):
+        self._assert_cloud_device({'device': 'windows'}, {'url': 'https://x'}, False)
+
+    def test_cloud_device_no_browser_config_no_buttons(self):
+        self._assert_cloud_device(None, None, False)
+
 
 class CloudRunDispatchTest(unittest.TestCase):
 
