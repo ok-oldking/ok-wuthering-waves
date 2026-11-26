@@ -2093,3 +2093,85 @@ msgstr "{name} 이미 정리됨 ({defeated}/{total})"
 
 msgid "Timed out on the game login screen."
 msgstr "게임 로그인 화면에서 대기 시간이 초과되었습니다."
+
+msgid "Use Echo Box for Daily Echo"
+msgstr "에코 상자로 일일 임무용 에코 획득"
+
+msgid ""
+"When needed, use an Echo box from the Bag to obtain an Echo and complete "
+"daily activities."
+msgstr "필요할 때 가방의 에코 상자를 사용해 에코를 획득하고 일일 임무를 완료합니다."
+
+#: src/task/EchoBoxMixin.py
+msgid "Echo box skipped: unsupported game language."
+msgstr "지원하지 않는 게임 언어이므로 에코 상자 사용을 건너뜁니다."
+
+#: src/task/EchoBoxMixin.py
+msgid "Looking for an Echo box on the current page"
+msgstr "현재 페이지에서 에코 상자 찾는 중"
+
+#: src/task/EchoBoxMixin.py
+msgid "No Echo boxes found on the current page."
+msgstr "현재 페이지에서 에코 상자를 찾지 못했습니다."
+
+#: src/task/EchoBoxMixin.py
+msgid "Used one Echo box and verified its consumption."
+msgstr "에코 상자 1개를 사용하고 소모를 확인했습니다."
+
+#: src/task/EchoBoxMixin.py
+msgid "Opening the Bag and locating the Special tab"
+msgstr "배낭을 열고 특수 탭 찾는 중"
+
+#: src/task/EchoBoxMixin.py
+msgid "Scrolling the Bag category sidebar"
+msgstr "배낭 분류 목록 스크롤 중"
+
+#: src/task/EchoBoxMixin.py
+msgid "Could not find the Special tab in the Bag."
+msgstr "배낭에서 특수 탭을 찾지 못했습니다."
+
+#: src/task/EchoBoxMixin.py
+msgid "Reading the item name and quantity"
+msgstr "아이템 이름과 수량 인식 중"
+
+#: src/task/EchoBoxMixin.py
+msgid ""
+"Echo box result is uncertain. Check the Bag before running again; no retry "
+"was sent."
+msgstr "에코 상자 사용 결과를 확인할 수 없습니다. 재시도하지 않았습니다. 다시 실행하기 전에 배낭을 확인하세요."
+
+#: src/task/EchoBoxMixin.py
+msgid "Could not reliably read the item name and quantity. No box was used."
+msgstr "아이템 이름과 수량을 정확히 인식하지 못해 상자를 사용하지 않았습니다."
+
+#: src/task/EchoBoxMixin.py
+msgid "Could not uniquely locate an Echo box button."
+msgstr "에코 상자 버튼을 명확하게 식별하지 못했습니다."
+
+#: src/task/EchoBoxMixin.py
+msgid "Using one Echo box"
+msgstr "에코 상자 1개 사용 중"
+
+#: src/task/EchoBoxMixin.py
+msgid "Keep the game in the foreground while scrolling the Bag categories."
+msgstr "배낭 분류 목록을 스크롤할 때는 게임을 전면에 유지하세요."
+
+#: src/task/DailyTask.py
+msgid "Checking daily activity after claiming rewards"
+msgstr "보상 수령 후 일일 활동도 확인 중"
+
+#: src/task/DailyTask.py
+msgid "Could not read daily activity. No Echo box was used."
+msgstr "일일 활동도를 정확히 인식하지 못해 에코 상자를 사용하지 않았습니다."
+
+#: src/task/DailyTask.py
+msgid "Claiming daily rewards after using one Echo box"
+msgstr "에코 상자 1개 사용 후 일일 보상 수령 중"
+
+#: src/task/DailyTask.py
+msgid "Echo box daily completion failed; continuing daily tasks: {error}"
+msgstr "에코 상자로 일일 활동을 보충하지 못했습니다. 일일 작업을 계속합니다: {error}"
+
+#: src/task/DailyTask.py
+msgid "Could not return to the open world after the Echo box step: {error}"
+msgstr "에코 상자 단계 후 오픈 월드로 돌아가지 못했습니다: {error}"

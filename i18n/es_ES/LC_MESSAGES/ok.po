@@ -2049,3 +2049,98 @@ msgstr "{name} ya limpiado ({defeated}/{total})"
 
 msgid "Timed out on the game login screen."
 msgstr "Se agotó el tiempo de espera en la pantalla de inicio de sesión del juego."
+
+msgid "Use Echo Box for Daily Echo"
+msgstr "Usar cajas de Eco para las actividades diarias"
+
+msgid ""
+"When needed, use an Echo box from the Bag to obtain an Echo and complete "
+"daily activities."
+msgstr ""
+"Cuando sea necesario, usa una caja de Eco de la mochila para obtener un Eco "
+"y completar las actividades diarias."
+
+#: src/task/EchoBoxMixin.py
+msgid "Echo box skipped: unsupported game language."
+msgstr "Se omite la caja de Eco: idioma del juego no compatible."
+
+#: src/task/EchoBoxMixin.py
+msgid "Looking for an Echo box on the current page"
+msgstr "Buscando una caja de Eco en la página actual"
+
+#: src/task/EchoBoxMixin.py
+msgid "No Echo boxes found on the current page."
+msgstr "No se encontraron cajas de Eco en la página actual."
+
+#: src/task/EchoBoxMixin.py
+msgid "Used one Echo box and verified its consumption."
+msgstr "Se usó una caja de Eco y se verificó su consumo."
+
+#: src/task/EchoBoxMixin.py
+msgid "Opening the Bag and locating the Special tab"
+msgstr "Abriendo la mochila y buscando la pestaña Especial"
+
+#: src/task/EchoBoxMixin.py
+msgid "Scrolling the Bag category sidebar"
+msgstr "Desplazando la lista de categorías de la mochila"
+
+#: src/task/EchoBoxMixin.py
+msgid "Could not find the Special tab in the Bag."
+msgstr "No se encontró la pestaña Especial de la mochila."
+
+#: src/task/EchoBoxMixin.py
+msgid "Reading the item name and quantity"
+msgstr "Leyendo el nombre y la cantidad del objeto"
+
+#: src/task/EchoBoxMixin.py
+msgid ""
+"Echo box result is uncertain. Check the Bag before running again; no retry "
+"was sent."
+msgstr ""
+"El resultado de la caja de Eco es incierto. No se reintentó. Revisa la "
+"mochila antes de volver a ejecutar."
+
+#: src/task/EchoBoxMixin.py
+msgid "Could not reliably read the item name and quantity. No box was used."
+msgstr ""
+"No se pudieron leer con certeza el nombre y la cantidad del objeto. No se "
+"usó ninguna caja."
+
+#: src/task/EchoBoxMixin.py
+msgid "Could not uniquely locate an Echo box button."
+msgstr ""
+"No se pudo identificar de forma inequívoca el botón de la caja de Eco."
+
+#: src/task/EchoBoxMixin.py
+msgid "Using one Echo box"
+msgstr "Usando una caja de Eco"
+
+#: src/task/EchoBoxMixin.py
+msgid "Keep the game in the foreground while scrolling the Bag categories."
+msgstr ""
+"Mantén el juego en primer plano al desplazar las categorías de la mochila."
+
+#: src/task/DailyTask.py
+msgid "Checking daily activity after claiming rewards"
+msgstr "Comprobando la actividad diaria después de reclamar las recompensas"
+
+#: src/task/DailyTask.py
+msgid "Could not read daily activity. No Echo box was used."
+msgstr ""
+"No se pudo leer la actividad diaria con certeza. No se usó ninguna caja de "
+"Eco."
+
+#: src/task/DailyTask.py
+msgid "Claiming daily rewards after using one Echo box"
+msgstr "Reclamando las recompensas diarias tras usar una caja de Eco"
+
+#: src/task/DailyTask.py
+msgid "Echo box daily completion failed; continuing daily tasks: {error}"
+msgstr ""
+"No se pudo completar la actividad con una caja de Eco; se continúa la tarea "
+"diaria: {error}"
+
+#: src/task/DailyTask.py
+msgid "Could not return to the open world after the Echo box step: {error}"
+msgstr ""
+"No se pudo volver al mundo abierto tras el paso de la caja de Eco: {error}"

@@ -2090,3 +2090,85 @@ msgstr "{name} はクリア済み（{defeated}/{total}）"
 
 msgid "Timed out on the game login screen."
 msgstr "ゲームのログイン画面でタイムアウトしました。"
+
+msgid "Use Echo Box for Daily Echo"
+msgstr "音骸ボックスでデイリー用の音骸を獲得"
+
+msgid ""
+"When needed, use an Echo box from the Bag to obtain an Echo and complete "
+"daily activities."
+msgstr "必要に応じてバッグ内の音骸ボックスを使用し、音骸を獲得してデイリーを達成します。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Echo box skipped: unsupported game language."
+msgstr "ゲームの言語が未対応のため、音骸ボックスをスキップします。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Looking for an Echo box on the current page"
+msgstr "現在のページで音骸ボックスを検索中"
+
+#: src/task/EchoBoxMixin.py
+msgid "No Echo boxes found on the current page."
+msgstr "現在のページに音骸ボックスが見つかりません。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Used one Echo box and verified its consumption."
+msgstr "音骸ボックスを1個使用し、消費を確認しました。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Opening the Bag and locating the Special tab"
+msgstr "バッグを開いて「特殊」タブを検索中"
+
+#: src/task/EchoBoxMixin.py
+msgid "Scrolling the Bag category sidebar"
+msgstr "バッグのカテゴリ一覧をスクロール中"
+
+#: src/task/EchoBoxMixin.py
+msgid "Could not find the Special tab in the Bag."
+msgstr "バッグの「特殊」タブが見つかりません。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Reading the item name and quantity"
+msgstr "アイテム名と所持数を読み取り中"
+
+#: src/task/EchoBoxMixin.py
+msgid ""
+"Echo box result is uncertain. Check the Bag before running again; no retry "
+"was sent."
+msgstr "音骸ボックスの使用結果を確認できません。再試行はしていません。再実行前にバッグを確認してください。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Could not reliably read the item name and quantity. No box was used."
+msgstr "アイテム名と所持数を正確に読み取れないため、ボックスは使用していません。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Could not uniquely locate an Echo box button."
+msgstr "音骸ボックスの操作ボタンを一意に特定できません。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Using one Echo box"
+msgstr "音骸ボックスを1個使用中"
+
+#: src/task/EchoBoxMixin.py
+msgid "Keep the game in the foreground while scrolling the Bag categories."
+msgstr "バッグのカテゴリをスクロールする間は、ゲームを最前面にしてください。"
+
+#: src/task/DailyTask.py
+msgid "Checking daily activity after claiming rewards"
+msgstr "報酬受け取り後のデイリー活躍度を確認中"
+
+#: src/task/DailyTask.py
+msgid "Could not read daily activity. No Echo box was used."
+msgstr "デイリー活躍度を正確に読み取れないため、音骸ボックスは使用していません。"
+
+#: src/task/DailyTask.py
+msgid "Claiming daily rewards after using one Echo box"
+msgstr "音骸ボックスを1個使用した後のデイリー報酬を受け取り中"
+
+#: src/task/DailyTask.py
+msgid "Echo box daily completion failed; continuing daily tasks: {error}"
+msgstr "音骸ボックスによるデイリー補完に失敗しました。デイリータスクを続行します：{error}"
+
+#: src/task/DailyTask.py
+msgid "Could not return to the open world after the Echo box step: {error}"
+msgstr "音骸ボックスの操作後にフィールドへ戻れませんでした：{error}"
