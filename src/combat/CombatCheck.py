@@ -245,14 +245,19 @@ class CombatCheck(BaseWWTask):
         if not levitator:
             self.send_key_up(self.key_config.get('Wheel Key'))
             raise Exception('no levitator tool in the tab wheel!')
-        old = win32api.GetCursorPos()
+        # With the ChildSession interaction the game runs in a separate session: move()
+        # already places that session's cursor, and the host cursor must stay untouched.
+        on_host = type(self.executor.interaction).__name__ != 'ChildSessionInteraction'
+        old = win32api.GetCursorPos() if on_host else None
         self.move(levitator.x, levitator.y)
-        abs_pos = self.executor.interaction.capture.get_abs_cords(levitator.x, levitator.y)
-        win32api.SetCursorPos(abs_pos)
+        if on_host:
+            abs_pos = self.executor.interaction.capture.get_abs_cords(levitator.x, levitator.y)
+            win32api.SetCursorPos(abs_pos)
         self.sleep(0.1)
         self.send_key_up(self.key_config.get('Wheel Key'))
         self.sleep(0.2)
-        win32api.SetCursorPos(old)
+        if on_host:
+            win32api.SetCursorPos(old)
         if not self.wait_feature('edge_levitator', threshold=0.6, time_out=1):
             if self.has_char(Roccia):
                 if self.find_one('levitator_roccia', threshold=0.6):

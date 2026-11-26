@@ -19,7 +19,6 @@ env:
   PYTHONIOENCODING: 'UTF-8'
   PYTHONLEGACYWINDOWSSTDIO: 'UTF-8'
   BUILD_EXE: 'true'
-#  USE_RELEASE: 'https://api.github.com/repos/ok-oldking/ok-wuthering-waves/releases/tags/v3.5.15'
 
 jobs:
   validate:
@@ -207,26 +206,12 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: python -m ok.update.inline_ok_requirements --tag "$env:RELEASE_TAG"
 
-      - name: Reuse base executable
-        id: reuse_executable
-        uses: ok-oldking/pyappify-action@69bf7ae364e8c7f0606f34df86d432168a46f4bf
-        if: env.BUILD_EXE == 'true' && env.USE_RELEASE != ''
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          version: v1.2.7
-          build_setup: false
-          use_release: ${{ env.USE_RELEASE }}
-          add_version_name: true
-          package_zip: true
-          package_zip_format: 7z
-
       - name: Build portable packages
         id: build_executable
-        uses: ok-oldking/pyappify-action@69bf7ae364e8c7f0606f34df86d432168a46f4bf
-        if: env.BUILD_EXE == 'true' && env.USE_RELEASE == ''
+        uses: ok-oldking/pyappify-action@a987e9ade9d7517f97b38636c0e07b44fd5ef379
+        if: env.BUILD_EXE == 'true'
         with:
-          version: v1.2.7
+          version: v1.2.8
           build_setup: false
           build_exe_only: ${{ env.SIGN_BUILD == 'true' }}
           add_version_name: true
@@ -236,7 +221,7 @@ jobs:
       - name: Upload portable executable for signing
         id: upload_executable
         uses: actions/upload-artifact@v4
-        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
+        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
         with:
           name: portable-executable-to-sign
           path: ${{ steps.build_executable.outputs.exe-path }}
@@ -246,7 +231,7 @@ jobs:
       - name: Sign portable executable
         id: sign_executable
         uses: signpath/github-action-submit-signing-request@v2.2
-        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
+        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
         with:
           api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
           organization-id: '639bc6dd-9623-43cd-ac75-50a445898012'
@@ -258,7 +243,7 @@ jobs:
 
       - name: Approve portable executable signing
         uses: fjogeleit/http-request-action@v1
-        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
+        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
         with:
           url: 'https://app.signpath.io/API/v1/639bc6dd-9623-43cd-ac75-50a445898012/SigningRequests/${{ steps.sign_executable.outputs.signing-request-id }}/Approve'
           method: POST
@@ -270,7 +255,7 @@ jobs:
           retryWait: 10000
 
       - name: Download signed portable executable
-        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true' && env.USE_RELEASE == ''
+        if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
         shell: pwsh
         env:
           SIGNING_REQUEST_ID: ${{ steps.sign_executable.outputs.signing-request-id }}
@@ -308,10 +293,10 @@ jobs:
 
       - name: Build installers
         id: build_installers
-        uses: ok-oldking/pyappify-action@69bf7ae364e8c7f0606f34df86d432168a46f4bf
+        uses: ok-oldking/pyappify-action@a987e9ade9d7517f97b38636c0e07b44fd5ef379
         if: env.BUILD_EXE == 'true' && env.SIGN_BUILD == 'true'
         with:
-          version: v1.2.7
+          version: v1.2.8
           build_setup: false
           add_version_name: true
           package_zip: true

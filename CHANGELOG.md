@@ -2,6 +2,10 @@
 
 Release history starts at v3.0.0.
 
+## v3.8.16 (2026-11-26)
+- New option: run the PC game in a Windows child session, so tasks never move your own mouse or keyboard (ok-script 3.0.15b1, beta).
+- Installers and portable archives are smaller.
+
 ## v3.8.15 (2026-11-25)
 - Fixed repeated OCR errors and restored Simplified Chinese conversion when using the Traditional Chinese interface.
 - Scheduled runs now exit if game login times out, and revive recovery gives waypoint travel more time to finish.
