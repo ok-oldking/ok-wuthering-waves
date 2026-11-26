@@ -11,6 +11,17 @@ class Lily(BaseChar):
     HEAVY_START_TIMEOUT = 2
     HEAVY_TIMEOUT = 6
     CONCERTO_TIMEOUT = 3
+    # A hold that starts inside the animation of the skill that filled Dream
+    # Perfume is swallowed. After a failed start, look this long for the forte
+    # prompt, and press again after a short gap if it is still up.
+    HEAVY_RETRY_CHECK = 0.3
+    HEAVY_RETRY_GAP = 0.05
+    # Lily alternates between two heavy forms that share Dream Perfume: only
+    # the Nightmare form displays Labels.lily_heavy, while the Fairytale form
+    # consumes the forte prompt without showing that icon. Confirming the
+    # prompt disappeared while Lily stays on field detects the alternate form.
+    HEAVY_PROMPT_GONE_SETTLE = 0.4
+    HEAVY_ALT_HOLD = 4.6
     # Slumberland lasts 50s and hides her normal attack, Resonance Skill and
     # Echo, so on a plain switch-in she cannot act.
     SLUMBERLAND_DURATION = 50
@@ -45,6 +56,10 @@ class Lily(BaseChar):
             if self.is_mouse_forte_full() or self.is_forte_full():
                 self.perform_heavy()
             can_liberate = self.task.use_liberation and self.liberation_available()
+            if not can_liberate:
+                # Tells a drained Liberation apart from one that was not read.
+                self.logger.info('Lily Liberation is ' +
+                                 ('off' if not self.task.use_liberation else 'not ready'))
             self.fill_concerto(0.8 if can_liberate else 1)
             # Slumberland hides E/echo/normal attacks. Enter it only after the
             # heavy finisher, then pass the healing and Outro buffs to the team.
@@ -69,6 +84,31 @@ class Lily(BaseChar):
                 < self.SLUMBERLAND_INTRO_LOCKOUT):
             return SwitchPriority.NO
         return super().get_switch_priority(current_char, has_intro, target_low_con)
+
+    def switch_next_char(self, post_action=None, free_intro=False, target_low_con=False):
+        # The End control is not on screen yet when the cast's animation ends,
+        # so skip_combat_check() does not cover this hand-off. The combat check
+        # before the switch key would find no lock and no health bar, then spend
+        # its whole retarget timeout middle-clicking while she sleeps. She
+        # cannot act either way: hand off first, and let the incoming
+        # Resonator's own check decide whether the fight is over.
+        if not self.slumberland_block_active():
+            return super().switch_next_char(post_action=post_action, free_intro=free_intro,
+                                            target_low_con=target_low_con)
+        previous = getattr(self.task, 'skip_combat_check', False)
+        self.task.skip_combat_check = True
+        try:
+            return super().switch_next_char(post_action=post_action, free_intro=free_intro,
+                                            target_low_con=target_low_con)
+        finally:
+            self.task.skip_combat_check = previous
+
+    def on_combat_end(self, chars):
+        # If combat ends while Lily is still on field asleep (for example when
+        # her Liberation killed the last enemy), switch to a teammate who can
+        # walk to Echo drops instead of leaving her stuck on field.
+        if self.slumberland_block_active() or self.in_slumberland():
+            self.switch_other_char()
 
     def slumberland_block_active(self):
         return (self.slumberland_start > 0
@@ -123,25 +163,87 @@ class Lily(BaseChar):
                 and bool(self.task.find_one(Labels.lily_liberation, threshold=0.8))
                 and super().liberation_available(check_color=check_color))
 
+    def on_field(self):
+        in_team, current, _ = self.task.in_team()
+        return bool(in_team) and current == self.index
+
+    def heavy_still_ready(self):
+        # Another Resonator's forte prompt looks the same, so also require the
+        # party frame to show Lily as the active one.
+        return bool(self.is_mouse_forte_full()) and self.on_field()
+
     def perform_heavy(self):
         self.check_combat()
-        self.task.mouse_down()
+        held = False
+        mode = None
+        finished = False
+
+        def wait_heavy_start():
+            gone_since = [None]
+
+            def detect_start():
+                if self.heavy_in_progress():
+                    return 'flower'
+                if not self.is_mouse_forte_full() and self.on_field():
+                    now = time.time()
+                    if gone_since[0] is None:
+                        gone_since[0] = now
+                    if now - gone_since[0] >= self.HEAVY_PROMPT_GONE_SETTLE:
+                        return 'alt'
+                else:
+                    gone_since[0] = None
+                return False
+
+            res = self.task.wait_until(
+                detect_start, time_out=self.HEAVY_START_TIMEOUT,
+                pre_action=self.check_combat)
+            if res is True:
+                return 'flower', None
+            if res in ('flower', 'alt'):
+                return res, gone_since[0]
+            return None, None
+
         try:
-            started = bool(self.task.wait_until(
-                self.heavy_in_progress, time_out=self.HEAVY_START_TIMEOUT,
-                pre_action=self.check_combat))
-            if not started:
+            self.task.mouse_down()
+            held = True
+            mode, consumed_at = wait_heavy_start()
+            if not mode and self.task.wait_until(
+                    self.heavy_still_ready, time_out=self.HEAVY_RETRY_CHECK):
+                # Nothing was consumed, so the hold never reached the game.
+                self.logger.info('Lily heavy channel did not start, pressing again')
+                self.task.mouse_up()
+                held = False
+                self.sleep(self.HEAVY_RETRY_GAP)
+                self.task.mouse_down()
+                held = True
+                mode, consumed_at = wait_heavy_start()
+            if not mode:
                 self.logger.warning('Lily heavy channel did not start')
                 return False
-            finished = bool(self.task.wait_until(
-                lambda: not self.heavy_in_progress(), time_out=self.HEAVY_TIMEOUT,
-                settle_time=0.15, pre_action=self.check_combat))
+            if mode == 'alt':
+                alt_start = consumed_at if consumed_at is not None else time.time()
+                res = self.task.wait_until(
+                    lambda: 'flower' if self.heavy_in_progress()
+                    else ('done' if time.time() - alt_start >= self.HEAVY_ALT_HOLD else False),
+                    time_out=self.HEAVY_ALT_HOLD + 0.5, pre_action=self.check_combat)
+                if res == 'flower':
+                    mode = 'flower'
+                else:
+                    finished = bool(res)
+            if mode == 'flower':
+                finished = bool(self.task.wait_until(
+                    lambda: not self.heavy_in_progress(), time_out=self.HEAVY_TIMEOUT,
+                    settle_time=0.15, pre_action=self.check_combat))
         finally:
-            self.task.mouse_up()
+            if held:
+                self.task.mouse_up()
         if finished:
             # The prompt disappears at the start of the uninterruptible finisher.
             self.sleep(0.7)
-            self.logger.info('Lily heavy finisher completed')
+            if mode == 'alt':
+                self.logger.info('Lily heavy finisher completed (alternate form)')
+            else:
+                self.logger.info('Lily heavy finisher completed')
         else:
             self.logger.warning('Lily heavy channel did not finish before timeout')
         return finished
