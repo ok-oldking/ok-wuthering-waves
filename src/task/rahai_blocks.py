@@ -46,6 +46,7 @@ class Board:
     mask: int
     pieces: tuple
     fixed: int = 0
+    fault: int = 0
 
 
 def canonical_frame(frame):
@@ -75,6 +76,37 @@ def _board_masks(frame):
         votes += ((bright > 88) & (chroma > 40)) | fixed
         fixed_votes += fixed
     return tuple(sum(1 << int(i) for i in np.flatnonzero(v.ravel() >= 3)) for v in (votes, fixed_votes))
+
+
+def _fault_mask(frame, mask):
+    """Detect faulted blocks (故障方块) by their pink static overlay.
+
+    Calibrated against the in-game screenshots in tests/images: a fault block
+    is BGR ~ (242, 105, 207) with high variance, while an ordinary magenta
+    block is BGR ~ (242, 63, 152) with almost no variance.  The original
+    threshold (r>160, b>170, b-g>50, r-g>35) also matched the ordinary
+    magenta block, so it changed the planner's choices on real stages.
+    Requiring all three channels to be in the fault range fixes that.
+    """
+    if frame is None or not mask:
+        return 0
+    half = 34  # sample a 68x68 square around the cell centre
+    fault = 0
+    for i in range(SIZE * SIZE):
+        if not mask >> i & 1:
+            continue
+        row, col = divmod(i, SIZE)
+        cx = round(BOARD_X + (col + .5) * CELL)
+        cy = round(BOARD_Y + (row + .5) * CELL)
+        tile = frame[cy - half:cy + half, cx - half:cx + half]
+        if tile.shape[0] < half * 2 or tile.shape[1] < half * 2:
+            continue
+        b, g, r = tile[:, :, 0].astype(int), tile[:, :, 1].astype(int), tile[:, :, 2].astype(int)
+        glitch = ((b > 200) & (g > 85) & (r > 185)
+                  & ((b - g) > 50) & ((r - g) > 35))
+        if glitch.mean() > .2:
+            fault |= 1 << i
+    return fault
 
 
 def _read_piece(frame, slot, cy):
@@ -145,15 +177,17 @@ def read_board(frame):
     if len(trays) != 1:
         return None
     mask, fixed = _board_masks(frame)
-    return Board(mask, trays[0], fixed)
+    fault = _fault_mask(frame, mask)
+    return Board(mask, trays[0], fixed, fault)
 
 
-def clear_lines(mask, fixed=0):
-    """Gray blocks contribute to full lines but stay in place when cleared."""
-    lines = [line for line in (*ROWS, *COLS) if mask & line == line]
+def clear_lines(mask, fixed=0, fault=0):
+    """Gray (数据损坏) and faulted (故障) blocks fill lines but stay in place."""
+    occupied = mask | fixed | fault
+    lines = [line for line in (*ROWS, *COLS) if occupied & line == line]
     for line in lines:
-        mask &= ~line
-    return mask | fixed, len(lines)
+        occupied &= ~line
+    return occupied | fixed | fault, len(lines)
 
 
 @lru_cache(maxsize=128)
@@ -199,7 +233,7 @@ def choose_move(board, excluded=()):
                     tile_mask = p[-1]
                     if tile_mask & mask or (first is None and (slot, tile_mask) in excluded):
                         continue
-                    after, lines = clear_lines(mask | tile_mask, board.fixed)
+                    after, lines = clear_lines(mask | tile_mask, board.fixed, board.fault)
                     total = score + lines * (lines + 1) * 30
                     move = first or Move(slot, *p)
                     initial = first_lines if first else lines

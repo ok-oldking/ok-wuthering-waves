@@ -333,9 +333,10 @@ class RahaiBlocksTask(BaseTask):
                 continue
             misses = 0
             rejected.clear()
-            expected, lines = clear_lines(board.mask | move.mask, board.fixed)
+            expected, lines = clear_lines(board.mask | move.mask, board.fixed, board.fault)
             self.log_info(f"Rahai Blocks: slot={move.slot + 1}, rotation={move.turns * 90}, "
-                          f"cell=({move.row + 1},{move.col + 1}), lines={lines}")
+                          f"cell=({move.row + 1},{move.col + 1}), lines={lines}, "
+                          f"fault={board.fault.bit_count()}")
             self.sleep(.95 if lines else .38)
             actual = None
             matched = False
