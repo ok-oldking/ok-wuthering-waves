@@ -252,7 +252,6 @@ class LilySwitchTest(unittest.TestCase):
         self.combat.add_freeze_duration = Mock()
         self.combat.check_combat = check_combat_fn or Mock()
         self.combat.switch_char_time_out = 5
-        self.combat.debug = False
         self.combat.support_chain_without_intro = 0
         self.combat.in_liberation = False
 
