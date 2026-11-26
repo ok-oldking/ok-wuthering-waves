@@ -830,7 +830,6 @@ class BaseCombatTask(CombatCheck):
         from src.char.ShoreKeeper import ShoreKeeper
         last_click = 0
         start = time.time()
-        con_full_streak = 0
         while True:
             in_team, current_index, _ = self.in_team()
             already_switched = in_team and current_index == switch_to.index
@@ -839,12 +838,9 @@ class BaseCombatTask(CombatCheck):
             now = time.time()
             if in_team and current_index == current_char.index:
                 self.update_lib_portrait_icon()
-                if not has_intro:
+                if not has_intro and current_char.is_con_full():
+                    self.sleep(0.02)
                     if current_char.is_con_full():
-                        con_full_streak += 1
-                    else:
-                        con_full_streak = 0
-                    if con_full_streak >= 2:
                         has_intro = True
                         switch_to = self._choose_switch_target(current_char, has_intro,
                                                                target_low_con=target_low_con)
@@ -860,8 +856,6 @@ class BaseCombatTask(CombatCheck):
                 self._apply_intro_flags(current_char, switch_to, has_intro)
                 if has_intro:
                     current_char.f_break(check_f_on_switch=True)
-            else:
-                con_full_streak = 0
             if not already_switched:
                 if switch_to.wait_switch():
                     self.click()
