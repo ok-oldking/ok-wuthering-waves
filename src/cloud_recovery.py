@@ -273,30 +273,22 @@ def _snapshot_dungeon_before_refresh(task, resume_dungeon, refresh_page) -> None
         task._cloud_in_reward_dungeon_before_error = False
 
 
-def _stop_if_repeating(task, error, label, repeated) -> None:
-    """Give up early when the very same error shows up N times in a row.
+def _log_repeated_failure(task, error, label, repeated) -> None:
+    """Explain why the very same error N times in a row is hopeless.
 
     For example a bad ``super()`` call fails at the same spot on every
     restart; refreshing the page cannot help, so stop with a clear message.
     """
-    if repeated < REPEAT_ERROR_LIMIT:
-        return
     task.log_error(
         task.tr('{name} 连续 {count} 次出现相同错误，判定为无法自动恢复：{error}')
         .format(name=label, count=repeated, error=error))
-    task.info_set('状态', '执行失败')
-    raise
 
 
-def _stop_if_restart_limit(task, label, restarts, limit, error) -> None:
-    """Stop after more automatic restarts than allowed."""
-    if restarts <= limit:
-        return
+def _log_restart_limit_failure(task, label, restarts, limit, error) -> None:
+    """Explain why the automatic restart budget is exhausted."""
     task.log_error(
         task.tr('{name} 已自动重启 {count} 次仍然失败，停止任务。')
         .format(name=label, count=limit), error)
-    task.info_set('状态', '执行失败')
-    raise
 
 
 def _recover_after_error(task, refresh_page, wait_ready, time_out,
@@ -317,29 +309,33 @@ def _recover_after_error(task, refresh_page, wait_ready, time_out,
 def _handle_cloud_error(task, error, *, label, restarts, last_signature,
                         repeated, limit, refresh_page, wait_ready, time_out,
                         restart_browser, resume_dungeon):
-    """Log one cloud failure, decide whether to retry, and refresh the page.
+    """Log one cloud failure, and retry with a page refresh when allowed.
 
-    Returns ``(restarts, last_signature, repeated)`` for the next round.
-    Raises again (the original error) when the error must not be retried: the
-    limit of restarts is exhausted or the very same failure keeps repeating.
+    Returns ``(restarts, last_signature, repeated, may_retry)``.  The caller
+    re-raises ``error`` when ``may_retry`` is False; that raise must happen
+    in its except block (see python:S5747).
     """
-    if not _runs_in_cloud(task):
-        raise
-
     restarts += 1
     task.log_error(task.tr('{name} 运行出错').format(name=label), error)
     _snapshot_dungeon_before_refresh(task, resume_dungeon, refresh_page)
 
     signature = _error_signature(error)
     repeated = repeated + 1 if signature == last_signature else 1
-    _stop_if_repeating(task, error, label, repeated)
-    _stop_if_restart_limit(task, label, restarts, limit, error)
+    may_retry = True
+    if repeated >= REPEAT_ERROR_LIMIT:
+        _log_repeated_failure(task, error, label, repeated)
+        may_retry = False
+    elif restarts > limit:
+        _log_restart_limit_failure(task, label, restarts, limit, error)
+        may_retry = False
+    if not may_retry:
+        return restarts, signature, repeated, False
 
     task.info_set('状态', task.tr('出错，正在自动重启 {current}/{limit}')
                   .format(current=restarts, limit=limit))
     _recover_after_error(task, refresh_page, wait_ready, time_out,
                          restart_browser, resume_dungeon)
-    return restarts, signature, repeated
+    return restarts, signature, repeated, True
 
 
 def run_with_cloud_recovery(
@@ -381,8 +377,13 @@ def run_with_cloud_recovery(
         except FatalTaskError:
             raise
         except Exception as error:
-            restarts, last_signature, repeated = _handle_cloud_error(
+            if not _runs_in_cloud(task):
+                raise
+            restarts, last_signature, repeated, may_retry = _handle_cloud_error(
                 task, error, label=label, restarts=restarts,
                 last_signature=last_signature, repeated=repeated, limit=limit,
                 refresh_page=refresh_page, wait_ready=wait_ready, time_out=time_out,
                 restart_browser=restart_browser, resume_dungeon=resume_dungeon)
+            if not may_retry:
+                task.info_set('状态', '执行失败')
+                raise
