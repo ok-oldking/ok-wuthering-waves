@@ -631,7 +631,7 @@ msgid "Need mankind help"
 msgstr "自动肉鸽失败, 需要手动操作到下一节点!"
 
 msgid "current task"
-msgstr ""
+msgstr "当前任务"
 
 msgid "in main"
 msgstr ""
@@ -2141,3 +2141,85 @@ msgstr "{name} 已清理（{defeated}/{total}）"
 
 msgid "Timed out on the game login screen."
 msgstr "等待游戏登录超时，仍停在登录界面。"
+
+msgid "Use Echo Box for Daily Echo"
+msgstr "使用声骸箱子获取日常声骸"
+
+msgid ""
+"When needed, use an Echo box from the Bag to obtain an Echo and complete "
+"daily activities."
+msgstr "必要时，使用背包中的声骸箱子获取声骸完成日常"
+
+#: src/task/EchoBoxMixin.py
+msgid "Echo box skipped: unsupported game language."
+msgstr "当前游戏语言不受支持，跳过声骸箱子。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Looking for an Echo box on the current page"
+msgstr "在当前页面查找声骸箱子"
+
+#: src/task/EchoBoxMixin.py
+msgid "No Echo boxes found on the current page."
+msgstr "当前页面未找到声骸箱子。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Used one Echo box and verified its consumption."
+msgstr "已使用 1 个声骸箱子，并确认消耗。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Opening the Bag and locating the Special tab"
+msgstr "打开背包并寻找特殊分类"
+
+#: src/task/EchoBoxMixin.py
+msgid "Scrolling the Bag category sidebar"
+msgstr "滚动背包分类栏"
+
+#: src/task/EchoBoxMixin.py
+msgid "Could not find the Special tab in the Bag."
+msgstr "未能找到背包的特殊分类。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Reading the item name and quantity"
+msgstr "识别物品名称和数量"
+
+#: src/task/EchoBoxMixin.py
+msgid ""
+"Echo box result is uncertain. Check the Bag before running again; no retry "
+"was sent."
+msgstr "声骸箱子结果待核实，未再次开箱。请检查背包后再决定是否重新运行。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Could not reliably read the item name and quantity. No box was used."
+msgstr "无法可靠识别物品名称和数量，未使用箱子。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Could not uniquely locate an Echo box button."
+msgstr "无法唯一定位声骸箱子的操作按钮。"
+
+#: src/task/EchoBoxMixin.py
+msgid "Using one Echo box"
+msgstr "使用 1 个声骸箱子"
+
+#: src/task/EchoBoxMixin.py
+msgid "Keep the game in the foreground while scrolling the Bag categories."
+msgstr "滚动背包分类栏时，请保持游戏在前台。"
+
+#: src/task/DailyTask.py
+msgid "Checking daily activity after claiming rewards"
+msgstr "检查领取奖励后的日常活跃度"
+
+#: src/task/DailyTask.py
+msgid "Could not read daily activity. No Echo box was used."
+msgstr "无法可靠识别日常活跃度，未使用声骸箱子。"
+
+#: src/task/DailyTask.py
+msgid "Claiming daily rewards after using one Echo box"
+msgstr "使用 1 个声骸箱子后领取日常奖励"
+
+#: src/task/DailyTask.py
+msgid "Echo box daily completion failed; continuing daily tasks: {error}"
+msgstr "声骸箱子日常补足失败，继续每日任务：{error}"
+
+#: src/task/DailyTask.py
+msgid "Could not return to the open world after the Echo box step: {error}"
+msgstr "声骸箱子流程结束后返回大世界失败：{error}"
