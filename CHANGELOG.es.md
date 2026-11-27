@@ -2,6 +2,11 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.18 (2026-11-27)
+- Tareas diarias: se añadió la opción «Usar cajas de Eco para las actividades diarias» (desactivada por defecto) para usar una caja de Eco de la mochila cuando la actividad diaria siga por debajo de 100 y luego reclamar las recompensas diarias (compatible con interfaces en chino simplificado, chino tradicional e inglés).
+- Combate automático: se corrigieron bloqueos al cambiar tras el estado de sueño de Lily, cambios de vuelta a una Lily dormida al terminar el combate, el manejo de ambas formas de ataque cargado y casos límite de picos de Concierto o comprobaciones de combate obsoletas al cambiar de personaje.
+- «3.8 拉海洛方块·逆转»: se limitó la búsqueda de jugadas en fases de cuatro bandejas con un tope de 3 segundos para evitar que se quede colgada al elegir movimiento.
+
 ## v3.8.17 (2026-11-27)
 - Sesión secundaria: se corrigió que la vista del juego tapara ventanas emergentes y descripciones, las reconexiones son más fiables y el juego se silencia cuando la ventana está en segundo plano (ok-script 3.0.15b2).
 

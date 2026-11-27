@@ -2,6 +2,11 @@
 
 Release history starts at v3.0.0.
 
+## v3.8.18 (2026-11-27)
+- Daily Task: added an optional "Use Echo Box for Daily Echo" setting (off by default) to use one Echo box from the Bag when daily activity is still below 100 and then claim daily rewards (Simplified Chinese, Traditional Chinese, and English game UI).
+- Auto Combat: fixed Lily's Slumberland hand-off stalls, post-combat switches back to a sleeping Lily, alternate heavy-attack handling, and mid-switch Concerto spike / stale combat-check edge cases.
+- “3.8 拉海洛方块·逆转”: bounded move search on four-tray stages with a 3-second time limit so move planning no longer hangs.
+
 ## v3.8.17 (2026-11-27)
 - Child session: fixed the game view covering pop-ups and tooltips, more reliable reconnects, and the game is muted while the window is in the background (ok-script 3.0.15b2).
 
