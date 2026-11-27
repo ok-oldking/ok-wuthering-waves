@@ -988,11 +988,23 @@ class BaseChar:
         return False
 
     def switch_other_char(self, allow_auto_combat=False):
-        target_index = (self.index + 1) % len(self.task.chars)
+        char_count = len(self.task.chars)
+        target_index = None
         for char in self.task.chars:
-            if char and char.is_healer and char.index != self.index:
+            if (char and char.is_healer and char.index != self.index
+                    and char.get_switch_priority(current_char=self, has_intro=False)
+                    > SwitchPriority.NO):
                 target_index = char.index
                 break
+        if target_index is None:
+            for offset in range(1, char_count):
+                char = self.task.chars[(self.index + offset) % char_count]
+                if (char and char.get_switch_priority(current_char=self, has_intro=False)
+                        > SwitchPriority.NO):
+                    target_index = char.index
+                    break
+        if target_index is None:
+            target_index = (self.index + 1) % char_count
         next_char = str(target_index + 1)
 
         from src.task.AutoCombatTask import AutoCombatTask

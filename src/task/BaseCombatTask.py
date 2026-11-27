@@ -831,39 +831,44 @@ class BaseCombatTask(CombatCheck):
         last_click = 0
         start = time.time()
         while True:
-            if not (isinstance(switch_to, ShoreKeeper) and has_intro):
+            in_team, current_index, _ = self.in_team()
+            already_switched = in_team and current_index == switch_to.index
+            if not already_switched and not (isinstance(switch_to, ShoreKeeper) and has_intro):
                 self.check_combat()
             now = time.time()
-            _, current_index, _ = self.in_team()
-            if current_index == current_char.index:
+            if in_team and current_index == current_char.index:
                 self.update_lib_portrait_icon()
-                refreshed_has_intro = has_intro or current_char.is_con_full()
-                if refreshed_has_intro != has_intro:
-                    has_intro = refreshed_has_intro
-                    switch_to = self._choose_switch_target(current_char, has_intro,
-                                                           target_low_con=target_low_con)
-                    if not switch_to or switch_to == current_char:
-                        logger.warning(
-                            f"{current_char} can't find next char to switch to after intro refresh, "
-                            f"performing too fast add a normal attack")
-                        current_char.continues_normal_attack(0.2)
-                        return
-                    logger.info(f'switch_next_char refreshed target after intro became available: {switch_to}')
+                if not has_intro and current_char.is_con_full():
+                    self.sleep(0.02)
+                    if current_char.is_con_full():
+                        has_intro = True
+                        switch_to = self._choose_switch_target(current_char, has_intro,
+                                                               target_low_con=target_low_con)
+                        if not switch_to or switch_to == current_char:
+                            logger.warning(
+                                f"{current_char} can't find next char to switch to after intro "
+                                f"refresh, performing too fast add a normal attack")
+                            current_char.continues_normal_attack(0.2)
+                            return
+                        logger.info(
+                            f'switch_next_char refreshed target after intro became available: '
+                            f'{switch_to}')
                 self._apply_intro_flags(current_char, switch_to, has_intro)
                 if has_intro:
                     current_char.f_break(check_f_on_switch=True)
-            if switch_to.wait_switch():
-                self.click()
-                self.sleep(0.1)
-                continue
-            if now - last_click > 0.1:
-                self.send_key(switch_to.index + 1)
-                self.sleep(0.001)
-                last_click = now
-                self.log_debug('switch not detected, send click')
-                self.click()
-                self.sleep(0.001)
-            in_team, current_index, size = self.in_team()
+            if not already_switched:
+                if switch_to.wait_switch():
+                    self.click()
+                    self.sleep(0.1)
+                    continue
+                if now - last_click > 0.1:
+                    self.send_key(switch_to.index + 1)
+                    self.sleep(0.001)
+                    last_click = now
+                    self.log_debug('switch not detected, send click')
+                    self.click()
+                    self.sleep(0.001)
+                in_team, current_index, _ = self.in_team()
             if not in_team:
                 logger.info(f'not in team while switching chars_{current_char}_to_{switch_to} {now - start}')
                 # if self.debug:
@@ -980,7 +985,12 @@ class BaseCombatTask(CombatCheck):
     def switch_healer(self):
         if self.switch_healer_enabled():
             current_char = self.get_current_char()
-            has_healer = any(char and char.is_healer for char in self.chars)
+            has_healer = any(
+                char and char.is_healer
+                and char.get_switch_priority(current_char=current_char, has_intro=False)
+                > SwitchPriority.NO
+                for char in self.chars
+            )
             if current_char and not current_char.is_healer and has_healer:
                 current_char.switch_other_char(allow_auto_combat=True)
 
