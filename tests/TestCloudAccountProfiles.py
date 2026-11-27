@@ -109,5 +109,62 @@ class CloudProfileSwapTest(unittest.TestCase):
         self.assertTrue(cb.profile_matches('acc-m'))
 
 
+class CloudProfileCrossVolumeTest(unittest.TestCase):
+    """不同磁盘/文件系统: os.replace 报 EXDEV 时的复制兜底 (不能撞上已存在的目录)."""
+
+    def setUp(self):
+        import errno
+        from unittest.mock import patch
+        self.errno = errno
+        self.patch = patch
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.source = self.root / 'cache' / 'playwright'
+        self.target = self.root / 'data' / 'playwright'
+        self.retired = self.target.with_name(self.target.name + '.retired')
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _fake_replace(self):
+        real_replace = os.replace
+
+        def replace(source, target):
+            if Path(source) == self.source:
+                raise OSError(self.errno.EXDEV, 'cross-device link')
+            return real_replace(source, target)
+        return replace
+
+    def test_copy_fallback_replaces_existing_target(self):
+        (self.source / 'Default').mkdir(parents=True)
+        (self.source / 'Cookies').write_text('new-cookie', encoding='utf-8')
+        self.target.mkdir(parents=True)
+        (self.target / 'Cookies').write_text('old-cookie', encoding='utf-8')
+
+        with self.patch.object(cb.os, 'replace', side_effect=self._fake_replace()):
+            cb._replace_dir(self.source, self.target)
+
+        self.assertEqual((self.target / 'Cookies').read_text(encoding='utf-8'), 'new-cookie')
+        self.assertFalse(self.source.exists())
+        self.assertFalse(self.retired.exists())
+
+    def test_copy_failure_keeps_old_profile(self):
+        (self.source / 'Cookies').parent.mkdir(parents=True, exist_ok=True)
+        (self.source / 'Cookies').write_text('new-cookie', encoding='utf-8')
+        self.target.mkdir(parents=True)
+        (self.target / 'Cookies').write_text('old-cookie', encoding='utf-8')
+
+        with self.patch.object(cb.os, 'replace', side_effect=self._fake_replace()), \
+                self.patch.object(cb.shutil, 'copytree',
+                                  side_effect=OSError(self.errno.ENOSPC, 'no space')):
+            with self.assertRaises(OSError):
+                cb._replace_dir(self.source, self.target)
+
+        # 复制失败时旧 profile 必须回到原位, 不能留下半个目录或 .retired。
+        self.assertEqual((self.target / 'Cookies').read_text(encoding='utf-8'), 'old-cookie')
+        self.assertFalse(self.retired.exists())
+        self.assertTrue(self.source.exists())
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -70,36 +70,57 @@ class CloudConfigTypeTest(unittest.TestCase):
         task = MultiAccountDailyTask.__new__(MultiAccountDailyTask)
         self.assertFalse(MultiAccountDailyTask._is_cloud_device(task))
 
-    # --- First entry: the device list may not be refreshed yet yet the
-    # --- cloud buttons must still show when a cloud browser is configured.
+    # --- First entry: the device list may not be refreshed yet, so the saved
+    # --- device identifier decides (never browser_config: config.py defines it
+    # --- for every installation, including pure PC ones).
 
     @staticmethod
-    def _manager(preferred, browser_config):
+    def _manager(preferred, browser_config, saved_preferred=''):
         import types
         return types.SimpleNamespace(
             get_preferred_device=lambda: preferred,
             browser_config=browser_config,
+            config={'preferred': saved_preferred},
         )
 
-    def _assert_cloud_device(self, preferred, browser_config, expected):
+    def _assert_cloud_device(self, preferred, browser_config, expected, saved_preferred=''):
         import types
         from unittest.mock import patch
-        executor = types.SimpleNamespace(device_manager=self._manager(preferred, browser_config))
+        executor = types.SimpleNamespace(
+            device_manager=self._manager(preferred, browser_config, saved_preferred))
         task = MultiAccountDailyTask.__new__(MultiAccountDailyTask)
         with patch.object(MultiAccountDailyTask, 'executor', new=executor):
             self.assertEqual(MultiAccountDailyTask._is_cloud_device(task), expected)
 
-    def test_cloud_device_first_entry_falls_back_to_browser_config(self):
-        self._assert_cloud_device(None, {'url': 'https://x'}, True)
+    def test_pc_user_with_browser_config_is_not_cloud(self):
+        """PC 用户也有 browser 段: 设备没刷新时不能因此被当成云游戏。"""
+        self._assert_cloud_device(None, {'url': 'https://x'}, False, saved_preferred='')
+
+    def test_pc_device_saved_preferred_is_not_cloud(self):
+        self._assert_cloud_device(None, {'url': 'https://x'}, False, saved_preferred='ABC123')
+
+    def test_cloud_device_first_entry_falls_back_to_saved_preferred(self):
+        self._assert_cloud_device(None, {'url': 'https://x'}, True, saved_preferred='browser')
 
     def test_cloud_device_preferred_browser(self):
         self._assert_cloud_device({'device': 'browser'}, {}, True)
 
     def test_cloud_device_preferred_windows_hides_buttons(self):
-        self._assert_cloud_device({'device': 'windows'}, {'url': 'https://x'}, False)
+        self._assert_cloud_device({'device': 'windows'}, {'url': 'https://x'}, False,
+                                  saved_preferred='browser')
 
     def test_cloud_device_no_browser_config_no_buttons(self):
         self._assert_cloud_device(None, None, False)
+
+    def test_manager_without_config_is_not_cloud(self):
+        import types
+        from unittest.mock import patch
+        manager = types.SimpleNamespace(get_preferred_device=lambda: None,
+                                        browser_config={'url': 'https://x'})
+        executor = types.SimpleNamespace(device_manager=manager)
+        task = MultiAccountDailyTask.__new__(MultiAccountDailyTask)
+        with patch.object(MultiAccountDailyTask, 'executor', new=executor):
+            self.assertFalse(MultiAccountDailyTask._is_cloud_device(task))
 
 
 class CloudRunDispatchTest(unittest.TestCase):
@@ -121,6 +142,101 @@ class CloudRunDispatchTest(unittest.TestCase):
         task.run_task_by_class = lambda cls: calls.append(getattr(cls, '__name__', cls))
         MultiAccountDailyTask.run(task)
         self.assertEqual(calls, ['MultiAccountConfigTask'])
+
+
+class CloudAccountRunTest(unittest.TestCase):
+    """逐账号执行语义: 没配置任务 = 只登录, 一个账号都没配置 = 跑默认日常."""
+
+    def _run_account(self, account, resolved=None):
+        from contextlib import contextmanager
+        from types import SimpleNamespace
+        from unittest.mock import Mock, patch
+
+        import src.task.MultiAccountDailyTask as module
+        from src.task.DailyTask import DailyTask
+
+        state = {'calls': [], 'isolated': None, 'config': None}
+        task = MultiAccountDailyTask.__new__(MultiAccountDailyTask)
+        task._cloud_reward_resumed = False
+        task.log_info = Mock()
+        task.tr = lambda text: text
+        task._switch_cloud_profile = Mock()
+        task.ensure_main = Mock()
+        task.run_task_by_class = Mock(side_effect=state['calls'].append)
+        task._executor = SimpleNamespace(get_all_tasks=lambda: ['all-tasks'])
+
+        @contextmanager
+        def isolated(tasks):
+            state['isolated'] = tasks
+            yield
+
+        @contextmanager
+        def account_config(saved_task, config):
+            state['config'] = (saved_task, config)
+            yield
+
+        def run_recovery(_task, work, **_kwargs):
+            return work()
+
+        with patch.object(module, 'resolve_task', return_value=resolved) as resolve, \
+                patch.object(module, 'run_with_cloud_recovery', side_effect=run_recovery), \
+                patch.object(module, 'wait_cloud_ready', return_value=True), \
+                patch.object(module, 'isolated_task_configs', isolated), \
+                patch.object(module, 'account_task_config', account_config):
+            MultiAccountDailyTask._run_cloud_account(task, account)
+        state['DailyTask'] = DailyTask
+        return state, resolve
+
+    def test_configured_none_task_only_logs_in(self):
+        state, resolve = self._run_account({'account_key': 'acc-a', 'task': None, 'config': {}})
+        self.assertEqual(state['calls'], [])
+        self.assertEqual(state['isolated'], ['all-tasks'])
+        self.assertIsNone(state['config'])
+
+    def test_no_accounts_runs_default_daily(self):
+        state, resolve = self._run_account(None)
+        self.assertEqual(state['calls'], [state['DailyTask']])
+        resolve.assert_not_called()
+
+    def test_account_task_runs_with_its_own_config(self):
+        from types import SimpleNamespace
+        resolved = SimpleNamespace(config={})
+        state, resolve = self._run_account(
+            {'account_key': 'acc-b', 'task': {'module': 'm', 'class': 'C'}, 'config': {'x': 1}},
+            resolved=resolved)
+        self.assertEqual(state['calls'], [SimpleNamespace])
+        self.assertEqual(state['config'], (resolved, {'x': 1}))
+        self.assertEqual(state['isolated'], ['all-tasks'])
+
+    def test_cancel_is_recorded_as_cancelled(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock, patch
+
+        import src.task.MultiAccountDailyTask as module
+        from ok.task.exceptions import TaskDisabledException
+
+        records = []
+
+        class FakeStore:
+            def load(self):
+                return [{'account_key': 'acc-c', 'enabled': True, 'task': None, 'config': {}}]
+
+            def record_result(self, account, status, message=''):
+                records.append(status)
+
+        task = MultiAccountDailyTask.__new__(MultiAccountDailyTask)
+        task.log_info = Mock()
+        task.log_warning = Mock()
+        task.tr = lambda text: text
+        task.info_set = Mock()
+        task._executor = SimpleNamespace()
+        task._account_store = Mock(return_value=FakeStore())
+        task._run_cloud_account = Mock(side_effect=TaskDisabledException())
+
+        with patch.object(module.WWOneTimeTask, 'run', lambda _self: None):
+            with self.assertRaises(TaskDisabledException):
+                MultiAccountDailyTask._run_cloud(task)
+        self.assertEqual(records, ['cancelled'])
 
 
 class CloudButtonGuardTest(unittest.TestCase):

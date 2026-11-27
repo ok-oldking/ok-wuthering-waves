@@ -158,9 +158,11 @@ def _try_swap(source: Path, target: Path, retired: Path):
             os.replace(target, retired)
         os.replace(source, target)
     except OSError as error:
-        _restore_retired(retired, target)
         if error.errno == errno.EXDEV:
+            # 跨盘时目标已经被挪到 retired 了, 交给 _copy_across_volumes 直接复制;
+            # 先还原再挪一次只会让 copytree 撞上已存在的目录。
             return 'exdev', error
+        _restore_retired(retired, target)
         return 'retry', error
     return 'done', None
 
@@ -168,10 +170,28 @@ def _try_swap(source: Path, target: Path, retired: Path):
 def _copy_across_volumes(source: Path, target: Path, retired: Path) -> None:
     """Cross-volume fallback for different filesystems.
 
-    The target was already moved aside, so copying creates a complete new
-    profile before the old one is deleted.
+    ``target`` may still exist here (``_restore_retired`` runs only for
+    non-EXDEV failures, but callers can reach this path with the old profile
+    still in place) and ``shutil.copytree`` refuses to write into an existing
+    directory — that made every cross-volume swap fail with FileExistsError.
+    Move it aside first (same volume, so a plain rename), then copy; on failure
+    restore the old profile instead of leaving a half-written directory behind.
     """
-    shutil.copytree(source, target)
+    if target.exists():
+        if retired.exists():
+            shutil.rmtree(retired, ignore_errors=True)
+        try:
+            os.replace(target, retired)
+        except OSError as error:
+            raise RuntimeError(
+                f'cloud_browser: cannot move {target} aside for the cross-volume copy: {error}'
+            ) from error
+    try:
+        shutil.copytree(source, target)
+    except OSError:
+        shutil.rmtree(target, ignore_errors=True)
+        _restore_retired(retired, target)
+        raise
     _cleanup_retired(retired)
     shutil.rmtree(source, ignore_errors=True)
 

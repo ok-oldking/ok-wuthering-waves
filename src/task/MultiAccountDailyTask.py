@@ -7,7 +7,7 @@ import win32gui
 import win32process
 
 from ok import Box
-from ok.task.exceptions import WaitFailedException
+from ok.task.exceptions import TaskDisabledException, WaitFailedException
 from src import cloud_browser
 from src.cloud_recovery import FatalTaskError, run_with_cloud_recovery, wait_cloud_ready
 from src.task.DailyTask import DailyTask
@@ -18,7 +18,7 @@ from src.task.MouseResetTask import MouseResetTask
 from src.task.account.MultiAccountConfigStore import (
     MultiAccountConfigStore, display_account, resolve_task, validate_accounts,
 )
-from src.task.account.RuntimeTaskConfig import account_task_config
+from src.task.account.RuntimeTaskConfig import account_task_config, isolated_task_configs
 from src.task.task_icons import task_icon
 
 account_pattern = re.compile(r'\*\*\*\*')
@@ -158,11 +158,10 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
         }
 
     def _is_cloud_device(self):
-        # The device list may not have been refreshed yet on the first visit,
-        # so device_dict has no 'browser' entry and is_browser() returns None —
-        # the save/switch buttons would be missing on first open. Prefer the
-        # actual selected device when one exists; otherwise fall back to
-        # whether a cloud browser is configured at all.
+        # 设备列表刷新前 device_dict 里没有 'browser' 项, get_preferred_device() 返回
+        # None（游戏没启动时也一样）。这时只能看「已保存的设备标识」：
+        # config.py 给每个安装都定义了 browser 段, 用 browser_config 判断会把 PC
+        # 用户也当成云游戏（隐藏逐账号配置、显示云按钮、run() 走 _run_cloud）。
         try:
             manager = self.executor.device_manager
         except Exception:
@@ -173,7 +172,12 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             preferred = None
         if preferred is not None:
             return preferred.get('device') == 'browser'
-        return bool(getattr(manager, 'browser_config', None))
+        config = getattr(manager, 'config', None)
+        try:
+            saved = config.get('preferred') if config is not None else None
+        except Exception:
+            saved = None
+        return saved == 'browser'
 
     def _mark_done(self, account):
         normalized = normalize_account_name(account)
@@ -241,8 +245,15 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             self.info_set('当前账号', display_account(key))
             try:
                 self._run_cloud_account(account)
+            except TaskDisabledException:
+                # 用户主动停止: 与 PC 的逐账号流程一致, 记为 cancelled 后继续抛出。
+                self._record_cloud_result(store, account, 'cancelled', '任务已停止')
+                self.info_set('状态', '已停止')
+                raise
             except Exception as error:
                 self._record_cloud_result(store, account, 'failed', str(error))
+                self.info_set('状态', '执行失败')
+                self.info_set('Error', str(error))
                 raise
             self._record_cloud_result(store, account, 'success')
             completed.append(display_account(key))
@@ -271,10 +282,16 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
             ).format(account=label))
 
     def _run_cloud_account(self, account):
-        """换到该账号的 profile 并跑它自己的任务（account 为 None 表示当前账号）."""
-        key = account['account_key'] if account else None
+        """换到该账号的 profile 并跑它自己的任务（account 为 None 表示当前账号）.
+
+        ``account`` 为 None 表示「一个账号都没配置」：沿用旧行为，对当前已登录的
+        账号跑一次默认日常。``account['task']`` 为 None 表示「只登录不跑任务」，
+        两者含义不同，不能都退化成 DailyTask。
+        """
+        has_account = account is not None
+        key = account['account_key'] if has_account else None
         label = display_account(key) if key else self.tr('当前账号')
-        task = resolve_task(self.executor, account['task']) if account else None
+        task = resolve_task(self.executor, account['task']) if has_account else None
 
         if key:
             self._switch_cloud_profile(key, label)
@@ -286,12 +303,17 @@ class MultiAccountDailyTask(WWOneTimeTask, BaseCombatTask):
                 self.log_info(self.tr('副本现场已续打并领奖，接着执行本账号剩余任务。'))
             else:
                 wait_cloud_ready(self, time_out=600)
-            if task is None:
-                self.run_task_by_class(DailyTask)
-            else:
-                # 按该账号自己勾选的配置执行（含刷梦魇巢穴/4C 等）。
-                with account_task_config(task, account['config']):
-                    self.run_task_by_class(type(task))
+            # 与 PC 逐账号流程一致：每个账号用独立的运行时配置，账号之间的
+            # 任务配置（含被间接调用的任务）不会互相串。
+            with isolated_task_configs(self.executor.get_all_tasks()):
+                if not has_account:
+                    self.run_task_by_class(DailyTask)
+                elif task is None:
+                    self.log_info(self.tr('Login successful; task is set to None, skipping.'))
+                else:
+                    # 按该账号自己勾选的配置执行（含刷梦魇巢穴/4C 等）。
+                    with account_task_config(task, account['config']):
+                        self.run_task_by_class(type(task))
             self.ensure_main(time_out=100)
 
         # 云游戏出错时刷新页面/重开浏览器并从头跑该账号, 不再因为一次识别失败中断所有账号.
