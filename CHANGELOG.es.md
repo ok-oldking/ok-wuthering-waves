@@ -2,6 +2,9 @@
 
 El historial comienza en v3.0.0.
 
+## v3.8.17 (2026-11-27)
+- Sesión secundaria: se corrigió que la vista del juego tapara ventanas emergentes y descripciones, las reconexiones son más fiables y el juego se silencia cuando la ventana está en segundo plano (ok-script 3.0.15b2).
+
 ## v3.8.16 (2026-11-26)
 - Nueva opción: ejecutar el juego de PC en una sesión secundaria de Windows, para que las tareas nunca muevan tu propio ratón ni teclado (ok-script 3.0.15b1, beta).
 - Los instaladores y los archivos portátiles ocupan menos.

@@ -2,6 +2,9 @@
 
 Release history starts at v3.0.0.
 
+## v3.8.17 (2026-11-27)
+- Child session: fixed the game view covering pop-ups and tooltips, more reliable reconnects, and the game is muted while the window is in the background (ok-script 3.0.15b2).
+
 ## v3.8.16 (2026-11-26)
 - New option: run the PC game in a Windows child session, so tasks never move your own mouse or keyboard (ok-script 3.0.15b1, beta).
 - Installers and portable archives are smaller.
