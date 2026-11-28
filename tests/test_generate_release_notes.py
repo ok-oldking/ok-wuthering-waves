@@ -59,6 +59,35 @@ class TestGenerateReleaseNotes(unittest.TestCase):
             self.assertIn("* Some commit", notes)
             self.assertNotIn("### Changelog (English)", notes)
 
+    def test_extract_contributors_filters_bots_and_deduplicates(self):
+        payload = {
+            "commits": [
+                {"author": {"login": "ok-oldking", "type": "User"}},
+                {"author": {"login": "dependabot[bot]", "type": "Bot"}},
+                {"author": {"login": "Alice", "type": "User"}},
+                {"author": {"login": "alice", "type": "User"}},
+                {"author": None},
+                {"author": {"login": "github-actions[bot]", "type": "User"}},
+            ]
+        }
+        self.assertEqual(
+            mod.extract_contributors_from_compare_payload(payload),
+            ["ok-oldking", "Alice"],
+        )
+
+    def test_build_release_notes_includes_contributors_section(self):
+        notes = mod.build_release_notes(
+            tag="v3.8.4",
+            en_changelog=ROOT / "CHANGELOG.md",
+            zh_changelog=ROOT / "CHANGELOG.zh-CN.md",
+            contributors=["ok-oldking", "@alice", "Alice"],
+        )
+        self.assertIn("### Contributors / 贡献者\n\n@ok-oldking, @alice", notes)
+        self.assertLess(
+            notes.index("### Contributors / 贡献者"),
+            notes.index("### 其他下载源 / Other download sources"),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

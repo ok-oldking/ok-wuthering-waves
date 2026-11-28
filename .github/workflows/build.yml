@@ -412,6 +412,8 @@ jobs:
           START_TAG: ${{ needs.synchronize.outputs.start_tag }}
           END_TAG: ${{ needs.synchronize.outputs.end_tag }}
           FALLBACK_CHANGES: ${{ needs.synchronize.outputs.changes }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 .github/scripts/generate_release_notes.py \
             --tag "$RELEASE_TAG" \
